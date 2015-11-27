@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 欢迎来到ios梦工厂 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/huan-ying-lai-dao-iosmeng-gong-han/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-11-27T23:13:32+08:00</updated>
+  <updated>2015-11-27T23:27:07+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -241,10 +241,10 @@ $ rake deploy
 <p>标题栏显示的内容为 /source/<em>includes/custom/header.html 所实现的，其中title和subtitle在 </em>config.yml 中定义，你可以进行适量的修改：</p>
 
 <pre><code>    &lt;hgroup&gt;
- &lt;h1&gt;&lt;a href="{{ root_url }}/"&gt;{{ site.title }}&lt;/a&gt;&lt;/h1&gt;
-{% if site.subtitle %}
-&lt;h2&gt;{{ site.subtitle }}&lt;/h2&gt;
-{% endif %}
+ &lt;h1&gt;&lt;a href="/"&gt;iOS梦工厂&lt;/a&gt;&lt;/h1&gt;
+
+&lt;h2&gt;不战胜自己，何以改变未来！&lt;/h2&gt;
+
 &lt;/hgroup&gt;
 </code></pre>
 
@@ -253,10 +253,10 @@ $ rake deploy
 <p>可以自行为导航栏添加项目，链接至不同的页面，在 /source/_includes/custom/navigation.html 中编辑即可。</p>
 
 <pre><code>&lt;ul class="main-navigation"&gt;
-&lt;li&gt;&lt;a href="{{ root_url }}/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
- &lt;li&gt;&lt;a href="{{ root_url }}/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="{{ root_url }}/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="{{ root_url }}/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;a href="/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </code></pre>
 
@@ -270,7 +270,7 @@ $ rake deploy
 <p>在 source/_includes/custom/footer.html 中编辑尾栏：</p>
 
 <pre><code>&lt;p&gt;
-    Copyright © {{ site.time | date: "%Y" }} - {{ site.author }} -
+    Copyright © 2015 - iCocos -
 &lt;span class="credit"&gt;
       Powered by
       &lt;a href="http://octopress.org"&gt;Octopress&lt;/a&gt;
@@ -531,7 +531,9 @@ Liquid::Template.register_tag('category_list', Jekyll::CategoryListTag)
 <pre><code>&lt;section&gt;
 &lt;h1&gt;文章分类&lt;/h1&gt;
 &lt;ul id="categories"&gt;
-{% category_list %}
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (1)</a></li>
+
 &lt;/ul&gt;
 &lt;/section&gt;
 </code></pre>
@@ -558,12 +560,7 @@ duoshuo_short_name: yourname
 
 <p>下方添加多说评论模块：</p>
 
-<pre><code>{% if site.duoshuo_short_name and site.duoshuo_comments == T and page.comments == T %}  
-&lt;section&gt;
-    &lt;h1&gt;Comments&lt;/h1&gt;
-    &lt;div id="comments" aria-live="polite"&gt;{% include post/duoshuo.html %}&lt;/div&gt;
-&lt;/section&gt;
-{% endif %}
+<pre><code>
 </code></pre>
 
 <p>如果你希望一些单独的页面下方也放置评论功能，那么在 ./source/<em>layouts/page.html 中也做如上修改。 然后创建一个 ./source/</em>includes/post/duoshuo.html 文件，内容如下：</p>
@@ -588,9 +585,7 @@ var duoshuoQuery = {short_name:"tianweili"};
 
 <p>下方添加下面代码：</p>
 
-<pre><code>{% if site.duoshuo_short_name and page.comments != F and post.comments != F and site.duoshuo_comments == T %}
-| &lt;a href="{% if index %}{{ root_url }}{{ post.url }}{% endif %}#comments"&gt;Comments&lt;/a&gt;
-{% endif %}
+<pre><code>
 </code></pre>
 
 <blockquote><p>注意：
@@ -851,11 +846,7 @@ tag_dir: blog/tags
 <pre><code>&lt;section&gt;
 &lt;h2&gt;相关文章：&lt;/h2&gt;
   &lt;ul class="posts"&gt;
-   {% for post in site.related_posts limit:5 %}
-      &lt;li class="related"&gt;
-      &lt;a href="{{ root_url }}{{ post.url }}"&gt;{{ post.title }}&lt;/a&gt;
-      &lt;/li&gt;
-  {% endfor %}
+   
 &lt;/ul&gt;
 &lt;/section&gt;
 </code></pre>
@@ -925,9 +916,7 @@ comment_share: true
 
 <p>然后在 source/_includes/post/sharing.html 中添加如下代码：</p>
 
-<pre><code>{% if site.comment_share %}
-{% include post/share_comment.html %}
-{% endif %}
+<pre><code>
 </code></pre>
 
 <p>最后需要使你的网站通过友言的验证，才可以进行后台管理，后台可以进行评论管理、社交影响力分析、和评论栏的风格功能设置。</p>
@@ -958,11 +947,18 @@ comment_share: true
 
 <p>友言提供评论计数功能，可以将每篇文章的评论数显示在博客首页相应文章题目旁。实现方法为：在 source/_includes/article.html 中</p>
 
-<p><code>{% include post/date.html %}{{ time }}</code></p>
+<p><code>
+
+
+
+
+
+
+</code></p>
 
 <p>的后边填入嵌入组件中获得的评论计数的代码，需要修改其中一些内容</p>
 
-<pre><code>| &lt;a href="{% if index %}{{ root_url }}{{ post.url }}{% endif %}#comments" id="uyan_count_unit" du="" su=""&gt;0条评论&lt;/a&gt;
+<pre><code>| &lt;a href="#comments" id="uyan_count_unit" du="" su=""&gt;0条评论&lt;/a&gt;
  &lt;script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=*******"&gt;&lt;/script&gt;
 </code></pre>
 

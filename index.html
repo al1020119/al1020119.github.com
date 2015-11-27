@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="简介 Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.) 根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10 &hellip;">
+  <meta name="description" content="底层开发之越狱开发 做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。 这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面: (1)主要涉及到越狱市场的建立， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,334 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">越狱开发详解</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h1>底层开发之越狱开发</h1>
+
+<p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
+
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
+
+<ul>
+<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
+<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
+<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
+这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
+</ul>
+
+
+<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
+
+<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
+
+<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
+
+<p>进入正题：</p>
+
+<p>需要的工具和环境：</p>
+
+<ol type="a">
+<li>iPhone or iPad越狱，安装AppSync</li>
+<li>Xcode安装 Command Line Tools</li>
+<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
+</ol>
+
+
+<p>1、修改SDKSettings.plist文件</p>
+
+<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
+
+<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
+</code></pre>
+
+<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
+
+<p>执行命令为：</p>
+
+<p>转到目录下</p>
+
+<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+</code></pre>
+
+<p>将原有文件备份</p>
+
+<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
+</code></pre>
+
+<p>对SDKSettings.plist文件进行编辑</p>
+
+<pre><code>sudo vim SDKSettings.plist
+</code></pre>
+
+<p>将下面对应的字段改为NO</p>
+
+<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
+&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
+</code></pre>
+
+<p>此操作参考的路径如下：</p>
+
+<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
+</code></pre>
+
+<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
+
+<p>新建一个plist文件，命名为entitlements.</p>
+
+<pre><code>![Alt text](/iamges/yueyu001.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu001.jpg" title="Caption" ></p>
+
+<p>创建一个plist</p>
+
+<pre><code>![Alt text](/iamges/yueyu002.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu002.jpg" title="Caption" ></p>
+
+<p>将plist文件改为：</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Install&lt;/string&gt;
+        &lt;string&gt;Browse&lt;/string&gt;
+        &lt;string&gt;Uninstall&lt;/string&gt;
+        &lt;string&gt;Archive&lt;/string&gt;
+        &lt;string&gt;RemoveArchive&lt;/string&gt;
+    &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+
+<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu003.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu003.jpg" title="Caption" ></p>
+
+<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
+
+<p>3、实现越狱安装的代码：</p>
+
+<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
+NSDictionary *IPAInstalledApps()
+{
+void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
+if (lib)
+{
+    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
+    if (pMobileInstallationLookup)
+    {
+        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
+        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
+        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
+#ifdef DEBUG
+        NSLog(@"%@", dict);
+#endif
+        return dict;
+    }
+}
+return nil;
+}
+</code></pre>
+
+<p>所有代码均在之前的github目录中，可以自行查看。</p>
+
+<p>4、编译生成App文件</p>
+
+<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
+
+<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
+
+<pre><code>![Alt text](/iamges/yueyu004.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu004.jpg" title="Caption" ></p>
+
+<p>5、制作ipa文件</p>
+
+<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
+
+<p>比如在 Download 目录下， sudo -i</p>
+
+<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
+
+<p>然后对之前生成的文件，进行ldid签名</p>
+
+<pre><code>![Alt text](/iamges/yueyu005.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu005.jpg" title="Caption" ></p>
+
+<ul>
+<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
+<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
+</ul>
+
+
+<p>6、生成ipa文件，安装</p>
+
+<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
+
+<p>然后通过itools安装，测试刚刚生成的文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu006.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu006.jpg" title="Caption" ></p>
+
+<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
+
+<h1>检查iphone时候越狱</h1>
+
+<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
+
+<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
+
+<p>复制代码
+复制代码</p>
+
+<pre><code>/*方法名:
+ *        isJailbroken
+*介绍:
+*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
+*参数说明:
+*        无
+*        
+*
+*/
+
+#pragma mark utils api
+// 类方法，判断当前设备是否已经越狱
++ (BOOL)isJailbroken;
+// 类方法，判断你的App是否被破解
++ (BOOL)isPirated;
+</code></pre>
+
+<p>apt和Cydia的方式来进行判断的，没看见源码</p>
+
+<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
+
+<h3>apt</h3>
+
+<pre><code>- (BOOL) asAP
+{
+return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
+4 }`
+</code></pre>
+
+<h3>system</h3>
+
+<pre><code>`1 - (BOOL) successCallSystem
+2 {
+3 return (system("ls") == 0) ? YES : NO;
+4 }`
+</code></pre>
+
+<h3>示例代码</h3>
+
+<pre><code>static const char* jailbreak_apps[] =
+
+  {
+      "/Applications/Cydia.app",
+      "/Applications/limera1n.app",
+      "/Applications/greenpois0n.app",
+      "/Applications/blackra1n.app",
+      "/Applications/blacksn0w.app",
+      "/Applications/redsn0w.app",
+     "/Applications/Absinthe.app",
+     NULL,
+ };
+
+ - (BOOL) isJailBroken
+ {
+     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
+     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
+     {
+         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
+         {
+             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
+             return YES;
+         }
+     }
+
+               // TODO: Add more checks? This is an arms-race we're bound to lose.
+
+     return NO;
+ }
+</code></pre>
+
+<hr />
+
+<pre><code>@interface UIDevice (Helper)  
+ - (BOOL)isJailbroken;  
+ @end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation UIDevice (Helper)  
+- (BOOL)isJailbroken {  
+BOOL jailbroken = NO;  
+NSString *cydiaPath = @"/Applications/Cydia.app";  
+NSString *aptPath = @"/private/var/lib/apt/";  
+if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
+ jailbroken = YES;  
+}  
+if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
+ jailbroken = YES;  
+}  
+return jailbroken;  
+}  
+@end
+</code></pre>
+
+<hr />
+
+<p>参考资源链接：</p>
+
+<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
+<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -640,6 +968,10 @@ addBlankTargetForLinks();
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">越狱开发详解</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a>
       </li>
     
@@ -648,6 +980,35 @@ addBlankTargetForLinks();
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 
@@ -660,6 +1021,16 @@ addBlankTargetForLinks();
     <h1>访客统计</h1>
     <br/>
     <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
 </section>
   
 </aside>
