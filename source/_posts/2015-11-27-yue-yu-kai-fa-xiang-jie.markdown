@@ -75,7 +75,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 
 	![Alt text](/iamges/yueyu001.jpg)
 	
-{% img /images/yueyu001.jpg Caption %}  
+{% img /images/yueyu001.png Caption %}  
 
 创建一个plist
 
@@ -83,7 +83,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 	![Alt text](/iamges/yueyu002.jpg)
 
 
-{% img /images/yueyu002.jpg Caption %}  
+{% img /images/yueyu002.png Caption %}  
 
 将plist文件改为：
 
@@ -107,7 +107,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 
 	![Alt text](/iamges/yueyu003.jpg)
 
-{% img /images/yueyu003.jpg Caption %}  
+{% img /images/yueyu003.png Caption %}  
 
 
 后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。
@@ -152,7 +152,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 
  
 
-{% img /images/yueyu004.jpg Caption %}  
+{% img /images/yueyu004.png Caption %}  
 
 5、制作ipa文件
 
@@ -167,7 +167,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 	![Alt text](/iamges/yueyu005.jpg)
 
 
-{% img /images/yueyu005.jpg Caption %}  
+{% img /images/yueyu005.png Caption %}  
 
 * 这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。
 
@@ -184,7 +184,7 @@ C. 下载最新版本的ldid https://github.com/downloads/rpetrich/ldid/ldid.zip
 	![Alt text](/iamges/yueyu006.jpg)
  
  
-{% img /images/yueyu006.jpg Caption %}  
+{% img /images/yueyu006.png Caption %}  
 
 整合了很多资源，有些地方弄的比较凌乱，后面加以完善
 
