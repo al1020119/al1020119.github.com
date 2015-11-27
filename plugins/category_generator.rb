@@ -119,7 +119,7 @@ module Jekyll
 ===============================================
  Error for category_generator.rb plugin
 -----------------------------------------------
- No 'category_index.html' in source/_layouts/
+ No 'category_index.hmtl' in source/_layouts/
  Perhaps you haven't installed a theme yet.
 ===============================================
 
@@ -153,7 +153,16 @@ ERR
     # Returns string
     #
     def category_links(categories)
-      categories.sort.map { |c| category_link c }.join(', ')
+      categories = categories.sort!.map { |c| category_link c }
+
+      case categories.length
+      when 0
+        ""
+      when 1
+        categories[0].to_s
+      else
+        "#{categories[0...-1].join(', ')}, #{categories[-1]}"
+      end
     end
 
     # Outputs a single category as an <a> link.
@@ -174,11 +183,12 @@ ERR
     # Returns string
     def date_to_html_string(date)
       result = '<span class="month">' + date.strftime('%b').upcase + '</span> '
-      result << date.strftime('<span class="day">%d</span> ')
-      result << date.strftime('<span class="year">%Y</span> ')
+      result += date.strftime('<span class="day">%d</span> ')
+      result += date.strftime('<span class="year">%Y</span> ')
       result
     end
 
   end
 
 end
+
