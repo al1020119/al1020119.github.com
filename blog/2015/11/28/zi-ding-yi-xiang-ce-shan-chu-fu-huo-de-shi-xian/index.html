@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>UITableView性能优化与卡顿问题 - iOS梦工厂</title>
+  <title>自定义相册删除复活的实现 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="UITableView性能优化与卡顿问题 ordinal 引言： 在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿） 最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术， &hellip;">
+  <meta name="description" content="自定义相册删除复活的实现 ordinal 在这里（http://www.cnblogs.com/iCocos/p/4705585.html%EF%BC%89%E6%88%91%E4%BB%AC%E6%8F%90%E5%88%B0%E4%BA%86%E3%80%82 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">UITableView性能优化与卡顿问题</h1>
+      <h1 class="entry-title">自定义相册删除复活的实现</h1>
     
     
       <p class="meta">
@@ -97,86 +97,151 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>引言：</p>
+<div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html%EF%BC%89%E6%88%91%E4%BB%AC%E6%8F%90%E5%88%B0%E4%BA%86%E3%80%82">http://www.cnblogs.com/iCocos/p/4705585.html%EF%BC%89%E6%88%91%E4%BB%AC%E6%8F%90%E5%88%B0%E4%BA%86%E3%80%82</a></p>
 
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
 
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
 
-<p>1.最常用的就是cell的重用， 注册重用标识符</p>
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
 
-<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
-如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
-每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-设置正确的reuseIdentifer以重用cell
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+
+<p>先来看看咱们取得相册中的相片</p>
+
+<pre><code>- (void)getAllPhotos
+{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
+    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
+        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+            // 缩略图
+            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
+            // 获得原始图片
+            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
+        }];
+
+   } failureBlock:nil];
+}
 </code></pre>
 
-<p>2.避免cell的重新布局</p>
+<p>下面我们看看代码具体的实现</p>
 
-<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
-如可以将cell单独放到一个自定义类，初始化时就布局好
+<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+
+<pre><code> /** 相册库 */
+@property (nonatomic, strong) ALAssetsLibrary *library;
 </code></pre>
 
-<p>3.提前计算并缓存cell的属性及内容</p>
+<p>二：然后就懒加载这个属性</p>
 
-<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
-当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
+<pre><code>- (ALAssetsLibrary *)library
+{
+    if (!_library) {
+        _library = [[ALAssetsLibrary alloc] init];
+    }
+    return _library;
+}
 </code></pre>
 
-<p>4.减少cell中控件的数量</p>
+<p>三：点击保存按钮的实现</p>
 
-<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
-不适用的可以先隐藏
+<pre><code>- (IBAction)save
+{
+// 获得文件夹的名字
+__block NSString *groupName = [self groupName];
+
+// self的弱引用
+XMGWeakSelf;
+
+// 图片库
+__weak ALAssetsLibrary *weakLibrary = self.library;
+
+// 创建文件夹
+[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+    if (group) { // 新创建的文件夹
+        // 添加图片到文件夹中
+        [weakSelf addImageToGroup:group];
+    } else { // 文件夹已经存在
+        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
+            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
+                // 添加图片到文件夹中
+
+                [weakSelf addImageToGroup:group];
+
+                *stop = YES; // 停止遍历
+            } else if ([name isEqualToString:@"Camera Roll"]) {
+                // 文件夹被用户强制删除了
+                groupName = [groupName stringByAppendingString:@" "];
+                // 存储新的名字
+                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                // 创建新的文件夹
+                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+                    // 添加图片到文件夹中
+                    [weakSelf addImageToGroup:group];
+                } failureBlock:nil];
+            }
+        } failureBlock:nil];
+    }
+
+    } failureBlock:nil];
+    }
 </code></pre>
 
-<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
+<p>四：添加图片</p>
 
-<pre><code>渲染耗时比较长
-尽量将view设置为不透明，包括cell本身。
+<pre><code>/**
+ * 添加一张图片到某个文件夹中
+ */
+- (void)addImageToGroup:(ALAssetsGroup *)group
+{
+__weak ALAssetsLibrary *weakLibrary = self.library;
+// 需要保存的图片
+
+CGImageRef image = self.imageView.image.CGImage;
+
+// 添加图片到【相机胶卷】
+[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+        // 添加一张图片到自定义的文件夹中
+        [group addAsset:asset];
+        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
+    } failureBlock:nil];
+}];
+}
 </code></pre>
 
-<p>6.使用局部更新</p>
+<p>五：关于沙河中的组名</p>
 
-<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
+<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
+
+<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
+static NSString * const iCocosDefaultGroupName = @"iCocos";
 </code></pre>
 
-<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
+<p>实现祖名的存取</p>
 
-<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
+<pre><code>- (NSString *)groupName
+{
+    // 先从沙盒中取得名字
+
+    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
+    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
+   groupName = XMGDefaultGroupName;
+
+    // 存储名字到沙盒中
+    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+ [[NSUserDefaults standardUserDefaults] synchronize];
+}
+return groupName;
+}
 </code></pre>
-
-<p>8.少使用addView 给cell动态添加view</p>
-
-<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
-
-<pre><code>注意正确使用懒加载
-</code></pre>
-
-<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
-
-<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
-</code></pre>
-
-<p>11.缓存行高：</p>
-
-<pre><code>如果row的高度不相同，那么将其缓存下来
-estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-</code></pre>
-
-<p>12.避免渐变，图像缩放以及离屏绘制</p>
-
-<p>13.使用shadowPath来设置阴影。</p>
-
-<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
-
-<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
-
-<hr />
-
-<p>参考：相关性能优化问题</p>
-
-<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
 </div>
 
 
@@ -228,10 +293,8 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/" title="Previous Post: 底层开发之越狱开发">&laquo; 底层开发之越狱开发</a>
+        <a class="basic-alignment left" href="/blog/2015/11/28/xmppshi-yong-zong-jie/" title="Previous Post: XMPP使用总结">&laquo; XMPP使用总结</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/" title="Next Post: 取消TableView的Header与Footer的黏性效果">取消TableView的Header与Footer的黏性效果 &raquo;</a>
       
     </p>
   </footer>
@@ -309,7 +372,7 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/11/28/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

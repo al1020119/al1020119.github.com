@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Icocos个人相关 - iOS梦工厂</title>
+  <title>cocoaPods简单粗暴 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="Icocos个人相关 ordinal ordinal 文章分类 欢迎来到ios梦工厂 (1)
-程序员必备 (1) 最新文章 自定义相册删除复活的实现 XMPP使用总结 蓝牙开发你知道多少 cocoaPods简单粗暴 取消TableView的Header与Footer的黏性效果 GitHub &hellip;">
+  <meta name="description" content="cocoaPods简单粗暴 ordinal 直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ 2:新增淘宝镜像 $ &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/icocos/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -74,28 +73,14 @@ $(document).bind('DOMNodeInserted', function(event) {
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Icocos个人相关</h1>
-    <p class="meta">
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> </p>
-  </header>
-  
-  
-
-  
-    <footer>
+    
+      <h1 class="entry-title">cocoaPods简单粗暴</h1>
+    
+    
       <p class="meta">
-        
         
 
 
@@ -108,16 +93,169 @@ $(document).bind('DOMNodeInserted', function(event) {
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
         
       </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
       
-        <div class="sharing">
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="images/iCoocs.jpg" width=90 height=100></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
   
   
   
 </div>
 
+    
+    <p class="meta">
       
-    </footer>
-  
+        <a class="basic-alignment left" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/" title="Previous Post: 取消TableView的Header与Footer的黏性效果">&laquo; 取消TableView的Header与Footer的黏性效果</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/" title="Next Post: 蓝牙开发你知道多少">蓝牙开发你知道多少 &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
 
 </div>
@@ -192,7 +330,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/icocos/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/icocos/index.html" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
@@ -213,10 +351,10 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 <!-- 多说评论 -->
-
-<section>
-    <h1>更多评论</h1>
-    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
 <div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
 <script type="text/javascript">
     var duoshuoQuery = {short_name:"tianweili"};
@@ -230,9 +368,8 @@ $(document).bind('DOMNodeInserted', function(event) {
      })();
     </script>
 <!-- Duoshuo Comment END --></div>
-</section>
-
-
+    </section>
+    
     </div>
   </div>
   <footer role="contentinfo"><p>

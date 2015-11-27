@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Icocos个人相关 - iOS梦工厂</title>
+  <title>取消TableView的Header与Footer的黏性效果 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="Icocos个人相关 ordinal ordinal 文章分类 欢迎来到ios梦工厂 (1)
-程序员必备 (1) 最新文章 自定义相册删除复活的实现 XMPP使用总结 蓝牙开发你知道多少 cocoaPods简单粗暴 取消TableView的Header与Footer的黏性效果 GitHub &hellip;">
+  <meta name="description" content="取消TableView的Header与Footer的黏性效果 ordinal 引言： 最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。 那么是什么问题呢？ 首先当我在tabelView中为没饿过section设置一个header和footer之后 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/icocos/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -74,28 +73,14 @@ $(document).bind('DOMNodeInserted', function(event) {
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Icocos个人相关</h1>
-    <p class="meta">
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> </p>
-  </header>
-  
-  
-
-  
-    <footer>
+    
+      <h1 class="entry-title">取消TableView的Header与Footer的黏性效果</h1>
+    
+    
       <p class="meta">
-        
         
 
 
@@ -108,16 +93,156 @@ $(document).bind('DOMNodeInserted', function(event) {
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
         
       </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>引言：</p>
+
+<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
+
+<h6>那么是什么问题呢？</h6>
+
+<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
+
+<p>我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？</p>
+
+<p>后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。</p>
+
+<p>也在网上找了一段这样的代码</p>
+
+<h3>去掉UItableview headerview黏性(sticky)</h3>
+
+<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+if (scrollView == self.tableView)
+
+{
+
+        CGFloat sectionHeaderHeight = 64; //sectionHeaderHeight
+
+        if (scrollView.contentOffset.y &lt;= sectionHeaderHeight &amp;&amp; scrollView.contentOffset.y &gt;= 0) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
+
+        } else if (scrollView.contentOffset.y &gt;= sectionHeaderHeight) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>但是他职能设置headerView不能设置footerView，自己也试着去补充footerView的实现，但是发现技术有限，所以，你懂的！</p>
+
+<h3>最后看到国外一位大神写的一一篇文章找到了下面的代码</h3>
+
+<pre><code> -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+    if (scrollView == self.tableView)
+
+        {
+
+        UITableView *tableview = (UITableView *)scrollView;
+
+        CGFloat sectionHeaderHeight = 64;
+
+        CGFloat sectionFooterHeight = 120;
+
+        CGFloat offsetY = tableview.contentOffset.y;
+
+        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>注：sectionHeaderHeight和sectionFooterHeight根据项目进行设置。</p>
+
+<p>发现基本上搞定，最后只需要设置对应的内边距即可！</p>
+
+<!-- more -->
+
+
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
       
-        <div class="sharing">
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="images/iCoocs.jpg" width=90 height=100></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
   
   
   
 </div>
 
+    
+    <p class="meta">
       
-    </footer>
-  
+        <a class="basic-alignment left" href="/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/" title="Previous Post: UITableView性能优化与卡顿问题">&laquo; UITableView性能优化与卡顿问题</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/" title="Next Post: cocoaPods简单粗暴">cocoaPods简单粗暴 &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
 
 </div>
@@ -192,7 +317,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/icocos/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/icocos/index.html" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
@@ -213,10 +338,10 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 <!-- 多说评论 -->
-
-<section>
-    <h1>更多评论</h1>
-    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
 <div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
 <script type="text/javascript">
     var duoshuoQuery = {short_name:"tianweili"};
@@ -230,9 +355,8 @@ $(document).bind('DOMNodeInserted', function(event) {
      })();
     </script>
 <!-- Duoshuo Comment END --></div>
-</section>
-
-
+    </section>
+    
     </div>
   </div>
   <footer role="contentinfo"><p>

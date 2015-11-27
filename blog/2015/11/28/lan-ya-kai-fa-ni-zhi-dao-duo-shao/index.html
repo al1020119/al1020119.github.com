@@ -5,11 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>UITableView性能优化与卡顿问题 - iOS梦工厂</title>
+  <title>蓝牙开发你知道多少 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="UITableView性能优化与卡顿问题 ordinal 引言： 在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿） 最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术， &hellip;">
+  <meta name="description" content="蓝牙开发你知道多少 ordinal 蓝牙简单介绍和4.0的基本使用 背景： iOS的蓝牙不能用来传输文件。
+iOS与iOS设备之间进行数据通信，使用gameKit.framework
+iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework iOS中蓝牙的实现方案 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +79,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">UITableView性能优化与卡顿问题</h1>
+      <h1 class="entry-title">蓝牙开发你知道多少</h1>
     
     
       <p class="meta">
@@ -97,86 +99,208 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>引言：</p>
+<div class="entry-content"><p>蓝牙简单介绍和4.0的基本使用</p>
 
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+<p>背景：</p>
 
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
+<ul>
+<li>iOS的蓝牙不能用来传输文件。</li>
+<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
+<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
+</ul>
 
-<p>1.最常用的就是cell的重用， 注册重用标识符</p>
 
-<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
-如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
-每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-设置正确的reuseIdentifer以重用cell
+<h3>iOS中蓝牙的实现方案</h3>
+
+<p>iOS中提供了4个框架用于实现蓝牙连接</p>
+
+<ol>
+<li><p>GameKit.framework（用法简单）</p>
+
+<p> <code>只能用于iOS设备之间的连接，多用于游戏（比如五子棋对战），从iOS7开始过期</code></p></li>
+<li><p>MultipeerConnectivity.framework</p>
+
+<p> <code>只能用于iOS设备之间的连接，从iOS7开始引入，主要用于文件共享（仅限于沙盒的文件）</code></p></li>
+<li><p>ExternalAccessory.framework</p>
+
+<p> <code>可用于第三方蓝牙设备交互，但是蓝牙设备必须经过苹果MFi认证（国内较少）</code></p></li>
+<li><h6>CoreBluetooth.framework（时下热门）</h6>
+
+<p> <code>可用于第三方蓝牙设备交互，必须要支持蓝牙4.0</code></p>
+
+<p> <code>硬件至少是4s，系统至少是iOS6</code></p>
+
+<p> <code>蓝牙4.0以低功耗著称，一般也叫BLE（BluetoothLowEnergy）</code></p>
+
+<p> <code>目前应用比较多的案例：运动手坏、嵌入式设备、智能家居</code></p></li>
+</ol>
+
+
+<p>下面具体介绍使用CoreBluetooth.framework的代码步骤：</p>
+
+<h5>蓝牙系统库</h5>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
 </code></pre>
 
-<p>2.避免cell的重新布局</p>
+<h5>必须要由UUID来唯一标示对应的service和characteristic</h5>
 
-<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
-如可以将cell单独放到一个自定义类，初始化时就布局好
+<pre><code>#define kServiceUUID @"5C476471-1109-4EBE-A826-45B4F9D74FB9"
+
+#define kCharacteristicHeartRateUUID @"82C7AC0F-6113-4EC9-92D1-5EEF44571398"
+
+#define kCharacteristicBodyLocationUUID @"537B5FD6-1889-4041-9C35-F6949D1CA034"
 </code></pre>
-
-<p>3.提前计算并缓存cell的属性及内容</p>
-
-<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
-当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
-</code></pre>
-
-<p>4.减少cell中控件的数量</p>
-
-<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
-不适用的可以先隐藏
-</code></pre>
-
-<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
-
-<pre><code>渲染耗时比较长
-尽量将view设置为不透明，包括cell本身。
-</code></pre>
-
-<p>6.使用局部更新</p>
-
-<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
-</code></pre>
-
-<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
-
-<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
-</code></pre>
-
-<p>8.少使用addView 给cell动态添加view</p>
-
-<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
-
-<pre><code>注意正确使用懒加载
-</code></pre>
-
-<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
-
-<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
-</code></pre>
-
-<p>11.缓存行高：</p>
-
-<pre><code>如果row的高度不相同，那么将其缓存下来
-estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-</code></pre>
-
-<p>12.避免渐变，图像缩放以及离屏绘制</p>
-
-<p>13.使用shadowPath来设置阴影。</p>
-
-<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
-
-<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
 
 <hr />
 
-<p>参考：相关性能优化问题</p>
+<pre><code>@interface ViewController ()&lt;CBCentralManagerDelegate,CBPeripheralDelegate&gt;
 
-<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
+
+
+@property (nonatomic,strong)CBCentralManager * centralManager;
+
+@property (nonatomic,strong)CBPeripheral     * peripheral;
+
+@end
+</code></pre>
+
+<h4>创建中心角色</h4>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+
+- (void)viewDidLoad
+{
+
+    [super viewDidLoad];
+
+    //初始化蓝牙 central manager
+
+    _centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) options:nil];    
+
+}
+</code></pre>
+
+<h4>扫描外设</h4>
+
+<pre><code>[manager scanForPeripheralsWithServices:nil options:@{CBCentralManagerRestoredStateScanOptionsKey:@(YES)}];
+</code></pre>
+
+<h4>连接外设</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+        if([peripheral.name  isEqualToString:BLE_SERVICE_NAME]){
+                [self connect:peripheral];
+        }
+}       
+
+-(BOOL)connect:(CBPeripheral *)peripheral{
+        self.manager.delegate = self;
+        [self.manager connectPeripheral:peripheral
+                                options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:CBConnectPeripheralOptionNotifyOnDisconnectionKey]];
+}
+</code></pre>
+
+<h4>扫描外设中的服务和特征</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
+{
+
+   NSLog(@"Did connect to peripheral: %@", peripheral);       
+
+   _testPeripheral = peripheral;
+   [peripheral setDelegate:self];  &lt;br&gt;//查找服务
+   [peripheral discoverServices:nil];
+
+
+}
+</code></pre>
+
+<h4>发现服务：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+
+
+NSLog(@"didDiscoverServices");
+
+if (error)
+{
+    NSLog(@"Discovered services for %@ with error: %@", peripheral.name, [error localizedDescription]);
+
+    if ([self.delegate respondsToSelector:@selector(DidNotifyFailConnectService:withPeripheral:error:)])
+        [self.delegate DidNotifyFailConnectService:nil withPeripheral:nil error:nil];
+
+    return;
+}
+
+
+for (CBService *service in peripheral.services)
+{
+     //发现服务
+    if ([service.UUID isEqual:[CBUUID UUIDWithString:UUIDSTR_ISSC_PROPRIETARY_SERVICE]])
+    {
+        NSLog(@"Service found with UUID: %@", service.UUID);  &lt;br&gt;//查找特征
+        [peripheral discoverCharacteristics:nil forService:service];
+        break;
+    }
+
+
+}
+}
+</code></pre>
+
+<h4>发现服务中的特征：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+
+if (error)
+{
+    NSLog(@"Discovered characteristics for %@ with error: %@", service.UUID, [error localizedDescription]);
+
+    [self error];
+    return;
+}
+
+NSLog(@"服务：%@",service.UUID);
+for (CBCharacteristic *characteristic in service.characteristics)
+{
+   //发现特征
+        if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"xxxxxxx"]]) {
+            NSLog(@"监听：%@",characteristic);&lt;br&gt;//监听特征
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+}
+}
+</code></pre>
+
+<h4>与外设进行数据交互</h4>
+
+<p>读取数据：</p>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error)
+    {
+        NSLog(@"Error updating value for characteristic %@ error: %@", characteristic.UUID, [error localizedDescription]);
+        self.error_b = BluetoothError_System;
+        [self error];
+        return;
+}
+
+//    NSLog(@"收到的数据：%@",characteristic.value);
+[self decodeData:characteristic.value];
+}
+</code></pre>
+
+<h4>写数据：</h4>
+
+<pre><code>NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
+            [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+</code></pre>
 </div>
 
 
@@ -228,10 +352,10 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/" title="Previous Post: 底层开发之越狱开发">&laquo; 底层开发之越狱开发</a>
+        <a class="basic-alignment left" href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/" title="Previous Post: cocoaPods简单粗暴">&laquo; cocoaPods简单粗暴</a>
       
       
-        <a class="basic-alignment right" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/" title="Next Post: 取消TableView的Header与Footer的黏性效果">取消TableView的Header与Footer的黏性效果 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2015/11/28/xmppshi-yong-zong-jie/" title="Next Post: XMPP使用总结">XMPP使用总结 &raquo;</a>
       
     </p>
   </footer>
@@ -309,7 +433,7 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
