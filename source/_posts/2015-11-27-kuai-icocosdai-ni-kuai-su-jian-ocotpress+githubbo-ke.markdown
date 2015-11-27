@@ -514,11 +514,11 @@ Octopress默认自带了DISQUS，但是对于国内不是很好用。所以在�
 
 下方添加下面代码：
 
-> 
+
 	{% if site.duoshuo_short_name and page.comments != F and post.comments != F and site.duoshuo_comments == T %}
 	| <a href="{% if index %}{{ root_url }}{{ post.url }}{% endif %}#comments">Comments</a>
 	{% endif %}
-> 	
+> 
 注意：
 以上所有F代表false，T代表true，更改对应的就可以
 （不要问为撒）
