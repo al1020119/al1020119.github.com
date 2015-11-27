@@ -9,7 +9,7 @@ categories:
 ---
 
  
-在这里（http://www.cnblogs.com/iCocos/p/4705585.html）我们提到了。
+在这里（[http://www.cnblogs.com/iCocos/p/4705585.html](http://www.cnblogs.com/iCocos/p/4705585.html)）我们提到了。
 
 * 简单的实现了获取系统相册图片并且保存图片到系统相册
 * 定义自定义的相册，并且保存到自定义相册
