@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-11-28T00:01:16+08:00</updated>
+  <updated>2015-11-28T00:21:17+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,94 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[UITableView性能优化与卡顿问题]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/"/>
+    <updated>2015-11-28T00:05:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi</id>
+    <content type="html"><![CDATA[<p>引言：</p>
+
+<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+
+<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
+
+<p>1.最常用的就是cell的重用， 注册重用标识符</p>
+
+<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
+如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
+每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
+设置正确的reuseIdentifer以重用cell
+</code></pre>
+
+<p>2.避免cell的重新布局</p>
+
+<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
+如可以将cell单独放到一个自定义类，初始化时就布局好
+</code></pre>
+
+<p>3.提前计算并缓存cell的属性及内容</p>
+
+<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
+当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
+而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
+</code></pre>
+
+<p>4.减少cell中控件的数量</p>
+
+<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
+不适用的可以先隐藏
+</code></pre>
+
+<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
+
+<pre><code>渲染耗时比较长
+尽量将view设置为不透明，包括cell本身。
+</code></pre>
+
+<p>6.使用局部更新</p>
+
+<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
+</code></pre>
+
+<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
+
+<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
+</code></pre>
+
+<p>8.少使用addView 给cell动态添加view</p>
+
+<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
+
+<pre><code>注意正确使用懒加载
+</code></pre>
+
+<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
+
+<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
+</code></pre>
+
+<p>11.缓存行高：</p>
+
+<pre><code>如果row的高度不相同，那么将其缓存下来
+estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
+</code></pre>
+
+<p>12.避免渐变，图像缩放以及离屏绘制</p>
+
+<p>13.使用shadowPath来设置阴影。</p>
+
+<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
+
+<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
+
+<hr />
+
+<p>参考：相关性能优化问题</p>
+
+<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[底层开发之越狱开发]]></title>
@@ -1142,6 +1230,10 @@ tag_dir: blog/tags
 <pre><code>&lt;section&gt;
 &lt;h2&gt;相关文章：&lt;/h2&gt;
   &lt;ul class="posts"&gt;
+
+      &lt;li class="related"&gt;
+      &lt;a href="http://al1020119.github.io/blog/2015/11/28/tableviewqia-dun-na-du-bu-shi-shi/"&gt;UITableView性能优化与卡顿问题&lt;/a&gt;
+      &lt;/li&gt;
 
       &lt;li class="related"&gt;
       &lt;a href="http://al1020119.github.io/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/"&gt;底层开发之越狱开发&lt;/a&gt;
