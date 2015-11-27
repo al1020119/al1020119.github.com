@@ -189,8 +189,7 @@ Octopress为我们提供了一些task来创建博文和页面。博文必须存�
 
 
 
-*****
-----
+***
 
 #个性化配置（初级篇）
 
@@ -218,7 +217,10 @@ Octopress为我们提供了一些task来创建博文和页面。博文必须存�
 	<li><a href="{{ root_url }}/category-cloud">分类云</a></li>
 	<li><a href="{{ root_url }}/about">关于</a></li>
 	</ul>
-当想添加一些页面，如“关于”页面，可以试验 rake new_page['name'] 命令来创建，如 rake new_page['about'] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如 <li><a href="/about">关于</a></li> 。
+当想添加一些页面，如“关于”页面，可以试验 rake new_page['name'] 命令来创建，如 rake new_page['about'] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如 
+	
+	<li><a href="/about">关于</a></li> 
+	
 
 ### footer（尾栏）
 
@@ -351,6 +353,8 @@ Octopress为我们提供了一些task来创建博文和页面。博文必须存�
 
 或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。
 
+***
+
 #个性化配置（中级篇）
 
 ### 提高博客访问速度
@@ -375,7 +379,9 @@ Octopress默认使用的是Google的JS公共库地址，加载的过程无比的
 	#twitter_tweet_button: true
 把 \source\_includes\after_footer.html 文件中的twitter内容给注释掉：
 
-	<!--{% include twitter_sharing.html %}-->
+	include twitter_sharing.html
+	
+	
 #### 删除Google font
 
 把在 \source\_includes\custom\head.html 中的Google font样式给删除：
@@ -472,40 +478,52 @@ Octopress默认自带了DISQUS，但是对于国内不是很好用。所以在�
 
 	# duoshuo comments
 	duoshuo_comments: true
-	duoshuo_short_name: yourname
+	duoshuo_short_name: yourname 
 在 ./source/_layouts/post.html 中的 disqus 代码
 
 下方添加多说评论模块：
 
-	{% if site.duoshuo_short_name and site.duoshuo_comments == true and page.comments == true %}
+	{% if site.duoshuo_short_name and site.duoshuo_comments == T and page.comments == T %}	
 	<section>
-    <h1>Comments</h1>
-    <div id="comments" aria-live="polite">{% include post/duoshuo.html %}</div>
+		<h1>Comments</h1>
+		<div id="comments" aria-live="polite">{% include post/duoshuo.html %}</div>
 	</section>
 	{% endif %}
+
+
+
+
 如果你希望一些单独的页面下方也放置评论功能，那么在 ./source/_layouts/page.html 中也做如上修改。 然后创建一个 ./source/_includes/post/duoshuo.html 文件，内容如下：
 
-	<!-- Duoshuo Comment BEGIN -->
+> 
+	
 	<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
 	<script type="text/javascript">
 	var duoshuoQuery = {short_name:"tianweili"};
 	(function() {
-    var ds = document.createElement('script');
-    ds.type = 'text/javascript';ds.async = true;
-    ds.src = 'http://static.duoshuo.com/embed.js';
-    ds.charset = 'UTF-8';
-    (document.getElementsByTagName('head')[0] 
-    || document.getElementsByTagName('body')[0]).appendChild(ds);
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = 'http://static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		|| document.getElementsByTagName('body')[0]).appendChild(ds);
 	})();
 	</script>
-	<!-- Duoshuo Comment END -->
+
 最后再修改 _includes/article.html 文件，在
 
 下方添加下面代码：
 
-	{% if site.duoshuo_short_name and page.comments != false and post.comments != false and site.duoshuo_comments == true %}
-      | <a href="{% if index %}{{ root_url }}{{ post.url }}{% endif %}#comments">Comments</a>
+> 
+	{% if site.duoshuo_short_name and page.comments != F and post.comments != F and site.duoshuo_comments == T %}
+	| <a href="{% if index %}{{ root_url }}{{ post.url }}{% endif %}#comments">Comments</a>
 	{% endif %}
+> 	
+注意：
+以上所有F代表false，T代表true，更改对应的就可以
+（不要问为撒）
+
+
 ### 自动为图片添加url前缀
 
 我把图片资源都 放在了七牛云存储 上，写博客时候就是用七牛的外链。但是这样有几个问题：
@@ -547,8 +565,7 @@ Octopress默认自带了DISQUS，但是对于国内不是很好用。所以在�
 	flag_counter: true
 
 
-*****
-----
+***
 
 
 #个性化配置（高级篇） 
@@ -684,7 +701,8 @@ Gemfile 中的是bundle安装时安装的所有依赖的软件，然后用bundle
 
 这样就设置好了，同时建议将缓存的page rank文件添加进你的 .gitignore 中
 
-.page_rank
+	.page_rank
+	
 ### 3D标签云与标签列表
 
 octopress默认的只支持category的分类，而并没有tag。category和tag分别代表有序/无序的知识点归纳。一篇文章只能属于一个category，但可以有多个tag。原来的plugin下只有category_generator.rb插件，实现category功能，在github上有两个插件帮助实现了tag生成和tag cloud功能 插件1 ， 插件2 。但似乎并不支持中文，而category_generator.rb是支持中文的，所以我有样学样，改成了支持中文的，并且实现了3D标签云的，插件已经上传到 github 。clone到你博客的目录即可。
@@ -832,7 +850,7 @@ share_comment.html文件中代码如下（每个人不同）：
 
 友言提供评论计数功能，可以将每篇文章的评论数显示在博客首页相应文章题目旁。实现方法为：在 source/_includes/article.html 中
 
-	{% include post/date.html %}{{ time }}
+`{% include post/date.html %}{{ time }}`
 	
 的后边填入嵌入组件中获得的评论计数的代码，需要修改其中一些内容
 
@@ -890,9 +908,11 @@ share_comment.html文件中代码如下（每个人不同）：
  	---
 	<script type="text/javascript" src="http://www.qq.com/404/	search_children,js" charset="utf-8></script>
  
+***
+
 ## mackdown语法简介
 
-#####下面简单介绍一下mackdown常用语法（mackdown语法程序员必备）
+###下面简单介绍一下mackdown常用语法（mackdown语法程序员必备）
  
 
 1. 标题设置（让字体变大，和word的标题意思一样）
@@ -946,17 +966,29 @@ I get 10 times more traffic from [Google][1] than from [Yahoo][2] or [MSN][3].
 
 10. 脚注（footnote）
 实现方式如下：
-hello[^hello]
+	
+	
+	`hello[^hello]`
 
 
-[^hello]: hi
+	`[^hello]: hi`
 
 11. 下划线
 在空白行下方添加三条“-”横线。（前面讲过在文字下方添加“-”，实现的2级标题）
 
 相关参考
 
-[mackdoen语法简介](http://www.cnblogs.com/itech/p/3800982.html)
-[以上内容根据官方文档基本文档进行整理](http://daringfireball.net/projects/markdown/basics)
-[Markdown官方网站](http://daringfireball.net/projects/markdown/) 
-[推荐一款在线的Markdown编辑器](https://stackedit.io/)
+[mackdoen语法简介](http://www.cnblogs.com/itech/p/3800982.html) 
+
+*** 
+
+版权声明：欢迎转载，请贴上源地址
+ 
+ [https://al1020119.github.io](https://al1020119.github.io)
+ 
+ [http://www.cnblogs.com/iCocos/（iOS梦工厂）](http://www.cnblogs.com/iCocos/（iOS梦工厂）)
+
+更多精彩请关注
+
+[github：https://github.com/al1020119?tab=repositories](github：https://github.com/al1020119?tab=repositories)
+
