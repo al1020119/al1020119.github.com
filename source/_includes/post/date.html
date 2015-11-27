@@ -1,5 +1,12 @@
-{% if page.date %}{% capture time %}{{ page.date_time_html }}{% endcapture %}{% endif %}
-{% if post.date %}{% capture time %}{{ post.date_time_html }}{% endcapture %}{% endif %}
-
-{% if page.updated %}{% capture updated %}{{ page.date_time_updated_html }}{% endcapture %}{% endif %}
-{% if post.updated %}{% capture updated %}{{ post.date_time_updated_html }}{% endcapture %}{% endif %}
+{% capture date %}{{ page.date }}{{ post.date }}{% endcapture %}
+{% capture date_formatted %}{% if page.date %}{{ page.date | date: site.date_format }}{% endif %}{% if post.date %}{{ post.date | date: site.date_format }}{% endif %}{% endcapture %}
+{% capture has_date %}{{ date | size }}{% endcapture %}
+{% capture updated %}{{ page.updated }}{{ post.updated }}{% endcapture %}
+{% capture updated_formatted %}{% if page.updated %}{{ page.updated | date: site.date_format }}{% endif %}{% if post.updated %}{{ post.updated | date: site.date_format }}{% endif %}{% endcapture %}
+{% capture was_updated %}{{ updated | size }}{% endcapture %}
+{% if has_date != '0' %}
+{% capture time %} <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> {{ date_formatted }} </time> {% endcapture %}
+{% endif %}
+{% if was_updated != '0' %}
+{% capture updated %} <time class="updated" itemprop="dateModified"> Updated {{ updated_formatted }} </time> {% endcapture %}
+{% else %}{% assign updated = false %}{% endif %}

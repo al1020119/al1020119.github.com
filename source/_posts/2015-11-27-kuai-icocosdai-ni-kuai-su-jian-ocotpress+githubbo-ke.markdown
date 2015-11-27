@@ -4,7 +4,9 @@ layout: post
 title: "带你玩虐Ocotpress＋Github博客"
 date: 2015-11-27 13:53:19 +0800
 comments: true
-categories: 
+categories: 欢迎来到iOS梦工厂
+description: "我的个人简介" 
+keywords: Octopress 
 
 ---
 
