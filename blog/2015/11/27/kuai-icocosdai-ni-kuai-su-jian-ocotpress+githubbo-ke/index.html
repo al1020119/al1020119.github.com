@@ -305,8 +305,6 @@ $ rake deploy
 
 <hr />
 
-<hr />
-
 <h1>个性化配置（初级篇）</h1>
 
 <p>这几个部分是经常需要个性化定制的，在 source/<em>includes 中存在其对应的HTML文件，这是主题默认的文件，更换主题，更新octopress会被覆盖，所以应该编辑 source/</em>includes/custom 下的文件来实现修改。</p>
@@ -337,7 +335,10 @@ $ rake deploy
 &lt;/ul&gt;
 </code></pre>
 
-<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如 <li><a href="/about">关于</a></li> 。</p>
+<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如</p>
+
+<pre><code>&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt; 
+</code></pre>
 
 <h3>footer（尾栏）</h3>
 
@@ -482,6 +483,8 @@ body &gt; div &gt; div { //文章内容
 
 <p>或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。</p>
 
+<hr />
+
 <h1>个性化配置（中级篇）</h1>
 
 <h3>提高博客访问速度</h3>
@@ -510,10 +513,8 @@ body &gt; div &gt; div { //文章内容
 
 <p>把 \source_includes\after_footer.html 文件中的twitter内容给注释掉：</p>
 
-<pre><code>&lt;!--
+<pre><code>include twitter_sharing.html
 </code></pre>
-
-<p>&ndash;></p>
 
 <h4>删除Google font</h4>
 
@@ -627,64 +628,38 @@ Liquid::Template.register_tag('category_list', Jekyll::CategoryListTag)
 
 <pre><code># duoshuo comments
 duoshuo_comments: true
-duoshuo_short_name: yourname
+duoshuo_short_name: yourname 
 </code></pre>
 
 <p>在 ./source/_layouts/post.html 中的 disqus 代码</p>
 
 <p>下方添加多说评论模块：</p>
 
-<pre><code>&lt;section&gt;
-&lt;h1&gt;Comments&lt;/h1&gt;
-&lt;div id="comments" aria-live="polite"&gt;&lt;!-- Duoshuo Comment BEGIN --&gt;
-</code></pre>
-
-<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
-
-
-<script type="text/javascript">
-    var duoshuoQuery = {short_name:"tianweili"};
-    (function() {
-     var ds = document.createElement('script');
-     ds.type = 'text/javascript';ds.async = true;
-     ds.src = 'http://static.duoshuo.com/embed.js';
-     ds.charset = 'UTF-8';
-     (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-     })();
-    </script>
-
-
-<!-- Duoshuo Comment END -->
-
-
-<p></div>
-    </section></p>
-
 <p>如果你希望一些单独的页面下方也放置评论功能，那么在 ./source/<em>layouts/page.html 中也做如上修改。 然后创建一个 ./source/</em>includes/post/duoshuo.html 文件，内容如下：</p>
 
-<pre><code>&lt;!-- Duoshuo Comment BEGIN --&gt;
-&lt;div class="ds-thread" data-title="Octopress博客的个性化配置"&gt;&lt;/div&gt;
+<blockquote></blockquote>
+
+<pre><code>&lt;div class="ds-thread" data-title="Octopress博客的个性化配置"&gt;&lt;/div&gt;
 &lt;script type="text/javascript"&gt;
 var duoshuoQuery = {short_name:"tianweili"};
 (function() {
-var ds = document.createElement('script');
-ds.type = 'text/javascript';ds.async = true;
-ds.src = 'http://static.duoshuo.com/embed.js';
-ds.charset = 'UTF-8';
-(document.getElementsByTagName('head')[0] 
-|| document.getElementsByTagName('body')[0]).appendChild(ds);
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
 })();
 &lt;/script&gt;
-&lt;!-- Duoshuo Comment END --&gt;
 </code></pre>
 
 <p>最后再修改 _includes/article.html 文件，在</p>
 
 <p>下方添加下面代码：</p>
 
-<pre><code>  | &lt;a href="#comments"&gt;Comments&lt;/a&gt;
-</code></pre>
+<blockquote><p>注意：
+以上所有F代表false，T代表true，更改对应的就可以
+（不要问为撒）</p></blockquote>
 
 <h3>自动为图片添加url前缀</h3>
 
@@ -734,8 +709,6 @@ static_file_prefix: http://7u2i08.com1.z0.glb.clouddn.com
 <pre><code># Flag Counter
 flag_counter: true
 </code></pre>
-
-<hr />
 
 <hr />
 
@@ -890,7 +863,8 @@ github_skip_forks: true
 
 <p>这样就设置好了，同时建议将缓存的page rank文件添加进你的 .gitignore 中</p>
 
-<p>.page_rank</p>
+<pre><code>.page_rank
+</code></pre>
 
 <h3>3D标签云与标签列表</h3>
 
@@ -1043,7 +1017,9 @@ comment_share: true
 
 <p>友言提供评论计数功能，可以将每篇文章的评论数显示在博客首页相应文章题目旁。实现方法为：在 source/_includes/article.html 中</p>
 
-<p><time class='entry-date' datetime='2015-11-27T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:53 pm</span></time></p>
+<p>`</p>
+
+<p><time class='entry-date' datetime='2015-11-27T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>27</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:53 pm</span></time>`</p>
 
 <p>的后边填入嵌入组件中获得的评论计数的代码，需要修改其中一些内容</p>
 
@@ -1105,9 +1081,11 @@ footer: false
 &lt;script type="text/javascript" src="http://www.qq.com/404/  search_children,js" charset="utf-8&gt;&lt;/script&gt;
 </code></pre>
 
+<hr />
+
 <h2>mackdown语法简介</h2>
 
-<h5>下面简单介绍一下mackdown常用语法（mackdown语法程序员必备）</h5>
+<h3>下面简单介绍一下mackdown常用语法（mackdown语法程序员必备）</h3>
 
 <ol>
 <li><p>标题设置（让字体变大，和word的标题意思一样）
@@ -1145,8 +1123,11 @@ I get 10 times more traffic from <a href="http://google.com/" title="Google">Goo
 第一种：简单文字出现一个代码框。使用<code>&lt;blockquote&gt;</code>。（<code>不是单引号而是左上角的ESC下面~中的</code>）
 第二种：大片文字需要实现代码框。使用Tab和四个空格。</p></li>
 <li><p>脚注（footnote）
-实现方式如下：
-hello<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></p></li>
+实现方式如下：</p>
+
+<p>  <code>hello[^hello]</code></p>
+
+<p>  <code>[^hello]: hi</code></p></li>
 <li><p>下划线
 在空白行下方添加三条“-”横线。（前面讲过在文字下方添加“-”，实现的2级标题）</p></li>
 </ol>
@@ -1154,24 +1135,25 @@ hello<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></p></li>
 
 <p>相关参考</p>
 
-<p><a href="http://www.cnblogs.com/itech/p/3800982.html">mackdoen语法简介</a>
-<a href="http://daringfireball.net/projects/markdown/basics">以上内容根据官方文档基本文档进行整理</a>
-<a href="http://daringfireball.net/projects/markdown/">Markdown官方网站</a>
-<a href="https://stackedit.io/">推荐一款在线的Markdown编辑器</a></p>
-<div class="footnotes">
-<hr/>
-<ol>
-<li id="fn:1">
-<p>hi<a href="#fnref:1" rev="footnote">&#8617;</a></p></li>
-</ol>
+<p><a href="http://www.cnblogs.com/itech/p/3800982.html">mackdoen语法简介</a></p>
+
+<hr />
+
+<p>版权声明：欢迎转载，请贴上源地址</p>
+
+<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
+
+<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+
+<p>更多精彩请关注</p>
+
+<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
 </div>
 
-</div>
 
 
 
-
-| <a href="#comments">Comments</a>
+| <a href="#comments">更多评论</a>
 
   <footer>
     <p class="meta">
@@ -1243,10 +1225,10 @@ hello<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></p></li>
 
 
 <!-- 多说评论 -->
-
-<section>
-    <h1>Comments</h1>
-    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
 <div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
 <script type="text/javascript">
     var duoshuoQuery = {short_name:"tianweili"};
@@ -1260,8 +1242,8 @@ hello<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></p></li>
      })();
     </script>
 <!-- Duoshuo Comment END --></div>
-</section>
-
+    </section>
+    
     </div>
   </div>
   <footer role="contentinfo"><p>
