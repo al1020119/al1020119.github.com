@@ -1,0 +1,1067 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。 这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面: (1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/posts/2/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/iCocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
+
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
+
+<ul>
+<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
+<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
+<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
+这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
+</ul>
+
+
+<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
+
+<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
+
+<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
+
+<p>进入正题：</p>
+
+<p>需要的工具和环境：</p>
+
+<ol type="a">
+<li>iPhone or iPad越狱，安装AppSync</li>
+<li>Xcode安装 Command Line Tools</li>
+<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
+</ol>
+
+
+<p>1、修改SDKSettings.plist文件</p>
+
+<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
+
+<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
+</code></pre>
+
+<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
+
+<p>执行命令为：</p>
+
+<p>转到目录下</p>
+
+<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+</code></pre>
+
+<p>将原有文件备份</p>
+
+<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
+</code></pre>
+
+<p>对SDKSettings.plist文件进行编辑</p>
+
+<pre><code>sudo vim SDKSettings.plist
+</code></pre>
+
+<p>将下面对应的字段改为NO</p>
+
+<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
+&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
+</code></pre>
+
+<p>此操作参考的路径如下：</p>
+
+<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
+</code></pre>
+
+<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
+
+<p>新建一个plist文件，命名为entitlements.</p>
+
+<pre><code>![Alt text](/iamges/yueyu001.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu001.png" title="Caption" ></p>
+
+<p>创建一个plist</p>
+
+<pre><code>![Alt text](/iamges/yueyu002.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu002.png" title="Caption" ></p>
+
+<p>将plist文件改为：</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Install&lt;/string&gt;
+        &lt;string&gt;Browse&lt;/string&gt;
+        &lt;string&gt;Uninstall&lt;/string&gt;
+        &lt;string&gt;Archive&lt;/string&gt;
+        &lt;string&gt;RemoveArchive&lt;/string&gt;
+    &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+
+<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu003.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu003.png" title="Caption" ></p>
+
+<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
+
+<p>3、实现越狱安装的代码：</p>
+
+<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
+NSDictionary *IPAInstalledApps()
+{
+void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
+if (lib)
+{
+    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
+    if (pMobileInstallationLookup)
+    {
+        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
+        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
+        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
+#ifdef DEBUG
+        NSLog(@"%@", dict);
+#endif
+        return dict;
+    }
+}
+return nil;
+}
+</code></pre>
+
+<p>所有代码均在之前的github目录中，可以自行查看。</p>
+
+<p>4、编译生成App文件</p>
+
+<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
+
+<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
+
+<pre><code>![Alt text](/iamges/yueyu004.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu004.png" title="Caption" ></p>
+
+<p>5、制作ipa文件</p>
+
+<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
+
+<p>比如在 Download 目录下， sudo -i</p>
+
+<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
+
+<p>然后对之前生成的文件，进行ldid签名</p>
+
+<pre><code>![Alt text](/iamges/yueyu005.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
+<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
+</ul>
+
+
+<p>6、生成ipa文件，安装</p>
+
+<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
+
+<p>然后通过itools安装，测试刚刚生成的文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu006.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu006.png" title="Caption" ></p>
+
+<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
+
+<h1>检查iphone时候越狱</h1>
+
+<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
+
+<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
+
+<p>复制代码
+复制代码</p>
+
+<pre><code>/*方法名:
+ *        isJailbroken
+*介绍:
+*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
+*参数说明:
+*        无
+*        
+*
+*/
+
+#pragma mark utils api
+// 类方法，判断当前设备是否已经越狱
++ (BOOL)isJailbroken;
+// 类方法，判断你的App是否被破解
++ (BOOL)isPirated;
+</code></pre>
+
+<p>apt和Cydia的方式来进行判断的，没看见源码</p>
+
+<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
+
+<h3>apt</h3>
+
+<pre><code>- (BOOL) asAP
+{
+return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
+4 }`
+</code></pre>
+
+<h3>system</h3>
+
+<pre><code>`1 - (BOOL) successCallSystem
+2 {
+3 return (system("ls") == 0) ? YES : NO;
+4 }`
+</code></pre>
+
+<h3>示例代码</h3>
+
+<pre><code>static const char* jailbreak_apps[] =
+
+  {
+      "/Applications/Cydia.app",
+      "/Applications/limera1n.app",
+      "/Applications/greenpois0n.app",
+      "/Applications/blackra1n.app",
+      "/Applications/blacksn0w.app",
+      "/Applications/redsn0w.app",
+     "/Applications/Absinthe.app",
+     NULL,
+ };
+
+ - (BOOL) isJailBroken
+ {
+     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
+     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
+     {
+         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
+         {
+             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
+             return YES;
+         }
+     }
+
+               // TODO: Add more checks? This is an arms-race we're bound to lose.
+
+     return NO;
+ }
+</code></pre>
+
+<hr />
+
+<pre><code>@interface UIDevice (Helper)  
+ - (BOOL)isJailbroken;  
+ @end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation UIDevice (Helper)  
+- (BOOL)isJailbroken {  
+BOOL jailbroken = NO;  
+NSString *cydiaPath = @"/Applications/Cydia.app";  
+NSString *aptPath = @"/private/var/lib/apt/";  
+if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
+ jailbroken = YES;  
+}  
+if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
+ jailbroken = YES;  
+}  
+return jailbroken;  
+}  
+@end
+</code></pre>
+
+<hr />
+
+<p>参考资源链接：</p>
+
+<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
+<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h5>简介</h5>
+
+<p>Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.)</p>
+
+<p>根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10.8.3)利用Octopress搭建一个Github博客。本文需要读者熟悉一些shell命令，并掌握基本的git操作。</p>
+
+<p>目录</p>
+
+<h2>一： 快速搭建</h2>
+
+<ol>
+<li>安装Ruby</li>
+<li>安装Octopress</li>
+<li>配置Octopress</li>
+<li>将博客部署到GitHub上</li>
+<li>开始写博客</li>
+</ol>
+
+
+<h2>二： 个性化配置（个性化初级篇）</h2>
+
+<ol>
+<li>Header（标题栏）</li>
+<li>Navigation（导航栏）</li>
+<li>footer（尾栏）</li>
+<li>添加背景图片</li>
+<li>LOGO图片</li>
+<li>导航栏倒圆角</li>
+<li>滑动返回顶部按钮</li>
+<li>二维码展示</li>
+</ol>
+
+
+<h2>三： 个性化配置（个性化中级篇）</h2>
+
+<ol>
+<li>提高博客访问速度</li>
+<li>设置链接在新窗口打开</li>
+<li>首页文章以摘要形式展示</li>
+<li>代码着色</li>
+<li>修改代码生成css</li>
+<li>添加侧边栏文章分类（category）</li>
+<li>添加多说评论</li>
+<li>自动为图片添加url前缀</li>
+<li>添加访客统计</li>
+</ol>
+
+
+<h2>四： 个性化配置（个性化高级篇）</h2>
+
+<ol>
+<li>侧边栏</li>
+<li>最新文章</li>
+<li>GitHub Repos</li>
+<li>微博秀</li>
+<li>豆瓣展示</li>
+<li>访客地图</li>
+<li>酷站博客</li>
+<li>最热文章</li>
+<li>3D标签云与标签列表</li>
+<li>相关文章功能</li>
+<li>社会化评论与分享</li>
+<li>为博文添加原文链接及声明</li>
+<li>公益404</li>
+</ol>
+
+
+<h2>五： 其他</h2>
+
+<ol>
+<li>mackdown语法<br></li>
+</ol>
+
+
+<hr />
+
+<h1>一： 快速搭建</h1>
+
+<h3>安装Ruby</h3>
+
+<p>Octopress需要Ruby环境，RVM(Ruby Version Manager)负责安装和管理Ruby的环境。所以我们先在终端输入如下命令，来安装RVM：</p>
+
+<pre><code>curl -L https://get.rvm.io | bash -s stable --ruby  
+</code></pre>
+
+<p>接着是安装Ruby 1.9.3，在终端依次运行如下命令：</p>
+
+<pre><code>rvm install 1.9.3  
+rvm use 1.9.3  
+rvm rubygems latest  
+</code></pre>
+
+<p>完成上面的操作之后，运行ruby &ndash;version应该可以看到ruby 1.9.3环境已经安装好了。
+参考：Installing Ruby With RVM</p>
+
+<h3>安装Octopress</h3>
+
+<p>在安装Octopress之前，请确保你的电脑上已经安装有git了，在终端输入git &ndash;version，应该可以看到电脑中的git版本(我电脑上输出:git version 1.7.12.4 (Apple Git-37))，如果没有显示相关内容，请先安装git。
+git安装之后，利用git命令将octopress从github上clone到本机，如下命令：</p>
+
+<pre><code>git clone git://github.com/imathis/octopress.git octopress  
+cd octopress    # If you use RVM, You'll be asked if you trust  the .rvmrc file (say yes).  
+ruby --version  # Should report Ruby 1.9.3  
+</code></pre>
+
+<p>接着安装相关依赖项：</p>
+
+<pre><code>gem install bundler  
+rbenv rehash    # If you use rbenv, rehash to be able to run the    bundle command  
+bundle install  
+</code></pre>
+
+<p>最后安装默认的Octopress 主题。</p>
+
+<pre><code>rake install  
+</code></pre>
+
+<h3>配置Octopress</h3>
+
+<p>Octopress的作者已经尽量让配置简化了。大多数情况下只需要配置_config.yml和Rakefile文件即可。其中Rakefile是跟博客部署相关，一般情况下并不需要修改这个文件，除非使用了rsync。</p>
+
+<p>config.yml是博客重要的一个配置文件，在config.yml文件中有三大配置项：Main Configs、Jekyll &amp; Plugins和3rd Party Settings。</p>
+
+<p>一般，该文件中其中url是必须要填写的，这里的url是在github上创建的一个仓库地址，具体请看第四步中创建的地址。另外再修改一下title、subtitle和author，根据需求，在开启一些第三方组件服务。</p>
+
+<p>关于_config.yml文件中的更多内容，请看这里的内容：Configuring Octopress</p>
+
+<p>建议：最好把里面的twitter相关的信息全部删掉，否则由于GFW的原因，将会造成页面load很慢。同理，修改定制文件/source/_includes/custom/head.html 把google的自定义字体去掉。from唐巧的博文中—配置。</p>
+
+<h3>将博客部署到GitHub上</h3>
+
+<p>Github的Page service可以免费托管博客，并且还可以自定义域名。
+首先需要在GitHub上创建一个仓库，并将仓库名称按照这样的方式进行命名：username.github.com或organization.github.com。等后面配置完毕之后，我们就可以在浏览器中使用页面地址</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>来访问我们的博客。一般来说，我们希望在将博客的源码放到source分支下，并把生成的内容提交到master分支。</p>
+
+<p>创建好仓库之后，我们需要利用octopress的一个配置rake任务来自动配置上面创建的仓库：可以让我们方便的部署GitHub page。在终端输入如下命令：
+C代码  收藏代码</p>
+
+<pre><code>$ rake setup_github_pages  
+</code></pre>
+
+<p>上面的命令会做一些事情(详细介绍看下面给出的参考链接)。其中最主要的就是创建一个_deploy目录，目录用来存放部署到master分支的内容。期间会要求你输入仓库的url，根据提示，进行输入即可。</p>
+
+<p>完成上面的命令之后，我们就可以生成博客并真正的部署到仓库中了。执行如下命令：</p>
+
+<pre><code>rake generate  
+rake deploy  
+</code></pre>
+
+<p>上面的命令首先生成博客文件，并将生成的博客文件拷贝到_deploy/目录下，然后将这些内容添加到git中，并commit和push到仓库的master分支。</p>
+
+<p>现在可以访问</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>注意：有时候可能会有延时，要等几分钟才能打开。
+至此，我们的博客已经完成基本的部署，不过博客的source需要单独提交，执行如下命令就可以将source提交到仓库的source分支下。</p>
+
+<pre><code>$ git add .  
+$ git commit -m 'Initial source commit'  
+$ git push origin source  
+</code></pre>
+
+<p>如果在部署到仓库之前，需要先预览一下博客，可以在终端输入rake preview命令，然后就能在浏览器中进行本地预览访问了：</p>
+
+<pre><code>http://127.0.0.1:4000/
+</code></pre>
+
+<p>或</p>
+
+<pre><code>http://localhost:4000/
+</code></pre>
+
+<p>效果跟仓库中的一样。</p>
+
+<h3>开始写博客</h3>
+
+<p>Octopress为我们提供了一些task来创建博文和页面。博文必须存储在source/_posts目录下，并且需要按照Jekyll的命名规范对文章进行命名：YYYY-MM-DD-post-title.markdown。文章的名字会被当做url的一部分，而其中的日期用于对博文的区分和排序。</p>
+
+<p>通过Octopress提供的task可以正确的按照命名规范创建一个博文，并且在博文中会附带常用的一些yaml元数据。只需要在终端输入如下命令：</p>
+
+<pre><code>rake new_post["title"]  
+</code></pre>
+
+<p>其中title为博文的文件名，创建出来的文件默认是markdown格式。上面的命令会创建出这样一个文件：source/_posts/2013-08-03-title.markdown。打开这个文件，可以看到里面有如下一些内容了(告诉Jekyll博客引擎如何处理博文和页面)：</p>
+
+<pre><code>layout: post  
+title: "title"  
+date: 2013-08-03 16:36  
+comments: true  
+categories:   
+</code></pre>
+
+<p>接着我们就可以在这个文件中写我们的博文啦。完成之后，我们可以预览和部署博文。下面是创建并部署博文的一个完整过程：</p>
+
+<pre><code>$ rake new_post["New Post"]  
+$ rake generate  
+$ git add .  
+$ git commit -am "Some comment here."   
+$ git push origin source  
+$ rake deploy  
+</code></pre>
+
+<h6>本节介绍了如何利用Octopress搭建一个Github博客，下面讲介绍桌面去个性化你的博客。</h6>
+
+<hr />
+
+<h1>个性化配置（初级篇）</h1>
+
+<p>这几个部分是经常需要个性化定制的，在 source/<em>includes 中存在其对应的HTML文件，这是主题默认的文件，更换主题，更新octopress会被覆盖，所以应该编辑 source/</em>includes/custom 下的文件来实现修改。</p>
+
+<h2>Header，Navigation，footer</h2>
+
+<h3>Header（标题栏）</h3>
+
+<p>标题栏显示的内容为 /source/<em>includes/custom/header.html 所实现的，其中title和subtitle在 </em>config.yml 中定义，你可以进行适量的修改：</p>
+
+<pre><code>    &lt;hgroup&gt;
+ &lt;h1&gt;&lt;a href="/"&gt;iOS梦工厂&lt;/a&gt;&lt;/h1&gt;
+
+&lt;h2&gt;不战胜自己，何以改变未来！&lt;/h2&gt;
+
+&lt;/hgroup&gt;
+</code></pre>
+
+<h3>Navigation（导航栏）</h3>
+
+<p>可以自行为导航栏添加项目，链接至不同的页面，在 /source/_includes/custom/navigation.html 中编辑即可。</p>
+
+<pre><code>&lt;ul class="main-navigation"&gt;
+&lt;li&gt;&lt;a href="/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;a href="/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如</p>
+
+<pre><code>&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt; 
+</code></pre>
+
+<h3>footer（尾栏）</h3>
+
+<p>在 source/_includes/custom/footer.html 中编辑尾栏：</p>
+
+<pre><code>&lt;p&gt;
+    Copyright © 2015 - iCocos -
+&lt;span class="credit"&gt;
+      Powered by
+      &lt;a href="http://octopress.org"&gt;Octopress&lt;/a&gt;
+&lt;/span&gt;
+&lt;/p&gt;
+</code></pre>
+
+<p>默认显示 Copyright@2013 - author - Powered by Octopress ，你可以添加自己想显示在尾栏的东西，第三方统计流量统计工具也可以添加到这，如CNZZ、Google analytics和百度统计等，使用这些工具可以更详细的分析网站流量，改善引流措施，完善网站，具体添加方法见统计工具与SEO。</p>
+
+<h3>添加背景图片</h3>
+
+<p>在 sass/custom/_styles.scss 中添加：</p>
+
+<pre><code>html {
+    background: #555555 url("/images/bg3.jpg");
+    //background: #555555;
+}
+
+body &gt; div {
+    background-image: none;
+    //background: #F5F5D5
+} //侧边栏
+
+body &gt; div &gt; div { //文章内容
+    background-image: none;
+    //background: #F5F5D5; 
+    //background: url("/images/bg.jpg");
+}
+</code></pre>
+
+<p>将背景图片放入 source/images/ 中，修改上述代码中的路径指向想要的图片，即可 更改博客、侧边栏或文章的背景图片。博客使用背景图片后，与Header区不太和谐， 所以我在 /sass/base/_theme.scss 中将 header-bg 设置成透明色了。</p>
+
+<h3>LOGO图片</h3>
+
+<p>我所说的logo图片有两种，一个是打开一个网页时，标签栏上显示的小图片。还有一个是标题栏主标题旁的图片。</p>
+
+<p>首先针对于第一种可以选择你喜欢的图片（大小适中），替换 source 目录下的 favicon.png 即可。</p>
+
+<p>或者将logo图片放入 source/images 中，然后修改 source/_includes/head.html ，找到 favicon.png ，修改其路径指向你的图片即可。</p>
+
+<p>对于主标题旁的图片需要在 sass/custom/_styles.scss 中填入如下语句：</p>
+
+<pre><code>//Blog logo pic
+@media only screen and (min-width: 550px) {
+
+    body &gt; header h1{
+            background: url("/images/logo1.png") no-repeat 0 1px;
+            padding-left: 65px;
+    }
+
+    body &gt; header h2 { padding-left: 65px; }
+}
+</code></pre>
+
+<p>根据自己情况进行修改即可。</p>
+
+<h3>导航栏倒圆角</h3>
+
+<p>我设置的header区背景色透明，所以导航栏的直角有些尖锐，在 sass/custom/_styles.scss 中添加如下语句，将其修改为圆角：</p>
+
+<pre><code>//倒圆角
+@media only screen and (min-width: 1040px) {
+    body &gt; nav {
+            @include border-top-radius(.4em);
+    }
+
+    body &gt; footer {
+            @include border-bottom-radius(.4em);
+    }
+}
+</code></pre>
+
+<h3>滑动返回顶部按钮</h3>
+
+<p>当文章较长，通常希望有一个返回顶部的按钮，如下方法实现了在页面右下方添加一个返回顶部的图片按钮，点击后可以滑动的返回顶部。</p>
+
+<p>首先创建 source/javascripts/top.js ，实现滑动返回顶部效果，添加如下代码：</p>
+
+<pre><code>function goTop(acceleration, time)
+{
+    acceleration = acceleration || 0.1;
+    time = time || 16;
+
+    var x1 = 0;
+    var y1 = 0;
+    var x2 = 0;
+    var y2 = 0;
+    var x3 = 0;
+    var y3 = 0;
+
+    if (document.documentElement)
+    {
+            x1 = document.documentElement.scrollLeft || 0;
+            y1 = document.documentElement.scrollTop || 0;
+    }
+    if (document.body)
+    {
+            x2 = document.body.scrollLeft || 0;
+            y2 = document.body.scrollTop || 0;
+    }
+    var x3 = window.scrollX || 0;
+    var y3 = window.scrollY || 0;
+
+    var x = Math.max(x1, Math.max(x2, x3));
+    var y = Math.max(y1, Math.max(y2, y3));
+
+    var speed = 1 + acceleration;
+    window.scrollTo(Math.floor(x / speed), Math.floor(y / speed));
+
+    if(x &gt; 0 || y &gt; 0)
+    {
+            var invokeFunction = "goTop(" + acceleration + ", " + time + ")";
+            window.setTimeout(invokeFunction, time);
+    }
+}
+</code></pre>
+
+<p>然后创建 source/_includes/custom/totop.html ，设置返回顶部按钮样式和位置，代码如下：</p>
+
+<pre><code>&lt;!--返回顶部开始--&gt;
+&lt;div id="full" style="width:0px; height:0px; position:fixed; right:180px; bottom:150px; z-index:100; text-align:center; background-color:transparent; cursor:pointer;"&gt;
+    &lt;a href="#" onclick="goTop();return false;"&gt;&lt;img src="/images/top.png" border=0 alt="返回顶部"&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;script src="/javascripts/top.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;!--返回顶部结束--&gt;
+</code></pre>
+
+<p>最后，还需要将返回顶部的图片放入 source/images ，命名为 top.png （或修改totop.html中图片的路径）。</p>
+
+<h3>二维码展示</h3>
+
+<p>在关于页面或边栏可以展示你的个人博客的二维码，方便移动终端扫描访问你的博客，插件主页 点击这里 。</p>
+
+<p>在侧边栏显示，则将 qrcode.html 放入 source/<em>includes/custom/asides/ 中，在 </em>config.yml 中 default_asides 添加 custom/asides/qrcode.html 即可显示。</p>
+
+<p>或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。</p>
+
+<hr />
+
+<h1>个性化配置（中级篇）</h1>
+
+<h3>提高博客访问速度</h3>
+
+<p>因为“墙”的关系，所以Octopress建立以后会发现访问速度奇慢无比，竟然超过了40s。</p>
+
+<p>仔细分析后我们发现其中都是一些被墙的请求报了404Error，所以导致访问博客巨慢无比，下面我们就一次阉割掉这些被墙的请求。T_T</p>
+
+<h4>替换Google JS公共库</h4>
+
+<p>Octopress默认使用的是Google的JS公共库地址，加载的过程无比的缓慢。因此我们要把它改为 百度的JS公共库 ，需要把 /source/_includes/head.html 文件中的Google公共库地址改为：</p>
+
+<script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+
+
+<h4>去掉Twitter</h4>
+
+<p>从上图可以看出加载失败的还有twitter，这个也得给去掉。</p>
+
+<p>把在根目录下的 _config.yml 文件中Twitter内容给注释掉。</p>
+
+<pre><code># Twitter
+#twitter_user:
+#twitter_tweet_button: true
+</code></pre>
+
+<p>把 \source_includes\after_footer.html 文件中的twitter内容给注释掉：</p>
+
+<pre><code>include twitter_sharing.html
+</code></pre>
+
+<h4>删除Google font</h4>
+
+<p>把在 \source_includes\custom\head.html 中的Google font样式给删除：</p>
+
+<pre><code>&lt;link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre>
+
+<h3>设置链接在新窗口打开</h3>
+
+<p>在博文中，如果点击链接直接在本窗口打开了，那么用户体验就不是很好。而markdown的标准语法是不支持链接在新窗口打开的，虽然可以通过在markdown中直接写html标签来解决这个问题，但是这与markdown的简洁书写特性不符。但是我们可以通过设置Octopress来达到这种效果，即在 \source_includes\custom\head.html 文件中添加如下一段代码：</p>
+
+<pre><code>&lt;script&gt;
+function addBlankTargetForLinks () {
+$('a[href^="http"]').each(function(){
+  $(this).attr('target', '_blank');
+});
+}
+$(document).bind('DOMNodeInserted', function(event) {
+addBlankTargetForLinks();
+});
+&lt;/script&gt;
+</code></pre>
+
+<h3>首页文章以摘要形式展示</h3>
+
+<p>2.在文章对应的markdown文件中，在需要显示在首页的文字后面添加 </div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
+
+<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
+
+<hr />
+
+<p>版权声明：欢迎转载，请贴上源地址</p>
+
+<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
+
+<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+
+<p>更多精彩请关注</p>
+
+<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/index.html">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/iossheng-ming-zhou-qi/">iOS生命周期</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/blockshen-jiu/">Block深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/posts/2/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/posts/2/index.html" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+  <span class="credit">Preview in <a href="https://al1020119.github.io">iCocos</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
