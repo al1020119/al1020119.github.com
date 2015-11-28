@@ -5,12 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>iCocos博客重整第一天 - iOS梦工厂</title>
+  <title>自定义相册删除复活的实现 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="我的第一篇Octopress博客">
-  <meta name="keywords" content="Octopress">
+  <meta name="description" content="自定义相册删除复活的实现 ordinal 在这里（http://www.cnblogs.com/iCocos/p/4705585.html）我们提到了。 简单的实现了获取系统相册图片并且保存图片到系统相册
+定义自定义的相册，并且保存到自定义相册 这里久以一个简单的例子实现一个上面的所有功能， &hellip;">
+  
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +78,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">iCocos博客重整第一天</h1>
+      <h1 class="entry-title">自定义相册删除复活的实现</h1>
     
     
       <p class="meta">
@@ -97,24 +98,151 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
+<div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
 
-<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
 
-<hr />
 
-<p>版权声明：欢迎转载，请贴上源地址</p>
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
 
-<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
 
-<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+<p>先来看看咱们取得相册中的相片</p>
 
-<p>更多精彩请关注</p>
+<pre><code>- (void)getAllPhotos
+{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
+    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
+        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+            // 缩略图
+            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
+            // 获得原始图片
+            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
+        }];
 
-<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
+   } failureBlock:nil];
+}
+</code></pre>
 
-<!--more-->
+<p>下面我们看看代码具体的实现</p>
 
+<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+
+<pre><code> /** 相册库 */
+@property (nonatomic, strong) ALAssetsLibrary *library;
+</code></pre>
+
+<p>二：然后就懒加载这个属性</p>
+
+<pre><code>- (ALAssetsLibrary *)library
+{
+    if (!_library) {
+        _library = [[ALAssetsLibrary alloc] init];
+    }
+    return _library;
+}
+</code></pre>
+
+<p>三：点击保存按钮的实现</p>
+
+<pre><code>- (IBAction)save
+{
+// 获得文件夹的名字
+__block NSString *groupName = [self groupName];
+
+// self的弱引用
+XMGWeakSelf;
+
+// 图片库
+__weak ALAssetsLibrary *weakLibrary = self.library;
+
+// 创建文件夹
+[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+    if (group) { // 新创建的文件夹
+        // 添加图片到文件夹中
+        [weakSelf addImageToGroup:group];
+    } else { // 文件夹已经存在
+        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
+            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
+                // 添加图片到文件夹中
+
+                [weakSelf addImageToGroup:group];
+
+                *stop = YES; // 停止遍历
+            } else if ([name isEqualToString:@"Camera Roll"]) {
+                // 文件夹被用户强制删除了
+                groupName = [groupName stringByAppendingString:@" "];
+                // 存储新的名字
+                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                // 创建新的文件夹
+                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+                    // 添加图片到文件夹中
+                    [weakSelf addImageToGroup:group];
+                } failureBlock:nil];
+            }
+        } failureBlock:nil];
+    }
+
+    } failureBlock:nil];
+    }
+</code></pre>
+
+<p>四：添加图片</p>
+
+<pre><code>/**
+ * 添加一张图片到某个文件夹中
+ */
+- (void)addImageToGroup:(ALAssetsGroup *)group
+{
+__weak ALAssetsLibrary *weakLibrary = self.library;
+// 需要保存的图片
+
+CGImageRef image = self.imageView.image.CGImage;
+
+// 添加图片到【相机胶卷】
+[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+        // 添加一张图片到自定义的文件夹中
+        [group addAsset:asset];
+        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
+    } failureBlock:nil];
+}];
+}
+</code></pre>
+
+<p>五：关于沙河中的组名</p>
+
+<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
+
+<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
+static NSString * const iCocosDefaultGroupName = @"iCocos";
+</code></pre>
+
+<p>实现祖名的存取</p>
+
+<pre><code>- (NSString *)groupName
+{
+    // 先从沙盒中取得名字
+
+    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
+    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
+   groupName = XMGDefaultGroupName;
+
+    // 存储名字到沙盒中
+    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+ [[NSUserDefaults standardUserDefaults] synchronize];
+}
+return groupName;
+}
+</code></pre>
 </div>
 
 
@@ -141,12 +269,6 @@ $(document).bind('DOMNodeInserted', function(event) {
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
       
 
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/cheng-xu-yuan-bi-bei/'>程序员必备</a>
-  
-</span>
-
 
       
 
@@ -172,8 +294,8 @@ $(document).bind('DOMNodeInserted', function(event) {
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2015/11/29/xmppshi-yong-zong-jie/" title="Previous Post: XMPP使用总结">&laquo; XMPP使用总结</a>
       
-        <a class="basic-alignment right" href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/" title="Next Post: 带你玩虐Ocotpress＋Github博客">带你玩虐Ocotpress＋Github博客 &raquo;</a>
       
     </p>
   </footer>
@@ -251,7 +373,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
