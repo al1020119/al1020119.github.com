@@ -14,9 +14,9 @@ footer: true
 								
 								
 
-[微博：http://weibo.com/u/3288975567](http://weibo.com/u/3288975567)
+[微博](http://weibo.com/u/3288975567)
 
-[博客园：http://www.cnblogs.com/iCocos/](http://www.cnblogs.com/iCocos/)
+[博客园](http://www.cnblogs.com/iCocos/)
 
 [github博文：http://al1020119.github.io/](http://al1020119.github.io/)
 
