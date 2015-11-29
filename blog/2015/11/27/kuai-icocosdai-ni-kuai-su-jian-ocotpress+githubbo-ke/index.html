@@ -160,6 +160,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li>相关文章功能</li>
 <li>社会化评论与分享</li>
 <li>为博文添加原文链接及声明</li>
+<li>添加版权声明</li>
 <li>公益404</li>
 </ol>
 
@@ -925,23 +926,23 @@ tag_dir: blog/tags
   &lt;ul class="posts"&gt;
 
       &lt;li class="related"&gt;
+      &lt;a href="/blog/2015/11/30/iossheng-ming-zhou-qi/"&gt;iOS生命周期&lt;/a&gt;
+      &lt;/li&gt;
+
+      &lt;li class="related"&gt;
+      &lt;a href="/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie/"&gt;长链接&amp;amp;短链接&lt;/a&gt;
+      &lt;/li&gt;
+
+      &lt;li class="related"&gt;
+      &lt;a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/"&gt;iOS版本适配问题（6，7，8，9）&lt;/a&gt;
+      &lt;/li&gt;
+
+      &lt;li class="related"&gt;
       &lt;a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"&gt;自定义相册删除复活的实现&lt;/a&gt;
       &lt;/li&gt;
 
       &lt;li class="related"&gt;
       &lt;a href="/blog/2015/11/29/xmppshi-yong-zong-jie/"&gt;XMPP使用总结&lt;/a&gt;
-      &lt;/li&gt;
-
-      &lt;li class="related"&gt;
-      &lt;a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/"&gt;UITableView性能优化与卡顿问题&lt;/a&gt;
-      &lt;/li&gt;
-
-      &lt;li class="related"&gt;
-      &lt;a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/"&gt;蓝牙开发你知道多少&lt;/a&gt;
-      &lt;/li&gt;
-
-      &lt;li class="related"&gt;
-      &lt;a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/"&gt;cocoaPods简单粗暴&lt;/a&gt;
       &lt;/li&gt;
 
 &lt;/ul&gt;
@@ -1091,6 +1092,60 @@ Liquid::Template.register_filter AppendFooterFilter
 
 <p>尊重原创，此功能来源 为octopress每篇文章添加一个文章信息 。</p>
 
+<h3>添加版权声明</h3>
+
+<p>这里所说的版权声明是指每篇文章后面的版权信息</p>
+
+<p>首先source_includes\post目录中添加license.html文件，文件内容如下：</p>
+
+<pre><code>&lt;DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right&gt; 
+&lt;DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"&gt; 
+&lt;IMG alt="" src="http://images.cnblogs.com/cnblogs_com/oec2003/219566/r_fw90100.jpg" width=90 height=100&gt;&lt;/DIV&gt; 
+&lt;DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"&gt; 
+作者： &lt;A href="http://oec2003.github.io/"&gt;冯威&lt;/A&gt; &lt;BR&gt; 
+出处： &lt;A href="http://oec2003.github.io/"&gt;http://oec2003.github.io/&lt;/A&gt; 
+&lt;BR&gt;本文基于&lt;a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"&gt; 
+署名 2.5 中国大陆&lt;/a&gt;许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+&lt;a href="http://oec2003.github.io/"&gt;冯威&lt;/a&gt;（包含链接）。 &lt;/DIV&gt;&lt;/DIV&gt; 
+</code></pre>
+
+<p>在sass\custom_styles.scss添加如下样式信息来控制版权信息的样式</p>
+
+<pre><code>.oec2003right 
+{ 
+    background: #C3D9FF; 
+    height:120px; 
+    border:1px solid #BBBBBB; 
+}
+
+.oec2003right a:link 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:visited 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:active,a:hover 
+{ 
+    color: #0057b6; 
+    text-decoration: underline; 
+}
+</code></pre>
+
+<p>修改文件source_layouts\post.html</p>
+
+<pre><code>在class中增加类类似的一行，修改为对应的html就可以
+</code></pre>
+
+<p>在_config.yml添加配置项用来控制是否显示页面的版权信息</p>
+
+<pre><code># Post License 
+post_license: true
+</code></pre>
+
 <h3>公益404</h3>
 
 <p>在 source 目录下创建404.markdown，添加如下代码，即可实现公益404的功能，当你的网页出错找不到时，可以为公益尽一份力。</p>
@@ -1212,7 +1267,7 @@ I get 10 times more traffic from <a href="http://google.com/" title="Google">Goo
 
 <DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
     <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
-        <IMG alt="" src="images/iCoocs.jpg" width=90 height=100></DIV>
+        <IMG alt="" src="images/iCocos.jpg" width=90 height=100></DIV>
     <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
         作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
         出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
@@ -1257,23 +1312,23 @@ I get 10 times more traffic from <a href="http://google.com/" title="Google">Goo
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/11/30/iossheng-ming-zhou-qi/">iOS生命周期</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a>
       </li>
     
   </ul>
@@ -1357,7 +1412,7 @@ I get 10 times more traffic from <a href="http://google.com/" title="Google">Goo
   </div>
   <footer role="contentinfo"><p>
   Copyright &copy; 2015 - iCocos -
-  <span class="credit">Preview in <a href="https://al1020119.github.io">iCocos</a></span>
+<span class="credit">Preview in <a href="https://al1020119.github.io">[曹#黎]</a></span>
 </p>
 
 </footer>

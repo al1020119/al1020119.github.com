@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 欢迎来到ios梦工厂 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/huan-ying-lai-dao-iosmeng-gong-han/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-11-29T01:02:35+08:00</updated>
+  <updated>2015-11-29T18:09:58+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -81,6 +81,7 @@
 <li>相关文章功能</li>
 <li>社会化评论与分享</li>
 <li>为博文添加原文链接及声明</li>
+<li>添加版权声明</li>
 <li>公益404</li>
 </ol>
 
@@ -1001,6 +1002,63 @@ Liquid::Template.register_filter AppendFooterFilter
 </code></pre>
 
 <p>尊重原创，此功能来源 为octopress每篇文章添加一个文章信息 。</p>
+
+<h3>添加版权声明</h3>
+
+<p>这里所说的版权声明是指每篇文章后面的版权信息</p>
+
+<p>首先source_includes\post目录中添加license.html文件，文件内容如下：</p>
+
+<pre><code>
+
+&lt;DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right&gt; 
+&lt;DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"&gt; 
+&lt;IMG alt="" src="http://images.cnblogs.com/cnblogs_com/oec2003/219566/r_fw90100.jpg" width=90 height=100&gt;&lt;/DIV&gt; 
+&lt;DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"&gt; 
+作者： &lt;A href="http://oec2003.github.io/"&gt;冯威&lt;/A&gt; &lt;BR&gt; 
+出处： &lt;A href="http://oec2003.github.io/"&gt;http://oec2003.github.io/&lt;/A&gt; 
+&lt;BR&gt;本文基于&lt;a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"&gt; 
+署名 2.5 中国大陆&lt;/a&gt;许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+&lt;a href="http://oec2003.github.io/"&gt;冯威&lt;/a&gt;（包含链接）。 &lt;/DIV&gt;&lt;/DIV&gt; 
+
+</code></pre>
+
+<p>在sass\custom_styles.scss添加如下样式信息来控制版权信息的样式</p>
+
+<pre><code>.oec2003right 
+{ 
+    background: #C3D9FF; 
+    height:120px; 
+    border:1px solid #BBBBBB; 
+}
+
+.oec2003right a:link 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:visited 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:active,a:hover 
+{ 
+    color: #0057b6; 
+    text-decoration: underline; 
+}
+</code></pre>
+
+<p>修改文件source_layouts\post.html</p>
+
+<pre><code>在class中增加类类似的一行，修改为对应的html就可以
+</code></pre>
+
+<p>在_config.yml添加配置项用来控制是否显示页面的版权信息</p>
+
+<pre><code># Post License 
+post_license: true
+</code></pre>
 
 <h3>公益404</h3>
 
