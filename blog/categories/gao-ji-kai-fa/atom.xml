@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 高级开发 | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/gao-ji-kai-fa/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2015-11-29T19:00:26+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[长链接&amp;短链接]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie/"/>
+    <updated>2015-11-30T21:30:21+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie</id>
+    <content type="html"><![CDATA[<ul>
+<li>HTTP协议与TCP/IP协议的关系</li>
+<li>如何理解HTTP协议是无状态的</li>
+<li>什么是长连接、短连接？
+
+<ul>
+<li> TCP连接</li>
+<li> TCP短连接</li>
+<li> TCP长连接</li>
+</ul>
+</li>
+<li>长连接短连接操作过程</li>
+<li>长连接和短连接的优点和缺点</li>
+<li>什么时候用长连接，短连接？</li>
+</ul>
+
+
+<h3>HTTP协议与TCP/IP协议的关系</h3>
+
+<p>HTTP的长连接和短连接本质上是TCP长连接和短连接。HTTP属于应用层协议，在传输层使用TCP协议，在网络层使用IP协议。IP协议主要解决网络路由和寻址问题，TCP协议主要解决如何在IP层之上可靠的传递数据包，使在网络上的另一端收到发端发出的所有包，并且顺序与发出顺序一致。TCP有可靠，面向连接的特点。</p>
+
+<h3>如何理解HTTP协议是无状态的</h3>
+
+<p>HTTP协议是无状态的，指的是协议对于事务处理没有记忆能力，服务器不知道客户端是什么状态。也就是说，打开一个服务器上的网页和你之前打开这个服务器上的网页之间没有任何联系。HTTP是一个无状态的面向连接的协议，无状态不代表HTTP不能保持TCP连接，更不能代表HTTP使用的是UDP协议（无连接）。</p>
+
+<h3>什么是长连接、短连接？</h3>
+
+<p>在HTTP/1.0中，默认使用的是短连接。也就是说，浏览器和服务器每进行一次HTTP操作，就建立一次连接，但任务结束就中断连接。如果客户端浏览器访问的某个HTML或其他类型的 Web页中包含有其他的Web资源，如JavaScript文件、图像文件、CSS文件等；当浏览器每遇到这样一个Web资源，就会建立一个HTTP会话。</p>
+
+<p>但从 HTTP/1.1起，默认使用长连接，用以保持连接特性。使用长连接的HTTP协议，会在响应头有加入这行代码：</p>
+
+<p>Connection:keep-alive</p>
+
+<p>在使用长连接的情况下，当一个网页打开完成后，客户端和服务器之间用于传输HTTP数据的 TCP连接不会关闭，如果客户端再次访问这个服务器上的网页，会继续使用这一条已经建立的连接。Keep-Alive不会永久保持连接，它有一个保持时间，可以在不同的服务器软件（如Apache）中设定这个时间。实现长连接要客户端和服务端都支持长连接。</p>
+
+<p>HTTP协议的长连接和短连接，实质上是TCP协议的长连接和短连接。</p>
+
+<h5>TCP连接</h5>
+
+<p>当网络通信时采用TCP协议时，在真正的读写操作之前，server与client之间必须建立一个连接，当读写操作完成后，双方不再需要这个连接 时它们可以释放这个连接，连接的建立是需要三次握手的，而释放则需要4次握手，所以说每个连接的建立都是需要资源消耗和时间消耗的</p>
+
+<p>经典的三次握手示意图：</p>
+
+<p>经典的四次握手关闭图：</p>
+
+<h5>TCP短连接</h5>
+
+<p>我们模拟一下TCP短连接的情况，client向server发起连接请求，server接到请求，然后双方建立连接。client向server 发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起 close操作。为什么呢，一般的server不会回复完client后立即关闭连接的，当然不排除有特殊的情况。从上面的描述看，短连接一般只会在 client/server间传递一次读写操作</p>
+
+<p>短连接的优点是：管理起来比较简单，存在的连接都是有用的连接，不需要额外的控制手段</p>
+
+<h5>TCP长连接</h5>
+
+<p>接下来我们再模拟一下长连接的情况，client向server发起连接，server接受client连接，双方建立连接。Client与server完成一次读写之后，它们之间的连接并不会主动关闭，后续的读写操作会继续使用这个连接。</p>
+
+<p>首先说一下TCP/IP详解上讲到的TCP保活功能，保活功能主要为服务器应用提供，服务器应用希望知道客户主机是否崩溃，从而可以代表客户使用资源。如果客户已经消失，使得服务器上保留一个半开放的连接，而服务器又在等待来自客户端的数据，则服务器将应远等待客户端的数据，保活功能就是试图在服务 器端检测到这种半开放的连接。</p>
+
+<p>如果一个给定的连接在两小时内没有任何的动作，则服务器就向客户发一个探测报文段，客户主机必须处于以下4个状态之一：</p>
+
+<p>客户主机依然正常运行，并从服务器可达。客户的TCP响应正常，而服务器也知道对方是正常的，服务器在两小时后将保活定时器复位。
+客户主机已经崩溃，并且关闭或者正在重新启动。在任何一种情况下，客户的TCP都没有响应。服务端将不能收到对探测的响应，并在75秒后超时。服务器总共发送10个这样的探测 ，每个间隔75秒。如果服务器没有收到一个响应，它就认为客户主机已经关闭并终止连接。
+客户主机崩溃并已经重新启动。服务器将收到一个对其保活探测的响应，这个响应是一个复位，使得服务器终止这个连接。
+客户机正常运行，但是服务器不可达，这种情况与2类似，TCP能发现的就是没有收到探查的响应。</p>
+
+<h5>长连接短连接操作过程</h5>
+
+<p>短连接的操作步骤是：</p>
+
+<p>建立连接——数据传输——关闭连接…建立连接——数据传输——关闭连接</p>
+
+<p>长连接的操作步骤是：</p>
+
+<p>建立连接——数据传输…（保持连接）…数据传输——关闭连接</p>
+
+<h3>长连接和短连接的优点和缺点</h3>
+
+<p>由上可以看出，长连接可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。对于频繁请求资源的客户来说，较适用长连接。不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。在长连接的应用场景下，client端一般不会主动关闭它们之间的连接，Client与server之间的连接如果一直不关闭的话，会存在一个问题，随着客户端连接越来越多，server早晚有扛不住的时候，这时候server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数，这样可以完全避免某个蛋疼的客户端连累后端服务。</p>
+
+<p>短连接对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。但如果客户请求频繁，将在TCP的建立和关闭操作上浪费时间和带宽。</p>
+
+<p>长连接和短连接的产生在于client和server采取的关闭策略，具体的应用场景采用具体的策略，没有十全十美的选择，只有合适的选择。</p>
+
+<h3>什么时候用长连接，短连接？</h3>
+
+<p>长连接多用于操作频繁，点对点的通讯，而且连接数不能太多情况，。每个TCP连接都需要三步握手，这需要时间，如果每个操作都是先连接，再操作的话那么处理速度会降低很多，所以每个操作完后都不断开，次处理时直接发送数据包就OK了，不用建立TCP连接。例如：数据库的连接用长连接， 如果用短连接频繁的通信会造成socket错误，而且频繁的socket 创建也是对资源的浪费。</p>
+
+<p>而像WEB网站的http服务一般都用短链接，因为长连接对于服务端来说会耗费一定的资源，而像WEB网站这么频繁的成千上万甚至上亿客户端的连接用短连接会更省一些资源，如果用长连接，而且同时有成千上万的用户，如果每个用户都占用一个连接的话，那可想而知吧。所以并发量大，但每个用户无需频繁操作情况下需用短连好。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[自定义相册删除复活的实现]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"/>
+    <updated>2015-11-29T00:22:52+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian</id>
+    <content type="html"><![CDATA[<p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
+
+
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
+
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+
+<p>先来看看咱们取得相册中的相片</p>
+
+<pre><code>- (void)getAllPhotos
+{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
+    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
+        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+            // 缩略图
+            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
+            // 获得原始图片
+            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
+        }];
+
+   } failureBlock:nil];
+}
+</code></pre>
+
+<p>下面我们看看代码具体的实现</p>
+
+<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+
+<pre><code> /** 相册库 */
+@property (nonatomic, strong) ALAssetsLibrary *library;
+</code></pre>
+
+<p>二：然后就懒加载这个属性</p>
+
+<pre><code>- (ALAssetsLibrary *)library
+{
+    if (!_library) {
+        _library = [[ALAssetsLibrary alloc] init];
+    }
+    return _library;
+}
+</code></pre>
+
+<p>三：点击保存按钮的实现</p>
+
+<pre><code>- (IBAction)save
+{
+// 获得文件夹的名字
+__block NSString *groupName = [self groupName];
+
+// self的弱引用
+XMGWeakSelf;
+
+// 图片库
+__weak ALAssetsLibrary *weakLibrary = self.library;
+
+// 创建文件夹
+[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+    if (group) { // 新创建的文件夹
+        // 添加图片到文件夹中
+        [weakSelf addImageToGroup:group];
+    } else { // 文件夹已经存在
+        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
+            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
+                // 添加图片到文件夹中
+
+                [weakSelf addImageToGroup:group];
+
+                *stop = YES; // 停止遍历
+            } else if ([name isEqualToString:@"Camera Roll"]) {
+                // 文件夹被用户强制删除了
+                groupName = [groupName stringByAppendingString:@" "];
+                // 存储新的名字
+                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                // 创建新的文件夹
+                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+                    // 添加图片到文件夹中
+                    [weakSelf addImageToGroup:group];
+                } failureBlock:nil];
+            }
+        } failureBlock:nil];
+    }
+
+    } failureBlock:nil];
+    }
+</code></pre>
+
+<p>四：添加图片</p>
+
+<pre><code>/**
+ * 添加一张图片到某个文件夹中
+ */
+- (void)addImageToGroup:(ALAssetsGroup *)group
+{
+__weak ALAssetsLibrary *weakLibrary = self.library;
+// 需要保存的图片
+
+CGImageRef image = self.imageView.image.CGImage;
+
+// 添加图片到【相机胶卷】
+[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+        // 添加一张图片到自定义的文件夹中
+        [group addAsset:asset];
+        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
+    } failureBlock:nil];
+}];
+}
+</code></pre>
+
+<p>五：关于沙河中的组名</p>
+
+<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
+
+<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
+static NSString * const iCocosDefaultGroupName = @"iCocos";
+</code></pre>
+
+<p>实现祖名的存取</p>
+
+<pre><code>- (NSString *)groupName
+{
+    // 先从沙盒中取得名字
+
+    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
+    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
+   groupName = XMGDefaultGroupName;
+
+    // 存储名字到沙盒中
+    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+ [[NSUserDefaults standardUserDefaults] synchronize];
+}
+return groupName;
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[XMPP使用总结]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/29/xmppshi-yong-zong-jie/"/>
+    <updated>2015-11-29T00:21:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/29/xmppshi-yong-zong-jie</id>
+    <content type="html"><![CDATA[<p>引言：
+最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
+
+<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
+
+<h6>##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（RFC-3920），同时还提供了用于读写XML的工具，大大简化了基于XMPP的通信应用的开发。</h6>
+
+<h3>关于连接的</h3>
+
+<pre><code>//此方法在stream开始连接服务器的时候调用
+ - (void)xmppStreamDidConnect:(XMPPStream *)sender
+ //此方法在stream连接断开的时候调用
+ - (void)xmppStreamDidDisconnect:(XMPPStream *)sender withError:(NSError *)error;
+</code></pre>
+
+<h3>关于验证的</h3>
+
+<pre><code>//验证失败后调用
+ - (void)xmppStream:(XMPPStream *)sender didNotAuthenticate:(NSXMLElement *)error
+//验证成功后调用
+ - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
+</code></pre>
+
+<h3>关于通信的</h3>
+
+<pre><code>//收到消息后调用
+- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+//接受到好友状态更新
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<h4>简单实战</h4>
+
+<h6>登录和好友上下线</h6>
+
+<h5>XMPP中常用对象们</h5>
+
+<pre><code>XMPPStream：xmpp基础服务类
+XMPPRoster：好友列表类
+XMPPRosterCoreDataStorage：好友列表（用户账号）在core data中的操作类
+XMPPvCardCoreDataStorage：好友名片（昵称，签名，性别，年龄等信息）在core data中的操作类
+XMPPvCardTemp：好友名片实体类，从数据库里取出来的都是它
+xmppvCardAvatarModule：好友头像
+XMPPReconnect：如果失去连接,自动重连
+XMPPRoom：提供多用户聊天支持
+</code></pre>
+
+<p>XMPPPubSub：发布订阅</p>
+
+<h5>登录操作，也就是连接xmpp服务器</h5>
+
+<pre><code>- (void)connect {
+    if (self.xmppStream == nil) {
+        self.xmppStream = [[XMPPStream alloc] init];
+        [self.xmppStream addDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    if (![self.xmppStream isConnected]) {
+        NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"username"];
+        XMPPJID *jid = [XMPPJID jidWithUser:username domain:@"lizhen" resource:@"Ework"];
+        [self.xmppStream setMyJID:jid];
+        [self.xmppStream setHostName:@"10.4.125.113"];
+        NSError *error = nil;
+        if (![self.xmppStream connect:&amp;error]) {
+            NSLog(@"Connect Error: %@", [[error userInfo] description]);
+        }
+    }
+}
+</code></pre>
+
+<p>connect成功之后会依次调用XMPPStreamDelegate的方法，首先调用</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender socketDidConnect:(GCDAsyncSocket *)socket
+</code></pre>
+
+<p>&hellip;
+然后</p>
+
+<ul>
+<li><p>(void)xmppStreamDidConnect:(XMPPStream *)sender
+在该方法下面需要使用xmppStream 的authenticateWithPassword方法进行密码验证，成功的话会响应delegate的方法，就是下面这个</p></li>
+<li><p>(void)xmppStreamDidAuthenticate:(XMPPStream *)sender</p></li>
+</ul>
+
+
+<h5>上线</h5>
+
+<p>实现 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender 委托方法</p>
+
+<pre><code>- (void)xmppStreamDidAuthenticate:(XMPPStream *)sender {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"available"];
+    [self.xmppStream sendElement:presence];
+ }
+</code></pre>
+
+<h5>退出并断开连接</h5>
+
+<pre><code> - (void)disconnect {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"unavailable"];
+    [self.xmppStream sendElement:presence];
+
+      [self.xmppStream disconnect];
+  }
+</code></pre>
+
+<h5>好友状态</h5>
+
+<p>获取好友状态，通过实现</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<p>&hellip;
+方法，当接收到 presence 标签的内容时，XMPPFramework 框架回调该方法</p>
+
+<pre><code>presence 的状态：
+available 上线
+away 离开
+do not disturb 忙碌
+unavailable 下线
+
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence {
+    NSString *presenceType = [presence type];
+    NSString *presenceFromUser = [[presence from] user];
+    if (![presenceFromUser isEqualToString:[[sender myJID] user]]) {
+        if ([presenceType isEqualToString:@"available"]) {
+            //
+        } else if ([presenceType isEqualToString:@"unavailable"]) {
+            //
+        }
+    }
+}
+</code></pre>
+
+<h3>接收消息和发送消息</h3>
+
+<h5>接收消息</h5>
+
+<p>通过实现</p>
+
+<ul>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message;
+当接收到 message 标签的内容时，XMPPFramework 框架回调该方法
+根据 XMPP 协议，消息体的内容存储在标签 body 内</p></li>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message {
+  NSString *messageBody = [[message elementForName:@&ldquo;body&rdquo;] stringValue];
+}</p></li>
+</ul>
+
+
+<h5>发送消息</h5>
+
+<p>发送消息，我们需要根据 XMPP 协议，将数据放到标签内</p>
+
+<pre><code>- (void)sendMessage:(NSString *) message toUser:(NSString *) user {
+    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
+    [body setStringValue:message];
+    NSXMLElement *message = [NSXMLElement elementWithName:@"message"];
+    [message addAttributeWithName:@"type" stringValue:@"chat"];
+    NSString *to = [NSString stringWithFormat:@"%@@example.com", user];
+    [message addAttributeWithName:@"to" stringValue:to];
+    [message addChild:body];
+    [self.xmppStream sendElement:message];
+}
+</code></pre>
+
+<h3>获取好友信息和删除好友</h3>
+
+<h5>好友列表和好友名片</h5>
+
+<pre><code>[_xmppRoster fetchRoster];//获取好友列表
+//获取到一个好友节点
+- (void)xmppRoster:(XMPPRoster *)sender didRecieveRosterItem:(NSXMLElement *)item
+//获取完好友列表
+- (void)xmppRosterDidEndPopulating:(XMPPRoster *)sender
+//到服务器上请求联系人名片信息
+- (void)fetchvCardTempForJID:(XMPPJID *)jid;
+//请求联系人的名片，如果数据库有就不请求，没有就发送名片请求
+- (void)fetchvCardTempForJID:(XMPPJID *)jid ignoreStorage:(BOOL)ignoreStorage;
+//获取联系人的名片，如果数据库有就返回，没有返回空，并到服务器上抓取
+- (XMPPvCardTemp *)vCardTempForJID:(XMPPJID *)jid shouldFetch:(BOOL)shouldFetch;
+//更新自己的名片信息
+- (void)updateMyvCardTemp:(XMPPvCardTemp *)vCardTemp;
+//获取到一盒联系人的名片信息的回调
+- (void)xmppvCardTempModule:(XMPPvCardTempModule *)vCardTempModule
+        didReceivevCardTemp:(XMPPvCardTemp *)vCardTemp
+                     forJID:(XMPPJID *)jid
+</code></pre>
+
+<h5>添加好友</h5>
+
+<pre><code>//name为用户账号
+    - (void)XMPPAddFriendSubscribe:(NSString *)name
+    {
+        //XMPPHOST 就是服务器名，  主机名
+        XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];
+        //[presence addAttributeWithName:@"subscription" stringValue:@"好友"];
+        [xmppRoster subscribePresenceToUser:jid];
+
+    }
+</code></pre>
+
+<h5>收到添加好友的请求</h5>
+
+<pre><code>- (void)xmppRoster:(XMPPRoster *)sender didReceivePresenceSubscriptionRequest:(XMPPPresence *)presence
+    {
+        //取得好友状态
+        NSString *presenceType = [NSString stringWithFormat:@"%@", [presence type]]; //online/offline
+        //请求的用户
+        NSString *presenceFromUser =[NSString stringWithFormat:@"%@", [[presence from] user]];
+        NSLog(@"presenceType:%@",presenceType);
+
+        NSLog(@"presence2:%@  sender2:%@",presence,sender);
+
+        XMPPJID *jid = [XMPPJID jidWithString:presenceFromUser];
+        //接收添加好友请求
+        [xmppRoster acceptPresenceSubscriptionRequestFrom:jid andAddToRoster:YES];
+
+    }
+</code></pre>
+
+<h5>删除好友</h5>
+
+<pre><code>//删除好友，name为好友账号
+- (void)removeBuddy:(NSString *)name  
+{  
+    XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];  
+
+    [self xmppRoster] removeUser:jid];  
+}
+</code></pre>
+
+<h5>聊天室</h5>
+
+<p>初始化聊天室</p>
+
+<pre><code>     XMPPJID *roomJID = [XMPPJID jidWithString:ROOM_JID];
+
+    xmppRoom = [[XMPPRoom alloc] initWithRoomStorage:self jid:roomJID];
+
+    [xmppRoom activate:xmppStream];
+     [xmppRoom addDelegate:self delegateQueue:dispatch_get_main_queue()];
+</code></pre>
+
+<p>创建聊天室成功</p>
+
+<pre><code>`- (void)xmppRoomDidCreate:(XMPPRoom *)sender
+{
+    DDLogInfo(@"%@: %@", THIS_FILE, THIS_METHOD);
+}`
+</code></pre>
+
+<p>加入聊天室，使用昵称</p>
+
+<pre><code>[xmppRoom joinRoomUsingNickname:@"quack" history:nil];
+</code></pre>
+
+<p>获取聊天室信息</p>
+
+<pre><code>- (void)xmppRoomDidJoin:(XMPPRoom *)sender
+    {
+        [xmppRoom fetchConfigurationForm];
+        [xmppRoom fetchBanList];
+        [xmppRoom fetchMembersList];
+        [xmppRoom fetchModeratorsList];
+    }
+</code></pre>
+
+<p>如果房间存在，会调用委托</p>
+
+<pre><code>    // 收到禁止名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchBanList:(NSArray *)items;
+    // 收到好友名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchMembersList:(NSArray *)items;
+    // 收到主持人名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchModeratorsList:(NSArray *)items;
+房间不存在，调用委托
+
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchBanList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchMembersList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchModeratorsList:(XMPPIQ *)iqError;
+</code></pre>
+
+<p>离开房间</p>
+
+<pre><code>[xmppRoom deactivate:xmppStream];
+</code></pre>
+
+<p>XMPPRoomDelegate的其他代理方法:</p>
+
+<p>离开聊天室</p>
+
+<pre><code>    - (void)xmppRoomDidLeave:(XMPPRoom *)sender
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>新人加入群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidJoin:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人退出群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidLeave:(XMPPJID *)occupantJID
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人在群里发言</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<h5>消息回执</h5>
+
+<p>这个是XEP－0184协议的内容
+发送消息时附加回执请求
+代码实现</p>
+
+<pre><code>NSString *siID = [XMPPStream generateUUID];
+    //发送消息
+    XMPPMessage *message = [XMPPMessage messageWithType:@"chat" to:jid elementID:siID];
+    NSXMLElement *receipt = [NSXMLElement elementWithName:@"request" xmlns:@"urn:xmpp:receipts"];
+    [message addChild:receipt];
+    [message addBody:@"测试"];
+    [self.xmppStream sendElement:message];
+</code></pre>
+
+<p>收到回执请求的消息，发送回执</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+    {
+        //回执判断
+        NSXMLElement *request = [message elementForName:@"request"];
+        if (request)
+        {
+            if ([request.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+            {
+                //组装消息回执
+                XMPPMessage *msg = [XMPPMessage messageWithType:[message attributeStringValueForName:@"type"] to:message.from elementID:[message attributeStringValueForName:@"id"]];
+                NSXMLElement *recieved = [NSXMLElement elementWithName:@"received" xmlns:@"urn:xmpp:receipts"];
+                [msg addChild:recieved];
+
+                //发送回执
+                [self.xmppStream sendElement:msg];
+            }
+        }else
+        {
+            NSXMLElement *received = [message elementForName:@"received"];
+            if (received)
+            {
+                if ([received.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+                {
+                    //发送成功
+                    NSLog(@"message send success!");
+                }  
+            }  
+        }  
+
+        //消息处理  
+        //...  
+    }
+</code></pre>
+
+<h5>添加AutoPing</h5>
+
+<p>为 了监听服务器是否有效，增加心跳监听。用XEP-0199协议，在XMPPFrameWork框架下，封装了 XMPPAutoPing 和 XMPPPing两个类都可以使用，因为XMPPAutoPing已经组合进了XMPPPing类，所以XMPPAutoPing使用起来更方便。</p>
+
+<pre><code>//初始化并启动ping
+-(void)autoPingProxyServer:(NSString*)strProxyServer
+{
+    _xmppAutoPing = [[XMPPAutoPingalloc] init];
+    [_xmppAutoPingactivate:_xmppStream];
+    [_xmppAutoPingaddDelegate:selfdelegateQueue:  dispatch_get_main_queue()];
+    _xmppAutoPing.respondsToQueries = YES;
+    _xmppAutoPing.pingInterval=2;//ping 间隔时间
+    if (nil != strProxyServer)
+    {
+       _xmppAutoPing.targetJID = [XMPPJID jidWithString: strProxyServer ];//设置ping目标服务器，如果为nil,则监听socketstream当前连接上的那个服务器
+    }
+}
+//卸载监听
+ [_xmppAutoPing   deactivate];
+  [_xmppAutoPing   removeDelegate:self];
+   _xmppAutoPing = nil;
+//ping XMPPAutoPingDelegate的委托方法:
+- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender");
+}
+- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender");
+}
+
+- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender");
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[蓝牙开发你知道多少]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/"/>
+    <updated>2015-11-28T00:38:13+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao</id>
+    <content type="html"><![CDATA[<p>蓝牙简单介绍和4.0的基本使用</p>
+
+<p>背景：</p>
+
+<ul>
+<li>iOS的蓝牙不能用来传输文件。</li>
+<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
+<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
+</ul>
+
+
+<h3>iOS中蓝牙的实现方案</h3>
+
+<p>iOS中提供了4个框架用于实现蓝牙连接</p>
+
+<ol>
+<li><p>GameKit.framework（用法简单）</p>
+
+<p> <code>只能用于iOS设备之间的连接，多用于游戏（比如五子棋对战），从iOS7开始过期</code></p></li>
+<li><p>MultipeerConnectivity.framework</p>
+
+<p> <code>只能用于iOS设备之间的连接，从iOS7开始引入，主要用于文件共享（仅限于沙盒的文件）</code></p></li>
+<li><p>ExternalAccessory.framework</p>
+
+<p> <code>可用于第三方蓝牙设备交互，但是蓝牙设备必须经过苹果MFi认证（国内较少）</code></p></li>
+<li><h6>CoreBluetooth.framework（时下热门）</h6>
+
+<p> <code>可用于第三方蓝牙设备交互，必须要支持蓝牙4.0</code></p>
+
+<p> <code>硬件至少是4s，系统至少是iOS6</code></p>
+
+<p> <code>蓝牙4.0以低功耗著称，一般也叫BLE（BluetoothLowEnergy）</code></p>
+
+<p> <code>目前应用比较多的案例：运动手坏、嵌入式设备、智能家居</code></p></li>
+</ol>
+
+
+<p>下面具体介绍使用CoreBluetooth.framework的代码步骤：</p>
+
+<h5>蓝牙系统库</h5>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+</code></pre>
+
+<h5>必须要由UUID来唯一标示对应的service和characteristic</h5>
+
+<pre><code>#define kServiceUUID @"5C476471-1109-4EBE-A826-45B4F9D74FB9"
+
+#define kCharacteristicHeartRateUUID @"82C7AC0F-6113-4EC9-92D1-5EEF44571398"
+
+#define kCharacteristicBodyLocationUUID @"537B5FD6-1889-4041-9C35-F6949D1CA034"
+</code></pre>
+
+<hr />
+
+<pre><code>@interface ViewController ()&lt;CBCentralManagerDelegate,CBPeripheralDelegate&gt;
+
+
+
+@property (nonatomic,strong)CBCentralManager * centralManager;
+
+@property (nonatomic,strong)CBPeripheral     * peripheral;
+
+@end
+</code></pre>
+
+<h4>创建中心角色</h4>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+
+- (void)viewDidLoad
+{
+
+    [super viewDidLoad];
+
+    //初始化蓝牙 central manager
+
+    _centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) options:nil];    
+
+}
+</code></pre>
+
+<h4>扫描外设</h4>
+
+<pre><code>[manager scanForPeripheralsWithServices:nil options:@{CBCentralManagerRestoredStateScanOptionsKey:@(YES)}];
+</code></pre>
+
+<h4>连接外设</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+        if([peripheral.name  isEqualToString:BLE_SERVICE_NAME]){
+                [self connect:peripheral];
+        }
+}       
+
+-(BOOL)connect:(CBPeripheral *)peripheral{
+        self.manager.delegate = self;
+        [self.manager connectPeripheral:peripheral
+                                options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:CBConnectPeripheralOptionNotifyOnDisconnectionKey]];
+}
+</code></pre>
+
+<h4>扫描外设中的服务和特征</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
+{
+
+   NSLog(@"Did connect to peripheral: %@", peripheral);       
+
+   _testPeripheral = peripheral;
+   [peripheral setDelegate:self];  &lt;br&gt;//查找服务
+   [peripheral discoverServices:nil];
+
+
+}
+</code></pre>
+
+<h4>发现服务：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+
+
+NSLog(@"didDiscoverServices");
+
+if (error)
+{
+    NSLog(@"Discovered services for %@ with error: %@", peripheral.name, [error localizedDescription]);
+
+    if ([self.delegate respondsToSelector:@selector(DidNotifyFailConnectService:withPeripheral:error:)])
+        [self.delegate DidNotifyFailConnectService:nil withPeripheral:nil error:nil];
+
+    return;
+}
+
+
+for (CBService *service in peripheral.services)
+{
+     //发现服务
+    if ([service.UUID isEqual:[CBUUID UUIDWithString:UUIDSTR_ISSC_PROPRIETARY_SERVICE]])
+    {
+        NSLog(@"Service found with UUID: %@", service.UUID);  &lt;br&gt;//查找特征
+        [peripheral discoverCharacteristics:nil forService:service];
+        break;
+    }
+
+
+}
+}
+</code></pre>
+
+<h4>发现服务中的特征：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+
+if (error)
+{
+    NSLog(@"Discovered characteristics for %@ with error: %@", service.UUID, [error localizedDescription]);
+
+    [self error];
+    return;
+}
+
+NSLog(@"服务：%@",service.UUID);
+for (CBCharacteristic *characteristic in service.characteristics)
+{
+   //发现特征
+        if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"xxxxxxx"]]) {
+            NSLog(@"监听：%@",characteristic);&lt;br&gt;//监听特征
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+}
+}
+</code></pre>
+
+<h4>与外设进行数据交互</h4>
+
+<p>读取数据：</p>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error)
+    {
+        NSLog(@"Error updating value for characteristic %@ error: %@", characteristic.UUID, [error localizedDescription]);
+        self.error_b = BluetoothError_System;
+        [self error];
+        return;
+}
+
+//    NSLog(@"收到的数据：%@",characteristic.value);
+[self decodeData:characteristic.value];
+}
+</code></pre>
+
+<h4>写数据：</h4>
+
+<pre><code>NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
+            [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+</code></pre>
+]]></content>
+  </entry>
+  
+</feed>

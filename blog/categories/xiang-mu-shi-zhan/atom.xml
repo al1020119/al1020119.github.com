@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 项目实战 | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/xiang-mu-shi-zhan/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2015-11-29T19:00:26+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[取消TableView的Header与Footer的黏性效果]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/"/>
+    <updated>2015-11-28T00:24:40+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo</id>
+    <content type="html"><![CDATA[<p>引言：</p>
+
+<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
+
+<h6>那么是什么问题呢？</h6>
+
+<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
+
+<p>我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？</p>
+
+<p>后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。</p>
+
+<p>也在网上找了一段这样的代码</p>
+
+<h3>去掉UItableview headerview黏性(sticky)</h3>
+
+<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+if (scrollView == self.tableView)
+
+{
+
+        CGFloat sectionHeaderHeight = 64; //sectionHeaderHeight
+
+        if (scrollView.contentOffset.y &lt;= sectionHeaderHeight &amp;&amp; scrollView.contentOffset.y &gt;= 0) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
+
+        } else if (scrollView.contentOffset.y &gt;= sectionHeaderHeight) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>但是他职能设置headerView不能设置footerView，自己也试着去补充footerView的实现，但是发现技术有限，所以，你懂的！</p>
+
+<h3>最后看到国外一位大神写的一一篇文章找到了下面的代码</h3>
+
+<pre><code> -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+    if (scrollView == self.tableView)
+
+        {
+
+        UITableView *tableview = (UITableView *)scrollView;
+
+        CGFloat sectionHeaderHeight = 64;
+
+        CGFloat sectionFooterHeight = 120;
+
+        CGFloat offsetY = tableview.contentOffset.y;
+
+        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>注：sectionHeaderHeight和sectionFooterHeight根据项目进行设置。</p>
+
+<p>发现基本上搞定，最后只需要设置对应的内边距即可！</p>
+
+<!-- more -->
+
+
+
+]]></content>
+  </entry>
+  
+</feed>

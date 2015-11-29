@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 开发工具 | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/kai-fa-gong-ju/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2015-11-29T19:00:26+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[cocoaPods简单粗暴]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/"/>
+    <updated>2015-11-28T00:32:20+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao</id>
+    <content type="html"><![CDATA[<p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+]]></content>
+  </entry>
+  
+</feed>
