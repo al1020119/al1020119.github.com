@@ -59,7 +59,8 @@ Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静�
 10. 相关文章功能
 11. 社会化评论与分享
 12. 为博文添加原文链接及声明
-13. 公益404
+13. 添加版权声明
+14. 公益404
 
 ##五： 其他
 1. mackdown语法<br>
@@ -897,6 +898,58 @@ share_comment.html文件中代码如下（每个人不同）：
 	
 尊重原创，此功能来源 为octopress每篇文章添加一个文章信息 。
 
+###  添加版权声明
+这里所说的版权声明是指每篇文章后面的版权信息
+
+首先source\_includes\post目录中添加license.html文件，文件内容如下：
+	
+	{% if site.post_license %}
+	
+	<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right> 
+	<DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"> 
+	<IMG alt="" src="http://images.cnblogs.com/cnblogs_com/oec2003/219566/r_fw90100.jpg" width=90 height=100></DIV> 
+	<DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"> 
+	作者： <A href="http://oec2003.github.io/">冯威</A> <BR> 
+	出处： <A href="http://oec2003.github.io/">http://oec2003.github.io/</A> 
+	<BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"> 
+	署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+	<a href="http://oec2003.github.io/">冯威</a>（包含链接）。 </DIV></DIV> 
+	{% endif %}
+
+在sass\custom\_styles.scss添加如下样式信息来控制版权信息的样式
+
+	.oec2003right 
+	{ 
+	    background: #C3D9FF; 
+	    height:120px; 
+	    border:1px solid #BBBBBB; 
+	}
+	
+	.oec2003right a:link 
+	{ 
+	    color: #0057b6; 
+	    text-decoration: none; 
+	} 
+	.oec2003right a:visited 
+	{ 
+	    color: #0057b6; 
+	    text-decoration: none; 
+	} 
+	.oec2003right a:active,a:hover 
+	{ 
+	    color: #0057b6; 
+	    text-decoration: underline; 
+	}
+
+修改文件source\_layouts\post.html
+
+	在class中增加类类似的一行，修改为对应的html就可以
+
+在_config.yml添加配置项用来控制是否显示页面的版权信息
+
+	# Post License 
+	post_license: true
+
 ###  公益404
 
 在 source 目录下创建404.markdown，添加如下代码，即可实现公益404的功能，当你的网页出错找不到时，可以为公益尽一份力。
@@ -911,6 +964,9 @@ share_comment.html文件中代码如下（每个人不同）：
 	<script type="text/javascript" src="http://www.qq.com/404/	search_children,js" charset="utf-8></script>
  
 ***
+
+
+
 
 ## mackdown语法简介
 
