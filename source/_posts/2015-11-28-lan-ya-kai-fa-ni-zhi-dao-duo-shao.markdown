@@ -1,9 +1,11 @@
 ---
+
 layout: post
 title: "蓝牙开发你知道多少"
 date: 2015-11-28 00:38:13 +0800
 comments: true
-categories: 
+categories: 高级开发
+
 ---
 
 蓝牙简单介绍和4.0的基本使用

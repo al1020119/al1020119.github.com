@@ -1,9 +1,11 @@
 ---
+
 layout: post
 title: "XMPP使用总结"
 date: 2015-11-29 00:21:39 +0800
 comments: true
-categories: 
+categories: 高级开发
+
 ---
 
 

@@ -1,9 +1,11 @@
 ---
+
 layout: post
 title: "自定义相册删除复活的实现"
 date: 2015-11-29 00:22:52 +0800
 comments: true
-categories: 
+categories: 高级开发
+
 ---
 
 

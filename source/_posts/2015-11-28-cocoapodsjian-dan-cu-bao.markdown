@@ -4,7 +4,7 @@ layout: post
 title: "cocoaPods简单粗暴"
 date: 2015-11-28 00:32:20 +0800
 comments: true
-categories: 
+categories: 开发工具
 
 ---
 
