@@ -463,14 +463,16 @@ Pygments默认提供了很多css样式，你可以在python shell中用下面命
 2.添加 source/_includes/asides/category_list.html 文件，内容如下：
 
 	<section>
-	<h1>文章分类</h1>
-	<ul id="categories">
-    {% category_list %}
-	</ul>
+	  <h1>Categories</h1>
+	  <ul id="categories">
+	    {%raw%}{% category_list %}{%endraw%} 
+	  </ul>
 	</section>
+	
 3.修改 _config.yml 文件，在 default_asides 项中添加 asides/category_list.html ，值之间以逗号隔开，值的先后顺序代表了侧边栏展现的先后顺序。
 
 	default_asides: [asides/category_list.html, asides/recent_posts.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
+	
 在侧边栏还可以添加其他组件，如微博、标签云等，添加方式和上面类似。
 
 ### 添加多说评论
