@@ -465,7 +465,9 @@ Pygments默认提供了很多css样式，你可以在python shell中用下面命
 	<section>
 	  <h1>Categories</h1>
 	  <ul id="categories">
+	  ***
 	    {%raw%}{% category_list %}{%endraw%} 
+	  ***
 	  </ul>
 	</section>
 	
