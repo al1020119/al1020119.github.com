@@ -389,7 +389,7 @@ UIScreenEdgePanGestureRecognizer 继承自UIPanGestureRecognizer ，它可以让
 	pulled upward again to cancel the dismiss
 以下是让键盘可以在滚动的时候消失需要设置的属性：
 
-{% img /images/banbenshipei005.jpg Caption %}  
+{% img /images/banbenshipei005.png Caption %}  
 
 ####二十、使用Core Image来检测眨眼以及微笑
 iOS给Core Image增加了两种人脸检测功能：CIDetectorEyeBlink以及CIDetectorSmile。这也就是说你现在可以在照片中检测微笑以及眨眼。
@@ -736,7 +736,7 @@ info.plist 配置中的XML源码如下所示:
 
 要将 info.plist 配置如下：
 
-{% img /images/banbenshipei007.jpg Caption %}  
+{% img /images/banbenshipei007.png Caption %}  
 
 对应的 Info.plist 的XML源码是：
 
@@ -751,14 +751,14 @@ bitcode的理解应该是把程序编译成的一种过渡代码，然后苹果�
 
 问题的原因是：某些第三方库还不支持bitcode。要不然是等待库的开发者升级了此项功能我们更新库，要不就是把这个bitcode禁用。禁用Bitcode，方法见下图：
 
-{% img /images/banbenshipei009.jpg Caption %}  
+{% img /images/banbenshipei009.png Caption %}  
 
 ####四、企业级分发
 iOS9之前，企业级分发十分方便：点击App出现“信任按钮”。
 
 iOS9以后，企业级分发ipa包将遭到与Mac上dmg安装包一样的待遇。默认不能安装，也不再出现“信任按钮”，必须让用户进行gif图中的设置。
 
-{% img /images/banbenshipei010.jpg Caption %}  
+{% img /images/banbenshipei010.png Caption %}  
 
 ####五、URL scheme
 URL scheme一般使用的场景是应用程序有分享或跳其他平台授权的功能，分享或授权后再跳回来。在iOS8并没有做过多限制，在iOS9中，如果使用URL scheme必须在"info.plist"中将你要在外部调用的URL scheme列为白名单，否则不能使用。
@@ -767,7 +767,7 @@ URL scheme一般使用的场景是应用程序有分享或跳其他平台授权�
 
 具体的解决方案也是要在info.plist中设置 LSApplicationQueriesSchemes 类型为数组，下面添加所有你用到的scheme
 
-{% img /images/banbenshipei011.jpg Caption %}  
+{% img /images/banbenshipei011.png Caption %}  
 
 推荐一篇博客: http://awkwardhare.com/post/121196006730/quick-take-on-ios-9-url-scheme-changes
 
@@ -782,10 +782,10 @@ iOS8中，字体是Helvetica，中文的字体有点类似于“华文细黑”�
 
 所以很多原本写死了width的label可能会出现“...”的情况。
 
-{% img /images/banbenshipei012.jpg Caption %}  
+{% img /images/banbenshipei012.png Caption %}  
+ 
 
-
-{% img /images/banbenshipei013.jpg Caption %}  
+{% img /images/banbenshipei013.png Caption %}  
 
 上面这两张图也可以直观的看出同一个界面，同一个label的变化。
 
