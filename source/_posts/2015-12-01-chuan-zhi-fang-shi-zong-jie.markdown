@@ -63,7 +63,7 @@ categories: 项目实战
 初始化之后出现下面的界面
 
  
-{% img /images/chuanzhi001.jpg Caption %}  
+{% img /images/chuanzhi001.png Caption %}  
 
  
 
@@ -82,7 +82,7 @@ categories: 项目实战
 我这个项目使用的是多层分组模型，讲每一组合对应的属性还有friends作为组模型，再将friends作为子模型，实现表格数据的现实。
 
 
-{% img /images/chuanzhi002.jpg Caption %}  
+{% img /images/chuanzhi002.png Caption %}  
 
  
 
@@ -251,7 +251,7 @@ categories: 项目实战
 使用上面任何一种方法都可以实现同样的功能，点击每一行的组的时候就会展开相应行并且显示对应组的所有行。
 
 
-{% img /images/chuanzhi003.jpg Caption %}  
+{% img /images/chuanzhi003.png Caption %}  
 
 实现Header左边按钮上面图标的旋转：（这里是一个重点，也是以后以后开发中肯呢过遇到的一个难点，可能不是一样的但是或许思路和原理一样，这里是这篇文章中除了传值的三种方式以后最重要的地方）
 	/*****在这个方法里面实现旋转：当View移到父控件的时候，不然旋转也看不到选过，因为刷新实在旋转之后的，旋转之后再刷新，从缓存迟里面取出来********/
