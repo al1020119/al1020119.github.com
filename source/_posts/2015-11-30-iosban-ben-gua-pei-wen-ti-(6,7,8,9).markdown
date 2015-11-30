@@ -174,7 +174,7 @@ instancetype让iOS7API变得更加难懂。苹果改变了大部分 initializer�
 renderingMode属性的默认值是UIImageRenderingModeAutomatic，即UIImage是否使用
 Tint Color取决于它显示的位置。其他情况可以看下面的图例：
 
-{% img /images/banbenshipei002.jpg Caption %}  
+{% img /images/banbenshipei002.png Caption %}  
 
 以下的代码说明了使用一个既定的rendering模式创建图片是多么简单：
 
