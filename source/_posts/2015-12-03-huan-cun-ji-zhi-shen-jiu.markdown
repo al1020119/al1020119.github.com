@@ -56,7 +56,7 @@ categories:
 如图打印结果:
 
 
-{% img /images/huancun001.jpg Caption %}  
+{% img /images/huancun001.png Caption %}  
 
 * 分析：底层先获取有多少cell（10个），在获取每个cell的高度，返回高度的方法一开始调用10次。
 
@@ -66,7 +66,7 @@ categories:
 
 打印验证，如图：
 
-{% img /images/huancun002.jpg Caption %}  
+{% img /images/huancun002.png Caption %}  
 
 一开始调用了7次，因为一开始屏幕最多显示7个cell
 
@@ -120,12 +120,12 @@ categories:
 警告:
 
 
-{% img /images/huancun003.jpg Caption %}  
+{% img /images/huancun003.png Caption %}  
 
 解决，在YZTableView.m的实现中声明。
 
 
-{% img /images/huancun004.jpg Caption %}  
+{% img /images/huancun004.png Caption %}  
 
 + 原因：有人会问为什么我要定义同名的delegate属性，我主要想模仿系统的tableView，系统tableView也有同名的属性。
 
@@ -224,12 +224,12 @@ categories:
 当tableView内容往下走
 
 
-{% img /images/huancun005.jpg Caption %}  
+{% img /images/huancun005.gif Caption %}  
 
 当tableView内容往上走
 
 
-{% img /images/huancun006.jpg Caption %}  
+{% img /images/huancun006.gif Caption %}  
 
   
 	 1 // 根据cell尺寸判断cell在不在屏幕上
