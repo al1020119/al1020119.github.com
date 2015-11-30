@@ -5,7 +5,7 @@ layout: post
 title: "字典转模型深究"
 date: 2015-12-01 02:33:18 +0800
 comments: true
-categories: 
+categories: 项目实战
 
 
 ---
