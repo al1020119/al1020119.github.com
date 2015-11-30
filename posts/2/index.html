@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="简介 Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.) 根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10 &hellip;">
+  <meta name="description" content="直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ 2:新增淘宝镜像 $ gem sources -a http:// &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,7 +64,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <ul class="main-navigation">
   <li><a href="/">首页</a></li>
   <li><a href="/blog/archives">归档</a></li>
-  <li><a href="/iCocos">iCocos</a></li>
+  <li><a href="/icocos">iCocos</a></li>
   <li><a href="/other">其他</a></li>
   <li><a href="/about">关于</a></li>
 </ul>
@@ -74,6 +74,593 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">取消TableView的Header与Footer的黏性效果</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：</p>
+
+<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
+
+<h6>那么是什么问题呢？</h6>
+
+<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
+
+<p>我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？</p>
+
+<p>后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。</p>
+
+<p>也在网上找了一段这样的代码</p>
+
+<h3>去掉UItableview headerview黏性(sticky)</h3>
+
+<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+if (scrollView == self.tableView)
+
+{
+
+        CGFloat sectionHeaderHeight = 64; //sectionHeaderHeight
+
+        if (scrollView.contentOffset.y &lt;= sectionHeaderHeight &amp;&amp; scrollView.contentOffset.y &gt;= 0) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
+
+        } else if (scrollView.contentOffset.y &gt;= sectionHeaderHeight) {
+
+            scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>但是他职能设置headerView不能设置footerView，自己也试着去补充footerView的实现，但是发现技术有限，所以，你懂的！</p>
+
+<h3>最后看到国外一位大神写的一一篇文章找到了下面的代码</h3>
+
+<pre><code> -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+    if (scrollView == self.tableView)
+
+        {
+
+        UITableView *tableview = (UITableView *)scrollView;
+
+        CGFloat sectionHeaderHeight = 64;
+
+        CGFloat sectionFooterHeight = 120;
+
+        CGFloat offsetY = tableview.contentOffset.y;
+
+        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<p>注：sectionHeaderHeight和sectionFooterHeight根据项目进行设置。</p>
+
+<p>发现基本上搞定，最后只需要设置对应的内边距即可！</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
+
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
+
+<ul>
+<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
+<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
+<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
+这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
+</ul>
+
+
+<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
+
+<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
+
+<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
+
+<p>进入正题：</p>
+
+<p>需要的工具和环境：</p>
+
+<ol type="a">
+<li>iPhone or iPad越狱，安装AppSync</li>
+<li>Xcode安装 Command Line Tools</li>
+<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
+</ol>
+
+
+<p>1、修改SDKSettings.plist文件</p>
+
+<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
+
+<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
+</code></pre>
+
+<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
+
+<p>执行命令为：</p>
+
+<p>转到目录下</p>
+
+<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+</code></pre>
+
+<p>将原有文件备份</p>
+
+<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
+</code></pre>
+
+<p>对SDKSettings.plist文件进行编辑</p>
+
+<pre><code>sudo vim SDKSettings.plist
+</code></pre>
+
+<p>将下面对应的字段改为NO</p>
+
+<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
+&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
+</code></pre>
+
+<p>此操作参考的路径如下：</p>
+
+<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
+</code></pre>
+
+<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
+
+<p>新建一个plist文件，命名为entitlements.</p>
+
+<pre><code>![Alt text](/iamges/yueyu001.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu001.png" title="Caption" ></p>
+
+<p>创建一个plist</p>
+
+<pre><code>![Alt text](/iamges/yueyu002.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu002.png" title="Caption" ></p>
+
+<p>将plist文件改为：</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Install&lt;/string&gt;
+        &lt;string&gt;Browse&lt;/string&gt;
+        &lt;string&gt;Uninstall&lt;/string&gt;
+        &lt;string&gt;Archive&lt;/string&gt;
+        &lt;string&gt;RemoveArchive&lt;/string&gt;
+    &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+
+<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu003.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu003.png" title="Caption" ></p>
+
+<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
+
+<p>3、实现越狱安装的代码：</p>
+
+<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
+NSDictionary *IPAInstalledApps()
+{
+void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
+if (lib)
+{
+    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
+    if (pMobileInstallationLookup)
+    {
+        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
+        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
+        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
+#ifdef DEBUG
+        NSLog(@"%@", dict);
+#endif
+        return dict;
+    }
+}
+return nil;
+}
+</code></pre>
+
+<p>所有代码均在之前的github目录中，可以自行查看。</p>
+
+<p>4、编译生成App文件</p>
+
+<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
+
+<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
+
+<pre><code>![Alt text](/iamges/yueyu004.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu004.png" title="Caption" ></p>
+
+<p>5、制作ipa文件</p>
+
+<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
+
+<p>比如在 Download 目录下， sudo -i</p>
+
+<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
+
+<p>然后对之前生成的文件，进行ldid签名</p>
+
+<pre><code>![Alt text](/iamges/yueyu005.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
+<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
+</ul>
+
+
+<p>6、生成ipa文件，安装</p>
+
+<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
+
+<p>然后通过itools安装，测试刚刚生成的文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu006.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu006.png" title="Caption" ></p>
+
+<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
+
+<h1>检查iphone时候越狱</h1>
+
+<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
+
+<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
+
+<p>复制代码
+复制代码</p>
+
+<pre><code>/*方法名:
+ *        isJailbroken
+*介绍:
+*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
+*参数说明:
+*        无
+*        
+*
+*/
+
+#pragma mark utils api
+// 类方法，判断当前设备是否已经越狱
++ (BOOL)isJailbroken;
+// 类方法，判断你的App是否被破解
++ (BOOL)isPirated;
+</code></pre>
+
+<p>apt和Cydia的方式来进行判断的，没看见源码</p>
+
+<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
+
+<h3>apt</h3>
+
+<pre><code>- (BOOL) asAP
+{
+return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
+4 }`
+</code></pre>
+
+<h3>system</h3>
+
+<pre><code>`1 - (BOOL) successCallSystem
+2 {
+3 return (system("ls") == 0) ? YES : NO;
+4 }`
+</code></pre>
+
+<h3>示例代码</h3>
+
+<pre><code>static const char* jailbreak_apps[] =
+
+  {
+      "/Applications/Cydia.app",
+      "/Applications/limera1n.app",
+      "/Applications/greenpois0n.app",
+      "/Applications/blackra1n.app",
+      "/Applications/blacksn0w.app",
+      "/Applications/redsn0w.app",
+     "/Applications/Absinthe.app",
+     NULL,
+ };
+
+ - (BOOL) isJailBroken
+ {
+     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
+     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
+     {
+         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
+         {
+             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
+             return YES;
+         }
+     }
+
+               // TODO: Add more checks? This is an arms-race we're bound to lose.
+
+     return NO;
+ }
+</code></pre>
+
+<hr />
+
+<pre><code>@interface UIDevice (Helper)  
+ - (BOOL)isJailbroken;  
+ @end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation UIDevice (Helper)  
+- (BOOL)isJailbroken {  
+BOOL jailbroken = NO;  
+NSString *cydiaPath = @"/Applications/Cydia.app";  
+NSString *aptPath = @"/private/var/lib/apt/";  
+if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
+ jailbroken = YES;  
+}  
+if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
+ jailbroken = YES;  
+}  
+return jailbroken;  
+}  
+@end
+</code></pre>
+
+<hr />
+
+<p>参考资源链接：</p>
+
+<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
+<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -650,23 +1237,23 @@ addBlankTargetForLinks();
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/11/30/iossheng-ming-zhou-qi/">iOS生命周期</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a>
       </li>
     
   </ul>

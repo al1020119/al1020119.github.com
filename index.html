@@ -9,9 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="控制器（View）生命周期 当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序 1、 alloc 创建对象，分配空间
-2、init (initWithNibName) 初始化对象，初始化数据
-3、loadView 从nib载入视图 ，通常这一步不需要去干涉。 &hellip;">
+  <meta name="description" content="字典转模型深究 ordinal 引言：
+在文字开始之前先介绍两个软件： JSONExport JSON Accelerator 关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。 如果你觉得自己对应本文后面的内容非常了解， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,7 +65,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <ul class="main-navigation">
   <li><a href="/">首页</a></li>
   <li><a href="/blog/archives">归档</a></li>
-  <li><a href="/iCocos">iCocos</a></li>
+  <li><a href="/icocos">iCocos</a></li>
   <li><a href="/other">其他</a></li>
   <li><a href="/about">关于</a></li>
 </ul>
@@ -76,6 +75,1237 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>引言：
+在文字开始之前先介绍两个软件：</p></blockquote>
+
+<h5>JSONExport</h5>
+
+<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
+
+<h5>JSON Accelerator</h5>
+
+<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
+
+<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+
+<ul>
+<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
+<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+</ul>
+
+
+<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
+
+<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
+
+<h2>一：直接加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
+
+<pre><code>定义一个数组属性 
+@property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>获取Plist文件</h6>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载Plsit中的数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    NSDictionary *dic = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+    */
+     icon.image = [UIImage imageNamed:dic[@"icon"]];
+
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = dic[@"label"];
+
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
+
+    [view addSubview:btn];
+</code></pre>
+
+<h2>二：使用简单的模型加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
+
+<pre><code> 1 //定义一个数组属性
+
+  2 @property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>在模型中定义模型对应的属性</h6>
+
+<pre><code>@property (nonatomic, copy) NSString *icon;
+
+
+@property (nonatomic, copy) NSString *label;
+
+
+@property (nonatomic, copy) NSString *btn;
+</code></pre>
+
+<h6>模型方法</h6>
+
+<pre><code>/**
+ 模型数据方法
+ */
++(instancetype)messageWithDict:(NSDictionary *)dict;
+
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>模型的实现文件</h6>
+
+<pre><code>/**
+ 模型数据方法的实现
+ */
+
++ (instancetype)messageWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>实用模型加载Plist文件</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            appsModel *model = [[appsModel alloc] init];
+            model.label = dic[@"label"];
+            model.btn = dic[@"btn"];
+            model.icon = dic[@"icon"];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载模型中对应的plist数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    appsModel *app = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+     */
+    icon.image = [UIImage imageNamed:app.icon];
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = app.label;
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:app.btn forState:UIControlStateNormal];
+    [view addSubview:btn];
+</code></pre>
+
+<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+{
+self = [super init];
+if (self) {
+    self.label = dict[@"label"];
+    self.btn = dict[@"btn"];
+    self.icon = dict[@"icon"];
+
+//[self setValue:dict[@"label"] forKeyPath:@"label"];
+
+    //封装
+    [self setValuesForKeysWithDictionary:dict];
+}
+
+return self;
+}
+</code></pre>
+
+<p>/<em>*
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ </em>/</p>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+//            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
+
+<p>在模型中定义并且实现一个模型封装的方法</p>
+
+<pre><code>+(NSArray *)appList
+{
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+    }
+    return arrayApps;
+
+}
+</code></pre>
+
+<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+
+        _apps = [appsModel appList];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h2>三：复杂Plist转模型</h2>
+
+<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
+
+<p>比如Plist中海油一个friends这歌子模型</p>
+
+<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
+
+<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
+
+<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
+
+<pre><code>/**
+ 根据plist里面存在的子列中的数据再创建一个模型数据
+ */
+
+/**
+ 设置子模型数据的属性
+ */
+
+@property (nonatomic, assign) NSString *icon;
+
+@property (nonatomic, assign) NSString *intro;
+
+@property (nonatomic, assign) NSString *name;
+
+@property (nonatomic, assign, getter=isVip)BOOL vip;
+
+
+/**
+ 子模型数据的方法
+ */
++ (instancetype)friendWithDict:(NSDictionary *)dict;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>子模型的实现</h6>
+
+<pre><code>/**
+ 子模型数据的方法de实现
+ */
+
++ (instancetype)friendWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>然后就是根模型</h6>
+
+<pre><code>/**
+ 根据plist中的数据创建一个模型数据
+ */
+
+/**
+ 设置模型数据的中的属性
+ */
+
+@property (nonatomic, assign) NSArray *friends;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSNumber *online;
+
+/**
+ 模型数据的方法
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict;
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
+
+<pre><code>/**
+ 模型数据的方法的实现
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+
+        NSMutableArray *friendArray = [NSMutableArray array];
+        for (NSDictionary *dict in self.friends) {
+            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
+            [friendArray addObject:friend];
+        }
+        self.friends = friendArray;
+    }
+    return self;
+}
+</code></pre>
+
+<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
+
+<pre><code>/**
+ 加载模型数据的方法
+ */
+
+- (NSArray *)groups
+{
+    if (_groups == nil) {
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
+
+        NSMutableArray *groupArray = [NSMutableArray array];
+        for (NSDictionary *dict in dictArray) {
+            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
+            [groupArray addObject:group];
+        }
+
+        _groups = groupArray;
+    }
+    return _groups;
+}
+</code></pre>
+
+<h2>四：使用第三份库</h2>
+
+<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
+
+<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
+
+<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
+
+<p>下载好了之后直接讲MJExtension拖到你的项目</p>
+
+<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
+
+<h6>首先根据plist数据新建对应的模型数据</h6>
+
+<p>这里我一新浪微博中的小部分做测试</p>
+
+<pre><code>#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  微博文本内容
+ */
+@property (copy, nonatomic) NSString *text;
+
+/**
+ *  微博作者
+ */
+@property (strong, nonatomic) User *user;
+
+/**
+ *  转发的微博
+ */
+@property (strong, nonatomic) Status *retweetedStatus;
+/**
+ *  存放着某一页微博数据（里面都是Status模型）
+ */
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+/**
+ *  总数
+ */
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+/**
+ *  上一页的游标
+ */
+@property (assign, nonatomic) long long previousCursor;
+
+/**
+ *  下一页的游标
+ */
+@property (assign, nonatomic) long long nextCursor;
+/**
+ *  名称
+ */
+@property (copy, nonatomic) NSString *name;
+
+/**
+ *  头像
+ */
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
+
+<pre><code>/**
+ MJ友情提醒：
+ 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
+ 2.MJExtension能完成的功能
+ * 字典 --&gt; 模型
+ * 模型 --&gt; 字典
+ * 字典数组 --&gt; 模型数组
+ * 模型数组 --&gt; 字典数组
+ 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
+ 4.希望各位大神能用得爽
+ */
+
+#import &lt;Foundation/Foundation.h&gt;
+#import "MJExtension.h"
+#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  简单的字典 -&gt; 模型
+ */
+void keyValues2object()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"name" : @"Jack",
+                           @"icon" : @"lufy.png",
+                           };
+
+    // 2.将字典转为User模型
+    User *user = [User objectWithKeyValues:dict];
+
+    // 3.打印User模型的属性
+    NSLog(@"name=%@, icon=%@", user.name, user.icon);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+ */
+void keyValues2object2()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"text" : @"是啊，今天天气确实不错！",
+
+                           @"user" : @{
+                                   @"name" : @"Jack",
+                                   @"icon" : @"lufy.png"
+                                   },
+
+                           @"retweetedStatus" : @{
+                                   @"text" : @"今天天气真不错！",
+
+                                   @"user" : @{
+                                           @"name" : @"Rose",
+                                           @"icon" : @"nami.png"
+                                           }
+                                   }
+                           };
+
+    // 2.将字典转为Status模型
+    Status *status = [Status objectWithKeyValues:dict];
+
+    // 3.打印status的属性
+    NSString *text = status.text;
+    NSString *name = status.user.name;
+    NSString *icon = status.user.icon;
+    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+    // 4.打印status.retweetedStatus的属性
+    NSString *text2 = status.retweetedStatus.text;
+    NSString *name2 = status.retweetedStatus.user.name;
+    NSString *icon2 = status.retweetedStatus.user.icon;
+    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+ */
+void keyValues2object3()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"statuses" : @[
+                                   @{
+                                       @"text" : @"今天天气真不错！",
+
+                                       @"user" : @{
+                                               @"name" : @"Rose",
+                                               @"icon" : @"nami.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"明天去旅游了",
+
+                                       @"user" : @{
+                                               @"name" : @"Jack",
+                                               @"icon" : @"lufy.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"嘿嘿，这东西不错哦！",
+
+                                       @"user" : @{
+                                               @"name" : @"Jim",
+                                               @"icon" : @"zero.png"
+                                               }
+                                       }
+
+                                   ],
+
+                           @"totalNumber" : @"2014",
+
+                           @"previousCursor" : @"13476589",
+
+                           @"nextCursor" : @"13476599"
+                           };
+
+    // 2.将字典转为StatusResult模型
+    StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+    // 3.打印StatusResult模型的简单属性
+    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+    // 4.打印statuses数组中的模型属性
+    for (Status *status in result.statuses) {
+        NSString *text = status.text;
+        NSString *name = status.user.name;
+        NSString *icon = status.user.icon;
+        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+    }
+}
+
+/**
+ *  字典数组 -&gt; 模型数组
+ */
+void keyValuesArray2objectArray()
+{
+    // 1.定义一个字典数组
+    NSArray *dictArray = @[
+                           @{
+                               @"name" : @"Jack",
+                               @"icon" : @"lufy.png",
+                               },
+
+                           @{
+                               @"name" : @"Rose",
+                               @"icon" : @"nami.png",
+                               },
+
+                           @{
+                               @"name" : @"Jim",
+                               @"icon" : @"zero.png",
+                               }
+                           ];
+
+    // 2.将字典数组转为User模型数组
+    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+    // 3.打印userArray数组中的User模型属性
+    for (User *user in userArray) {
+        NSLog(@"name=%@, icon=%@", user.name, user.icon);
+    }
+}
+
+/**
+ *  模型 -&gt; 字典
+ */
+void object2keyValues()
+{
+    // 1.新建模型
+    User *user = [[User alloc] init];
+    user.name = @"Jack";
+    user.icon = @"lufy.png";
+
+    Status *status = [[Status alloc] init];
+    status.user = user;
+    status.text = @"今天的心情不错！";
+
+    // 2.将模型转为字典
+    //    NSDictionary *dict = [status keyValues];
+    NSDictionary *dict = status.keyValues;
+    NSLog(@"%@", dict);
+}
+
+/**
+ *  模型数组 -&gt; 字典数组
+ */
+void objectArray2keyValuesArray()
+{
+    // 1.新建模型数组
+    User *user1 = [[User alloc] init];
+    user1.name = @"Jack";
+    user1.icon = @"lufy.png";
+
+    User *user2 = [[User alloc] init];
+    user2.name = @"Rose";
+    user2.icon = @"nami.png";
+
+    User *user3 = [[User alloc] init];
+    user3.name = @"Jim";
+    user3.icon = @"zero.png";
+
+    NSArray *userArray = @[user1, user2, user3];
+
+    // 2.将模型数组转为字典数组
+    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+    NSLog(@"%@", dictArray);
+}
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        // 简单的字典 -&gt; 模型
+        keyValues2object();
+
+        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+        keyValues2object2();
+
+        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+        keyValues2object3();
+
+        // 字典数组 -&gt; 模型数组
+        keyValuesArray2objectArray();
+
+        // 模型转字典
+        object2keyValues();
+
+        // 模型数组 -&gt; 字典数组
+        objectArray2keyValuesArray();
+    }
+    return 0;
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
+
+<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
+
+<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
+
+<ul>
+<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
+</ul>
+
+
+<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
+
+<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
+
+<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
+
+<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
+
+<ul>
+<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
+<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
+<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
+<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
+</ul>
+
+
+<h4>Swift的代码</h4>
+
+<pre><code>import UIKit
+class TopWindow: UIWindow {
+    private static let window_: UIWindow = UIWindow()
+    ///  类初始化方法,保证window_只被创建一次
+    override class func initialize() {
+        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
+        window_.windowLevel = UIWindowLevelAlert
+        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
+    }
+    class func topWindowClick() {
+        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
+        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
+    }
+    private class func searchAllowScrollViewInView(superView: UIView) {
+        for subview: UIView in superView.subviews as! [UIView] {
+            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
+                // 拿到scrollView的contentOffset
+                var offest = (subview as! UIScrollView).contentOffset
+                // 将offest的y轴还原成最开始的值
+                offest.y = -(subview as! UIScrollView).contentInset.top
+                // 重新设置scrollView的内容
+                (subview as! UIScrollView).setContentOffset(offest, animated: true)
+            }
+            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
+            searchAllowScrollViewInView(subview)
+        }
+    }
+    ///  添加topWindow,使手势生效
+    class func showTopWindow() {
+        window_.hidden = false
+    }
+    ///  隐藏topWindow,移除手势
+    class func hiddenTopWindow() {
+        window_.hidden = true
+    }
+}
+///  对UIView的一个扩展
+extension UIView {
+    ///  判断调用方法的view是否在keyWindow中
+    func viewIsInKeyWindow() -&gt; Bool {
+        let keyWindow = UIApplication.sharedApplication().keyWindow!
+        // 将当前view的坐标系转换到window.bounds
+        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
+        let keyWindowBounds = keyWindow.bounds
+        // 判断当前view是否在keyWindow的范围内
+        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
+        // 判断是否满足所有条件
+        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
+    }   
+}
+</code></pre>
+
+<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
+
+<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
+      // 添加顶部的window
+      TopWindow.showTopWindow()
+      return true
+  }
+</code></pre>
+
+<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
+
+<h4>Objective-C代码</h4>
+
+<p>.h文件只暴露显示和隐藏方法</p>
+
+<pre><code>#import @interface WNXTopWindow : NSObject
++ (void)show;
++ (void)hide;
+@end
+</code></pre>
+
+<p>.m文件</p>
+
+<pre><code>#import "WNXTopWindow.h"
+@implementation WNXTopWindow
+static UIWindow *window_;
+//初始化window
++ (void)initialize {
+  window_ = [[UIWindow alloc] init];
+  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
+  window_.windowLevel = UIWindowLevelAlert;
+  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
+}  
++ (void)show {
+  window_.hidden = NO;
+}
++ (void)hide {
+  window_.hidden = YES;
+}
+// 监听窗口点击
++ (void)windowClick {
+  UIWindow *window = [UIApplication sharedApplication].keyWindow;
+  [self searchScrollViewInView:window];
+}
++ (void)searchScrollViewInView:(UIView *)superview {
+  for (UIScrollView *subview in superview.subviews) {
+      // 如果是scrollview, 滚动最顶部
+      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
+          CGPoint offset = subview.contentOffset;
+          offset.y = - subview.contentInset.top;
+          [subview setContentOffset:offset animated:YES];
+      }
+      // 递归继续查找子控件
+      [self searchScrollViewInView:subview];
+  }
+}
++ (BOOL)isShowingOnKeyWindow:(UIView *)view {
+  // 主窗口
+  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+  // 以主窗口左上角为坐标原点, 计算self的矩形框
+  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
+  CGRect winBounds = keyWindow.bounds;
+  // 主窗口的bounds 和 self的矩形框 是否有重叠
+  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
+  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
+}
+@end
+</code></pre>
+
+<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
+  [WNXTopWindow show];
+  return YES;
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>简单总结
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+
+<ul>
+<li>简单实用
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+<p>虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation，block和target- action。</p>
+
+<p>大多数情况下，消息传递该使用什么机制，是很明确的了，当然了，在某些情况下该使用什么机制并没有明确的答案，需要你亲自去尝试一下。</p>
+
+<hr />
+
+<h3>简单总结</h3>
+
+<ul>
+<li><p>delegation</p>
+
+<ul>
+<li><p>在苹果的Framework中，delegation模式被广泛的只用着。delegation允许我们定制某个对象的行为，并且可以收到某些 确定的事件。为了使用delegation模式，消息的发送者需要知道消息的接收者(delegate)，反过来就不用了。这里的发送者和接收者是比较松 耦合的，因为发送者只知道它的delegate是遵循某个特定的协议。</p></li>
+<li><p>delegate协议可以定义任意的方法，因此你可以准确的定义出你所需要的类型。你可以用函数参数的形式来处理消息内容，delegate还 可以通过返回值的形式给发送者做出回应。如果只需要在相对接近的两个模块之间进行消息传递，那么Delegation是一种非常灵活和直接方式。</p></li>
+<li><p>不过，过渡使用delegation也有一定的风险，如果两个对象的耦合程度比较紧密，相互之间不能独立存在，那么此时就没有必要使用 delegate协议了，针对这种情况，对象之间可以知道相互间的类型，进而直接进行消息传递。例如UICollectionViewLayout和 NSURLSessionConfiguration。</p></li>
+</ul>
+</li>
+<li><p>block</p>
+
+<ul>
+<li><p>Block相对来说，是一种比较新的技术，它首次出现是在OS X 10.6和iOS 4中。一般情况下，block可以满足用delegation实现的消息传递机制。不过这两种机制都有各自的需求和优势。</p></li>
+<li><p>当不考虑使用block时，一般主要是考虑到block极易引起retain环。如果发送者需要reatain block，而又不能确保这个引用什么时候被nil，这样就会发生潜在的retain环。</p></li>
+</ul>
+</li>
+<li><p>Notification</p>
+
+<ul>
+<li><p>在不相关的两部分代码中要想进行消息传递，通知(notifacation)是非常好的一种机制，它可以对消息进行广播。特别是想要传递丰富的信息，并且不一定指望有谁对此消息关心。</p></li>
+<li><p>通知可以用来发送任意的消息，甚至包含一个userInfo字典，或者是NSNotifacation的一个子类。通知的独特之处就在于发送者 和接收者双方并不需要相互知道。这样就可以在非常松耦合的模块间进行消息的传递。记住，这种消息传递机制是单向的，作为接收者是不可以回复消息的。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+
+<h3>简单使用</h3>
+
+<p>初始化之后出现下面的界面</p>
+
+<p><img src="/images/chuanzhi001.jpg" title="Caption" ></p>
+
+<h5>准备：</h5>
+
+<p>这里试试根据本文的实战做相应的介绍，关于拓展只要理解了这里的思路基本是三种传值的使用没有什么问题。</p>
+
+<p>首先，由于我们要实现的点击对应的组实现展开分组显示对应组里面的所有行。</p>
+
+<p>我这个项目使用的是多层分组模型，讲每一组合对应的属性还有friends作为组模型，再将friends作为子模型，实现表格数据的现实。</p>
+
+<p><img src="/images/chuanzhi002.jpg" title="Caption" ></p>
+
+<h6>定义一个BOOL值用来记录点击（由于我们需要实现点击对应组做事情，所以先在组模型中定义一个BOOL）</h6>
+
+<pre><code>@property (nonatomic, assign, getter = isOpen) BOOL open; 
+</code></pre>
+
+<h6>在相应的点击方法里面是实现取反点击，这里的点击方法是分组View上面一个按钮的点击事件。</h6>
+
+<pre><code>self.group.open = !self.group.open; 
+</code></pre>
+
+<h6>在numberOfRowsInSection中返回的时候使用三木判断是否点击，并且实现伸缩与展开，</h6>
+
+<pre><code>return model.open?model.friends.cout:0; 
+</code></pre>
+
+<p>这里完成之后运行程序点一下试试，你会发现。。。。。。。。。。。。。。。。。什么效果也没有。</p>
+
+<p>当然会没有效果，因为我们没有传值，后面才是本章的重点，学会了这里以后关于通知，代理。Block的使用基本上没有问题。</p>
+
+<hr />
+
+<p>/######################代理######################/</p>
+
+<hr />
+
+<h2>方法一：代理</h2>
+
+<h6>在对应的View中创建一个协议</h6>
+
+<pre><code>@class iCocosView
+
+
+
+@protocol iCocoDelegate &lt;NSObject&gt;
+
+@optional
+
+-(void)headerView:(iCocosView *)view;
+
+
+
+@end
+</code></pre>
+
+<h6>创建一个代理属性</h6>
+
+<pre><code> @property (nonatomic, assign) id&lt;iCocoDelegate&gt; delegate; 
+</code></pre>
+
+<h6>在这个实现文件中判断有没有实现这个代理方法</h6>
+
+<pre><code>if([self.delegate repondToSelector:selector(headerView)]) {
+
+[self.delegate headerView];
+
+}
+</code></pre>
+
+<h6>先在对应的控制器遵守这个协议，并且设置代理</h6>
+
+<pre><code> &lt;iCocosDelegate&gt; 
+
+header.delegate = self; //让控制器充当代理
+</code></pre>
+
+<h6>实现代理方法</h6>
+
+<pre><code>－（void）headerView:(iCocosView *)view {[self.tableView reloadData];  }  
+</code></pre>
+
+<hr />
+
+<p>/######################Block######################/</p>
+
+<hr />
+
+<h2>方法二：Block</h2>
+
+<h6>定义一个Block</h6>
+
+<pre><code>typedef void (^iCocosBlock)(id);  
+</code></pre>
+
+<h6>创建一个Block对应的属性（使用Copy）</h6>
+
+<pre><code> @property （nonatomic， weak）iCocosBlock block; 
+</code></pre>
+
+<h6>实现文件中判读</h6>
+
+<pre><code>  if(self.block) { self.block(self);}  
+</code></pre>
+
+<h6>在控制器中实现</h6>
+
+<pre><code> header.block = ^(id sender) {  //sender是传过来的参数
+
+ [self.tableView reloadData];
+
+ };
+</code></pre>
+
+<hr />
+
+<p>/######################通知######################/</p>
+
+<hr />
+
+<h2>方法三：通知</h2>
+
+<p> 注意：通知的使用是前面的反向思维，在控制器里面注册并且实现通知方法，然后在分组View里面发布这个通知。</p>
+
+<h6>在控制器中注册一个通知</h6>
+
+<pre><code>[［NSNotificationCenter defaultCenter］ addObserver:self selector:@selector(notiClick) name:@“friends” object:nil]; 2 3  
+</code></pre>
+
+<h6>实现通知方法</h6>
+
+<pre><code>－（void）notiClick
+
+{
+
+[self.tableView reloadData];
+
+}
+</code></pre>
+
+<h6>同样在Header分组的实现文件中发布一个通知</h6>
+
+<pre><code>[［NSNotificationCenter defaultCenter］postNotificationName: @“friends”object:self userInfo:nil]; 2 3  
+</code></pre>
+
+<h6>移除通知：我们可以在两个方法里面一出通知：ViewDidDidApper和Dealloc</h6>
+
+<p>并且使用良种两种方法</p>
+
+<p>@1:移除所有通知</p>
+
+<pre><code>[［NSNotificationCenter defaultCenter］ removeObserver:self]; 
+</code></pre>
+
+<p>@2:根据名字移除通知</p>
+
+<pre><code>[［NSNotificationCenter defaultCenter］removeObserver:self name:@“friedns” object:nil];  
+</code></pre>
+
+<p>这里需要注意：实际开发中使用完通知之后一定要移除通知，否则如果里面通知太多，当你再次发送一个通知的时候程序就不知道去找那个通知甚至会导致程序奔溃。</p>
+
+<hr />
+
+<p>/######################运行结果######################/</p>
+
+<hr />
+
+<p>使用上面任何一种方法都可以实现同样的功能，点击每一行的组的时候就会展开相应行并且显示对应组的所有行。</p>
+
+<p><img src="/images/chuanzhi003.jpg" title="Caption" ></p>
+
+<p>实现Header左边按钮上面图标的旋转：（这里是一个重点，也是以后以后开发中肯呢过遇到的一个难点，可能不是一样的但是或许思路和原理一样，这里是这篇文章中除了传值的三种方式以后最重要的地方）
+    /<strong><strong><em>在这个方法里面实现旋转：当View移到父控件的时候，不然旋转也看不到选过，因为刷新实在旋转之后的，旋转之后再刷新，从缓存迟里面取出来</em></strong></strong>***/</p>
+
+<pre><code>-(void)didMoveToSuperview
+{
+    if (self.group.open) {
+        self.nameView.imageView.transform = CGAffineTransformMakeRotation(M_PI_2);
+    }else {
+        self.nameView.imageView.transform = CGAffineTransformMakeRotation(0);
+    }
+
+}
+/ 
+</code></pre>
+
+<p>但是具体使用说明视情况而定：</p>
+
+<p>总结：。。。。。。。。待续</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2226,593 +3456,6 @@ for (CBCharacteristic *characteristic in service.characteristics)
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
-
-<p>1:移除ruby镜像（天朝的网你们懂的）</p>
-
-<pre><code> $ gem sources --remove https://rubygems.org/ 
-</code></pre>
-
-<p>2:新增淘宝镜像</p>
-
-<pre><code>$ gem sources -a http://ruby.taobao.org/ 
-</code></pre>
-
-<p>3:查看列表</p>
-
-<pre><code> $ gem sources -l 
-</code></pre>
-
-<p>成功的征兆：</p>
-
-<pre><code>*** CURRENT SOURCES ***
-http://ruby.taobao.org/
-$ sudo gem install cocoapods
-</code></pre>
-
-<p>4:正式安装</p>
-
-<pre><code> sudo gem install cocoapods 
-</code></pre>
-
-<p>接下来就是开始使用了。</p>
-
-<p>查看对应的框架</p>
-
-<pre><code> $ pod search AFNetworking 
-</code></pre>
-
-<p>创建文件</p>
-
-<pre><code> $ vim Podfile 
-</code></pre>
-
-<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
-
-<pre><code>touch Podfile
-</code></pre>
-
-<p>新建一个文件</p>
-
-<p>然后在Podfile文件中输入以下文字：</p>
-
-<pre><code>platform :ios, '7.0'
-pod "AFNetworking", "~&gt; 2.0”
-</code></pre>
-
-<p>安装</p>
-
-<pre><code> pod install  
-</code></pre>
-
-<p>更新</p>
-
-<pre><code> $ pod update 
-</code></pre>
-
-<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
-
-<pre><code>pod update 换成pod update --verbose --no-repo-update
-pod install 换成pod install --verbose --no-repo-update
-</code></pre>
-
-<ul>
-<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
-$ pod update会更新所有的类库，获取最新版本的类库。
-或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
-</ul>
-
-
-<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
-
-<ul>
-<li>解决方案</li>
-</ul>
-
-
-<p>LNJ替换为你自己的用户名</p>
-
-<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
-</code></pre>
-
-<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
-
-<ul>
-<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
-<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
-  <code>$ pod update。</code></p></li>
-</ul>
-
-
-<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
-
-<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">取消TableView的Header与Footer的黏性效果</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
-
-<h6>那么是什么问题呢？</h6>
-
-<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
-
-<p>我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？</p>
-
-<p>后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。</p>
-
-<p>也在网上找了一段这样的代码</p>
-
-<h3>去掉UItableview headerview黏性(sticky)</h3>
-
-<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-
-if (scrollView == self.tableView)
-
-{
-
-        CGFloat sectionHeaderHeight = 64; //sectionHeaderHeight
-
-        if (scrollView.contentOffset.y &lt;= sectionHeaderHeight &amp;&amp; scrollView.contentOffset.y &gt;= 0) {
-
-            scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
-
-        } else if (scrollView.contentOffset.y &gt;= sectionHeaderHeight) {
-
-            scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
-
-        }
-
-    }
-
-}
-</code></pre>
-
-<p>但是他职能设置headerView不能设置footerView，自己也试着去补充footerView的实现，但是发现技术有限，所以，你懂的！</p>
-
-<h3>最后看到国外一位大神写的一一篇文章找到了下面的代码</h3>
-
-<pre><code> -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
-
-    if (scrollView == self.tableView)
-
-        {
-
-        UITableView *tableview = (UITableView *)scrollView;
-
-        CGFloat sectionHeaderHeight = 64;
-
-        CGFloat sectionFooterHeight = 120;
-
-        CGFloat offsetY = tableview.contentOffset.y;
-
-        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
-
-        {
-
-            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
-
-        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
-
-        {
-
-            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
-
-        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
-
-            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
-
-        }
-
-    }
-
-}
-</code></pre>
-
-<p>注：sectionHeaderHeight和sectionFooterHeight根据项目进行设置。</p>
-
-<p>发现基本上搞定，最后只需要设置对应的内边距即可！</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
-
-<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
-
-<ul>
-<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
-<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
-<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
-这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
-</ul>
-
-
-<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
-
-<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
-
-<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
-
-<p>进入正题：</p>
-
-<p>需要的工具和环境：</p>
-
-<ol type="a">
-<li>iPhone or iPad越狱，安装AppSync</li>
-<li>Xcode安装 Command Line Tools</li>
-<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
-</ol>
-
-
-<p>1、修改SDKSettings.plist文件</p>
-
-<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
-
-<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
-</code></pre>
-
-<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
-
-<p>执行命令为：</p>
-
-<p>转到目录下</p>
-
-<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
-</code></pre>
-
-<p>将原有文件备份</p>
-
-<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
-</code></pre>
-
-<p>对SDKSettings.plist文件进行编辑</p>
-
-<pre><code>sudo vim SDKSettings.plist
-</code></pre>
-
-<p>将下面对应的字段改为NO</p>
-
-<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
-&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
-</code></pre>
-
-<p>此操作参考的路径如下：</p>
-
-<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
-</code></pre>
-
-<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
-
-<p>新建一个plist文件，命名为entitlements.</p>
-
-<pre><code>![Alt text](/iamges/yueyu001.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu001.png" title="Caption" ></p>
-
-<p>创建一个plist</p>
-
-<pre><code>![Alt text](/iamges/yueyu002.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu002.png" title="Caption" ></p>
-
-<p>将plist文件改为：</p>
-
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;dict&gt;
-    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
-    &lt;array&gt;
-        &lt;string&gt;Install&lt;/string&gt;
-        &lt;string&gt;Browse&lt;/string&gt;
-        &lt;string&gt;Uninstall&lt;/string&gt;
-        &lt;string&gt;Archive&lt;/string&gt;
-        &lt;string&gt;RemoveArchive&lt;/string&gt;
-    &lt;/array&gt;
-&lt;/dict&gt;
-&lt;/plist&gt;
-</code></pre>
-
-<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
-
-<pre><code>![Alt text](/iamges/yueyu003.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu003.png" title="Caption" ></p>
-
-<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
-
-<p>3、实现越狱安装的代码：</p>
-
-<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
-NSDictionary *IPAInstalledApps()
-{
-void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
-if (lib)
-{
-    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
-    if (pMobileInstallationLookup)
-    {
-        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
-        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
-        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
-#ifdef DEBUG
-        NSLog(@"%@", dict);
-#endif
-        return dict;
-    }
-}
-return nil;
-}
-</code></pre>
-
-<p>所有代码均在之前的github目录中，可以自行查看。</p>
-
-<p>4、编译生成App文件</p>
-
-<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
-
-<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
-
-<pre><code>![Alt text](/iamges/yueyu004.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu004.png" title="Caption" ></p>
-
-<p>5、制作ipa文件</p>
-
-<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
-
-<p>比如在 Download 目录下， sudo -i</p>
-
-<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
-
-<p>然后对之前生成的文件，进行ldid签名</p>
-
-<pre><code>![Alt text](/iamges/yueyu005.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu005.png" title="Caption" ></p>
-
-<ul>
-<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
-<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
-</ul>
-
-
-<p>6、生成ipa文件，安装</p>
-
-<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
-
-<p>然后通过itools安装，测试刚刚生成的文件</p>
-
-<pre><code>![Alt text](/iamges/yueyu006.jpg)
-</code></pre>
-
-<p><img src="/images/yueyu006.png" title="Caption" ></p>
-
-<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
-
-<h1>检查iphone时候越狱</h1>
-
-<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
-
-<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
-
-<p>复制代码
-复制代码</p>
-
-<pre><code>/*方法名:
- *        isJailbroken
-*介绍:
-*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
-*参数说明:
-*        无
-*        
-*
-*/
-
-#pragma mark utils api
-// 类方法，判断当前设备是否已经越狱
-+ (BOOL)isJailbroken;
-// 类方法，判断你的App是否被破解
-+ (BOOL)isPirated;
-</code></pre>
-
-<p>apt和Cydia的方式来进行判断的，没看见源码</p>
-
-<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
-
-<h3>apt</h3>
-
-<pre><code>- (BOOL) asAP
-{
-return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
-4 }`
-</code></pre>
-
-<h3>system</h3>
-
-<pre><code>`1 - (BOOL) successCallSystem
-2 {
-3 return (system("ls") == 0) ? YES : NO;
-4 }`
-</code></pre>
-
-<h3>示例代码</h3>
-
-<pre><code>static const char* jailbreak_apps[] =
-
-  {
-      "/Applications/Cydia.app",
-      "/Applications/limera1n.app",
-      "/Applications/greenpois0n.app",
-      "/Applications/blackra1n.app",
-      "/Applications/blacksn0w.app",
-      "/Applications/redsn0w.app",
-     "/Applications/Absinthe.app",
-     NULL,
- };
-
- - (BOOL) isJailBroken
- {
-     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
-     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
-     {
-         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
-         {
-             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
-             return YES;
-         }
-     }
-
-               // TODO: Add more checks? This is an arms-race we're bound to lose.
-
-     return NO;
- }
-</code></pre>
-
-<hr />
-
-<pre><code>@interface UIDevice (Helper)  
- - (BOOL)isJailbroken;  
- @end
-</code></pre>
-
-<hr />
-
-<pre><code>@implementation UIDevice (Helper)  
-- (BOOL)isJailbroken {  
-BOOL jailbroken = NO;  
-NSString *cydiaPath = @"/Applications/Cydia.app";  
-NSString *aptPath = @"/private/var/lib/apt/";  
-if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
- jailbroken = YES;  
-}  
-if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
- jailbroken = YES;  
-}  
-return jailbroken;  
-}  
-@end
-</code></pre>
-
-<hr />
-
-<p>参考资源链接：</p>
-
-<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
-<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -2842,23 +3485,23 @@ return jailbroken;
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/11/30/iossheng-ming-zhou-qi/">iOS生命周期</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/11/30/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a>
       </li>
     
   </ul>
