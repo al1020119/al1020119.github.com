@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>cocoaPods简单粗暴 - iOS梦工厂</title>
+  <title>切换控制器 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="cocoaPods简单粗暴 ordinal 直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ 2:新增淘宝镜像 $ &hellip;">
+  <meta name="description" content="切换控制器 ordinal 从一个视图控制器切换到另一个视图控制器的几种方式 1,模态(modal)画面的显示方法： 例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
+例：点击一个按钮，进入另一个界面 - (IBAction)pressAbout:(id)sender &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/02/qie-huan-kong-zhi-qi/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +78,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">cocoaPods简单粗暴</h1>
+      <h1 class="entry-title">切换控制器</h1>
     
     
       <p class="meta">
@@ -97,107 +98,53 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+<div class="entry-content"><p>从一个视图控制器切换到另一个视图控制器的几种方式</p>
 
-<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+<h4>1,模态(modal)画面的显示方法：</h4>
 
-<pre><code> $ gem sources --remove https://rubygems.org/ 
+<p>例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
+例：点击一个按钮，进入另一个界面
+    - (IBAction)pressAbout:(id)sender {</p>
+
+<pre><code>iCocosViewController *iCocos=[[[iCocosViewController alloc] initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
+
+[self presentModalViewController:aboutanimated:YES];//显示模态画面
+
+关闭模态画面的方法：
+
+[self dissmissModalViewControllerAnimationed:YES];
 </code></pre>
 
-<p>2:新增淘宝镜像</p>
-
-<pre><code>$ gem sources -a http://ruby.taobao.org/ 
-</code></pre>
-
-<p>3:查看列表</p>
-
-<pre><code> $ gem sources -l 
-</code></pre>
-
-<p>成功的征兆：</p>
-
-<pre><code>*** CURRENT SOURCES ***
-http://ruby.taobao.org/
-$ sudo gem install cocoapods
-</code></pre>
-
-<p>4:正式安装</p>
-
-<pre><code> sudo gem install cocoapods 
-</code></pre>
-
-<p>接下来就是开始使用了。</p>
-
-<p>查看对应的框架</p>
-
-<pre><code> $ pod search AFNetworking 
-</code></pre>
-
-<p>创建文件</p>
-
-<pre><code> $ vim Podfile 
-</code></pre>
-
-<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
-
-<pre><code>touch Podfile
-</code></pre>
-
-<p>新建一个文件</p>
-
-<p>然后在Podfile文件中输入以下文字：</p>
-
-<pre><code>platform :ios, '7.0'
-pod "AFNetworking", "~&gt; 2.0”
-</code></pre>
-
-<p>安装</p>
-
-<pre><code> pod install  
-</code></pre>
-
-<p>更新</p>
-
-<pre><code> $ pod update 
-</code></pre>
-
-<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
-
-<pre><code>pod update 换成pod update --verbose --no-repo-update
-pod install 换成pod install --verbose --no-repo-update
-</code></pre>
+<h4>2,SwitchViewController中有2个控制器的属性：BviewController,CViewController</h4>
 
 <ul>
-<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
-$ pod update会更新所有的类库，获取最新版本的类库。
-或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+<li>使用方法：insertSubview: atIndex:
+这种画面跳转方法并非最佳的跳转方法：</li>
+<li>实际上并非真的实现了两个画面间的跳转，而是同时启动了2个画面，控制其中哪一个画面显示在前台，哪一个画面显示在后台而已。</li>
+<li>这种画面跳转方式有一个很大的缺点，即当画面数量增加时，画面跳转的实现代码将月来越复杂，而且各个画面间不可避免的有相互依赖关系。</li>
 </ul>
 
 
-<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+<h4>3,UITabBarController实现并列画面跳转（这里其实就是window的切花）</h4>
 
-<ul>
-<li>解决方案</li>
-</ul>
+<pre><code>//将5个viewController实例放入TabBar的viewcontrollers属性中    
 
+self.tabBarController.viewControllers = @[navFrist, navSecond,navThird,navFourth,navFifth];   
 
-<p>LNJ替换为你自己的用户名</p>
+self.window.rootViewController = self.tabBarController;
 
-<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+[self.window addSubview:self.tabBarController.view];//将根控制器的视图加到应用程序主窗口
 </code></pre>
 
-<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+<h4>4,UINavigationController实现多层画面跳转，在导航控制器中，载入有层级关系的界面</h4>
 
-<ul>
-<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
-<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
-  <code>$ pod update。</code></p></li>
-</ul>
+<pre><code>- (IBAction)addRightAction:(id)sender
+{
+    iCocosViewController *iCocos=[[[iCocosViewController alloc]initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
 
-
-<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
-
-<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+[self.navigationController pushViewController:aiCocos animated:YES];
+}
+</code></pre>
 </div>
 
 
@@ -226,7 +173,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/kai-fa-gong-ju/'>开发工具</a>
+    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
   
 </span>
 
@@ -255,10 +202,10 @@ $ pod update会更新所有的类库，获取最新版本的类库。
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/" title="Previous Post: 取消TableView的Header与Footer的黏性效果">&laquo; 取消TableView的Header与Footer的黏性效果</a>
+        <a class="basic-alignment left" href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/" title="Previous Post: 字典转模型深究">&laquo; 字典转模型深究</a>
       
       
-        <a class="basic-alignment right" href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/" title="Next Post: 蓝牙开发你知道多少">蓝牙开发你知道多少 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/" title="Next Post: 全屏返回（Runtime）">全屏返回（Runtime） &raquo;</a>
       
     </p>
   </footer>
@@ -343,7 +290,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/02/qie-huan-kong-zhi-qi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/02/qie-huan-kong-zhi-qi/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
