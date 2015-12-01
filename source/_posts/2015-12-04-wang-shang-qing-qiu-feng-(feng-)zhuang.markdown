@@ -1,7 +1,7 @@
 ---
 
 layout: post
-title: "网上请求疯（封）装"
+title: "网络请求疯（封）装"
 date: 2015-12-04 09:37:30 +0800
 comments: true
 categories: 性能相关
