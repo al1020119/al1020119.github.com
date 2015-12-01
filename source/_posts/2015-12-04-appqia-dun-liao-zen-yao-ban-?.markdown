@@ -9,9 +9,6 @@ categories: 性能相关
 ---
 
 
-
-
- 
 {% img /images/kadun001.jpg Caption %}  
 
 在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。
