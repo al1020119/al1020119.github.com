@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="自己写套缓存机制 ordinal 前言 大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。 一： 研究UITableView底层实现 1. &hellip;">
+  <meta name="description" content="网上请求疯（封）装 ordinal 一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,802 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">网上请求疯（封）装</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
+
+<p>关于XLNetworkApi</p>
+
+<p>XLNetworkApi的一些功能和说明：</p>
+
+<p>使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。
+以及网络下载、上传文件，以block的形式返回实时的下载、上传进度，上传文件参数通过模型XLFileConfig去存取。
+通过继承于XLDataService来将一些数据处理，模型转化封装起来，于业务逻辑对接返回的是对应的模型，减少Controllor处理数据处理逻辑的压力。
+自定义一些回调的block</p>
+
+<pre><code>/**
+请求成功block
+*/
+typedef void (^requestSuccessBlock)(id responseObj);
+/**
+请求失败block
+*/
+typedef void (^requestFailureBlock) (NSError *error);
+/**
+请求响应block
+*/
+typedef void (^responseBlock)(id dataObj, NSError *error);
+/**
+监听进度响应block
+*/
+typedef void (^progressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
+XLNetworkRequest.m部分实现
+#import "XLNetworkRequest.h"
+#import "AFNetworking.h"
+@implementation XLNetworkRequest
++ (void)getRequest:(NSString *)url params:(NSDictionary *)params success:(requestSuccessBlock)successHandler failure:(requestFailureBlock)failureHandler {
+//网络不可用
+  if (![self checkNetworkStatus]) {
+      successHandler(nil);
+      failureHandler(nil);
+      return;
+  }
+  AFHTTPRequestOperationManager *manager = [self getRequstManager];
+  [manager GET:url parameters:params success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+      successHandler(responseObject);
+  } failure:^(AFHTTPRequestOperation * _Nullable operation, NSError * _Nonnull error) {
+      XLLog(@"------请求失败-------%@",error);
+      failureHandler(error);
+  }];
+}
+</code></pre>
+
+<p>下载部分代码</p>
+
+<pre><code>    //下载文件，监听下载进度
+    + (void)downloadRequest:(NSString *)url successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
+      if (![self checkNetworkStatus]) {
+          progressHandler(0, 0, 0);
+          completionHandler(nil, nil);
+          return;
+      }
+      NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+      AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:sessionConfiguration];
+      NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+      NSProgress *kProgress = nil;
+      NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:&amp;kProgress destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+          NSURL *documentUrl = [[NSFileManager defaultManager] URLForDirectory :NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+          return [documentUrl URLByAppendingPathComponent:[response suggestedFilename]];
+      } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nonnull filePath, NSError * _Nonnull error){
+          if (error) {
+              XLLog(@"------下载失败-------%@",error);
+          }
+          completionHandler(response, error);
+      }];
+      [manager setDownloadTaskDidWriteDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDownloadTask * _Nonnull downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
+          progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+      }];
+      [downloadTask resume];
+    }
+</code></pre>
+
+<p>上传部分代码</p>
+
+<pre><code>//上传文件，监听上传进度
++ (void)updateRequest:(NSString *)url params:(NSDictionary *)params fileConfig:(XLFileConfig *)fileConfig successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
+  if (![self checkNetworkStatus]) {
+      progressHandler(0, 0, 0);
+      completionHandler(nil, nil);
+      return;
+  }
+  NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:url parameters:params constructingBodyWithBlock:^(id  _Nonnull formData) {
+      [formData appendPartWithFileData:fileConfig.fileData name:fileConfig.name fileName:fileConfig.fileName mimeType:fileConfig.mimeType];
+  } error:nil];
+  //获取上传进度
+  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+  [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+      progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+  }];
+  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+      completionHandler(responseObject, nil);
+  } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
+      completionHandler(nil, error);
+      if (error) {
+          XLLog(@"------上传失败-------%@",error);
+      }
+  }];
+  [operation start];
+}
+</code></pre>
+
+<p>XLDataService.m部分实现</p>
+
+<pre><code>+ (void)getWithUrl:(NSString *)url param:(id)param modelClass:(Class)modelClass responseBlock:(responseBlock)responseDataBlock {
+      [XLNetworkRequest getRequest:url params:param success:^(id responseObj) {
+      //数组、字典转化为模型数组
+      dataObj = [self modelTransformationWithResponseObj:responseObj modelClass:modelClass];
+      responseDataBlock(dataObj, nil);
+  } failure:^(NSError *error) {
+      responseDataBlock(nil, error);
+  }];
+}
+</code></pre>
+
+<p>（关键）下面这个方法提供给继承XLDataService的子类重写，将转化为模型的代码写在这里，相似业务的网络数据请求都可以用这个子类去请求数据，直接返回对应的模型数组。
+    /<em>*
+    数组、字典转化为模型
+    </em>/
+    + (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
+         return nil;
+    }
+关于离线数据缓存</p>
+
+<p>当用户进入程序的展示页面，有三个情况下可能涉及到数据库存取操作，简单画了个图来理解，思路比较简单，主要是一些存取的细节处理。</p>
+
+<p>进入展示页面</p>
+
+<p><img src="/images/net001.png" title="Caption" ></p>
+
+<p>下拉刷新最新数据</p>
+
+<p><img src="/images/net002.png" title="Caption" ></p>
+
+<p>上拉加载更多数据</p>
+
+<p><img src="/images/net003.png" title="Caption" ></p>
+
+<p>需要注意的是，上拉加载更多的时候，每次从数据库返回一定数量的数据，而不是一次性将数据全部加载，否则会有内存问题，直到数据库中没有更多数据时再发生网络请求，再次将新数据存入数据库。这里存储数据的方式是将服务器返回每组数据的字典归档成二进制作为数据库字段直接存储，这样存储在模型属性比较多的情况下更有好处，避免每一个属性作为一个字段，另外增加了一个idStr字段用来判断数据的唯一性，避免重复存储。
+首先定义一个工具类XLDataBase来做数据库相关的操作，这里用的是第三方的FMDB。</p>
+
+<pre><code>#import "XLDataBase.h"
+#import "FMDatabase.h"
+#import "Item.h"
+#import "MJExtension.h"
+@implementation XLDataBase
+static FMDatabase *_db;
++ (void)initialize {
+    NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/Data.db",NSHomeDirectory()];
+    _db = [FMDatabase databaseWithPath:path];
+    [_db open];
+    [_db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_item (id integer PRIMARY KEY, itemDict blob NOT NULL, idStr text NOT NULL)"];
+}
+//存入数据库
++ (void)saveItemDict:(NSDictionary *)itemDict {
+    //此处把字典归档成二进制数据直接存入数据库，避免添加过多的数据库字段
+    NSData *dictData = [NSKeyedArchiver archivedDataWithRootObject:itemDict];
+    [_db executeUpdateWithFormat:@"INSERT INTO t_item (itemDict, idStr) VALUES (%@, %@)",dictData, itemDict[@"id"]];
+}
+//返回全部数据
++ (NSArray *)list {
+    FMResultSet *set = [_db executeQuery:@"SELECT * FROM t_item"];
+    NSMutableArray *list = [NSMutableArray array];
+    while (set.next) {
+        // 获得当前所指向的数据
+        NSData *dictData = [set objectForColumnName:@"itemDict"];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
+        [list addObject:[Item mj_objectWithKeyValues:dict]];
+    }
+    return list;
+}
+//取出某个范围内的数据
++ (NSArray *)listWithRange:(NSRange)range {
+    NSString *SQL = [NSString stringWithFormat:@"SELECT * FROM t_item LIMIT %lu, %lu",range.location, range.length];
+    FMResultSet *set = [_db executeQuery:SQL];
+    NSMutableArray *list = [NSMutableArray array];
+    while (set.next) {
+        NSData *dictData = [set objectForColumnName:@"itemDict"];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
+        [list addObject:[Item mj_objectWithKeyValues:dict]];
+    }
+    return list;
+}
+//通过一组数据的唯一标识判断数据是否存在
++ (BOOL)isExistWithId:(NSString *)idStr
+{
+    BOOL isExist = NO;
+    FMResultSet *resultSet= [_db executeQuery:@"SELECT * FROM t_item where idStr = ?",idStr];
+    while ([resultSet next]) {
+        if([resultSet stringForColumn:@"idStr"]) {
+            isExist = YES;
+        }else{
+            isExist = NO;
+        }
+    }
+    return isExist;
+}
+@end
+</code></pre>
+
+<p>一些继承于XLDataService的子类的数据库存储和模型转换的逻辑代码</p>
+
+<pre><code>#import "GetTableViewData.h"
+#import "XLDataBase.h"
+@implementation GetTableViewData
+//重写父类方法
++ (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
+    NSArray *lists = responseObj[@"data"][@"list"];
+    NSMutableArray *array = [NSMutableArray array];
+    for (NSDictionary *dict in lists) {
+        [modelClass mj_setupReplacedKeyFromPropertyName:^NSDictionary *{
+            return @{ @"ID" : @"id" };
+        }];
+        [array addObject:[modelClass mj_objectWithKeyValues:dict]];
+        //通过idStr先判断数据是否存储过，如果没有，网络请求新数据存入数据库
+        if (![XLDataBase isExistWithId:dict[@"id"]]) {
+            //存数据库
+            NSLog(@"存入数据库");
+            [XLDataBase saveItemDict:dict];
+        }
+    }
+    return array;
+}
+</code></pre>
+
+<p>下面是一些控制器的代码实现：</p>
+
+<pre><code>#import "ViewController.h"
+#import "GetTableViewData.h"
+#import "Item.h"
+#import "XLDataBase.h"
+#import "ItemCell.h"
+#import "MJRefresh.h"
+#define URL_TABLEVIEW @"https://api.108tian.com/mobile/v3/EventList?cityId=1&amp;step=10&amp;theme=0&amp;page=%lu"
+@interface ViewController () {
+    NSMutableArray *_dataArray;
+    UITableView *_tableView;
+    NSInteger _currentPage;//当前数据对应的page
+}
+@end
+@implementation ViewController
+#pragma mark Life cycle
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    [self createTableView];
+    _dataArray = [NSMutableArray array];
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    NSRange range = NSMakeRange(0, 10);
+    //如果数据库有数据则读取，不发送网络请求
+    if ([[XLDataBase listWithRange:range] count]) {
+        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
+        NSLog(@"从数据库加载");
+    }else{
+        [self getTableViewDataWithPage:0];
+    }
+}
+#pragma mark UI
+- (void)createTableView {
+    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    _tableView.rowHeight = 100.0;
+    [self.view addSubview:_tableView];
+    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        [self loadNewData];
+    }];
+    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+        [self loadMoreData];
+    }];
+}
+#pragma mark GetDataSoure
+- (void)getTableViewDataWithPage:(NSInteger)page {
+    NSLog(@"发送网络请求！");
+    NSString *url = [NSString stringWithFormat:URL_TABLEVIEW, page];
+    [GetTableViewData getWithUrl:url param:nil modelClass:[Item class] responseBlock:^(id dataObj, NSError *error) {
+        [_dataArray addObjectsFromArray:dataObj];
+        [_tableView reloadData];
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+}
+- (void)loadNewData {
+    NSLog(@"下拉刷新");
+    _currentPage = 0;
+    [_dataArray removeAllObjects];
+    [self getTableViewDataWithPage:_currentPage];
+}
+- (void)loadMoreData {
+    NSLog(@"上拉加载");
+    _currentPage ++;
+    NSRange range = NSMakeRange(_currentPage * 10, 10);
+    if ([[XLDataBase listWithRange:range] count]) {
+        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
+        [_tableView reloadData];
+        [_tableView.mj_footer endRefreshing];
+        NSLog(@"数据库加载%lu条更多数据",[[XLDataBase listWithRange:range] count]);
+    }else{
+        //数据库没更多数据时再网络请求
+        [self getTableViewDataWithPage:_currentPage];
+    }
+}
+#pragma mark UITableViewDataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _dataArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    ItemCell *cell = [ItemCell itemCellWithTableView:tableView];
+    cell.item = _dataArray[indexPath.row];
+    return cell;
+}
+@end
+</code></pre>
+
+<p>最后附上代码的下载地址，重要的部分代码中都有相应的注释和文字打印，运行程序可以很直观的表现。</p>
+
+<p><a href="https://github.com/ShelinShelin/OffLineCache.git">Demo</a></p>
+
+<p>希望大家能提出一些意见，很乐意与大家互相交流。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>摘要
+序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</li>
+</ul>
+
+
+<h2>简介</h2>
+
+<p>文章作者服务于美团推荐与个性化组，该组致力于为美团用户提供每天billion级别的高质量个性化推荐以及排序服务。从Terabyte级别的用户行为数据，到Gigabyte级别的Deal/Poi数据；从对实时性要求毫秒以内的用户实时地理位置数据，到定期后台job数据，推荐与重排序系统需要多种类型的数据服务。推荐与重排序系统客户包括各种内部服务、美团客户端、美团网站。为了提供高质量的数据服务，为了实现与上下游各系统进行良好的对接，序列化和反序列化的选型往往是我们做系统设计的一个重要考虑因素。</p>
+
+<p>本文内容按如下方式组织：</p>
+
+<ul>
+<li>第一部分给出了序列化和反序列化的定义，以及其在通讯协议中所处的位置。</li>
+<li>第二部分从使用者的角度探讨了序列化协议的一些特性。</li>
+<li>第三部分描述在具体的实施过程中典型的序列化组件，并与数据库组建进行了类比。</li>
+<li>第四部分分别讲解了目前常见的几种序列化协议的特性，应用场景，并对相关组件进行举例。</li>
+<li>最后一部分，基于各种协议的特性，以及相关benchmark数据，给出了作者的技术选型建议。</li>
+</ul>
+
+
+<h4>一、定义以及相关概念</h4>
+
+<p>互联网的产生带来了机器间通讯的需求，而互联通讯的双方需要采用约定的协议，序列化和反序列化属于通讯协议的一部分。通讯协议往往采用分层模型，不同模型每层的功能定义以及颗粒度不同，例如：TCP/IP协议是一个四层协议，而OSI模型却是七层协议模型。在OSI七层协议模型中展现层（Presentation Layer）的主要功能是把应用层的对象转换成一段连续的二进制串，或者反过来，把二进制串转换成应用层的对象&ndash;这两个功能就是序列化和反序列化。一般而言，TCP/IP协议的应用层对应与OSI七层协议模型的应用层，展示层和会话层，所以序列化协议属于TCP/IP协议应用层的一部分。本文对序列化协议的讲解主要基于OSI七层协议模型。</p>
+
+<ul>
+<li>序列化： 将数据结构或对象转换成二进制串的过程</li>
+<li>反序列化：将在序列化过程中所生成的二进制串转换成数据结构或者对象的过程</li>
+</ul>
+
+
+<p>数据结构、对象与二进制串
+不同的计算机语言中，数据结构，对象以及二进制串的表示方式并不相同。</p>
+
+<p>数据结构和对象：对于类似Java这种完全面向对象的语言，工程师所操作的一切都是对象（Object），来自于类的实例化。在Java语言中最接近数据结构的概念，就是POJO（Plain Old Java Object）或者Javabean－－那些只有setter/getter方法的类。而在C++这种半面向对象的语言中，数据结构和struct对应，对象和class对应。</p>
+
+<p>二进制串：序列化所生成的二进制串指的是存储在内存中的一块数据。C++语言具有内存操作符，所以二进制串的概念容易理解，例如，C++语言的字符串可以直接被传输层使用，因为其本质上就是以'\0'结尾的存储在内存中的二进制串。在Java语言里面，二进制串的概念容易和String混淆。实际上String 是Java的一等公民，是一种特殊对象（Object）。对于跨语言间的通讯，序列化后的数据当然不能是某种语言的特殊数据类型。二进制串在Java里面所指的是byte[]，byte是Java的8中原生数据类型之一（Primitive data types）。</p>
+
+<h4>二、序列化协议特性</h4>
+
+<p>每种序列化协议都有优点和缺点，它们在设计之初有自己独特的应用场景。在系统设计的过程中，需要考虑序列化需求的方方面面，综合对比各种序列化协议的特性，最终给出一个折衷的方案。</p>
+
+<h6>通用性有两个层面的意义：</h6>
+
+<ul>
+<li>第一、技术层面，序列化协议是否支持跨平台、跨语言。如果不支持，在技术层面上的通用性就大大降低了。</li>
+<li>第二、流行程度，序列化和反序列化需要多方参与，很少人使用的协议往往意味着昂贵的学习成本；另一方面，流行度低的协议，往往缺乏稳定而成熟的跨语言、跨平台的公共包。</li>
+</ul>
+
+
+<p>强健性/鲁棒性
+以下两个方面的原因会导致协议不够强健：</p>
+
+<ul>
+<li>第一、成熟度不够，一个协议从制定到实施，到最后成熟往往是一个漫长的阶段。协议的强健性依赖于大量而全面的测试，对于致力于提供高质量服务的系统，采用处于测试阶段的序列化协议会带来很高的风险。</li>
+<li>第二、语言/平台的不公平性。为了支持跨语言、跨平台的功能，序列化协议的制定者需要做大量的工作；但是，当所支持的语言或者平台之间存在难以调和的特性的时候，协议制定者需要做一个艰难的决定&ndash;支持更多人使用的语言/平台，亦或支持更多的语言/平台而放弃某个特性。当协议的制定者决定为某种语言或平台提供更多支持的时候，对于使用者而言，协议的强健性就被牺牲了。</li>
+</ul>
+
+
+<p>可调试性/可读性
+序列化和反序列化的数据正确性和业务正确性的调试往往需要很长的时间，良好的调试机制会大大提高开发效率。序列化后的二进制串往往不具备人眼可读性，为了验证序列化结果的正确性，写入方不得同时撰写反序列化程序，或提供一个查询平台&ndash;这比较费时；另一方面，如果读取方未能成功实现反序列化，这将给问题查找带来了很大的挑战&ndash;难以定位是由于自身的反序列化程序的bug所导致还是由于写入方序列化后的错误数据所导致。对于跨公司间的调试，由于以下原因，问题会显得更严重：</p>
+
+<ul>
+<li>第一、支持不到位，跨公司调试在问题出现后可能得不到及时的支持，这大大延长了调试周期。</li>
+<li>第二、访问限制，调试阶段的查询平台未必对外公开，这增加了读取方的验证难度。</li>
+</ul>
+
+
+<p>如果序列化后的数据人眼可读，这将大大提高调试效率， XML和JSON就具有人眼可读的优点。</p>
+
+<h6>性能包括两个方面，时间复杂度和空间复杂度：</h6>
+
+<ul>
+<li>第一、空间开销（Verbosity）， 序列化需要在原有的数据上加上描述字段，以为反序列化解析之用。如果序列化过程引入的额外开销过高，可能会导致过大的网络，磁盘等各方面的压力。对于海量分布式存储系统，数据量往往以TB为单位，巨大的的额外空间开销意味着高昂的成本。</li>
+<li>第二、时间开销（Complexity），复杂的序列化协议会导致较长的解析时间，这可能会使得序列化和反序列化阶段成为整个系统的瓶颈。</li>
+</ul>
+
+
+<p>可扩展性/兼容性
+移动互联时代，业务系统需求的更新周期变得更快，新的需求不断涌现，而老的系统还是需要继续维护。如果序列化协议具有良好的可扩展性，支持自动增加新的业务字段，而不影响老的服务，这将大大提供系统的灵活度。</p>
+
+<p>安全性/访问限制
+在序列化选型的过程中，安全性的考虑往往发生在跨局域网访问的场景。当通讯发生在公司之间或者跨机房的时候，出于安全的考虑，对于跨局域网的访问往往被限制为基于HTTP/HTTPS的80和443端口。如果使用的序列化协议没有兼容而成熟的HTTP传输层框架支持，可能会导致以下三种结果之一：</p>
+
+<ul>
+<li>第一、因为访问限制而降低服务可用性。</li>
+<li>第二、被迫重新实现安全协议而导致实施成本大大提高。</li>
+<li>第三、开放更多的防火墙端口和协议访问，而牺牲安全性。</li>
+</ul>
+
+
+<h4>三、序列化和反序列化的组件</h4>
+
+<p>典型的序列化和反序列化过程往往需要如下组件：</p>
+
+<ul>
+<li>IDL（Interface description language）文件：参与通讯的各方需要对通讯的内容需要做相关的约定（Specifications）。为了建立一个与语言和平台无关的约定，这个约定需要采用与具体开发语言、平台无关的语言来进行描述。这种语言被称为接口描述语言（IDL），采用IDL撰写的协议约定称之为IDL文件。</li>
+<li>IDL Compiler：IDL文件中约定的内容为了在各语言和平台可见，需要有一个编译器，将IDL文件转换成各语言对应的动态库。</li>
+<li>Stub/Skeleton Lib：负责序列化和反序列化的工作代码。Stub是一段部署在分布式系统客户端的代码，一方面接收应用层的参数，并对其序列化后通过底层协议栈发送到服务端，另一方面接收服务端序列化后的结果数据，反序列化后交给客户端应用层；Skeleton部署在服务端，其功能与Stub相反，从传输层接收序列化参数，反序列化后交给服务端应用层，并将应用层的执行结果序列化后最终传送给客户端Stub。</li>
+<li>Client/Server：指的是应用层程序代码，他们面对的是IDL所生存的特定语言的class或struct。
+底层协议栈和互联网：序列化之后的数据通过底层的传输层、网络层、链路层以及物理层协议转换成数字信号在互联网中传递。
+序列化组件</li>
+</ul>
+
+
+<p>序列化组件与数据库访问组件的对比
+数据库访问对于很多工程师来说相对熟悉，所用到的组件也相对容易理解。下表类比了序列化过程中用到的部分组件和数据库访问组件的对应关系，以便于大家更好的把握序列化相关组件的概念。</p>
+
+<table>
+<thead>
+<tr>
+<th> 序列化组件         </th>
+<th style="text-align:center;"> 数据库组件          </th>
+<th style="text-align:right;"> 说明  </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> IDL           </td>
+<td style="text-align:center;">   DDL              </td>
+<td style="text-align:right;"> 用于建表或者模型的语言</td>
+</tr>
+<tr>
+<td> DL            </td>
+<td style="text-align:center;"> file DB Schema    </td>
+<td style="text-align:right;"> 表创建文件或模型文件</td>
+</tr>
+<tr>
+<td> Stub/Skeleton </td>
+<td style="text-align:center;">  lib  O/R mapping </td>
+<td style="text-align:right;">   将class和Table或者数据模型进行映射</td>
+</tr>
+</tbody>
+</table>
+
+
+<h4>四、几种常见的序列化和反序列化协议</h4>
+
+<p>互联网早期的序列化协议主要有COM和CORBA。</p>
+
+<p>COM主要用于Windows平台，并没有真正实现跨平台，另外COM的序列化的原理利用了编译器中虚表，使得其学习成本巨大（想一下这个场景， 工程师需要是简单的序列化协议，但却要先掌握语言编译器）。由于序列化的数据与编译器紧耦合，扩展属性非常麻烦。</p>
+
+<p>CORBA是早期比较好的实现了跨平台，跨语言的序列化协议。COBRA的主要问题是参与方过多带来的版本过多，版本之间兼容性较差，以及使用复杂晦涩。这些政治经济，技术实现以及早期设计不成熟的问题，最终导致COBRA的渐渐消亡。J2SE 1.3之后的版本提供了基于CORBA协议的RMI-IIOP技术，这使得Java开发者可以采用纯粹的Java语言进行CORBA的开发。</p>
+
+<p>这里主要介绍和对比几种当下比较流行的序列化协议，包括XML、JSON、Protobuf、Thrift和Avro。</p>
+
+<p>一个例子
+如前所述，序列化和反序列化的出现往往晦涩而隐蔽，与其他概念之间往往相互包容。为了更好了让大家理解序列化和反序列化的相关概念在每种协议里面的具体实现，我们将一个例子穿插在各种序列化协议讲解中。在该例子中，我们希望将一个用户信息在多个系统里面进行传递；在应用层，如果采用Java语言，所面对的类对象如下所示：</p>
+
+<pre><code>class Address
+{
+    private String city;
+    private String postcode;
+    private String street;
+}
+public class UserInfo
+{
+    private Integer userid;
+    private String name;
+    private List&lt;Address&gt; address;
+}
+</code></pre>
+
+<h6>XML&amp;SOAP</h6>
+
+<ul>
+<li><p>XML是一种常用的序列化和反序列化协议，具有跨机器，跨语言等优点。 XML历史悠久，其1.0版本早在1998年就形成标准，并被广泛使用至今。XML的最初产生目标是对互联网文档（Document）进行标记，所以它的设计理念中就包含了对于人和机器都具备可读性。 但是，当这种标记文档的设计被用来序列化对象的时候，就显得冗长而复杂（Verbose and Complex）。 XML本质上是一种描述语言，并且具有自我描述（Self-describing）的属性，所以XML自身就被用于XML序列化的IDL。 标准的XML描述格式有两种：DTD（Document Type Definition）和XSD（XML Schema Definition）。作为一种人眼可读（Human-readable）的描述语言，XML被广泛使用在配置文件中，例如O/R mapping、 Spring Bean Configuration File 等。</p></li>
+<li><p>SOAP（Simple Object Access protocol） 是一种被广泛应用的，基于XML为序列化和反序列化协议的结构化消息传递协议。SOAP在互联网影响如此大，以至于我们给基于SOAP的解决方案一个特定的名称&ndash;Web service。SOAP虽然可以支持多种传输层协议，不过SOAP最常见的使用方式还是XML+HTTP。SOAP协议的主要接口描述语言（IDL）是WSDL（Web Service Description Language）。SOAP具有安全、可扩展、跨语言、跨平台并支持多种传输层协议。如果不考虑跨平台和跨语言的需求，XML的在某些语言里面具有非常简单易用的序列化使用方法，无需IDL文件和第三方编译器， 例如Java＋XStream。</p></li>
+</ul>
+
+
+<p>自我描述与递归
+SOAP是一种采用XML进行序列化和反序列化的协议，它的IDL是WSDL. 而WSDL的描述文件是XSD，而XSD自身是一种XML文件。 这里产生了一种有趣的在数学上称之为“递归”的问题，这种现象往往发生在一些具有自我属性（Self-description）的事物上。</p>
+
+<p>IDL文件举例
+采用WSDL描述上述用户基本信息的例子如下：</p>
+
+<pre><code>&lt;xsd:complexType name='Address'&gt;
+     &lt;xsd:attribute name='city' type='xsd:string' /&gt;
+     &lt;xsd:attribute name='postcode' type='xsd:string' /&gt;
+     &lt;xsd:attribute name='street' type='xsd:string' /&gt;
+&lt;/xsd:complexType&gt;
+&lt;xsd:complexType name='UserInfo'&gt;
+     &lt;xsd:sequence&gt;
+     &lt;xsd:element name='address' type='tns:Address'/&gt;
+     &lt;xsd:element name='address1' type='tns:Address'/&gt; 
+     &lt;/xsd:sequence&gt;
+     &lt;xsd:attribute name='userid' type='xsd:int' /&gt;
+     &lt;xsd:attribute name='name' type='xsd:string' /&gt; 
+&lt;/xsd:complexType&gt;
+</code></pre>
+
+<p>典型应用场景和非应用场景
+SOAP协议具有广泛的群众基础，基于HTTP的传输协议使得其在穿越防火墙时具有良好安全特性，XML所具有的人眼可读（Human-readable）特性使得其具有出众的可调试性，互联网带宽的日益剧增也大大弥补了其空间开销大（Verbose）的缺点。对于在公司之间传输数据量相对小或者实时性要求相对低（例如秒级别）的服务是一个好的选择。</p>
+
+<p>由于XML的额外空间开销大，序列化之后的数据量剧增，对于数据量巨大序列持久化应用常景，这意味着巨大的内存和磁盘开销，不太适合XML。另外，XML的序列化和反序列化的空间和时间开销都比较大，对于对性能要求在ms级别的服务，不推荐使用。WSDL虽然具备了描述对象的能力，SOAP的S代表的也是simple，但是SOAP的使用绝对不简单。对于习惯于面向对象编程的用户，WSDL文件不直观。</p>
+
+<p>JSON（Javascript Object Notation）
+JSON起源于弱类型语言Javascript， 它的产生来自于一种称之为"Associative array"的概念，其本质是就是采用"Attribute－value"的方式来描述对象。实际上在Javascript和PHP等弱类型语言中，类的描述方式就是Associative array。JSON的如下优点，使得它快速成为最广泛使用的序列化协议之一：</p>
+
+<ul>
+<li>1、这种Associative array格式非常符合工程师对对象的理解。</li>
+<li>2、它保持了XML的人眼可读（Human-readable）的优点。</li>
+<li>3、相对于XML而言，序列化后的数据更加简洁。 来自于的以下链接的研究表明：XML所产生序列化之后文件的大小接近JSON的两倍。<a href="http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity">http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity</a></li>
+<li>4、它具备Javascript的先天性支持，所以被广泛应用于Web browser的应用常景中，是Ajax的事实标准协议。</li>
+<li>5、与XML相比，其协议比较简单，解析速度比较快。</li>
+<li>6、松散的Associative array使得其具有良好的可扩展性和兼容性。</li>
+</ul>
+
+
+<p>IDL悖论
+JSON实在是太简单了，或者说太像各种语言里面的类了，所以采用JSON进行序列化不需要IDL。这实在是太神奇了，存在一种天然的序列化协议，自身就实现了跨语言和跨平台。然而事实没有那么神奇，之所以产生这种假象，来自于两个原因：</p>
+
+<h6>第一</h6>
+
+<p>Associative array在弱类型语言里面就是类的概念，在PHP和Javascript里面Associative array就是其class的实际实现方式，所以在这些弱类型语言里面，JSON得到了非常良好的支持。</p>
+
+<h6>第二</h6>
+
+<p>IDL的目的是撰写IDL文件，而IDL文件被IDL Compiler编译后能够产生一些代码（Stub/Skeleton），而这些代码是真正负责相应的序列化和反序列化工作的组件。 但是由于Associative array和一般语言里面的class太像了，他们之间形成了一一对应关系，这就使得我们可以采用一套标准的代码进行相应的转化。对于自身支持Associative array的弱类型语言，语言自身就具备操作JSON序列化后的数据的能力；对于Java这强类型语言，可以采用反射的方式统一解决，例如Google提供的Gson。</p>
+
+<p>典型应用场景和非应用场景
+JSON在很多应用场景中可以替代XML，更简洁并且解析速度更快。典型应用场景包括：</p>
+
+<ul>
+<li>1、公司之间传输数据量相对小，实时性要求相对低（例如秒级别）的服务。</li>
+<li>2、基于Web browser的Ajax请求。</li>
+<li>3、由于JSON具有非常强的前后兼容性，对于接口经常发生变化，并对可调式性要求高的场景，例如Mobile app与服务端的通讯。</li>
+<li>4、由于JSON的典型应用场景是JSON＋HTTP，适合跨防火墙访问。</li>
+</ul>
+
+
+<p>总的来说，采用JSON进行序列化的额外空间开销比较大，对于大数据量服务或持久化，这意味着巨大的内存和磁盘开销，这种场景不适合。没有统一可用的IDL降低了对参与方的约束，实际操作中往往只能采用文档方式来进行约定，这可能会给调试带来一些不便，延长开发周期。 由于JSON在一些语言中的序列化和反序列化需要采用反射机制，所以在性能要求为ms级别，不建议使用。</p>
+
+<p>IDL文件举例
+以下是UserInfo序列化之后的一个例子：</p>
+
+<pre><code>{"userid":1,"name":"messi","address":[{"city":"北京","postcode":"1000000","street":"wangjingdonglu"}]}
+</code></pre>
+
+<p>Thrift
+Thrift是Facebook开源提供的一个高性能，轻量级RPC服务框架，其产生正是为了满足当前大数据量、分布式、跨语言、跨平台数据通讯的需求。 但是，Thrift并不仅仅是序列化协议，而是一个RPC框架。相对于JSON和XML而言，Thrift在空间开销和解析性能上有了比较大的提升，对于对性能要求比较高的分布式系统，它是一个优秀的RPC解决方案；但是由于Thrift的序列化被嵌入到Thrift框架里面，Thrift框架本身并没有透出序列化和反序列化接口，这导致其很难和其他传输层协议共同使用（例如HTTP）。</p>
+
+<p>典型应用场景和非应用场景
+对于需求为高性能，分布式的RPC服务，Thrift是一个优秀的解决方案。它支持众多语言和丰富的数据类型，并对于数据字段的增删具有较强的兼容性。所以非常适用于作为公司内部的面向服务构建（SOA）的标准RPC框架。</p>
+
+<p>不过Thrift的文档相对比较缺乏，目前使用的群众基础相对较少。另外由于其Server是基于自身的Socket服务，所以在跨防火墙访问时，安全是一个顾虑，所以在公司间进行通讯时需要谨慎。 另外Thrift序列化之后的数据是Binary数组，不具有可读性，调试代码时相对困难。最后，由于Thrift的序列化和框架紧耦合，无法支持向持久层直接读写数据，所以不适合做数据持久化序列化协议。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>struct Address
+{ 
+    1: required string city;
+    2: optional string postcode;
+    3: optional string street;
+} 
+struct UserInfo
+{ 
+    1: required string userid;
+    2: required i32 name;
+    3: optional list&lt;Address&gt; address;
+}
+</code></pre>
+
+<p>Protobuf
+Protobuf具备了优秀的序列化协议的所需的众多典型特征：</p>
+
+<ul>
+<li>1、标准的IDL和IDL编译器，这使得其对工程师非常友好。</li>
+<li>2、序列化数据非常简洁，紧凑，与XML相比，其序列化之后的数据量约为1/3到1/10。</li>
+<li>3、解析速度非常快，比对应的XML快约20-100倍。</li>
+<li>4、提供了非常友好的动态库，使用非常简介，反序列化只需要一行代码。</li>
+</ul>
+
+
+<p>Protobuf是一个纯粹的展示层协议，可以和各种传输层协议一起使用；Protobuf的文档也非常完善。 但是由于Protobuf产生于Google，所以目前其仅仅支持Java、C++、Python三种语言。另外Protobuf支持的数据类型相对较少，不支持常量类型。由于其设计的理念是纯粹的展现层协议（Presentation Layer），目前并没有一个专门支持Protobuf的RPC框架。</p>
+
+<p>典型应用场景和非应用场景
+Protobuf具有广泛的用户基础，空间开销小以及高解析性能是其亮点，非常适合于公司内部的对性能要求高的RPC调用。由于Protobuf提供了标准的IDL以及对应的编译器，其IDL文件是参与各方的非常强的业务约束，另外，Protobuf与传输层无关，采用HTTP具有良好的跨防火墙的访问属性，所以Protobuf也适用于公司间对性能要求比较高的场景。由于其解析性能高，序列化后数据量相对少，非常适合应用层对象的持久化场景。</p>
+
+<p>它的主要问题在于其所支持的语言相对较少，另外由于没有绑定的标准底层传输层协议，在公司间进行传输层协议的调试工作相对麻烦。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>message Address
+{
+    required string city=1;
+        optional string postcode=2;
+        optional string street=3;
+}
+message UserInfo
+{
+    required string userid=1;
+    required string name=2;
+    repeated Address address=3;
+}
+</code></pre>
+
+<p>Avro</p>
+
+<pre><code>Avro的产生解决了JSON的冗长和没有IDL的问题，Avro属于Apache Hadoop的一个子项目。 Avro提供两种序列化格式：JSON格式或者Binary格式。Binary格式在空间开销和解析性能方面可以和Protobuf媲美，JSON格式方便测试阶段的调试。 Avro支持的数据类型非常丰富，包括C++语言里面的union类型。Avro支持JSON格式的IDL和类似于Thrift和Protobuf的IDL（实验阶段），这两者之间可以互转。Schema可以在传输数据的同时发送，加上JSON的自我描述属性，这使得Avro非常适合动态类型语言。 Avro在做文件持久化的时候，一般会和Schema一起存储，所以Avro序列化文件自身具有自我描述属性，所以非常适合于做Hive、Pig和MapReduce的持久化数据格式。对于不同版本的Schema，在进行RPC调用的时候，服务端和客户端可以在握手阶段对Schema进行互相确认，大大提高了最终的数据解析速度。
+</code></pre>
+
+<p>典型应用场景和非应用场景
+Avro解析性能高并且序列化之后的数据非常简洁，比较适合于高性能的序列化服务。</p>
+
+<p>由于Avro目前非JSON格式的IDL处于实验阶段，而JSON格式的IDL对于习惯于静态类型语言的工程师来说不直观。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>protocol Userservice {
+  record Address {
+   string city;
+   string postcode;
+   string street;
+  }  
+  record UserInfo {
+   string name;
+   int userid;
+   array&lt;Address&gt; address = [];
+  }
+}
+</code></pre>
+
+<p>所对应的JSON Schema格式如下：</p>
+
+<pre><code>{
+  "protocol" : "Userservice",
+  "namespace" : "org.apache.avro.ipc.specific",
+  "version" : "1.0.5",
+  "types" : [ {
+    "type" : "record",
+    "name" : "Address",
+    "fields" : [ {
+      "name" : "city",
+      "type" : "string"
+    }, {
+      "name" : "postcode",
+      "type" : "string"
+    }, {
+      "name" : "street",
+      "type" : "string"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "UserInfo",
+    "fields" : [ {
+      "name" : "name",
+      "type" : "string"
+    }, {
+      "name" : "userid",
+      "type" : "int"
+    }, {
+      "name" : "address",
+      "type" : {
+        "type" : "array",
+        "items" : "Address"
+      },
+      "default" : [ ]
+    } ]
+  } ],
+  "messages" : { }
+}
+</code></pre>
+
+<h4>五、Benchmark以及选型建议</h4>
+
+<p>Benchmark
+以下数据来自<a href="https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking">https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking</a></p>
+
+<ul>
+<li>解析性能</li>
+<li>序列化之空间开销</li>
+<li>序列化大小</li>
+</ul>
+
+
+<p>从上图可得出如下结论：</p>
+
+<ul>
+<li>1、XML序列化（Xstream）无论在性能和简洁性上比较差。</li>
+<li>2、Thrift与Protobuf相比在时空开销方面都有一定的劣势。</li>
+<li>3、Protobuf和Avro在两方面表现都非常优越。</li>
+</ul>
+
+
+<p>选型建议</p>
+
+<pre><code>以上描述的五种序列化和反序列化协议都各自具有相应的特点，适用于不同的场景：
+1、对于公司间的系统调用，如果性能要求在100ms以上的服务，基于XML的SOAP协议是一个值得考虑的方案。
+2、基于Web browser的Ajax，以及Mobile app与服务端之间的通讯，JSON协议是首选。对于性能要求不太高，或者以动态类型语言为主，或者传输数据载荷很小的的运用场景，JSON也是非常不错的选择。
+3、对于调试环境比较恶劣的场景，采用JSON或XML能够极大的提高调试效率，降低系统开发成本。
+4、当对性能和简洁性有极高要求的场景，Protobuf，Thrift，Avro之间具有一定的竞争关系。
+5、对于T级别的数据的持久化应用场景，Protobuf和Avro是首要选择。如果持久化后的数据存储在Hadoop子项目里，Avro会是更好的选择。
+6、由于Avro的设计理念偏向于动态类型语言，对于动态语言为主的应用场景，Avro是更好的选择。
+7、对于持久层非Hadoop项目，以静态类型语言为主的应用场景，Protobuf会更符合静态类型语言工程师的开发习惯。
+8、如果需要提供一个完整的RPC解决方案，Thrift是一个好的选择。
+9、如果序列化之后需要支持不同的传输层协议，或者需要跨防火墙访问的高性能场景，Protobuf可以优先考虑。
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1611,6 +2407,163 @@ self.window.rootViewController = self.tabBarController;
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2015/12/01/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
+
+<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
+
+<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
+
+<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+<h2>CPU 资源消耗原因和解决方案</h2>
+
+<h4>对象创建</h4>
+
+<p>对象的创建会分配内存、调整属性、甚至还有读取文件等操作，比较消耗 CPU 资源。</p>
+
+<p>尽量用轻量的对象代替重量的对象，可以对性能有所优化。</p>
+
+<p>比如 CALayer 比 UIView 要轻量许多，那么不需要响应触摸事件的控件，用 CALayer 显示会更加合适。如果对象不涉及 UI 操作，则尽量放到后台线程去创建，但可惜的是包含有 CALayer 的控件，都只能在主线程创建和操作。通过 Storyboard 创建视图对象时，其资源消耗会比直接通过代码创建对象要大非常多，在性能敏感的界面里，Storyboard 并不是一个好的技术选择。</p>
+
+<p>尽量推迟对象创建的时间，并把对象的创建分散到多个任务中去。尽管这实现起来比较麻烦，并且带来的优势并不多，但如果有能力做，还是要尽量尝试一下。如果对象可以复用，并且复用的代价比释放、创建新对象要小，那么这类对象应当尽量放到一个缓存池里复用。</p>
+
+<h4>对象调整</h4>
+
+<p>对象的调整也经常是消耗 CPU 资源的地方。</p>
+
+<p>这里特别说一下 CALayer：</p>
+
+<ul>
+<li><p>CALayer 内部并没有属性，当调用属性方法时，它内部是通过运行时 resolveInstanceMethod 为对象临时添加一个方法，并把对应属性值保存到内部的一个 Dictionary 里，同时还会通知 delegate、创建动画等等，非常消耗资源。</p></li>
+<li><p>UIView 的关于显示相关的属性（比如 frame/bounds/transform）等实际上都是 CALayer 属性映射来的，所以对 UIView 的这些属性进行调整时，消耗的资源要远大于一般的属性。对此你在应用中，应该尽量减少不必要的属性修改。</p></li>
+</ul>
+
+
+<p>当视图层次调整时，UIView、CALayer 之间会出现很多方法调用与通知，所以在优化性能时，应该尽量避免调整视图层次、添加和移除视图。</p>
+
+<h4>对象销毁</h4>
+
+<p>对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。</p>
+
+<pre><code>NSArray *tmp = self.array;
+
+self.array = nil;
+
+dispatch_async(queue, ^{
+
+    [tmp class];
+
+});
+</code></pre>
+
+<h4>布局计算</h4>
+
+<p>视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。</p>
+
+<p>不论通过何种技术对视图进行布局，其最终都会落到对 UIView.frame/bounds/center 等属性的调整上。上面也说过，对这些属性的调整非常消耗资源，所以尽量提前计算好布局，在需要时一次性调整好对应属性，而不要多次、频繁的计算和调整这些属性。</p>
+
+<h4>Autolayout</h4>
+
+<ul>
+<li>Autolayout 是苹果本身提倡的技术，在大部分情况下也能很好的提升开发效率，但是 Autolayout 对于复杂视图来说常常会产生严重的性能问题。随着视图数量的增长，Autolayout 带来的 CPU 消耗会呈指数级上升。具体数据可以看这个文章：<a href="http://pilky.me/36/%E3%80%82">http://pilky.me/36/%E3%80%82</a> 如果你不想手动调整 frame 等属性，你可以用一些工具方法替代（比如常见的 left/right/top/bottom/width/height 快捷属性），或者使用 ComponentKit、AsyncDisplayKit 等框架。</li>
+</ul>
+
+
+<h4>文本计算</h4>
+
+<p>如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。尽管这两个方法性能不错，但仍旧需要放到后台线程进行以避免阻塞主线程。</p>
+
+<blockquote><p>注意：如果你用 CoreText 绘制文本，那就可以先生成 CoreText 排版对象，然后自己计算了，并且 CoreText 对象还能保留以供稍后绘制使用。</p></blockquote>
+
+<h4>文本渲染</h4>
+
+<p>屏幕上能看到的所有文本内容控件，包括 UIWebView，在底层都是通过 CoreText 排版、绘制为 Bitmap 显示的。常见的文本控件 （UILabel、UITextView 等），其排版和绘制都是在主线程进行的，当显示大量文本时，CPU 的压力会非常大。对此解决方案只有一个，那就是自定义文本控件，用 TextKit 或最底层的 CoreText 对文本异步绘制。尽管这实现起来非常麻烦，但其带来的优势也非常大，CoreText 对象创建好后，能直接获取文本的宽高等信息，避免了多次计算（调整 UILabel 大小时算一遍、UILabel 绘制时内部再算一遍）；CoreText 对象占用内存较少，可以缓存下来以备稍后多次渲染。</p>
+
+<h4>图片的解码</h4>
+
+<p>当你用 UIImage 或 CGImageSource 的那几个方法创建图片时，图片数据并不会立刻解码。图片设置到 UIImageView 或者 CALayer.contents 中去，并且 CALayer 被提交到 GPU 前，CGImage 中的数据才会得到解码。这一步是发生在主线程的，并且不可避免。如果想要绕开这个机制，常见的做法是在后台线程先把图片绘制到 CGBitmapContext 中，然后从 Bitmap 直接创建图片。目前常见的网络图片库都自带这个功能。</p>
+
+<h4>图像的绘制</h4>
+
+<p>图像的绘制通常是指用那些以 CG 开头的方法把图像绘制到画布中，然后从画布创建图片并显示这样一个过程。这个最常见的地方就是 [UIView drawRect:] 里面了。由于 CoreGraphic 方法通常都是线程安全的，所以图像的绘制可以很容易的放到后台线程进行。一个简单异步绘制的过程大致如下（实际情况会比这个复杂得多，但原理基本一致）：</p>
+
+<pre><code>- (void)display {
+
+    dispatch_async(backgroundQueue, ^{
+
+    CGContextRef ctx = CGBitmapContextCreate(...);
+
+    // draw in context...
+
+    CGImageRef img = CGBitmapContextCreateImage(ctx);
+
+    CFRelease(ctx);
+
+    dispatch_async(mainQueue, ^{
+
+        layer.contents = img;
+
+    });
+
+    });
+}
+</code></pre>
+
+<h2>GPU 资源消耗原因和解决方案</h2>
+
+<p>相对于 CPU 来说，GPU 能干的事情比较单一：接收提交的纹理（Texture）和顶点描述（三角形），应用变换（transform）、混合并渲染，然后输出到屏幕上。通常你所能看到的内容，主要也就是纹理（图片）和形状（三角模拟的矢量图形）两类。</p>
+
+<h4>纹理的渲染</h4>
+
+<p>所有的 Bitmap，包括图片、文本、栅格化的内容，最终都要由内存提交到显存，绑定为 GPU Texture。不论是提交到显存的过程，还是 GPU 调整和渲染 Texture 的过程，都要消耗不少 GPU 资源。当在较短时间显示大量图片时（比如 TableView 存在非常多的图片并且快速滑动时），CPU 占用率很低，GPU 占用非常高，界面仍然会掉帧。避免这种情况的方法只能是尽量减少在短时间内大量图片的显示，尽可能将多张图片合成为一张进行显示。</p>
+
+<blockquote><p>注意：当图片过大，超过 GPU 的最大纹理尺寸时，图片需要先由 CPU 进行预处理，这对 CPU 和 GPU 都会带来额外的资源消耗。目前来说，iPhone 4S 以上机型，纹理尺寸上限都是 4096x4096，更详细的资料可以看这里：iosres.com。所以，尽量不要让图片和视图的大小超过这个值。</p></blockquote>
+
+<h4>视图的混合 (Composing)</h4>
+
+<p>当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。为了减轻这种情况的 GPU 消耗，应用应当尽量减少视图数量和层次，并在不透明的视图里标明 opaque 属性以避免无用的 Alpha 通道合成。当然，这也可以用上面的方法，把多个视图预先渲染为一张图片来显示。</p>
+
+<h4>图形的生成</h4>
+
+<p>CALayer 的 border、圆角、阴影、遮罩（mask），CASharpLayer 的矢量图形显示，通常会触发离屏渲染（offscreen rendering），而离屏渲染通常发生在 GPU 中。当一个列表视图中出现大量圆角的 CALayer，并且快速滑动时，可以观察到 GPU 资源已经占满，而 CPU 资源消耗很少。这时界面仍然能正常滑动，但平均帧数会降到很低。为了避免这种情况，可以尝试开启 CALayer.shouldRasterize 属性，但这会把原本离屏渲染的操作转嫁到 CPU 上去。对于只需要圆角的某些场合，也可以用一张已经绘制好的圆角图片覆盖到原本视图上面来模拟相同的视觉效果。最彻底的解决办法，就是把需要显示的图形在后台线程绘制为图片，避免使用圆角、阴影、遮罩等属性。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/01/appqia-dun-liao-zen-yao-ban-%3F/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a></h1>
     
     
@@ -2352,600 +3305,6 @@ int main(int argc, const char * argv[])
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
-
-<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
-
-<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
-
-<ul>
-<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
-</ul>
-
-
-<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
-
-<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
-
-<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
-
-<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
-
-<ul>
-<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
-<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
-<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
-<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
-</ul>
-
-
-<h4>Swift的代码</h4>
-
-<pre><code>import UIKit
-class TopWindow: UIWindow {
-    private static let window_: UIWindow = UIWindow()
-    ///  类初始化方法,保证window_只被创建一次
-    override class func initialize() {
-        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
-        window_.windowLevel = UIWindowLevelAlert
-        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
-    }
-    class func topWindowClick() {
-        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
-        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
-    }
-    private class func searchAllowScrollViewInView(superView: UIView) {
-        for subview: UIView in superView.subviews as! [UIView] {
-            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
-                // 拿到scrollView的contentOffset
-                var offest = (subview as! UIScrollView).contentOffset
-                // 将offest的y轴还原成最开始的值
-                offest.y = -(subview as! UIScrollView).contentInset.top
-                // 重新设置scrollView的内容
-                (subview as! UIScrollView).setContentOffset(offest, animated: true)
-            }
-            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
-            searchAllowScrollViewInView(subview)
-        }
-    }
-    ///  添加topWindow,使手势生效
-    class func showTopWindow() {
-        window_.hidden = false
-    }
-    ///  隐藏topWindow,移除手势
-    class func hiddenTopWindow() {
-        window_.hidden = true
-    }
-}
-///  对UIView的一个扩展
-extension UIView {
-    ///  判断调用方法的view是否在keyWindow中
-    func viewIsInKeyWindow() -&gt; Bool {
-        let keyWindow = UIApplication.sharedApplication().keyWindow!
-        // 将当前view的坐标系转换到window.bounds
-        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
-        let keyWindowBounds = keyWindow.bounds
-        // 判断当前view是否在keyWindow的范围内
-        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
-        // 判断是否满足所有条件
-        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
-    }   
-}
-</code></pre>
-
-<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
-
-<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
-      // 添加顶部的window
-      TopWindow.showTopWindow()
-      return true
-  }
-</code></pre>
-
-<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
-
-<h4>Objective-C代码</h4>
-
-<p>.h文件只暴露显示和隐藏方法</p>
-
-<pre><code>#import @interface WNXTopWindow : NSObject
-+ (void)show;
-+ (void)hide;
-@end
-</code></pre>
-
-<p>.m文件</p>
-
-<pre><code>#import "WNXTopWindow.h"
-@implementation WNXTopWindow
-static UIWindow *window_;
-//初始化window
-+ (void)initialize {
-  window_ = [[UIWindow alloc] init];
-  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
-  window_.windowLevel = UIWindowLevelAlert;
-  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
-}  
-+ (void)show {
-  window_.hidden = NO;
-}
-+ (void)hide {
-  window_.hidden = YES;
-}
-// 监听窗口点击
-+ (void)windowClick {
-  UIWindow *window = [UIApplication sharedApplication].keyWindow;
-  [self searchScrollViewInView:window];
-}
-+ (void)searchScrollViewInView:(UIView *)superview {
-  for (UIScrollView *subview in superview.subviews) {
-      // 如果是scrollview, 滚动最顶部
-      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
-          CGPoint offset = subview.contentOffset;
-          offset.y = - subview.contentInset.top;
-          [subview setContentOffset:offset animated:YES];
-      }
-      // 递归继续查找子控件
-      [self searchScrollViewInView:subview];
-  }
-}
-+ (BOOL)isShowingOnKeyWindow:(UIView *)view {
-  // 主窗口
-  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-  // 以主窗口左上角为坐标原点, 计算self的矩形框
-  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
-  CGRect winBounds = keyWindow.bounds;
-  // 主窗口的bounds 和 self的矩形框 是否有重叠
-  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
-  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
-}
-@end
-</code></pre>
-
-<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
-
-<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
-  [WNXTopWindow show];
-  return YES;
-}
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/01/scrollviewhui-dao-ding-bu-fu-yuan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ul>
-<li>简单总结
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<ul>
-<li>简单实用
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-<p>虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation，block和target- action。</p>
-
-<p>大多数情况下，消息传递该使用什么机制，是很明确的了，当然了，在某些情况下该使用什么机制并没有明确的答案，需要你亲自去尝试一下。</p>
-
-<hr />
-
-<h3>简单总结</h3>
-
-<ul>
-<li><p>delegation</p>
-
-<ul>
-<li><p>在苹果的Framework中，delegation模式被广泛的只用着。delegation允许我们定制某个对象的行为，并且可以收到某些 确定的事件。为了使用delegation模式，消息的发送者需要知道消息的接收者(delegate)，反过来就不用了。这里的发送者和接收者是比较松 耦合的，因为发送者只知道它的delegate是遵循某个特定的协议。</p></li>
-<li><p>delegate协议可以定义任意的方法，因此你可以准确的定义出你所需要的类型。你可以用函数参数的形式来处理消息内容，delegate还 可以通过返回值的形式给发送者做出回应。如果只需要在相对接近的两个模块之间进行消息传递，那么Delegation是一种非常灵活和直接方式。</p></li>
-<li><p>不过，过渡使用delegation也有一定的风险，如果两个对象的耦合程度比较紧密，相互之间不能独立存在，那么此时就没有必要使用 delegate协议了，针对这种情况，对象之间可以知道相互间的类型，进而直接进行消息传递。例如UICollectionViewLayout和 NSURLSessionConfiguration。</p></li>
-</ul>
-</li>
-<li><p>block</p>
-
-<ul>
-<li><p>Block相对来说，是一种比较新的技术，它首次出现是在OS X 10.6和iOS 4中。一般情况下，block可以满足用delegation实现的消息传递机制。不过这两种机制都有各自的需求和优势。</p></li>
-<li><p>当不考虑使用block时，一般主要是考虑到block极易引起retain环。如果发送者需要reatain block，而又不能确保这个引用什么时候被nil，这样就会发生潜在的retain环。</p></li>
-</ul>
-</li>
-<li><p>Notification</p>
-
-<ul>
-<li><p>在不相关的两部分代码中要想进行消息传递，通知(notifacation)是非常好的一种机制，它可以对消息进行广播。特别是想要传递丰富的信息，并且不一定指望有谁对此消息关心。</p></li>
-<li><p>通知可以用来发送任意的消息，甚至包含一个userInfo字典，或者是NSNotifacation的一个子类。通知的独特之处就在于发送者 和接收者双方并不需要相互知道。这样就可以在非常松耦合的模块间进行消息的传递。记住，这种消息传递机制是单向的，作为接收者是不可以回复消息的。</p></li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<h3>简单使用</h3>
-
-<p>初始化之后出现下面的界面</p>
-
-<p><img src="/images/chuanzhi001.png" title="Caption" ></p>
-
-<h5>准备：</h5>
-
-<p>这里试试根据本文的实战做相应的介绍，关于拓展只要理解了这里的思路基本是三种传值的使用没有什么问题。</p>
-
-<p>首先，由于我们要实现的点击对应的组实现展开分组显示对应组里面的所有行。</p>
-
-<p>我这个项目使用的是多层分组模型，讲每一组合对应的属性还有friends作为组模型，再将friends作为子模型，实现表格数据的现实。</p>
-
-<p><img src="/images/chuanzhi002.png" title="Caption" ></p>
-
-<h6>定义一个BOOL值用来记录点击（由于我们需要实现点击对应组做事情，所以先在组模型中定义一个BOOL）</h6>
-
-<pre><code>@property (nonatomic, assign, getter = isOpen) BOOL open; 
-</code></pre>
-
-<h6>在相应的点击方法里面是实现取反点击，这里的点击方法是分组View上面一个按钮的点击事件。</h6>
-
-<pre><code>self.group.open = !self.group.open; 
-</code></pre>
-
-<h6>在numberOfRowsInSection中返回的时候使用三木判断是否点击，并且实现伸缩与展开，</h6>
-
-<pre><code>return model.open?model.friends.cout:0; 
-</code></pre>
-
-<p>这里完成之后运行程序点一下试试，你会发现。。。。。。。。。。。。。。。。。什么效果也没有。</p>
-
-<p>当然会没有效果，因为我们没有传值，后面才是本章的重点，学会了这里以后关于通知，代理。Block的使用基本上没有问题。</p>
-
-<hr />
-
-<p>/######################代理######################/</p>
-
-<hr />
-
-<h2>方法一：代理</h2>
-
-<h6>在对应的View中创建一个协议</h6>
-
-<pre><code>@class iCocosView
-
-
-
-@protocol iCocoDelegate &lt;NSObject&gt;
-
-@optional
-
--(void)headerView:(iCocosView *)view;
-
-
-
-@end
-</code></pre>
-
-<h6>创建一个代理属性</h6>
-
-<pre><code> @property (nonatomic, assign) id&lt;iCocoDelegate&gt; delegate; 
-</code></pre>
-
-<h6>在这个实现文件中判断有没有实现这个代理方法</h6>
-
-<pre><code>if([self.delegate repondToSelector:selector(headerView)]) {
-
-[self.delegate headerView];
-
-}
-</code></pre>
-
-<h6>先在对应的控制器遵守这个协议，并且设置代理</h6>
-
-<pre><code> &lt;iCocosDelegate&gt; 
-
-header.delegate = self; //让控制器充当代理
-</code></pre>
-
-<h6>实现代理方法</h6>
-
-<pre><code>－（void）headerView:(iCocosView *)view {[self.tableView reloadData];  }  
-</code></pre>
-
-<hr />
-
-<p>/######################Block######################/</p>
-
-<hr />
-
-<h2>方法二：Block</h2>
-
-<h6>定义一个Block</h6>
-
-<pre><code>typedef void (^iCocosBlock)(id);  
-</code></pre>
-
-<h6>创建一个Block对应的属性（使用Copy）</h6>
-
-<pre><code> @property （nonatomic， weak）iCocosBlock block; 
-</code></pre>
-
-<h6>实现文件中判读</h6>
-
-<pre><code>  if(self.block) { self.block(self);}  
-</code></pre>
-
-<h6>在控制器中实现</h6>
-
-<pre><code> header.block = ^(id sender) {  //sender是传过来的参数
-
- [self.tableView reloadData];
-
- };
-</code></pre>
-
-<hr />
-
-<p>/######################通知######################/</p>
-
-<hr />
-
-<h2>方法三：通知</h2>
-
-<p> 注意：通知的使用是前面的反向思维，在控制器里面注册并且实现通知方法，然后在分组View里面发布这个通知。</p>
-
-<h6>在控制器中注册一个通知</h6>
-
-<pre><code>[［NSNotificationCenter defaultCenter］ addObserver:self selector:@selector(notiClick) name:@“friends” object:nil]; 2 3  
-</code></pre>
-
-<h6>实现通知方法</h6>
-
-<pre><code>－（void）notiClick
-
-{
-
-[self.tableView reloadData];
-
-}
-</code></pre>
-
-<h6>同样在Header分组的实现文件中发布一个通知</h6>
-
-<pre><code>[［NSNotificationCenter defaultCenter］postNotificationName: @“friends”object:self userInfo:nil]; 2 3  
-</code></pre>
-
-<h6>移除通知：我们可以在两个方法里面一出通知：ViewDidDidApper和Dealloc</h6>
-
-<p>并且使用良种两种方法</p>
-
-<p>@1:移除所有通知</p>
-
-<pre><code>[［NSNotificationCenter defaultCenter］ removeObserver:self]; 
-</code></pre>
-
-<p>@2:根据名字移除通知</p>
-
-<pre><code>[［NSNotificationCenter defaultCenter］removeObserver:self name:@“friedns” object:nil];  
-</code></pre>
-
-<p>这里需要注意：实际开发中使用完通知之后一定要移除通知，否则如果里面通知太多，当你再次发送一个通知的时候程序就不知道去找那个通知甚至会导致程序奔溃。</p>
-
-<hr />
-
-<p>/######################运行结果######################/</p>
-
-<hr />
-
-<p>使用上面任何一种方法都可以实现同样的功能，点击每一行的组的时候就会展开相应行并且显示对应组的所有行。</p>
-
-<p><img src="/images/chuanzhi003.png" title="Caption" ></p>
-
-<p>实现Header左边按钮上面图标的旋转：（这里是一个重点，也是以后以后开发中肯呢过遇到的一个难点，可能不是一样的但是或许思路和原理一样，这里是这篇文章中除了传值的三种方式以后最重要的地方）
-    /<strong><strong><em>在这个方法里面实现旋转：当View移到父控件的时候，不然旋转也看不到选过，因为刷新实在旋转之后的，旋转之后再刷新，从缓存迟里面取出来</em></strong></strong>***/</p>
-
-<pre><code>-(void)didMoveToSuperview
-{
-    if (self.group.open) {
-        self.nameView.imageView.transform = CGAffineTransformMakeRotation(M_PI_2);
-    }else {
-        self.nameView.imageView.transform = CGAffineTransformMakeRotation(0);
-    }
-
-}
-/ 
-</code></pre>
-
-<p>但是具体使用说明视情况而定：</p>
-
-<p>总结：。。。。。。。。待续</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/30/iossheng-ming-zhou-qi/">iOS生命周期</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>控制器（View）生命周期</h3>
-
-<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
-
-<pre><code>1、 alloc                                   创建对象，分配空间
-2、init (initWithNibName) 初始化对象，初始化数据
-3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
-4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
-5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
-6、viewDidAppear               视图已在屏幕上渲染完成
-</code></pre>
-
-<p>当一个视图被移除屏幕并且销毁的时候的执行顺序，这个顺序差不多和上面的相反</p>
-
-<pre><code>1、viewWillDisappear            视图将被从屏幕上移除之前执行
-2、viewDidDisappear             视图已经被从屏幕上移除，用户看不到这个视图了
-3、dealloc                                 视图被销毁，此处需要对你在init和viewDidLoad中创建的对象进行释放
-</code></pre>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>app的启动过程</h3>
-
-<pre><code>1.先执行main函数，main内部会调用UIApplicationMain函数
-
-2.UIApplicationMain函数里面做了什么事情：
-
-    1&gt; 创建UIApplication对象
-    2&gt; 创建UIApplication的delegate对象—–PYAppDelegate
-    3&gt; 开启一个消息循环
-
-每监听到对应的系统事件时，就会通知MJAppDelegate
-
-根据plist文件判断是否需要加载storyBoard
-</code></pre>
-
-<p>如果有storyBoard</p>
-
-<pre><code>加载Info.plist文件，读取最主要storyboard文件的名称
-
-加载最主要的storyboard文件，创建白色箭头所指的控制器对象
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>如果没有storyBoard</p>
-
-<pre><code>在代理的difinishLuaunchWithOPtions中为应用程序创建一个UIWindow对象(继承自UIView)，设置为PYAppDelegate的window属性
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>App的生命周期</h3>
-
-<p>这里只是简单的总结，关于有些方法我们并没有解除过，所以就略过了。</p>
-
-<pre><code> 1、application didFinishLaunchingWithOptions：当应用程序启动时执行，应用程序启动入口，只在应用程序启动时执行一次。若用户直接启动，lauchOptions内无数据,若通过其他方式启动应用，lauchOptions包含对应方式的内容。
- 2、applicationWillResignActive：在应用程序将要由活动状态切换到非活动状态时候，要执行的委托调用，如 按下 home 按钮，返回主屏幕，或全屏之间切换应用程序等。
-
- 3、applicationDidEnterBackground：在应用程序已进入后台程序时，要执行的委托调用。
-
- 4、applicationWillEnterForeground：在应用程序将要进入前台时(被激活)，要执行的委托调用，刚好与applicationWillResignActive 方法相对应。
-
- 5、applicationDidBecomeActive：在应用程序已被激活后，要执行的委托调用，刚好与applicationDidEnterBackground 方法相对应。
-
- 6、applicationWillTerminate：在应用程序要完全推出的时候，要执行的委托调用，这个需要要设置UIApplicationExitsOnSuspend的键值。
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/30/iossheng-ming-zhou-qi/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -2961,18 +3320,26 @@ header.delegate = self; //让控制器充当代理
     <ul id="categories">
         <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (2)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (3)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (5)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (1)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/项目实战/'>项目实战 (6)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (6)</a></li>
 
     </ul>
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">网上请求疯（封）装</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/03/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a>
@@ -2984,14 +3351,6 @@ header.delegate = self; //让控制器充当代理
     
       <li class="post">
         <a href="/blog/2015/12/03/nian-tie-shen-jiu/">粘贴深究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/02/xiao-chu-jing-gao/">消除警告</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a>
       </li>
     
   </ul>
