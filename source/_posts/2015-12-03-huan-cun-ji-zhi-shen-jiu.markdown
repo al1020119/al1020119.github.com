@@ -583,3 +583,7 @@ cell离开屏幕，放进缓存池
 	10     [self.visibleCells removeAllObjects];
 	11     ...
 	12 } 
+	
+	
+
+<!--more-->

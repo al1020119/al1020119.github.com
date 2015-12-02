@@ -326,3 +326,7 @@ XLDataService.m部分实现
 [Demo](https://github.com/ShelinShelin/OffLineCache.git)
 
 希望大家能提出一些意见，很乐意与大家互相交流。
+
+
+
+<!--more-->
