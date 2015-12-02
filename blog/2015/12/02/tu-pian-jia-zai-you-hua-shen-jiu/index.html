@@ -246,9 +246,17 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <p>SDWebImage与AFNetworking都没有对第7点做优化，FastImageCache相对与其他的开源库，则对第5点与第7点做了优化。这里我们谈谈第七点，关于图片数据的字节对齐。</p>
 
-<p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：
-那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)
-块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p>
+<blockquote><p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：</p>
+
+<p>那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)</p></blockquote>
+
+<hr />
+
+<blockquote><p>块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p></blockquote>
+
+<hr />
+
+<p><img src="/images/tupianyouhua001.png" title="Caption" ></p>
 
 <p>从代码上来看，主要是在创建上图解码的过程中，CGBitmapContextCreate函数的bytesPerRow参数必须传64的倍数。</p>
 
