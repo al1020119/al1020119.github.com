@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="引言： 最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。 那么是什么问题呢？ 首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候， &hellip;">
+  <meta name="description" content="蓝牙简单介绍和4.0的基本使用 背景： iOS的蓝牙不能用来传输文件。
+iOS与iOS设备之间进行数据通信，使用gameKit.framework
+iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework iOS中蓝牙的实现方案 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +76,381 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>蓝牙简单介绍和4.0的基本使用</p>
+
+<p>背景：</p>
+
+<ul>
+<li>iOS的蓝牙不能用来传输文件。</li>
+<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
+<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
+</ul>
+
+
+<h3>iOS中蓝牙的实现方案</h3>
+
+<p>iOS中提供了4个框架用于实现蓝牙连接</p>
+
+<ol>
+<li><p>GameKit.framework（用法简单）</p>
+
+<p> <code>只能用于iOS设备之间的连接，多用于游戏（比如五子棋对战），从iOS7开始过期</code></p></li>
+<li><p>MultipeerConnectivity.framework</p>
+
+<p> <code>只能用于iOS设备之间的连接，从iOS7开始引入，主要用于文件共享（仅限于沙盒的文件）</code></p></li>
+<li><p>ExternalAccessory.framework</p>
+
+<p> <code>可用于第三方蓝牙设备交互，但是蓝牙设备必须经过苹果MFi认证（国内较少）</code></p></li>
+<li><h6>CoreBluetooth.framework（时下热门）</h6>
+
+<p> <code>可用于第三方蓝牙设备交互，必须要支持蓝牙4.0</code></p>
+
+<p> <code>硬件至少是4s，系统至少是iOS6</code></p>
+
+<p> <code>蓝牙4.0以低功耗著称，一般也叫BLE（BluetoothLowEnergy）</code></p>
+
+<p> <code>目前应用比较多的案例：运动手坏、嵌入式设备、智能家居</code></p></li>
+</ol>
+
+
+<p>下面具体介绍使用CoreBluetooth.framework的代码步骤：</p>
+
+<h5>蓝牙系统库</h5>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+</code></pre>
+
+<h5>必须要由UUID来唯一标示对应的service和characteristic</h5>
+
+<pre><code>#define kServiceUUID @"5C476471-1109-4EBE-A826-45B4F9D74FB9"
+
+#define kCharacteristicHeartRateUUID @"82C7AC0F-6113-4EC9-92D1-5EEF44571398"
+
+#define kCharacteristicBodyLocationUUID @"537B5FD6-1889-4041-9C35-F6949D1CA034"
+</code></pre>
+
+<hr />
+
+<pre><code>@interface ViewController ()&lt;CBCentralManagerDelegate,CBPeripheralDelegate&gt;
+
+
+
+@property (nonatomic,strong)CBCentralManager * centralManager;
+
+@property (nonatomic,strong)CBPeripheral     * peripheral;
+
+@end
+</code></pre>
+
+<h4>创建中心角色</h4>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+
+- (void)viewDidLoad
+{
+
+    [super viewDidLoad];
+
+    //初始化蓝牙 central manager
+
+    _centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) options:nil];    
+
+}
+</code></pre>
+
+<h4>扫描外设</h4>
+
+<pre><code>[manager scanForPeripheralsWithServices:nil options:@{CBCentralManagerRestoredStateScanOptionsKey:@(YES)}];
+</code></pre>
+
+<h4>连接外设</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+        if([peripheral.name  isEqualToString:BLE_SERVICE_NAME]){
+                [self connect:peripheral];
+        }
+}       
+
+-(BOOL)connect:(CBPeripheral *)peripheral{
+        self.manager.delegate = self;
+        [self.manager connectPeripheral:peripheral
+                                options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:CBConnectPeripheralOptionNotifyOnDisconnectionKey]];
+}
+</code></pre>
+
+<h4>扫描外设中的服务和特征</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
+{
+
+   NSLog(@"Did connect to peripheral: %@", peripheral);       
+
+   _testPeripheral = peripheral;
+   [peripheral setDelegate:self];  &lt;br&gt;//查找服务
+   [peripheral discoverServices:nil];
+
+
+}
+</code></pre>
+
+<h4>发现服务：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+
+
+NSLog(@"didDiscoverServices");
+
+if (error)
+{
+    NSLog(@"Discovered services for %@ with error: %@", peripheral.name, [error localizedDescription]);
+
+    if ([self.delegate respondsToSelector:@selector(DidNotifyFailConnectService:withPeripheral:error:)])
+        [self.delegate DidNotifyFailConnectService:nil withPeripheral:nil error:nil];
+
+    return;
+}
+
+
+for (CBService *service in peripheral.services)
+{
+     //发现服务
+    if ([service.UUID isEqual:[CBUUID UUIDWithString:UUIDSTR_ISSC_PROPRIETARY_SERVICE]])
+    {
+        NSLog(@"Service found with UUID: %@", service.UUID);  &lt;br&gt;//查找特征
+        [peripheral discoverCharacteristics:nil forService:service];
+        break;
+    }
+
+
+}
+}
+</code></pre>
+
+<h4>发现服务中的特征：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+
+if (error)
+{
+    NSLog(@"Discovered characteristics for %@ with error: %@", service.UUID, [error localizedDescription]);
+
+    [self error];
+    return;
+}
+
+NSLog(@"服务：%@",service.UUID);
+for (CBCharacteristic *characteristic in service.characteristics)
+{
+   //发现特征
+        if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"xxxxxxx"]]) {
+            NSLog(@"监听：%@",characteristic);&lt;br&gt;//监听特征
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+}
+}
+</code></pre>
+
+<h4>与外设进行数据交互</h4>
+
+<p>读取数据：</p>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error)
+    {
+        NSLog(@"Error updating value for characteristic %@ error: %@", characteristic.UUID, [error localizedDescription]);
+        self.error_b = BluetoothError_System;
+        [self error];
+        return;
+}
+
+//    NSLog(@"收到的数据：%@",characteristic.value);
+[self decodeData:characteristic.value];
+}
+</code></pre>
+
+<h4>写数据：</h4>
+
+<pre><code>NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
+            [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
+
+    </article>
   
   
     <article>

@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-02T14:51:22+08:00</updated>
+  <updated>2015-12-02T15:07:58+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -1884,6 +1884,357 @@ FIXME:
 </code></pre>
 
 <!--more-->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片加载优化深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/02/tu-pian-jia-zai-you-hua-shen-jiu/"/>
+    <updated>2015-12-02T14:56:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/02/tu-pian-jia-zai-you-hua-shen-jiu</id>
+    <content type="html"><![CDATA[<h3>1. 网络图片显示大体步骤:</h3>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+</ul>
+
+
+<h3>2. 一些优化思路：</h3>
+
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<h6>2.1 关于异步图片下载:</h6>
+
+<p>fastImageCache主要针对于从磁盘文件读取并展示图片的极端优化，所以并没有集成异步图片下载的功能。这里主要来看看SDWebImage(AFNetWorking的基本类似)的实现方案：</p>
+
+<p>tableView中，异步图片下载任务的管理:</p>
+
+<p>我们知道，tableViewCell是有重用机制的，也就是说，内存中只有当前可见的cell数目的实例，滑动的时候，新显示cell会重用被滑出的cell对象。这样就存在一个问题：</p>
+
+<p>一般情况下在我们会在cellForRow方法里面设置cell的图片数据源，也就是说如果一个cell的imageview对象开启了一个下载任务，这个时候该cell对象发生了重用，新的image数据源会开启另外的一个下载任务，由于他们关联的imageview对象实际上是同一个cell实例的imageview对象，就会发生2个下载任务回调给同一个imageview对象。这个时候就有必要做一些处理，避免回调发生时，错误的image数据源刷新了UI。</p>
+
+<blockquote><p>SDWebImage提供的UIImageView扩展的解决方案：</p></blockquote>
+
+<p>imageView对象会关联一个下载列表（列表是给AnimationImages用的，这个时候会下载多张图片），当tableview滑动，imageView重设数据源（url）时，会cancel掉下载列表中所有的任务，然后开启一个新的下载任务。这样子就保证了只有当前可见的cell对象的imageView对象关联的下载任务能够回调，不会发生image错乱。</p>
+
+<p>同时，SDWebImage管理了一个全局下载队列（在DownloadManager中）,并发量设置为6.也就是说如果可见cell的数目是大于6的，就会有部分下载队列处于等待状态。而且，在添加下载任务到全局的下载队列中去的时候，SDWebImage默认是采取LIFO策略的，具体是在添加下载任务的时候，将上次添加的下载任务添加依赖为新添加的下载任务。</p>
+
+<pre><code>    [wself.downloadQueue addOperation:operation];
+    if (wself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
+        // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
+        [wself.lastAddedOperation addDependency:operation];
+        wself.lastAddedOperation = operation;
+    }
+</code></pre>
+
+<p>另外一种解决方案是：</p>
+
+<p>imageView对象和图片的url相关联，在滑动时，不取消旧的下载任务，而是在下载任务完成回调时，进行url匹配，只有匹配成功的image会刷新imageView对象，而其他的image则只做缓存操作，而不刷新UI。</p>
+
+<p>同时，仍然管理一个执行队列，为了避免占用太多的资源，通常会对执行队列设置一个最大的并发量。此外，为了保证LIFO的下载策略，可以自己维持一个等待队列，每次下载任务开始的时候，将后进入的下载任务插入到等待队列的前面。</p>
+
+<h6>iOS异步任务一般有3种实现方式:</h6>
+
+<ul>
+<li>NSOperationQueue</li>
+<li>GCD</li>
+<li>NSThread</li>
+</ul>
+
+
+<p>这几种方式就不细说了，SDWebImage是通过自定义NSOperation来抽象下载任务的，并结合了GCD来做一些主线程与子线程的切换。具体异步下载的实现，AFNetworking与SDWebImage都是十分优秀的代码，有兴趣的可以深入看看源码。</p>
+
+<h6>2.2 关于图片解压缩:</h6>
+
+<blockquote><p>通用的解压缩方案
+主体的思路是在子线程，将原始的图片渲染成一张的新的可以字节显示的图片，来获取一个解压缩过的图片。
+基本上比较流行的一些开源库都先后支持了在异步线程完成图片的解压缩，并对解压缩过后的图片进行缓存。</p></blockquote>
+
+<p>这么做的优点是在setImage的时候系统省去了上面的第6步，缺点就是图片占用的空间变大。
+比如1张50<em>50像素的图片，在retina的屏幕下所占用的空间为100</em>100*4 ~ 40KB</p>
+
+<p>下面的代码是SDWebImage的解决方案:</p>
+
+<pre><code>+ (UIImage *)decodedImageWithImage:(UIImage *)image {
+    if (image.images) {
+        // Do not decode animated images
+        return image;
+    }
+
+    CGImageRef imageRef = image.CGImage;
+    CGSize imageSize = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
+    CGRect imageRect = (CGRect){.origin = CGPointZero, .size = imageSize};
+
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
+
+    int infoMask = (bitmapInfo &amp; kCGBitmapAlphaInfoMask);
+    BOOL anyNonAlpha = (infoMask == kCGImageAlphaNone ||
+            infoMask == kCGImageAlphaNoneSkipFirst ||
+            infoMask == kCGImageAlphaNoneSkipLast);
+
+    // CGBitmapContextCreate doesn't support kCGImageAlphaNone with RGB.
+    // https://developer.apple.com/library/mac/#qa/qa1037/_index.html
+    if (infoMask == kCGImageAlphaNone &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) &gt; 1) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+
+        // Set noneSkipFirst.
+        bitmapInfo |= kCGImageAlphaNoneSkipFirst;
+    }
+            // Some PNGs tell us they have alpha but only 3 components. Odd.
+    else if (!anyNonAlpha &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) == 3) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+        bitmapInfo |= kCGImageAlphaPremultipliedFirst;
+    }
+
+    // It calculates the bytes-per-row based on the bitsPerComponent and width arguments.
+    CGContextRef context = CGBitmapContextCreate(NULL,
+            imageSize.width,
+            imageSize.height,
+            CGImageGetBitsPerComponent(imageRef),
+            0,
+            colorSpace,
+            bitmapInfo);
+    CGColorSpaceRelease(colorSpace);
+
+    // If failed, return undecompressed image
+    if (!context) return image;
+
+    CGContextDrawImage(context, imageRect, imageRef);
+    CGImageRef decompressedImageRef = CGBitmapContextCreateImage(context);
+
+    CGContextRelease(context);
+
+    UIImage *decompressedImage = [UIImage imageWithCGImage:decompressedImageRef scale:image.scale orientation:image.imageOrientation];
+    CGImageRelease(decompressedImageRef);
+    return decompressedImage;
+}
+</code></pre>
+
+<h6>2.3 关于字节对齐</h6>
+
+<p>SDWebImage与AFNetworking都没有对第7点做优化，FastImageCache相对与其他的开源库，则对第5点与第7点做了优化。这里我们谈谈第七点，关于图片数据的字节对齐。</p>
+
+<p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：
+那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)
+块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p>
+
+<p>从代码上来看，主要是在创建上图解码的过程中，CGBitmapContextCreate函数的bytesPerRow参数必须传64的倍数。</p>
+
+<p>比较各个开源框架的代码，可以看到SDWebImage与AFNetworking的该参数都传的是0，即让系统自动来计算该值（那为何系统自动计算的时候不让图片数据字节就字节对齐呢？）。</p>
+
+<h6>2.4 关于第3，4点，内存级别拷贝</h6>
+
+<p>以上3个开源库中，FastImageCache对这一点做了很大的优化，其他的2个开源库则未关注这一点。这一块木有深入研究，就引用一下FastImageCache团队对该点的一些说明。有能力的可以去看看原文章(英文):here。</p>
+
+<blockquote><p>内存映射
+平常我们读取磁盘上的一个文件，上层API调用到最后会使用系统方法read()读取数据，内核把磁盘数据读入内核缓冲区，用户再从内核缓冲区读取数据复制到用户内存空间，这里有一次内存拷贝的时间消耗，并且读取后整个文件数据就已经存在于用户内存中，占用了进程的内存空间。
+FastImageCache采用了另一种读写文件的方法，就是用mmap把文件映射到用户空间里的虚拟内存，文件中的位置在虚拟内存中有了对应的地址，可以像操作内存一样操作这个文件，相当于已经把整个文件放入内存，但在真正使用到这些数据前却不会消耗物理内存，也不会有读写磁盘的操作，只有真正使用这些数据时，也就是图像准备渲染在屏幕上时，虚拟内存管理系统VMS才根据缺页加载的机制从磁盘加载对应的数据块到物理内存，再进行渲染。这样的文件读写文件方式少了数据从内核缓存到用户空间的拷贝，效率很高。</p></blockquote>
+
+<h6>2.5 关于第二步图片处理（裁剪，边框等）</h6>
+
+<p>一般情况下，对于下载下来的图片我们可能想要做一些处理，比如说做一些缩放，裁剪，或者添加圆角等等。</p>
+
+<p>对于比较通用的缩放，或者圆角等功能，可以集成到控件本身。不过，提供一个接口出来，让使用者能够有机会对下载下来的图片做一些其他的特殊处理是有必要的。</p>
+
+<pre><code>/** SDWebImage
+ * Allows to transform the image immediately after it has been downloaded and just before to cache it on disk and memory.
+ * NOTE: This method is called from a global queue in order to not to block the main thread.
+ *
+ * @param imageManager The current `SDWebImageManager`
+ * @param image        The image to transform
+ * @param imageURL     The url of the image to transform
+ *
+ * @return The transformed image object.
+ */
+- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL;
+</code></pre>
+
+<h6>2.6 其他（诸如图片预下载，gif支持等等,下载进度条）</h6>
+
+<p>待补充</p>
+
+<h3>3. 常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip    </th>
+<th style="text-align:center;">SDWebImage </th>
+<th style="text-align:right;">AFNetworking   </th>
+<th>FastImageCache</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片</td>
+<td style="text-align:center;">    YES</td>
+<td style="text-align:right;">    YES</td>
+<td>    NO</td>
+</tr>
+<tr>
+<td>子线程解压缩</td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">YES    </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>内存级别缓存 </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>磁盘级别缓存 </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES</td>
+<td>   YES</td>
+</tr>
+<tr>
+<td>UIImageView category</td>
+<td style="text-align:center;">  YES </td>
+<td style="text-align:right;">NO </td>
+<td>NO</td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO </td>
+<td style="text-align:right;">NO</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>接口易用性    </td>
+<td style="text-align:center;">***</td>
+<td style="text-align:right;">   *** </td>
+<td>*</td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[站在AFN上看ASI]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/02/zhan-zai-afnshang-kan-asi/"/>
+    <updated>2015-12-02T14:53:45+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/02/zhan-zai-afnshang-kan-asi</id>
+    <content type="html"><![CDATA[<h6>一、底层实现</h6>
+
+<ul>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
+</ul>
+
+
+<h6>二、对服务器返回的数据处理</h6>
+
+<ul>
+<li><p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string</p></li>
+<li><p>2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li><p>JSON处理</p></li>
+<li><p>XML处理</p></li>
+<li><p>其他处理</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h6>三、监听请求的过程</h6>
+
+<ul>
+<li><p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li><p>success : 请求成功后调用</p></li>
+<li><p>failure : 请求失败后调用</p></li>
+</ul>
+</li>
+<li><p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程</p></li>
+</ul>
+
+
+<p>（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<pre><code>* 成为代理，遵守协议，实现协议中的代理方法
+
+* 成为代理，不遵守协议，自定义代理方法
+
+* 设置block
+</code></pre>
+
+<h6>四、在文件下载和文件上传的使用难易度</h6>
+
+<ul>
+<li><p>1> AFN</p>
+
+<ul>
+<li><p>不容易监听下载进度和上传进度</p></li>
+<li><p>不容易实现断点续传</p></li>
+<li><p>一般只用来下载不大的文件</p></li>
+</ul>
+</li>
+<li><p>2> ASI</p>
+
+<ul>
+<li><p>非常容易实现下载和上传</p></li>
+<li><p>非常容易监听下载进度和上传进度</p></li>
+<li><p>非常容易实现断点续传</p></li>
+<li><p>下载或大或小的文件都行</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h6>五、ASI提供了更多的实用功能</h6>
+
+<ul>
+<li><p>1> 控制圈圈要不要在请求过程中转</p></li>
+<li><p>2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象</p></li>
+<li><p>3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li><p>暂停\恢复\取消所有的请求</p></li>
+<li><p>监听整个队列中所有请求的下载进度和上传进度</p></li>
+</ul>
+</li>
+</ul>
 
 ]]></content>
   </entry>
@@ -5150,325 +5501,6 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
 <p>参考：相关性能优化问题</p>
 
 <p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[蓝牙开发你知道多少]]></title>
-    <link href="http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/"/>
-    <updated>2015-11-28T00:38:13+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao</id>
-    <content type="html"><![CDATA[<p>蓝牙简单介绍和4.0的基本使用</p>
-
-<p>背景：</p>
-
-<ul>
-<li>iOS的蓝牙不能用来传输文件。</li>
-<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
-<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
-</ul>
-
-
-<h3>iOS中蓝牙的实现方案</h3>
-
-<p>iOS中提供了4个框架用于实现蓝牙连接</p>
-
-<ol>
-<li><p>GameKit.framework（用法简单）</p>
-
-<p> <code>只能用于iOS设备之间的连接，多用于游戏（比如五子棋对战），从iOS7开始过期</code></p></li>
-<li><p>MultipeerConnectivity.framework</p>
-
-<p> <code>只能用于iOS设备之间的连接，从iOS7开始引入，主要用于文件共享（仅限于沙盒的文件）</code></p></li>
-<li><p>ExternalAccessory.framework</p>
-
-<p> <code>可用于第三方蓝牙设备交互，但是蓝牙设备必须经过苹果MFi认证（国内较少）</code></p></li>
-<li><h6>CoreBluetooth.framework（时下热门）</h6>
-
-<p> <code>可用于第三方蓝牙设备交互，必须要支持蓝牙4.0</code></p>
-
-<p> <code>硬件至少是4s，系统至少是iOS6</code></p>
-
-<p> <code>蓝牙4.0以低功耗著称，一般也叫BLE（BluetoothLowEnergy）</code></p>
-
-<p> <code>目前应用比较多的案例：运动手坏、嵌入式设备、智能家居</code></p></li>
-</ol>
-
-
-<p>下面具体介绍使用CoreBluetooth.framework的代码步骤：</p>
-
-<h5>蓝牙系统库</h5>
-
-<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
-</code></pre>
-
-<h5>必须要由UUID来唯一标示对应的service和characteristic</h5>
-
-<pre><code>#define kServiceUUID @"5C476471-1109-4EBE-A826-45B4F9D74FB9"
-
-#define kCharacteristicHeartRateUUID @"82C7AC0F-6113-4EC9-92D1-5EEF44571398"
-
-#define kCharacteristicBodyLocationUUID @"537B5FD6-1889-4041-9C35-F6949D1CA034"
-</code></pre>
-
-<hr />
-
-<pre><code>@interface ViewController ()&lt;CBCentralManagerDelegate,CBPeripheralDelegate&gt;
-
-
-
-@property (nonatomic,strong)CBCentralManager * centralManager;
-
-@property (nonatomic,strong)CBPeripheral     * peripheral;
-
-@end
-</code></pre>
-
-<h4>创建中心角色</h4>
-
-<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
-
-- (void)viewDidLoad
-{
-
-    [super viewDidLoad];
-
-    //初始化蓝牙 central manager
-
-    _centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) options:nil];    
-
-}
-</code></pre>
-
-<h4>扫描外设</h4>
-
-<pre><code>[manager scanForPeripheralsWithServices:nil options:@{CBCentralManagerRestoredStateScanOptionsKey:@(YES)}];
-</code></pre>
-
-<h4>连接外设</h4>
-
-<pre><code>- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
-{
-        if([peripheral.name  isEqualToString:BLE_SERVICE_NAME]){
-                [self connect:peripheral];
-        }
-}       
-
--(BOOL)connect:(CBPeripheral *)peripheral{
-        self.manager.delegate = self;
-        [self.manager connectPeripheral:peripheral
-                                options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:CBConnectPeripheralOptionNotifyOnDisconnectionKey]];
-}
-</code></pre>
-
-<h4>扫描外设中的服务和特征</h4>
-
-<pre><code>- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
-{
-
-   NSLog(@"Did connect to peripheral: %@", peripheral);       
-
-   _testPeripheral = peripheral;
-   [peripheral setDelegate:self];  &lt;br&gt;//查找服务
-   [peripheral discoverServices:nil];
-
-
-}
-</code></pre>
-
-<h4>发现服务：</h4>
-
-<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
-{
-
-
-NSLog(@"didDiscoverServices");
-
-if (error)
-{
-    NSLog(@"Discovered services for %@ with error: %@", peripheral.name, [error localizedDescription]);
-
-    if ([self.delegate respondsToSelector:@selector(DidNotifyFailConnectService:withPeripheral:error:)])
-        [self.delegate DidNotifyFailConnectService:nil withPeripheral:nil error:nil];
-
-    return;
-}
-
-
-for (CBService *service in peripheral.services)
-{
-     //发现服务
-    if ([service.UUID isEqual:[CBUUID UUIDWithString:UUIDSTR_ISSC_PROPRIETARY_SERVICE]])
-    {
-        NSLog(@"Service found with UUID: %@", service.UUID);  &lt;br&gt;//查找特征
-        [peripheral discoverCharacteristics:nil forService:service];
-        break;
-    }
-
-
-}
-}
-</code></pre>
-
-<h4>发现服务中的特征：</h4>
-
-<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
-{
-
-if (error)
-{
-    NSLog(@"Discovered characteristics for %@ with error: %@", service.UUID, [error localizedDescription]);
-
-    [self error];
-    return;
-}
-
-NSLog(@"服务：%@",service.UUID);
-for (CBCharacteristic *characteristic in service.characteristics)
-{
-   //发现特征
-        if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"xxxxxxx"]]) {
-            NSLog(@"监听：%@",characteristic);&lt;br&gt;//监听特征
-            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
-        }
-
-}
-}
-</code></pre>
-
-<h4>与外设进行数据交互</h4>
-
-<p>读取数据：</p>
-
-<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
-{
-    if (error)
-    {
-        NSLog(@"Error updating value for characteristic %@ error: %@", characteristic.UUID, [error localizedDescription]);
-        self.error_b = BluetoothError_System;
-        [self error];
-        return;
-}
-
-//    NSLog(@"收到的数据：%@",characteristic.value);
-[self decodeData:characteristic.value];
-}
-</code></pre>
-
-<h4>写数据：</h4>
-
-<pre><code>NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
-            [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[cocoaPods简单粗暴]]></title>
-    <link href="http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao/"/>
-    <updated>2015-11-28T00:32:20+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/11/28/cocoapodsjian-dan-cu-bao</id>
-    <content type="html"><![CDATA[<p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
-
-<p>1:移除ruby镜像（天朝的网你们懂的）</p>
-
-<pre><code> $ gem sources --remove https://rubygems.org/ 
-</code></pre>
-
-<p>2:新增淘宝镜像</p>
-
-<pre><code>$ gem sources -a http://ruby.taobao.org/ 
-</code></pre>
-
-<p>3:查看列表</p>
-
-<pre><code> $ gem sources -l 
-</code></pre>
-
-<p>成功的征兆：</p>
-
-<pre><code>*** CURRENT SOURCES ***
-http://ruby.taobao.org/
-$ sudo gem install cocoapods
-</code></pre>
-
-<p>4:正式安装</p>
-
-<pre><code> sudo gem install cocoapods 
-</code></pre>
-
-<p>接下来就是开始使用了。</p>
-
-<p>查看对应的框架</p>
-
-<pre><code> $ pod search AFNetworking 
-</code></pre>
-
-<p>创建文件</p>
-
-<pre><code> $ vim Podfile 
-</code></pre>
-
-<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
-
-<pre><code>touch Podfile
-</code></pre>
-
-<p>新建一个文件</p>
-
-<p>然后在Podfile文件中输入以下文字：</p>
-
-<pre><code>platform :ios, '7.0'
-pod "AFNetworking", "~&gt; 2.0”
-</code></pre>
-
-<p>安装</p>
-
-<pre><code> pod install  
-</code></pre>
-
-<p>更新</p>
-
-<pre><code> $ pod update 
-</code></pre>
-
-<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
-
-<pre><code>pod update 换成pod update --verbose --no-repo-update
-pod install 换成pod install --verbose --no-repo-update
-</code></pre>
-
-<ul>
-<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
-$ pod update会更新所有的类库，获取最新版本的类库。
-或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
-</ul>
-
-
-<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
-
-<ul>
-<li>解决方案</li>
-</ul>
-
-
-<p>LNJ替换为你自己的用户名</p>
-
-<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
-</code></pre>
-
-<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
-
-<ul>
-<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
-<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
-  <code>$ pod update。</code></p></li>
-</ul>
-
-
-<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
-
-<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
 ]]></content>
   </entry>
   
