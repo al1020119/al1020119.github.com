@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 项目实战 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xiang-mu-shi-zhan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-03T18:36:13+08:00</updated>
+  <updated>2015-12-03T18:37:49+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,183 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[玩转定时器]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi/"/>
+    <updated>2015-12-09T18:17:51+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi</id>
+    <content type="html"><![CDATA[<p> <img src="/images/dingshiqi.png" title="Caption" ></p>
+
+<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+<h2>一、NSTimer</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>1     // 设置定时器
+2     [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(timeChange) userInfo:nil repeats:YES];
+3     
+4     // 0.1 setNeedsDisplay 绑定一个标识,等待下次刷新的时候才会调用drawRect方法
+5     // 0.15 屏幕的刷新时间
+</code></pre>
+
+<ul>
+<li><p>TimerInterval : 执行之前等待的时间。比如设置成1.0，就代表1秒后执行方法</p></li>
+<li><p>target : 需要执行方法的对象。</p></li>
+<li><p>selector : 需要执行的方法</p></li>
+<li><p>repeats : 是否需要循环</p></li>
+</ul>
+
+
+<h5>2. 释放方法</h5>
+
+<pre><code> [timer invalidate]; 
+</code></pre>
+
+<blockquote><p>注意 :
+调用创建方法后，target对象的计数器会加1，直到执行完毕，自动减1。如果是循环执行的话，就必须手动关闭，否则可以不执行释放方法。</p></blockquote>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>存在延迟</li>
+</ul>
+
+
+<p>不管是一次性的还是周期性的timer的实际触发事件的时间，都会与所加入的RunLoop和RunLoop Mode有关，如果此RunLoop正在执行一个连续性的运算，timer就会被延时出发。重复性的timer遇到这种情况，如果延迟超过了一个周期，则会在延时结束后立刻执行，并按照之前指定的周期继续执行。</p>
+
+<ul>
+<li>必须加入Runloop</li>
+</ul>
+
+
+<p>使用上面的创建方式，会自动把timer加入MainRunloop的NSDefaultRunLoopMode中。如果使用以下方式创建定时器，就必须手动加入Runloop:</p>
+
+<pre><code>NSTimer *timer = [NSTimer timerWithTimeInterval:5 target:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(timerAction) userInfo:nil repeats:YES];&lt;br&gt;&lt;br&gt;
+[[NSRunLoop mainRunLoop] &lt;span style="color: #3366ff;"&gt;addTimer&lt;/span&gt;:timer forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<p> 注意NSTimer还有一个方法，因为每次用的时候都是使用带target的这个方法，突然有一天很好奇就研究了一下，他的使用也很简单，只是相对上面那个有点繁琐，</p>
+
+<h5>1:创建一个签名：</h5>
+
+<pre><code> NSMethodSignature *singature = [NSMethodSignature signatureWithObjCTypes:"v@:"]; 2  
+</code></pre>
+
+<p>这里我想如果你仔细的话肯定注意到了：后面的“v@：”，这里是运行时的语法</p>
+
+<p>在这里是指一个方法</p>
+
+<pre><code>v放回viod类型
+@一个id类型的对象
+：对应SEL
+</code></pre>
+
+<p>关于运行时这里不多介绍请查看笔者之前的文章，或者查看官方文档，这是一个iOS开发者必须会的知识点</p>
+
+<h5>2:通过前面创建一个请求，并且设置对应的target和SEL</h5>
+
+<pre><code>&lt;span style="color: #3366ff;"&gt;    NSInvocation&lt;/span&gt; *vocation = [NSInvocation invocationWithMethodSignature:singature];
+    vocation.target = self;
+    vocation.selector = @selector(timeChange);
+</code></pre>
+
+<h5>3:在讲请求传到NSTimer中去实现定时</h5>
+
+<pre><code>[NSTimer scheduledTimerWithTimeInterval:1 invocation:vocation repeats:YES]; 
+</code></pre>
+
+<h2>二、CADisplayLink</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>self.displayLink = [CADisplayLink displayLinkWithTarget:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(handleDisplayLink:)];   
+[self.displayLink &lt;span style="color: #3366ff;"&gt;addToRunLoop&lt;/span&gt;:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<h5>2. 停止方法</h5>
+
+<pre><code>self.displayLink &lt;span style="color: #3366ff;"&gt;invalidate&lt;/span&gt;]; 
+self.displayLink = nil;
+</code></pre>
+
+<p> 当把CADisplayLink对象add到runloop中后，selector就能被周期性调用，类似于重复的NSTimer被启动了；执行invalidate操作时，CADisplayLink对象就会从runloop中移除，selector调用也随即停止，类似于NSTimer的invalidate方法。</p>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>屏幕刷新时调用</li>
+</ul>
+
+
+<p>CADisplayLink是一个能让我们以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类。CADisplayLink以特定模式注册到runloop后，每当屏幕显示内容刷新结束的时候，runloop就会向CADisplayLink指定的target发送一次指定的selector消息， CADisplayLink类对应的selector就会被调用一次。所以通常情况下，按照iOS设备屏幕的刷新率60次/秒</p>
+
+<ul>
+<li>延迟</li>
+</ul>
+
+
+<p>iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。但如果调用的方法比较耗时，超过了屏幕刷新周期，就会导致跳过若干次回调调用机会。</p>
+
+<p>如果CPU过于繁忙，无法保证屏幕60次/秒的刷新率，就会导致跳过若干次调用回调方法的机会，跳过次数取决CPU的忙碌程度。</p>
+
+<ul>
+<li>使用场景</li>
+</ul>
+
+
+<p>从原理上可以看出，CADisplayLink适合做界面的不停重绘，比如视频播放的时候需要不停地获取下一帧用于界面渲染。</p>
+
+<h5>4. 重要属性</h5>
+
+<ul>
+<li>frameInterval</li>
+</ul>
+
+
+<p>NSInteger类型的值，用来设置间隔多少帧调用一次selector方法，默认值是1，即每帧都调用一次。</p>
+
+<ul>
+<li>duration</li>
+</ul>
+
+
+<p>readOnly的CFTimeInterval值，表示两次屏幕刷新之间的时间间隔。需要注意的是，该属性在target的selector被首次调用以后才会被赋值。selector的调用间隔时间计算方式是：调用间隔时间 = duration × frameInterval。</p>
+
+<h5>CADisplayLink底层实现：</h5>
+
+<pre><code> setNeedsDisplay:底层并不会马上调用drawRect,只会给当前的控件绑定一个刷新的标识,每次屏幕刷新的时候,就会把绑定了刷新(重绘)标识的控件重新刷新(绘制)一次,就会调用drawRect去重绘
+</code></pre>
+
+<blockquote><p> 注意：如果以后每隔一段时间需要重绘,一般不使用NSTimer,使用CADisplayLink,不会刷新的时候有延迟</p></blockquote>
+
+<h2>三、GCD方式</h2>
+
+<h5>执行一次</h5>
+
+<pre><code>1 double delayInSeconds = 2.0;
+2 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC); 
+3 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
+4     //执行事件
+5 });
+</code></pre>
+
+<h5>重复执行</h5>
+
+<pre><code>1 NSTimeInterval period = 1.0; //设置时间间隔
+2 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+3 dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+4 dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0); //每秒执行
+5 dispatch_source_set_event_handler(_timer, ^{
+6     //在这里执行事件
+7 });
+8 dispatch_resume(_timer);
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[怎么封装一个控件]]></title>
@@ -1002,61 +1179,6 @@ SLog(@"%@",self.interactivePopGestureRecognizer.delegate);
     } 
     return YES; 
 } 
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[切换控制器]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/02/qie-huan-kong-zhi-qi/"/>
-    <updated>2015-12-02T02:51:10+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/02/qie-huan-kong-zhi-qi</id>
-    <content type="html"><![CDATA[<p>从一个视图控制器切换到另一个视图控制器的几种方式</p>
-
-<h4>1,模态(modal)画面的显示方法：</h4>
-
-<p>例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
-例：点击一个按钮，进入另一个界面
-    - (IBAction)pressAbout:(id)sender {</p>
-
-<pre><code>iCocosViewController *iCocos=[[[iCocosViewController alloc] initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
-
-[self presentModalViewController:aboutanimated:YES];//显示模态画面
-
-关闭模态画面的方法：
-
-[self dissmissModalViewControllerAnimationed:YES];
-</code></pre>
-
-<h4>2,SwitchViewController中有2个控制器的属性：BviewController,CViewController</h4>
-
-<ul>
-<li>使用方法：insertSubview: atIndex:
-这种画面跳转方法并非最佳的跳转方法：</li>
-<li>实际上并非真的实现了两个画面间的跳转，而是同时启动了2个画面，控制其中哪一个画面显示在前台，哪一个画面显示在后台而已。</li>
-<li>这种画面跳转方式有一个很大的缺点，即当画面数量增加时，画面跳转的实现代码将月来越复杂，而且各个画面间不可避免的有相互依赖关系。</li>
-</ul>
-
-
-<h4>3,UITabBarController实现并列画面跳转（这里其实就是window的切花）</h4>
-
-<pre><code>//将5个viewController实例放入TabBar的viewcontrollers属性中    
-
-self.tabBarController.viewControllers = @[navFrist, navSecond,navThird,navFourth,navFifth];   
-
-self.window.rootViewController = self.tabBarController;
-
-[self.window addSubview:self.tabBarController.view];//将根控制器的视图加到应用程序主窗口
-</code></pre>
-
-<h4>4,UINavigationController实现多层画面跳转，在导航控制器中，载入有层级关系的界面</h4>
-
-<pre><code>- (IBAction)addRightAction:(id)sender
-{
-    iCocosViewController *iCocos=[[[iCocosViewController alloc]initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
-
-[self.navigationController pushViewController:aiCocos animated:YES];
-}
 </code></pre>
 ]]></content>
   </entry>
