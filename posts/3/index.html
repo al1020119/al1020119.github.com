@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="切换控制器 ordinal 从一个视图控制器切换到另一个视图控制器的几种方式 1,模态(modal)画面的显示方法： 例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
-例：点击一个按钮，进入另一个界面 - (IBAction)pressAbout:(id)sender &hellip;">
+  <meta name="description" content="消除警告 ordinal 前言： 现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +74,382 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/02/xiao-chu-jing-gao/">消除警告</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>前言：</h6>
+
+<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
+
+<p>本文分为三个部分：</p>
+
+<ul>
+<li>1.简单粗暴的消除警告。</li>
+<li>2.详细科学的消除警告。（包括警告收录）</li>
+<li>3.添加警告。</li>
+</ul>
+
+
+<h4>一、简单粗暴的消除警告</h4>
+
+<p>警告如果是自己项目中的还好直接改了，如果是第三方库，你改了之后，pod下作者更新一下又白改了，所以可以用这种简单粗暴的方法：直接让第三方库的警告不显示</p>
+
+<p> 就是在podfile文件里面加上一行指令 。
+inhibit_all_warnings!
+如果某警告实在无法消除，但是又不想让他显示，可以加入预编译指令</p>
+
+<p>比如我已经知道某行会报上面警告了，我就用这个宏把这几行包住，就不会报引号中-Wunused-variable的警告了</p>
+
+<pre><code>#pragma clang diagnostic push
+#pragma clang diagnostic ignored"-Wunused-variable" //这里是会报警告的代码
+
+#pragma clang diagnostic pop
+</code></pre>
+
+<p>这个-Wunused-variable代表的意思就是 有的东西 你实例化了但是没有使用（同上面第几条）。 但是如何得到一个警告的标示符？</p>
+
+<ol>
+<li><p>如图选择一个警告，点击右键，reveal in log  就能看到右边有个方括号[]里面的东西就是 这个警告对应的标示符</p></li>
+<li><p>如果希望整个项目中都忽略 某种很无聊的警告，就在项目中Build Setting里加上这个标示符，可以连着加的。</p></li>
+<li><p>如果不想整个项目都忽略，只想个别文件忽略，那就找到个别文件加上此指令，这个操作应该使用率不高（一般都是全项目忽略），就不上图了。去Build Phases 里面的 Compile Sources里面改。</p></li>
+</ol>
+
+
+<h4>二、详细科学的消除警告</h4>
+
+<p>其实笔者本意是想把一些第一眼看不懂比较坑的警告收录进来，但是后来发现那基本没几个需要些写了，所以就采用了全收录的方法，遇到的就记录下以后也会不断更新。 可以直接按command+F 在本页面搜索警告</p>
+
+<pre><code>Unused variable 'replyURL'
+</code></pre>
+
+<h6>1.没有使用</h6>
+
+<pre><code>Cannot find protocol definition for 'TencentSessionDelegate'
+</code></pre>
+
+<h6>2.这种明明都能运行还说我没有定义的警告，是因为你这个协议虽然定义了，但是你这个协议可能还遵守了XX协议，然后这个XX协议没有定义导致会报这种警告，所以遇到这种警告要往“父协议”找。 举个栗子，上面这行就是腾讯授权的库里面报的警告，</h6>
+
+<pre><code>@protocol TencentSessionDelegate
+此协议遵守了TencentApiInterfaceDelegate协议，在TencentOAuth.h类中#import "TencentApiInterface.h" 警告可破
+
+
+Null passed to a callee that requires a non-null argument
+</code></pre>
+
+<h6>3.这个警告比较新，是xcode6.3开始 为了让OC也能有swift的？和！的功能，你在声明一个属性的时候加上 <strong>nullable（？可以为空）与</strong>nonnull（！不能为空） 如果放在@property里面的话不用写下划线</h6>
+
+<pre><code>@property (nonatomic, copy, nonnull) NSString * tickets;
+@property (nonatomic, copy) NSString * __nonnull tickets;
+</code></pre>
+
+<p>或者用宏NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END 包住多个属性全部具备nonnull，然后仅对需要nullable的改下就行，有点类似于f-no-objc-arc那种先整体给个路线在单独改个别文件的思想。 此警告就是某属性说好的不能为空，你又在某地方写了XX = nil 所以冲突了。</p>
+
+<pre><code>Auto property synthesis will not synthesize property 'privateCacheDirectory'; it will be implemented by its superclass, use @dynamic to acknowledge intention
+</code></pre>
+
+<h6>4.他说你的父类实现了setget方法，但是如果你什么都不写，就会系统自动生成出最一般的setget方法，请用@dynamic 来承认父类实现的这个getset方法。</h6>
+
+<pre><code>Unsupported Configuration: Scene is unreachable due to lack of entry points and does not have an identifier for runtime access via -instantiateViewControllerWithIdentifier:.
+</code></pre>
+
+<h6>5.一般是storyboard报的警告，简而言之就是你有的页面没有和箭头所指的控制器连起来，导致最终改页面可能无法显示。</h6>
+
+<pre><code>Deprecated: Push segues are deprecated in iOS 8.0 and later
+</code></pre>
+
+<h6>6.iOS8之后呢，不要再用push拖线了，统一用show，他会自己根据你是否有导航栏来判断走push还是走modal</h6>
+
+<pre><code>Unsupported Configuration: Plain Style unsupported in a Navigation Item
+</code></pre>
+
+<h6>7.导航栏的item 不支持用plain ，那就用Bordered呗。</h6>
+
+<pre><code>The launch image set "LaunchImage" has 2 unassigned images.
+The app icon set "AppIcon" has 2 unassigned images.
+</code></pre>
+
+<h6>8.几张图标还是启动图找不到自己的位置，可能是一次导入了全部尺寸图片，但是右边的设置只勾了iOS8的 那iOS7尺寸的图标就会报此警告。删掉，或者对照右边匹配。</h6>
+
+<pre><code>'sizeWithFont:constrainedToSize:lineBreakMode:' is deprecated: first deprecated in iOS 7.0 - Use -boundingRectWithSize:options:attributes:context:
+</code></pre>
+
+<h6>9.方法废除，旧的方法sizeWithFontToSize在iOS7后就废除了取而代之是boundingRectWithSize方法</h6>
+
+<pre><code>Undeclared selector 'historyAction'
+</code></pre>
+
+<h6>10.使用未声明的方法，一般出现在@selector() 括号里写了个不存在的方法或方法名写错了。</h6>
+
+<pre><code>PerformSelector may cause a leak because its selector is unknown
+</code></pre>
+
+<h6>11.这个和上面类似就是直接把上面那个@SEL拿来用会报这个警告</h6>
+
+<pre><code>'strongify' macro redefined
+</code></pre>
+
+<h6>12.这个宏声明重复,删一个吧</h6>
+
+<pre><code>'UITextAttributeFont' is deprecated: first deprecated in iOS 7.0 - Use NSFontAttributeName
+'UITextAttributeTextColor' is deprecated: first deprecated in iOS 7.0 - Use NSForegroundColorAttributeName
+'UITextAttributeTextShadowColor' is deprecated: first deprecated in iOS 7.0 - Use NSShadowAttributeName with an NSShadow instance as the value
+</code></pre>
+
+<h6>13.方法废除,一般一起出现</h6>
+
+<pre><code>Code will never be executed
+</code></pre>
+
+<h6>14.他说这代码永远也轮不到他执行，估计是有几行代码写在了return之后</h6>
+
+<pre><code>Assigning to 'id' from incompatible type 'SXTabViewController *const __strong'
+</code></pre>
+
+<h6>15.一般出现在xxx.delegate = self ，应该在上面遵守协议</h6>
+
+<pre><code>Format specifies type 'unsigned long' but the argument has type 'unsigned int'
+</code></pre>
+
+<h6>16.这个警告一般会出现在NSStringWithFormat里面 前面%d %lu 什么的和后面填进去的参数不匹配就报了警告</h6>
+
+<pre><code>Values of type 'NSInteger' should not be used as format arguments; add an explicit cast to 'long' instead
+</code></pre>
+
+<h6>17.类似于上面，也是format里面前后写的不匹配</h6>
+
+<pre><code>Method 'dealWithURL:andTitle:andKeyword:' in protocol 'SXPostAdDelegate' not implemented
+</code></pre>
+
+<h6>18.经典警告，遵守了协议，但是没有实现协议方法。 也可能你实现了只是又加了个参数或是你写的方法和协议方法名字有点轻微不同</h6>
+
+<pre><code>Using integer absolute value function 'abs' when argument is of floating point type
+</code></pre>
+
+<h6>19.这个可以自动修正，就是说abs适用于整数绝对值，要是float取绝对值要用fabsf</h6>
+
+<pre><code>Attribute Unavailable: Automatic Preferred Max Layout Width is not available on iOS versions prior to 8.0
+</code></pre>
+
+<h6>20.有的方法你用的太落后了，也有的方法你用的太超前了。 说这个最大宽度在iOS8之前的系统是要坑的</h6>
+
+<pre><code>Too many personality routines for compact unwind to encode
+</code></pre>
+
+<h6>21.你可以在otherlink 中加入 -Wl,-no_compact_unwind 去掉该警告，根据苹果的解释，这个是由于某些地方 c/c++/oc/oc++混用会造成编译警告。一般没有什么伤害。</h6>
+
+<pre><code>Property 'ssid' requires method 'ssid' to be defined - use @synthesize, @dynamic or provide a method implementation in this class implementation
+</code></pre>
+
+<h6>22.说这个ssid必须要定义个这个属性的getter方法，如果警告是setSsid就是setter方法， 用@synthesize和@dynamic 都行，一个是让编译器生成getter和setter，一个是自己生成，如果你有模型分发或kvc之类的，选@dynamic就行</h6>
+
+<pre><code>Unknown escape sequence '\)'
+</code></pre>
+
+<h6>23.未知的转义序列。 一般有个斜杠再加个东西他都会以为是转义字符，一看\）不认识就报警告了，一般正则表达式容易报这种警告</h6>
+
+<pre><code>Property 'LoginPort' not found on object of type 'LoginLvsTestTask *'; did you mean to access property loginPort?
+</code></pre>
+
+<h6>24.这种可以点击自动修复，是典型的大小写写错了，他提醒了一下。</h6>
+
+<pre><code>Variable 'type' is used uninitialized whenever switch default is taken
+</code></pre>
+
+<h6>25.这是出现在switch语句中的警告， 一般可能是switch外面定义了个type但是并没有初始化（初始化操作都写在switch的各个分支里），然后在最后return type。 但是switch的有个分支没有对type初始化，他说如果你来到这个分支的话，那还没初始化就要被return。</h6>
+
+<h5>三、添加警告</h5>
+
+<h6>1.首先最常用的就是 普通警告，这也没什么好说的了</h6>
+
+<pre><code>#warning TODO
+</code></pre>
+
+<h6>2.如果是自己写的文件或第三方库，有了新的接口，然后提示旧的接口废除的话需要在方法后加上宏NS_DEPRECATED_IOS和范围</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target NS_DEPRECATED_IOS(2_0, 4_0);
+</code></pre>
+
+<h6>3.如果需要在此方法后加上带信息的警告则需要这么写</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target __attribute((deprecated("这个接口会爆内存 不建议使用")));
+</code></pre>
+
+<p>显示的效果像这样：</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/02/xiao-chu-jing-gao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言</p>
+
+<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
+
+<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
+
+<h5>一、自定义导航控制器</h5>
+
+<p>目的：以后需要使用全屏滑动返回功能，就使用自己定义的导航控制器。</p>
+
+<h5>二、分析导航控制器侧滑功能</h5>
+
+<p>效果：导航控制器默认自带了侧滑功能，当用户在界面的左边滑动的时候，就会有侧滑功能。</p>
+
+<p>系统自带的侧滑效果：</p>
+
+<p>分析：</p>
+
+<ul>
+<li><p>1.导航控制器的view自带了滑动手势，只不过手势的触发范围只能在左边。</p></li>
+<li><p>2.当用户在界面左边拖动，就会触发滑动手势方法，并且有滑动返回功能，说明系统手势触发的方法已经实现了滑动返回功能。</p></li>
+<li><p>3.为什么说系统手势触发的方法已经实现了滑动返回功能？</p></li>
+</ul>
+
+
+<h3>原因：</h3>
+
+<p>创建滑动手势对象的时候，需要绑定监听者，当触发手势的时候会调用target的action。</p>
+
+<p>UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:action];
+当用户在界面左边滑动，有滑动返回功能，这是因为触发手势了，调用target的action方法，说明action方法内部实现滑动返回功能，否则就不会有滑动返回效果。</p>
+
+<h5>三、实现全屏滑动功能分析</h5>
+
+<p>打印导航控制器自带的滑动手势，看下它的真实面目。</p>
+
+<p>系统自带的滑动手势interactivePopGestureRecognizer</p>
+
+<pre><code>//  self指向的导航控制器，在导航控制器的viewDidLoad方法打印 
+- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    NSLog(@"%@",self.interactivePopGestureRecognizer); 
+} 
+</code></pre>
+
+<p>由图中可知：</p>
+
+<ul>
+<li><p>1.系统自带的手势是UIScreenEdgePanGestureRecognizer类型对象,屏幕边缘滑动手势</p></li>
+<li><p>2.系统自带手势target是_UINavigationInteractiveTransition类型的对象</p></li>
+<li><p>3.target调用的action方法名叫handleNavigationTransition:</p></li>
+</ul>
+
+
+<p>分析：</p>
+
+<p>UIScreenEdgePanGestureRecognizer，看名称就知道，这个手势的范围只能在屏幕的周边，就是因为这个手势，系统自带的滑动效果，只能实现侧边滑动。</p>
+
+<h5>四、如何实现全屏滑动功能</h5>
+
+<p>给自己的导航控制器，添加一个全屏的滑动手势，调用系统自带滑动手势的target的action方法，利用系统实现的滑动返回功能，加上自己全屏滑动手势，就有全屏滑动功能了。</p>
+
+<p>问题：如何拿到系统自带的target对象?，action方法名已经知道，而且系统肯定在target对象实现了，只要拿到target对象，调用这个方法就行。</p>
+
+<p>通过打印系统自带的滑动手势的代理，发现正好是_UINavigationInteractiveTransition对象，因此我猜测这个代理对象就是target对象,只要拿到它，就拿到系统自带滑动手势的target对象。</p>
+
+<pre><code>// 打印系统自带滑动手势的代理对象 
+SLog(@"%@",self.interactivePopGestureRecognizer.delegate); 
+</code></pre>
+
+<p>导航控制器全屏滑动注意点:</p>
+
+<ul>
+<li><p>1.禁止系统自带滑动手势使用。</p></li>
+<li><p>2.只有导航控制器的非根控制器才需要触发手势，使用手势代理，控制手势触发。</p></li>
+</ul>
+
+
+<p>全屏滑动代码实现</p>
+
+<pre><code>- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    // 获取系统自带滑动手势的target对象 
+    id target = self.interactivePopGestureRecognizer.delegate; 
+    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法 
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)]; 
+    // 设置手势代理，拦截手势触发 
+    pan.delegate = self; 
+    // 给导航控制器的view添加全屏滑动手势 
+    [self.view addGestureRecognizer:pan]; 
+    // 禁止使用系统自带的滑动手势 
+    self.interactivePopGestureRecognizer.enabled = NO; 
+} 
+// 什么时候调用：每次触发手势之前都会询问下代理，是否触发。 
+// 作用：拦截手势触发 
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer 
+{ 
+    // 注意：只有非根控制器才有滑动返回功能，根控制器没有。 
+    // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器 
+    if (self.childViewControllers.count == 1) { 
+        // 表示用户在根控制器界面，就不需要触发滑动手势， 
+        return NO; 
+    } 
+    return YES; 
+} 
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2738,569 +3113,6 @@ return groupName;
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：
-最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
-
-<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
-
-<h6>##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（RFC-3920），同时还提供了用于读写XML的工具，大大简化了基于XMPP的通信应用的开发。</h6>
-
-<h3>关于连接的</h3>
-
-<pre><code>//此方法在stream开始连接服务器的时候调用
- - (void)xmppStreamDidConnect:(XMPPStream *)sender
- //此方法在stream连接断开的时候调用
- - (void)xmppStreamDidDisconnect:(XMPPStream *)sender withError:(NSError *)error;
-</code></pre>
-
-<h3>关于验证的</h3>
-
-<pre><code>//验证失败后调用
- - (void)xmppStream:(XMPPStream *)sender didNotAuthenticate:(NSXMLElement *)error
-//验证成功后调用
- - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
-</code></pre>
-
-<h3>关于通信的</h3>
-
-<pre><code>//收到消息后调用
-- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
-//接受到好友状态更新
-- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
-</code></pre>
-
-<h4>简单实战</h4>
-
-<h6>登录和好友上下线</h6>
-
-<h5>XMPP中常用对象们</h5>
-
-<pre><code>XMPPStream：xmpp基础服务类
-XMPPRoster：好友列表类
-XMPPRosterCoreDataStorage：好友列表（用户账号）在core data中的操作类
-XMPPvCardCoreDataStorage：好友名片（昵称，签名，性别，年龄等信息）在core data中的操作类
-XMPPvCardTemp：好友名片实体类，从数据库里取出来的都是它
-xmppvCardAvatarModule：好友头像
-XMPPReconnect：如果失去连接,自动重连
-XMPPRoom：提供多用户聊天支持
-</code></pre>
-
-<p>XMPPPubSub：发布订阅</p>
-
-<h5>登录操作，也就是连接xmpp服务器</h5>
-
-<pre><code>- (void)connect {
-    if (self.xmppStream == nil) {
-        self.xmppStream = [[XMPPStream alloc] init];
-        [self.xmppStream addDelegate:self delegateQueue:dispatch_get_main_queue()];
-    }
-    if (![self.xmppStream isConnected]) {
-        NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"username"];
-        XMPPJID *jid = [XMPPJID jidWithUser:username domain:@"lizhen" resource:@"Ework"];
-        [self.xmppStream setMyJID:jid];
-        [self.xmppStream setHostName:@"10.4.125.113"];
-        NSError *error = nil;
-        if (![self.xmppStream connect:&amp;error]) {
-            NSLog(@"Connect Error: %@", [[error userInfo] description]);
-        }
-    }
-}
-</code></pre>
-
-<p>connect成功之后会依次调用XMPPStreamDelegate的方法，首先调用</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender socketDidConnect:(GCDAsyncSocket *)socket
-</code></pre>
-
-<p>&hellip;
-然后</p>
-
-<ul>
-<li><p>(void)xmppStreamDidConnect:(XMPPStream *)sender
-在该方法下面需要使用xmppStream 的authenticateWithPassword方法进行密码验证，成功的话会响应delegate的方法，就是下面这个</p></li>
-<li><p>(void)xmppStreamDidAuthenticate:(XMPPStream *)sender</p></li>
-</ul>
-
-
-<h5>上线</h5>
-
-<p>实现 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender 委托方法</p>
-
-<pre><code>- (void)xmppStreamDidAuthenticate:(XMPPStream *)sender {
-     XMPPPresence *presence = [XMPPPresence presenceWithType:@"available"];
-    [self.xmppStream sendElement:presence];
- }
-</code></pre>
-
-<h5>退出并断开连接</h5>
-
-<pre><code> - (void)disconnect {
-     XMPPPresence *presence = [XMPPPresence presenceWithType:@"unavailable"];
-    [self.xmppStream sendElement:presence];
-
-      [self.xmppStream disconnect];
-  }
-</code></pre>
-
-<h5>好友状态</h5>
-
-<p>获取好友状态，通过实现</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
-</code></pre>
-
-<p>&hellip;
-方法，当接收到 presence 标签的内容时，XMPPFramework 框架回调该方法</p>
-
-<pre><code>presence 的状态：
-available 上线
-away 离开
-do not disturb 忙碌
-unavailable 下线
-
-- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence {
-    NSString *presenceType = [presence type];
-    NSString *presenceFromUser = [[presence from] user];
-    if (![presenceFromUser isEqualToString:[[sender myJID] user]]) {
-        if ([presenceType isEqualToString:@"available"]) {
-            //
-        } else if ([presenceType isEqualToString:@"unavailable"]) {
-            //
-        }
-    }
-}
-</code></pre>
-
-<h3>接收消息和发送消息</h3>
-
-<h5>接收消息</h5>
-
-<p>通过实现</p>
-
-<ul>
-<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message;
-当接收到 message 标签的内容时，XMPPFramework 框架回调该方法
-根据 XMPP 协议，消息体的内容存储在标签 body 内</p></li>
-<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message {
-  NSString *messageBody = [[message elementForName:@&ldquo;body&rdquo;] stringValue];
-}</p></li>
-</ul>
-
-
-<h5>发送消息</h5>
-
-<p>发送消息，我们需要根据 XMPP 协议，将数据放到标签内</p>
-
-<pre><code>- (void)sendMessage:(NSString *) message toUser:(NSString *) user {
-    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
-    [body setStringValue:message];
-    NSXMLElement *message = [NSXMLElement elementWithName:@"message"];
-    [message addAttributeWithName:@"type" stringValue:@"chat"];
-    NSString *to = [NSString stringWithFormat:@"%@@example.com", user];
-    [message addAttributeWithName:@"to" stringValue:to];
-    [message addChild:body];
-    [self.xmppStream sendElement:message];
-}
-</code></pre>
-
-<h3>获取好友信息和删除好友</h3>
-
-<h5>好友列表和好友名片</h5>
-
-<pre><code>[_xmppRoster fetchRoster];//获取好友列表
-//获取到一个好友节点
-- (void)xmppRoster:(XMPPRoster *)sender didRecieveRosterItem:(NSXMLElement *)item
-//获取完好友列表
-- (void)xmppRosterDidEndPopulating:(XMPPRoster *)sender
-//到服务器上请求联系人名片信息
-- (void)fetchvCardTempForJID:(XMPPJID *)jid;
-//请求联系人的名片，如果数据库有就不请求，没有就发送名片请求
-- (void)fetchvCardTempForJID:(XMPPJID *)jid ignoreStorage:(BOOL)ignoreStorage;
-//获取联系人的名片，如果数据库有就返回，没有返回空，并到服务器上抓取
-- (XMPPvCardTemp *)vCardTempForJID:(XMPPJID *)jid shouldFetch:(BOOL)shouldFetch;
-//更新自己的名片信息
-- (void)updateMyvCardTemp:(XMPPvCardTemp *)vCardTemp;
-//获取到一盒联系人的名片信息的回调
-- (void)xmppvCardTempModule:(XMPPvCardTempModule *)vCardTempModule
-        didReceivevCardTemp:(XMPPvCardTemp *)vCardTemp
-                     forJID:(XMPPJID *)jid
-</code></pre>
-
-<h5>添加好友</h5>
-
-<pre><code>//name为用户账号
-    - (void)XMPPAddFriendSubscribe:(NSString *)name
-    {
-        //XMPPHOST 就是服务器名，  主机名
-        XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];
-        //[presence addAttributeWithName:@"subscription" stringValue:@"好友"];
-        [xmppRoster subscribePresenceToUser:jid];
-
-    }
-</code></pre>
-
-<h5>收到添加好友的请求</h5>
-
-<pre><code>- (void)xmppRoster:(XMPPRoster *)sender didReceivePresenceSubscriptionRequest:(XMPPPresence *)presence
-    {
-        //取得好友状态
-        NSString *presenceType = [NSString stringWithFormat:@"%@", [presence type]]; //online/offline
-        //请求的用户
-        NSString *presenceFromUser =[NSString stringWithFormat:@"%@", [[presence from] user]];
-        NSLog(@"presenceType:%@",presenceType);
-
-        NSLog(@"presence2:%@  sender2:%@",presence,sender);
-
-        XMPPJID *jid = [XMPPJID jidWithString:presenceFromUser];
-        //接收添加好友请求
-        [xmppRoster acceptPresenceSubscriptionRequestFrom:jid andAddToRoster:YES];
-
-    }
-</code></pre>
-
-<h5>删除好友</h5>
-
-<pre><code>//删除好友，name为好友账号
-- (void)removeBuddy:(NSString *)name  
-{  
-    XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];  
-
-    [self xmppRoster] removeUser:jid];  
-}
-</code></pre>
-
-<h5>聊天室</h5>
-
-<p>初始化聊天室</p>
-
-<pre><code>     XMPPJID *roomJID = [XMPPJID jidWithString:ROOM_JID];
-
-    xmppRoom = [[XMPPRoom alloc] initWithRoomStorage:self jid:roomJID];
-
-    [xmppRoom activate:xmppStream];
-     [xmppRoom addDelegate:self delegateQueue:dispatch_get_main_queue()];
-</code></pre>
-
-<p>创建聊天室成功</p>
-
-<pre><code>`- (void)xmppRoomDidCreate:(XMPPRoom *)sender
-{
-    DDLogInfo(@"%@: %@", THIS_FILE, THIS_METHOD);
-}`
-</code></pre>
-
-<p>加入聊天室，使用昵称</p>
-
-<pre><code>[xmppRoom joinRoomUsingNickname:@"quack" history:nil];
-</code></pre>
-
-<p>获取聊天室信息</p>
-
-<pre><code>- (void)xmppRoomDidJoin:(XMPPRoom *)sender
-    {
-        [xmppRoom fetchConfigurationForm];
-        [xmppRoom fetchBanList];
-        [xmppRoom fetchMembersList];
-        [xmppRoom fetchModeratorsList];
-    }
-</code></pre>
-
-<p>如果房间存在，会调用委托</p>
-
-<pre><code>    // 收到禁止名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchBanList:(NSArray *)items;
-    // 收到好友名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchMembersList:(NSArray *)items;
-    // 收到主持人名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchModeratorsList:(NSArray *)items;
-房间不存在，调用委托
-
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchBanList:(XMPPIQ *)iqError;
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchMembersList:(XMPPIQ *)iqError;
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchModeratorsList:(XMPPIQ *)iqError;
-</code></pre>
-
-<p>离开房间</p>
-
-<pre><code>[xmppRoom deactivate:xmppStream];
-</code></pre>
-
-<p>XMPPRoomDelegate的其他代理方法:</p>
-
-<p>离开聊天室</p>
-
-<pre><code>    - (void)xmppRoomDidLeave:(XMPPRoom *)sender
-    {
-        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>新人加入群聊</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidJoin:(XMPPJID *)occupantJID
-     {
-         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>有人退出群聊</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidLeave:(XMPPJID *)occupantJID
-    {
-        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>有人在群里发言</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID
-     {
-         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<h5>消息回执</h5>
-
-<p>这个是XEP－0184协议的内容
-发送消息时附加回执请求
-代码实现</p>
-
-<pre><code>NSString *siID = [XMPPStream generateUUID];
-    //发送消息
-    XMPPMessage *message = [XMPPMessage messageWithType:@"chat" to:jid elementID:siID];
-    NSXMLElement *receipt = [NSXMLElement elementWithName:@"request" xmlns:@"urn:xmpp:receipts"];
-    [message addChild:receipt];
-    [message addBody:@"测试"];
-    [self.xmppStream sendElement:message];
-</code></pre>
-
-<p>收到回执请求的消息，发送回执</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
-    {
-        //回执判断
-        NSXMLElement *request = [message elementForName:@"request"];
-        if (request)
-        {
-            if ([request.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
-            {
-                //组装消息回执
-                XMPPMessage *msg = [XMPPMessage messageWithType:[message attributeStringValueForName:@"type"] to:message.from elementID:[message attributeStringValueForName:@"id"]];
-                NSXMLElement *recieved = [NSXMLElement elementWithName:@"received" xmlns:@"urn:xmpp:receipts"];
-                [msg addChild:recieved];
-
-                //发送回执
-                [self.xmppStream sendElement:msg];
-            }
-        }else
-        {
-            NSXMLElement *received = [message elementForName:@"received"];
-            if (received)
-            {
-                if ([received.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
-                {
-                    //发送成功
-                    NSLog(@"message send success!");
-                }  
-            }  
-        }  
-
-        //消息处理  
-        //...  
-    }
-</code></pre>
-
-<h5>添加AutoPing</h5>
-
-<p>为 了监听服务器是否有效，增加心跳监听。用XEP-0199协议，在XMPPFrameWork框架下，封装了 XMPPAutoPing 和 XMPPPing两个类都可以使用，因为XMPPAutoPing已经组合进了XMPPPing类，所以XMPPAutoPing使用起来更方便。</p>
-
-<pre><code>//初始化并启动ping
--(void)autoPingProxyServer:(NSString*)strProxyServer
-{
-    _xmppAutoPing = [[XMPPAutoPingalloc] init];
-    [_xmppAutoPingactivate:_xmppStream];
-    [_xmppAutoPingaddDelegate:selfdelegateQueue:  dispatch_get_main_queue()];
-    _xmppAutoPing.respondsToQueries = YES;
-    _xmppAutoPing.pingInterval=2;//ping 间隔时间
-    if (nil != strProxyServer)
-    {
-       _xmppAutoPing.targetJID = [XMPPJID jidWithString: strProxyServer ];//设置ping目标服务器，如果为nil,则监听socketstream当前连接上的那个服务器
-    }
-}
-//卸载监听
- [_xmppAutoPing   deactivate];
-  [_xmppAutoPing   removeDelegate:self];
-   _xmppAutoPing = nil;
-//ping XMPPAutoPingDelegate的委托方法:
-- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender");
-}
-- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender");
-}
-
-- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender");
-}
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
-
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
-
-<p>1.最常用的就是cell的重用， 注册重用标识符</p>
-
-<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
-如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
-每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-设置正确的reuseIdentifer以重用cell
-</code></pre>
-
-<p>2.避免cell的重新布局</p>
-
-<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
-如可以将cell单独放到一个自定义类，初始化时就布局好
-</code></pre>
-
-<p>3.提前计算并缓存cell的属性及内容</p>
-
-<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
-当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
-</code></pre>
-
-<p>4.减少cell中控件的数量</p>
-
-<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
-不适用的可以先隐藏
-</code></pre>
-
-<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
-
-<pre><code>渲染耗时比较长
-尽量将view设置为不透明，包括cell本身。
-</code></pre>
-
-<p>6.使用局部更新</p>
-
-<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
-</code></pre>
-
-<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
-
-<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
-</code></pre>
-
-<p>8.少使用addView 给cell动态添加view</p>
-
-<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
-
-<pre><code>注意正确使用懒加载
-</code></pre>
-
-<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
-
-<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
-</code></pre>
-
-<p>11.缓存行高：</p>
-
-<pre><code>如果row的高度不相同，那么将其缓存下来
-estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-</code></pre>
-
-<p>12.避免渐变，图像缩放以及离屏绘制</p>
-
-<p>13.使用shadowPath来设置阴影。</p>
-
-<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
-
-<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
-
-<hr />
-
-<p>参考：相关性能优化问题</p>
-
-<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -3334,6 +3146,10 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">完整定时器</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
@@ -3347,10 +3163,6 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
     
       <li class="post">
         <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
       </li>
     
   </ul>

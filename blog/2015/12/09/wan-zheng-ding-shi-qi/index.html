@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>自定义相册删除复活的实现 - iOS梦工厂</title>
+  <title>完整定时器 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="自定义相册删除复活的实现 ordinal 在这里（http://www.cnblogs.com/iCocos/p/4705585.html）我们提到了。 简单的实现了获取系统相册图片并且保存图片到系统相册
-定义自定义的相册，并且保存到自定义相册 这里久以一个简单的例子实现一个上面的所有功能， &hellip;">
+  <meta name="description" content="完整定时器 ordinal 在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -78,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">自定义相册删除复活的实现</h1>
+      <h1 class="entry-title">完整定时器</h1>
     
     
       <p class="meta">
@@ -98,150 +97,172 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+<div class="entry-content"><p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+<h2>一、NSTimer</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>1     // 设置定时器
+2     [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(timeChange) userInfo:nil repeats:YES];
+3     
+4     // 0.1 setNeedsDisplay 绑定一个标识,等待下次刷新的时候才会调用drawRect方法
+5     // 0.15 屏幕的刷新时间
+</code></pre>
 
 <ul>
-<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
-<li>定义自定义的相册，并且保存到自定义相册</li>
+<li><p>TimerInterval : 执行之前等待的时间。比如设置成1.0，就代表1秒后执行方法</p></li>
+<li><p>target : 需要执行方法的对象。</p></li>
+<li><p>selector : 需要执行的方法</p></li>
+<li><p>repeats : 是否需要循环</p></li>
 </ul>
 
 
-<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
-App中自定义的相册呗删除之后再次保存相片无法成功</p>
+<h5>2. 释放方法</h5>
 
-<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
-
-<p>先来看看咱们取得相册中的相片</p>
-
-<pre><code>- (void)getAllPhotos
-{
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
-    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
-        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
-            // 缩略图
-            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
-            // 获得原始图片
-            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
-        }];
-
-   } failureBlock:nil];
-}
+<pre><code> [timer invalidate]; 
 </code></pre>
 
-<p>下面我们看看代码具体的实现</p>
+<blockquote><p>注意 :
+调用创建方法后，target对象的计数器会加1，直到执行完毕，自动减1。如果是循环执行的话，就必须手动关闭，否则可以不执行释放方法。</p></blockquote>
 
-<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+<h5>3. 特性</h5>
 
-<pre><code> /** 相册库 */
-@property (nonatomic, strong) ALAssetsLibrary *library;
+<ul>
+<li>存在延迟</li>
+</ul>
+
+
+<p>不管是一次性的还是周期性的timer的实际触发事件的时间，都会与所加入的RunLoop和RunLoop Mode有关，如果此RunLoop正在执行一个连续性的运算，timer就会被延时出发。重复性的timer遇到这种情况，如果延迟超过了一个周期，则会在延时结束后立刻执行，并按照之前指定的周期继续执行。</p>
+
+<ul>
+<li>必须加入Runloop</li>
+</ul>
+
+
+<p>使用上面的创建方式，会自动把timer加入MainRunloop的NSDefaultRunLoopMode中。如果使用以下方式创建定时器，就必须手动加入Runloop:</p>
+
+<pre><code>NSTimer *timer = [NSTimer timerWithTimeInterval:5 target:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(timerAction) userInfo:nil repeats:YES];&lt;br&gt;&lt;br&gt;
+[[NSRunLoop mainRunLoop] &lt;span style="color: #3366ff;"&gt;addTimer&lt;/span&gt;:timer forMode:NSDefaultRunLoopMode];
 </code></pre>
 
-<p>二：然后就懒加载这个属性</p>
+<p> 注意NSTimer还有一个方法，因为每次用的时候都是使用带target的这个方法，突然有一天很好奇就研究了一下，他的使用也很简单，只是相对上面那个有点繁琐，</p>
 
-<pre><code>- (ALAssetsLibrary *)library
-{
-    if (!_library) {
-        _library = [[ALAssetsLibrary alloc] init];
-    }
-    return _library;
-}
+<h5>1:创建一个签名：</h5>
+
+<pre><code> NSMethodSignature *singature = [NSMethodSignature signatureWithObjCTypes:"v@:"]; 2  
 </code></pre>
 
-<p>三：点击保存按钮的实现</p>
+<p>这里我想如果你仔细的话肯定注意到了：后面的“v@：”，这里是运行时的语法</p>
 
-<pre><code>- (IBAction)save
-{
-// 获得文件夹的名字
-__block NSString *groupName = [self groupName];
+<p>在这里是指一个方法</p>
 
-// self的弱引用
-XMGWeakSelf;
-
-// 图片库
-__weak ALAssetsLibrary *weakLibrary = self.library;
-
-// 创建文件夹
-[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-    if (group) { // 新创建的文件夹
-        // 添加图片到文件夹中
-        [weakSelf addImageToGroup:group];
-    } else { // 文件夹已经存在
-        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
-            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
-                // 添加图片到文件夹中
-
-                [weakSelf addImageToGroup:group];
-
-                *stop = YES; // 停止遍历
-            } else if ([name isEqualToString:@"Camera Roll"]) {
-                // 文件夹被用户强制删除了
-                groupName = [groupName stringByAppendingString:@" "];
-                // 存储新的名字
-                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-                // 创建新的文件夹
-                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-                    // 添加图片到文件夹中
-                    [weakSelf addImageToGroup:group];
-                } failureBlock:nil];
-            }
-        } failureBlock:nil];
-    }
-
-    } failureBlock:nil];
-    }
+<pre><code>v放回viod类型
+@一个id类型的对象
+：对应SEL
 </code></pre>
 
-<p>四：添加图片</p>
+<p>关于运行时这里不多介绍请查看笔者之前的文章，或者查看官方文档，这是一个iOS开发者必须会的知识点</p>
 
-<pre><code>/**
- * 添加一张图片到某个文件夹中
- */
-- (void)addImageToGroup:(ALAssetsGroup *)group
-{
-__weak ALAssetsLibrary *weakLibrary = self.library;
-// 需要保存的图片
+<h5>2:通过前面创建一个请求，并且设置对应的target和SEL</h5>
 
-CGImageRef image = self.imageView.image.CGImage;
-
-// 添加图片到【相机胶卷】
-[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        // 添加一张图片到自定义的文件夹中
-        [group addAsset:asset];
-        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
-    } failureBlock:nil];
-}];
-}
+<pre><code>&lt;span style="color: #3366ff;"&gt;    NSInvocation&lt;/span&gt; *vocation = [NSInvocation invocationWithMethodSignature:singature];
+    vocation.target = self;
+    vocation.selector = @selector(timeChange);
 </code></pre>
 
-<p>五：关于沙河中的组名</p>
+<h5>3:在讲请求传到NSTimer中去实现定时</h5>
 
-<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
-
-<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
-static NSString * const iCocosDefaultGroupName = @"iCocos";
+<pre><code>[NSTimer scheduledTimerWithTimeInterval:1 invocation:vocation repeats:YES]; 
 </code></pre>
 
-<p>实现祖名的存取</p>
+<h2>二、CADisplayLink</h2>
 
-<pre><code>- (NSString *)groupName
-{
-    // 先从沙盒中取得名字
+<h5>1. 创建方法</h5>
 
-    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
-    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
-   groupName = XMGDefaultGroupName;
+<pre><code>self.displayLink = [CADisplayLink displayLinkWithTarget:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(handleDisplayLink:)];   
+[self.displayLink &lt;span style="color: #3366ff;"&gt;addToRunLoop&lt;/span&gt;:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+</code></pre>
 
-    // 存储名字到沙盒中
-    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
- [[NSUserDefaults standardUserDefaults] synchronize];
-}
-return groupName;
-}
+<h5>2. 停止方法</h5>
+
+<pre><code>self.displayLink &lt;span style="color: #3366ff;"&gt;invalidate&lt;/span&gt;]; 
+self.displayLink = nil;
+</code></pre>
+
+<p> 当把CADisplayLink对象add到runloop中后，selector就能被周期性调用，类似于重复的NSTimer被启动了；执行invalidate操作时，CADisplayLink对象就会从runloop中移除，selector调用也随即停止，类似于NSTimer的invalidate方法。</p>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>屏幕刷新时调用</li>
+</ul>
+
+
+<p>CADisplayLink是一个能让我们以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类。CADisplayLink以特定模式注册到runloop后，每当屏幕显示内容刷新结束的时候，runloop就会向CADisplayLink指定的target发送一次指定的selector消息， CADisplayLink类对应的selector就会被调用一次。所以通常情况下，按照iOS设备屏幕的刷新率60次/秒</p>
+
+<ul>
+<li>延迟</li>
+</ul>
+
+
+<p>iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。但如果调用的方法比较耗时，超过了屏幕刷新周期，就会导致跳过若干次回调调用机会。</p>
+
+<p>如果CPU过于繁忙，无法保证屏幕60次/秒的刷新率，就会导致跳过若干次调用回调方法的机会，跳过次数取决CPU的忙碌程度。</p>
+
+<ul>
+<li>使用场景</li>
+</ul>
+
+
+<p>从原理上可以看出，CADisplayLink适合做界面的不停重绘，比如视频播放的时候需要不停地获取下一帧用于界面渲染。</p>
+
+<h5>4. 重要属性</h5>
+
+<ul>
+<li>frameInterval</li>
+</ul>
+
+
+<p>NSInteger类型的值，用来设置间隔多少帧调用一次selector方法，默认值是1，即每帧都调用一次。</p>
+
+<ul>
+<li>duration</li>
+</ul>
+
+
+<p>readOnly的CFTimeInterval值，表示两次屏幕刷新之间的时间间隔。需要注意的是，该属性在target的selector被首次调用以后才会被赋值。selector的调用间隔时间计算方式是：调用间隔时间 = duration × frameInterval。</p>
+
+<h5>CADisplayLink底层实现：</h5>
+
+<pre><code> setNeedsDisplay:底层并不会马上调用drawRect,只会给当前的控件绑定一个刷新的标识,每次屏幕刷新的时候,就会把绑定了刷新(重绘)标识的控件重新刷新(绘制)一次,就会调用drawRect去重绘
+</code></pre>
+
+<blockquote><p> 注意：如果以后每隔一段时间需要重绘,一般不使用NSTimer,使用CADisplayLink,不会刷新的时候有延迟</p></blockquote>
+
+<h2>三、GCD方式</h2>
+
+<h5>执行一次</h5>
+
+<pre><code>1 double delayInSeconds = 2.0;
+2 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC); 
+3 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
+4     //执行事件
+5 });
+</code></pre>
+
+<h5>重复执行</h5>
+
+<pre><code>1 NSTimeInterval period = 1.0; //设置时间间隔
+2 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+3 dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+4 dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0); //每秒执行
+5 dispatch_source_set_event_handler(_timer, ^{
+6     //在这里执行事件
+7 });
+8 dispatch_resume(_timer);
 </code></pre>
 </div>
 
@@ -269,12 +290,6 @@ return groupName;
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
       
 
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
-  
-</span>
-
 
       
 
@@ -300,10 +315,8 @@ return groupName;
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/11/29/xmppshi-yong-zong-jie/" title="Previous Post: XMPP使用总结">&laquo; XMPP使用总结</a>
+        <a class="basic-alignment left" href="/blog/2015/12/08/watch-os2-chu-tan/" title="Previous Post: Watch OS2 初探">&laquo; Watch OS2 初探</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/" title="Next Post: iOS版本适配问题（6，7，8，9）">iOS版本适配问题（6，7，8，9） &raquo;</a>
       
     </p>
   </footer>
@@ -390,7 +403,7 @@ return groupName;
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

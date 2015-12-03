@@ -9,9 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="蓝牙简单介绍和4.0的基本使用 背景： iOS的蓝牙不能用来传输文件。
-iOS与iOS设备之间进行数据通信，使用gameKit.framework
-iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework iOS中蓝牙的实现方案 &hellip;">
+  <meta name="description" content="引言：
+最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。 但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的 ##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（ &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +75,569 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：
+最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
+
+<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
+
+<h6>##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（RFC-3920），同时还提供了用于读写XML的工具，大大简化了基于XMPP的通信应用的开发。</h6>
+
+<h3>关于连接的</h3>
+
+<pre><code>//此方法在stream开始连接服务器的时候调用
+ - (void)xmppStreamDidConnect:(XMPPStream *)sender
+ //此方法在stream连接断开的时候调用
+ - (void)xmppStreamDidDisconnect:(XMPPStream *)sender withError:(NSError *)error;
+</code></pre>
+
+<h3>关于验证的</h3>
+
+<pre><code>//验证失败后调用
+ - (void)xmppStream:(XMPPStream *)sender didNotAuthenticate:(NSXMLElement *)error
+//验证成功后调用
+ - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
+</code></pre>
+
+<h3>关于通信的</h3>
+
+<pre><code>//收到消息后调用
+- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+//接受到好友状态更新
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<h4>简单实战</h4>
+
+<h6>登录和好友上下线</h6>
+
+<h5>XMPP中常用对象们</h5>
+
+<pre><code>XMPPStream：xmpp基础服务类
+XMPPRoster：好友列表类
+XMPPRosterCoreDataStorage：好友列表（用户账号）在core data中的操作类
+XMPPvCardCoreDataStorage：好友名片（昵称，签名，性别，年龄等信息）在core data中的操作类
+XMPPvCardTemp：好友名片实体类，从数据库里取出来的都是它
+xmppvCardAvatarModule：好友头像
+XMPPReconnect：如果失去连接,自动重连
+XMPPRoom：提供多用户聊天支持
+</code></pre>
+
+<p>XMPPPubSub：发布订阅</p>
+
+<h5>登录操作，也就是连接xmpp服务器</h5>
+
+<pre><code>- (void)connect {
+    if (self.xmppStream == nil) {
+        self.xmppStream = [[XMPPStream alloc] init];
+        [self.xmppStream addDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    if (![self.xmppStream isConnected]) {
+        NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"username"];
+        XMPPJID *jid = [XMPPJID jidWithUser:username domain:@"lizhen" resource:@"Ework"];
+        [self.xmppStream setMyJID:jid];
+        [self.xmppStream setHostName:@"10.4.125.113"];
+        NSError *error = nil;
+        if (![self.xmppStream connect:&amp;error]) {
+            NSLog(@"Connect Error: %@", [[error userInfo] description]);
+        }
+    }
+}
+</code></pre>
+
+<p>connect成功之后会依次调用XMPPStreamDelegate的方法，首先调用</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender socketDidConnect:(GCDAsyncSocket *)socket
+</code></pre>
+
+<p>&hellip;
+然后</p>
+
+<ul>
+<li><p>(void)xmppStreamDidConnect:(XMPPStream *)sender
+在该方法下面需要使用xmppStream 的authenticateWithPassword方法进行密码验证，成功的话会响应delegate的方法，就是下面这个</p></li>
+<li><p>(void)xmppStreamDidAuthenticate:(XMPPStream *)sender</p></li>
+</ul>
+
+
+<h5>上线</h5>
+
+<p>实现 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender 委托方法</p>
+
+<pre><code>- (void)xmppStreamDidAuthenticate:(XMPPStream *)sender {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"available"];
+    [self.xmppStream sendElement:presence];
+ }
+</code></pre>
+
+<h5>退出并断开连接</h5>
+
+<pre><code> - (void)disconnect {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"unavailable"];
+    [self.xmppStream sendElement:presence];
+
+      [self.xmppStream disconnect];
+  }
+</code></pre>
+
+<h5>好友状态</h5>
+
+<p>获取好友状态，通过实现</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<p>&hellip;
+方法，当接收到 presence 标签的内容时，XMPPFramework 框架回调该方法</p>
+
+<pre><code>presence 的状态：
+available 上线
+away 离开
+do not disturb 忙碌
+unavailable 下线
+
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence {
+    NSString *presenceType = [presence type];
+    NSString *presenceFromUser = [[presence from] user];
+    if (![presenceFromUser isEqualToString:[[sender myJID] user]]) {
+        if ([presenceType isEqualToString:@"available"]) {
+            //
+        } else if ([presenceType isEqualToString:@"unavailable"]) {
+            //
+        }
+    }
+}
+</code></pre>
+
+<h3>接收消息和发送消息</h3>
+
+<h5>接收消息</h5>
+
+<p>通过实现</p>
+
+<ul>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message;
+当接收到 message 标签的内容时，XMPPFramework 框架回调该方法
+根据 XMPP 协议，消息体的内容存储在标签 body 内</p></li>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message {
+  NSString *messageBody = [[message elementForName:@&ldquo;body&rdquo;] stringValue];
+}</p></li>
+</ul>
+
+
+<h5>发送消息</h5>
+
+<p>发送消息，我们需要根据 XMPP 协议，将数据放到标签内</p>
+
+<pre><code>- (void)sendMessage:(NSString *) message toUser:(NSString *) user {
+    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
+    [body setStringValue:message];
+    NSXMLElement *message = [NSXMLElement elementWithName:@"message"];
+    [message addAttributeWithName:@"type" stringValue:@"chat"];
+    NSString *to = [NSString stringWithFormat:@"%@@example.com", user];
+    [message addAttributeWithName:@"to" stringValue:to];
+    [message addChild:body];
+    [self.xmppStream sendElement:message];
+}
+</code></pre>
+
+<h3>获取好友信息和删除好友</h3>
+
+<h5>好友列表和好友名片</h5>
+
+<pre><code>[_xmppRoster fetchRoster];//获取好友列表
+//获取到一个好友节点
+- (void)xmppRoster:(XMPPRoster *)sender didRecieveRosterItem:(NSXMLElement *)item
+//获取完好友列表
+- (void)xmppRosterDidEndPopulating:(XMPPRoster *)sender
+//到服务器上请求联系人名片信息
+- (void)fetchvCardTempForJID:(XMPPJID *)jid;
+//请求联系人的名片，如果数据库有就不请求，没有就发送名片请求
+- (void)fetchvCardTempForJID:(XMPPJID *)jid ignoreStorage:(BOOL)ignoreStorage;
+//获取联系人的名片，如果数据库有就返回，没有返回空，并到服务器上抓取
+- (XMPPvCardTemp *)vCardTempForJID:(XMPPJID *)jid shouldFetch:(BOOL)shouldFetch;
+//更新自己的名片信息
+- (void)updateMyvCardTemp:(XMPPvCardTemp *)vCardTemp;
+//获取到一盒联系人的名片信息的回调
+- (void)xmppvCardTempModule:(XMPPvCardTempModule *)vCardTempModule
+        didReceivevCardTemp:(XMPPvCardTemp *)vCardTemp
+                     forJID:(XMPPJID *)jid
+</code></pre>
+
+<h5>添加好友</h5>
+
+<pre><code>//name为用户账号
+    - (void)XMPPAddFriendSubscribe:(NSString *)name
+    {
+        //XMPPHOST 就是服务器名，  主机名
+        XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];
+        //[presence addAttributeWithName:@"subscription" stringValue:@"好友"];
+        [xmppRoster subscribePresenceToUser:jid];
+
+    }
+</code></pre>
+
+<h5>收到添加好友的请求</h5>
+
+<pre><code>- (void)xmppRoster:(XMPPRoster *)sender didReceivePresenceSubscriptionRequest:(XMPPPresence *)presence
+    {
+        //取得好友状态
+        NSString *presenceType = [NSString stringWithFormat:@"%@", [presence type]]; //online/offline
+        //请求的用户
+        NSString *presenceFromUser =[NSString stringWithFormat:@"%@", [[presence from] user]];
+        NSLog(@"presenceType:%@",presenceType);
+
+        NSLog(@"presence2:%@  sender2:%@",presence,sender);
+
+        XMPPJID *jid = [XMPPJID jidWithString:presenceFromUser];
+        //接收添加好友请求
+        [xmppRoster acceptPresenceSubscriptionRequestFrom:jid andAddToRoster:YES];
+
+    }
+</code></pre>
+
+<h5>删除好友</h5>
+
+<pre><code>//删除好友，name为好友账号
+- (void)removeBuddy:(NSString *)name  
+{  
+    XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];  
+
+    [self xmppRoster] removeUser:jid];  
+}
+</code></pre>
+
+<h5>聊天室</h5>
+
+<p>初始化聊天室</p>
+
+<pre><code>     XMPPJID *roomJID = [XMPPJID jidWithString:ROOM_JID];
+
+    xmppRoom = [[XMPPRoom alloc] initWithRoomStorage:self jid:roomJID];
+
+    [xmppRoom activate:xmppStream];
+     [xmppRoom addDelegate:self delegateQueue:dispatch_get_main_queue()];
+</code></pre>
+
+<p>创建聊天室成功</p>
+
+<pre><code>`- (void)xmppRoomDidCreate:(XMPPRoom *)sender
+{
+    DDLogInfo(@"%@: %@", THIS_FILE, THIS_METHOD);
+}`
+</code></pre>
+
+<p>加入聊天室，使用昵称</p>
+
+<pre><code>[xmppRoom joinRoomUsingNickname:@"quack" history:nil];
+</code></pre>
+
+<p>获取聊天室信息</p>
+
+<pre><code>- (void)xmppRoomDidJoin:(XMPPRoom *)sender
+    {
+        [xmppRoom fetchConfigurationForm];
+        [xmppRoom fetchBanList];
+        [xmppRoom fetchMembersList];
+        [xmppRoom fetchModeratorsList];
+    }
+</code></pre>
+
+<p>如果房间存在，会调用委托</p>
+
+<pre><code>    // 收到禁止名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchBanList:(NSArray *)items;
+    // 收到好友名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchMembersList:(NSArray *)items;
+    // 收到主持人名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchModeratorsList:(NSArray *)items;
+房间不存在，调用委托
+
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchBanList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchMembersList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchModeratorsList:(XMPPIQ *)iqError;
+</code></pre>
+
+<p>离开房间</p>
+
+<pre><code>[xmppRoom deactivate:xmppStream];
+</code></pre>
+
+<p>XMPPRoomDelegate的其他代理方法:</p>
+
+<p>离开聊天室</p>
+
+<pre><code>    - (void)xmppRoomDidLeave:(XMPPRoom *)sender
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>新人加入群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidJoin:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人退出群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidLeave:(XMPPJID *)occupantJID
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人在群里发言</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<h5>消息回执</h5>
+
+<p>这个是XEP－0184协议的内容
+发送消息时附加回执请求
+代码实现</p>
+
+<pre><code>NSString *siID = [XMPPStream generateUUID];
+    //发送消息
+    XMPPMessage *message = [XMPPMessage messageWithType:@"chat" to:jid elementID:siID];
+    NSXMLElement *receipt = [NSXMLElement elementWithName:@"request" xmlns:@"urn:xmpp:receipts"];
+    [message addChild:receipt];
+    [message addBody:@"测试"];
+    [self.xmppStream sendElement:message];
+</code></pre>
+
+<p>收到回执请求的消息，发送回执</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+    {
+        //回执判断
+        NSXMLElement *request = [message elementForName:@"request"];
+        if (request)
+        {
+            if ([request.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+            {
+                //组装消息回执
+                XMPPMessage *msg = [XMPPMessage messageWithType:[message attributeStringValueForName:@"type"] to:message.from elementID:[message attributeStringValueForName:@"id"]];
+                NSXMLElement *recieved = [NSXMLElement elementWithName:@"received" xmlns:@"urn:xmpp:receipts"];
+                [msg addChild:recieved];
+
+                //发送回执
+                [self.xmppStream sendElement:msg];
+            }
+        }else
+        {
+            NSXMLElement *received = [message elementForName:@"received"];
+            if (received)
+            {
+                if ([received.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+                {
+                    //发送成功
+                    NSLog(@"message send success!");
+                }  
+            }  
+        }  
+
+        //消息处理  
+        //...  
+    }
+</code></pre>
+
+<h5>添加AutoPing</h5>
+
+<p>为 了监听服务器是否有效，增加心跳监听。用XEP-0199协议，在XMPPFrameWork框架下，封装了 XMPPAutoPing 和 XMPPPing两个类都可以使用，因为XMPPAutoPing已经组合进了XMPPPing类，所以XMPPAutoPing使用起来更方便。</p>
+
+<pre><code>//初始化并启动ping
+-(void)autoPingProxyServer:(NSString*)strProxyServer
+{
+    _xmppAutoPing = [[XMPPAutoPingalloc] init];
+    [_xmppAutoPingactivate:_xmppStream];
+    [_xmppAutoPingaddDelegate:selfdelegateQueue:  dispatch_get_main_queue()];
+    _xmppAutoPing.respondsToQueries = YES;
+    _xmppAutoPing.pingInterval=2;//ping 间隔时间
+    if (nil != strProxyServer)
+    {
+       _xmppAutoPing.targetJID = [XMPPJID jidWithString: strProxyServer ];//设置ping目标服务器，如果为nil,则监听socketstream当前连接上的那个服务器
+    }
+}
+//卸载监听
+ [_xmppAutoPing   deactivate];
+  [_xmppAutoPing   removeDelegate:self];
+   _xmppAutoPing = nil;
+//ping XMPPAutoPingDelegate的委托方法:
+- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender");
+}
+- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender");
+}
+
+- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender");
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：</p>
+
+<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+
+<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
+
+<p>1.最常用的就是cell的重用， 注册重用标识符</p>
+
+<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
+如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
+每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
+设置正确的reuseIdentifer以重用cell
+</code></pre>
+
+<p>2.避免cell的重新布局</p>
+
+<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
+如可以将cell单独放到一个自定义类，初始化时就布局好
+</code></pre>
+
+<p>3.提前计算并缓存cell的属性及内容</p>
+
+<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
+当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
+而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
+</code></pre>
+
+<p>4.减少cell中控件的数量</p>
+
+<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
+不适用的可以先隐藏
+</code></pre>
+
+<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
+
+<pre><code>渲染耗时比较长
+尽量将view设置为不透明，包括cell本身。
+</code></pre>
+
+<p>6.使用局部更新</p>
+
+<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
+</code></pre>
+
+<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
+
+<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
+</code></pre>
+
+<p>8.少使用addView 给cell动态添加view</p>
+
+<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
+
+<pre><code>注意正确使用懒加载
+</code></pre>
+
+<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
+
+<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
+</code></pre>
+
+<p>11.缓存行高：</p>
+
+<pre><code>如果row的高度不相同，那么将其缓存下来
+estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
+</code></pre>
+
+<p>12.避免渐变，图像缩放以及离屏绘制</p>
+
+<p>13.使用shadowPath来设置阴影。</p>
+
+<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
+
+<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
+
+<hr />
+
+<p>参考：相关性能优化问题</p>
+
+<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1479,6 +2041,10 @@ addBlankTargetForLinks();
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">完整定时器</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
@@ -1492,10 +2058,6 @@ addBlankTargetForLinks();
     
       <li class="post">
         <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
       </li>
     
   </ul>

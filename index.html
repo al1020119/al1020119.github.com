@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
-在这个过程中,你会学到: 如何为iOS &hellip;">
+  <meta name="description" content="在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +74,209 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">完整定时器</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+<h2>一、NSTimer</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>1     // 设置定时器
+2     [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(timeChange) userInfo:nil repeats:YES];
+3     
+4     // 0.1 setNeedsDisplay 绑定一个标识,等待下次刷新的时候才会调用drawRect方法
+5     // 0.15 屏幕的刷新时间
+</code></pre>
+
+<ul>
+<li><p>TimerInterval : 执行之前等待的时间。比如设置成1.0，就代表1秒后执行方法</p></li>
+<li><p>target : 需要执行方法的对象。</p></li>
+<li><p>selector : 需要执行的方法</p></li>
+<li><p>repeats : 是否需要循环</p></li>
+</ul>
+
+
+<h5>2. 释放方法</h5>
+
+<pre><code> [timer invalidate]; 
+</code></pre>
+
+<blockquote><p>注意 :
+调用创建方法后，target对象的计数器会加1，直到执行完毕，自动减1。如果是循环执行的话，就必须手动关闭，否则可以不执行释放方法。</p></blockquote>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>存在延迟</li>
+</ul>
+
+
+<p>不管是一次性的还是周期性的timer的实际触发事件的时间，都会与所加入的RunLoop和RunLoop Mode有关，如果此RunLoop正在执行一个连续性的运算，timer就会被延时出发。重复性的timer遇到这种情况，如果延迟超过了一个周期，则会在延时结束后立刻执行，并按照之前指定的周期继续执行。</p>
+
+<ul>
+<li>必须加入Runloop</li>
+</ul>
+
+
+<p>使用上面的创建方式，会自动把timer加入MainRunloop的NSDefaultRunLoopMode中。如果使用以下方式创建定时器，就必须手动加入Runloop:</p>
+
+<pre><code>NSTimer *timer = [NSTimer timerWithTimeInterval:5 target:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(timerAction) userInfo:nil repeats:YES];&lt;br&gt;&lt;br&gt;
+[[NSRunLoop mainRunLoop] &lt;span style="color: #3366ff;"&gt;addTimer&lt;/span&gt;:timer forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<p> 注意NSTimer还有一个方法，因为每次用的时候都是使用带target的这个方法，突然有一天很好奇就研究了一下，他的使用也很简单，只是相对上面那个有点繁琐，</p>
+
+<h5>1:创建一个签名：</h5>
+
+<pre><code> NSMethodSignature *singature = [NSMethodSignature signatureWithObjCTypes:"v@:"]; 2  
+</code></pre>
+
+<p>这里我想如果你仔细的话肯定注意到了：后面的“v@：”，这里是运行时的语法</p>
+
+<p>在这里是指一个方法</p>
+
+<pre><code>v放回viod类型
+@一个id类型的对象
+：对应SEL
+</code></pre>
+
+<p>关于运行时这里不多介绍请查看笔者之前的文章，或者查看官方文档，这是一个iOS开发者必须会的知识点</p>
+
+<h5>2:通过前面创建一个请求，并且设置对应的target和SEL</h5>
+
+<pre><code>&lt;span style="color: #3366ff;"&gt;    NSInvocation&lt;/span&gt; *vocation = [NSInvocation invocationWithMethodSignature:singature];
+    vocation.target = self;
+    vocation.selector = @selector(timeChange);
+</code></pre>
+
+<h5>3:在讲请求传到NSTimer中去实现定时</h5>
+
+<pre><code>[NSTimer scheduledTimerWithTimeInterval:1 invocation:vocation repeats:YES]; 
+</code></pre>
+
+<h2>二、CADisplayLink</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>self.displayLink = [CADisplayLink displayLinkWithTarget:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(handleDisplayLink:)];   
+[self.displayLink &lt;span style="color: #3366ff;"&gt;addToRunLoop&lt;/span&gt;:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<h5>2. 停止方法</h5>
+
+<pre><code>self.displayLink &lt;span style="color: #3366ff;"&gt;invalidate&lt;/span&gt;]; 
+self.displayLink = nil;
+</code></pre>
+
+<p> 当把CADisplayLink对象add到runloop中后，selector就能被周期性调用，类似于重复的NSTimer被启动了；执行invalidate操作时，CADisplayLink对象就会从runloop中移除，selector调用也随即停止，类似于NSTimer的invalidate方法。</p>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>屏幕刷新时调用</li>
+</ul>
+
+
+<p>CADisplayLink是一个能让我们以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类。CADisplayLink以特定模式注册到runloop后，每当屏幕显示内容刷新结束的时候，runloop就会向CADisplayLink指定的target发送一次指定的selector消息， CADisplayLink类对应的selector就会被调用一次。所以通常情况下，按照iOS设备屏幕的刷新率60次/秒</p>
+
+<ul>
+<li>延迟</li>
+</ul>
+
+
+<p>iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。但如果调用的方法比较耗时，超过了屏幕刷新周期，就会导致跳过若干次回调调用机会。</p>
+
+<p>如果CPU过于繁忙，无法保证屏幕60次/秒的刷新率，就会导致跳过若干次调用回调方法的机会，跳过次数取决CPU的忙碌程度。</p>
+
+<ul>
+<li>使用场景</li>
+</ul>
+
+
+<p>从原理上可以看出，CADisplayLink适合做界面的不停重绘，比如视频播放的时候需要不停地获取下一帧用于界面渲染。</p>
+
+<h5>4. 重要属性</h5>
+
+<ul>
+<li>frameInterval</li>
+</ul>
+
+
+<p>NSInteger类型的值，用来设置间隔多少帧调用一次selector方法，默认值是1，即每帧都调用一次。</p>
+
+<ul>
+<li>duration</li>
+</ul>
+
+
+<p>readOnly的CFTimeInterval值，表示两次屏幕刷新之间的时间间隔。需要注意的是，该属性在target的selector被首次调用以后才会被赋值。selector的调用间隔时间计算方式是：调用间隔时间 = duration × frameInterval。</p>
+
+<h5>CADisplayLink底层实现：</h5>
+
+<pre><code> setNeedsDisplay:底层并不会马上调用drawRect,只会给当前的控件绑定一个刷新的标识,每次屏幕刷新的时候,就会把绑定了刷新(重绘)标识的控件重新刷新(绘制)一次,就会调用drawRect去重绘
+</code></pre>
+
+<blockquote><p> 注意：如果以后每隔一段时间需要重绘,一般不使用NSTimer,使用CADisplayLink,不会刷新的时候有延迟</p></blockquote>
+
+<h2>三、GCD方式</h2>
+
+<h5>执行一次</h5>
+
+<pre><code>1 double delayInSeconds = 2.0;
+2 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC); 
+3 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
+4     //执行事件
+5 });
+</code></pre>
+
+<h5>重复执行</h5>
+
+<pre><code>1 NSTimeInterval period = 1.0; //设置时间间隔
+2 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+3 dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+4 dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0); //每秒执行
+5 dispatch_source_set_event_handler(_timer, ^{
+6     //在这里执行事件
+7 });
+8 dispatch_resume(_timer);
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -411,7 +613,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#x6f;&#58;&#x6d;&#97;&#106;&#x69;&#97;&#x30;&#51;&#64;&#109;&#101;&#x69;&#116;&#117;&#97;&#110;&#46;&#x63;&#x6f;&#109;">&#x6d;&#97;&#106;&#x69;&#x61;&#x30;&#x33;&#64;&#109;&#101;&#x69;&#x74;&#x75;&#x61;&#x6e;&#46;&#x63;&#111;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x6d;&#x61;&#106;&#105;&#x61;&#48;&#51;&#x40;&#109;&#x65;&#105;&#116;&#x75;&#x61;&#x6e;&#46;&#99;&#111;&#109;">&#109;&#97;&#106;&#x69;&#97;&#x30;&#x33;&#64;&#x6d;&#x65;&#x69;&#116;&#117;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -4159,379 +4361,6 @@ public:
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/05/h5chu-tan/">H5初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>H5精华</h2>
-
-<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
-
-<h6>1：链接</h6>
-
-<p>图像标签</p>
-
-<pre><code>相对路径 ../../
-
-绝对路径  https:// http://  ftp://  file://
-</code></pre>
-
-<ul>
-<li><p> href: 引用 不是必须的</p></li>
-<li><p> src: 引入  必需的</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code>&lt;!--超链接标签  javascript:void(0) --&gt;
-&lt;a href="#"&gt;我是超链接&lt;/a&gt;
-&lt;a href="http://baidu.com" target="_blank"&gt;百度一下,你就知道&lt;/a&gt;
-
-
-&lt;img src="https://www.baidu.com/img/bd_logo1.png" alt="百度logo" width="200"&gt;
-&lt;img src="images/img_01.jpg"&gt;
-</code></pre>
-
-<h6>2：列表&lt;&ndash;列表标签&ndash;></h6>
-
-<p>无序：</p>
-
-<pre><code>&lt;ul&gt;
-  &lt;li&gt;我是列表1&lt;/li&gt;
-  &lt;li&gt;我是列表2&lt;/li&gt;
-  &lt;li&gt;我是列表3&lt;/li&gt;
-  &lt;li&gt;我是列表4&lt;/li&gt;
-&lt;/ul&gt;
-</code></pre>
-
-<p>有序：</p>
-
-<pre><code>&lt;Ol&gt;
-    &lt;li&gt;我是列表1&lt;/li&gt;
-    &lt;li&gt;我是列表2&lt;/li&gt;
-    &lt;li&gt;我是列表3&lt;/li&gt;
-    &lt;li&gt;我是列表4&lt;/li&gt;
-&lt;/Ol&gt;
-</code></pre>
-
-<h6>3:文章：</h6>
-
-<pre><code>&lt;article&gt;
-
-    &lt;header&gt;
-
-    &lt;/header&gt;
-
-    &lt;section&gt;&lt;/section&gt;
-
-    &lt;section&gt;&lt;/section&gt;
-
-    &lt;footer&gt;
-
-    &lt;/footer&gt;
-
-&lt;/article&gt;
-</code></pre>
-
-<h6>4：高级:</h6>
-
-<pre><code>   &lt;!--进度条--&gt;
-   &lt;progress max="100" value="50"&gt;&lt;/progress&gt;
-   &lt;!--音频--&gt;
-   &lt;audio src="sources/music.m4a" controls="controls"&gt;&lt;/audio&gt;
-   &lt;!--视频--&gt;
-   &lt;video src="sources/BigBuck.m4v" controls="controls"&gt;&lt;/video&gt;
-</code></pre>
-
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-
-<hr />
-
-<h2>CSS3</h2>
-
-<h4>一:样式</h4>
-
-<blockquote><p>CSS即层叠样式表（Cascading StyleSheet）。 在网页制作时采用层叠样式表技术，可以有效地对页面的布局、字体、颜色、背景和其它效果实现更加精确的控制。 只要对相应的代码做一些简单的修改，就可以改变同一页面的不同部分，或者页数不同的网页的外观和格式。CSS3是CSS技术的升级版本，CSS3语言开发是朝着模块化发展的。以前的规范作为一个模块实在是太庞大而且比较复杂，所以，把它分解为一些小的模块，更多新的模块也被加入进来。这些模块包括： 盒子模型、列表模块、超链接方式 、语言模块 、背景和边框 、文字特效 、多栏布局等。</p></blockquote>
-
-<h6>1.行内：</h6>
-
-<p>&lt;&ndash;style=&ldquo;background-color: red;&rdquo;&ndash;></p>
-
-<p><--
-   单值属性: 后面只有一个属性值
-   复合属性: 后面有多个属性值
---></p>
-
-<pre><code>   &lt;div style="color: purple; font-size: 40px; background-color: yellowgreen;"&gt;我是容器div&lt;/div&gt;
-   &lt;p style="color: blue; font-size: 100px; border:3px solid red;"&gt;我是段落&lt;/p&gt;
-</code></pre>
-
-<h6>2.页内：</h6>
-
-<pre><code>&lt;--
-  网站 = N个网页 + 服务器 + 数据库 + ....
-
---&gt;
-
-&lt;!--
-  css遵循的规律:
-  1&gt; 就近原则
-  2&gt; 叠加原则
---&gt;
-</code></pre>
-
-<hr />
-
-<pre><code>    &lt;style&gt;
-        div{
-            color: chartreuse;
-            border: 3px dashed blueviolet;
-            font-size: 90px;
-        }
-    &lt;/style&gt; 
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;div&gt;我是div&lt;/div&gt; 
-</code></pre>
-
-<h6>3.外部</h6>
-
-<pre><code>    &lt;!--引入--&gt;
-    &lt;link href="css/index.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-   &lt;div&gt;哈哈哈哈哈&lt;/div&gt;
-</code></pre>
-
-<hr />
-
-<pre><code>div{
-    color: darkgoldenrod;
-    background-color: mediumvioletred;
-    font-size: 5px;
-}
-</code></pre>
-
-<h4>二：选择器</h4>
-
-<pre><code>    /** 标签选择器*/
-    div{
-        color: red;
-    }
-    /*类选择器*/
-    .test1{
-        color: green;
-    }
-    /*id选择器*/
-    #main{
-        font-size: 90px;
-    }
-    /*并列选择器*/
-    #main,.test1{
-        border: 5px double darkviolet;
-    }
-    /*复合选择器*/
-    p.test2{
-       background-color: red;
-    }
-    /*后代选择器*/
-    #first p a{
-        font-size: 90px;
-    }
-    /*伪类*/
-    input:focus{
-       width: 500px;
-       height: 60px;
-       font-size: 55px;
-       /*去除外边框*/
-       outline: none;
-    }
-
-    div#main:hover{
-       background-color: yellow;
-       width: 500px;
-       height: 250px;
-    }
-    /*伪元素*/
-    p:first-letter{
-        color: goldenrod;
-        font-size: 60px;
-    }
-</code></pre>
-
-<hr />
-
-<pre><code>   &lt;div id="main"&gt;bjbjwefbjb&lt;/div&gt;
-   &lt;div&gt;bjbjwefbjb&lt;/div&gt; 
-   &lt;p&gt;我是段落&lt;/p&gt; 
-   &lt;div class="test1"&gt;bjbjwefbjb&lt;/div&gt;
-   &lt;div id="first"&gt;
-       &lt;p&gt;
-           &lt;a href="#"&gt;我是超链接&lt;/a&gt;
-       &lt;/p&gt;
-   &lt;/div&gt;
-</code></pre>
-
-<h4>三：优先级：</h4>
-
-<pre><code>    &lt;--
-      CSS遵循的规律:
-      1.相同级别的选择器: a.就近原则  b.叠加原则
-      2.不同选择器:
-        important &gt; 内联 &gt; id &gt; 类 &gt; 标签 | 伪类 | 属性选择 &gt; 伪元素 &gt; 通配符 &gt; 继承
-      3. 选择器的针对性越强，它的优先级就越高
-    --&gt;
-</code></pre>
-
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-
-<hr />
-
-<h2>编写 JScript</h2>
-
-<blockquote><p>与其他许多编程语言一样， Microsoft JScript 是用文本方式编写的，并被组织成为语句、由相关的语句集组成的块、以及注释。在一条语句内可以使用变量、比如字符串和数字（称为“文字”）的立即数、以及表达式。</p></blockquote>
-
-<h5>一：语句</h5>
-
-<p>JScript 程序是语句的集合。一条 Jscript 语句相当于英语中的一个完整句。Jscript 语句将表达式组合起来，完成一个任务。</p>
-
-<p>一条语句由一个或多个表达式、关键字或者运算符（符号）组成。典型地，一条语句写一行，尽管一条语句可以超过两行或更多行。两条或更多条语句也可以写在同一行上，语句之间用分号“;”隔开。通常，每一新行开始一条新语句。不过显式地终止语句是一个好方法。这是用分号 (;)来实现的，分号是 JScript 语句的终止字符。下面给出 Jscript 语句的两隔示例。</p>
-
-<pre><code>aBird = "Robin"; //将文本“Robin”赋值给变量 aBird
-var today = new Date(); // 将今天的日期赋值给变量 today
-</code></pre>
-
-<p>用大括号（{}）括起来的一组 JScript 语句称为一个语句块。分组到一个语句块中的语句通常可当作单条语句处理。这就是说在 JScript 期望有一条单个语句的大多数地方可以使用语句块。应该注意以 for 和 while 打头的循环语句是例外情况。注意，语句块中的原始语句以分号结束，但语句块本身并不以分号结束。</p>
-
-<p>通常，在函数和条件语句中使用语句块。</p>
-
-<blockquote><p>注意，Jscript 与 C++ 以及其他某些语言不同，它不认为语句块是一个新的范围；只有函数创建新范围。在下面的示例中，第一条语句开始定义一个函数，该函数包含一个五条语句组成的语句块。语句块后的三条语句没有用大括号括起来；这些语句不是一个语句块，所以就不是函数定义的一部分。</p></blockquote>
-
-<pre><code>function convert(inches)  {
-   feet = inches / 12;  //  这五条语句属于一个语句块。
-   miles = feet / 5280;
-   nauticalMiles = feet / 6080;
-   cm = inches * 2.54;
-   meters = inches / 39.37;
-}
-km = meters / 1000;  //  这三条语句不在语句块内。
-kradius = km;
-mradius = miles;
-</code></pre>
-
-<h5>二：注释</h5>
-
-<p>单行的 JScript 注释以一对正斜杠(//)开始。下面给出一个单行注释的示例。</p>
-
-<pre><code>aGoodIdea = "Comment your code thoroughly.";  //  这是一个单行注释。
-</code></pre>
-
-<p>多行注释以一个正斜杠加一个星号的组合(/<em>)开始,并以其逆向顺序 (</em>/)结束。</p>
-
-<pre><code>/*
-这是一个用来解释前面的代码语句的多行注释。
-
-该语句将一个值赋给 aGoodIdea 变量。
-用引号包含的这种值称为一个文字。
-文字显式并直接包含信息；
-而不是简接地引用信息。
-（引号不属于该文字的内容。）
-*/
-</code></pre>
-
-<blockquote><p>注意   如果您试图将一个多行注释插入到另一个中，JScript 不能按正常的方式解释生成的多行注释。标明嵌入的多行注释结束的 */ 被认为是整个多行注释的结尾。这就意味着嵌入多行注释之后的文本不再被认为是注释；相应地，它将被解释为 JScript 代码，并会产生语法错误。</p></blockquote>
-
-<p>建议将所有的注释写为单行注释的语句块。这样您以后就能够将大段的代码与多行注释区分开。</p>
-
-<pre><code>//这是另一种多行注释，写成一系列单行注释。
-
-//  在执行完该语句后，可以使用 aGoodIdea 变量的名字来引用其内容，
-//  如下一条语句那样，即采用连接操作将字符串文字添加到
-//  aGoodIdea 变量，以创建一个新的变量。
-
-var extendedIdea = aGoodIdea + " You never know when you'll have to figure out what it does.";
-</code></pre>
-
-<p>赋值和相等</p>
-
-<p>JScript 语句中使用等号 (=)给变量赋值：等号是赋值运算符。= 运算符左边的操作项总是一个 Lvalue。Lvalue 可以是：</p>
-
-<h5>三：变量，</h5>
-
-<p>数组元素，
-对象属性。
-= 运算符右边的操作项总是一个 Rvalue。Rvalues 可以是任何类型的一个任意值，包括表达式的值。下面给出一个 JScript 赋值语句的示例。</p>
-
-<pre><code>anInteger = 3;
-</code></pre>
-
-<p>Jscript 编译器解释本语句的意义为：“将 3 赋给变量 anInteger”或“anInteger 的值为 3”。</p>
-
-<p>确定您理解了 = 运算符（赋值）和 == 运算符（相等）的差异。在比较两个值是否相等时，应使用两个等于号 (==)。这些内容将在 控制程序的流程 中详细介绍。</p>
-
-<h5>四：表达式</h5>
-
-<p>JScript 表达式是指 JScript 解释器能够计算生成值的 JScript “短语”。这个值可以是任何有效的 JScript 类型 — 数字、字符串、对象，等等。最简单的表达式是文字。下面给出 JScript 文字表达式的一些示例。</p>
-
-<pre><code>3.9                       // 数字文字
-"Hello!"                  // 字符串文字
-false                     // 布尔文字
-null                      // 文字空值
-{x:1, y:2}                // 对象文字
-[1,2,3]                   // 数组文字
-function(x){return x*x;}  // 函数文字
-</code></pre>
-
-<p>更多复杂的表达式中包含变量、函数、函数调用以及其他表达式。可以用运算符将表达式组合，创建复合表达式。运算符可以是：</p>
-
-<pre><code>+  // 加法
--  // 减法
-*  // 乘法
-/  // 除法
-</code></pre>
-
-<p>下面给出 JScript 复合表达式的一些示例。</p>
-
-<pre><code>var anExpression = 3 * (4 / 5) + 6;
-var aSecondExpression = Math.PI * radius * radius;
-var aThirdExpression = aSecondExpression + "%" + anExpression;
-var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
-</code></pre>
-
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/05/h5chu-tan/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -4563,6 +4392,10 @@ var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">完整定时器</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
@@ -4576,10 +4409,6 @@ var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
     
       <li class="post">
         <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
       </li>
     
   </ul>
