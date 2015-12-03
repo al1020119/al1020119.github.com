@@ -3,7 +3,7 @@ layout: post
 title: "玩转定时器"
 date: 2015-12-09 18:17:51 +0800
 comments: true
-categories: 
+categories: 项目实战
 ---
 
  {% img /images/dingshiqi.png Caption %}  
