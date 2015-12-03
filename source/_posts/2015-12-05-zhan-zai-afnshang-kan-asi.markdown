@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "站在AFN上看ASI"
-date: 2015-12-02 14:53:45 +0800
+date: 2015-12-05 14:53:45 +0800
 comments: true
 categories: 
 ---
