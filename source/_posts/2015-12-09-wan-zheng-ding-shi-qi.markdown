@@ -1,12 +1,12 @@
 ---
 layout: post
-title: "完整定时器"
+title: "玩转定时器"
 date: 2015-12-09 18:17:51 +0800
 comments: true
 categories: 
 ---
 
- {% img /images/ dingshiqi.png Caption %}  
+ {% img /images/dingshiqi.png Caption %}  
 
 在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。
 
