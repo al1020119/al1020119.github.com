@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 项目实战 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xiang-mu-shi-zhan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-03T11:57:10+08:00</updated>
+  <updated>2015-12-03T11:59:13+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,98 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[站在AFN上看ASI]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/05/zhan-zai-afnshang-kan-asi/"/>
+    <updated>2015-12-05T14:53:45+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/05/zhan-zai-afnshang-kan-asi</id>
+    <content type="html"><![CDATA[<h6>一、底层实现</h6>
+
+<ul>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
+</ul>
+
+
+<h6>二、对服务器返回的数据处理</h6>
+
+<ul>
+<li><p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string</p></li>
+<li><p>2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li><p>JSON处理</p></li>
+<li><p>XML处理</p></li>
+<li><p>其他处理</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h6>三、监听请求的过程</h6>
+
+<ul>
+<li><p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li><p>success : 请求成功后调用</p></li>
+<li><p>failure : 请求失败后调用</p></li>
+</ul>
+</li>
+<li><p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程</p></li>
+</ul>
+
+
+<p>（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<pre><code>* 成为代理，遵守协议，实现协议中的代理方法
+
+* 成为代理，不遵守协议，自定义代理方法
+
+* 设置block
+</code></pre>
+
+<h6>四、在文件下载和文件上传的使用难易度</h6>
+
+<ul>
+<li><p>1> AFN</p>
+
+<ul>
+<li><p>不容易监听下载进度和上传进度</p></li>
+<li><p>不容易实现断点续传</p></li>
+<li><p>一般只用来下载不大的文件</p></li>
+</ul>
+</li>
+<li><p>2> ASI</p>
+
+<ul>
+<li><p>非常容易实现下载和上传</p></li>
+<li><p>非常容易监听下载进度和上传进度</p></li>
+<li><p>非常容易实现断点续传</p></li>
+<li><p>下载或大或小的文件都行</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h6>五、ASI提供了更多的实用功能</h6>
+
+<ul>
+<li><p>1> 控制圈圈要不要在请求过程中转</p></li>
+<li><p>2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象</p></li>
+<li><p>3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li><p>暂停\恢复\取消所有的请求</p></li>
+<li><p>监听整个队列中所有请求的下载进度和上传进度</p></li>
+</ul>
+</li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[全屏返回（Runtime）]]></title>
@@ -1063,269 +1155,6 @@ static UIWindow *window_;
   return YES;
 }
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[传值方式总结]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie/"/>
-    <updated>2015-12-01T02:32:36+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/01/chuan-zhi-fang-shi-zong-jie</id>
-    <content type="html"><![CDATA[<ul>
-<li>简单总结
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<ul>
-<li>简单实用
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-<p>虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation，block和target- action。</p>
-
-<p>大多数情况下，消息传递该使用什么机制，是很明确的了，当然了，在某些情况下该使用什么机制并没有明确的答案，需要你亲自去尝试一下。</p>
-
-<hr />
-
-<h3>简单总结</h3>
-
-<ul>
-<li><p>delegation</p>
-
-<ul>
-<li><p>在苹果的Framework中，delegation模式被广泛的只用着。delegation允许我们定制某个对象的行为，并且可以收到某些 确定的事件。为了使用delegation模式，消息的发送者需要知道消息的接收者(delegate)，反过来就不用了。这里的发送者和接收者是比较松 耦合的，因为发送者只知道它的delegate是遵循某个特定的协议。</p></li>
-<li><p>delegate协议可以定义任意的方法，因此你可以准确的定义出你所需要的类型。你可以用函数参数的形式来处理消息内容，delegate还 可以通过返回值的形式给发送者做出回应。如果只需要在相对接近的两个模块之间进行消息传递，那么Delegation是一种非常灵活和直接方式。</p></li>
-<li><p>不过，过渡使用delegation也有一定的风险，如果两个对象的耦合程度比较紧密，相互之间不能独立存在，那么此时就没有必要使用 delegate协议了，针对这种情况，对象之间可以知道相互间的类型，进而直接进行消息传递。例如UICollectionViewLayout和 NSURLSessionConfiguration。</p></li>
-</ul>
-</li>
-<li><p>block</p>
-
-<ul>
-<li><p>Block相对来说，是一种比较新的技术，它首次出现是在OS X 10.6和iOS 4中。一般情况下，block可以满足用delegation实现的消息传递机制。不过这两种机制都有各自的需求和优势。</p></li>
-<li><p>当不考虑使用block时，一般主要是考虑到block极易引起retain环。如果发送者需要reatain block，而又不能确保这个引用什么时候被nil，这样就会发生潜在的retain环。</p></li>
-</ul>
-</li>
-<li><p>Notification</p>
-
-<ul>
-<li><p>在不相关的两部分代码中要想进行消息传递，通知(notifacation)是非常好的一种机制，它可以对消息进行广播。特别是想要传递丰富的信息，并且不一定指望有谁对此消息关心。</p></li>
-<li><p>通知可以用来发送任意的消息，甚至包含一个userInfo字典，或者是NSNotifacation的一个子类。通知的独特之处就在于发送者 和接收者双方并不需要相互知道。这样就可以在非常松耦合的模块间进行消息的传递。记住，这种消息传递机制是单向的，作为接收者是不可以回复消息的。</p></li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<h3>简单使用</h3>
-
-<p>初始化之后出现下面的界面</p>
-
-<p><img src="/images/chuanzhi001.png" title="Caption" ></p>
-
-<h5>准备：</h5>
-
-<p>这里试试根据本文的实战做相应的介绍，关于拓展只要理解了这里的思路基本是三种传值的使用没有什么问题。</p>
-
-<p>首先，由于我们要实现的点击对应的组实现展开分组显示对应组里面的所有行。</p>
-
-<p>我这个项目使用的是多层分组模型，讲每一组合对应的属性还有friends作为组模型，再将friends作为子模型，实现表格数据的现实。</p>
-
-<p><img src="/images/chuanzhi002.png" title="Caption" ></p>
-
-<h6>定义一个BOOL值用来记录点击（由于我们需要实现点击对应组做事情，所以先在组模型中定义一个BOOL）</h6>
-
-<pre><code>@property (nonatomic, assign, getter = isOpen) BOOL open; 
-</code></pre>
-
-<h6>在相应的点击方法里面是实现取反点击，这里的点击方法是分组View上面一个按钮的点击事件。</h6>
-
-<pre><code>self.group.open = !self.group.open; 
-</code></pre>
-
-<h6>在numberOfRowsInSection中返回的时候使用三木判断是否点击，并且实现伸缩与展开，</h6>
-
-<pre><code>return model.open?model.friends.cout:0; 
-</code></pre>
-
-<p>这里完成之后运行程序点一下试试，你会发现。。。。。。。。。。。。。。。。。什么效果也没有。</p>
-
-<p>当然会没有效果，因为我们没有传值，后面才是本章的重点，学会了这里以后关于通知，代理。Block的使用基本上没有问题。</p>
-
-<hr />
-
-<p>/######################代理######################/</p>
-
-<hr />
-
-<h2>方法一：代理</h2>
-
-<h6>在对应的View中创建一个协议</h6>
-
-<pre><code>@class iCocosView
-
-
-
-@protocol iCocoDelegate &lt;NSObject&gt;
-
-@optional
-
--(void)headerView:(iCocosView *)view;
-
-
-
-@end
-</code></pre>
-
-<h6>创建一个代理属性</h6>
-
-<pre><code> @property (nonatomic, assign) id&lt;iCocoDelegate&gt; delegate; 
-</code></pre>
-
-<h6>在这个实现文件中判断有没有实现这个代理方法</h6>
-
-<pre><code>if([self.delegate repondToSelector:selector(headerView)]) {
-
-[self.delegate headerView];
-
-}
-</code></pre>
-
-<h6>先在对应的控制器遵守这个协议，并且设置代理</h6>
-
-<pre><code> &lt;iCocosDelegate&gt; 
-
-header.delegate = self; //让控制器充当代理
-</code></pre>
-
-<h6>实现代理方法</h6>
-
-<pre><code>－（void）headerView:(iCocosView *)view {[self.tableView reloadData];  }  
-</code></pre>
-
-<hr />
-
-<p>/######################Block######################/</p>
-
-<hr />
-
-<h2>方法二：Block</h2>
-
-<h6>定义一个Block</h6>
-
-<pre><code>typedef void (^iCocosBlock)(id);  
-</code></pre>
-
-<h6>创建一个Block对应的属性（使用Copy）</h6>
-
-<pre><code> @property （nonatomic， weak）iCocosBlock block; 
-</code></pre>
-
-<h6>实现文件中判读</h6>
-
-<pre><code>  if(self.block) { self.block(self);}  
-</code></pre>
-
-<h6>在控制器中实现</h6>
-
-<pre><code> header.block = ^(id sender) {  //sender是传过来的参数
-
- [self.tableView reloadData];
-
- };
-</code></pre>
-
-<hr />
-
-<p>/######################通知######################/</p>
-
-<hr />
-
-<h2>方法三：通知</h2>
-
-<p> 注意：通知的使用是前面的反向思维，在控制器里面注册并且实现通知方法，然后在分组View里面发布这个通知。</p>
-
-<h6>在控制器中注册一个通知</h6>
-
-<pre><code>[［NSNotificationCenter defaultCenter］ addObserver:self selector:@selector(notiClick) name:@“friends” object:nil]; 2 3  
-</code></pre>
-
-<h6>实现通知方法</h6>
-
-<pre><code>－（void）notiClick
-
-{
-
-[self.tableView reloadData];
-
-}
-</code></pre>
-
-<h6>同样在Header分组的实现文件中发布一个通知</h6>
-
-<pre><code>[［NSNotificationCenter defaultCenter］postNotificationName: @“friends”object:self userInfo:nil]; 2 3  
-</code></pre>
-
-<h6>移除通知：我们可以在两个方法里面一出通知：ViewDidDidApper和Dealloc</h6>
-
-<p>并且使用良种两种方法</p>
-
-<p>@1:移除所有通知</p>
-
-<pre><code>[［NSNotificationCenter defaultCenter］ removeObserver:self]; 
-</code></pre>
-
-<p>@2:根据名字移除通知</p>
-
-<pre><code>[［NSNotificationCenter defaultCenter］removeObserver:self name:@“friedns” object:nil];  
-</code></pre>
-
-<p>这里需要注意：实际开发中使用完通知之后一定要移除通知，否则如果里面通知太多，当你再次发送一个通知的时候程序就不知道去找那个通知甚至会导致程序奔溃。</p>
-
-<hr />
-
-<p>/######################运行结果######################/</p>
-
-<hr />
-
-<p>使用上面任何一种方法都可以实现同样的功能，点击每一行的组的时候就会展开相应行并且显示对应组的所有行。</p>
-
-<p><img src="/images/chuanzhi003.png" title="Caption" ></p>
-
-<p>实现Header左边按钮上面图标的旋转：（这里是一个重点，也是以后以后开发中肯呢过遇到的一个难点，可能不是一样的但是或许思路和原理一样，这里是这篇文章中除了传值的三种方式以后最重要的地方）
-    /<strong><strong><em>在这个方法里面实现旋转：当View移到父控件的时候，不然旋转也看不到选过，因为刷新实在旋转之后的，旋转之后再刷新，从缓存迟里面取出来</em></strong></strong>***/</p>
-
-<pre><code>-(void)didMoveToSuperview
-{
-    if (self.group.open) {
-        self.nameView.imageView.transform = CGAffineTransformMakeRotation(M_PI_2);
-    }else {
-        self.nameView.imageView.transform = CGAffineTransformMakeRotation(0);
-    }
-
-}
-/ 
-</code></pre>
-
-<p>但是具体使用说明视情况而定：</p>
-
-<p>总结：。。。。。。。。待续</p>
 ]]></content>
   </entry>
   

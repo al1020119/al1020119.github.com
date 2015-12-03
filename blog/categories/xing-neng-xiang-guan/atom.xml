@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能相关 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xing-neng-xiang-guan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-03T11:57:10+08:00</updated>
+  <updated>2015-12-03T11:59:13+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,273 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[图片加载优化深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/"/>
+    <updated>2015-12-05T14:56:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu</id>
+    <content type="html"><![CDATA[<h3>1. 网络图片显示大体步骤:</h3>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+</ul>
+
+
+<h3>2. 一些优化思路：</h3>
+
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<h6>2.1 关于异步图片下载:</h6>
+
+<p>fastImageCache主要针对于从磁盘文件读取并展示图片的极端优化，所以并没有集成异步图片下载的功能。这里主要来看看SDWebImage(AFNetWorking的基本类似)的实现方案：</p>
+
+<p>tableView中，异步图片下载任务的管理:</p>
+
+<p>我们知道，tableViewCell是有重用机制的，也就是说，内存中只有当前可见的cell数目的实例，滑动的时候，新显示cell会重用被滑出的cell对象。这样就存在一个问题：</p>
+
+<p>一般情况下在我们会在cellForRow方法里面设置cell的图片数据源，也就是说如果一个cell的imageview对象开启了一个下载任务，这个时候该cell对象发生了重用，新的image数据源会开启另外的一个下载任务，由于他们关联的imageview对象实际上是同一个cell实例的imageview对象，就会发生2个下载任务回调给同一个imageview对象。这个时候就有必要做一些处理，避免回调发生时，错误的image数据源刷新了UI。</p>
+
+<blockquote><p>SDWebImage提供的UIImageView扩展的解决方案：</p></blockquote>
+
+<p>imageView对象会关联一个下载列表（列表是给AnimationImages用的，这个时候会下载多张图片），当tableview滑动，imageView重设数据源（url）时，会cancel掉下载列表中所有的任务，然后开启一个新的下载任务。这样子就保证了只有当前可见的cell对象的imageView对象关联的下载任务能够回调，不会发生image错乱。</p>
+
+<p>同时，SDWebImage管理了一个全局下载队列（在DownloadManager中）,并发量设置为6.也就是说如果可见cell的数目是大于6的，就会有部分下载队列处于等待状态。而且，在添加下载任务到全局的下载队列中去的时候，SDWebImage默认是采取LIFO策略的，具体是在添加下载任务的时候，将上次添加的下载任务添加依赖为新添加的下载任务。</p>
+
+<pre><code>    [wself.downloadQueue addOperation:operation];
+    if (wself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
+        // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
+        [wself.lastAddedOperation addDependency:operation];
+        wself.lastAddedOperation = operation;
+    }
+</code></pre>
+
+<p>另外一种解决方案是：</p>
+
+<p>imageView对象和图片的url相关联，在滑动时，不取消旧的下载任务，而是在下载任务完成回调时，进行url匹配，只有匹配成功的image会刷新imageView对象，而其他的image则只做缓存操作，而不刷新UI。</p>
+
+<p>同时，仍然管理一个执行队列，为了避免占用太多的资源，通常会对执行队列设置一个最大的并发量。此外，为了保证LIFO的下载策略，可以自己维持一个等待队列，每次下载任务开始的时候，将后进入的下载任务插入到等待队列的前面。</p>
+
+<h6>iOS异步任务一般有3种实现方式:</h6>
+
+<ul>
+<li>NSOperationQueue</li>
+<li>GCD</li>
+<li>NSThread</li>
+</ul>
+
+
+<p>这几种方式就不细说了，SDWebImage是通过自定义NSOperation来抽象下载任务的，并结合了GCD来做一些主线程与子线程的切换。具体异步下载的实现，AFNetworking与SDWebImage都是十分优秀的代码，有兴趣的可以深入看看源码。</p>
+
+<h6>2.2 关于图片解压缩:</h6>
+
+<blockquote><p>通用的解压缩方案
+主体的思路是在子线程，将原始的图片渲染成一张的新的可以字节显示的图片，来获取一个解压缩过的图片。
+基本上比较流行的一些开源库都先后支持了在异步线程完成图片的解压缩，并对解压缩过后的图片进行缓存。</p></blockquote>
+
+<p>这么做的优点是在setImage的时候系统省去了上面的第6步，缺点就是图片占用的空间变大。
+比如1张50<em>50像素的图片，在retina的屏幕下所占用的空间为100</em>100*4 ~ 40KB</p>
+
+<p>下面的代码是SDWebImage的解决方案:</p>
+
+<pre><code>+ (UIImage *)decodedImageWithImage:(UIImage *)image {
+    if (image.images) {
+        // Do not decode animated images
+        return image;
+    }
+
+    CGImageRef imageRef = image.CGImage;
+    CGSize imageSize = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
+    CGRect imageRect = (CGRect){.origin = CGPointZero, .size = imageSize};
+
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
+
+    int infoMask = (bitmapInfo &amp; kCGBitmapAlphaInfoMask);
+    BOOL anyNonAlpha = (infoMask == kCGImageAlphaNone ||
+            infoMask == kCGImageAlphaNoneSkipFirst ||
+            infoMask == kCGImageAlphaNoneSkipLast);
+
+    // CGBitmapContextCreate doesn't support kCGImageAlphaNone with RGB.
+    // https://developer.apple.com/library/mac/#qa/qa1037/_index.html
+    if (infoMask == kCGImageAlphaNone &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) &gt; 1) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+
+        // Set noneSkipFirst.
+        bitmapInfo |= kCGImageAlphaNoneSkipFirst;
+    }
+            // Some PNGs tell us they have alpha but only 3 components. Odd.
+    else if (!anyNonAlpha &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) == 3) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+        bitmapInfo |= kCGImageAlphaPremultipliedFirst;
+    }
+
+    // It calculates the bytes-per-row based on the bitsPerComponent and width arguments.
+    CGContextRef context = CGBitmapContextCreate(NULL,
+            imageSize.width,
+            imageSize.height,
+            CGImageGetBitsPerComponent(imageRef),
+            0,
+            colorSpace,
+            bitmapInfo);
+    CGColorSpaceRelease(colorSpace);
+
+    // If failed, return undecompressed image
+    if (!context) return image;
+
+    CGContextDrawImage(context, imageRect, imageRef);
+    CGImageRef decompressedImageRef = CGBitmapContextCreateImage(context);
+
+    CGContextRelease(context);
+
+    UIImage *decompressedImage = [UIImage imageWithCGImage:decompressedImageRef scale:image.scale orientation:image.imageOrientation];
+    CGImageRelease(decompressedImageRef);
+    return decompressedImage;
+}
+</code></pre>
+
+<h6>2.3 关于字节对齐</h6>
+
+<p>SDWebImage与AFNetworking都没有对第7点做优化，FastImageCache相对与其他的开源库，则对第5点与第7点做了优化。这里我们谈谈第七点，关于图片数据的字节对齐。</p>
+
+<blockquote><p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：</p>
+
+<p>那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)</p></blockquote>
+
+<hr />
+
+<blockquote><p>块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p></blockquote>
+
+<hr />
+
+<p><img src="/images/tupianyouhua001.png" title="Caption" ></p>
+
+<p>从代码上来看，主要是在创建上图解码的过程中，CGBitmapContextCreate函数的bytesPerRow参数必须传64的倍数。</p>
+
+<p>比较各个开源框架的代码，可以看到SDWebImage与AFNetworking的该参数都传的是0，即让系统自动来计算该值（那为何系统自动计算的时候不让图片数据字节就字节对齐呢？）。</p>
+
+<h6>2.4 关于第3，4点，内存级别拷贝</h6>
+
+<p>以上3个开源库中，FastImageCache对这一点做了很大的优化，其他的2个开源库则未关注这一点。这一块木有深入研究，就引用一下FastImageCache团队对该点的一些说明。有能力的可以去看看原文章(英文):here。</p>
+
+<blockquote><p>内存映射
+平常我们读取磁盘上的一个文件，上层API调用到最后会使用系统方法read()读取数据，内核把磁盘数据读入内核缓冲区，用户再从内核缓冲区读取数据复制到用户内存空间，这里有一次内存拷贝的时间消耗，并且读取后整个文件数据就已经存在于用户内存中，占用了进程的内存空间。
+FastImageCache采用了另一种读写文件的方法，就是用mmap把文件映射到用户空间里的虚拟内存，文件中的位置在虚拟内存中有了对应的地址，可以像操作内存一样操作这个文件，相当于已经把整个文件放入内存，但在真正使用到这些数据前却不会消耗物理内存，也不会有读写磁盘的操作，只有真正使用这些数据时，也就是图像准备渲染在屏幕上时，虚拟内存管理系统VMS才根据缺页加载的机制从磁盘加载对应的数据块到物理内存，再进行渲染。这样的文件读写文件方式少了数据从内核缓存到用户空间的拷贝，效率很高。</p></blockquote>
+
+<h6>2.5 关于第二步图片处理（裁剪，边框等）</h6>
+
+<p>一般情况下，对于下载下来的图片我们可能想要做一些处理，比如说做一些缩放，裁剪，或者添加圆角等等。</p>
+
+<p>对于比较通用的缩放，或者圆角等功能，可以集成到控件本身。不过，提供一个接口出来，让使用者能够有机会对下载下来的图片做一些其他的特殊处理是有必要的。</p>
+
+<pre><code>/** SDWebImage
+ * Allows to transform the image immediately after it has been downloaded and just before to cache it on disk and memory.
+ * NOTE: This method is called from a global queue in order to not to block the main thread.
+ *
+ * @param imageManager The current `SDWebImageManager`
+ * @param image        The image to transform
+ * @param imageURL     The url of the image to transform
+ *
+ * @return The transformed image object.
+ */
+- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL;
+</code></pre>
+
+<h6>2.6 其他（诸如图片预下载，gif支持等等,下载进度条）</h6>
+
+<p>待补充</p>
+
+<h3>3. 常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip    </th>
+<th style="text-align:center;">SDWebImage </th>
+<th style="text-align:right;">AFNetworking   </th>
+<th>FastImageCache</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片</td>
+<td style="text-align:center;">    YES</td>
+<td style="text-align:right;">    YES</td>
+<td>    NO</td>
+</tr>
+<tr>
+<td>子线程解压缩</td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">YES    </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>内存级别缓存 </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>磁盘级别缓存 </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES</td>
+<td>   YES</td>
+</tr>
+<tr>
+<td>UIImageView category</td>
+<td style="text-align:center;">  YES </td>
+<td style="text-align:right;">NO </td>
+<td>NO</td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO </td>
+<td style="text-align:right;">NO</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>接口易用性    </td>
+<td style="text-align:center;">***</td>
+<td style="text-align:right;">   *** </td>
+<td>*</td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[App卡顿了怎么办？]]></title>
@@ -769,94 +1036,6 @@ The app icon set "AppIcon" has 2 unassigned images.
 </code></pre>
 
 <p>显示的效果像这样：</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[UITableView性能优化与卡顿问题]]></title>
-    <link href="http://al1020119.github.io/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/"/>
-    <updated>2015-11-29T00:19:52+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti</id>
-    <content type="html"><![CDATA[<p>引言：</p>
-
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
-
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
-
-<p>1.最常用的就是cell的重用， 注册重用标识符</p>
-
-<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
-如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
-每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-设置正确的reuseIdentifer以重用cell
-</code></pre>
-
-<p>2.避免cell的重新布局</p>
-
-<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
-如可以将cell单独放到一个自定义类，初始化时就布局好
-</code></pre>
-
-<p>3.提前计算并缓存cell的属性及内容</p>
-
-<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
-当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
-</code></pre>
-
-<p>4.减少cell中控件的数量</p>
-
-<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
-不适用的可以先隐藏
-</code></pre>
-
-<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
-
-<pre><code>渲染耗时比较长
-尽量将view设置为不透明，包括cell本身。
-</code></pre>
-
-<p>6.使用局部更新</p>
-
-<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
-</code></pre>
-
-<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
-
-<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
-</code></pre>
-
-<p>8.少使用addView 给cell动态添加view</p>
-
-<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
-
-<pre><code>注意正确使用懒加载
-</code></pre>
-
-<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
-
-<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
-</code></pre>
-
-<p>11.缓存行高：</p>
-
-<pre><code>如果row的高度不相同，那么将其缓存下来
-estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-</code></pre>
-
-<p>12.避免渐变，图像缩放以及离屏绘制</p>
-
-<p>13.使用shadowPath来设置阴影。</p>
-
-<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
-
-<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
-
-<hr />
-
-<p>参考：相关性能优化问题</p>
-
-<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
 ]]></content>
   </entry>
   
