@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="切换控制器 ordinal 从一个视图控制器切换到另一个视图控制器的几种方式 1,模态(modal)画面的显示方法： 例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
-例：点击一个按钮，进入另一个界面 - (IBAction)pressAbout:(id)sender &hellip;">
+  <meta name="description" content="全屏返回（Runtime） ordinal 前言 此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。 如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;. 一、自定义导航控制器 目的： &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +74,148 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言</p>
+
+<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
+
+<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
+
+<h5>一、自定义导航控制器</h5>
+
+<p>目的：以后需要使用全屏滑动返回功能，就使用自己定义的导航控制器。</p>
+
+<h5>二、分析导航控制器侧滑功能</h5>
+
+<p>效果：导航控制器默认自带了侧滑功能，当用户在界面的左边滑动的时候，就会有侧滑功能。</p>
+
+<p>系统自带的侧滑效果：</p>
+
+<p>分析：</p>
+
+<ul>
+<li><p>1.导航控制器的view自带了滑动手势，只不过手势的触发范围只能在左边。</p></li>
+<li><p>2.当用户在界面左边拖动，就会触发滑动手势方法，并且有滑动返回功能，说明系统手势触发的方法已经实现了滑动返回功能。</p></li>
+<li><p>3.为什么说系统手势触发的方法已经实现了滑动返回功能？</p></li>
+</ul>
+
+
+<h3>原因：</h3>
+
+<p>创建滑动手势对象的时候，需要绑定监听者，当触发手势的时候会调用target的action。</p>
+
+<p>UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:action];
+当用户在界面左边滑动，有滑动返回功能，这是因为触发手势了，调用target的action方法，说明action方法内部实现滑动返回功能，否则就不会有滑动返回效果。</p>
+
+<h5>三、实现全屏滑动功能分析</h5>
+
+<p>打印导航控制器自带的滑动手势，看下它的真实面目。</p>
+
+<p>系统自带的滑动手势interactivePopGestureRecognizer</p>
+
+<pre><code>//  self指向的导航控制器，在导航控制器的viewDidLoad方法打印 
+- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    NSLog(@"%@",self.interactivePopGestureRecognizer); 
+} 
+</code></pre>
+
+<p>由图中可知：</p>
+
+<ul>
+<li><p>1.系统自带的手势是UIScreenEdgePanGestureRecognizer类型对象,屏幕边缘滑动手势</p></li>
+<li><p>2.系统自带手势target是_UINavigationInteractiveTransition类型的对象</p></li>
+<li><p>3.target调用的action方法名叫handleNavigationTransition:</p></li>
+</ul>
+
+
+<p>分析：</p>
+
+<p>UIScreenEdgePanGestureRecognizer，看名称就知道，这个手势的范围只能在屏幕的周边，就是因为这个手势，系统自带的滑动效果，只能实现侧边滑动。</p>
+
+<h5>四、如何实现全屏滑动功能</h5>
+
+<p>给自己的导航控制器，添加一个全屏的滑动手势，调用系统自带滑动手势的target的action方法，利用系统实现的滑动返回功能，加上自己全屏滑动手势，就有全屏滑动功能了。</p>
+
+<p>问题：如何拿到系统自带的target对象?，action方法名已经知道，而且系统肯定在target对象实现了，只要拿到target对象，调用这个方法就行。</p>
+
+<p>通过打印系统自带的滑动手势的代理，发现正好是_UINavigationInteractiveTransition对象，因此我猜测这个代理对象就是target对象,只要拿到它，就拿到系统自带滑动手势的target对象。</p>
+
+<pre><code>// 打印系统自带滑动手势的代理对象 
+SLog(@"%@",self.interactivePopGestureRecognizer.delegate); 
+</code></pre>
+
+<p>导航控制器全屏滑动注意点:</p>
+
+<ul>
+<li><p>1.禁止系统自带滑动手势使用。</p></li>
+<li><p>2.只有导航控制器的非根控制器才需要触发手势，使用手势代理，控制手势触发。</p></li>
+</ul>
+
+
+<p>全屏滑动代码实现</p>
+
+<pre><code>- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    // 获取系统自带滑动手势的target对象 
+    id target = self.interactivePopGestureRecognizer.delegate; 
+    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法 
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)]; 
+    // 设置手势代理，拦截手势触发 
+    pan.delegate = self; 
+    // 给导航控制器的view添加全屏滑动手势 
+    [self.view addGestureRecognizer:pan]; 
+    // 禁止使用系统自带的滑动手势 
+    self.interactivePopGestureRecognizer.enabled = NO; 
+} 
+// 什么时候调用：每次触发手势之前都会询问下代理，是否触发。 
+// 作用：拦截手势触发 
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer 
+{ 
+    // 注意：只有非根控制器才有滑动返回功能，根控制器没有。 
+    // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器 
+    if (self.childViewControllers.count == 1) { 
+        // 表示用户在根控制器界面，就不需要触发滑动手势， 
+        return NO; 
+    } 
+    return YES; 
+} 
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/02/quan-ping-fan-hui-(runtime)/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -3185,122 +3326,6 @@ unavailable 下线
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
-
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
-
-<p>1.最常用的就是cell的重用， 注册重用标识符</p>
-
-<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
-如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
-每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
-设置正确的reuseIdentifer以重用cell
-</code></pre>
-
-<p>2.避免cell的重新布局</p>
-
-<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
-如可以将cell单独放到一个自定义类，初始化时就布局好
-</code></pre>
-
-<p>3.提前计算并缓存cell的属性及内容</p>
-
-<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
-当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
-而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
-</code></pre>
-
-<p>4.减少cell中控件的数量</p>
-
-<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
-不适用的可以先隐藏
-</code></pre>
-
-<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
-
-<pre><code>渲染耗时比较长
-尽量将view设置为不透明，包括cell本身。
-</code></pre>
-
-<p>6.使用局部更新</p>
-
-<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
-</code></pre>
-
-<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
-
-<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
-</code></pre>
-
-<p>8.少使用addView 给cell动态添加view</p>
-
-<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
-
-<pre><code>注意正确使用懒加载
-</code></pre>
-
-<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
-
-<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
-</code></pre>
-
-<p>11.缓存行高：</p>
-
-<pre><code>如果row的高度不相同，那么将其缓存下来
-estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
-</code></pre>
-
-<p>12.避免渐变，图像缩放以及离屏绘制</p>
-
-<p>13.使用shadowPath来设置阴影。</p>
-
-<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
-
-<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
-
-<hr />
-
-<p>参考：相关性能优化问题</p>
-
-<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -3316,7 +3341,8 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
     <section>
     <h1>文章分类</h1>
     <ul id="categories">
-        <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (2)</a></li>
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (1)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (2)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
 <li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -3332,6 +3358,10 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/05/h5chu-tan/">H5初探</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a>
       </li>
     
@@ -3345,10 +3375,6 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
     
       <li class="post">
         <a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a>
       </li>
     
   </ul>
