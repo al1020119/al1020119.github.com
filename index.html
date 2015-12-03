@@ -9,8 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="H5精华 1：链接 图像标签 相对路径 ../../ 绝对路径 https:// http:// ftp:// file:// href: 引用 不是必须的 src: 引入 必需的 &lt;!--超链接标签 javascript:void(0) --&gt;
-&lt;a href="#"&gt; &hellip;">
+  <meta name="description" content="这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
+在这个过程中,你会学到: 如何为iOS &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,7 +81,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/05/h5chu-tan/">H5初探</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a></h1>
     
     
       <p class="meta">
@@ -101,1290 +101,284 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-  <div class="entry-content"><h2>H5精华</h2>
-
-<h6>1：链接</h6>
-
-<p>图像标签</p>
-
-<pre><code>相对路径 ../../
-
-绝对路径  https:// http://  ftp://  file://
-</code></pre>
+  <div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
+在这个过程中,你会学到:</p></blockquote>
 
 <ul>
-<li><p> href: 引用 不是必须的</p></li>
-<li><p> src: 引入  必需的</p></li>
+<li>如何为iOS app添加watchOS 2的target</li>
+<li>如何在两个target之间共享数据</li>
+<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
+<li>如何创建WKInterfaceController的子类并连线</li>
 </ul>
 
 
-<hr />
+<p>正式开始吧</p>
 
-<pre><code>&lt;!--超链接标签  javascript:void(0) --&gt;
-&lt;a href="#"&gt;我是超链接&lt;/a&gt;
-&lt;a href="http://baidu.com" target="_blank"&gt;百度一下,你就知道&lt;/a&gt;
+<p>首先下载教程的起始项目吧。</p>
 
+<p>在Xcode中打开它然后编译运行。你应该会看到一个空白界面:</p>
 
-&lt;img src="https://www.baidu.com/img/bd_logo1.png" alt="百度logo" width="200"&gt;
-&lt;img src="images/img_01.jpg"&gt;
-</code></pre>
+<p><img src="/images/watchOS001.png" title="Caption" ></p>
 
-<h6>2：列表&lt;&ndash;列表标签&ndash;></h6>
+<p>这个项目没有太多的文件,只包含一些你需要的最基本的文件。</p>
 
-<p>无序：</p>
+<p>添加WatchKit App</p>
 
-<pre><code>&lt;ul&gt;
-  &lt;li&gt;我是列表1&lt;/li&gt;
-  &lt;li&gt;我是列表2&lt;/li&gt;
-  &lt;li&gt;我是列表3&lt;/li&gt;
-  &lt;li&gt;我是列表4&lt;/li&gt;
-&lt;/ul&gt;
-</code></pre>
+<p>选择File\New\Target…,在出现的对话框中选择watchOS\Application\WatchKit App然后点击Next:</p>
 
-<p>有序：</p>
+<p><img src="/images/watchOS002.png" title="Caption" ></p>
 
-<pre><code>&lt;Ol&gt;
-    &lt;li&gt;我是列表1&lt;/li&gt;
-    &lt;li&gt;我是列表2&lt;/li&gt;
-    &lt;li&gt;我是列表3&lt;/li&gt;
-    &lt;li&gt;我是列表4&lt;/li&gt;
-&lt;/Ol&gt;
-</code></pre>
+<p>在接下来的界面中,设置项目名字为Watch,确保语言设置为Swift,然后取消选中任何复选框。点击Finish:</p>
 
-<h6>3:文章：</h6>
+<p><img src="/images/watchOS003.png" title="Caption" ></p>
 
-<pre><code>&lt;article&gt;
+<p>之后会询问你是否想要激活watch scheme,你需要这么做,所以确保选择了激活:</p>
 
-    &lt;header&gt;
+<p><img src="/images/watchOS004.png" title="Caption" ></p>
 
-    &lt;/header&gt;
+<p>祝贺,你刚刚创建了你的第一个手表app!这真的很容易。</p>
 
-    &lt;section&gt;&lt;/section&gt;
+<p>你会注意到,这个操作实际上创建了两个target,而不是一个,在项目导航中看到两个对应的组。这是因为手表app的代码实际是作为一个扩展形式存在的,类似iOS上的Today extensions。</p>
 
-    &lt;section&gt;&lt;/section&gt;
+<p>当你在项目导航中点开Watch和Watch Extensions组的时候,你会看到所有storyboard放在Watch组,当前target创建的所有的类文件放在Watch Extensions组中:</p>
 
-    &lt;footer&gt;
+<p><img src="/images/watchOS005.png" title="Caption" ></p>
 
-    &lt;/footer&gt;
+<p>你需要遵循如下的原则:任何你添加的代码必须放在Watch Extension组中然后添加到Watch Extension target,而所有的assets或者storyboards需要放在Watch组里。</p>
 
-&lt;/article&gt;
-</code></pre>
+<p><img src="/images/watchOS006.png" title="Caption" ></p>
 
-<h6>4：高级:</h6>
+<p>在继续前,你需要删掉一些target模板添加的你不需要的文件。</p>
 
-<pre><code>   &lt;!--进度条--&gt;
-   &lt;progress max="100" value="50"&gt;&lt;/progress&gt;
-   &lt;!--音频--&gt;
-   &lt;audio src="sources/music.m4a" controls="controls"&gt;&lt;/audio&gt;
-   &lt;!--视频--&gt;
-   &lt;video src="sources/BigBuck.m4v" controls="controls"&gt;&lt;/video&gt;
-</code></pre>
-
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-
-<hr />
-
-<h2>CSS3</h2>
-
-<h4>一:样式</h4>
-
-<h6>1.行内：</h6>
-
-<p>&lt;&ndash;style=&ldquo;background-color: red;&rdquo;&ndash;></p>
-
-<p><--
-   单值属性: 后面只有一个属性值
-   复合属性: 后面有多个属性值
---></p>
-
-<pre><code>   &lt;div style="color: purple; font-size: 40px; background-color: yellowgreen;"&gt;我是容器div&lt;/div&gt;
-   &lt;p style="color: blue; font-size: 100px; border:3px solid red;"&gt;我是段落&lt;/p&gt;
-</code></pre>
-
-<h6>2.页内：</h6>
-
-<pre><code>&lt;--
-  网站 = N个网页 + 服务器 + 数据库 + ....
-
---&gt;
-
-&lt;!--
-  css遵循的规律:
-  1&gt; 就近原则
-  2&gt; 叠加原则
---&gt;
-</code></pre>
-
-<hr />
-
-<pre><code>    &lt;style&gt;
-        div{
-            color: chartreuse;
-            border: 3px dashed blueviolet;
-            font-size: 90px;
-        }
-    &lt;/style&gt; 
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;div&gt;我是div&lt;/div&gt; 
-</code></pre>
-
-<h6>3.外部</h6>
-
-<pre><code>    &lt;!--引入--&gt;
-    &lt;link href="css/index.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-   &lt;div&gt;哈哈哈哈哈&lt;/div&gt;
-</code></pre>
-
-<hr />
-
-<pre><code>div{
-    color: darkgoldenrod;
-    background-color: mediumvioletred;
-    font-size: 5px;
-}
-</code></pre>
-
-<h4>二：选择器</h4>
-
-<pre><code>    /** 标签选择器*/
-    div{
-        color: red;
-    }
-    /*类选择器*/
-    .test1{
-        color: green;
-    }
-    /*id选择器*/
-    #main{
-        font-size: 90px;
-    }
-    /*并列选择器*/
-    #main,.test1{
-        border: 5px double darkviolet;
-    }
-    /*复合选择器*/
-    p.test2{
-       background-color: red;
-    }
-    /*后代选择器*/
-    #first p a{
-        font-size: 90px;
-    }
-    /*伪类*/
-    input:focus{
-       width: 500px;
-       height: 60px;
-       font-size: 55px;
-       /*去除外边框*/
-       outline: none;
-    }
-
-    div#main:hover{
-       background-color: yellow;
-       width: 500px;
-       height: 250px;
-    }
-    /*伪元素*/
-    p:first-letter{
-        color: goldenrod;
-        font-size: 60px;
-    }
-</code></pre>
-
-<hr />
-
-<pre><code>   &lt;div id="main"&gt;bjbjwefbjb&lt;/div&gt;
-   &lt;div&gt;bjbjwefbjb&lt;/div&gt; 
-   &lt;p&gt;我是段落&lt;/p&gt; 
-   &lt;div class="test1"&gt;bjbjwefbjb&lt;/div&gt;
-   &lt;div id="first"&gt;
-       &lt;p&gt;
-           &lt;a href="#"&gt;我是超链接&lt;/a&gt;
-       &lt;/p&gt;
-   &lt;/div&gt;
-</code></pre>
-
-<h4>三：优先级：</h4>
-
-<pre><code>    &lt;--
-      CSS遵循的规律:
-      1.相同级别的选择器: a.就近原则  b.叠加原则
-      2.不同选择器:
-        important &gt; 内联 &gt; id &gt; 类 &gt; 标签 | 伪类 | 属性选择 &gt; 伪元素 &gt; 通配符 &gt; 继承
-      3. 选择器的针对性越强，它的优先级就越高
-    --&gt;
-</code></pre>
-
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-
-<hr />
-
-<h2>编写 JScript</h2>
-
-<blockquote><p>与其他许多编程语言一样， Microsoft JScript 是用文本方式编写的，并被组织成为语句、由相关的语句集组成的块、以及注释。在一条语句内可以使用变量、比如字符串和数字（称为“文字”）的立即数、以及表达式。</p></blockquote>
-
-<h5>一：语句</h5>
-
-<p>JScript 程序是语句的集合。一条 Jscript 语句相当于英语中的一个完整句。Jscript 语句将表达式组合起来，完成一个任务。</p>
-
-<p>一条语句由一个或多个表达式、关键字或者运算符（符号）组成。典型地，一条语句写一行，尽管一条语句可以超过两行或更多行。两条或更多条语句也可以写在同一行上，语句之间用分号“;”隔开。通常，每一新行开始一条新语句。不过显式地终止语句是一个好方法。这是用分号 (;)来实现的，分号是 JScript 语句的终止字符。下面给出 Jscript 语句的两隔示例。</p>
-
-<pre><code>aBird = "Robin"; //将文本“Robin”赋值给变量 aBird
-var today = new Date(); // 将今天的日期赋值给变量 today
-</code></pre>
-
-<p>用大括号（{}）括起来的一组 JScript 语句称为一个语句块。分组到一个语句块中的语句通常可当作单条语句处理。这就是说在 JScript 期望有一条单个语句的大多数地方可以使用语句块。应该注意以 for 和 while 打头的循环语句是例外情况。注意，语句块中的原始语句以分号结束，但语句块本身并不以分号结束。</p>
-
-<p>通常，在函数和条件语句中使用语句块。</p>
-
-<blockquote><p>注意，Jscript 与 C++ 以及其他某些语言不同，它不认为语句块是一个新的范围；只有函数创建新范围。在下面的示例中，第一条语句开始定义一个函数，该函数包含一个五条语句组成的语句块。语句块后的三条语句没有用大括号括起来；这些语句不是一个语句块，所以就不是函数定义的一部分。</p></blockquote>
-
-<pre><code>function convert(inches)  {
-   feet = inches / 12;  //  这五条语句属于一个语句块。
-   miles = feet / 5280;
-   nauticalMiles = feet / 6080;
-   cm = inches * 2.54;
-   meters = inches / 39.37;
-}
-km = meters / 1000;  //  这三条语句不在语句块内。
-kradius = km;
-mradius = miles;
-</code></pre>
-
-<h5>二：注释</h5>
-
-<p>单行的 JScript 注释以一对正斜杠(//)开始。下面给出一个单行注释的示例。</p>
-
-<pre><code>aGoodIdea = "Comment your code thoroughly.";  //  这是一个单行注释。
-</code></pre>
-
-<p>多行注释以一个正斜杠加一个星号的组合(/<em>)开始,并以其逆向顺序 (</em>/)结束。</p>
+<p>在项目导航里面右键点击InterfaceController.swift然后选择删除。 当弹出提示,选择Move to Trash来确保文件确实从项目中删掉了:</p>
 
-<pre><code>/*
-这是一个用来解释前面的代码语句的多行注释。
+<p><img src="/images/watchOS007.png" title="Caption" ></p>
 
-该语句将一个值赋给 aGoodIdea 变量。
-用引号包含的这种值称为一个文字。
-文字显式并直接包含信息；
-而不是简接地引用信息。
-（引号不属于该文字的内容。）
-*/
-</code></pre>
+<p>下一步,打开Interface.storyboard,选择其中仅有的界面控制器,按下backspace键来删除它。现在就剩下一个空storyboard,或者是我认为的,一个空白画布。</p>
 
-<blockquote><p>注意   如果您试图将一个多行注释插入到另一个中，JScript 不能按正常的方式解释生成的多行注释。标明嵌入的多行注释结束的 */ 被认为是整个多行注释的结尾。这就意味着嵌入多行注释之后的文本不再被认为是注释；相应地，它将被解释为 JScript 代码，并会产生语法错误。</p></blockquote>
+<p>共享数据和代码</p>
 
-<p>建议将所有的注释写为单行注释的语句块。这样您以后就能够将大段的代码与多行注释区分开。</p>
+<p>起始项目包含一个记录所有Aber航空公司航班信息的JSON文件,一个模型类表示飞行数据。这正是应该共享的数据,因为iOS app和手表app使用相同的模型类和数据-你记得DRY(不要写重复的代码)原则吗?</p>
 
-<pre><code>//这是另一种多行注释，写成一系列单行注释。
+<p>在项目导航中点开Shared组然后选择Flights.json。之后,在File Inspector中找到Target Membership区域,选中Watch Extension</p>
 
-//  在执行完该语句后，可以使用 aGoodIdea 变量的名字来引用其内容，
-//  如下一条语句那样，即采用连接操作将字符串文字添加到
-//  aGoodIdea 变量，以创建一个新的变量。
+<p><img src="/images/watchOS008.png" title="Caption" ></p>
 
-var extendedIdea = aGoodIdea + " You never know when you'll have to figure out what it does.";
-</code></pre>
+<p>文件现在应该被AirAber和Watch Extensions这两个target所包含。 为其他Shared组的文件重复这个步骤,比如说Flight.swift。 这些都做完后,你可以开始开发航班详情界面了!</p>
 
-<p>赋值和相等</p>
+<p>构造界面</p>
 
-<p>JScript 语句中使用等号 (=)给变量赋值：等号是赋值运算符。= 运算符左边的操作项总是一个 Lvalue。Lvalue 可以是：</p>
+<p>打开 Watch\Interface.storyboard,从对象库拖一个界面控制器到storyboard里面.选中这个界面控制器,打开属性检查器设置它的Identificer为Flight,然后勾选Is Initial Controller:</p>
 
-<h5>三：变量，</h5>
+<p><img src="/images/watchOS009.png" title="Caption" ></p>
 
-<p>数组元素，
-对象属性。
-= 运算符右边的操作项总是一个 Rvalue。Rvalues 可以是任何类型的一个任意值，包括表达式的值。下面给出一个 JScript 赋值语句的示例。</p>
+<p>你设置的这个Identifier让你可以在代码中引用这个界面控制器。选中Is Initial Controller简单告诉WatchKit你希望当应用程序启动的时候首先显示这个界面。</p>
 
-<pre><code>anInteger = 3;
-</code></pre>
+<p>下一步,从对象库中拖动一个组到界面控制器:</p>
 
-<p>Jscript 编译器解释本语句的意义为：“将 3 赋给变量 anInteger”或“anInteger 的值为 3”。</p>
+<p><img src="/images/watchOS010.png" title="Caption" ></p>
 
-<p>确定您理解了 = 运算符（赋值）和 == 运算符（相等）的差异。在比较两个值是否相等时，应使用两个等于号 (==)。这些内容将在 控制程序的流程 中详细介绍。</p>
+<p>之后这个组会包含Aber公司的logo,航班号和路线。</p>
 
-<h5>四：表达式</h5>
+<p>选中这个组,在属性检查器的顶部改变它的Insets为Custom。这会显示四个额外的文本框让你可以手动的设置组的上下左右。设置Top为6:</p>
 
-<p>JScript 表达式是指 JScript 解释器能够计算生成值的 JScript “短语”。这个值可以是任何有效的 JScript 类型 — 数字、字符串、对象，等等。最简单的表达式是文字。下面给出 JScript 文字表达式的一些示例。</p>
+<p><img src="/images/watchOS011.png" title="Caption" ></p>
 
-<pre><code>3.9                       // 数字文字
-"Hello!"                  // 字符串文字
-false                     // 布尔文字
-null                      // 文字空值
-{x:1, y:2}                // 对象文字
-[1,2,3]                   // 数组文字
-function(x){return x*x;}  // 函数文字
-</code></pre>
+<p>这仅仅让你的组到顶部有个额外的空隙。</p>
 
-<p>更多复杂的表达式中包含变量、函数、函数调用以及其他表达式。可以用运算符将表达式组合，创建复合表达式。运算符可以是：</p>
+<p>下一步,拖动Image到组中。组会相应的收缩来改变Top inset(感谢Xcode!),之后在文档大纲中检查来确保Image是组的子节点,而不是同级:</p>
 
-<pre><code>+  // 加法
--  // 减法
-*  // 乘法
-/  // 除法
-</code></pre>
+<p><img src="/images/watchOS012.png" title="Caption" ></p>
 
-<p>下面给出 JScript 复合表达式的一些示例。</p>
+<p>现在需要显示一张图片,下载logo图片然后把它拖动到Watch\Assets.xcassets中。这会创建一个新的logo图片,存放在2x的部分。</p>
 
-<pre><code>var anExpression = 3 * (4 / 5) + 6;
-var aSecondExpression = Math.PI * radius * radius;
-var aThirdExpression = aSecondExpression + "%" + anExpression;
-var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
-</code></pre>
+<p><img src="/images/watchOS013.png" title="Caption" ></p>
 
-<blockquote><h6>其他请参考相关文档</h6></blockquote>
-</div>
-  
-  
+<p>为了给图片染色,选中这张图片,在属性检查器中修改Render As为Template Image。</p>
 
-
-
-
-| <a href="/blog/2015/12/05/h5chu-tan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
+<p>重新打开 Watch\Interface.storyboard 选中之前的image.使用属性检查器,做如下的改变:</p>
 
 <ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+<li>设置图片为Logo - 当下拉列表没有出现,你可以自己输入;</li>
+<li>设置Tint为#FA114F(也可以在颜色面板中输入值);</li>
+<li>设置Width为Fixed,值为40;</li>
+<li>设置Height为Fixed,值为40。</li>
 </ul>
 
 
-<h3>2. 一些优化思路：</h3>
+<p>属性检查器现在应该像下面这样:</p>
 
-<ul>
-<li>异步下载图片</li>
-<li>image解压缩放到子线程</li>
-<li>使用缓存 (包括内存级别和磁盘级别)</li>
-<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
-<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
-<li>良好的接口（比如SDWebImage使用category）</li>
-<li>Core Data vs 文件存储</li>
-<li>图片预下载</li>
-</ul>
+<p><img src="/images/watchOS014.png" title="Caption" ></p>
 
+<p>不要担心看不到logo,因为Xcode设计时无法给模板图片染色!</p>
 
-<h6>2.1 关于异步图片下载:</h6>
+<p>下一步,往已经存在的组中拖动另外一个组,确保它出现在image的右侧,使用属性检查器设置Layout属性为Vertical.同样修改Spacing为0、Width为Size to Fit Content。然后拖动两个label到新的组中,放置一个到另一个的下面。</p>
 
-<p>fastImageCache主要针对于从磁盘文件读取并展示图片的极端优化，所以并没有集成异步图片下载的功能。这里主要来看看SDWebImage(AFNetWorking的基本类似)的实现方案：</p>
+<p><img src="/images/watchOS015.png" title="Caption" ></p>
 
-<p>tableView中，异步图片下载任务的管理:</p>
+<p>选择上面的label,使用属性检查器,设置文本为Flight 123,文字颜色为#FA114F。</p>
 
-<p>我们知道，tableViewCell是有重用机制的，也就是说，内存中只有当前可见的cell数目的实例，滑动的时候，新显示cell会重用被滑出的cell对象。这样就存在一个问题：</p>
+<p>选择下面的label,设置文本为MAM to SFO。界面控制器最后看起来像下面这样:</p>
 
-<p>一般情况下在我们会在cellForRow方法里面设置cell的图片数据源，也就是说如果一个cell的imageview对象开启了一个下载任务，这个时候该cell对象发生了重用，新的image数据源会开启另外的一个下载任务，由于他们关联的imageview对象实际上是同一个cell实例的imageview对象，就会发生2个下载任务回调给同一个imageview对象。这个时候就有必要做一些处理，避免回调发生时，错误的image数据源刷新了UI。</p>
+<p><img src="/images/watchOS016.png" title="Caption" ></p>
 
-<blockquote><p>SDWebImage提供的UIImageView扩展的解决方案：</p></blockquote>
+<p>这些文本仅仅充当占位符,之后会被控制器中设置的文本取代。</p>
 
-<p>imageView对象会关联一个下载列表（列表是给AnimationImages用的，这个时候会下载多张图片），当tableview滑动，imageView重设数据源（url）时，会cancel掉下载列表中所有的任务，然后开启一个新的下载任务。这样子就保证了只有当前可见的cell对象的imageView对象关联的下载任务能够回调，不会发生image错乱。</p>
+<p>下一步,拖动另一个组到界面控制器中,但是这次确保与第一个组同级。当不能设置组级别关系请使用文档大纲(Document Outline)。</p>
 
-<p>同时，SDWebImage管理了一个全局下载队列（在DownloadManager中）,并发量设置为6.也就是说如果可见cell的数目是大于6的，就会有部分下载队列处于等待状态。而且，在添加下载任务到全局的下载队列中去的时候，SDWebImage默认是采取LIFO策略的，具体是在添加下载任务的时候，将上次添加的下载任务添加依赖为新添加的下载任务。</p>
+<p><img src="/images/watchOS017.png" title="Caption" ></p>
 
-<pre><code>    [wself.downloadQueue addOperation:operation];
-    if (wself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
-        // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
-        [wself.lastAddedOperation addDependency:operation];
-        wself.lastAddedOperation = operation;
-    }
+<p>选中新的组,设置它的Layout为Vertical、Spacing为0。</p>
+
+<p>现在,拖动三个label到新的组中:</p>
+
+<p><img src="/images/watchOS018.png" title="Caption" ></p>
+
+<p>确保label都在group中,而不是与group同级!</p>
+
+<p>选择顶部的label使用属性检查器修改它的文本为AA123 Boards。</p>
+
+<p>选中中间的label,修改文本颜色为#FA114F,字体选择System,Regulaer样式和54.0的size.最后,修改Height为Fixed,值是44。</p>
+
+<p>选中底部的label修改文本为On time,文本颜色为#04DE71。 你的界面控制器应该现在像下面这样:</p>
+
+<p><img src="/images/watchOS019.png" title="Caption" ></p>
+
+<p>从对象库中拖动一个新的组到下面的组,这次确保它是在子节点而不是在同级,之后向其中添加两个label,你完全的界面对象关系应该像这样:</p>
+
+<p><img src="/images/watchOS020.png" title="Caption" ></p>
+
+<p>使用属性检查器,设置左边的label文本为Gate 1A。右边的label设置为Seat 64A,之后设置它的Horizontal alignment为Right 完全的界面应该像如下这样:</p>
+
+<p><img src="/images/watchOS021.png" title="Caption" ></p>
+
+<p>恭喜,你已经完成你的第一个watch app界面的布局了,现在是时候给它填充一些真实的数据然后在模拟器上运行。</p>
+
+<p>创建控制器</p>
+
+<p>在项目导航中右击Watch Extensions组,选择New File,在出现的对话框中选择watchOS\Source\WatchKit Class然后点击Next。命名新的类为FlightInterfaceController,确保它为WKInterfaceController的子类,语言设置为Swift:</p>
+
+<p><img src="/images/watchOS022.png" title="Caption" ></p>
+
+<p>点击Next,之后是Create</p>
+
+<p>可以看到新的文件在代码编辑器中打开了,删除其中的三个空方法,只剩下import语句和类定义。</p>
+
+<p>添加这些Outlets到FlightInterfaceController的顶部:</p>
+
+<pre><code>@IBOutlet var flightLabel: WKInterfaceLabel!
+@IBOutlet var routeLabel: WKInterfaceLabel!
+@IBOutlet var boardingLabel: WKInterfaceLabel!
+@IBOutlet var boardTimeLabel: WKInterfaceLabel!
+@IBOutlet var statusLabel: WKInterfaceLabel!
+@IBOutlet var gateLabel: WKInterfaceLabel!
+@IBOutlet var seatLabel: WKInterfaceLabel!
 </code></pre>
 
-<p>另外一种解决方案是：</p>
-
-<p>imageView对象和图片的url相关联，在滑动时，不取消旧的下载任务，而是在下载任务完成回调时，进行url匹配，只有匹配成功的image会刷新imageView对象，而其他的image则只做缓存操作，而不刷新UI。</p>
-
-<p>同时，仍然管理一个执行队列，为了避免占用太多的资源，通常会对执行队列设置一个最大的并发量。此外，为了保证LIFO的下载策略，可以自己维持一个等待队列，每次下载任务开始的时候，将后进入的下载任务插入到等待队列的前面。</p>
-
-<h6>iOS异步任务一般有3种实现方式:</h6>
-
-<ul>
-<li>NSOperationQueue</li>
-<li>GCD</li>
-<li>NSThread</li>
-</ul>
-
-
-<p>这几种方式就不细说了，SDWebImage是通过自定义NSOperation来抽象下载任务的，并结合了GCD来做一些主线程与子线程的切换。具体异步下载的实现，AFNetworking与SDWebImage都是十分优秀的代码，有兴趣的可以深入看看源码。</p>
-
-<h6>2.2 关于图片解压缩:</h6>
-
-<blockquote><p>通用的解压缩方案
-主体的思路是在子线程，将原始的图片渲染成一张的新的可以字节显示的图片，来获取一个解压缩过的图片。
-基本上比较流行的一些开源库都先后支持了在异步线程完成图片的解压缩，并对解压缩过后的图片进行缓存。</p></blockquote>
-
-<p>这么做的优点是在setImage的时候系统省去了上面的第6步，缺点就是图片占用的空间变大。
-比如1张50<em>50像素的图片，在retina的屏幕下所占用的空间为100</em>100*4 ~ 40KB</p>
-
-<p>下面的代码是SDWebImage的解决方案:</p>
-
-<pre><code>+ (UIImage *)decodedImageWithImage:(UIImage *)image {
-    if (image.images) {
-        // Do not decode animated images
-        return image;
-    }
-
-    CGImageRef imageRef = image.CGImage;
-    CGSize imageSize = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
-    CGRect imageRect = (CGRect){.origin = CGPointZero, .size = imageSize};
-
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
-
-    int infoMask = (bitmapInfo &amp; kCGBitmapAlphaInfoMask);
-    BOOL anyNonAlpha = (infoMask == kCGImageAlphaNone ||
-            infoMask == kCGImageAlphaNoneSkipFirst ||
-            infoMask == kCGImageAlphaNoneSkipLast);
-
-    // CGBitmapContextCreate doesn't support kCGImageAlphaNone with RGB.
-    // https://developer.apple.com/library/mac/#qa/qa1037/_index.html
-    if (infoMask == kCGImageAlphaNone &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) &gt; 1) {
-        // Unset the old alpha info.
-        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
-
-        // Set noneSkipFirst.
-        bitmapInfo |= kCGImageAlphaNoneSkipFirst;
-    }
-            // Some PNGs tell us they have alpha but only 3 components. Odd.
-    else if (!anyNonAlpha &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) == 3) {
-        // Unset the old alpha info.
-        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
-        bitmapInfo |= kCGImageAlphaPremultipliedFirst;
-    }
-
-    // It calculates the bytes-per-row based on the bitsPerComponent and width arguments.
-    CGContextRef context = CGBitmapContextCreate(NULL,
-            imageSize.width,
-            imageSize.height,
-            CGImageGetBitsPerComponent(imageRef),
-            0,
-            colorSpace,
-            bitmapInfo);
-    CGColorSpaceRelease(colorSpace);
-
-    // If failed, return undecompressed image
-    if (!context) return image;
-
-    CGContextDrawImage(context, imageRect, imageRef);
-    CGImageRef decompressedImageRef = CGBitmapContextCreateImage(context);
-
-    CGContextRelease(context);
-
-    UIImage *decompressedImage = [UIImage imageWithCGImage:decompressedImageRef scale:image.scale orientation:image.imageOrientation];
-    CGImageRelease(decompressedImageRef);
-    return decompressedImage;
-}
-</code></pre>
-
-<h6>2.3 关于字节对齐</h6>
-
-<p>SDWebImage与AFNetworking都没有对第7点做优化，FastImageCache相对与其他的开源库，则对第5点与第7点做了优化。这里我们谈谈第七点，关于图片数据的字节对齐。</p>
-
-<blockquote><p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：</p>
-
-<p>那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)</p></blockquote>
-
-<hr />
-
-<blockquote><p>块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p></blockquote>
-
-<hr />
-
-<p><img src="/images/tupianyouhua001.png" title="Caption" ></p>
-
-<p>从代码上来看，主要是在创建上图解码的过程中，CGBitmapContextCreate函数的bytesPerRow参数必须传64的倍数。</p>
-
-<p>比较各个开源框架的代码，可以看到SDWebImage与AFNetworking的该参数都传的是0，即让系统自动来计算该值（那为何系统自动计算的时候不让图片数据字节就字节对齐呢？）。</p>
-
-<h6>2.4 关于第3，4点，内存级别拷贝</h6>
-
-<p>以上3个开源库中，FastImageCache对这一点做了很大的优化，其他的2个开源库则未关注这一点。这一块木有深入研究，就引用一下FastImageCache团队对该点的一些说明。有能力的可以去看看原文章(英文):here。</p>
-
-<blockquote><p>内存映射
-平常我们读取磁盘上的一个文件，上层API调用到最后会使用系统方法read()读取数据，内核把磁盘数据读入内核缓冲区，用户再从内核缓冲区读取数据复制到用户内存空间，这里有一次内存拷贝的时间消耗，并且读取后整个文件数据就已经存在于用户内存中，占用了进程的内存空间。
-FastImageCache采用了另一种读写文件的方法，就是用mmap把文件映射到用户空间里的虚拟内存，文件中的位置在虚拟内存中有了对应的地址，可以像操作内存一样操作这个文件，相当于已经把整个文件放入内存，但在真正使用到这些数据前却不会消耗物理内存，也不会有读写磁盘的操作，只有真正使用这些数据时，也就是图像准备渲染在屏幕上时，虚拟内存管理系统VMS才根据缺页加载的机制从磁盘加载对应的数据块到物理内存，再进行渲染。这样的文件读写文件方式少了数据从内核缓存到用户空间的拷贝，效率很高。</p></blockquote>
-
-<h6>2.5 关于第二步图片处理（裁剪，边框等）</h6>
-
-<p>一般情况下，对于下载下来的图片我们可能想要做一些处理，比如说做一些缩放，裁剪，或者添加圆角等等。</p>
-
-<p>对于比较通用的缩放，或者圆角等功能，可以集成到控件本身。不过，提供一个接口出来，让使用者能够有机会对下载下来的图片做一些其他的特殊处理是有必要的。</p>
-
-<pre><code>/** SDWebImage
- * Allows to transform the image immediately after it has been downloaded and just before to cache it on disk and memory.
- * NOTE: This method is called from a global queue in order to not to block the main thread.
- *
- * @param imageManager The current `SDWebImageManager`
- * @param image        The image to transform
- * @param imageURL     The url of the image to transform
- *
- * @return The transformed image object.
- */
-- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL;
-</code></pre>
-
-<h6>2.6 其他（诸如图片预下载，gif支持等等,下载进度条）</h6>
-
-<p>待补充</p>
-
-<h3>3. 常用的开源库对比</h3>
-
-<table>
-<thead>
-<tr>
-<th>tip    </th>
-<th style="text-align:center;">SDWebImage </th>
-<th style="text-align:right;">AFNetworking   </th>
-<th>FastImageCache</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>异步下载图片</td>
-<td style="text-align:center;">    YES</td>
-<td style="text-align:right;">    YES</td>
-<td>    NO</td>
-</tr>
-<tr>
-<td>子线程解压缩</td>
-<td style="text-align:center;">    YES </td>
-<td style="text-align:right;">YES    </td>
-<td>YES</td>
-</tr>
-<tr>
-<td>子线程图片处理(缩放，圆角等)  </td>
-<td style="text-align:center;">YES</td>
-<td style="text-align:right;">   YES</td>
-<td>    YES</td>
-</tr>
-<tr>
-<td>存储解压缩后的位图    </td>
-<td style="text-align:center;">YES</td>
-<td style="text-align:right;">   YES</td>
-<td>    YES</td>
-</tr>
-<tr>
-<td>内存级别缓存 </td>
-<td style="text-align:center;">YES</td>
-<td style="text-align:right;">   YES </td>
-<td>YES</td>
-</tr>
-<tr>
-<td>磁盘级别缓存 </td>
-<td style="text-align:center;">YES    </td>
-<td style="text-align:right;">YES</td>
-<td>   YES</td>
-</tr>
-<tr>
-<td>UIImageView category</td>
-<td style="text-align:center;">  YES </td>
-<td style="text-align:right;">NO </td>
-<td>NO</td>
-</tr>
-<tr>
-<td>减少内存级别的拷贝    </td>
-<td style="text-align:center;">NO </td>
-<td style="text-align:right;">NO</td>
-<td>    YES</td>
-</tr>
-<tr>
-<td>接口易用性    </td>
-<td style="text-align:center;">***</td>
-<td style="text-align:right;">   *** </td>
-<td>*</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h6>一、底层实现</h6>
-
-<ul>
-<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
-<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
-<li><p>3> ASI的运行性能 高于 AFN</p></li>
-</ul>
-
-
-<h6>二、对服务器返回的数据处理</h6>
-
-<ul>
-<li><p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string</p></li>
-<li><p>2> AFN提供了多种对服务器数据处理的方式</p>
-
-<ul>
-<li><p>JSON处理</p></li>
-<li><p>XML处理</p></li>
-<li><p>其他处理</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h6>三、监听请求的过程</h6>
-
-<ul>
-<li><p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
-
-<ul>
-<li><p>success : 请求成功后调用</p></li>
-<li><p>failure : 请求失败后调用</p></li>
-</ul>
-</li>
-<li><p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程</p></li>
-</ul>
-
-
-<p>（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
-
-<pre><code>* 成为代理，遵守协议，实现协议中的代理方法
-
-* 成为代理，不遵守协议，自定义代理方法
-
-* 设置block
-</code></pre>
-
-<h6>四、在文件下载和文件上传的使用难易度</h6>
-
-<ul>
-<li><p>1> AFN</p>
-
-<ul>
-<li><p>不容易监听下载进度和上传进度</p></li>
-<li><p>不容易实现断点续传</p></li>
-<li><p>一般只用来下载不大的文件</p></li>
-</ul>
-</li>
-<li><p>2> ASI</p>
-
-<ul>
-<li><p>非常容易实现下载和上传</p></li>
-<li><p>非常容易监听下载进度和上传进度</p></li>
-<li><p>非常容易实现断点续传</p></li>
-<li><p>下载或大或小的文件都行</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h6>五、ASI提供了更多的实用功能</h6>
-
-<ul>
-<li><p>1> 控制圈圈要不要在请求过程中转</p></li>
-<li><p>2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象</p></li>
-<li><p>3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
-
-<ul>
-<li><p>暂停\恢复\取消所有的请求</p></li>
-<li><p>监听整个队列中所有请求的下载进度和上传进度</p></li>
-</ul>
-</li>
-</ul>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
-
-<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
-
-<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
-
-<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
-
-<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
-
-<h2>CPU 资源消耗原因和解决方案</h2>
-
-<h4>对象创建</h4>
-
-<p>对象的创建会分配内存、调整属性、甚至还有读取文件等操作，比较消耗 CPU 资源。</p>
-
-<p>尽量用轻量的对象代替重量的对象，可以对性能有所优化。</p>
-
-<p>比如 CALayer 比 UIView 要轻量许多，那么不需要响应触摸事件的控件，用 CALayer 显示会更加合适。如果对象不涉及 UI 操作，则尽量放到后台线程去创建，但可惜的是包含有 CALayer 的控件，都只能在主线程创建和操作。通过 Storyboard 创建视图对象时，其资源消耗会比直接通过代码创建对象要大非常多，在性能敏感的界面里，Storyboard 并不是一个好的技术选择。</p>
-
-<p>尽量推迟对象创建的时间，并把对象的创建分散到多个任务中去。尽管这实现起来比较麻烦，并且带来的优势并不多，但如果有能力做，还是要尽量尝试一下。如果对象可以复用，并且复用的代价比释放、创建新对象要小，那么这类对象应当尽量放到一个缓存池里复用。</p>
-
-<h4>对象调整</h4>
-
-<p>对象的调整也经常是消耗 CPU 资源的地方。</p>
-
-<p>这里特别说一下 CALayer：</p>
-
-<ul>
-<li><p>CALayer 内部并没有属性，当调用属性方法时，它内部是通过运行时 resolveInstanceMethod 为对象临时添加一个方法，并把对应属性值保存到内部的一个 Dictionary 里，同时还会通知 delegate、创建动画等等，非常消耗资源。</p></li>
-<li><p>UIView 的关于显示相关的属性（比如 frame/bounds/transform）等实际上都是 CALayer 属性映射来的，所以对 UIView 的这些属性进行调整时，消耗的资源要远大于一般的属性。对此你在应用中，应该尽量减少不必要的属性修改。</p></li>
-</ul>
-
-
-<p>当视图层次调整时，UIView、CALayer 之间会出现很多方法调用与通知，所以在优化性能时，应该尽量避免调整视图层次、添加和移除视图。</p>
-
-<h4>对象销毁</h4>
-
-<p>对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。</p>
-
-<pre><code>NSArray *tmp = self.array;
-
-self.array = nil;
-
-dispatch_async(queue, ^{
-
-    [tmp class];
-
-});
-</code></pre>
-
-<h4>布局计算</h4>
-
-<p>视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。</p>
-
-<p>不论通过何种技术对视图进行布局，其最终都会落到对 UIView.frame/bounds/center 等属性的调整上。上面也说过，对这些属性的调整非常消耗资源，所以尽量提前计算好布局，在需要时一次性调整好对应属性，而不要多次、频繁的计算和调整这些属性。</p>
-
-<h4>Autolayout</h4>
-
-<ul>
-<li>Autolayout 是苹果本身提倡的技术，在大部分情况下也能很好的提升开发效率，但是 Autolayout 对于复杂视图来说常常会产生严重的性能问题。随着视图数量的增长，Autolayout 带来的 CPU 消耗会呈指数级上升。具体数据可以看这个文章：<a href="http://pilky.me/36/%E3%80%82">http://pilky.me/36/%E3%80%82</a> 如果你不想手动调整 frame 等属性，你可以用一些工具方法替代（比如常见的 left/right/top/bottom/width/height 快捷属性），或者使用 ComponentKit、AsyncDisplayKit 等框架。</li>
-</ul>
-
-
-<h4>文本计算</h4>
-
-<p>如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。尽管这两个方法性能不错，但仍旧需要放到后台线程进行以避免阻塞主线程。</p>
-
-<blockquote><p>注意：如果你用 CoreText 绘制文本，那就可以先生成 CoreText 排版对象，然后自己计算了，并且 CoreText 对象还能保留以供稍后绘制使用。</p></blockquote>
-
-<h4>文本渲染</h4>
-
-<p>屏幕上能看到的所有文本内容控件，包括 UIWebView，在底层都是通过 CoreText 排版、绘制为 Bitmap 显示的。常见的文本控件 （UILabel、UITextView 等），其排版和绘制都是在主线程进行的，当显示大量文本时，CPU 的压力会非常大。对此解决方案只有一个，那就是自定义文本控件，用 TextKit 或最底层的 CoreText 对文本异步绘制。尽管这实现起来非常麻烦，但其带来的优势也非常大，CoreText 对象创建好后，能直接获取文本的宽高等信息，避免了多次计算（调整 UILabel 大小时算一遍、UILabel 绘制时内部再算一遍）；CoreText 对象占用内存较少，可以缓存下来以备稍后多次渲染。</p>
-
-<h4>图片的解码</h4>
-
-<p>当你用 UIImage 或 CGImageSource 的那几个方法创建图片时，图片数据并不会立刻解码。图片设置到 UIImageView 或者 CALayer.contents 中去，并且 CALayer 被提交到 GPU 前，CGImage 中的数据才会得到解码。这一步是发生在主线程的，并且不可避免。如果想要绕开这个机制，常见的做法是在后台线程先把图片绘制到 CGBitmapContext 中，然后从 Bitmap 直接创建图片。目前常见的网络图片库都自带这个功能。</p>
-
-<h4>图像的绘制</h4>
-
-<p>图像的绘制通常是指用那些以 CG 开头的方法把图像绘制到画布中，然后从画布创建图片并显示这样一个过程。这个最常见的地方就是 [UIView drawRect:] 里面了。由于 CoreGraphic 方法通常都是线程安全的，所以图像的绘制可以很容易的放到后台线程进行。一个简单异步绘制的过程大致如下（实际情况会比这个复杂得多，但原理基本一致）：</p>
-
-<pre><code>- (void)display {
-
-    dispatch_async(backgroundQueue, ^{
-
-    CGContextRef ctx = CGBitmapContextCreate(...);
-
-    // draw in context...
-
-    CGImageRef img = CGBitmapContextCreateImage(ctx);
-
-    CFRelease(ctx);
-
-    dispatch_async(mainQueue, ^{
-
-        layer.contents = img;
-
-    });
-
-    });
-}
-</code></pre>
-
-<h2>GPU 资源消耗原因和解决方案</h2>
-
-<p>相对于 CPU 来说，GPU 能干的事情比较单一：接收提交的纹理（Texture）和顶点描述（三角形），应用变换（transform）、混合并渲染，然后输出到屏幕上。通常你所能看到的内容，主要也就是纹理（图片）和形状（三角模拟的矢量图形）两类。</p>
-
-<h4>纹理的渲染</h4>
-
-<p>所有的 Bitmap，包括图片、文本、栅格化的内容，最终都要由内存提交到显存，绑定为 GPU Texture。不论是提交到显存的过程，还是 GPU 调整和渲染 Texture 的过程，都要消耗不少 GPU 资源。当在较短时间显示大量图片时（比如 TableView 存在非常多的图片并且快速滑动时），CPU 占用率很低，GPU 占用非常高，界面仍然会掉帧。避免这种情况的方法只能是尽量减少在短时间内大量图片的显示，尽可能将多张图片合成为一张进行显示。</p>
-
-<blockquote><p>注意：当图片过大，超过 GPU 的最大纹理尺寸时，图片需要先由 CPU 进行预处理，这对 CPU 和 GPU 都会带来额外的资源消耗。目前来说，iPhone 4S 以上机型，纹理尺寸上限都是 4096x4096，更详细的资料可以看这里：iosres.com。所以，尽量不要让图片和视图的大小超过这个值。</p></blockquote>
-
-<h4>视图的混合 (Composing)</h4>
-
-<p>当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。为了减轻这种情况的 GPU 消耗，应用应当尽量减少视图数量和层次，并在不透明的视图里标明 opaque 属性以避免无用的 Alpha 通道合成。当然，这也可以用上面的方法，把多个视图预先渲染为一张图片来显示。</p>
-
-<h4>图形的生成</h4>
-
-<p>CALayer 的 border、圆角、阴影、遮罩（mask），CASharpLayer 的矢量图形显示，通常会触发离屏渲染（offscreen rendering），而离屏渲染通常发生在 GPU 中。当一个列表视图中出现大量圆角的 CALayer，并且快速滑动时，可以观察到 GPU 资源已经占满，而 CPU 资源消耗很少。这时界面仍然能正常滑动，但平均帧数会降到很低。为了避免这种情况，可以尝试开启 CALayer.shouldRasterize 属性，但这会把原本离屏渲染的操作转嫁到 CPU 上去。对于只需要圆角的某些场合，也可以用一张已经绘制好的圆角图片覆盖到原本视图上面来模拟相同的视觉效果。最彻底的解决办法，就是把需要显示的图形在后台线程绘制为图片，避免使用圆角、阴影、遮罩等属性。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
-
-<p>关于XLNetworkApi</p>
-
-<p>XLNetworkApi的一些功能和说明：</p>
-
-<p>使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。
-以及网络下载、上传文件，以block的形式返回实时的下载、上传进度，上传文件参数通过模型XLFileConfig去存取。
-通过继承于XLDataService来将一些数据处理，模型转化封装起来，于业务逻辑对接返回的是对应的模型，减少Controllor处理数据处理逻辑的压力。
-自定义一些回调的block</p>
-
-<pre><code>/**
-请求成功block
-*/
-typedef void (^requestSuccessBlock)(id responseObj);
-/**
-请求失败block
-*/
-typedef void (^requestFailureBlock) (NSError *error);
-/**
-请求响应block
-*/
-typedef void (^responseBlock)(id dataObj, NSError *error);
-/**
-监听进度响应block
-*/
-typedef void (^progressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
-XLNetworkRequest.m部分实现
-#import "XLNetworkRequest.h"
-#import "AFNetworking.h"
-@implementation XLNetworkRequest
-+ (void)getRequest:(NSString *)url params:(NSDictionary *)params success:(requestSuccessBlock)successHandler failure:(requestFailureBlock)failureHandler {
-//网络不可用
-  if (![self checkNetworkStatus]) {
-      successHandler(nil);
-      failureHandler(nil);
-      return;
-  }
-  AFHTTPRequestOperationManager *manager = [self getRequstManager];
-  [manager GET:url parameters:params success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      successHandler(responseObject);
-  } failure:^(AFHTTPRequestOperation * _Nullable operation, NSError * _Nonnull error) {
-      XLLog(@"------请求失败-------%@",error);
-      failureHandler(error);
-  }];
-}
-</code></pre>
-
-<p>下载部分代码</p>
-
-<pre><code>    //下载文件，监听下载进度
-    + (void)downloadRequest:(NSString *)url successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-      if (![self checkNetworkStatus]) {
-          progressHandler(0, 0, 0);
-          completionHandler(nil, nil);
-          return;
+<p>这里仅仅为之前的每个label添加一个Outlet。稍后会把他们连接起来。</p>
+
+<p>下一步,在outlets下面添加flight属性和对应的属性观察器:</p>
+
+<pre><code>// 1
+var flight: Flight? {
+  // 2
+  didSet {
+    // 3
+    if let flight = flight {
+      // 4
+      flightLabel.setText("Flight \(flight.shortNumber)")
+      routeLabel.setText(flight.route)
+      boardingLabel.setText("\(flight.number) Boards")
+      boardTimeLabel.setText(flight.boardsAt)
+      // 5
+      if flight.onSchedule {
+        statusLabel.setText("On Time")
+      } else {
+        statusLabel.setText("Delayed")
+        statusLabel.setTextColor(UIColor.redColor())
       }
-      NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
-      AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:sessionConfiguration];
-      NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
-      NSProgress *kProgress = nil;
-      NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:&amp;kProgress destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-          NSURL *documentUrl = [[NSFileManager defaultManager] URLForDirectory :NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-          return [documentUrl URLByAppendingPathComponent:[response suggestedFilename]];
-      } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nonnull filePath, NSError * _Nonnull error){
-          if (error) {
-              XLLog(@"------下载失败-------%@",error);
-          }
-          completionHandler(response, error);
-      }];
-      [manager setDownloadTaskDidWriteDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDownloadTask * _Nonnull downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
-          progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-      }];
-      [downloadTask resume];
+      gateLabel.setText("Gate \(flight.gate)")
+      seatLabel.setText("Seat \(flight.seat)")
     }
-</code></pre>
-
-<p>上传部分代码</p>
-
-<pre><code>//上传文件，监听上传进度
-+ (void)updateRequest:(NSString *)url params:(NSDictionary *)params fileConfig:(XLFileConfig *)fileConfig successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-  if (![self checkNetworkStatus]) {
-      progressHandler(0, 0, 0);
-      completionHandler(nil, nil);
-      return;
   }
-  NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:url parameters:params constructingBodyWithBlock:^(id  _Nonnull formData) {
-      [formData appendPartWithFileData:fileConfig.fileData name:fileConfig.name fileName:fileConfig.fileName mimeType:fileConfig.mimeType];
-  } error:nil];
-  //获取上传进度
-  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-  [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
-      progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-  }];
-  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      completionHandler(responseObject, nil);
-  } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
-      completionHandler(nil, error);
-      if (error) {
-          XLLog(@"------上传失败-------%@",error);
-      }
-  }];
-  [operation start];
 }
 </code></pre>
 
-<p>XLDataService.m部分实现</p>
+<p>会一步步讲解发生的事情:</p>
 
-<pre><code>+ (void)getWithUrl:(NSString *)url param:(id)param modelClass:(Class)modelClass responseBlock:(responseBlock)responseDataBlock {
-      [XLNetworkRequest getRequest:url params:param success:^(id responseObj) {
-      //数组、字典转化为模型数组
-      dataObj = [self modelTransformationWithResponseObj:responseObj modelClass:modelClass];
-      responseDataBlock(dataObj, nil);
-  } failure:^(NSError *error) {
-      responseDataBlock(nil, error);
-  }];
+<ul>
+<li><p>1.你定义了一个可选的属性类型为Flight。这个类在Flight.swift中定义;</p></li>
+<li><p>2.你添加了一个属性观察器,当属性设值时候会触发它;</p></li>
+<li><p>3.在可选属性中确保有一个真的flight而不是nil,当flight存在才会去设置labels的值;</p></li>
+<li><p>4.使用flight的相关属性去设置labels</p></li>
+<li><p>5.如果航班被延误，那么你就将标签的文本颜色改为红色</p></li>
+</ul>
+
+
+<p>在控制器第一次显示时候设置航班。添加以下声明：</p>
+
+<pre><code>override func awakeWithContext(context: AnyObject?) {
+  super.awakeWithContext(context)
+  flight = Flight.allFlights().first!
 }
 </code></pre>
 
-<p>（关键）下面这个方法提供给继承XLDataService的子类重写，将转化为模型的代码写在这里，相似业务的网络数据请求都可以用这个子类去请求数据，直接返回对应的模型数组。
-    /<em>*
-    数组、字典转化为模型
-    </em>/
-    + (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-         return nil;
-    }
-关于离线数据缓存</p>
+<p>本后面的教程会修改为在上下文中传递值给它,但现在你只需要从共享的JSON文件中加载所有的航班,然后使用数组中的第一个。</p>
 
-<p>当用户进入程序的展示页面，有三个情况下可能涉及到数据库存取操作，简单画了个图来理解，思路比较简单，主要是一些存取的细节处理。</p>
+<p>在后面的教程你将学到更多关于awakeWithContext（_：)的知识,但是现在你仅仅需要知道它是界面控制器生命周期第一环节,一个设置flight值的地方。 现在仅剩最后一步你就可以编译运行了,就是去连接outlets</p>
 
-<p>进入展示页面</p>
+<p>连接outlets</p>
 
-<p><img src="/images/net001.png" title="Caption" ></p>
+<p>打开 Watch\Interface.storyboard 选择界面控制器,使用Identity Inspector,设置Class\Custom Class为FlightInterfaceController</p>
 
-<p>下拉刷新最新数据</p>
+<p>下一步,右击界面控制器顶部的黄色图片弹出窗口:</p>
 
-<p><img src="/images/net002.png" title="Caption" ></p>
+<p><img src="/images/watchOS023.png" title="Caption" ></p>
 
-<p>上拉加载更多数据</p>
+<p>现在,按下面的列表连接outlets:</p>
 
-<p><img src="/images/net003.png" title="Caption" ></p>
-
-<p>需要注意的是，上拉加载更多的时候，每次从数据库返回一定数量的数据，而不是一次性将数据全部加载，否则会有内存问题，直到数据库中没有更多数据时再发生网络请求，再次将新数据存入数据库。这里存储数据的方式是将服务器返回每组数据的字典归档成二进制作为数据库字段直接存储，这样存储在模型属性比较多的情况下更有好处，避免每一个属性作为一个字段，另外增加了一个idStr字段用来判断数据的唯一性，避免重复存储。
-首先定义一个工具类XLDataBase来做数据库相关的操作，这里用的是第三方的FMDB。</p>
-
-<pre><code>#import "XLDataBase.h"
-#import "FMDatabase.h"
-#import "Item.h"
-#import "MJExtension.h"
-@implementation XLDataBase
-static FMDatabase *_db;
-+ (void)initialize {
-    NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/Data.db",NSHomeDirectory()];
-    _db = [FMDatabase databaseWithPath:path];
-    [_db open];
-    [_db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_item (id integer PRIMARY KEY, itemDict blob NOT NULL, idStr text NOT NULL)"];
-}
-//存入数据库
-+ (void)saveItemDict:(NSDictionary *)itemDict {
-    //此处把字典归档成二进制数据直接存入数据库，避免添加过多的数据库字段
-    NSData *dictData = [NSKeyedArchiver archivedDataWithRootObject:itemDict];
-    [_db executeUpdateWithFormat:@"INSERT INTO t_item (itemDict, idStr) VALUES (%@, %@)",dictData, itemDict[@"id"]];
-}
-//返回全部数据
-+ (NSArray *)list {
-    FMResultSet *set = [_db executeQuery:@"SELECT * FROM t_item"];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        // 获得当前所指向的数据
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//取出某个范围内的数据
-+ (NSArray *)listWithRange:(NSRange)range {
-    NSString *SQL = [NSString stringWithFormat:@"SELECT * FROM t_item LIMIT %lu, %lu",range.location, range.length];
-    FMResultSet *set = [_db executeQuery:SQL];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//通过一组数据的唯一标识判断数据是否存在
-+ (BOOL)isExistWithId:(NSString *)idStr
-{
-    BOOL isExist = NO;
-    FMResultSet *resultSet= [_db executeQuery:@"SELECT * FROM t_item where idStr = ?",idStr];
-    while ([resultSet next]) {
-        if([resultSet stringForColumn:@"idStr"]) {
-            isExist = YES;
-        }else{
-            isExist = NO;
-        }
-    }
-    return isExist;
-}
-@end
+<pre><code>boardingLabel: AA123 Boards
+boardTimeLabel: 15:06
+flightLabel: Flight 123
+gateLabel: Gate 1A
+routeLabel: MAN to SFO
+seatLabel: Seat 64A
+statusLabel: On time
 </code></pre>
 
-<p>一些继承于XLDataService的子类的数据库存储和模型转换的逻辑代码</p>
+<p>在运行之前,有一件事情要做。本教程的实例app专为42mm的Apple Watch开发的,所以你需要确保正确设置了模拟器,否则界面元素看起来会有点小。对于一个现实app,需要确保界面能很好运行在两种大小的手表上,但这在本教程的范围之外。</p>
 
-<pre><code>#import "GetTableViewData.h"
-#import "XLDataBase.h"
-@implementation GetTableViewData
-//重写父类方法
-+ (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-    NSArray *lists = responseObj[@"data"][@"list"];
-    NSMutableArray *array = [NSMutableArray array];
-    for (NSDictionary *dict in lists) {
-        [modelClass mj_setupReplacedKeyFromPropertyName:^NSDictionary *{
-            return @{ @"ID" : @"id" };
-        }];
-        [array addObject:[modelClass mj_objectWithKeyValues:dict]];
-        //通过idStr先判断数据是否存储过，如果没有，网络请求新数据存入数据库
-        if (![XLDataBase isExistWithId:dict[@"id"]]) {
-            //存数据库
-            NSLog(@"存入数据库");
-            [XLDataBase saveItemDict:dict];
-        }
-    }
-    return array;
-}
-</code></pre>
+<p>在Xcode中,选择Window\Devices打开设备管理器,点击右下角的 + 图标.在弹出的对话框中,命名模拟器为iPhone 6 - 42mm,设置设备类型为iPhone 6,修改配对的Apple watch为Apple Watch - 42mm (WatchOS 2.0)然后点击Create:</p>
 
-<p>下面是一些控制器的代码实现：</p>
+<p><img src="/images/watchOS024.png" title="Caption" ></p>
 
-<pre><code>#import "ViewController.h"
-#import "GetTableViewData.h"
-#import "Item.h"
-#import "XLDataBase.h"
-#import "ItemCell.h"
-#import "MJRefresh.h"
-#define URL_TABLEVIEW @"https://api.108tian.com/mobile/v3/EventList?cityId=1&amp;step=10&amp;theme=0&amp;page=%lu"
-@interface ViewController () {
-    NSMutableArray *_dataArray;
-    UITableView *_tableView;
-    NSInteger _currentPage;//当前数据对应的page
-}
-@end
-@implementation ViewController
-#pragma mark Life cycle
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    [self createTableView];
-    _dataArray = [NSMutableArray array];
-}
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    NSRange range = NSMakeRange(0, 10);
-    //如果数据库有数据则读取，不发送网络请求
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        NSLog(@"从数据库加载");
-    }else{
-        [self getTableViewDataWithPage:0];
-    }
-}
-#pragma mark UI
-- (void)createTableView {
-    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
-    _tableView.delegate = self;
-    _tableView.dataSource = self;
-    _tableView.rowHeight = 100.0;
-    [self.view addSubview:_tableView];
-    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
-        [self loadNewData];
-    }];
-    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
-        [self loadMoreData];
-    }];
-}
-#pragma mark GetDataSoure
-- (void)getTableViewDataWithPage:(NSInteger)page {
-    NSLog(@"发送网络请求！");
-    NSString *url = [NSString stringWithFormat:URL_TABLEVIEW, page];
-    [GetTableViewData getWithUrl:url param:nil modelClass:[Item class] responseBlock:^(id dataObj, NSError *error) {
-        [_dataArray addObjectsFromArray:dataObj];
-        [_tableView reloadData];
-        [_tableView.mj_header endRefreshing];
-        [_tableView.mj_footer endRefreshing];
-    }];
-}
-- (void)loadNewData {
-    NSLog(@"下拉刷新");
-    _currentPage = 0;
-    [_dataArray removeAllObjects];
-    [self getTableViewDataWithPage:_currentPage];
-}
-- (void)loadMoreData {
-    NSLog(@"上拉加载");
-    _currentPage ++;
-    NSRange range = NSMakeRange(_currentPage * 10, 10);
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        [_tableView reloadData];
-        [_tableView.mj_footer endRefreshing];
-        NSLog(@"数据库加载%lu条更多数据",[[XLDataBase listWithRange:range] count]);
-    }else{
-        //数据库没更多数据时再网络请求
-        [self getTableViewDataWithPage:_currentPage];
-    }
-}
-#pragma mark UITableViewDataSource
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _dataArray.count;
-}
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    ItemCell *cell = [ItemCell itemCellWithTableView:tableView];
-    cell.item = _dataArray[indexPath.row];
-    return cell;
-}
-@end
-</code></pre>
+<p>关闭设备管理器,选择Watch Scheme,然后选中新的模拟器:</p>
 
-<p>最后附上代码的下载地址，重要的部分代码中都有相应的注释和文字打印，运行程序可以很直观的表现。</p>
+<p><img src="/images/watchOS025.png" title="Caption" ></p>
 
-<p><a href="https://github.com/ShelinShelin/OffLineCache.git">Demo</a></p>
+<p>编译运行。一段模拟器启动完成你会看到下面界面:</p>
 
-<p>希望大家能提出一些意见，很乐意与大家互相交流。</p>
+<p><img src="/images/watchOS026.png" title="Caption" ></p>
 
+<blockquote><p>注意:如果收到一条错误消息,说明安装失败,然后你可以再次尝试使用Xcode,或者在手表模拟器上手动安装app。为此,打开iOS模拟器中的手表app,点击AirAber,在Apple Watch弹出我们的app。一旦这么做了,返回手表模拟器,按Shift + Ctrl + H导航到主界面, 然后点击AirAber图片来启动手表app。</p></blockquote>
+
+<p>恭喜!你已经完成WatchKit初始界面,并使用真实的数据使它很好运行在手表模拟器上。</p>
+
+<p>稍后会做什么?</p>
+
+<p>下面是这个系列教程完整示例项目。</p>
+
+<p>在这个练习中你已经学会了如何往现有的iOS app中添加手表app，如何创建一个界面控制器和使用嵌套组构造一个非常复杂的界面，以及使用WKInterfaceController类来配合这项工作。那么，接下来呢？</p>
+
+<p>本教程系列的第二部分，你将学习所有关于表和导航WatchKit的使用。</p>
 </div>
   
   
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">阅读全文😘</a>
-    </footer>
-  
 
 
 
 
-| <a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/#comments">更多评论</a>
+| <a href="/blog/2015/12/08/watch-os2-chu-tan/#comments">更多评论</a>
 
     </article>
   
@@ -1393,7 +387,7 @@ static FMDatabase *_db;
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a></h1>
     
     
       <p class="meta">
@@ -1414,20 +408,276 @@ static FMDatabase *_db;
 
 
   <div class="entry-content"><blockquote><p>摘要
-序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</p></blockquote>
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#108;&#116;&#x6f;&#x3a;&#x6d;&#x61;&#106;&#105;&#x61;&#x30;&#x33;&#x40;&#109;&#x65;&#105;&#116;&#x75;&#x61;&#x6e;&#46;&#x63;&#x6f;&#109;">&#109;&#97;&#106;&#x69;&#97;&#48;&#51;&#64;&#109;&#x65;&#x69;&#116;&#117;&#x61;&#110;&#46;&#99;&#111;&#109;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+<p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
+
+<pre><code>[object methodA];
+</code></pre>
+
+<p>这表示我们想去调用object的methodA。
+但是在Objective-C里面调用一个方法到底意味着什么呢，是否和C++一样，任何一个非虚方法都会被编译成一个唯一的符号，在调用的时候去查找符号表，找到这个方法然后调用呢？
+答案是否定的。在Objective-C里面调用一个方法的时候，runtime层会将这个调用翻译成</p>
+
+<pre><code>objc_msgSend(id self, SEL op, ...)
+</code></pre>
+
+<p>而objc_msgSend具体又是如何分发的呢？ 我们来看下runtime层objc_msgSend的源码。
+在objc-msg-arm.s中，objc_msgSend的代码如下：
+（ps：Apple为了高度优化objc_msgSend的性能，这个文件是汇编写成的，不过即使我们不懂汇编，详尽的注释也可以让我们一窥其真面目）</p>
+
+<pre><code>ENTRY objc_msgSend
+# check whether receiver is nil
+teq     a1, #0
+    beq     LMsgSendNilReceiver
+
+# save registers and load receiver's class for CacheLookup
+stmfd   sp!, {a4,v1}
+ldr     v1, [a1, #ISA]
+
+# receiver is non-nil: search the cache
+CacheLookup a2, v1, LMsgSendCacheMiss
+
+# cache hit (imp in ip) and CacheLookup returns with nonstret (eq) set, restore registers and call
+ldmfd   sp!, {a4,v1}
+bx      ip
+
+# cache miss: go search the method lists
+LMsgSendCacheMiss:
+ldmfd sp!, {a4,v1}
+b _objc_msgSend_uncached
+
+LMsgSendNilReceiver:
+    mov     a2, #0
+    bx      lr
+
+LMsgSendExit:
+END_ENTRY objc_msgSend
+
+
+STATIC_ENTRY objc_msgSend_uncached
+
+# Push stack frame
+stmfd sp!, {a1-a4,r7,lr}
+add     r7, sp, #16
+
+# Load class and selector
+ldr a3, [a1, #ISA] /* class = receiver-&gt;isa  */
+/* selector already in a2 */
+/* receiver already in a1 */
+
+# Do the lookup
+MI_CALL_EXTERNAL(__class_lookupMethodAndLoadCache3)
+MOVE    ip, a1
+
+# Prep for forwarding, Pop stack frame and call imp
+teq v1, v1 /* set nonstret (eq) */
+ldmfd sp!, {a1-a4,r7,lr}
+bx ip
+</code></pre>
+
+<p>从上述代码中可以看到，objc_msgSend（就arm平台而言）的消息分发分为以下几个步骤：</p>
+
+<p>判断receiver是否为nil，也就是objc_msgSend的第一个参数self，也就是要调用的那个方法所属对象
+从缓存里寻找，找到了则分发，否则
+利用objc-class.mm中_class_lookupMethodAndLoadCache3（为什么有个这么奇怪的方法。本文末尾会解释）方法去寻找selector</p>
+
+<p>如果支持GC，忽略掉非GC环境的方法（retain等）
+从本class的method list寻找selector，如果找到，填充到缓存中，并返回selector，否则
+寻找父类的method list，并依次往上寻找，直到找到selector，填充到缓存中，并返回selector，否则
+调用_class_resolveMethod，如果可以动态resolve为一个selector，不缓存，方法返回，否则
+转发这个selector，否则
+报错，抛出异常
+缓存为谁而生
+从上面的分析中我们可以看到，当一个方法在比较“上层”的类中，用比较“下层”（继承关系上的上下层）对象去调用的时候，如果没有缓存，那么整个查找链是相当长的。就算方法是在这个类里面，当方法比较多的时候，每次都查找也是费事费力的一件事情。
+考虑下面的一个调用过程：</p>
+
+<pre><code>for ( int i = 0; i &lt; 100000; ++i) {
+    MyClass *myObject = myObjects[i];
+    [myObject methodA];
+}
+</code></pre>
+
+<p>当我们需要去调用一个方法数十万次甚至更多地时候，查找方法的消耗会变的非常显著。
+就算我们平常的非大规模调用，除非一个方法只会调用一次，否则缓存都是有用的。在运行时，那么多对象，那么多方法调用，节省下来的时间也是非常可观的。</p>
+
+<p>追本溯源，何为方法缓存
+本着源码面前，了无秘密的原则，我们看下源码中的方法缓存到底是什么，在objc-cache.mm中，objc_cache的定义如下：</p>
+
+<pre><code>struct objc_cache {
+    uintptr_t mask;            /* total = mask + 1 */
+    uintptr_t occupied;       
+    cache_entry *buckets[1];
+};
+</code></pre>
+
+<p>嗯，objc_cache的定义看起来很简单，它包含了下面三个变量：</p>
+
+<ul>
+<li>1)、mask：可以认为是当前能达到的最大index（从0开始的），所以缓存的size（total）是mask+1</li>
+<li>2)、occupied：被占用的槽位，因为缓存是以散列表的形式存在的，所以会有空槽，而occupied表示当前被占用的数目</li>
+<li>3)、buckets：用数组表示的hash表，cache_entry类型，每一个cache_entry代表一个方法缓存
+(buckets定义在objc_cache的最后，说明这是一个可变长度的数组)</li>
+</ul>
+
+
+<p>而cache_entry的定义如下：</p>
+
+<pre><code>typedef struct {
+    SEL name;     // same layout as struct old_method
+    void *unused;
+    IMP imp;  // same layout as struct old_method
+} cache_entry;
+</code></pre>
+
+<p>cache_entry定义也包含了三个字段，分别是：</p>
+
+<ul>
+<li>1)、name，被缓存的方法名字</li>
+<li>2)、unused，保留字段，还没被使用。</li>
+<li>3)、imp，方法实现</li>
+</ul>
+
+
+<p>缓存和散列
+缓存的存储使用了散列表。
+为什么要用散列表呢？因为散列表检索起来更快，我们来看下是方法缓存如何散列和检索的：</p>
+
+<pre><code>// Scan for the first unused slot and insert there.
+// There is guaranteed to be an empty slot because the 
+// minimum size is 4 and we resized at 3/4 full.
+buckets = (cache_entry **)cache-&gt;buckets;
+for (index = CACHE_HASH(sel, cache-&gt;mask); 
+     buckets[index] != NULL; 
+     index = (index+1) &amp; cache-&gt;mask)
+{
+    // empty
+}
+buckets[index] = entry;
+</code></pre>
+
+<p>这是往方法缓存里存放一个方法的代码片段，我们可以看到sel被散列后找到一个空槽放在buckets中，而CACHE_HASH的定义如下：</p>
+
+<pre><code>#define CACHE_HASH(sel, mask) (((uintptr_t)(sel)&gt;&gt;2) &amp; (mask))
+</code></pre>
+
+<p>这段代码就是利用了sel的指针地址和mask做了一下简单计算得出的。
+而从散列表取缓存则是利用汇编语言写成的（是为了高度优化objc_msgSend而使用汇编的）。我们看objc-msg-arm.mm 里面的CacheLookup方法：</p>
+
+<pre><code>.macro CacheLookup /* selReg, classReg, missLabel */
+
+ MOVE r9, $0, LSR #2          /* index = (sel &gt;&gt; 2) */
+ ldr     a4, [$1, #CACHE]        /* cache = class-&gt;cache */
+ add     a4, a4, #BUCKETS        /* buckets = &amp;cache-&gt;buckets */
+
+/* search the cache */
+/* a1=receiver, a2 or a3=sel, r9=index, a4=buckets, $1=method */
+1:
+ ldr     ip, [a4, #NEGMASK]      /* mask = cache-&gt;mask */
+ and     r9, r9, ip              /* index &amp;= mask           */
+ ldr     $1, [a4, r9, LSL #2]    /* method = buckets[index] */
+ teq     $1, #0                  /* if (method == NULL)     */
+ add     r9, r9, #1              /* index++                 */
+ beq     $2                      /*     goto cacheMissLabel */
+
+ ldr     ip, [$1, #METHOD_NAME]  /* load method-&gt;method_name        */
+ teq     $0, ip                  /* if (method-&gt;method_name != sel) */
+ bne     1b                      /*     retry                       */
+
+/* cache hit, $1 == method triplet address */
+/* Return triplet in $1 and imp in ip      */
+ ldr     ip, [$1, #METHOD_IMP]   /* imp = method-&gt;method_imp */
+
+.endmacro
+</code></pre>
+
+<p>虽然是汇编，但是注释太详尽了，理解起来并不难，还是求hash，去buckets里找，找不到按照hash冲突的规则继续向下，直到最后。</p>
+
+<p>十万个为什么
+了解了方法缓存的定义之后，我们提出几个问题并一一解答</p>
+
+<p>方法缓存存在什么地方？
+让我们去翻看类的定义，在Objective-C 2.0中，Class的定义大致是这样的（见objc-runtime.mm）</p>
+
+<pre><code>  struct _class_t {
+  struct _class_t *isa;
+  struct _class_t *superclass;
+  void *cache;
+  void *vtable;
+  struct _class_ro_t *ro;
+  };
+</code></pre>
+
+<p>我们看到在类的定义里就有cache字段，没错，类的所有缓存都存在metaclass上，所以每个类都只有一份方法缓存，而不是每一个类的object都保存一份。
+父类方法的缓存只存在父类么，还是子类也会缓存父类的方法？
+在第一节对objc_msgSend的追溯中我们可以看到，即便是从父类取到的方法，也会存在类本身的方法缓存里。而当用一个父类对象去调用那个方法的时候，也会在父类的metaclass里缓存一份。
+类的方法缓存大小有没有限制？
+要回答这个问题，我们需要再看一下源码，在objc-cache.mm有一个变量定义如下：</p>
+
+<pre><code>  /* When _class_slow_grow is non-zero, any given cache is actually grown
+   * only on the odd-numbered times it becomes full; on the even-numbered
+   * times, it is simply emptied and re-used.  When this flag is zero,
+   * caches are grown every time. */
+  static const int _class_slow_grow = 1;
+</code></pre>
+
+<p>其实不用再看进一步的代码片段，仅从注释我们就可以看到问题的答案。注释中说明，当<em>class_slow_grow是非0值的时候，只有当方法缓存第奇数次满（使用的槽位超过3/4）的时候，方法缓存的大小才会增长（会清空缓存，否则hash值就不对了）；当第偶数次满的时候，方法缓存会被清空并重新利用。 如果</em>class_slow_grow值为0，那么每一次方法缓存满的时候，其大小都会增长。
+所以单就问题而言，答案是没有限制，虽然这个值被设置为1，方法缓存的大小增速会慢一点，但是确实是没有上限的。
+为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？
+这个问题么，我觉得有以下三个原因：</p>
+
+<p>散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
+list的方法还保存了除了selector和imp之外其他很多属性
+散列表是有空槽的，会浪费空间
+缓存 - 性能优化的万金油？
+非也，就算有了有了Objective-C本身的方法缓存，我们还是有很多调用方法的优化空间，对于这件事情，这篇文章讲的非常详细，大家可以自行移步观摩<a href="http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html">http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html</a> （强烈推荐，虽然我们一般不会遇到需要这么强度优化的地方，但是这种精神和思想是值得我们学习的）</p>
+
+<p>优化，永无止境
+在文章末尾，我们再来回答一下第一节提出的问题：“为什么会有_class_lookupMethodAndLoadCache3这个方法？”
+这个方法的实现如下所示：</p>
+
+<pre><code>/***********************************************************************
+* _class_lookupMethodAndLoadCache.
+* Method lookup for dispatchers ONLY. OTHER CODE SHOULD USE lookUpImp().
+* This lookup avoids optimistic cache scan because the dispatcher
+* already tried that.
+**********************************************************************/
+IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
+{
+    return lookUpImpOrForward(cls, sel, obj, 
+                              YES/*initialize*/, NO/*cache*/, YES/*resolver*/);
+}
+</code></pre>
+
+<p>如果单纯看方法名，这个方法应该会从缓存和方法列表中查找一个方法，但是如第一节所讲，在调用这个方法之前，我们已经是从缓存无法找到这个方法了，所以这个方法避免了再去扫描缓存查找方法的过程，而是直接从方法列表找起。从Apple代码的注释，我们也完全可以了解这一点。不顾一切地追求完美和性能，是一种品质。</p>
+
+<p>后记
+本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 <a href="http://www.opensource.apple.com/tarballs/">http://www.opensource.apple.com/tarballs/</a> 下载。如有错误，敬请指正。</p>
 </div>
   
   
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
 
 
 
 
-| <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/#comments">更多评论</a>
+| <a href="/blog/2015/12/08/fang-fa-huan-cun/#comments">更多评论</a>
 
     </article>
   
@@ -1436,7 +686,892 @@ static FMDatabase *_db;
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/03/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
+当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
+
+<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
+等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+
+<h4>Apple Store 中的 iBeacon 支持</h4>
+
+<h6>特点</h6>
+
+<pre><code>iBeacon 基于低功耗蓝牙技术（Bluetooth Low Energy, BLE）这一开放标准，因此也继承了 BLE 的一些特点。
+</code></pre>
+
+<h6>范围广</h6>
+
+<pre><code>相比于 NFC 的数厘米的识别范围，iBeacon 的识别范围可以达到数十米，并且能够估计距离的远近。
+</code></pre>
+
+<h6>兼容性</h6>
+
+<pre><code>iBeacon 是基于 BLE 做的一个简单封装，因此大部分支持 BLE 的设备都可以兼容。
+例如可以使用一个普通的蓝牙芯片作为信标，使用 Android 设备检测信标的存在。
+</code></pre>
+
+<h6>低能耗</h6>
+
+<pre><code>不少 beacon 实现宣称可以不依赖外部能源独立运行两年。
+</code></pre>
+
+<h6>使用场景</h6>
+
+<pre><code>我们以一个连锁商场的例子来讲解 iBeacon 的一个流程。在一个连锁商场中，店家需要在商场中的不同地方推送不同的优惠信息，比如服装和家居柜台推送的消息就很有可能不同。
+</code></pre>
+
+<p>当消费者走进某个商场时，会扫描到一个 beacon。这个 beacon 有三个标志符，proximityUUID 是一个整个公司（所有连锁商场）统一的值，可以用来标识这个公司，major 值用来标识特定的连锁商场，比如消费者正在走进的商场，minor 值标识了特定的一个位置的 beacon，例如定位到消费者正在门口。</p>
+
+<p>这时商场的 app 会被系统唤醒，app 可以运行一个比较短的时间。在这段时间内，app 可以根据 beacon 的属性查询到用户的地理位置（通过查询服务器或者本地数据），例如在化妆品专柜，之后就可以通过一个 local notification 推送化妆品的促销信息。用户可以点击这次 local notification 来查看更详细的信息，这样一次促销行为就完成了。</p>
+
+<h6>API</h6>
+
+<pre><code>闲话少说，我们来看下 iBeacon 具体怎么使用：
+</code></pre>
+
+<h6>Beacon 的表示</h6>
+
+<pre><code>iBeacon 本质上来说是一个位置（区域）信息，所以 Apple 把 iBeacon 功能集成在了 Core Location 里面。
+</code></pre>
+
+<p>iBeacon 信标在 Core Location 中表现为一个 CLBeacon，它圈定的范围则表现为 CLBeaconRegion，这是一个 CLRegion 的子类。</p>
+
+<p>CLBeaconRegion 主要用三个属性来标识一个 iBeacon，proximityUUID、major 和 minor。
+proximityUUID 是一个 NSUUID，用来标识公司，每个公司、组织使用的 iBeacon 应该拥有同样的 proximityUUID。
+major 用来识别一组相关联的 beacon，例如在连锁超市的场景中，每个分店的 beacon 应该拥有同样的 major。
+minor 则用来区分某个特定的 beacon。</p>
+
+<pre><code>这些属性如果不指定（即 nil），匹配的时候就会忽略这个属性。例如只指定 proximityUUID 的 CLBeaconRegion 可以匹配某公司的所有 beacons。
+</code></pre>
+
+<h6>Monitoring</h6>
+
+<pre><code>Apple 在 iOS 4 中增加了地理围栏 API，可以用来在设备进入/退出某个地理区域时获得通知，这些 API 包括 -startMonitoringForRegion:、-locationManager:didEnterRegion:、-locationManager:didExitRegion: 等。
+</code></pre>
+
+<p>CLBeaconRegion 作为 CLRegion 的子类也可以复用这些 API，这种检测 iBeacon 的方式叫做 monitoring。</p>
+
+<p>使用这种方法可以在程序在后台运行时检测 iBeacon，但是只能同时检测 20 个 region，也不能推测设备与 beacon 的距离。</p>
+
+<h6>Ranging</h6>
+
+<pre><code>除了使用地理围栏 API 的方式，Apple 还在 iOS 7 中新增加了 iBeacon 专用的检测方式，也就是 ranging。
+</code></pre>
+
+<p>通过 CLLocationManager 的 -startRangingBeaconsInRegion: 方法可以开始检测特定的 iBeacon。</p>
+
+<p>当检测到 beacon 的时候，CLLocationManager 的 delegate 方法 -locationManager:didRangeBeacons:inRegion: 会被调用，通知调用者现在被检测到的 beacons。
+这个方法会返回一个 CLBeacon 的数组，根据 CLBeacon 的 proximity 属性就可以判断设备和 beacon 之间的距离。</p>
+
+<blockquote><p>proximity 属性有四个可能的值，unknown、immediate、near 和 far。
+另外 CLBeacon 还有 accuracy 和 rssi 两个属性能提供更详细的距离数据。</p></blockquote>
+
+<h6>使用 iOS 设备作为 iBeacon</h6>
+
+<p>我们可以使用 Core Bluetooth 框架来广播特定的 payload 来让 iOS 设备成为一个 iBeacon。
+这个 payload 可以由 CLBeaconRegion 的 -peripheralDataWithMeasuredPower: 方法来获取。
+之后交给 CBPeripheralManager 广播出去就可以了。</p>
+
+<p>需要注意的是，广播 iBeacon 信息的时候 app 必须在前台运行。</p>
+
+<h6>行为</h6>
+
+<p>iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别是当应用运行在后台时，检测到 beacon 的时间延迟会让开发者难以推测。在做了一些实验和合理的推测后，我们得出了一些</p>
+
+<blockquote><p>结论：
+检测到 beacon 的时间跟设备进行蓝牙扫描的时间间隔有关，每当设备进行扫描的时候，就能发现 iBeacon region 的变化。
+在 ranging 打开的情况下，设备会每秒钟做一次扫描，也就是说状态更新最多延迟一秒。
+程序在后台运行，并且 monitoring 打开的时候，设备可能每隔数分钟做一次扫描。iOS 7 的响应速度较慢，iOS 7.1 有比较大的改善。
+如果存在设置 notifyEntryStateOnDisplay=YES 的 beacon，iOS 会在屏幕点亮的时候（锁屏状态下按下 home 键，或者因为收到推送点亮等）进行一次扫描。
+设备重启并不影响 iBeacon 后台检测的执行。
+iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/08/ibeaconchu-tan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一个控件从外在特征来说，主要是封装这几点：</p>
+
+<ul>
+<li>交互方式</li>
+<li>显示样式</li>
+<li>数据使用</li>
+</ul>
+
+
+<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
+
+<ul>
+<li>灵活性</li>
+<li>低耦合</li>
+<li>易拓展</li>
+<li>易维护</li>
+</ul>
+
+
+<p>通常特征之间需要做一些取舍，比如灵活性与耦合度，有时候接口越多越能适应各种环境，但是接口越少对外产生的依赖就越少，维护起来也更容易。通常一些前期看起来还不错的代码，往往也会随着时间加深慢慢“成长”，功能的增加也会带来新的接口，很不自觉地就加深了耦合度，在开发中时不时地进行一些重构工作很有必要。总之，尽量减少接口的数量，但有足够的定制空间，可以在一开始把接口全部隐藏起来，再根据实际需要慢慢放开。</p>
+
+<p>自定义控件在 iOS 项目里很常见，通常页面之间入口很多，而且使用场景极有可能大不相同，比如一个 UIView 既可以以代码初始化，也可以以 xib 的形式初始化，而我们是需要保证这两种操作都能产生同样的行为。本文将会讨论到以下几点：</p>
+
+<ul>
+<li>选择正确的初始化方式</li>
+<li>调整布局的时机</li>
+<li>正确的处理 touches 方法</li>
+<li>drawRectCALayer 与动画</li>
+<li>UIControl 与 UIButton</li>
+<li>更友好的支持 xib</li>
+<li>不规则图形和事件触发范围（事件链的简单介绍以及处理）</li>
+<li>合理使用 KVO</li>
+</ul>
+
+
+<p>如果这些问题你一看就懂的话就不用继续往下看了。</p>
+
+<p>设计方针</p>
+
+<p>选择正确的初始化方式</p>
+
+<p>UIView 的首要问题就是既能从代码中初始化，也能从 xib 中初始化，两者有何不同? UIView 是支持 NSCoding 协议的，当在 xib 或 storyboard 里存在一个 UIView 的时候，其实是将 UIView 序列化到文件里（xib 和 storyboard 都是以 XML 格式来保存的），加载的时候反序列化出来，所以：</p>
+
+<ul>
+<li>当从代码实例化 UIView 的时候，initWithFrame 会执行；</li>
+<li>当从文件加载 UIView 的时候，initWithCoder 会执行。</li>
+</ul>
+
+
+<p>从代码中加载</p>
+
+<p>虽然 initWithFrame 是 UIView 的Designated Initializer，理论上来讲你继承自 UIView 的任何子类，该方法最终都会被调用，但是有一些类在初始化的时候没有遵守这个约定，如 UIImageView 的 initWithImage 和 UITableViewCell 的 initWithStyle:reuseIdentifier: 的构造器等，所以我们在写自定义控件的时候，最好只假设父视图的 Designated Initializer 被调用。</p>
+
+<p>如果控件在初始化或者在使用之前必须有一些参数要设置，那我们可以写自己的 Designated Initializer 构造器，如：</p>
+
+<pre><code>- (instancetype)initWithName:(NSString *)name;
+</code></pre>
+
+<p>在实现中一定要调用父类的 Designated Initializer，而且如果你有多个自定义的 Designated Initializer，最终都应该指向一个全能的初始化构造器：</p>
+
+<pre><code>- (instancetype)initWithName:(NSString *)name {
+    self = [self initWithName:name frame:CGRectZero];
+    return self;
+}
+- (instancetype)initWithName:(NSString *)name frame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.name = name;
+    }
+    return self;
+}
+</code></pre>
+
+<p>并且你要考虑到，因为你的控件是继承自 UIView 或 UIControl 的，那么用户完全可以不使用你提供的构造器，而直接调用基类的构造器，所以最好重写父类的 Designated Initializer，使它调用你提供的 Designated Initializer ，比如父类是个 UIView：</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame {
+    self = [self initWithName:nil frame:frame];
+    return self;
+}
+</code></pre>
+
+<p>这样当用户从代码里初始化你的控件的时候，就总是逃脱不了你需要执行的初始化代码了，哪怕用户直接调用 init 方法，最终还是会回到父类的 Designated Initializer 上。</p>
+
+<p>从 xib 或 storyboard 中加载</p>
+
+<p>当控件从 xib 或 storyboard 中加载的时候，情况就变得复杂了，首先我们知道有 initWithCoder 方法，该方法会在对象被反序列化的时候调用，比如从文件加载一个 UIView 的时候：</p>
+
+<pre><code>UIView *view = [[UIView alloc] init];
+NSData *data = [NSKeyedArchiver archivedDataWithRootObject:view];
+[[NSUserDefaults standardUserDefaults] setObject:data forKey:@"KeyView"];
+[[NSUserDefaults standardUserDefaults] synchronize];
+data = [[NSUserDefaults standardUserDefaults] objectForKey:@"KeyView"];
+view = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+NSLog(@"%@", view);
+</code></pre>
+
+<p>执行 unarchiveObjectWithData 的时候， initWithCoder 会被调用，那么你有可能会在这个方法里做一些初始化工作，比如恢复到保存之前的状态，当然前提是需要在 encodeWithCoder 中预先保存下来。</p>
+
+<p>不过我们很少会自己直接把一个 View 保存到文件中，一般是在 xib 或 storyboard 中写一个 View，然后让系统来完成反序列化的工作，此时在 initWithCoder 调用之后，awakeFromNib 方法也会被执行，既然在 awakeFromNib 方法里也能做初始化操作，那我们如何抉择?</p>
+
+<p>一般来说要尽量在 initWithCoder 中做初始化操作，毕竟这是最合理的地方，只要你的控件支持序列化，那么它就能在任何被反序列化的时候执行初始化操作，这里适合做全局数据、状态的初始化工作，也适合手动添加子视图。</p>
+
+<p>awakeFromNib 相较于 initWithCoder 的优势是：当 awakeFromNib 执行的时候，各种 IBOutlet 也都连接好了；而 initWithCoder 调用的时候，虽然子视图已经被添加到视图层级中，但是还没有引用。如果你是基于 xib 或 storyboard 创建的控件，那么你可能需要对 IBOutlet 连接的子控件进行初始化工作，这种情况下，你只能在 awakeFromNib 里进行处理。同时 xib 或 storyboard 对灵活性是有打折的，因为它们创建的代码无法被继承，所以当你选择用 xib 或 storyboard 来实现一个控件的时候，你已经不需要对灵活性有很高的要求了，唯一要做的是要保证用户一定是通过 xib 创建的此控件，否则可能是一个空的视图，可以在 initWithFrame 里放置一个 断言 或者异常来通知控件的用户。</p>
+
+<p>最后还要注意视图层级的问题，比如你要给 View 放置一个背景，你可能会在 initWithCoder 或 awakeFromNib 中这样写：</p>
+
+<pre><code>[self addSubview:self.backgroundView]; // 通过懒加载一个背景 View，然后添加到视图层级上
+</code></pre>
+
+<p>你的本意是在控件的最下面放置一个背景，却有可能将这个背景覆盖到控件的最上方，原因是用户可能会在 xib 里写入这个控件，然后往它上面添加一些子视图，这样一来，用户添加的这些子视图会在你添加背景之前先进入视图层级，你的背景被添加后就挡住了用户的子视图。如果你想支持用户的这种操作，可以把 addSubview 替换成 insertSubview:atIndex:。</p>
+
+<p>同时支持从代码和文件中加载</p>
+
+<p>如果你要同时支持 initWithFrame 和 initWithCoder ，那么你可以提供一个 commonInit 方法来做统一的初始化：</p>
+
+<pre><code>- (id)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
+}
+- (id)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
+}
+- (void)commonInit {
+    // do something ...
+}
+</code></pre>
+
+<p>awakeFromNib 方法里就不要再去调用 commonInit 了。</p>
+
+<p>调整布局的时机</p>
+
+<p>当一个控件被初始化以及开始使用之后，它的 frame 仍然可能发生变化，我们也需要接受这些变化，因为你提供的是 UIView 的接口，UIView 有很多种初始化方式：initWithFrame、initWithCoder、init 和类方法 new，用户完全可以在初始化之后再设置 frame 属性，而且用户就算使用 initWithFrame 来初始化也避免不了 frame 的改变，比如在横竖屏切换的时候。为了确保当它的 Size 发生变化后其子视图也能同步更新，我们不能一开始就把布局写死（使用约束除外）。</p>
+
+<p>基于 frame</p>
+
+<p>如果你是直接基于 frame 来布局的，你应该确保在初始化的时候只添加视图，而不去设置它们的frame，把设置子视图 frame 的过程全部放到 layoutSubviews 方法里：</p>
+
+<pre><code>- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
+}
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
+}
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    self.label.frame = CGRectInset(self.bounds, 20, 0);
+}
+- (void)commonInit {
+    [self addSubview:self.label];
+}
+- (UILabel *)label {
+    if (_label == nil) {
+        _label = [UILabel new];
+        _label.textColor = [UIColor grayColor];
+    }
+    return _label;
+}
+</code></pre>
+
+<p>这么做就能保证 label 总是出现在正确的位置上。</p>
+
+<p>使用 layoutSubviews 方法有几点需要注意：</p>
+
+<p>不要依赖前一次的计算结果，应该总是根据当前最新值来计算
+由于 layoutSubviews 方法是在自身的 bounds 发生改变的时候调用， 因此 UIScrollView 会在滚动时不停地调用，当你只关心 Size 有没有变化的时候，可以把前一次的 Size 保存起来，通过与最新的 Size 比较来判断是否需要更新，在大多数情况下都能改善性能
+基于 Auto Layout 约束</p>
+
+<p>如果你是基于 Auto Layout 约束来进行布局，那么可以在 commonInit 调用的时候就把约束添加上去，不要重写 layoutSubviews 方法，因为这种情况下它的默认实现就是根据约束来计算 frame。最重要的一点，把 translatesAutoresizingMaskIntoConstraints 属性设为 NO，以免产生 NSAutoresizingMaskLayoutConstraint 约束，如果你使用 Masonry 框架的话，则不用担心这个问题，mas_makeConstraints 方法会首先设置这个属性为 NO:</p>
+
+<pre><code>- (void)commonInit {
+    ...
+    [self setupConstraintsForSubviews];
+}
+- (void)setupConstraintsForSubviews {
+    [self.label mas_makeConstraints:^(MASConstraintMaker *make) {
+        ...
+    }];
+}
+</code></pre>
+
+<p>支持 sizeToFit</p>
+
+<p>如果你的控件对尺寸有严格的限定，比如有一个统一的宽高比或者是固定尺寸，那么最好能实现系统给出的约定成俗的接口。</p>
+
+<p>sizeToFit 用在基于 frame 布局的情况下，由你的控件去实现 sizeThatFits: 方法：</p>
+
+<pre><code>- (CGSize)sizeThatFits:(CGSize)size {
+    CGSize fitSize = [super sizeThatFits:size];
+    fitSize.height += self.label.frame.size.height;
+    // 如果是固定尺寸，就像 UISwtich 那样返回一个固定 Size 就 OK 了
+    return fitSize;
+}
+</code></pre>
+
+<p>然后在外部调用该控件的 sizeToFit 方法，这个方法内部会自动调用 sizeThatFits 并更新自身的 Size：</p>
+
+<p>[self.customView sizeToFit];
+在 ViewController 里调整视图布局</p>
+
+<p>当执行 viewDidLoad 方法时，不要依赖 self.view 的 Size。很多人会这样写：</p>
+
+<pre><code>- (void)viewDidLoad {
+    ...
+    self.label.width = self.view.width;
+}
+</code></pre>
+
+<p>这样是不对的，哪怕看上去没问题也只是碰巧没问题而已。当 viewDidLoad 方法被调用的时候，self.view 才刚刚被初始化，此时它的容器还没有对它的 frame 进行设置，如果 view 是从 xib 加载的，那么它的 Size 就是 xib 中设置的值；如果它是从代码加载的，那么它的 Size 和屏幕大小有关系，除了 Size 以外，Origin 也不会准确。整个过程看起来像这样：</p>
+
+<p>当访问 ViewController 的 view 的时候，ViewController 会先执行 loadViewIfRequired 方法，如果 view 还没有加载，则调用 loadView，然后是 viewDidLoad 这个钩子方法，最后是返回 view，容器拿到 view 后，根据自身的属性（如 edgesForExtendedLayout、判断是否存在 tabBar、判断 navigationBar 是否透明等）添加约束或者设置 frame。</p>
+
+<p>你至少应该设置 autoresizingMask 属性：</p>
+
+<pre><code>- (void)viewDidLoad {
+    ...
+    self.label.width = self.view.width;
+    self.label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+}
+</code></pre>
+
+<p>或者在 viewDidLayoutSubviews 里处理：</p>
+
+<pre><code>- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    self.label.width = self.view.width;
+}
+</code></pre>
+
+<p>如果是基于 Auto Layout 来布局，则在 viewDidLoad 里添加约束即可。</p>
+
+<p>正确的处理 touches 方法</p>
+
+<p>如果你需要重写 touches 方法，那么应该完整的重写这四个方法：</p>
+
+<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+</code></pre>
+
+<p>当你的视图在这四个方法执行的时候，如果已经对事件进行了处理，就不要再调用 super 的 touches 方法，super 的 touches 方法默认实现是在响应链里继续转发事件（UIView 的默认实现）。如果你的基类是 UIScrollView 或者 UIButton 这些已经重写了事件处理的类，那么当你不想处理事件的时候可以调用 self.nextResponder 的 touches 方法来转发事件，其他的情况就调用 super 的 touches 方法来转发，比如 UIScrollView 可以这样来转发 触摸 事件：</p>
+
+<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (!self.dragging) {
+        [self.nextResponder touchesBegan: touches withEvent:event]; 
+    }       
+    [super touchesBegan: touches withEvent: event];
+}
+- (void)touchesMoved...
+- (void)touchesEnded...
+- (void)touchesCancelled...
+</code></pre>
+
+<p>这么实现以后，当你仅仅只是“碰”一个 UIScrollView 的时候，该事件就有可能被 nextResponder 处理。</p>
+
+<p>如果你没有实现自己的事件处理，也没有调用 nextResponder 和 super，那么响应链就会断掉。另外，尽量用手势识别器去处理自定义事件，它的好处是你不需要关心响应链，逻辑处理起来也更加清晰，事实上，UIScrollView 也是通过手势识别器实现的：</p>
+
+<pre><code>@property(nonatomic, readonly) UIPanGestureRecognizer *panGestureRecognizer NS_AVAILABLE_IOS(5_0); 
+@property(nonatomic, readonly) UIPinchGestureRecognizer *pinchGestureRecognizer NS_AVAILABLE_IOS(5_0);
+</code></pre>
+
+<p>drawRect、CALayer 与动画</p>
+
+<p>drawRect 方法很适合做自定义的控件，当你需要更新 UI 的时候，只要用 setNeedsDisplay 标记一下就行了，这么做又简单又方便；控件也常常用于封装动画，但是动画却有可能被移除掉。</p>
+
+<p>需要注意的地方：</p>
+
+<ol>
+<li>在 drawRect 里尽量用 CGContext 绘制 UI。如果你用 addSubview 插入了其他的视图，那么当系统在每次进入绘制的时候，会先把当前的上下文清除掉（此处不考虑 clearsContextBeforeDrawing 的影响），然后你也要清除掉已有的 subviews，以免重复添加视图；用户可能会往你的控件上添加他自己的子视图，然后在某个情况下清除所有的子视图（我就喜欢这么做）：</li>
+</ol>
+
+
+<p>[subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+2. 用 CALayer 代替 UIView。CALayer 节省内存，而且更适合去做一个“图层”，因为它不会接收事件、也不会成为响应链中的一员，但是它能够响应父视图（或 layer）的尺寸变化，这种特性很适合做单纯的数据展示：</p>
+
+<pre><code>CALayer *imageLayer = [CALayer layer];
+imageLayer.frame = rect;
+imageLayer.contents = (id)image;
+[self.view.layer addSublayer:imageLayer];
+</code></pre>
+
+<ol>
+<li><p>如果有可能的话使用 setNeedsDisplayInRect 代替 setNeedsDisplay 以优化性能，但是遇到性能问题的时候应该先检查自己的绘图算法和绘图时机，我个人其实从来没有使用过 setNeedsDisplayInRect。</p></li>
+<li><p>当你想做一个无限循环播放的动画的时候，可能会创建几个封装了动画的 CALayer，然后把它们添加到视图层级上，就像我在 iOS 实现脉冲雷达以及动态增减元素 By Swift 中这么做的：</p></li>
+</ol>
+
+
+<p>37.gif</p>
+
+<p>效果还不错，实现又简单，但是当你按下 Home 键并再次返回到 app 的时候，原本好看的动画就变成了一滩死水：</p>
+
+<p>这是因为在按下 Home 键的时候，所有的动画被移除了，具体的，每个 layer 都调用了 removeAllAnimations 方法。</p>
+
+<p>如果你想重新播放动画，可以监听 UIApplicationDidBecomeActiveNotification 通知，就像我在 上述博客 中做的那样。</p>
+
+<ol>
+<li><p>UIImageView 的 drawRect 永远不会被调用：</p>
+
+<pre><code> Special Considerations
+ The UIImageView class is optimized to draw its images to the display. UIImageView will not call drawRect: in a subclass. If your subclass needs custom drawing code, it is recommended you use UIView as the base class.
+</code></pre></li>
+<li>UIView 的 drawRect 也不一定会调用，我在 12 年的博客：定制UINavigationBar 中曾经提到过 UIKit 框架的实现机制：</li>
+</ol>
+
+
+<p>众所周知一个视图如何显示是取决于它的 drawRect 方法，因为调这个方法之前 UIKit 也不知道如何显示它，但其实 drawRect 方法的目的也是画图（显示内容），而且我们如果以其他的方式给出了内容（图）的话， drawRect 方法就不会被调用了。</p>
+
+<p>注：实际上 UIView 是 CALayer 的delegate，如果 CALayer 没有内容的话，会回调给 UIView 的 displayLayer: 或者 drawLayer:inContext: 方法，UIView 在其中调用 drawRect ，draw 完后的图会缓存起来，除非使用 setNeedsDisplay 或是一些必要情况，否则都是使用缓存的图。</p>
+
+<p>UIView 和 CALayer 都是模型对象，如果我们以这种方式给出内容的话，drawRect 也就不会被调用了：</p>
+
+<pre><code>self.customView.layer.contents = (id)[UIImage imageNamed:@"AppIcon"];
+// 哪怕是给它一个 nil，这两句等价
+self.customView.layer.contents = nil;
+</code></pre>
+
+<p>我猜测是在 CALayer 的 setContents 方法里有个标记，无论传入的对象是什么都会将该标记打开，但是调用 setNeedsDisplay 的时候会将该标记去除。</p>
+
+<p>UIControl 与 UIButton</p>
+
+<p>如果要做一个可交互的控件，那么把 UIControl 作为基类就是首选，这个完美的基类支持各种状态：</p>
+
+<ul>
+<li>enabled</li>
+<li>selected</li>
+<li>highlighted</li>
+<li>tracking</li>
+<li><p>……
+还支持多状态下的观察者模式：</p>
+
+<pre><code>  @property(nonatomic,readonly) UIControlState state;
+  - (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
+  - (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
+</code></pre>
+
+<p>这个基类可以很方便地为视图添加各种点击状态，最常见的用法就是将 UIViewController 的 view 改成 UIControl，然后就能快速实现 resignFirstResponder。</p></li>
+</ul>
+
+
+<p>UIButton 自带图文接口，支持更强大的状态切换，titleEdgeInsets 和 imageEdgeInsets 也比较好用，配合两个基类的属性更好，先设置对齐规则，再设置 insets：</p>
+
+<pre><code>@property(nonatomic) UIControlContentVerticalAlignment contentVerticalAlignment;    
+@property(nonatomic) UIControlContentHorizontalAlignment contentHorizontalAlignment;
+</code></pre>
+
+<p>UIControl 和 UIButton 都能很好的支持 xib，可以设置各种状态下的显示和 Selector，但是对 UIButton 来说这些并不够，因为 Normal 、Highlighted 和 Normal | Highlighted 是三种不同的状态，如果你需要实现根据当前状态显示不同高亮的图片，可以参考我下面的代码：</p>
+
+<p>blob.png</p>
+
+<pre><code>- (void)updateStates {
+    [super setTitle:[self titleForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
+    [super setImage:[self imageForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
+    [super setTitle:[self titleForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
+    [super setImage:[self imageForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
+}
+</code></pre>
+
+<p>或者使用初始化设置：</p>
+
+<pre><code>- (void)commonInit {
+    [self setImage:[UIImage imageNamed:@"Normal"] forState:UIControlStateNormal];
+    [self setImage:[UIImage imageNamed:@"Selected"] forState:UIControlStateSelected];
+    [self setImage:[UIImage imageNamed:@"Highlighted"] forState:UIControlStateHighlighted];
+    [self setImage:[UIImage imageNamed:@"Selected_Highlighted"] forState:UIControlStateSelected | UIControlStateHighlighted];
+}
+</code></pre>
+
+<p>总之尽量使用原生类的接口，或者模仿原生类的接口。</p>
+
+<p>大多数情况下根据你所需要的特性来选择现有的基类就够了，或者用 UIView + 手势识别器 的组合也是一个好方案，尽量不要用 touches 方法（userInteractionEnabled 属性对 touches 和手势识别器的作用一样），这是我在 DKCarouselView 中内置的一个可点击的 ImageView，也可以继承 UIButton，不过 UIButton 更侧重于状态，ImageView 侧重于图片本身：</p>
+
+<pre><code>typedef void(^DKCarouselViewTapBlock)();
+@interface DKClickableImageView : UIImageView
+@property (nonatomic, assign) BOOL enable;
+@property (nonatomic, copy) DKCarouselViewTapBlock tapBlock;
+@end
+@implementation DKClickableImageView
+- (instancetype)initWithFrame:(CGRect)frame {
+    if ((self = [super initWithFrame:frame])) {
+        [self commonInit];
+    }
+    return self;
+}
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if ((self = [super initWithCoder:aDecoder])) {
+        [self commonInit];
+    }
+    return self;
+}
+- (void)commonInit {
+    self.userInteractionEnabled = YES;
+    self.enable = YES;
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onTap:)];
+    [self addGestureRecognizer:tapGesture];
+}
+- (IBAction)onTap:(id)sender {
+    if (!self.enable) return;
+    if (self.tapBlock) {
+        self.tapBlock();
+    }
+}
+@end
+</code></pre>
+
+<p>更友好的支持 xib</p>
+
+<p>你的控件现在应该可以正确的从文件、代码中初始化了，但是从 xib 中初始化以后可能还需要通过代码来进行一些设置，你或许觉得像上面那样设置 Button 的状态很恶心而且不够直观，但是也没办法，这是由于 xib 虽然对原生控件，如 UIView、UIImageView、UIScrollView 等支持较好（想设置圆角、边框等属性也没办法，只能通过 layer 来设置），但是对自定义控件却没有什么办法，当你拖一个 UIView 到 xib 中，然后把它的 Class 改成你自己的子类后，xib 如同一个瞎子一样，不会有任何变化。————好在这些都成了过去。</p>
+
+<p>Xcode 6 引入了两个新的宏：IBInspectable 和 IBDesignable。</p>
+
+<p>IBInspectable</p>
+
+<p>该宏会让 xib 识别属性，它支持这些数据类型：布尔、字符串、数字（NSNumber）、 CGPoint、CGSize、CGRect、UIColor 、 NSRange 和 UIImage。</p>
+
+<p>比如我们要让自定义的 Button 能在 xib 中设置 UIControlStateSelected | UIControlStateHighlighted 状态的图片，就可以这么做：</p>
+
+<pre><code>// CustomButton
+@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
+- (void)setHighlightSelectedImage:(UIImage *)highlightSelectedImage {
+    _highlightSelectedImage = highlightSelectedImage;
+    [self setImage:highlightSelectedImage forState:UIControlStateHighlighted | UIControlStateSelected];
+}
+</code></pre>
+
+<p>只需要在属性上加个 IBInspectable 宏即可，然后 xib 中就能显示这个自定义的属性：</p>
+
+<p>blob.png</p>
+
+<p>xib 会把属性名以大驼峰样式显示，如果有多个属性，xib 也会自动按属性名的第一个单词分组显示，如：</p>
+
+<p>blob.png</p>
+
+<p>通过使用 IBInspectable 宏，你可以把原本只能通过代码来设置的属性，也放到 xib 里来，代码就显得更加简洁了。</p>
+
+<p>IBDesignable</p>
+
+<p>xib 配合 IBInspectable 宏虽然可以让属性设置变得简单化，但是只有在运行期间你才能看到控件的真正效果，而使用 IBDesignable 可以让 Interface Builder 实时渲染控件，这一切只需要在类名加上 IBDesignable 宏即可：</p>
+
+<pre><code>IB_DESIGNABLE
+@interface CustomButton : UIButton
+@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
+@end
+</code></pre>
+
+<p>这样一来，当你在 xib 中调整属性的时候，画布也会实时更新。</p>
+
+<p>关于对 IBInspectable / IBDesignable 的详细介绍可以看这里：<a href="http://nshipster.cn/ibinspectable-ibdesignable/">http://nshipster.cn/ibinspectable-ibdesignable/</a></p>
+
+<p>这是 Twitter 上其他开发者做出的效果：</p>
+
+<p>blob.png</p>
+
+<p>blob.png</p>
+
+<p>相信通过使用 IBInspectable / IBDesignable ，会让控件使用起来更加方便、也更加有趣。</p>
+
+<p>不规则图形和事件触发范围</p>
+
+<p>不规则图形在 iOS 上并不多见，想来设计师也怕麻烦。不过 iOS 上的控件说到底都是各式各样的矩形，就算你修改 cornerRadius，让它看起来像这样：</p>
+
+<p>blob.png</p>
+
+<p>也只是看起来像这样罢了，它的实际事件触发范围还是一个矩形。</p>
+
+<p>问题描述</p>
+
+<p>想象一个复杂的可交互的控件，它并不是单独工作的，可能需要和另一个控件交互，而且它们的事件触发范围可能会重叠，像这个选择联系人的列表：</p>
+
+<p>38.gif</p>
+
+<p>在设计的时候让上面二级菜单在最大的范围内可以被点击，下面的一级菜单也能在自己的范围内很好的工作，正常情况下它们的触发范围是这样的：</p>
+
+<p>blob.png</p>
+
+<p>我们想要的是这样的：</p>
+
+<p>blob.png</p>
+
+<p>想要实现这样的效果需要对事件分发有一定的了解。首先我们来想想，当触摸屏幕的时候发生了什么?</p>
+
+<p>当触摸屏幕的时候发生了什么?</p>
+
+<p>当屏幕接收到一个 touch 的时候，iOS 需要找到一个合适的对象来处理事件（ touch 或者手势），要寻找这个对象，需要用到这个方法：</p>
+
+<ul>
+<li>(UIView <em>)hitTest:(CGPoint)point withEvent:(UIEvent </em>)event;
+该方法会首先在 application 的 keyWindow 上调用（UIWindow 也是 UIView 的子类），并且该方法的返回值将被用来处理事件。如果这个 view（无论是 window 还是普通的 UIView） 的 userInteractionEnabled 属性被设置为 NO，则它的 hitTest: 永远返回 nil，这意味着它和它的子视图没有机会去接收和处理事件。如果 userInteractionEnabled 属性为 YES，则会先判断产生触摸的 point 是否发生在自己的 bounds 内，如果没有也将返回 nil；如果 point 在自己的范围内，则会为自己的每个子视图调用 hitTest: 方法，只要有一个子视图通过这个方法返回一个 UIView 对象，那么整个方法就一层一层地往上返回；如果没有子视图返回 UIView 对象，则父视图将会把自己返回。</li>
+</ul>
+
+
+<p>所以，在事件分发中，有这么几个关键点：</p>
+
+<p>如果父视图不能响应事件（userInteractionEnabled 为 NO），则其子视图也将无法响应事件。</p>
+
+<p>如果子视图的 frame 有一半在外面，就像这样：</p>
+
+<p>blob.png</p>
+
+<p>则在外面的部分是无法响应事件的，因为它超出了父视图的范围。</p>
+
+<p>整个事件链只会返回一个 Hit-Test View 来处理事件。</p>
+
+<p>子视图的顺序会影响到 Hit-Test View 的选择：最先通过 hitTest: 方法返回的 UIView 才会被返回，假如有两个子视图平级，并且它们的 frame 一样，但是谁是后添加的谁就优先返回。</p>
+
+<p>了解了事件分发的这些特点后，还需要知道最后一件事：UIView 如何判断产生事件的 point 是否在自己的范围内? 答案是通过 pointInside 方法，这个方法的默认实现类似于这样：</p>
+
+<pre><code>// point 被转化为对应视图的坐标系统
+- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    return CGRectContainsPoint(self.bounds, point);
+}
+</code></pre>
+
+<p>所以，当我们想改变一个 View 的事件触发范围的时候，重写 pointInside 方法就可以了。</p>
+
+<p>回到问题</p>
+
+<p>针对这种视图一定要处理它们的事件触发范围，也就是 pointInside 方法，一般来说，我们先判断 point 是不是在自己的范围内（通过调用 super 来判断），然后再判断该 point 符不符合我们的处理要求：</p>
+
+<p>这个例子我用 Swift 来写</p>
+
+<pre><code>override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
+    let inside = super.pointInside(point, withEvent: event)
+    if inside {
+        let radius = self.layer.cornerRadius
+        let dx = point.x - self.bounds.size.width / 2
+        let dy = point.y - radius
+        let distace = sqrt(dx * dx + dy * dy)
+        return distace &lt; radius
+    }
+    return inside
+}
+</code></pre>
+
+<p>如果你要实现非矩形的控件，那么请在开发时处理好这类问题。</p>
+
+<p>这里附上一个很容易测试的小 Demo：</p>
+
+<pre><code>class CustomView: UIControl {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.backgroundColor = UIColor.redColor()
+    }
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        self.backgroundColor = UIColor.redColor()
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layer.cornerRadius = self.bounds.size.width / 2
+    }
+    override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -&gt; Bool {
+        self.backgroundColor = UIColor.grayColor()
+        return super.beginTrackingWithTouch(touch, withEvent: event)
+    }
+    override func endTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) {
+        super.endTrackingWithTouch(touch, withEvent: event)
+        self.backgroundColor = UIColor.redColor()
+    }
+    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
+        let inside = super.pointInside(point, withEvent: event)
+        if inside {
+            let radius = self.layer.cornerRadius
+            let dx = point.x - self.bounds.size.width / 2
+            let dy = point.y - radius
+            let distace = sqrt(dx * dx + dy * dy)
+            return distace &lt; radius
+        }
+        return inside
+    }
+}
+</code></pre>
+
+<p>合理使用 KVO</p>
+
+<p>某些视图的接口比较宝贵，被你用掉后外部的使用者就无法使用了，比如 UITextField 的 delegate，好在 UITextField 还提供了通知和 UITextInput 方法可以使用；像 UIScrollView 或者基于 UIScrollView 的控件，你既不能设置它的 delegate，又没有其他的替代方法可以使用，对于像以下这种需要根据某些属性实时更新的控件来说，KVO 真是极好的：</p>
+
+<p>这是一个动态高度 Header 的例子（DKStickyHeaderView）：</p>
+
+<p>两者都是基于 UIScrollView、基于 KVO ，不依赖外部参数：</p>
+
+<pre><code>override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer) {
+    if keyPath == KEY_PATH_CONTENTOFFSET {
+        let scrollView = self.superview as! UIScrollView
+        var delta: CGFloat = 0.0
+        if scrollView.contentOffset.y &lt; 0.0 {
+            delta = fabs(min(0.0, scrollView.contentOffset.y))
+        }
+        var newFrame = self.frame
+        newFrame.origin.y = -delta
+        newFrame.size.height = self.minHeight + delta
+        self.frame = newFrame
+    } else {
+        super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
+    }
+}
+</code></pre>
+
+<p>对容器类的 ViewController 来说也一样有用。在 iOS8 之前没有 UIContentContainer 这个正式协议，如果你要实现一个很长的、非列表、可滚动的 ViewController，那么你可能会将其中的功能分散到几个 ChildViewController 里，然后把它们组合起来，这样一来，这些 ChildViewController 既能被单独作为一个 ViewController 展示，也可以被组合到一起。作为组合到一起的前提，就是需要一个至少有以下两个方法的协议：</p>
+
+<p>提供一个统一的输入源，大多是一个 Model 或者像 userId 这样的
+能够返回你所需要的高度，比如设置 preferredContentSize 属性
+ChildViewController 动态地设置 contentSize，容器监听 contentSize 的变化动态地设置约束或者 frame。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>写在前头，好久没有更新博客，感谢老朋友的再次来访，同时也欢迎新朋友~</p></blockquote>
+
+<p>说起OpenGL，相信大不多数朋友都不会陌生，或多或少都有接触。本文不属于OpenGL提高篇，主要目的在于帮助新手更快熟悉iOS中如何使用OpenGL，关于这方面的介绍，网上也有很多，本文主要任务在于整理，介绍稍有偏重。这里有比较完整的Demo，可以协助大家更快上手</p>
+
+<p>OpenGL版本</p>
+
+<p>iOS系统默认支持OpenGl ES1.0、ES2.0以及ES3.0 3个版本，三者之间并不是简单的版本升级，设计理念甚至完全不同，在开发OpenGL项目前，需要根据业务需求选择合适的版本。这方面的介绍不少，不再展开。在学习OpenGL代码的时候也需要知道它对应着哪个版本，在ES1中执行ES2代码是看不到任何效果的，你可以在初始化EAGLContext时指定ES版本号</p>
+
+<pre><code>EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+</code></pre>
+
+<p>OpenGL坐标系</p>
+
+<p>OpenGL坐标系不同于UIKit坐标系，其实它是这样的</p>
+
+<p><img src="/images/openEL001.jpg" title="Caption" ></p>
+
+<p>除了方向，还有一点需要注意，默认情况各个方向坐标值范围为（-1，1），而不是UIKit中的（0，320）。当绘制点(320，0)，它并不会出现在屏幕右上角。在ES1中，可以通过以下代码将坐标系转化为熟悉的（320，480）</p>
+
+<pre><code>- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    glViewport(0, 0, rect.size.width * 2, rect.size.height * 2);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrthof(0, 320, 0, 480, -1024, 1024);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+</code></pre>
+
+<p>接下来说说iOS中如何使用OpenGL</p>
+
+<pre><code>GLKViewController &amp; GLKView
+</code></pre>
+
+<p>机智的码农是不是已经发现这两个对象， 为了方便大家更快的开发，系统为OpenGL提供了简单的封装，继承GLKViewController定义自己的ViewController，GLKViewController的view为GLKView类，GLKView的delegate定义了绘制回调函数</p>
+
+<pre><code>- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
+</code></pre>
+
+<p>GLKViewController定义数据刷新函数，当子类实现-(void)update方法，glkViewControllerUpdate方法将不再被调用</p>
+
+<pre><code>- (void)glkViewControllerUpdate:(GLKViewController *)controller
+</code></pre>
+
+<p>HJGLKViewControllerDemo模拟了GLKViewController方法实现，有兴趣的童鞋可以查看GLKViewController内部实现机制。需要补充一点，默认情况下，GLKViewController渲染RunLoop并非NSRunLoopCommonModes，而是NSDefaultRunLoopMode，因此在UIKit中使用GLKViewController，当滑动界面时，OpenGL是不会渲染的，为了解决这个问题，可以使用HJGLKViewController替换GLKViewController，HJGLKViewController中默认渲染RunLoop使用NSRunLoopCommonModes模式</p>
+
+<h3>EAGLContext</h3>
+
+<p>在介绍选择版本时已经提到EAGLContext，与UIKit中CGContextRef相似，EAGLContext相当于OpenGL绘制句柄或者上下文，在绘制试图之前，需要指定使用创建的上下文绘制</p>
+
+<p>[EAGLContext setCurrentContext:view.context];
+当一个APP可能存在多个EAGLContext时，需要处理并存冲突等问题，比如大家所熟知的GPUImage，都会使用到EAGLContext。因此，在使用中要记得及时释放。有兴趣的朋友可以看看这篇文章</p>
+
+<h3>Draw</h3>
+
+<p>OpenGL绘制本文就不做介绍，HJGLKViewControllerDemo中有大量的示例，顺便推荐几篇相关文章</p>
+
+<p>详解第一个OpenGL程序
+西蒙iPhone-OpenGL ES 中文教程专题
+Cocos2d源码
+小贴士：当App退到后台时， 切记暂停OpenGL绘制，否则可能导致crash</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/07/openel-gschu-tan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a></h1>
     
     
       <p class="meta">
@@ -2050,14 +2185,14 @@ static FMDatabase *_db;
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/12/03/huan-cun-ji-zhi-shen-jiu/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu/">阅读全文😘</a>
     </footer>
   
 
 
 
 
-| <a href="/blog/2015/12/03/huan-cun-ji-zhi-shen-jiu/#comments">更多评论</a>
+| <a href="/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu/#comments">更多评论</a>
 
     </article>
   
@@ -2066,7 +2201,7 @@ static FMDatabase *_db;
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">够逼格的注释习惯</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/06/blockshen-jiu/">Block深究</a></h1>
     
     
       <p class="meta">
@@ -2086,661 +2221,1071 @@ static FMDatabase *_db;
   </header>
 
 
-  <div class="entry-content"><p>够逼格的注释习惯总结</p>
+  <div class="entry-content"><h2>目录</h2>
 
-<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+<ul>
+<li><h5>什么是block？</h5>
 
-<h6>也许你使用过#warning 警告提示</h6>
+<ul>
+<li>block编译转换结构</li>
+<li>block实际结构</li>
+</ul>
+</li>
+<li><h5>block的类型</h5>
 
-<h6>也许你也使用过#pragma marks。</h6>
+<ul>
+<li>NSConcreteGlobalBlock和NSConcreteStackBlock</li>
+<li>NSConcreteMallocBlock</li>
+</ul>
+</li>
+<li><h5>捕捉变量对block结构的影响</h5>
 
-<p>但是你见过或者使用过下面这个吗？</p>
+<ul>
+<li>局部变量</li>
+<li>全局变量</li>
+<li>局部静态变量</li>
+<li>__block修饰的变量</li>
+<li>self隐式循环引用</li>
+</ul>
+</li>
+<li><h5>不同类型block的复制</h5>
 
-<pre><code>Comments containing:
-MARK:
-TODO:
-FIXME:
-!!!:
-???:
+<ul>
+<li>栈block</li>
+<li>堆block</li>
+<li>全局block</li>
+</ul>
+</li>
+<li><h5>block辅助函数</h5>
+
+<ul>
+<li>__block修饰的基本类型的辅助函数</li>
+<li>对象的辅助函数</li>
+</ul>
+</li>
+<li><h5>ARC中block的工作</h5>
+
+<ul>
+<li>block试验</li>
+<li>block作为参数传递</li>
+<li>block作为返回值</li>
+<li>block属性</li>
+</ul>
+</li>
+</ul>
+
+
+<h3>参考博文</h3>
+
+<p>最近看了一些block的资料，并动手做了一些实践，摘录并添加了一些结论。</p>
+
+<h3>什么是block？</h3>
+
+<p>首先，看一个极简的block：</p>
+
+<pre><code>    int main(int argc, const char * argv[]) {
+        @autoreleasepool {
+
+            ^{ };
+        }
+        return 0;
+    }
 </code></pre>
 
-<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+<h5>block编译转换结构</h5>
 
-<p> 首先说一下三个最常用的：</p>
+<p>对其执行clang -rewrite-objc编译转换成C++实现，得到以下代码：</p>
 
-<ul>
-<li>1、TODO</li>
-</ul>
+<pre><code>    struct __block_impl {
+        void *isa;
+        int Flags;
+        int Reserved;
+        void *FuncPtr;
+    };
 
+    struct __main_block_impl_0 {
+      struct __block_impl impl;
+      struct __main_block_desc_0* Desc;
+      __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+        impl.isa = &amp;_NSConcreteStackBlock;
+        impl.Flags = flags;
+        impl.FuncPtr = fp;
+        Desc = desc;
+      }
+    };
+    static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+    }
 
-<p> 等待实现的功能</p>
-
-<ul>
-<li>2、FIXME</li>
-</ul>
-
-
-<p> 需要修正的功能</p>
-
-<ul>
-<li>3、！！！</li>
-</ul>
-
-
-<p> 需要改进的功能</p>
-
-<p>具体使用</p>
-
-<pre><code>// FIXME:sss
-/* FIXME: sss */
-
-
-// MARK:sss
-/* MARK:sss */
-
-
-// !!!:sss
-/* !!!: sss */
-
-
-// ???:sss
-/* ???: sss */
-
-
-// TODO:sss
-/* TODO: sss */
-
-
-// Comments containing: sss
-/* Comments containing: sss */
+    static struct __main_block_desc_0 {
+      size_t reserved;
+      size_t Block_size;
+    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
+    int main(int argc, const char * argv[]) {
+        /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+            (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
+        }
+        return 0;
+    }
 </code></pre>
 
-<p>注意空格.</p>
+<p>不难看出其中的<strong>main_block_impl_0就是block的一个C++的实现(最后面的_0代表是main中的第几个block)，也就是说也是一个结构体。
+其中</strong>block_impl的定义如下：</p>
 
-<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
-
-<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/03/nian-tie-shen-jiu/">粘贴深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
-
-<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
-
-<ul>
-<li>1、UITextView</li>
-<li>2、UITextField</li>
-<li>3、UIWebView</li>
-</ul>
-
-
-<h3>二、UIKit framework提供了几个类和协议方便我们在自己的应用程序中实现剪贴板的功能。</h3>
-
-<ul>
-<li>1、UIPasteboard：我们可以向其中写入数据，也可以读取数据</li>
-<li>2、UIMenuController：显示一个快捷菜单，用来复制、剪贴、粘贴选择的项。</li>
-<li>3、UIResponder中的 canPerformAction:withSender:用于控制哪些命令显示在快捷菜单中。</li>
-<li>4、当快捷菜单上的命令点击的时候，UIResponderStandardEditActions将会被调用。</li>
-</ul>
-
-
-<h3>三、下面这些项能被放置到剪贴板中</h3>
-
-<ul>
-<li>1、UIPasteboardTypeListString —  字符串数组, 包含kUTTypeUTF8PlainText</li>
-<li>2、UIPasteboardTypeListURL —   URL数组，包含kUTTypeURL</li>
-<li>3、UIPasteboardTypeListImage —   图形数组, 包含kUTTypePNG 和kUTTypeJPEG</li>
-<li>4、UIPasteboardTypeListColor —   颜色数组</li>
-</ul>
-
-
-<h3>四、剪贴板的类型分为两种：</h3>
-
-<p>系统级：使用UIPasteboardNameGeneral和UIPasteboardNameFind创建，系统级的剪贴板，当应用程序关闭，或者卸载时，数据都不会丢失。
-应用程序级：通过设置，可以让数据在应用程序关闭之后仍然保存在剪贴板中，但是应用程序卸载之后数据就会失去。我们可用通过pasteboardWithName:create：来创建。</p>
-
-<p>了解这些之后，下面通过一系列的例子来说明如何在应用程序中使用剪贴板。</p>
-
-<p>例子：</p>
-
-<h5>1、复制剪贴文本。</h5>
-
-<pre><code>下面通过一个例子，可以在tableview上显示一个快捷菜单，上面只有复制按钮，复制tableview上的数据之后，然后粘贴到title上。
+<pre><code>struct __block_impl {
+  void *isa;
+  int Flags;
+  int Reserved;
+  void *FuncPtr;
+};
 </code></pre>
 
-<p>定义一个单元格类CopyTableViewCell，在这个类的上显示快捷菜单，实现复制功能。</p>
+<p>其结构体成员如下：</p>
 
-<pre><code>@interface CopyTableViewCell : UITableViewCell {
-    id delegate;
+<ul>
+<li>isa，指向所属类的指针，也就是block的类型</li>
+<li>flags，标志变量，在实现block的内部操作时会用到</li>
+<li>Reserved，保留变量</li>
+<li>FuncPtr，block执行时调用的函数指针</li>
+<li>可以看出，它包含了isa指针（包含isa指针的皆为对象），也就是说block也是一个对象* (runtime里面，对象和类都是用结构体表示)。</li>
+</ul>
+
+
+<p>__main_block_desc_0的定义如下：</p>
+
+<pre><code>    static struct __main_block_desc_0 {
+      size_t reserved;
+      size_t Block_size;
+    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
+</code></pre>
+
+<p>其结构成员含义如下：</p>
+
+<ul>
+<li>reserved：保留字段</li>
+<li>Block_size：block大小(sizeof(struct __main_block_impl_0))</li>
+<li>以上代码在定义<strong>main_block_desc_0结构体时，同时创建了</strong>main_block_desc_0_DATA，并给它赋值，以供在main函数中对__main_block_impl_0进行初始化。</li>
+</ul>
+
+
+<p>__main_block_impl_0定义了显式的构造函数，其函数体如下：</p>
+
+<pre><code>  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+</code></pre>
+
+<p>可以看出，</p>
+
+<ul>
+<li><em>_main_block_impl_0的isa指针指向了</em>NSConcreteStackBlock，</li>
+<li>从main函数中看， <strong>main_block_impl_0的FuncPtr指向了函数</strong>main_block_func_0</li>
+<li><strong>main_block_impl_0的Desc也指向了定义</strong>main_block_desc_0时就创建的__main_block_desc_0_DATA，其中纪录了block结构体大小等信息。</li>
+<li>以上就是根据编译转换的结果，对一个简单block的解析，后面会将block操作不同类型的外部变量，对block结构的影响进行相应的说明。</li>
+</ul>
+
+
+<h5>block实际结构</h5>
+
+<p>接下来观察下Block_private.h文件中对block的相关结构体的真实定义：</p>
+
+<pre><code>/* Revised new layout. */
+struct Block_descriptor {
+    unsigned long int reserved;
+    unsigned long int size;
+    void (*copy)(void *dst, void *src);
+    void (*dispose)(void *);
+};
+
+
+struct Block_layout {
+    void *isa;
+    int flags;
+    int reserved;
+    void (*invoke)(void *, ...);
+    struct Block_descriptor *descriptor;
+    /* Imported variables. */
+};
+</code></pre>
+
+<p>有了上文对编译转换的分析，这里只针对略微不同的成员进行分析：</p>
+
+<p>invoke，同上文的FuncPtr，block执行时调用的函数指针，block定义时内部的执行代码都在这个函数中
+Block_descriptor，block的详细描述</p>
+
+<ul>
+<li>copy/dispose，辅助拷贝/销毁函数，处理block范围外的变量时使用</li>
+<li>总体来说，block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。</li>
+</ul>
+
+
+<h3>block的类型</h3>
+
+<p>block的常见类型有3种：</p>
+
+<ul>
+<li>_NSConcreteGlobalBlock（全局）</li>
+<li>_NSConcreteStackBlock（栈）</li>
+<li>_NSConcreteMallocBlock（堆）</li>
+</ul>
+
+
+<p>附上APUE的进程虚拟内存段分布图：</p>
+
+<p><img src="/images/block001.png" title="Caption" ></p>
+
+<p>进程虚拟内存空间分布</p>
+
+<ul>
+<li>其中前2种在Block.h种声明，后1种在Block_private.h中声明，所以最后1种基本不会在源码中出现。</li>
+<li>由于无法直接创建_NSConcreteMallocBlock类型的block，所以这里只对前面2种进行手动创建分析，最后1种通过源代码分析。</li>
+</ul>
+
+
+<h5>NSConcreteGlobalBlock和NSConcreteStackBlock</h5>
+
+<p>首先，根据前面两种类型，编写以下代码：</p>
+
+<pre><code>void (^globalBlock)() = ^{
+
+};
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        void (^stackBlock1)() = ^{
+
+        };
+    }
+    return 0;
 }
-@property (nonatomic, retain) id delegate;
+</code></pre>
+
+<p>对其进行编译转换后得到以下缩略代码：</p>
+
+<pre><code>// globalBlock
+struct __globalBlock_block_impl_0 {
+  struct __block_impl impl;
+  struct __globalBlock_block_desc_0* Desc;
+  __globalBlock_block_impl_0(void *fp, struct __globalBlock_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteGlobalBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+...
+
+// stackBlock
+struct __main_block_impl_0 {
+  struct __block_impl impl;
+  struct __main_block_desc_0* Desc;
+  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+...
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+        void (*stackBlock)() = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
+    }
+    return 0;
+}
+</code></pre>
+
+<p>可以看出globalBlock的isa指向了<em>NSConcreteGlobalBlock，即在全局区域创建，编译时具体的代码就已经确定在上图中的代码段中了，block变量存储在全局数据存储区；stackBlock的isa指向了</em>NSConcreteStackBlock，即在栈区创建。</p>
+
+<h5>NSConcreteMallocBlock</h5>
+
+<ul>
+<li><p>接下来是在堆中的block，堆中的block无法直接创建，其需要由<em>NSConcreteStackBlock类型的block拷贝而来(也就是说block需要执行copy之后才能存放到堆中)。由于block的拷贝最终都会调用</em>Block_copy_internal函数，所以观察这个函数就可以知道堆中block是如何被创建的了：</p>
+
+<pre><code>  static void *_Block_copy_internal(const void *arg, const int flags) {
+      struct Block_layout *aBlock;
+      ...
+      aBlock = (struct Block_layout *)arg;
+      ...
+      // Its a stack block.  Make a copy.
+      if (!isGC) {
+          // 申请block的堆内存
+          struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
+          if (!result) return (void *)0;
+          // 拷贝栈中block到刚申请的堆内存中
+          memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
+          // reset refcount
+          result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
+          result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
+          // 改变isa指向_NSConcreteMallocBlock，即堆block类型
+          result-&gt;isa = _NSConcreteMallocBlock;
+          if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+              //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
+              (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
+          }
+          return result;
+      }
+      else {
+          ...
+      }
+  }
+</code></pre>
+
+<p>从以上代码以及注释可以很清楚的看出，函数通过memmove将栈中的block的内容拷贝到了堆中，并使isa指向了_NSConcreteMallocBlock。
+block主要的一些学问就出在栈中block向堆中block的转移过程中了。</p></li>
+</ul>
+
+
+<p>捕捉变量对block结构的影响
+接下来会编译转换捕捉不同变量类型的block，以对比它们的区别。</p>
+
+<h5>局部变量</h5>
+
+<p>前：</p>
+
+<pre><code>- (void)test
+{
+    int a;
+    ^{a;};
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  int a;
+  // a(_a)是构造函数的参数列表初始化形式，相当于a = _a。从_I_Person_test看，传入的就是a
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int _a, int flags=0) : a(_a) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  int a = __cself-&gt;a; // bound by copy
+a;}
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    int a;
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, a);
+}
+</code></pre>
+
+<p>可以看到，block相对于文章开头增加了一个int类型的成员变量，他就是用来存储外部变量a的。可以看出，这次拷贝只是一次值传递。并且当我们想在block中进行以下操作时，将会发生错误</p>
+
+<pre><code>^{a = 10;};
+</code></pre>
+
+<p>编译器会提示</p>
+
+<p><img src="/images/block002.png" title="Caption" ></p>
+
+<p>错误提示
+。因为_I_Person_test函数中的a和Persontest_block_func_0函数中的a并没有在同一个作用域，所以在block对a进行赋值是没有意义的，所以编译器给出了错误。我们可以通过地址传递来消除以上错误：</p>
+
+<pre><code>- (void)test
+{
+    int a = 0;
+    // 利用指针p存储a的地址
+    int *p = &amp;a;
+
+    ^{
+        // 通过a的地址设置a的值
+        *p = 10;
+    };
+}
+</code></pre>
+
+<p>但是变量a的生命周期是和方法test的栈相关联的，当test运行结束，栈随之销毁，那么变量a就会被销毁，p也就成为了野指针。如果block是作为参数或者返回值，这些类型都是跨栈的，也就是说再次调用会造成野指针错误。</p>
+
+<h5>全局变量</h5>
+
+<p>前：</p>
+
+<pre><code>// 全局静态
+static int a;
+// 全局
+int b;
+- (void)test
+{
+
+    ^{
+        a = 10;
+        b = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>static int a;
+int b;
+
+struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+
+        a = 10;
+        b = 10;
+    }
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA);
+}
+</code></pre>
+
+<p>可以看出，因为全局变量都是在静态数据存储区，在程序结束前不会被销毁，所以block直接访问了对应的变量，而没有在Persontest_block_impl_0结构体中给变量预留位置。</p>
+
+<h5>局部静态变量</h5>
+
+<p>前</p>
+
+<pre><code>- (void)test
+{
+    static int a;
+    ^{
+        a = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  int *a;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int *_a, int flags=0) : a(_a) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  int *a = __cself-&gt;a; // bound by copy
+        // 这里通过局部静态变量a的地址来对其进行修改
+        (*a) = 10;
+    }
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    static int a;
+    // 传入a的地址
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, &amp;a);
+}
+</code></pre>
+
+<p>需要注意一点的是静态局部变量是存储在静态数据存储区域的，也就是和程序拥有一样的生命周期，也就是说在程序运行时，都能够保证block访问到一个有效的变量。但是其作用范围还是局限于定义它的函数中，所以只能在block通过静态局部变量的地址来进行访问。
+关于变量的存储我原来的这篇博客有提及：c语言臆想&ndash;全局&mdash;局部变量</p>
+
+<h5>__block修饰的变量</h5>
+
+<p>前：</p>
+
+<pre><code>- (void)test
+{
+   __block int a;
+    ^{
+        a = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
+
+struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  __Block_byref_a_0 *a; // by ref
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
+        // 注意，这里的_forwarding用来保证操作的始终是堆中的拷贝a，而不是栈中的a
+        (a-&gt;__forwarding-&gt;a) = 10;
+    }
+static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
+  void (*dispose)(struct __Person__test_block_impl_0*);
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    // __block将a包装成了一个对象
+   __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
+;
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
+}
+</code></pre>
+
+<p>可以看到，对比上面的结果，明显多了<strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，</strong>Person<strong>test_block_impl_0的拷贝辅助函数</strong>Person<strong>test_block_copy_0会将</strong>Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作。其中<strong>Block_byref_a_0成员指针</strong>forwarding用来指向它在堆中的拷贝，其依据源码如下：</p>
+
+<pre><code>static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
+    struct Block_byref **destp = (struct Block_byref **)dest;
+    struct Block_byref *src = (struct Block_byref *)arg;
+
+    ...
+    // 堆中拷贝的forwarding指向它自己
+    copy-&gt;forwarding = copy; // patch heap copy to point to itself (skip write-barrier)
+    // 栈中的forwarding指向堆中的拷贝
+    src-&gt;forwarding = copy;  // patch stack to point to heap copy
+    ...
+}
+</code></pre>
+
+<p>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
+至于block如何实现对局部变量的拷贝，下面会详细说明。</p>
+
+<h5>self隐式循环引用</h5>
+
+<p>前：</p>
+
+<pre><code>@implementation Person
+{
+    int _a;
+    void (^_block)();
+}
+- (void)test
+{
+  void (^_block)() = ^{
+        _a = 10;
+    };
+}
+
 @end
 </code></pre>
 
-<p>实现CopyTableViewCell ：</p>
+<p>后：</p>
 
-<pre><code>#import "CopyTableViewCell.h"
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  // 可以看到，block强引用了self
+  Person *self;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, Person *_self, int flags=0) : self(_self) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  Person *self = __cself-&gt;self; // bound by copy
 
-@implementation CopyTableViewCell
-
-@synthesize delegate;
-
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
     }
-    return self;
-}
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
-}
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-    [[self delegate] performSelector:@selector(showMenu:)
-                          withObject:self afterDelay:0.9f];
+static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;self, (void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
 
-    [super setHighlighted:highlighted animated:animated];
+static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
 
-}
-- (BOOL)canBecomeFirstResponder
-{
-    return YES;
-}
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
-    if (action == @selector(cut:)){
-        return NO;
-    }
-    else if(action == @selector(copy:)){
-        return YES;
-    }
-    else if(action == @selector(paste:)){
-        return NO;
-    }
-    else if(action == @selector(select:)){
-        return NO;
-    }
-    else if(action == @selector(selectAll:)){
-        return NO;
-    }
-    else
-    {
-        return [super canPerformAction:action withSender:sender];
-    }
-}
-- (void)copy:(id)sender {
-    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-    [pasteboard setString:[[self textLabel]text]];
-}
-- (void)dealloc {
-    [super dealloc];
-}
-@end
-</code></pre>
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
+  void (*dispose)(struct __Person__test_block_impl_0*);
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
 
-<p>复制代码
-定义CopyPasteTextController，实现粘贴功能。
-    @interface CopyPasteTextController : UIViewController<UITableViewDelegate> {
-        //用来标识是否显示快捷菜单
-        BOOL menuVisible;
-        UITableView *tableView;
-    }</p>
-
-<pre><code>@property (nonatomic, getter=isMenuVisible) BOOL menuVisible;
-
-@property (nonatomic, retain) IBOutlet UITableView *tableView;
-@end
-</code></pre>
-
-<p>实现CopyPasteTextController ：</p>
-
-<pre><code>#import "CopyPasteTextController.h"
-#import "CopyTableViewCell.h"
-
-@implementation CopyPasteTextController
-@synthesize menuVisible,tableView;
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    [self setTitle:@"文字复制粘贴"];
-    //点击这个按钮将剪贴板的内容粘贴到title上
-    UIBarButtonItem *addButton = [[[UIBarButtonItem alloc]
-                                      initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
-                                      target:self
-                                      action:@selector(readFromPasteboard:)]
-                                     autorelease];
-    [[self navigationItem] setRightBarButtonItem:addButton];
-}
-
-
-// Customize the number of sections in the table view.
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return 9;
-}
-
-// Customize the appearance of table view cells.
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *CellIdentifier =@"Cell";
-    CopyTableViewCell *cell = (CopyTableViewCell *)[tableView
-                                                           dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil)
-    {
-        cell = [[[CopyTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-        [cell setDelegate:self];
-    }
-
-    // Configure the cell.
-    NSString *text = [NSString stringWithFormat:@"Row %d", [indexPath row]];
-    [[cell textLabel] setText:text];
-    return cell;
-}
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if([self isMenuVisible])
-    {
-        return;
-    }
-    [[[self tableView] cellForRowAtIndexPath:indexPath] setSelected:YES
-                                                           animated:YES];
-}
-//显示菜单
-- (void)showMenu:(id)cell {
-    if ([cell isHighlighted]) {
-        [cell becomeFirstResponder];
-
-        UIMenuController * menu = [UIMenuController sharedMenuController];
-        [menu setTargetRect: [cell frame] inView: [self view]];
-        [menu setMenuVisible: YES animated: YES];
-    }
-}
-- (void)readFromPasteboard:(id)sender {
-    [self setTitle:[NSString stringWithFormat:@"Pasteboard = %@",
-                      [[UIPasteboard generalPasteboard] string]]];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-
-    // Relinquish ownership any cached data, images, etc that aren't in use.
-}
-
-- (void)viewDidUnload
-{
-    [super viewDidUnload];
-    [self.tableView release];
-
-    // Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
-    // For example: self.myOutlet = nil;
+static void _I_Person_test(Person * self, SEL _cmd) {
+  void (*_block)() = (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, self, 570425344);
 }
 </code></pre>
 
-<p>复制一行数据：
-点击右上角的按钮粘贴，将数据显示在title上：</p>
+<p>如果在编译转换前，将<em>a改成self.a，能很明显地看出是产生了循环引用(self强引用block，block强引用self)。那么使用</em>a呢？经过编译转换后，依然可以在<strong>Person</strong>test_block_impl_0看见self的身影。且在函数<em>I_Person_test中，传入的参数也是self。通过以下语句，可以看出，不管是用什么形式访问实例变量，最终都会转换成self+变量内存偏移的形式。所以在上面例子中使用</em>a也会造成循环引用。</p>
 
-<h6>2、图片复制粘贴</h6>
+<pre><code>static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  Person *self = __cself-&gt;self; // bound by copy
+        // self＋实例变量a的偏移值
+        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
+    }
+</code></pre>
 
-<p>   下面通过一个例子，将图片复制和剪贴到另外一个UIImageView中间。</p>
+<h3>不同类型block的复制</h3>
+
+<p>block的复制代码在_Block_copy_internal函数中。</p>
+
+<h5>栈block</h5>
+
+<p>从以下代码可以看出，栈block的复制不仅仅复制了其内容，还添加了一些额外的东西</p>
+
+<pre><code>* 1、往flags中并入了BLOCK_NEEDS_FREE（这个标志表明block需要释放，在release以及再次拷贝时会用到）
+
+* 2、如果有辅助copy函数（BLOCK_HAS_COPY_DISPOSE），那么就调用（这个辅助copy函数是用来拷贝block捕获的变量的）
+
+struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
+if (!result) return (void *)0;
+  memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
+// reset refcount
+result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
+result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
+result-&gt;isa = _NSConcreteMallocBlock;
+if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+      //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
+      (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
+  }
+  return result;
+</code></pre>
+
+<h5>堆block</h5>
+
+<p>从以下代码看出，如果block的flags中有BLOCK_NEEDS_FREE标志（block从栈中拷贝到堆时添加的标志），就执行latching_incr_int操作，其功能就是让block的引用计数加1。所以堆中block的拷贝只是单纯地改变了引用计数</p>
+
+<pre><code>  ...
+  if (aBlock-&gt;flags &amp; BLOCK_NEEDS_FREE) {
+        // latches on high
+        latching_incr_int(&amp;aBlock-&gt;flags);
+        return aBlock;
+    }
+  ...
+</code></pre>
+
+<h5>全局block</h5>
+
+<p>从以下代码看出，对于全局block，函数没有做任何操作，直接返回了传入的block</p>
+
+<pre><code>else if (aBlock-&gt;flags &amp; BLOCK_IS_GLOBAL) {
+      return aBlock;
+}
+</code></pre>
+
+<h3>block辅助函数</h3>
 
 <ul>
-<li>1、在界面上放置两个uiimageview，一个是图片的数据源，一个是将图片粘贴到的地方。CopyPasteImageViewController 代码如下：</li>
+<li>上文提及到了block辅助copy与dispose处理函数，这里分析下这两个函数的内部实现。在捕* 获变量为__block修饰的基本类型，或者为对象时，block才会有这两个辅助函数。</li>
+<li>block捕捉变量拷贝函数为<em>Block_object_assign。在调用复制block的函数</em>Block_copy_internal时，会根据block有无辅助函数来对捕捉变量拷贝函数<em>Block_object_assign进行调用。而在</em>Block_object_assign函数中，也会判断捕捉变量包装而成的对象(Block_byref结构体)是否有辅助函数，来进行调用。</li>
 </ul>
 
 
-<p>@interface CopyPasteImageViewController : UIViewController {
-    UIImageView <em>imageView;
-    UIImageView </em>pasteView;
-    UIImageView <em>selectedView;
-}
-@property (nonatomic, retain) IBOutlet UIImageView </em>imageView;
-@property (nonatomic, retain) IBOutlet UIImageView <em>pasteView;
-@property (nonatomic, retain) UIImageView </em>selectedView;
-- (void)placeImageOnPasteboard:(id)view;
-@end
-* 2、当触摸图片的时候我们显示快捷菜单：</p>
+<h5>__block修饰的基本类型的辅助函数</h5>
 
-<hr />
+<p>编写以下代码：</p>
 
-<pre><code>- (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-    NSSet *copyTouches = [event touchesForView:imageView];
-    NSSet *pasteTouches = [event touchesForView:pasteView];
-
-    [self becomeFirstResponder];
-    if ([copyTouches count] &gt; 0) {
-        [self performSelector:@selector(showMenu:)
-                   withObject:imageView afterDelay:0.9f];
-    }
-    else  if([pasteTouches count] &gt; 0) {
-        [self performSelector:@selector(showMenu:)
-                   withObject:pasteView afterDelay:0.9f];
-    }
-    [super touchesBegan:touches withEvent:event];
-}
-
-- (void)showMenu:(id)view {
-    [self setSelectedView:view];
-
-    UIMenuController * menu = [UIMenuController sharedMenuController];
-    [menu setTargetRect: CGRectMake(5, 10, 1, 1) inView: view];
-    [menu setMenuVisible: YES animated: YES];
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __block int a;
+        Block block = ^ {
+            a;
+        };
 }
 </code></pre>
 
-<p>这里的快捷菜单，显示三个菜单项：剪贴、粘贴、复制：</p>
+<p>转换成C++代码后：</p>
 
-<hr />
+<pre><code>typedef void(*Block)();
+// __block int a
+struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
 
-<pre><code>- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
-    if (action == @selector(cut:)) {
-        return ([self selectedView] == imageView) ? YES : NO;
-    } else if (action == @selector(copy:)) {
-        return ([self selectedView] == imageView) ? YES : NO;
-    } else if (action == @selector(paste:)) {
-        return ([self selectedView] == pasteView) ? YES : NO;
-    } else if (action == @selector(select:)) {
-        return NO;
-    } else if (action == @selector(selectAll:)) {
-        return NO;
-    } else {
-        return [super canPerformAction:action withSender:sender];
+// block
+struct __main_block_impl_0 {
+  struct __block_impl impl;
+  struct __main_block_desc_0* Desc;
+  __Block_byref_a_0 *a; // by ref
+  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+
+// block函数体
+static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
+
+            (a-&gt;__forwarding-&gt;a);
+        }
+// 辅助copy函数
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+// 辅助dispose函数
+static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static struct __main_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
+  void (*dispose)(struct __main_block_impl_0*);
+} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0};
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+        // 这里创建了，并将a的flags设置为0
+        __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
+;
+        Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
     }
-}
-- (void)cut:(id)sender {
-    [self copy:sender];
-    [imageView setHidden:YES];
-}
-- (void)copy:(id)sender {
-    [self placeImageOnPasteboard:[self imageView]];
-}
-- (void)paste:(id)sender {
-    UIPasteboard *appPasteBoard =
-    [UIPasteboard pasteboardWithName:@"CopyPasteImage" create:YES];
-    NSData *data =[appPasteBoard dataForPasteboardType:@"com.marizack.CopyPasteImage.imageView"];
-    pasteView.image = [UIImage imageWithData:data];
+    return 0;
 }
 </code></pre>
 
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/03/nian-tie-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
+<p>从上面代码中，被<strong>block修饰的a变量变为了</strong>Block_byref_a_0类型，根据这个格式，从源码中查看得到相似的定义：</p>
 
+<pre><code>struct Block_byref {
+    void *isa;
+    struct Block_byref *forwarding;
+    int flags; /* refcount; */
+    int size;
+    void (*byref_keep)(struct Block_byref *dst, struct Block_byref *src);
+    void (*byref_destroy)(struct Block_byref *);
+    /* long shared[0]; */
+};
 
+// 做下对比
+struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
 
-
-| <a href="/blog/2015/12/03/nian-tie-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/02/xiao-chu-jing-gao/">消除警告</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h6>前言：</h6>
-
-<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
-
-<p>本文分为三个部分：</p>
-
-<ul>
-<li>1.简单粗暴的消除警告。</li>
-<li>2.详细科学的消除警告。（包括警告收录）</li>
-<li>3.添加警告。</li>
-</ul>
-
-
-<h4>一、简单粗暴的消除警告</h4>
-
-<p>警告如果是自己项目中的还好直接改了，如果是第三方库，你改了之后，pod下作者更新一下又白改了，所以可以用这种简单粗暴的方法：直接让第三方库的警告不显示</p>
-
-<p> 就是在podfile文件里面加上一行指令 。
-inhibit_all_warnings!
-如果某警告实在无法消除，但是又不想让他显示，可以加入预编译指令</p>
-
-<p>比如我已经知道某行会报上面警告了，我就用这个宏把这几行包住，就不会报引号中-Wunused-variable的警告了</p>
-
-<pre><code>#pragma clang diagnostic push
-#pragma clang diagnostic ignored"-Wunused-variable" //这里是会报警告的代码
-
-#pragma clang diagnostic pop
+// flags/_flags类型
+enum {
+        /* See function implementation for a more complete description of these fields and combinations */
+        // 是一个对象
+        BLOCK_FIELD_IS_OBJECT   =  3,  /* id, NSObject, __attribute__((NSObject)), block, ... */
+        // 是一个block
+        BLOCK_FIELD_IS_BLOCK    =  7,  /* a block variable */
+        // 被__block修饰的变量
+        BLOCK_FIELD_IS_BYREF    =  8,  /* the on stack structure holding the __block variable */
+        // 被__weak修饰的变量，只能被辅助copy函数使用
+        BLOCK_FIELD_IS_WEAK     = 16,  /* declared __weak, only used in byref copy helpers */
+        // block辅助函数调用（告诉内部实现不要进行retain或者copy）
+        BLOCK_BYREF_CALLER      = 128  /* called from __block (byref) copy/dispose support routines. */
+    };
 </code></pre>
 
-<p>这个-Wunused-variable代表的意思就是 有的东西 你实例化了但是没有使用（同上面第几条）。 但是如何得到一个警告的标示符？</p>
+<p>可以看出，__block将原来的基本类型包装成了对象。因为以上两个结构体的前4个成员的类型都是一样的，内存空间排列一致，所以可以进行以下操作：</p>
+
+<pre><code>// 转换成C++代码
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+// _Block_object_assign源码
+void _Block_object_assign(void *destAddr, const void *object, const int flags) {
+...
+    else if ((flags &amp; BLOCK_FIELD_IS_BYREF) == BLOCK_FIELD_IS_BYREF)  {
+        // copying a __block reference from the stack Block to the heap
+        // flags will indicate if it holds a __weak reference and needs a special isa
+        _Block_byref_assign_copy(destAddr, object, flags);
+    }
+...
+}
+
+// _Block_byref_assign_copy源码
+static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
+    // 这里因为前面4个成员的内存分布一样，所以直接转换后，使用Block_byref的成员变量名，能访问到__Block_byref_a_0的前面4个成员
+    struct Block_byref **destp = (struct Block_byref **)dest;
+    struct Block_byref *src = (struct Block_byref *)arg;
+...
+    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_REFCOUNT_MASK) == 0) {
+        // 从main函数对__Block_byref_a_0的初始化，可以看到初始化时将flags赋值为0
+        // 这里表示第一次拷贝，会进行复制操作，并修改原来flags的值
+        // static int _Byref_flag_initial_value = BLOCK_NEEDS_FREE | 2;
+        // 可以看出，复制后，会并入BLOCK_NEEDS_FREE，后面的2是block的初始引用计数
+        ...
+        copy-&gt;flags = src-&gt;flags | _Byref_flag_initial_value;
+        ...
+    }
+    // 已经拷贝到堆了，只增加引用计数
+    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_NEEDS_FREE) == BLOCK_NEEDS_FREE) {
+        latching_incr_int(&amp;src-&gt;forwarding-&gt;flags);
+    }
+    // 普通的赋值，里面最底层就*destptr = value;这句表达式
+    _Block_assign(src-&gt;forwarding, (void **)destp);
+}
+</code></pre>
+
+<p>主要操作都在代码注释中了，总体来说，__block修饰的基本类型会被包装为对象，并且只在最初block拷贝时复制一次，后面的拷贝只会增加这个捕获变量的引用计数。</p>
+
+<h5>对象的辅助函数</h5>
+
+<p>没有__block修饰</p>
+
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSObject *a = [[NSObject alloc] init];
+        Block block = ^ {
+            a;
+        };
+    }
+    return 0;
+}
+</code></pre>
+
+<p>首先，在没有__block修饰时，对象编译转换的结果如下，删除了一些变化不大的代码：</p>
+
+<pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+  NSObject *a = __cself-&gt;a; // bound by copy
+            a;
+        }
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static struct __main_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
+  void (*dispose)(struct __main_block_impl_0*);
+} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0),
+</code></pre>
+
+<p>对象在没有<strong>block修饰时，并没有产生</strong>Block_byref_a_0结构体，只是将标志位修改为BLOCK_FIELD_IS_OBJECT。而在_Block_object_assign中对应的判断分支代码如下：</p>
+
+<pre><code>else if ((flags &amp; BLOCK_FIELD_IS_OBJECT) == BLOCK_FIELD_IS_OBJECT) {
+    _Block_retain_object(object);
+    _Block_assign((void *)object, destAddr);
+}
+</code></pre>
+
+<p>可以看到，block复制时，会retain捕捉对象，以增加其引用计数。</p>
+
+<p>有__block修饰</p>
+
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __block NSObject *a = [[NSObject alloc] init];
+        Block block = ^ {
+            a;
+        };
+    }
+    return 0;
+}
+</code></pre>
+
+<p>在这种情况下，编译转换的部分结果如下：</p>
+
+<pre><code>struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ void (*__Block_byref_id_object_copy)(void*, void*);
+ void (*__Block_byref_id_object_dispose)(void*);
+ NSObject *a;
+};
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 33554432, sizeof(__Block_byref_a_0), __Block_byref_id_object_copy_131, __Block_byref_id_object_dispose_131,....};
+Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
+}
+
+// 以下的40表示__Block_byref_a_0对象a的位移（4个指针(32字节)＋2个int变量(8字节)＝40字节）
+    static void __Block_byref_id_object_copy_131(void *dst, void *src) {
+     _Block_object_assign((char*)dst + 40, *(void * *) ((char*)src + 40), 131);
+    }
+    static void __Block_byref_id_object_dispose_131(void *src) {
+     _Block_object_dispose(*(void * *) ((char*)src + 40), 131);
+    }
+</code></pre>
 
 <ol>
-<li><p>如图选择一个警告，点击右键，reveal in log  就能看到右边有个方括号[]里面的东西就是 这个警告对应的标示符</p></li>
-<li><p>如果希望整个项目中都忽略 某种很无聊的警告，就在项目中Build Setting里加上这个标示符，可以连着加的。</p></li>
-<li><p>如果不想整个项目都忽略，只想个别文件忽略，那就找到个别文件加上此指令，这个操作应该使用率不高（一般都是全项目忽略），就不上图了。去Build Phases 里面的 Compile Sources里面改。</p></li>
+<li><p>可以看到，对于对象，<strong>Block_byref_a_0另外增加了两个辅助函数</strong>Block_byref_id_object_copy、__Block_byref_id_object_dispose,以实现对对象</p></li>
+<li><p>内存的管理。其中两者的最后一个参数131表示BLOCK_BYREF_CALLER|BLOCK_FIELD_IS_OBJECT，BLOCK_BYREF_CALLER表示在内部实现中不对a对象进行retain或copy；以下为相关源码</p></li>
 </ol>
 
 
-<h4>二、详细科学的消除警告</h4>
+<hr />
 
-<p>其实笔者本意是想把一些第一眼看不懂比较坑的警告收录进来，但是后来发现那基本没几个需要些写了，所以就采用了全收录的方法，遇到的就记录下以后也会不断更新。 可以直接按command+F 在本页面搜索警告</p>
-
-<pre><code>Unused variable 'replyURL'
+<pre><code>if ((flags &amp; BLOCK_BYREF_CALLER) == BLOCK_BYREF_CALLER) {
+    ...
+    else {
+        // do *not* retain or *copy* __block variables whatever they are
+        _Block_assign((void *)object, destAddr);
+    }
+}
 </code></pre>
 
-<h6>1.没有使用</h6>
+<p>_Block_byref_assign_copy函数的以下代码会对上面的辅助函数（__Block_byref_id_object_copy_131）进行调用；570425344表示BLOCK_HAS_COPY_DISPOSE|BLOCK_HAS_DESCRIPTOR，所以会执行以下相关源码：</p>
 
-<pre><code>Cannot find protocol definition for 'TencentSessionDelegate'
+<pre><code>if (src-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+    // Trust copy helper to copy everything of interest
+    // If more than one field shows up in a byref block this is wrong XXX
+    copy-&gt;byref_keep = src-&gt;byref_keep;
+    copy-&gt;byref_destroy = src-&gt;byref_destroy;
+    (*src-&gt;byref_keep)(copy, src);
+}
 </code></pre>
 
-<h6>2.这种明明都能运行还说我没有定义的警告，是因为你这个协议虽然定义了，但是你这个协议可能还遵守了XX协议，然后这个XX协议没有定义导致会报这种警告，所以遇到这种警告要往“父协议”找。 举个栗子，上面这行就是腾讯授权的库里面报的警告，</h6>
+<h3>ARC中block的工作</h3>
 
-<pre><code>@protocol TencentSessionDelegate
-此协议遵守了TencentApiInterfaceDelegate协议，在TencentOAuth.h类中#import "TencentApiInterface.h" 警告可破
+<p><img src="/images/block003.png" title="Caption" ></p>
 
+<p>苹果说明</p>
 
-Null passed to a callee that requires a non-null argument
+<p>苹果文档提及，在ARC模式下，在栈间传递block时，不需要手动copy栈中的block，即可让block正常工作。主要原因是ARC对栈中的block自动执行了copy，将<em>NSConcreteStackBlock类型的block转换成了</em>NSConcreteMallocBlock的block。</p>
+
+<h5>block试验</h5>
+
+<p>下面对block做点实验：</p>
+
+<p>int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        int i = 10;
+        void (^block)() = ^{i;};</p>
+
+<pre><code>    __weak void (^weakBlock)() = ^{i;};
+
+    void (^stackBlock)() = ^{};
+
+    // ARC情况下
+
+    // 创建时，都会在栈中
+    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
+    NSLog(@"%@", ^{i;});
+
+    // 因为stackBlock为strong类型，且捕获了外部变量，所以赋值时，自动进行了copy
+    // &lt;__NSMallocBlock__: 0x100206920&gt;
+    NSLog(@"%@", block);
+
+    // 如果是weak类型的block，依然不会自动进行copy
+    // &lt;__NSStackBlock__: 0x7fff5fbff728&gt;
+    NSLog(@"%@", weakBlock);
+
+    // 如果block是strong类型，并且没有捕获外部变量，那么就会转换成__NSGlobalBlock__
+    // &lt;__NSGlobalBlock__: 0x100001110&gt;
+    NSLog(@"%@", stackBlock);
+
+    // 在非ARC情况下，产生以下输出
+    // &lt;__NSStackBlock__: 0x7fff5fbff6d0&gt;
+    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
+    // &lt;__NSStackBlock__: 0x7fff5fbff700&gt;
+    // &lt;__NSGlobalBlock__: 0x1000010d0&gt;
+}
+return 0;
 </code></pre>
 
-<h6>3.这个警告比较新，是xcode6.3开始 为了让OC也能有swift的？和！的功能，你在声明一个属性的时候加上 <strong>nullable（？可以为空）与</strong>nonnull（！不能为空） 如果放在@property里面的话不用写下划线</h6>
+<p>}</p>
 
-<pre><code>@property (nonatomic, copy, nonnull) NSString * tickets;
-@property (nonatomic, copy) NSString * __nonnull tickets;
+<p>可以看出，ARC对类型为strong且捕获了外部变量的block进行了copy。并且当block类型为strong，但是创建时没有捕获外部变量，block最终会变成<strong>NSGlobalBlock</strong>类型（这里可能因为block中的代码没有捕获外部变量，所以不需要在栈中开辟变量，也就是说，在编译时，这个block的所有内容已经在代码段中生成了，所以就把block的类型转换为全局类型）</p>
+
+<h5>block作为参数传递</h5>
+
+<p>再来看下使用在栈中的block需要注意的情况：</p>
+
+<pre><code>NSMutableArray *arrayM;
+void myBlock()
+{
+    int a = 5;
+    Block block = ^ {
+        NSLog(@"%d", a);
+    };
+
+    [arrayM addObject:block];
+    NSLog(@"%@", block);
+}
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        arrayM = @[].mutableCopy;
+
+        myBlock();
+
+        Block block = [arrayM firstObject];
+        // 非ARC这里崩溃
+        block();
+ }
+
+// ARC情况下输出
+// &lt;__NSMallocBlock__: 0x100214480&gt;
+
+// 非ARC情况下输出
+// &lt;__NSStackBlock__: 0x7fff5fbff738&gt;
+// 崩溃，野指针错误
 </code></pre>
 
-<p>或者用宏NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END 包住多个属性全部具备nonnull，然后仅对需要nullable的改下就行，有点类似于f-no-objc-arc那种先整体给个路线在单独改个别文件的思想。 此警告就是某属性说好的不能为空，你又在某地方写了XX = nil 所以冲突了。</p>
+<p>可以看到，ARC情况下因为自动执行了copy，所以返回类型为<strong>NSMallocBlock</strong>，在函数结束后依然可以访问；而非ARC情况下，需要我们手动调用[block copy]来将block拷贝到堆中，否则因为栈中的block生命周期和函数中的栈生命周期关联，当函数退出后，相应的堆被销毁，block也就不存在了。
+如果把block的以下代码删除：</p>
 
-<pre><code>Auto property synthesis will not synthesize property 'privateCacheDirectory'; it will be implemented by its superclass, use @dynamic to acknowledge intention
+<pre><code>NSLog(@"%d", a);
+那么block就会变成全局类型，在main中访问也不会出崩溃。
 </code></pre>
 
-<h6>4.他说你的父类实现了setget方法，但是如果你什么都不写，就会系统自动生成出最一般的setget方法，请用@dynamic 来承认父类实现的这个getset方法。</h6>
+<h5>block作为返回值</h5>
 
-<pre><code>Unsupported Configuration: Scene is unreachable due to lack of entry points and does not have an identifier for runtime access via -instantiateViewControllerWithIdentifier:.
+<pre><code>在非ARC情况下，如果返回值是block，则一般这样操作：
+
+return [[block copy] autorelease];
 </code></pre>
 
-<h6>5.一般是storyboard报的警告，简而言之就是你有的页面没有和箭头所指的控制器连起来，导致最终改页面可能无法显示。</h6>
+<p>对于外部要使用的block，更趋向于把它拷贝到堆中，使其脱离栈生命周期的约束。</p>
 
-<pre><code>Deprecated: Push segues are deprecated in iOS 8.0 and later
+<h5>block属性</h5>
+
+<p>这里还有一点关于block类型的ARC属性。上文也说明了，ARC会自动帮strong类型且捕获外部变量的block进行copy，所以在定义block类型的属性时也可以使用strong，不一定使用copy。也就是以下代码：</p>
+
+<pre><code>/** 假如有栈block赋给以下两个属性 **/
+
+// 这里因为ARC，当栈block中会捕获外部变量时，这个block会被copy进堆中
+// 如果没有捕获外部变量，这个block会变为全局类型
+// 不管怎么样，它都脱离了栈生命周期的约束
+
+@property (strong, nonatomic) Block *strongBlock;
+
+// 这里都会被copy进堆中
+@property (copy, nonatomic) Block *copyBlock;
 </code></pre>
 
-<h6>6.iOS8之后呢，不要再用push拖线了，统一用show，他会自己根据你是否有导航栏来判断走push还是走modal</h6>
-
-<pre><code>Unsupported Configuration: Plain Style unsupported in a Navigation Item
-</code></pre>
-
-<h6>7.导航栏的item 不支持用plain ，那就用Bordered呗。</h6>
-
-<pre><code>The launch image set "LaunchImage" has 2 unassigned images.
-The app icon set "AppIcon" has 2 unassigned images.
-</code></pre>
-
-<h6>8.几张图标还是启动图找不到自己的位置，可能是一次导入了全部尺寸图片，但是右边的设置只勾了iOS8的 那iOS7尺寸的图标就会报此警告。删掉，或者对照右边匹配。</h6>
-
-<pre><code>'sizeWithFont:constrainedToSize:lineBreakMode:' is deprecated: first deprecated in iOS 7.0 - Use -boundingRectWithSize:options:attributes:context:
-</code></pre>
-
-<h6>9.方法废除，旧的方法sizeWithFontToSize在iOS7后就废除了取而代之是boundingRectWithSize方法</h6>
-
-<pre><code>Undeclared selector 'historyAction'
-</code></pre>
-
-<h6>10.使用未声明的方法，一般出现在@selector() 括号里写了个不存在的方法或方法名写错了。</h6>
-
-<pre><code>PerformSelector may cause a leak because its selector is unknown
-</code></pre>
-
-<h6>11.这个和上面类似就是直接把上面那个@SEL拿来用会报这个警告</h6>
-
-<pre><code>'strongify' macro redefined
-</code></pre>
-
-<h6>12.这个宏声明重复,删一个吧</h6>
-
-<pre><code>'UITextAttributeFont' is deprecated: first deprecated in iOS 7.0 - Use NSFontAttributeName
-'UITextAttributeTextColor' is deprecated: first deprecated in iOS 7.0 - Use NSForegroundColorAttributeName
-'UITextAttributeTextShadowColor' is deprecated: first deprecated in iOS 7.0 - Use NSShadowAttributeName with an NSShadow instance as the value
-</code></pre>
-
-<h6>13.方法废除,一般一起出现</h6>
-
-<pre><code>Code will never be executed
-</code></pre>
-
-<h6>14.他说这代码永远也轮不到他执行，估计是有几行代码写在了return之后</h6>
-
-<pre><code>Assigning to 'id' from incompatible type 'SXTabViewController *const __strong'
-</code></pre>
-
-<h6>15.一般出现在xxx.delegate = self ，应该在上面遵守协议</h6>
-
-<pre><code>Format specifies type 'unsigned long' but the argument has type 'unsigned int'
-</code></pre>
-
-<h6>16.这个警告一般会出现在NSStringWithFormat里面 前面%d %lu 什么的和后面填进去的参数不匹配就报了警告</h6>
-
-<pre><code>Values of type 'NSInteger' should not be used as format arguments; add an explicit cast to 'long' instead
-</code></pre>
-
-<h6>17.类似于上面，也是format里面前后写的不匹配</h6>
-
-<pre><code>Method 'dealWithURL:andTitle:andKeyword:' in protocol 'SXPostAdDelegate' not implemented
-</code></pre>
-
-<h6>18.经典警告，遵守了协议，但是没有实现协议方法。 也可能你实现了只是又加了个参数或是你写的方法和协议方法名字有点轻微不同</h6>
-
-<pre><code>Using integer absolute value function 'abs' when argument is of floating point type
-</code></pre>
-
-<h6>19.这个可以自动修正，就是说abs适用于整数绝对值，要是float取绝对值要用fabsf</h6>
-
-<pre><code>Attribute Unavailable: Automatic Preferred Max Layout Width is not available on iOS versions prior to 8.0
-</code></pre>
-
-<h6>20.有的方法你用的太落后了，也有的方法你用的太超前了。 说这个最大宽度在iOS8之前的系统是要坑的</h6>
-
-<pre><code>Too many personality routines for compact unwind to encode
-</code></pre>
-
-<h6>21.你可以在otherlink 中加入 -Wl,-no_compact_unwind 去掉该警告，根据苹果的解释，这个是由于某些地方 c/c++/oc/oc++混用会造成编译警告。一般没有什么伤害。</h6>
-
-<pre><code>Property 'ssid' requires method 'ssid' to be defined - use @synthesize, @dynamic or provide a method implementation in this class implementation
-</code></pre>
-
-<h6>22.说这个ssid必须要定义个这个属性的getter方法，如果警告是setSsid就是setter方法， 用@synthesize和@dynamic 都行，一个是让编译器生成getter和setter，一个是自己生成，如果你有模型分发或kvc之类的，选@dynamic就行</h6>
-
-<pre><code>Unknown escape sequence '\)'
-</code></pre>
-
-<h6>23.未知的转义序列。 一般有个斜杠再加个东西他都会以为是转义字符，一看\）不认识就报警告了，一般正则表达式容易报这种警告</h6>
-
-<pre><code>Property 'LoginPort' not found on object of type 'LoginLvsTestTask *'; did you mean to access property loginPort?
-</code></pre>
-
-<h6>24.这种可以点击自动修复，是典型的大小写写错了，他提醒了一下。</h6>
-
-<pre><code>Variable 'type' is used uninitialized whenever switch default is taken
-</code></pre>
-
-<h6>25.这是出现在switch语句中的警告， 一般可能是switch外面定义了个type但是并没有初始化（初始化操作都写在switch的各个分支里），然后在最后return type。 但是switch的有个分支没有对type初始化，他说如果你来到这个分支的话，那还没初始化就要被return。</h6>
-
-<h5>三、添加警告</h5>
-
-<h6>1.首先最常用的就是 普通警告，这也没什么好说的了</h6>
-
-<pre><code>#warning TODO
-</code></pre>
-
-<h6>2.如果是自己写的文件或第三方库，有了新的接口，然后提示旧的接口废除的话需要在方法后加上宏NS_DEPRECATED_IOS和范围</h6>
-
-<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target NS_DEPRECATED_IOS(2_0, 4_0);
-</code></pre>
-
-<h6>3.如果需要在此方法后加上带信息的警告则需要这么写</h6>
-
-<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target __attribute((deprecated("这个接口会爆内存 不建议使用")));
-</code></pre>
-
-<p>显示的效果像这样：</p>
+<p>参考博文
+谈Objective-C Block的实现(<a href="http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/">http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/</a>)
+iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/details/7756763">http://blog.csdn.net/jasonblog/article/details/7756763</a>)
+A look inside blocks: Episode 3
+runtime.c
+Block_private.h</p>
 </div>
   
   
@@ -2748,7 +3293,1242 @@ The app icon set "AppIcon" has 2 unassigned images.
 
 
 
-| <a href="/blog/2015/12/02/xiao-chu-jing-gao/#comments">更多评论</a>
+| <a href="/blog/2015/12/06/blockshen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shi-zhan/">Block实战</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
+
+<p>从闭包说起
+在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
+
+<p>所谓词法作用域，顾名思义，是指一个符号引用的是其词法环境中的变量，而无关程序在运行时的状态。这么说可能有点抽象，让我来看一段Common Lisp3代码：</p>
+
+<pre><code>(defvar printer (let ((x 42))
+          (lambda () (format t "~a" x))))
+</code></pre>
+
+<p>这里我们定义了一个变量printer，它的值是一个函数，这个函数会打印词法作用域中的变量x（其值为42）。
+现在我们来调用这个函数：</p>
+
+<pre><code>CL-USER&gt; (funcall printer)
+</code></pre>
+
+<p>42
+可以看到，我们调用了printer中存放的函数之后，打印出来的数字是42，跟我们的预期相符。</p>
+
+<p>接下来再让我们看一个可能会出乎意料的结果：</p>
+
+<pre><code>CL-USER&gt; (let ((x 1))
+       (funcall printer))
+</code></pre>
+
+<p>42
+我们在调用之前把x设置为了1，但是打印的结果仍然是42。</p>
+
+<p>为什么？因为printer中存放的函数在被调用时所引用的变量位于其词法作用域中， 即该函数被定义时所处的词法环境中，所以程序在运行时设置的变量x对函数不起作用。</p>
+
+<p>前面我们讲过，所谓闭包，就是函数及其词法作用域的合称，具体到上例，那么匿名函数和x就构成了一个闭包，它会为函数保存一种状态，有点类似于全局变量，不过除了那个匿名函数，其他函数无法访问到x。</p>
+
+<p>说了这么多，似乎跟block毫无关系？事实上，block为C带来了闭包。</p>
+
+<p>Block
+Apple从OS X 10.6和iOS 4以后开始支持block，让我们用C把上面的例子重写一下：</p>
+
+<pre><code>#include &lt;stdio.h&gt;
+
+int main ()
+{
+    int x = 42;
+    void (^block)() = ^() {
+        printf("%d\n", x);
+    };
+    block();
+    x = 1;
+    block();
+
+    return 0;
+}
+</code></pre>
+
+<p>编译运行后得到的输出同样是两个42。</p>
+
+<p>到了这里，相信读者对闭包已经有一个直观的认识了，但是它有什么用？有什么好处？
+设想如下场景，我们要请求一个URL，并以block的形式传入回调函数，并在回调函数中用到刚才这个URL：</p>
+
+<pre><code>NSURL *someURL = …;
+[SomeClass getURL:someURL finished:^(id responseObject) {
+    // process responseObject with someURL
+}];
+</code></pre>
+
+<p>这里网络请求是异步的，所以当block中代码执行时，getURL:finished:方法调用所在的栈很可能已经不存在了，但是因为回调block和someURL构成了closure，所以即使栈不存在，block仍然可以引用到someURL。</p>
+
+<p>可能你会说，“我在block中增加一个NSURL类型的参数，把someURL传回来不也可以实现同样的目的吗？”不妨设想如果我们在block中要引用的对象有10个之多，用参数列表传递明显不再现实，用容器类或者专门定义一个类来传递虽然可以，但是前者没有编译器为我们检查错误，后者则相当繁琐。而利用闭包，可以轻易达到灵活性和简洁性的平衡。事实上，美团客户端就大量利用了闭包，在UI层发出请求，在回调中更新某些UI组件。</p>
+
+<p>函数式编程4
+在Lisp中，函数是一等公民，可以随时创建、作为参数传递、作为返回值返回，Objective C在没有block之前，没有类似的机制，有了block，Objective C也就具备了函数式编程的能力，block是对象，有自己的ISA指针，可以随时创建，作为参数传递，作为返回值返回。</p>
+
+<p>先来看看block的经典用法：</p>
+
+<pre><code>[UIView animateWithDuration:0.25 animations:^{
+            self.view.alpha = 1.0f;
+        }];
+</code></pre>
+
+<p>UIView的animateWithDuration:animations:方法的第二个参数是一个block，它把跟动画相关的操作封装起来传递进去，以实现动画效果。</p>
+
+<p>现在让我们发掘一下类似的用法：</p>
+
+<pre><code>[SAKBaseModel comboRequest:^() {
+ [dealModel fetchDealByID:123456
+               withFields:nil
+               completion:^(MTDeal *deal, NSError *error) {
+                   ...
+               }];
+ [orderModel fetchOrderByID:654321
+             withDealFields:nil
+                 completion:^(MTOrder *order, NSError *error) {
+                ...
+             }];
+}];
+</code></pre>
+
+<p>这里我们为SAKBaseModel设计了一个类似于UIView的接口叫comboRequest，它会接受一个block作为参数，在这个block中发出的请求都会作为combo请求的一部分。如果dealModel或者orderModel的任何一个请求不是出现在block中，那么它就是一个普通的请求。这样做的好处是dealModel和orderModel的接口不需要关心自己是不是属于一个combo请求，调用者则可以灵活地调整代码。</p>
+
+<p>那么怎么实现这样的接口呢？还是从UIView上获取灵感。我们知道UIView有个方法setAnimationsEnabled:，实际上SAKBaseModel也可以有这么一个方法：setComboRequestEnabled:，而在comboRequest方法的实现中，在调用传进来的block之前先setComboRequestEnabled:YES，调用完后再恢复为原状态。相应的，在实际的model接口中，检查comboRequest是否为YES，如果是，则把自己作为一个combo请求的一部分，否则正常发出请求即可。</p>
+
+<p>Think Big
+Lisp最强大的特性之一是condition系统，它可以分离异常的检测、异常的解决和异常解决方式的决策，看一段示例代码：</p>
+
+<pre><code>(define-condition network-timeout-error (error)
+    ((url :initarg :url :accessor url)))
+
+(defun try-again (condition)
+    (let ((restart (find-restart ‘try-again)))
+      (when restart (invoke-restart restart))))
+
+(defun deal-requester (deal-id)
+    (handler-bind ((network-timeout-error #’try-again))
+      (request-from-url (format nil “http://api.mobile.meituan.com/deal/~a” deal-id)
+        (lambda (deal error)
+        (if error
+            (format t “error: ~a”, error)
+            (process-deal))))))
+(defun request-from-url (url finished)
+    (let ((callback (lambda (response error)
+              (if (network-timeout-error-p error)
+                (error ‘network-timeout-error :url url)
+                (funcall finished (parse-deal response) error)))))
+      (restart-bind
+        ((try-again (lambda () (http-request url callback))))
+        (http-request url callback))))
+</code></pre>
+
+<p>可以看到，condition系统对于代码的分层提供了良好的支持，请求超时的错误在底层代码被检测到，在发出请求前注册一个restart，而在业务层去决定要不要调用restart。</p>
+
+<p>一直以来，C语言要实现优雅的异常处理就是一件不简单的事情，而Objective-C虽然加入了try-catch支持，但是苹果并不鼓励使用，那么能否实现类似于condition系统这样的异常处理机制呢？</p>
+
+<p>答案是能。让我们来看看接口设计：</p>
+
+<pre><code>typedef void (^RESTART)(id userInfo);
+typedef void (^HANDLER)(id condition);
+
+void restart_bind(void (^body)(), NSString *restartName, RESTART restart, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void handler_bind(void (^body)(), Class class, HANDLER handler, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void notify(id condition);
+
+RESTART find_restart(NSString *restartName);
+</code></pre>
+
+<p>如下图所示，handler_bind首先在栈中注册好handler，而restart_bind则在handler有效的环境中注册restart，当有异常发生时，notify函数会在当前环境中寻找handler，找到后，控制会转移到上层的handler代码中，这时handler可以用find_restart在栈中搜索restart，找到之后可以调用，从而实现异常的恢复，做完这一切，控制回到notify发生的点继续向下执行。</p>
+
+<p>完整的代码敬请期待美团iOS的开源项目。</p>
+
+<p>有了SAKCondition，我们可以实现任意底层代码的逻辑穿透到上层代码，比如网络层和UI层，使得上层代码可以在不了解下层代码实现细节的情况下调用恢复机制。事实上，美团的iPhone客户端就是利用SAKCondition实现了美团账户的安全解锁功能。</p>
+
+<p>总结
+block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/06/fen-lei-shi-zhan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shen-jiu/">分类深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>摘要
+无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱majia03@meituan.com）。
+本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
+
+<ul>
+<li>初入宝地-category简介</li>
+<li>连类比事-category和extension</li>
+<li>挑灯细览-category真面目</li>
+<li>追本溯源-category如何加载</li>
+<li>旁枝末叶-category和+load方法</li>
+<li>触类旁通-category和方法覆盖</li>
+<li>更上一层-category和关联对象</li>
+</ul>
+
+
+<h3>1、初入宝地-category简介</h3>
+
+<p>category是Objective-C 2.0之后添加的语言特性，category的主要作用是为已经存在的类添加方法。除此之外，apple还推荐了category的另外两个使用场景1</p>
+
+<p>可以把类的实现分开在几个不同的文件里面。这样做有几个显而易见的好处，a)可以减少单个文件的体积 b)可以把不同的功能组织到不同的category里 c)可以由多个开发者共同完成一个类 d)可以按需加载想要的category 等等。
+声明私有方法
+不过除了apple推荐的使用场景，广大开发者脑洞大开，还衍生出了category的其他几个使用场景：</p>
+
+<p>模拟多继承
+把framework的私有方法公开
+Objective-C的这个语言特性对于纯动态语言来说可能不算什么，比如javascript，你可以随时为一个“类”或者对象添加任意方法和实例变量。但是对于不是那么“动态”的语言而言，这确实是一个了不起的特性。</p>
+
+<h3>2、连类比事-category和extension</h3>
+
+<p>extension看起来很像一个匿名的category，但是extension和有名字的category几乎完全是两个东西。 extension在编译期决议，它就是类的一部分，在编译期和头文件里的@interface以及实现文件里的@implement一起形成一个完整的类，它伴随类的产生而产生，亦随之一起消亡。extension一般用来隐藏类的私有信息，你必须有一个类的源码才能为一个类添加extension，所以你无法为系统的类比如NSString添加extension。（详见2）</p>
+
+<p>但是category则完全不一样，它是在运行期决议的。
+就category和extension的区别来看，我们可以推导出一个明显的事实，extension可以添加实例变量，而category是无法添加实例变量的（因为在运行期，对象的内存布局已经确定，如果添加实例变量就会破坏类的内部布局，这对编译型语言来说是灾难性的）。</p>
+
+<h3>3、挑灯细览-category真面目</h3>
+
+<p>我们知道，所有的OC类和对象，在runtime层都是用struct表示的，category也不例外，在runtime层，category用结构体category_t（在objc-runtime-new.h中可以找到此定义），它包含了
+1)、类的名字（name）
+2)、类（cls）
+3)、category中所有给类添加的实例方法的列表（instanceMethods）
+4)、category中所有添加的类方法的列表（classMethods）
+5)、category实现的所有协议的列表（protocols）
+6)、category中添加的所有属性（instanceProperties）</p>
+
+<pre><code>typedef struct category_t {
+    const char *name;
+    classref_t cls;
+    struct method_list_t *instanceMethods;
+    struct method_list_t *classMethods;
+    struct protocol_list_t *protocols;
+    struct property_list_t *instanceProperties;
+} category_t;
+</code></pre>
+
+<p>从category的定义也可以看出category的可为（可以添加实例方法，类方法，甚至可以实现协议，添加属性）和不可为（无法添加实例变量）。
+ok，我们先去写一个category看一下category到底为何物：</p>
+
+<p>MyClass.h：</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+@interface MyClass : NSObject
+
+- (void)printName;
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>@interface MyClass(MyAddition)
+
+@property(nonatomic, copy) NSString *name;
+
+- (void)printName;
+
+@end
+</code></pre>
+
+<p>MyClass.m：</p>
+
+<pre><code>#import "MyClass.h"
+
+@implementation MyClass
+
+- (void)printName
+{
+    NSLog(@"%@",@"MyClass");
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation MyClass(MyAddition)
+
+- (void)printName
+{
+    NSLog(@"%@",@"MyAddition");
+}
+
+@end
+</code></pre>
+
+<p>我们使用clang的命令去看看category到底会变成什么：</p>
+
+<p>clang -rewrite-objc MyClass.m
+好吧，我们得到了一个3M大小，10w多行的.cpp文件（这绝对是Apple值得吐槽的一点），我们忽略掉所有和我们无关的东西，在文件的最后，我们找到了如下代码片段：</p>
+
+<pre><code>static struct /*_method_list_t*/ {
+unsigned int entsize;  // sizeof(struct _objc_method)
+unsigned int method_count;
+struct _objc_method method_list[1];
+} _OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
+sizeof(_objc_method),
+1,
+
+};
+
+static struct /*_prop_list_t*/ {
+unsigned int entsize;  // sizeof(struct _prop_t)
+unsigned int count_of_properties;
+struct _prop_t prop_list[1];
+} _OBJC_$_PROP_LIST_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
+sizeof(_prop_t),
+1,
+name
+};
+
+extern "C" __declspec(dllexport) struct _class_t OBJC_CLASS_$_MyClass;
+
+static struct _category_t _OBJC_$_CATEGORY_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) =
+{
+"MyClass",
+0, // &amp;OBJC_CLASS_$_MyClass,
+(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition,
+0,
+0,
+(const struct _prop_list_t *)&amp;_OBJC_$_PROP_LIST_MyClass_$_MyAddition,
+};
+static void OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition(void ) {
+_OBJC_$_CATEGORY_MyClass_$_MyAddition.cls = &amp;OBJC_CLASS_$_MyClass;
+}
+#pragma section(".objc_inithooks$B", long, read, write)
+__declspec(allocate(".objc_inithooks$B")) static void *OBJC_CATEGORY_SETUP[] = {
+(void *)&amp;OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition,
+};
+static struct _class_t *L_OBJC_LABEL_CLASS_$ [1] __attribute__((used, section ("__DATA, __objc_classlist,regular,no_dead_strip")))= {
+&amp;OBJC_CLASS_$_MyClass,
+};
+static struct _class_t *_OBJC_LABEL_NONLAZY_CLASS_$[] = {
+&amp;OBJC_CLASS_$_MyClass,
+};
+static struct _category_t *L_OBJC_LABEL_CATEGORY_$ [1] __attribute__((used, section ("__DATA, __objc_catlist,regular,no_dead_strip")))= {
+&amp;_OBJC_$_CATEGORY_MyClass_$_MyAddition,
+};
+</code></pre>
+
+<p>我们可以看到，</p>
+
+<ul>
+<li><p>1)、首先编译器生成了实例方法列表OBJC$CATEGORY_INSTANCE_METHODS_MyClass$MyAddition和属性列表_OBJC$PROP_LIST_MyClass$MyAddition，两者的命名都遵循了公共前缀+类名+category名字的命名方式，而且实例方法列表里面填充的正是我们在MyAddition这个category里面写的方法printName，而属性列表里面填充的也正是我们在MyAddition里添加的name属性。</p>
+
+<ul>
+<li>还有一个需要注意到的事实就是category的名字用来给各种列表以及后面的category结构体本身命名，而且有static来修饰，所以在同一个编译单元里我们的category名不能重复，否则会出现编译错误。</li>
+</ul>
+</li>
+<li><p>2)、其次，编译器生成了category本身_OBJC$CATEGORY_MyClass$MyAddition，并用前面生成的列表来初始化category本身。</p></li>
+<li>3)、最后，编译器在DATA段下的objc_catlist section里保存了一个大小为1的category_t的数组L_OBJC_LABEL_CATEGORY$（当然，如果有多个category，会生成对应长度的数组^_^），用于运行期category的加载。
+到这里，编译器的工作就接近尾声了，对于category在运行期怎么加载，我们下节揭晓。</li>
+</ul>
+
+
+<h3>4、追本溯源-category如何加载</h3>
+
+<p>我们知道，Objective-C的运行是依赖OC的runtime的，而OC的runtime和其他系统库一样，是OS X和iOS通过dyld动态加载的。
+想了解更多dyld地同学可以移步这里（3）。</p>
+
+<p>对于OC运行时，入口方法如下（在objc-os.mm文件中）：</p>
+
+<pre><code>void _objc_init(void)
+{
+    static bool initialized = false;
+    if (initialized) return;
+    initialized = true;
+
+    // fixme defer initialization until an objc-using image is found?
+    environ_init();
+    tls_init();
+    lock_init();
+    exception_init();
+
+    // Register for unmap first, in case some +load unmaps something
+    _dyld_register_func_for_remove_image(&amp;unmap_image);
+    dyld_register_image_state_change_handler(dyld_image_state_bound,
+                                             1/*batch*/, &amp;map_images);
+    dyld_register_image_state_change_handler(dyld_image_state_dependents_initialized, 0/*not batch*/, &amp;load_images);
+}
+</code></pre>
+
+<p>category被附加到类上面是在map_images的时候发生的，在new-ABI的标准下，<em>objc_init里面的调用的map_images最终会调用objc-runtime-new.mm里面的</em>read_images方法，而在_read_images方法的结尾，有以下的代码片段：</p>
+
+<pre><code>// Discover categories. 
+    for (EACH_HEADER) {
+        category_t **catlist =
+            _getObjc2CategoryList(hi, &amp;count);
+        for (i = 0; i &lt; count; i++) {
+            category_t *cat = catlist[i];
+            class_t *cls = remapClass(cat-&gt;cls);
+
+            if (!cls) {
+                // Category's target class is missing (probably weak-linked).
+                // Disavow any knowledge of this category.
+                catlist[i] = NULL;
+                if (PrintConnecting) {
+                    _objc_inform("CLASS: IGNORING category \?\?\?(%s) %p with "
+                                 "missing weak-linked target class",
+                                 cat-&gt;name, cat);
+                }
+                continue;
+            }
+
+            // Process this category. 
+            // First, register the category with its target class. 
+            // Then, rebuild the class's method lists (etc) if 
+            // the class is realized. 
+            BOOL classExists = NO;
+            if (cat-&gt;instanceMethods ||  cat-&gt;protocols 
+                ||  cat-&gt;instanceProperties)
+            {
+                addUnattachedCategoryForClass(cat, cls, hi);
+                if (isRealized(cls)) {
+                    remethodizeClass(cls);
+                    classExists = YES;
+                }
+                if (PrintConnecting) {
+                    _objc_inform("CLASS: found category -%s(%s) %s",
+                                 getName(cls), cat-&gt;name,
+                                 classExists ? "on existing class" : "");
+                }
+            }
+
+            if (cat-&gt;classMethods  ||  cat-&gt;protocols 
+                /* ||  cat-&gt;classProperties */)
+            {
+                addUnattachedCategoryForClass(cat, cls-&gt;isa, hi);
+                if (isRealized(cls-&gt;isa)) {
+                    remethodizeClass(cls-&gt;isa);
+                }
+                if (PrintConnecting) {
+                    _objc_inform("CLASS: found category +%s(%s)",
+                                 getName(cls), cat-&gt;name);
+                }
+            }
+        }
+    }
+</code></pre>
+
+<p>首先，我们拿到的catlist就是上节中讲到的编译器为我们准备的category_t数组，关于是如何加载catlist本身的，我们暂且不表，这和category本身的关系也不大，有兴趣的同学可以去研究以下Apple的二进制格式和load机制。
+略去PrintConnecting这个用于log的东西，这段代码很容易理解：</p>
+
+<ul>
+<li>1)、把category的实例方法、协议以及属性添加到类上</li>
+<li>2)、把category的类方法和协议添加到类的metaclass上</li>
+</ul>
+
+
+<p>值得注意的是，在代码中有一小段注释 / || cat->classProperties /，看来苹果有过给类添加属性的计划啊。
+ok，我们接着往里看，category的各种列表是怎么最终添加到类上的，就拿实例方法列表来说吧：
+在上述的代码片段里，addUnattachedCategoryForClass只是把类和category做一个关联映射，而remethodizeClass才是真正去处理添加事宜的功臣。</p>
+
+<pre><code>static void remethodizeClass(class_t *cls)
+{
+    category_list *cats;
+    BOOL isMeta;
+
+    rwlock_assert_writing(&amp;runtimeLock);
+
+    isMeta = isMetaClass(cls);
+
+    // Re-methodizing: check for more categories
+    if ((cats = unattachedCategoriesForClass(cls))) {
+        chained_property_list *newproperties;
+        const protocol_list_t **newprotos;
+
+        if (PrintConnecting) {
+            _objc_inform("CLASS: attaching categories to class '%s' %s",
+                         getName(cls), isMeta ? "(meta)" : "");
+        }
+
+        // Update methods, properties, protocols
+
+        BOOL vtableAffected = NO;
+        attachCategoryMethods(cls, cats, &amp;vtableAffected);
+
+        newproperties = buildPropertyList(NULL, cats, isMeta);
+        if (newproperties) {
+            newproperties-&gt;next = cls-&gt;data()-&gt;properties;
+            cls-&gt;data()-&gt;properties = newproperties;
+        }
+
+        newprotos = buildProtocolList(cats, NULL, cls-&gt;data()-&gt;protocols);
+        if (cls-&gt;data()-&gt;protocols  &amp;&amp;  cls-&gt;data()-&gt;protocols != newprotos) {
+            _free_internal(cls-&gt;data()-&gt;protocols);
+        }
+        cls-&gt;data()-&gt;protocols = newprotos;
+
+        _free_internal(cats);
+
+        // Update method caches and vtables
+        flushCaches(cls);
+        if (vtableAffected) flushVtables(cls);
+    }
+}
+</code></pre>
+
+<p>而对于添加类的实例方法而言，又会去调用attachCategoryMethods这个方法，我们去看下attachCategoryMethods：</p>
+
+<pre><code>static void 
+attachCategoryMethods(class_t *cls, category_list *cats,
+                      BOOL *inoutVtablesAffected)
+{
+    if (!cats) return;
+    if (PrintReplacedMethods) printReplacements(cls, cats);
+
+    BOOL isMeta = isMetaClass(cls);
+    method_list_t **mlists = (method_list_t **)
+        _malloc_internal(cats-&gt;count * sizeof(*mlists));
+
+    // Count backwards through cats to get newest categories first
+    int mcount = 0;
+    int i = cats-&gt;count;
+    BOOL fromBundle = NO;
+    while (i--) {
+        method_list_t *mlist = cat_method_list(cats-&gt;list[i].cat, isMeta);
+        if (mlist) {
+            mlists[mcount++] = mlist;
+            fromBundle |= cats-&gt;list[i].fromBundle;
+        }
+    }
+
+    attachMethodLists(cls, mlists, mcount, NO, fromBundle, inoutVtablesAffected);
+
+    _free_internal(mlists);
+
+}
+</code></pre>
+
+<p>attachCategoryMethods做的工作相对比较简单，它只是把所有category的实例方法列表拼成了一个大的实例方法列表，然后转交给了attachMethodLists方法（我发誓，这是本节我们看的最后一段代码了^_^），这个方法有点长，我们只看一小段：</p>
+
+<pre><code>for (uint32_t m = 0;
+             (scanForCustomRR || scanForCustomAWZ)  &amp;&amp;  m &lt; mlist-&gt;count;
+             m++)
+        {
+            SEL sel = method_list_nth(mlist, m)-&gt;name;
+            if (scanForCustomRR  &amp;&amp;  isRRSelector(sel)) {
+                cls-&gt;setHasCustomRR();
+                scanForCustomRR = false;
+            } else if (scanForCustomAWZ  &amp;&amp;  isAWZSelector(sel)) {
+                cls-&gt;setHasCustomAWZ();
+                scanForCustomAWZ = false;
+            }
+        }
+
+        // Fill method list array
+        newLists[newCount++] = mlist;
+    .
+    .
+    .
+
+    // Copy old methods to the method list array
+    for (i = 0; i &lt; oldCount; i++) {
+        newLists[newCount++] = oldLists[i];
+    }
+</code></pre>
+
+<p>需要注意的有两点：</p>
+
+<ul>
+<li>1)、category的方法没有“完全替换掉”原来类已经有的方法，也就是说如果category和原来类都有methodA，那么category附加完成之后，类的方法列表里会有两个methodA</li>
+<li>2)、category的方法被放到了新方法列表的前面，而原来类的方法被放到了新方法列表的后面，这也就是我们平常所说的category的方法会“覆盖”掉原来类的同名方法，这是因为运行时在查找方法的时候是顺着方法列表的顺序查找的，它只要一找到对应名字的方法，就会罢休^_^，殊不知后面可能还有一样名字的方法。</li>
+</ul>
+
+
+<h3>5、旁枝末叶-category和+load方法</h3>
+
+<p>我们知道，在类和category中都可以有+load方法，那么有两个问题：</p>
+
+<ul>
+<li>1)、在类的+load方法调用的时候，我们可以调用category中声明的方法么？</li>
+<li>2)、这么些个+load方法，调用顺序是咋样的呢？
+鉴于上述几节我们看的代码太多了，对于这两个问题我们先来看一点直观的：</li>
+</ul>
+
+
+<p>项目结构</p>
+
+<p>我们的代码里有MyClass和MyClass的两个category （Category1和Category2），MyClass和两个category都添加了+load方法，并且Category1和Category2都写了MyClass的printName方法。
+在Xcode中点击Edit Scheme，添加如下两个环境变量（可以在执行load方法以及加载category的时候打印log信息，更多的环境变量选项可参见objc-private.h）:</p>
+
+<p>环境变量</p>
+
+<p>运行项目，我们会看到控制台打印很多东西出来，我们只找到我们想要的信息，顺序如下：</p>
+
+<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category1
+objc[1187]: REPLACED: -[MyClass printName] by category Category2
+.
+.
+.
+objc[1187]: LOAD: class 'MyClass' scheduled for +load
+objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
+objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
+objc[1187]: LOAD: +[MyClass load]
+.
+.
+.
+objc[1187]: LOAD: +[MyClass(Category1) load]
+.
+.
+.
+objc[1187]: LOAD: +[MyClass(Category2) load]
+</code></pre>
+
+<p>所以，对于上面两个问题，答案是很明显的：</p>
+
+<ul>
+<li>1)、可以调用，因为附加category到类的工作会先于+load方法的执行</li>
+<li>2)、+load的执行顺序是先类，后category，而category的+load执行顺序是根据编译顺序决定的。
+目前的编译顺序是这样的：</li>
+</ul>
+
+
+<p>编译顺序1</p>
+
+<p>我们调整一个Category1和Category2的编译顺序，run。ok，我们可以看到控制台的输出顺序变了：</p>
+
+<p>编译顺序2</p>
+
+<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category2
+objc[1187]: REPLACED: -[MyClass printName] by category Category1
+.
+.
+.
+objc[1187]: LOAD: class 'MyClass' scheduled for +load
+objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
+objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
+objc[1187]: LOAD: +[MyClass load]
+.
+.
+.
+objc[1187]: LOAD: +[MyClass(Category2) load]
+.
+.
+.
+objc[1187]: LOAD: +[MyClass(Category1) load]
+</code></pre>
+
+<p>虽然对于+load的执行顺序是这样，但是对于“覆盖”掉的方法，则会先找到最后一个编译的category里的对应方法。
+这一节我们只是用很直观的方式得到了问题的答案，有兴趣的同学可以继续去研究一下OC的运行时代码。</p>
+
+<h3>6、触类旁通-category和方法覆盖</h3>
+
+<p>鉴于上面几节我们已经把原理都讲了，这一节只有一个问题:
+怎么调用到原来类中被category覆盖掉的方法？
+对于这个问题，我们已经知道category其实并不是完全替换掉原来类的同名方法，只是category在方法列表的前面而已，所以我们只要顺着方法列表找到最后一个对应名字的方法，就可以调用原来类的方法：</p>
+
+<pre><code>Class currentClass = [MyClass class];
+MyClass *my = [[MyClass alloc] init];
+
+if (currentClass) {
+    unsigned int methodCount;
+    Method *methodList = class_copyMethodList(currentClass, &amp;methodCount);
+    IMP lastImp = NULL;
+    SEL lastSel = NULL;
+    for (NSInteger i = 0; i &lt; methodCount; i++) {
+        Method method = methodList[i];
+        NSString *methodName = [NSString stringWithCString:sel_getName(method_getName(method)) 
+                                        encoding:NSUTF8StringEncoding];
+        if ([@"printName" isEqualToString:methodName]) {
+            lastImp = method_getImplementation(method);
+            lastSel = method_getName(method);
+        }
+    }
+    typedef void (*fn)(id,SEL);
+
+    if (lastImp != NULL) {
+        fn f = (fn)lastImp;
+        f(my,lastSel);
+    }
+    free(methodList);
+}
+</code></pre>
+
+<h3>7、更上一层-category和关联对象</h3>
+
+<p>如上所见，我们知道在category里面是无法为category添加实例变量的。但是我们很多时候需要在category中添加和对象关联的值，这个时候可以求助关联对象来实现。</p>
+
+<p>MyClass+Category1.h:</p>
+
+<pre><code>#import "MyClass.h"
+
+@interface MyClass (Category1)
+
+@property(nonatomic,copy) NSString *name;
+
+@end
+</code></pre>
+
+<p>MyClass+Category1.m:</p>
+
+<pre><code>#import "MyClass+Category1.h"
+#import &lt;objc/runtime.h&gt;
+
+@implementation MyClass (Category1)
+
++ (void)load
+{
+    NSLog(@"%@",@"load in Category1");
+}
+
+- (void)setName:(NSString *)name
+{
+    objc_setAssociatedObject(self,
+                             "name",
+                             name,
+                             OBJC_ASSOCIATION_COPY);
+}
+
+- (NSString*)name
+{
+    NSString *nameObject = objc_getAssociatedObject(self, "name");
+    return nameObject;
+}
+
+@end
+</code></pre>
+
+<p>但是关联对象又是存在什么地方呢？ 如何存储？ 对象销毁时候如何处理关联对象呢？
+我们去翻一下runtime的源码，在objc-references.mm文件中有个方法_object_set_associative_reference：</p>
+
+<pre><code>void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
+    // retain the new value (if any) outside the lock.
+    ObjcAssociation old_association(0, nil);
+    id new_value = value ? acquireValue(value, policy) : nil;
+    {
+        AssociationsManager manager;
+        AssociationsHashMap &amp;associations(manager.associations());
+        disguised_ptr_t disguised_object = DISGUISE(object);
+        if (new_value) {
+            // break any existing association.
+            AssociationsHashMap::iterator i = associations.find(disguised_object);
+            if (i != associations.end()) {
+                // secondary table exists
+                ObjectAssociationMap *refs = i-&gt;second;
+                ObjectAssociationMap::iterator j = refs-&gt;find(key);
+                if (j != refs-&gt;end()) {
+                    old_association = j-&gt;second;
+                    j-&gt;second = ObjcAssociation(policy, new_value);
+                } else {
+                    (*refs)[key] = ObjcAssociation(policy, new_value);
+                }
+            } else {
+                // create the new association (first time).
+                ObjectAssociationMap *refs = new ObjectAssociationMap;
+                associations[disguised_object] = refs;
+                (*refs)[key] = ObjcAssociation(policy, new_value);
+                _class_setInstancesHaveAssociatedObjects(_object_getClass(object));
+            }
+        } else {
+            // setting the association to nil breaks the association.
+            AssociationsHashMap::iterator i = associations.find(disguised_object);
+            if (i !=  associations.end()) {
+                ObjectAssociationMap *refs = i-&gt;second;
+                ObjectAssociationMap::iterator j = refs-&gt;find(key);
+                if (j != refs-&gt;end()) {
+                    old_association = j-&gt;second;
+                    refs-&gt;erase(j);
+                }
+            }
+        }
+    }
+    // release the old value (outside of the lock).
+    if (old_association.hasValue()) ReleaseValue()(old_association);
+}
+</code></pre>
+
+<p>我们可以看到所有的关联对象都由AssociationsManager管理，而AssociationsManager定义如下：</p>
+
+<pre><code>class AssociationsManager {
+    static OSSpinLock _lock;
+    static AssociationsHashMap *_map;               // associative references:  object pointer -&gt; PtrPtrHashMap.
+public:
+    AssociationsManager()   { OSSpinLockLock(&amp;_lock); }
+    ~AssociationsManager()  { OSSpinLockUnlock(&amp;_lock); }
+
+    AssociationsHashMap &amp;associations() {
+        if (_map == NULL)
+            _map = new AssociationsHashMap();
+        return *_map;
+    }
+};
+</code></pre>
+
+<p>AssociationsManager里面是由一个静态AssociationsHashMap来存储所有的关联对象的。这相当于把所有对象的关联对象都存在一个全局map里面。而map的的key是这个对象的指针地址（任意两个不同对象的指针地址一定是不同的），而这个map的value又是另外一个AssociationsHashMap，里面保存了关联对象的kv对。
+而在对象的销毁逻辑里面，见objc-runtime-new.mm:</p>
+
+<pre><code>void *objc_destructInstance(id obj) 
+{
+    if (obj) {
+        Class isa_gen = _object_getClass(obj);
+        class_t *isa = newcls(isa_gen);
+
+        // Read all of the flags at once for performance.
+        bool cxx = hasCxxStructors(isa);
+        bool assoc = !UseGC &amp;&amp; _class_instancesHaveAssociatedObjects(isa_gen);
+
+        // This order is important.
+        if (cxx) object_cxxDestruct(obj);
+        if (assoc) _object_remove_assocations(obj);
+
+        if (!UseGC) objc_clear_deallocating(obj);
+    }
+
+    return obj;
+}
+</code></pre>
+
+<p>嗯，runtime的销毁对象函数objc_destructInstance里面会判断这个对象有没有关联对象，如果有，会调用_object_remove_assocations做关联对象的清理工作。</p>
+
+<blockquote><p>后记
+正如侯捷先生所讲-“源码面前，了无秘密”，Apple的Cocoa Touch框架虽然并不开源，但是Objective-C的runtime和Core Foundation却是完全开放源码的(在<a href="http://www.opensource.apple.com/tarballs/%E5%8F%AF%E4%BB%A5%E4%B8%8B%E8%BD%BD%E5%88%B0%E5%85%A8%E9%83%A8%E7%9A%84%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81">http://www.opensource.apple.com/tarballs/%E5%8F%AF%E4%BB%A5%E4%B8%8B%E8%BD%BD%E5%88%B0%E5%85%A8%E9%83%A8%E7%9A%84%E5%BC%80%E6%BA%90%E4%BB%A3%E7%A0%81</a>)。
+本系列runtime源码学习将会持续更新，意犹未尽的同学可以自行到上述网站下载源码学习。行笔简陋，如有错误，望指正。</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/06/fen-lei-shen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/05/h5chu-tan/">H5初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>H5精华</h2>
+
+<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
+
+<h6>1：链接</h6>
+
+<p>图像标签</p>
+
+<pre><code>相对路径 ../../
+
+绝对路径  https:// http://  ftp://  file://
+</code></pre>
+
+<ul>
+<li><p> href: 引用 不是必须的</p></li>
+<li><p> src: 引入  必需的</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>&lt;!--超链接标签  javascript:void(0) --&gt;
+&lt;a href="#"&gt;我是超链接&lt;/a&gt;
+&lt;a href="http://baidu.com" target="_blank"&gt;百度一下,你就知道&lt;/a&gt;
+
+
+&lt;img src="https://www.baidu.com/img/bd_logo1.png" alt="百度logo" width="200"&gt;
+&lt;img src="images/img_01.jpg"&gt;
+</code></pre>
+
+<h6>2：列表&lt;&ndash;列表标签&ndash;></h6>
+
+<p>无序：</p>
+
+<pre><code>&lt;ul&gt;
+  &lt;li&gt;我是列表1&lt;/li&gt;
+  &lt;li&gt;我是列表2&lt;/li&gt;
+  &lt;li&gt;我是列表3&lt;/li&gt;
+  &lt;li&gt;我是列表4&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>有序：</p>
+
+<pre><code>&lt;Ol&gt;
+    &lt;li&gt;我是列表1&lt;/li&gt;
+    &lt;li&gt;我是列表2&lt;/li&gt;
+    &lt;li&gt;我是列表3&lt;/li&gt;
+    &lt;li&gt;我是列表4&lt;/li&gt;
+&lt;/Ol&gt;
+</code></pre>
+
+<h6>3:文章：</h6>
+
+<pre><code>&lt;article&gt;
+
+    &lt;header&gt;
+
+    &lt;/header&gt;
+
+    &lt;section&gt;&lt;/section&gt;
+
+    &lt;section&gt;&lt;/section&gt;
+
+    &lt;footer&gt;
+
+    &lt;/footer&gt;
+
+&lt;/article&gt;
+</code></pre>
+
+<h6>4：高级:</h6>
+
+<pre><code>   &lt;!--进度条--&gt;
+   &lt;progress max="100" value="50"&gt;&lt;/progress&gt;
+   &lt;!--音频--&gt;
+   &lt;audio src="sources/music.m4a" controls="controls"&gt;&lt;/audio&gt;
+   &lt;!--视频--&gt;
+   &lt;video src="sources/BigBuck.m4v" controls="controls"&gt;&lt;/video&gt;
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+
+<hr />
+
+<h2>CSS3</h2>
+
+<h4>一:样式</h4>
+
+<blockquote><p>CSS即层叠样式表（Cascading StyleSheet）。 在网页制作时采用层叠样式表技术，可以有效地对页面的布局、字体、颜色、背景和其它效果实现更加精确的控制。 只要对相应的代码做一些简单的修改，就可以改变同一页面的不同部分，或者页数不同的网页的外观和格式。CSS3是CSS技术的升级版本，CSS3语言开发是朝着模块化发展的。以前的规范作为一个模块实在是太庞大而且比较复杂，所以，把它分解为一些小的模块，更多新的模块也被加入进来。这些模块包括： 盒子模型、列表模块、超链接方式 、语言模块 、背景和边框 、文字特效 、多栏布局等。</p></blockquote>
+
+<h6>1.行内：</h6>
+
+<p>&lt;&ndash;style=&ldquo;background-color: red;&rdquo;&ndash;></p>
+
+<p><--
+   单值属性: 后面只有一个属性值
+   复合属性: 后面有多个属性值
+--></p>
+
+<pre><code>   &lt;div style="color: purple; font-size: 40px; background-color: yellowgreen;"&gt;我是容器div&lt;/div&gt;
+   &lt;p style="color: blue; font-size: 100px; border:3px solid red;"&gt;我是段落&lt;/p&gt;
+</code></pre>
+
+<h6>2.页内：</h6>
+
+<pre><code>&lt;--
+  网站 = N个网页 + 服务器 + 数据库 + ....
+
+--&gt;
+
+&lt;!--
+  css遵循的规律:
+  1&gt; 就近原则
+  2&gt; 叠加原则
+--&gt;
+</code></pre>
+
+<hr />
+
+<pre><code>    &lt;style&gt;
+        div{
+            color: chartreuse;
+            border: 3px dashed blueviolet;
+            font-size: 90px;
+        }
+    &lt;/style&gt; 
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div&gt;我是div&lt;/div&gt; 
+</code></pre>
+
+<h6>3.外部</h6>
+
+<pre><code>    &lt;!--引入--&gt;
+    &lt;link href="css/index.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+   &lt;div&gt;哈哈哈哈哈&lt;/div&gt;
+</code></pre>
+
+<hr />
+
+<pre><code>div{
+    color: darkgoldenrod;
+    background-color: mediumvioletred;
+    font-size: 5px;
+}
+</code></pre>
+
+<h4>二：选择器</h4>
+
+<pre><code>    /** 标签选择器*/
+    div{
+        color: red;
+    }
+    /*类选择器*/
+    .test1{
+        color: green;
+    }
+    /*id选择器*/
+    #main{
+        font-size: 90px;
+    }
+    /*并列选择器*/
+    #main,.test1{
+        border: 5px double darkviolet;
+    }
+    /*复合选择器*/
+    p.test2{
+       background-color: red;
+    }
+    /*后代选择器*/
+    #first p a{
+        font-size: 90px;
+    }
+    /*伪类*/
+    input:focus{
+       width: 500px;
+       height: 60px;
+       font-size: 55px;
+       /*去除外边框*/
+       outline: none;
+    }
+
+    div#main:hover{
+       background-color: yellow;
+       width: 500px;
+       height: 250px;
+    }
+    /*伪元素*/
+    p:first-letter{
+        color: goldenrod;
+        font-size: 60px;
+    }
+</code></pre>
+
+<hr />
+
+<pre><code>   &lt;div id="main"&gt;bjbjwefbjb&lt;/div&gt;
+   &lt;div&gt;bjbjwefbjb&lt;/div&gt; 
+   &lt;p&gt;我是段落&lt;/p&gt; 
+   &lt;div class="test1"&gt;bjbjwefbjb&lt;/div&gt;
+   &lt;div id="first"&gt;
+       &lt;p&gt;
+           &lt;a href="#"&gt;我是超链接&lt;/a&gt;
+       &lt;/p&gt;
+   &lt;/div&gt;
+</code></pre>
+
+<h4>三：优先级：</h4>
+
+<pre><code>    &lt;--
+      CSS遵循的规律:
+      1.相同级别的选择器: a.就近原则  b.叠加原则
+      2.不同选择器:
+        important &gt; 内联 &gt; id &gt; 类 &gt; 标签 | 伪类 | 属性选择 &gt; 伪元素 &gt; 通配符 &gt; 继承
+      3. 选择器的针对性越强，它的优先级就越高
+    --&gt;
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+
+<hr />
+
+<h2>编写 JScript</h2>
+
+<blockquote><p>与其他许多编程语言一样， Microsoft JScript 是用文本方式编写的，并被组织成为语句、由相关的语句集组成的块、以及注释。在一条语句内可以使用变量、比如字符串和数字（称为“文字”）的立即数、以及表达式。</p></blockquote>
+
+<h5>一：语句</h5>
+
+<p>JScript 程序是语句的集合。一条 Jscript 语句相当于英语中的一个完整句。Jscript 语句将表达式组合起来，完成一个任务。</p>
+
+<p>一条语句由一个或多个表达式、关键字或者运算符（符号）组成。典型地，一条语句写一行，尽管一条语句可以超过两行或更多行。两条或更多条语句也可以写在同一行上，语句之间用分号“;”隔开。通常，每一新行开始一条新语句。不过显式地终止语句是一个好方法。这是用分号 (;)来实现的，分号是 JScript 语句的终止字符。下面给出 Jscript 语句的两隔示例。</p>
+
+<pre><code>aBird = "Robin"; //将文本“Robin”赋值给变量 aBird
+var today = new Date(); // 将今天的日期赋值给变量 today
+</code></pre>
+
+<p>用大括号（{}）括起来的一组 JScript 语句称为一个语句块。分组到一个语句块中的语句通常可当作单条语句处理。这就是说在 JScript 期望有一条单个语句的大多数地方可以使用语句块。应该注意以 for 和 while 打头的循环语句是例外情况。注意，语句块中的原始语句以分号结束，但语句块本身并不以分号结束。</p>
+
+<p>通常，在函数和条件语句中使用语句块。</p>
+
+<blockquote><p>注意，Jscript 与 C++ 以及其他某些语言不同，它不认为语句块是一个新的范围；只有函数创建新范围。在下面的示例中，第一条语句开始定义一个函数，该函数包含一个五条语句组成的语句块。语句块后的三条语句没有用大括号括起来；这些语句不是一个语句块，所以就不是函数定义的一部分。</p></blockquote>
+
+<pre><code>function convert(inches)  {
+   feet = inches / 12;  //  这五条语句属于一个语句块。
+   miles = feet / 5280;
+   nauticalMiles = feet / 6080;
+   cm = inches * 2.54;
+   meters = inches / 39.37;
+}
+km = meters / 1000;  //  这三条语句不在语句块内。
+kradius = km;
+mradius = miles;
+</code></pre>
+
+<h5>二：注释</h5>
+
+<p>单行的 JScript 注释以一对正斜杠(//)开始。下面给出一个单行注释的示例。</p>
+
+<pre><code>aGoodIdea = "Comment your code thoroughly.";  //  这是一个单行注释。
+</code></pre>
+
+<p>多行注释以一个正斜杠加一个星号的组合(/<em>)开始,并以其逆向顺序 (</em>/)结束。</p>
+
+<pre><code>/*
+这是一个用来解释前面的代码语句的多行注释。
+
+该语句将一个值赋给 aGoodIdea 变量。
+用引号包含的这种值称为一个文字。
+文字显式并直接包含信息；
+而不是简接地引用信息。
+（引号不属于该文字的内容。）
+*/
+</code></pre>
+
+<blockquote><p>注意   如果您试图将一个多行注释插入到另一个中，JScript 不能按正常的方式解释生成的多行注释。标明嵌入的多行注释结束的 */ 被认为是整个多行注释的结尾。这就意味着嵌入多行注释之后的文本不再被认为是注释；相应地，它将被解释为 JScript 代码，并会产生语法错误。</p></blockquote>
+
+<p>建议将所有的注释写为单行注释的语句块。这样您以后就能够将大段的代码与多行注释区分开。</p>
+
+<pre><code>//这是另一种多行注释，写成一系列单行注释。
+
+//  在执行完该语句后，可以使用 aGoodIdea 变量的名字来引用其内容，
+//  如下一条语句那样，即采用连接操作将字符串文字添加到
+//  aGoodIdea 变量，以创建一个新的变量。
+
+var extendedIdea = aGoodIdea + " You never know when you'll have to figure out what it does.";
+</code></pre>
+
+<p>赋值和相等</p>
+
+<p>JScript 语句中使用等号 (=)给变量赋值：等号是赋值运算符。= 运算符左边的操作项总是一个 Lvalue。Lvalue 可以是：</p>
+
+<h5>三：变量，</h5>
+
+<p>数组元素，
+对象属性。
+= 运算符右边的操作项总是一个 Rvalue。Rvalues 可以是任何类型的一个任意值，包括表达式的值。下面给出一个 JScript 赋值语句的示例。</p>
+
+<pre><code>anInteger = 3;
+</code></pre>
+
+<p>Jscript 编译器解释本语句的意义为：“将 3 赋给变量 anInteger”或“anInteger 的值为 3”。</p>
+
+<p>确定您理解了 = 运算符（赋值）和 == 运算符（相等）的差异。在比较两个值是否相等时，应使用两个等于号 (==)。这些内容将在 控制程序的流程 中详细介绍。</p>
+
+<h5>四：表达式</h5>
+
+<p>JScript 表达式是指 JScript 解释器能够计算生成值的 JScript “短语”。这个值可以是任何有效的 JScript 类型 — 数字、字符串、对象，等等。最简单的表达式是文字。下面给出 JScript 文字表达式的一些示例。</p>
+
+<pre><code>3.9                       // 数字文字
+"Hello!"                  // 字符串文字
+false                     // 布尔文字
+null                      // 文字空值
+{x:1, y:2}                // 对象文字
+[1,2,3]                   // 数组文字
+function(x){return x*x;}  // 函数文字
+</code></pre>
+
+<p>更多复杂的表达式中包含变量、函数、函数调用以及其他表达式。可以用运算符将表达式组合，创建复合表达式。运算符可以是：</p>
+
+<pre><code>+  // 加法
+-  // 减法
+*  // 乘法
+/  // 除法
+</code></pre>
+
+<p>下面给出 JScript 复合表达式的一些示例。</p>
+
+<pre><code>var anExpression = 3 * (4 / 5) + 6;
+var aSecondExpression = Math.PI * radius * radius;
+var aThirdExpression = aSecondExpression + "%" + anExpression;
+var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/05/h5chu-tan/#comments">更多评论</a>
 
     </article>
   
@@ -2766,15 +4546,15 @@ The app icon set "AppIcon" has 2 unassigned images.
     <h1>文章分类</h1>
     <ul id="categories">
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (1)</a></li>
-<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (3)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
 <li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
-<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
-<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (7)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (6)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (9)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (10)</a></li>
 
     </ul>
 </section><section>
@@ -2782,23 +4562,23 @@ The app icon set "AppIcon" has 2 unassigned images.
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/05/h5chu-tan/">H5初探</a>
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a>
+        <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a>
+        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a>
+        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/04/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a>
+        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
       </li>
     
   </ul>

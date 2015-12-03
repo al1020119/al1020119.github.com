@@ -1,0 +1,569 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Watch OS2 初探 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="Watch OS2 初探 ordinal 这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/08/watch-os2-chu-tan/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Watch OS2 初探</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
+在这个过程中,你会学到:</p></blockquote>
+
+<ul>
+<li>如何为iOS app添加watchOS 2的target</li>
+<li>如何在两个target之间共享数据</li>
+<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
+<li>如何创建WKInterfaceController的子类并连线</li>
+</ul>
+
+
+<p>正式开始吧</p>
+
+<p>首先下载教程的起始项目吧。</p>
+
+<p>在Xcode中打开它然后编译运行。你应该会看到一个空白界面:</p>
+
+<p><img src="/images/watchOS001.png" title="Caption" ></p>
+
+<p>这个项目没有太多的文件,只包含一些你需要的最基本的文件。</p>
+
+<p>添加WatchKit App</p>
+
+<p>选择File\New\Target…,在出现的对话框中选择watchOS\Application\WatchKit App然后点击Next:</p>
+
+<p><img src="/images/watchOS002.png" title="Caption" ></p>
+
+<p>在接下来的界面中,设置项目名字为Watch,确保语言设置为Swift,然后取消选中任何复选框。点击Finish:</p>
+
+<p><img src="/images/watchOS003.png" title="Caption" ></p>
+
+<p>之后会询问你是否想要激活watch scheme,你需要这么做,所以确保选择了激活:</p>
+
+<p><img src="/images/watchOS004.png" title="Caption" ></p>
+
+<p>祝贺,你刚刚创建了你的第一个手表app!这真的很容易。</p>
+
+<p>你会注意到,这个操作实际上创建了两个target,而不是一个,在项目导航中看到两个对应的组。这是因为手表app的代码实际是作为一个扩展形式存在的,类似iOS上的Today extensions。</p>
+
+<p>当你在项目导航中点开Watch和Watch Extensions组的时候,你会看到所有storyboard放在Watch组,当前target创建的所有的类文件放在Watch Extensions组中:</p>
+
+<p><img src="/images/watchOS005.png" title="Caption" ></p>
+
+<p>你需要遵循如下的原则:任何你添加的代码必须放在Watch Extension组中然后添加到Watch Extension target,而所有的assets或者storyboards需要放在Watch组里。</p>
+
+<p><img src="/images/watchOS006.png" title="Caption" ></p>
+
+<p>在继续前,你需要删掉一些target模板添加的你不需要的文件。</p>
+
+<p>在项目导航里面右键点击InterfaceController.swift然后选择删除。 当弹出提示,选择Move to Trash来确保文件确实从项目中删掉了:</p>
+
+<p><img src="/images/watchOS007.png" title="Caption" ></p>
+
+<p>下一步,打开Interface.storyboard,选择其中仅有的界面控制器,按下backspace键来删除它。现在就剩下一个空storyboard,或者是我认为的,一个空白画布。</p>
+
+<p>共享数据和代码</p>
+
+<p>起始项目包含一个记录所有Aber航空公司航班信息的JSON文件,一个模型类表示飞行数据。这正是应该共享的数据,因为iOS app和手表app使用相同的模型类和数据-你记得DRY(不要写重复的代码)原则吗?</p>
+
+<p>在项目导航中点开Shared组然后选择Flights.json。之后,在File Inspector中找到Target Membership区域,选中Watch Extension</p>
+
+<p><img src="/images/watchOS008.png" title="Caption" ></p>
+
+<p>文件现在应该被AirAber和Watch Extensions这两个target所包含。 为其他Shared组的文件重复这个步骤,比如说Flight.swift。 这些都做完后,你可以开始开发航班详情界面了!</p>
+
+<p>构造界面</p>
+
+<p>打开 Watch\Interface.storyboard,从对象库拖一个界面控制器到storyboard里面.选中这个界面控制器,打开属性检查器设置它的Identificer为Flight,然后勾选Is Initial Controller:</p>
+
+<p><img src="/images/watchOS009.png" title="Caption" ></p>
+
+<p>你设置的这个Identifier让你可以在代码中引用这个界面控制器。选中Is Initial Controller简单告诉WatchKit你希望当应用程序启动的时候首先显示这个界面。</p>
+
+<p>下一步,从对象库中拖动一个组到界面控制器:</p>
+
+<p><img src="/images/watchOS010.png" title="Caption" ></p>
+
+<p>之后这个组会包含Aber公司的logo,航班号和路线。</p>
+
+<p>选中这个组,在属性检查器的顶部改变它的Insets为Custom。这会显示四个额外的文本框让你可以手动的设置组的上下左右。设置Top为6:</p>
+
+<p><img src="/images/watchOS011.png" title="Caption" ></p>
+
+<p>这仅仅让你的组到顶部有个额外的空隙。</p>
+
+<p>下一步,拖动Image到组中。组会相应的收缩来改变Top inset(感谢Xcode!),之后在文档大纲中检查来确保Image是组的子节点,而不是同级:</p>
+
+<p><img src="/images/watchOS012.png" title="Caption" ></p>
+
+<p>现在需要显示一张图片,下载logo图片然后把它拖动到Watch\Assets.xcassets中。这会创建一个新的logo图片,存放在2x的部分。</p>
+
+<p><img src="/images/watchOS013.png" title="Caption" ></p>
+
+<p>为了给图片染色,选中这张图片,在属性检查器中修改Render As为Template Image。</p>
+
+<p>重新打开 Watch\Interface.storyboard 选中之前的image.使用属性检查器,做如下的改变:</p>
+
+<ul>
+<li>设置图片为Logo - 当下拉列表没有出现,你可以自己输入;</li>
+<li>设置Tint为#FA114F(也可以在颜色面板中输入值);</li>
+<li>设置Width为Fixed,值为40;</li>
+<li>设置Height为Fixed,值为40。</li>
+</ul>
+
+
+<p>属性检查器现在应该像下面这样:</p>
+
+<p><img src="/images/watchOS014.png" title="Caption" ></p>
+
+<p>不要担心看不到logo,因为Xcode设计时无法给模板图片染色!</p>
+
+<p>下一步,往已经存在的组中拖动另外一个组,确保它出现在image的右侧,使用属性检查器设置Layout属性为Vertical.同样修改Spacing为0、Width为Size to Fit Content。然后拖动两个label到新的组中,放置一个到另一个的下面。</p>
+
+<p><img src="/images/watchOS015.png" title="Caption" ></p>
+
+<p>选择上面的label,使用属性检查器,设置文本为Flight 123,文字颜色为#FA114F。</p>
+
+<p>选择下面的label,设置文本为MAM to SFO。界面控制器最后看起来像下面这样:</p>
+
+<p><img src="/images/watchOS016.png" title="Caption" ></p>
+
+<p>这些文本仅仅充当占位符,之后会被控制器中设置的文本取代。</p>
+
+<p>下一步,拖动另一个组到界面控制器中,但是这次确保与第一个组同级。当不能设置组级别关系请使用文档大纲(Document Outline)。</p>
+
+<p><img src="/images/watchOS017.png" title="Caption" ></p>
+
+<p>选中新的组,设置它的Layout为Vertical、Spacing为0。</p>
+
+<p>现在,拖动三个label到新的组中:</p>
+
+<p><img src="/images/watchOS018.png" title="Caption" ></p>
+
+<p>确保label都在group中,而不是与group同级!</p>
+
+<p>选择顶部的label使用属性检查器修改它的文本为AA123 Boards。</p>
+
+<p>选中中间的label,修改文本颜色为#FA114F,字体选择System,Regulaer样式和54.0的size.最后,修改Height为Fixed,值是44。</p>
+
+<p>选中底部的label修改文本为On time,文本颜色为#04DE71。 你的界面控制器应该现在像下面这样:</p>
+
+<p><img src="/images/watchOS019.png" title="Caption" ></p>
+
+<p>从对象库中拖动一个新的组到下面的组,这次确保它是在子节点而不是在同级,之后向其中添加两个label,你完全的界面对象关系应该像这样:</p>
+
+<p><img src="/images/watchOS020.png" title="Caption" ></p>
+
+<p>使用属性检查器,设置左边的label文本为Gate 1A。右边的label设置为Seat 64A,之后设置它的Horizontal alignment为Right 完全的界面应该像如下这样:</p>
+
+<p><img src="/images/watchOS021.png" title="Caption" ></p>
+
+<p>恭喜,你已经完成你的第一个watch app界面的布局了,现在是时候给它填充一些真实的数据然后在模拟器上运行。</p>
+
+<p>创建控制器</p>
+
+<p>在项目导航中右击Watch Extensions组,选择New File,在出现的对话框中选择watchOS\Source\WatchKit Class然后点击Next。命名新的类为FlightInterfaceController,确保它为WKInterfaceController的子类,语言设置为Swift:</p>
+
+<p><img src="/images/watchOS022.png" title="Caption" ></p>
+
+<p>点击Next,之后是Create</p>
+
+<p>可以看到新的文件在代码编辑器中打开了,删除其中的三个空方法,只剩下import语句和类定义。</p>
+
+<p>添加这些Outlets到FlightInterfaceController的顶部:</p>
+
+<pre><code>@IBOutlet var flightLabel: WKInterfaceLabel!
+@IBOutlet var routeLabel: WKInterfaceLabel!
+@IBOutlet var boardingLabel: WKInterfaceLabel!
+@IBOutlet var boardTimeLabel: WKInterfaceLabel!
+@IBOutlet var statusLabel: WKInterfaceLabel!
+@IBOutlet var gateLabel: WKInterfaceLabel!
+@IBOutlet var seatLabel: WKInterfaceLabel!
+</code></pre>
+
+<p>这里仅仅为之前的每个label添加一个Outlet。稍后会把他们连接起来。</p>
+
+<p>下一步,在outlets下面添加flight属性和对应的属性观察器:</p>
+
+<pre><code>// 1
+var flight: Flight? {
+  // 2
+  didSet {
+    // 3
+    if let flight = flight {
+      // 4
+      flightLabel.setText("Flight \(flight.shortNumber)")
+      routeLabel.setText(flight.route)
+      boardingLabel.setText("\(flight.number) Boards")
+      boardTimeLabel.setText(flight.boardsAt)
+      // 5
+      if flight.onSchedule {
+        statusLabel.setText("On Time")
+      } else {
+        statusLabel.setText("Delayed")
+        statusLabel.setTextColor(UIColor.redColor())
+      }
+      gateLabel.setText("Gate \(flight.gate)")
+      seatLabel.setText("Seat \(flight.seat)")
+    }
+  }
+}
+</code></pre>
+
+<p>会一步步讲解发生的事情:</p>
+
+<ul>
+<li><p>1.你定义了一个可选的属性类型为Flight。这个类在Flight.swift中定义;</p></li>
+<li><p>2.你添加了一个属性观察器,当属性设值时候会触发它;</p></li>
+<li><p>3.在可选属性中确保有一个真的flight而不是nil,当flight存在才会去设置labels的值;</p></li>
+<li><p>4.使用flight的相关属性去设置labels</p></li>
+<li><p>5.如果航班被延误，那么你就将标签的文本颜色改为红色</p></li>
+</ul>
+
+
+<p>在控制器第一次显示时候设置航班。添加以下声明：</p>
+
+<pre><code>override func awakeWithContext(context: AnyObject?) {
+  super.awakeWithContext(context)
+  flight = Flight.allFlights().first!
+}
+</code></pre>
+
+<p>本后面的教程会修改为在上下文中传递值给它,但现在你只需要从共享的JSON文件中加载所有的航班,然后使用数组中的第一个。</p>
+
+<p>在后面的教程你将学到更多关于awakeWithContext（_：)的知识,但是现在你仅仅需要知道它是界面控制器生命周期第一环节,一个设置flight值的地方。 现在仅剩最后一步你就可以编译运行了,就是去连接outlets</p>
+
+<p>连接outlets</p>
+
+<p>打开 Watch\Interface.storyboard 选择界面控制器,使用Identity Inspector,设置Class\Custom Class为FlightInterfaceController</p>
+
+<p>下一步,右击界面控制器顶部的黄色图片弹出窗口:</p>
+
+<p><img src="/images/watchOS023.png" title="Caption" ></p>
+
+<p>现在,按下面的列表连接outlets:</p>
+
+<pre><code>boardingLabel: AA123 Boards
+boardTimeLabel: 15:06
+flightLabel: Flight 123
+gateLabel: Gate 1A
+routeLabel: MAN to SFO
+seatLabel: Seat 64A
+statusLabel: On time
+</code></pre>
+
+<p>在运行之前,有一件事情要做。本教程的实例app专为42mm的Apple Watch开发的,所以你需要确保正确设置了模拟器,否则界面元素看起来会有点小。对于一个现实app,需要确保界面能很好运行在两种大小的手表上,但这在本教程的范围之外。</p>
+
+<p>在Xcode中,选择Window\Devices打开设备管理器,点击右下角的 + 图标.在弹出的对话框中,命名模拟器为iPhone 6 - 42mm,设置设备类型为iPhone 6,修改配对的Apple watch为Apple Watch - 42mm (WatchOS 2.0)然后点击Create:</p>
+
+<p><img src="/images/watchOS024.png" title="Caption" ></p>
+
+<p>关闭设备管理器,选择Watch Scheme,然后选中新的模拟器:</p>
+
+<p><img src="/images/watchOS025.png" title="Caption" ></p>
+
+<p>编译运行。一段模拟器启动完成你会看到下面界面:</p>
+
+<p><img src="/images/watchOS026.png" title="Caption" ></p>
+
+<blockquote><p>注意:如果收到一条错误消息,说明安装失败,然后你可以再次尝试使用Xcode,或者在手表模拟器上手动安装app。为此,打开iOS模拟器中的手表app,点击AirAber,在Apple Watch弹出我们的app。一旦这么做了,返回手表模拟器,按Shift + Ctrl + H导航到主界面, 然后点击AirAber图片来启动手表app。</p></blockquote>
+
+<p>恭喜!你已经完成WatchKit初始界面,并使用真实的数据使它很好运行在手表模拟器上。</p>
+
+<p>稍后会做什么?</p>
+
+<p>下面是这个系列教程完整示例项目。</p>
+
+<p>在这个练习中你已经学会了如何往现有的iOS app中添加手表app，如何创建一个界面控制器和使用嵌套组构造一个非常复杂的界面，以及使用WKInterfaceController类来配合这项工作。那么，接下来呢？</p>
+
+<p>本教程系列的第二部分，你将学习所有关于表和导航WatchKit的使用。</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/08/fang-fa-huan-cun/" title="Previous Post: 方法缓存">&laquo; 方法缓存</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (1)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (3)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (9)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (10)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/08/watch-os2-chu-tan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/08/watch-os2-chu-tan/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

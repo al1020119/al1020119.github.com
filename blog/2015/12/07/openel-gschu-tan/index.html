@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>OpenEL GS初探 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="OpenEL GS初探 ordinal 写在前头，好久没有更新博客，感谢老朋友的再次来访，同时也欢迎新朋友~ 说起OpenGL，相信大不多数朋友都不会陌生，或多或少都有接触。本文不属于OpenGL提高篇，主要目的在于帮助新手更快熟悉iOS中如何使用OpenGL，关于这方面的介绍，网上也有很多， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/07/openel-gschu-tan/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">OpenEL GS初探</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>写在前头，好久没有更新博客，感谢老朋友的再次来访，同时也欢迎新朋友~</p></blockquote>
+
+<p>说起OpenGL，相信大不多数朋友都不会陌生，或多或少都有接触。本文不属于OpenGL提高篇，主要目的在于帮助新手更快熟悉iOS中如何使用OpenGL，关于这方面的介绍，网上也有很多，本文主要任务在于整理，介绍稍有偏重。这里有比较完整的Demo，可以协助大家更快上手</p>
+
+<p>OpenGL版本</p>
+
+<p>iOS系统默认支持OpenGl ES1.0、ES2.0以及ES3.0 3个版本，三者之间并不是简单的版本升级，设计理念甚至完全不同，在开发OpenGL项目前，需要根据业务需求选择合适的版本。这方面的介绍不少，不再展开。在学习OpenGL代码的时候也需要知道它对应着哪个版本，在ES1中执行ES2代码是看不到任何效果的，你可以在初始化EAGLContext时指定ES版本号</p>
+
+<pre><code>EAGLContext *context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+</code></pre>
+
+<p>OpenGL坐标系</p>
+
+<p>OpenGL坐标系不同于UIKit坐标系，其实它是这样的</p>
+
+<p><img src="/images/openEL001.jpg" title="Caption" ></p>
+
+<p>除了方向，还有一点需要注意，默认情况各个方向坐标值范围为（-1，1），而不是UIKit中的（0，320）。当绘制点(320，0)，它并不会出现在屏幕右上角。在ES1中，可以通过以下代码将坐标系转化为熟悉的（320，480）</p>
+
+<pre><code>- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
+    glViewport(0, 0, rect.size.width * 2, rect.size.height * 2);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrthof(0, 320, 0, 480, -1024, 1024);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+</code></pre>
+
+<p>接下来说说iOS中如何使用OpenGL</p>
+
+<pre><code>GLKViewController &amp; GLKView
+</code></pre>
+
+<p>机智的码农是不是已经发现这两个对象， 为了方便大家更快的开发，系统为OpenGL提供了简单的封装，继承GLKViewController定义自己的ViewController，GLKViewController的view为GLKView类，GLKView的delegate定义了绘制回调函数</p>
+
+<pre><code>- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect
+</code></pre>
+
+<p>GLKViewController定义数据刷新函数，当子类实现-(void)update方法，glkViewControllerUpdate方法将不再被调用</p>
+
+<pre><code>- (void)glkViewControllerUpdate:(GLKViewController *)controller
+</code></pre>
+
+<p>HJGLKViewControllerDemo模拟了GLKViewController方法实现，有兴趣的童鞋可以查看GLKViewController内部实现机制。需要补充一点，默认情况下，GLKViewController渲染RunLoop并非NSRunLoopCommonModes，而是NSDefaultRunLoopMode，因此在UIKit中使用GLKViewController，当滑动界面时，OpenGL是不会渲染的，为了解决这个问题，可以使用HJGLKViewController替换GLKViewController，HJGLKViewController中默认渲染RunLoop使用NSRunLoopCommonModes模式</p>
+
+<h3>EAGLContext</h3>
+
+<p>在介绍选择版本时已经提到EAGLContext，与UIKit中CGContextRef相似，EAGLContext相当于OpenGL绘制句柄或者上下文，在绘制试图之前，需要指定使用创建的上下文绘制</p>
+
+<p>[EAGLContext setCurrentContext:view.context];
+当一个APP可能存在多个EAGLContext时，需要处理并存冲突等问题，比如大家所熟知的GPUImage，都会使用到EAGLContext。因此，在使用中要记得及时释放。有兴趣的朋友可以看看这篇文章</p>
+
+<h3>Draw</h3>
+
+<p>OpenGL绘制本文就不做介绍，HJGLKViewControllerDemo中有大量的示例，顺便推荐几篇相关文章</p>
+
+<p>详解第一个OpenGL程序
+西蒙iPhone-OpenGL ES 中文教程专题
+Cocos2d源码
+小贴士：当App退到后台时， 切记暂停OpenGL绘制，否则可能导致crash</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu/" title="Previous Post: 自己写套缓存机制">&laquo; 自己写套缓存机制</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/" title="Next Post: 怎么封装一个控件">怎么封装一个控件 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (1)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (3)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (9)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (10)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/07/openel-gschu-tan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/07/openel-gschu-tan/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

@@ -1,0 +1,461 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Block实战 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="Block实战 ordinal 说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。 从闭包说起 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Block实战</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
+
+<p>从闭包说起
+在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
+
+<p>所谓词法作用域，顾名思义，是指一个符号引用的是其词法环境中的变量，而无关程序在运行时的状态。这么说可能有点抽象，让我来看一段Common Lisp3代码：</p>
+
+<pre><code>(defvar printer (let ((x 42))
+          (lambda () (format t "~a" x))))
+</code></pre>
+
+<p>这里我们定义了一个变量printer，它的值是一个函数，这个函数会打印词法作用域中的变量x（其值为42）。
+现在我们来调用这个函数：</p>
+
+<pre><code>CL-USER&gt; (funcall printer)
+</code></pre>
+
+<p>42
+可以看到，我们调用了printer中存放的函数之后，打印出来的数字是42，跟我们的预期相符。</p>
+
+<p>接下来再让我们看一个可能会出乎意料的结果：</p>
+
+<pre><code>CL-USER&gt; (let ((x 1))
+       (funcall printer))
+</code></pre>
+
+<p>42
+我们在调用之前把x设置为了1，但是打印的结果仍然是42。</p>
+
+<p>为什么？因为printer中存放的函数在被调用时所引用的变量位于其词法作用域中， 即该函数被定义时所处的词法环境中，所以程序在运行时设置的变量x对函数不起作用。</p>
+
+<p>前面我们讲过，所谓闭包，就是函数及其词法作用域的合称，具体到上例，那么匿名函数和x就构成了一个闭包，它会为函数保存一种状态，有点类似于全局变量，不过除了那个匿名函数，其他函数无法访问到x。</p>
+
+<p>说了这么多，似乎跟block毫无关系？事实上，block为C带来了闭包。</p>
+
+<p>Block
+Apple从OS X 10.6和iOS 4以后开始支持block，让我们用C把上面的例子重写一下：</p>
+
+<pre><code>#include &lt;stdio.h&gt;
+
+int main ()
+{
+    int x = 42;
+    void (^block)() = ^() {
+        printf("%d\n", x);
+    };
+    block();
+    x = 1;
+    block();
+
+    return 0;
+}
+</code></pre>
+
+<p>编译运行后得到的输出同样是两个42。</p>
+
+<p>到了这里，相信读者对闭包已经有一个直观的认识了，但是它有什么用？有什么好处？
+设想如下场景，我们要请求一个URL，并以block的形式传入回调函数，并在回调函数中用到刚才这个URL：</p>
+
+<pre><code>NSURL *someURL = …;
+[SomeClass getURL:someURL finished:^(id responseObject) {
+    // process responseObject with someURL
+}];
+</code></pre>
+
+<p>这里网络请求是异步的，所以当block中代码执行时，getURL:finished:方法调用所在的栈很可能已经不存在了，但是因为回调block和someURL构成了closure，所以即使栈不存在，block仍然可以引用到someURL。</p>
+
+<p>可能你会说，“我在block中增加一个NSURL类型的参数，把someURL传回来不也可以实现同样的目的吗？”不妨设想如果我们在block中要引用的对象有10个之多，用参数列表传递明显不再现实，用容器类或者专门定义一个类来传递虽然可以，但是前者没有编译器为我们检查错误，后者则相当繁琐。而利用闭包，可以轻易达到灵活性和简洁性的平衡。事实上，美团客户端就大量利用了闭包，在UI层发出请求，在回调中更新某些UI组件。</p>
+
+<p>函数式编程4
+在Lisp中，函数是一等公民，可以随时创建、作为参数传递、作为返回值返回，Objective C在没有block之前，没有类似的机制，有了block，Objective C也就具备了函数式编程的能力，block是对象，有自己的ISA指针，可以随时创建，作为参数传递，作为返回值返回。</p>
+
+<p>先来看看block的经典用法：</p>
+
+<pre><code>[UIView animateWithDuration:0.25 animations:^{
+            self.view.alpha = 1.0f;
+        }];
+</code></pre>
+
+<p>UIView的animateWithDuration:animations:方法的第二个参数是一个block，它把跟动画相关的操作封装起来传递进去，以实现动画效果。</p>
+
+<p>现在让我们发掘一下类似的用法：</p>
+
+<pre><code>[SAKBaseModel comboRequest:^() {
+ [dealModel fetchDealByID:123456
+               withFields:nil
+               completion:^(MTDeal *deal, NSError *error) {
+                   ...
+               }];
+ [orderModel fetchOrderByID:654321
+             withDealFields:nil
+                 completion:^(MTOrder *order, NSError *error) {
+                ...
+             }];
+}];
+</code></pre>
+
+<p>这里我们为SAKBaseModel设计了一个类似于UIView的接口叫comboRequest，它会接受一个block作为参数，在这个block中发出的请求都会作为combo请求的一部分。如果dealModel或者orderModel的任何一个请求不是出现在block中，那么它就是一个普通的请求。这样做的好处是dealModel和orderModel的接口不需要关心自己是不是属于一个combo请求，调用者则可以灵活地调整代码。</p>
+
+<p>那么怎么实现这样的接口呢？还是从UIView上获取灵感。我们知道UIView有个方法setAnimationsEnabled:，实际上SAKBaseModel也可以有这么一个方法：setComboRequestEnabled:，而在comboRequest方法的实现中，在调用传进来的block之前先setComboRequestEnabled:YES，调用完后再恢复为原状态。相应的，在实际的model接口中，检查comboRequest是否为YES，如果是，则把自己作为一个combo请求的一部分，否则正常发出请求即可。</p>
+
+<p>Think Big
+Lisp最强大的特性之一是condition系统，它可以分离异常的检测、异常的解决和异常解决方式的决策，看一段示例代码：</p>
+
+<pre><code>(define-condition network-timeout-error (error)
+    ((url :initarg :url :accessor url)))
+
+(defun try-again (condition)
+    (let ((restart (find-restart ‘try-again)))
+      (when restart (invoke-restart restart))))
+
+(defun deal-requester (deal-id)
+    (handler-bind ((network-timeout-error #’try-again))
+      (request-from-url (format nil “http://api.mobile.meituan.com/deal/~a” deal-id)
+        (lambda (deal error)
+        (if error
+            (format t “error: ~a”, error)
+            (process-deal))))))
+(defun request-from-url (url finished)
+    (let ((callback (lambda (response error)
+              (if (network-timeout-error-p error)
+                (error ‘network-timeout-error :url url)
+                (funcall finished (parse-deal response) error)))))
+      (restart-bind
+        ((try-again (lambda () (http-request url callback))))
+        (http-request url callback))))
+</code></pre>
+
+<p>可以看到，condition系统对于代码的分层提供了良好的支持，请求超时的错误在底层代码被检测到，在发出请求前注册一个restart，而在业务层去决定要不要调用restart。</p>
+
+<p>一直以来，C语言要实现优雅的异常处理就是一件不简单的事情，而Objective-C虽然加入了try-catch支持，但是苹果并不鼓励使用，那么能否实现类似于condition系统这样的异常处理机制呢？</p>
+
+<p>答案是能。让我们来看看接口设计：</p>
+
+<pre><code>typedef void (^RESTART)(id userInfo);
+typedef void (^HANDLER)(id condition);
+
+void restart_bind(void (^body)(), NSString *restartName, RESTART restart, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void handler_bind(void (^body)(), Class class, HANDLER handler, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void notify(id condition);
+
+RESTART find_restart(NSString *restartName);
+</code></pre>
+
+<p>如下图所示，handler_bind首先在栈中注册好handler，而restart_bind则在handler有效的环境中注册restart，当有异常发生时，notify函数会在当前环境中寻找handler，找到后，控制会转移到上层的handler代码中，这时handler可以用find_restart在栈中搜索restart，找到之后可以调用，从而实现异常的恢复，做完这一切，控制回到notify发生的点继续向下执行。</p>
+
+<p>完整的代码敬请期待美团iOS的开源项目。</p>
+
+<p>有了SAKCondition，我们可以实现任意底层代码的逻辑穿透到上层代码，比如网络层和UI层，使得上层代码可以在不了解下层代码实现细节的情况下调用恢复机制。事实上，美团的iPhone客户端就是利用SAKCondition实现了美团账户的安全解锁功能。</p>
+
+<p>总结
+block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/06/fen-lei-shen-jiu/" title="Previous Post: 分类深究">&laquo; 分类深究</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/06/blockshen-jiu/" title="Next Post: Block深究">Block深究 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (1)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (3)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (9)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (10)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/07/openel-gschu-tan/">OpenEL GS初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
