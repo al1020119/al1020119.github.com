@@ -22,7 +22,7 @@ OpenGL坐标系不同于UIKit坐标系，其实它是这样的
 
 
  
-{% img /images/openEL001.jpg Caption %}  
+{% img /images/openEL001.png Caption %}  
 
 除了方向，还有一点需要注意，默认情况各个方向坐标值范围为（-1，1），而不是UIKit中的（0，320）。当绘制点(320，0)，它并不会出现在屏幕右上角。在ES1中，可以通过以下代码将坐标系转化为熟悉的（320，480）
 

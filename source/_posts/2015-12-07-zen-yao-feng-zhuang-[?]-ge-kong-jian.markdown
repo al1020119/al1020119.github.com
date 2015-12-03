@@ -264,7 +264,7 @@ drawRect 方法很适合做自定义的控件，当你需要更新 UI 的时候�
 
 4. 当你想做一个无限循环播放的动画的时候，可能会创建几个封装了动画的 CALayer，然后把它们添加到视图层级上，就像我在 iOS 实现脉冲雷达以及动态增减元素 By Swift 中这么做的： 
 
-37.gif
+{% img /images/kongjianfengzhuang001.gif Caption %}  
 
 效果还不错，实现又简单，但是当你按下 Home 键并再次返回到 app 的时候，原本好看的动画就变成了一滩死水：
 
@@ -311,7 +311,8 @@ UIButton 自带图文接口，支持更强大的状态切换，titleEdgeInsets �
 	@property(nonatomic) UIControlContentHorizontalAlignment contentHorizontalAlignment;
 UIControl 和 UIButton 都能很好的支持 xib，可以设置各种状态下的显示和 Selector，但是对 UIButton 来说这些并不够，因为 Normal 、Highlighted 和 Normal | Highlighted 是三种不同的状态，如果你需要实现根据当前状态显示不同高亮的图片，可以参考我下面的代码： 
 
-blob.png
+
+{% img /images/kongjianfengzhuang002.png Caption %}  
 
 	- (void)updateStates {
 	    [super setTitle:[self titleForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
@@ -382,11 +383,13 @@ IBInspectable
 	}
 只需要在属性上加个 IBInspectable 宏即可，然后 xib 中就能显示这个自定义的属性： 
 
-blob.png
+{% img /images/kongjianfengzhuang003.png Caption %} 
+
 
 xib 会把属性名以大驼峰样式显示，如果有多个属性，xib 也会自动按属性名的第一个单词分组显示，如： 
 
-blob.png
+
+{% img /images/kongjianfengzhuang004.png Caption %} 
 
 通过使用 IBInspectable 宏，你可以把原本只能通过代码来设置的属性，也放到 xib 里来，代码就显得更加简洁了。
 
@@ -404,9 +407,9 @@ xib 配合 IBInspectable 宏虽然可以让属性设置变得简单化，但是�
 
 这是 Twitter 上其他开发者做出的效果： 
 
-blob.png
+{% img /images/kongjianfengzhuang005.png Caption %} 
 
-blob.png
+{% img /images/kongjianfengzhuang006.png Caption %} 
 
 相信通过使用 IBInspectable / IBDesignable ，会让控件使用起来更加方便、也更加有趣。
 
@@ -414,7 +417,7 @@ blob.png
 
 不规则图形在 iOS 上并不多见，想来设计师也怕麻烦。不过 iOS 上的控件说到底都是各式各样的矩形，就算你修改 cornerRadius，让它看起来像这样： 
 
-blob.png
+{% img /images/kongjianfengzhuang007.png Caption %} 
 
 也只是看起来像这样罢了，它的实际事件触发范围还是一个矩形。
 
@@ -422,15 +425,15 @@ blob.png
 
 想象一个复杂的可交互的控件，它并不是单独工作的，可能需要和另一个控件交互，而且它们的事件触发范围可能会重叠，像这个选择联系人的列表：
 
-38.gif
+{% img /images/kongjianfengzhuang008.gif Caption %} 
 
 在设计的时候让上面二级菜单在最大的范围内可以被点击，下面的一级菜单也能在自己的范围内很好的工作，正常情况下它们的触发范围是这样的：
 
-blob.png
+{% img /images/kongjianfengzhuang009.png Caption %} 
 
 我们想要的是这样的：
 
-blob.png
+{% img /images/kongjianfengzhuang010.png Caption %} 
 
 想要实现这样的效果需要对事件分发有一定的了解。首先我们来想想，当触摸屏幕的时候发生了什么?
 
@@ -447,7 +450,7 @@ blob.png
 
 如果子视图的 frame 有一半在外面，就像这样： 
 
-blob.png
+{% img /images/kongjianfengzhuang011.png Caption %} 
 
 则在外面的部分是无法响应事件的，因为它超出了父视图的范围。
 
@@ -517,7 +520,8 @@ blob.png
 	        return inside
 	    }
 	}
-合理使用 KVO
+	
+####合理使用 KVO
 
 某些视图的接口比较宝贵，被你用掉后外部的使用者就无法使用了，比如 UITextField 的 delegate，好在 UITextField 还提供了通知和 UITextInput 方法可以使用；像 UIScrollView 或者基于 UIScrollView 的控件，你既不能设置它的 delegate，又没有其他的替代方法可以使用，对于像以下这种需要根据某些属性实时更新的控件来说，KVO 真是极好的：
 
