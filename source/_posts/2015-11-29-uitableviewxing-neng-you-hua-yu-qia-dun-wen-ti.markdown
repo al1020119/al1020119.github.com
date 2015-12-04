@@ -79,7 +79,9 @@ categories: 性能相关
 
 15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。
 
+16.使用富文本标签代价是很昂贵的
 
+费尽周折用富文本标签，代价太昂贵了。尽可能地避免使用这个。问问你自己是否真的需要这个。如果是的话，尽可能的做缓存。
 
 
 ***
