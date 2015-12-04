@@ -9,7 +9,11 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iOS6新特性 一、关于内存警告 ios6中废除了viewDidUnload，viewWillUnload这两个系统回调，收到内存警告时在didReceiveMemoryWarning中进行相关的处理。 - (void)viewDidUnload { [super viewDidUnload &hellip;">
+  <meta name="description" content="简单总结 代理
+Block
+通知 简单实用 代理
+Block
+通知 虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -80,7 +84,298 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/07/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>简单总结
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+
+<ul>
+<li>简单实用
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+<p>虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation，block和target- action。</p>
+
+<p>大多数情况下，消息传递该使用什么机制，是很明确的了，当然了，在某些情况下该使用什么机制并没有明确的答案，需要你亲自去尝试一下。</p>
+
+<hr />
+
+<h3>简单总结</h3>
+
+<ul>
+<li><p>delegation</p>
+
+<ul>
+<li><p>在苹果的Framework中，delegation模式被广泛的只用着。delegation允许我们定制某个对象的行为，并且可以收到某些 确定的事件。为了使用delegation模式，消息的发送者需要知道消息的接收者(delegate)，反过来就不用了。这里的发送者和接收者是比较松 耦合的，因为发送者只知道它的delegate是遵循某个特定的协议。</p></li>
+<li><p>delegate协议可以定义任意的方法，因此你可以准确的定义出你所需要的类型。你可以用函数参数的形式来处理消息内容，delegate还 可以通过返回值的形式给发送者做出回应。如果只需要在相对接近的两个模块之间进行消息传递，那么Delegation是一种非常灵活和直接方式。</p></li>
+<li><p>不过，过渡使用delegation也有一定的风险，如果两个对象的耦合程度比较紧密，相互之间不能独立存在，那么此时就没有必要使用 delegate协议了，针对这种情况，对象之间可以知道相互间的类型，进而直接进行消息传递。例如UICollectionViewLayout和 NSURLSessionConfiguration。</p></li>
+</ul>
+</li>
+<li><p>block</p>
+
+<ul>
+<li><p>Block相对来说，是一种比较新的技术，它首次出现是在OS X 10.6和iOS 4中。一般情况下，block可以满足用delegation实现的消息传递机制。不过这两种机制都有各自的需求和优势。</p></li>
+<li><p>当不考虑使用block时，一般主要是考虑到block极易引起retain环。如果发送者需要reatain block，而又不能确保这个引用什么时候被nil，这样就会发生潜在的retain环。</p></li>
+</ul>
+</li>
+<li><p>Notification</p>
+
+<ul>
+<li><p>在不相关的两部分代码中要想进行消息传递，通知(notifacation)是非常好的一种机制，它可以对消息进行广播。特别是想要传递丰富的信息，并且不一定指望有谁对此消息关心。</p></li>
+<li><p>通知可以用来发送任意的消息，甚至包含一个userInfo字典，或者是NSNotifacation的一个子类。通知的独特之处就在于发送者 和接收者双方并不需要相互知道。这样就可以在非常松耦合的模块间进行消息的传递。记住，这种消息传递机制是单向的，作为接收者是不可以回复消息的。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+
+<h3>简单使用</h3>
+
+<p>初始化之后出现下面的界面</p>
+
+<p><img src="/images/chuanzhi001.png" title="Caption" ></p>
+
+<h5>准备：</h5>
+
+<p>这里试试根据本文的实战做相应的介绍，关于拓展只要理解了这里的思路基本是三种传值的使用没有什么问题。</p>
+
+<p>首先，由于我们要实现的点击对应的组实现展开分组显示对应组里面的所有行。</p>
+
+<p>我这个项目使用的是多层分组模型，讲每一组合对应的属性还有friends作为组模型，再将friends作为子模型，实现表格数据的现实。</p>
+
+<p><img src="/images/chuanzhi002.png" title="Caption" ></p>
+
+<h6>定义一个BOOL值用来记录点击（由于我们需要实现点击对应组做事情，所以先在组模型中定义一个BOOL）</h6>
+
+<pre><code>@property (nonatomic, assign, getter = isOpen) BOOL open; 
+</code></pre>
+
+<h6>在相应的点击方法里面是实现取反点击，这里的点击方法是分组View上面一个按钮的点击事件。</h6>
+
+<pre><code>self.group.open = !self.group.open; 
+</code></pre>
+
+<h6>在numberOfRowsInSection中返回的时候使用三木判断是否点击，并且实现伸缩与展开，</h6>
+
+<pre><code>return model.open?model.friends.cout:0; 
+</code></pre>
+
+<p>这里完成之后运行程序点一下试试，你会发现。。。。。。。。。。。。。。。。。什么效果也没有。</p>
+
+<p>当然会没有效果，因为我们没有传值，后面才是本章的重点，学会了这里以后关于通知，代理。Block的使用基本上没有问题。</p>
+
+<hr />
+
+<p>/######################代理######################/</p>
+
+<hr />
+
+<h2>方法一：代理</h2>
+
+<h6>在对应的View中创建一个协议</h6>
+
+<pre><code>@class iCocosView
+
+
+
+@protocol iCocoDelegate &lt;NSObject&gt;
+
+@optional
+
+-(void)headerView:(iCocosView *)view;
+
+
+
+@end
+</code></pre>
+
+<h6>创建一个代理属性</h6>
+
+<pre><code> @property (nonatomic, assign) id&lt;iCocoDelegate&gt; delegate; 
+</code></pre>
+
+<h6>在这个实现文件中判断有没有实现这个代理方法</h6>
+
+<pre><code>if([self.delegate repondToSelector:selector(headerView)]) {
+
+[self.delegate headerView];
+
+}
+</code></pre>
+
+<h6>先在对应的控制器遵守这个协议，并且设置代理</h6>
+
+<pre><code> &lt;iCocosDelegate&gt; 
+
+header.delegate = self; //让控制器充当代理
+</code></pre>
+
+<h6>实现代理方法</h6>
+
+<pre><code>－（void）headerView:(iCocosView *)view {[self.tableView reloadData];  }  
+</code></pre>
+
+<hr />
+
+<p>/######################Block######################/</p>
+
+<hr />
+
+<h2>方法二：Block</h2>
+
+<h6>定义一个Block</h6>
+
+<pre><code>typedef void (^iCocosBlock)(id);  
+</code></pre>
+
+<h6>创建一个Block对应的属性（使用Copy）</h6>
+
+<pre><code> @property （nonatomic， weak）iCocosBlock block; 
+</code></pre>
+
+<h6>实现文件中判读</h6>
+
+<pre><code>  if(self.block) { self.block(self);}  
+</code></pre>
+
+<h6>在控制器中实现</h6>
+
+<pre><code> header.block = ^(id sender) {  //sender是传过来的参数
+
+ [self.tableView reloadData];
+
+ };
+</code></pre>
+
+<hr />
+
+<p>/######################通知######################/</p>
+
+<hr />
+
+<h2>方法三：通知</h2>
+
+<p> 注意：通知的使用是前面的反向思维，在控制器里面注册并且实现通知方法，然后在分组View里面发布这个通知。</p>
+
+<h6>在控制器中注册一个通知</h6>
+
+<pre><code>[［NSNotificationCenter defaultCenter］ addObserver:self selector:@selector(notiClick) name:@“friends” object:nil]; 2 3  
+</code></pre>
+
+<h6>实现通知方法</h6>
+
+<pre><code>－（void）notiClick
+
+{
+
+[self.tableView reloadData];
+
+}
+</code></pre>
+
+<h6>同样在Header分组的实现文件中发布一个通知</h6>
+
+<pre><code>[［NSNotificationCenter defaultCenter］postNotificationName: @“friends”object:self userInfo:nil]; 2 3  
+</code></pre>
+
+<h6>移除通知：我们可以在两个方法里面一出通知：ViewDidDidApper和Dealloc</h6>
+
+<p>并且使用良种两种方法</p>
+
+<p>@1:移除所有通知</p>
+
+<pre><code>[［NSNotificationCenter defaultCenter］ removeObserver:self]; 
+</code></pre>
+
+<p>@2:根据名字移除通知</p>
+
+<pre><code>[［NSNotificationCenter defaultCenter］removeObserver:self name:@“friedns” object:nil];  
+</code></pre>
+
+<p>这里需要注意：实际开发中使用完通知之后一定要移除通知，否则如果里面通知太多，当你再次发送一个通知的时候程序就不知道去找那个通知甚至会导致程序奔溃。</p>
+
+<hr />
+
+<p>/######################运行结果######################/</p>
+
+<hr />
+
+<p>使用上面任何一种方法都可以实现同样的功能，点击每一行的组的时候就会展开相应行并且显示对应组的所有行。</p>
+
+<p><img src="/images/chuanzhi003.png" title="Caption" ></p>
+
+<p>实现Header左边按钮上面图标的旋转：（这里是一个重点，也是以后以后开发中肯呢过遇到的一个难点，可能不是一样的但是或许思路和原理一样，这里是这篇文章中除了传值的三种方式以后最重要的地方）
+    /<strong><strong><em>在这个方法里面实现旋转：当View移到父控件的时候，不然旋转也看不到选过，因为刷新实在旋转之后的，旋转之后再刷新，从缓存迟里面取出来</em></strong></strong>***/</p>
+
+<pre><code>-(void)didMoveToSuperview
+{
+    if (self.group.open) {
+        self.nameView.imageView.transform = CGAffineTransformMakeRotation(M_PI_2);
+    }else {
+        self.nameView.imageView.transform = CGAffineTransformMakeRotation(0);
+    }
+
+}
+/ 
+</code></pre>
+
+<p>但是具体使用说明视情况而定：</p>
+
+<p>总结：。。。。。。。。待续</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/07/01/chuan-zhi-fang-shi-zong-jie/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/10/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a></h1>
     
     
       <p class="meta">
@@ -1006,7 +1301,7 @@ Optimizing Your App for Multitasking on iPad in iOS
 
 
 
-| <a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/#comments">更多评论</a>
+| <a href="/blog/2015/06/10/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/#comments">更多评论</a>
 
     </article>
   
@@ -1015,7 +1310,7 @@ Optimizing Your App for Multitasking on iPad in iOS
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a></h1>
     
     
       <p class="meta">
@@ -1035,151 +1330,93 @@ Optimizing Your App for Multitasking on iPad in iOS
   </header>
 
 
-  <div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+  <div class="entry-content"><ul>
+<li>HTTP协议与TCP/IP协议的关系</li>
+<li>如何理解HTTP协议是无状态的</li>
+<li>什么是长连接、短连接？
 
 <ul>
-<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
-<li>定义自定义的相册，并且保存到自定义相册</li>
+<li> TCP连接</li>
+<li> TCP短连接</li>
+<li> TCP长连接</li>
+</ul>
+</li>
+<li>长连接短连接操作过程</li>
+<li>长连接和短连接的优点和缺点</li>
+<li>什么时候用长连接，短连接？</li>
 </ul>
 
 
-<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
-App中自定义的相册呗删除之后再次保存相片无法成功</p>
+<h3>HTTP协议与TCP/IP协议的关系</h3>
 
-<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+<p>HTTP的长连接和短连接本质上是TCP长连接和短连接。HTTP属于应用层协议，在传输层使用TCP协议，在网络层使用IP协议。IP协议主要解决网络路由和寻址问题，TCP协议主要解决如何在IP层之上可靠的传递数据包，使在网络上的另一端收到发端发出的所有包，并且顺序与发出顺序一致。TCP有可靠，面向连接的特点。</p>
 
-<p>先来看看咱们取得相册中的相片</p>
+<h3>如何理解HTTP协议是无状态的</h3>
 
-<pre><code>- (void)getAllPhotos
-{
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
-    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
-        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
-            // 缩略图
-            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
-            // 获得原始图片
-            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
-        }];
+<p>HTTP协议是无状态的，指的是协议对于事务处理没有记忆能力，服务器不知道客户端是什么状态。也就是说，打开一个服务器上的网页和你之前打开这个服务器上的网页之间没有任何联系。HTTP是一个无状态的面向连接的协议，无状态不代表HTTP不能保持TCP连接，更不能代表HTTP使用的是UDP协议（无连接）。</p>
 
-   } failureBlock:nil];
-}
-</code></pre>
+<h3>什么是长连接、短连接？</h3>
 
-<p>下面我们看看代码具体的实现</p>
+<p>在HTTP/1.0中，默认使用的是短连接。也就是说，浏览器和服务器每进行一次HTTP操作，就建立一次连接，但任务结束就中断连接。如果客户端浏览器访问的某个HTML或其他类型的 Web页中包含有其他的Web资源，如JavaScript文件、图像文件、CSS文件等；当浏览器每遇到这样一个Web资源，就会建立一个HTTP会话。</p>
 
-<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+<p>但从 HTTP/1.1起，默认使用长连接，用以保持连接特性。使用长连接的HTTP协议，会在响应头有加入这行代码：</p>
 
-<pre><code> /** 相册库 */
-@property (nonatomic, strong) ALAssetsLibrary *library;
-</code></pre>
+<p>Connection:keep-alive</p>
 
-<p>二：然后就懒加载这个属性</p>
+<p>在使用长连接的情况下，当一个网页打开完成后，客户端和服务器之间用于传输HTTP数据的 TCP连接不会关闭，如果客户端再次访问这个服务器上的网页，会继续使用这一条已经建立的连接。Keep-Alive不会永久保持连接，它有一个保持时间，可以在不同的服务器软件（如Apache）中设定这个时间。实现长连接要客户端和服务端都支持长连接。</p>
 
-<pre><code>- (ALAssetsLibrary *)library
-{
-    if (!_library) {
-        _library = [[ALAssetsLibrary alloc] init];
-    }
-    return _library;
-}
-</code></pre>
+<p>HTTP协议的长连接和短连接，实质上是TCP协议的长连接和短连接。</p>
 
-<p>三：点击保存按钮的实现</p>
+<h5>TCP连接</h5>
 
-<pre><code>- (IBAction)save
-{
-// 获得文件夹的名字
-__block NSString *groupName = [self groupName];
+<p>当网络通信时采用TCP协议时，在真正的读写操作之前，server与client之间必须建立一个连接，当读写操作完成后，双方不再需要这个连接 时它们可以释放这个连接，连接的建立是需要三次握手的，而释放则需要4次握手，所以说每个连接的建立都是需要资源消耗和时间消耗的</p>
 
-// self的弱引用
-XMGWeakSelf;
+<p>经典的三次握手示意图：</p>
 
-// 图片库
-__weak ALAssetsLibrary *weakLibrary = self.library;
+<p>经典的四次握手关闭图：</p>
 
-// 创建文件夹
-[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-    if (group) { // 新创建的文件夹
-        // 添加图片到文件夹中
-        [weakSelf addImageToGroup:group];
-    } else { // 文件夹已经存在
-        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
-            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
-                // 添加图片到文件夹中
+<h5>TCP短连接</h5>
 
-                [weakSelf addImageToGroup:group];
+<p>我们模拟一下TCP短连接的情况，client向server发起连接请求，server接到请求，然后双方建立连接。client向server 发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起 close操作。为什么呢，一般的server不会回复完client后立即关闭连接的，当然不排除有特殊的情况。从上面的描述看，短连接一般只会在 client/server间传递一次读写操作</p>
 
-                *stop = YES; // 停止遍历
-            } else if ([name isEqualToString:@"Camera Roll"]) {
-                // 文件夹被用户强制删除了
-                groupName = [groupName stringByAppendingString:@" "];
-                // 存储新的名字
-                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-                // 创建新的文件夹
-                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-                    // 添加图片到文件夹中
-                    [weakSelf addImageToGroup:group];
-                } failureBlock:nil];
-            }
-        } failureBlock:nil];
-    }
+<p>短连接的优点是：管理起来比较简单，存在的连接都是有用的连接，不需要额外的控制手段</p>
 
-    } failureBlock:nil];
-    }
-</code></pre>
+<h5>TCP长连接</h5>
 
-<p>四：添加图片</p>
+<p>接下来我们再模拟一下长连接的情况，client向server发起连接，server接受client连接，双方建立连接。Client与server完成一次读写之后，它们之间的连接并不会主动关闭，后续的读写操作会继续使用这个连接。</p>
 
-<pre><code>/**
- * 添加一张图片到某个文件夹中
- */
-- (void)addImageToGroup:(ALAssetsGroup *)group
-{
-__weak ALAssetsLibrary *weakLibrary = self.library;
-// 需要保存的图片
+<p>首先说一下TCP/IP详解上讲到的TCP保活功能，保活功能主要为服务器应用提供，服务器应用希望知道客户主机是否崩溃，从而可以代表客户使用资源。如果客户已经消失，使得服务器上保留一个半开放的连接，而服务器又在等待来自客户端的数据，则服务器将应远等待客户端的数据，保活功能就是试图在服务 器端检测到这种半开放的连接。</p>
 
-CGImageRef image = self.imageView.image.CGImage;
+<p>如果一个给定的连接在两小时内没有任何的动作，则服务器就向客户发一个探测报文段，客户主机必须处于以下4个状态之一：</p>
 
-// 添加图片到【相机胶卷】
-[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        // 添加一张图片到自定义的文件夹中
-        [group addAsset:asset];
-        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
-    } failureBlock:nil];
-}];
-}
-</code></pre>
+<p>客户主机依然正常运行，并从服务器可达。客户的TCP响应正常，而服务器也知道对方是正常的，服务器在两小时后将保活定时器复位。
+客户主机已经崩溃，并且关闭或者正在重新启动。在任何一种情况下，客户的TCP都没有响应。服务端将不能收到对探测的响应，并在75秒后超时。服务器总共发送10个这样的探测 ，每个间隔75秒。如果服务器没有收到一个响应，它就认为客户主机已经关闭并终止连接。
+客户主机崩溃并已经重新启动。服务器将收到一个对其保活探测的响应，这个响应是一个复位，使得服务器终止这个连接。
+客户机正常运行，但是服务器不可达，这种情况与2类似，TCP能发现的就是没有收到探查的响应。</p>
 
-<p>五：关于沙河中的组名</p>
+<h5>长连接短连接操作过程</h5>
 
-<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
+<p>短连接的操作步骤是：</p>
 
-<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
-static NSString * const iCocosDefaultGroupName = @"iCocos";
-</code></pre>
+<p>建立连接——数据传输——关闭连接…建立连接——数据传输——关闭连接</p>
 
-<p>实现祖名的存取</p>
+<p>长连接的操作步骤是：</p>
 
-<pre><code>- (NSString *)groupName
-{
-    // 先从沙盒中取得名字
+<p>建立连接——数据传输…（保持连接）…数据传输——关闭连接</p>
 
-    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
-    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
-   groupName = XMGDefaultGroupName;
+<h3>长连接和短连接的优点和缺点</h3>
 
-    // 存储名字到沙盒中
-    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
- [[NSUserDefaults standardUserDefaults] synchronize];
-}
-return groupName;
-}
-</code></pre>
+<p>由上可以看出，长连接可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。对于频繁请求资源的客户来说，较适用长连接。不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。在长连接的应用场景下，client端一般不会主动关闭它们之间的连接，Client与server之间的连接如果一直不关闭的话，会存在一个问题，随着客户端连接越来越多，server早晚有扛不住的时候，这时候server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数，这样可以完全避免某个蛋疼的客户端连累后端服务。</p>
+
+<p>短连接对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。但如果客户请求频繁，将在TCP的建立和关闭操作上浪费时间和带宽。</p>
+
+<p>长连接和短连接的产生在于client和server采取的关闭策略，具体的应用场景采用具体的策略，没有十全十美的选择，只有合适的选择。</p>
+
+<h3>什么时候用长连接，短连接？</h3>
+
+<p>长连接多用于操作频繁，点对点的通讯，而且连接数不能太多情况，。每个TCP连接都需要三步握手，这需要时间，如果每个操作都是先连接，再操作的话那么处理速度会降低很多，所以每个操作完后都不断开，次处理时直接发送数据包就OK了，不用建立TCP连接。例如：数据库的连接用长连接， 如果用短连接频繁的通信会造成socket错误，而且频繁的socket 创建也是对资源的浪费。</p>
+
+<p>而像WEB网站的http服务一般都用短链接，因为长连接对于服务端来说会耗费一定的资源，而像WEB网站这么频繁的成千上万甚至上亿客户端的连接用短连接会更省一些资源，如果用长连接，而且同时有成千上万的用户，如果每个用户都占用一个连接的话，那可想而知吧。所以并发量大，但每个用户无需频繁操作情况下需用短连好。</p>
 </div>
   
   
@@ -1187,7 +1424,7 @@ return groupName;
 
 
 
-| <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/#comments">更多评论</a>
+| <a href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/#comments">更多评论</a>
 
     </article>
   
@@ -1196,7 +1433,7 @@ return groupName;
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/29/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/04/12/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
     
     
       <p class="meta">
@@ -1634,7 +1871,7 @@ unavailable 下线
 
 
 
-| <a href="/blog/2015/11/29/xmppshi-yong-zong-jie/#comments">更多评论</a>
+| <a href="/blog/2015/04/12/xmppshi-yong-zong-jie/#comments">更多评论</a>
 
     </article>
   
@@ -1643,7 +1880,7 @@ unavailable 下线
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
     
     
       <p class="meta">
@@ -1754,7 +1991,7 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
 
 
 
-| <a href="/blog/2015/11/29/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
+| <a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
 
     </article>
   
@@ -1763,7 +2000,7 @@ estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，�
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
     
     
       <p class="meta">
@@ -1992,7 +2229,7 @@ for (CBCharacteristic *characteristic in service.characteristics)
 
 
 
-| <a href="/blog/2015/11/28/lan-ya-kai-fa-ni-zhi-dao-duo-shao/#comments">更多评论</a>
+| <a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/#comments">更多评论</a>
 
     </article>
   
@@ -2001,7 +2238,7 @@ for (CBCharacteristic *characteristic in service.characteristics)
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
     
     
       <p class="meta">
@@ -2129,7 +2366,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
 
 
 
-| <a href="/blog/2015/11/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
+| <a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
 
     </article>
   
@@ -2138,131 +2375,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">取消TableView的Header与Footer的黏性效果</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
-
-<h6>那么是什么问题呢？</h6>
-
-<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
-
-<p>我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？</p>
-
-<p>后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。</p>
-
-<p>也在网上找了一段这样的代码</p>
-
-<h3>去掉UItableview headerview黏性(sticky)</h3>
-
-<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-
-if (scrollView == self.tableView)
-
-{
-
-        CGFloat sectionHeaderHeight = 64; //sectionHeaderHeight
-
-        if (scrollView.contentOffset.y &lt;= sectionHeaderHeight &amp;&amp; scrollView.contentOffset.y &gt;= 0) {
-
-            scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
-
-        } else if (scrollView.contentOffset.y &gt;= sectionHeaderHeight) {
-
-            scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
-
-        }
-
-    }
-
-}
-</code></pre>
-
-<p>但是他职能设置headerView不能设置footerView，自己也试着去补充footerView的实现，但是发现技术有限，所以，你懂的！</p>
-
-<h3>最后看到国外一位大神写的一一篇文章找到了下面的代码</h3>
-
-<pre><code> -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
-
-    if (scrollView == self.tableView)
-
-        {
-
-        UITableView *tableview = (UITableView *)scrollView;
-
-        CGFloat sectionHeaderHeight = 64;
-
-        CGFloat sectionFooterHeight = 120;
-
-        CGFloat offsetY = tableview.contentOffset.y;
-
-        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
-
-        {
-
-            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
-
-        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
-
-        {
-
-            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
-
-        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
-
-            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
-
-        }
-
-    }
-
-}
-</code></pre>
-
-<p>注：sectionHeaderHeight和sectionFooterHeight根据项目进行设置。</p>
-
-<p>发现基本上搞定，最后只需要设置对应的内边距即可！</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
     
     
       <p class="meta">
@@ -2579,7 +2692,7 @@ return jailbroken;
 
 
 
-| <a href="/blog/2015/11/27/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
+| <a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
 
     </article>
   
@@ -2588,7 +2701,7 @@ return jailbroken;
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/12/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a></h1>
     
     
       <p class="meta">
@@ -3062,14 +3175,14 @@ addBlankTargetForLinks();
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/12/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">阅读全文😘</a>
     </footer>
   
 
 
 
 
-| <a href="/blog/2015/11/27/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/#comments">更多评论</a>
+| <a href="/blog/2014/12/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/#comments">更多评论</a>
 
     </article>
   
@@ -3078,7 +3191,7 @@ addBlankTargetForLinks();
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
     
     
       <p class="meta">
@@ -3118,14 +3231,14 @@ addBlankTargetForLinks();
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">阅读全文😘</a>
     </footer>
   
 
 
 
 
-| <a href="/blog/2015/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
+| <a href="/blog/2014/11/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
 
     </article>
   
