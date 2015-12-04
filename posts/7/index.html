@@ -1,0 +1,2318 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="这两天认真研究了一下MVC设计模式，在iOS开发中这个算是重点中的重点了，如果对MVC模式不理解或者说不会用，那么你iOS肯定学不好，或者写不出好的东西，当然本人目前也在学习中，不过既然能看到这篇文档，说明你已经开始着手学习并且想深入研究它了，个人也是研究很久才搞懂，就写下来希望对各位有用， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/posts/7/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/21/mvc/">MVC初探+实战</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这两天认真研究了一下MVC设计模式，在iOS开发中这个算是重点中的重点了，如果对MVC模式不理解或者说不会用，那么你iOS肯定学不好，或者写不出好的东西，当然本人目前也在学习中，不过既然能看到这篇文档，说明你已经开始着手学习并且想深入研究它了，个人也是研究很久才搞懂，就写下来希望对各位有用，也能方便自己以后开发中查看，好了废话不多说，下面就来详细介绍一下MVC，并且用实例验证一下在项目开发中怎么去使用它。</p>
+
+<p>相信你对 MVC 设计模式 并不陌生，只是不能完全理解其中的含义或者不能很好的使用它。</p>
+
+<p>从字面意思来理解， Modal , View , Controller ，其用意在于将数据与视图分离开来－－－－－－解藕。</p>
+
+<p>在iOS cocoa touch 编程中， MVC机制被发挥得淋漓尽致。 MVC 示意图如下。 只有充分理解了MVC，才能在编写出优雅的iOS app。为充分理解 MVC， 相关的概念（比如： Delegate、 Protocol、 Notification 等）也要了然于胸。</p>
+
+<pre><code> MVC 约定， Model 不允许与View 打交道。 Model 是管理数据的， 当Model中的数据发生变化时，与之对应的视图应更新。 这就需要一种机制来支持。为此 iOS 框架提供了两种支持机制： Notification 和KVO （Key-Value Observing）。
+</code></pre>
+
+<p>　　KVO 可简单理解为，为你所关注的 Key 对象注册一个监听器。 当有数据发生变化时，就会发出广播给所有的监听器。</p>
+
+<pre><code>  MVC 也约定， View 不允许直接引用Modal， 它只能被Controller 所控制。 Controller 控制 View 显示什么数据。我们知道，View 所要显示的数据是来源于 Modal， View 上产生的事件 （ 比如 Touch事件）需要通知 Controller。 既然MVC 不允许直接打交道，就需要提供一种机制。 
+</code></pre>
+
+<p>  不错， iOS 确实提供了一种机制， 名曰： Delegate。 Delegate 这个词， 有人将它译为“委托”，也有人将它译为“代理”。名称上的差异没有什么，重要的是如何理解 Delegate。 Delegate设计模式的引入，就是为了解决UIView与Controller松耦合互动问题。</p>
+
+<p>为便于理解， 这里截取一张来iOS MVC 示意图：</p>
+
+<p>图片</p>
+
+<p>我们在详细介绍下这张图的内涵：</p>
+
+<ol>
+<li>图中，绿色的箭头表示直接引用。 对View 的直接引用体现在 IBOutlet 上。 当引用一个View 时，比如Button。 需要在ViewController</li>
+</ol>
+
+
+<p>中声明一个  IBOutlet  UIButton * btn；</p>
+
+<ol>
+<li><p>然后，我们看View 是怎么向 Controller 通信的。对于这个，  iOS 有三种常见的模式：</p>
+
+<ul>
+<li><p> 设置View对应的Action Target。如设置UIButton的Touch up inside的Action Target。</p></li>
+<li><p> 设置View的Delegate，如UIAlertViewDelegate, UIActionSheetDelegate，UITextFieldDelegate等。</p></li>
+<li><p> 设置View的data source, 如UITableViewDataSource。</p></li>
+</ul>
+
+
+<p> 通过以上三种模式，View既能向Controller通信，又无需知道具体的Controller是谁，这样，View 就与Controller解耦了。</p>
+
+<p>  除此之外， iOS 还提供了 Action-Target 模式来让Controller 监听View 触发的事件。 View 又是如何获取数据呢？ iOS提供了 Data source 的概念，其实也就是Protocol 的应用。</p></li>
+</ol>
+
+
+<blockquote><p>综上所述， 正是在iOS MVC框架的驱使下， 才需要深入理解 Delegate、Protocol等概念。</p></blockquote>
+
+<p>下面来看看代码中是怎么实现的，</p>
+
+<p>说到MVC我们一开始都是先从Model开始，然后再编写对应的View最后在控制器中做相应的控制</p>
+
+<h3>一：Model</h3>
+
+<p>1:首先我们先创建一个模型类，用于实现模型数据的读取</p>
+
+<p>头文件中创建两个模型属性，和两个模型方法，</p>
+
+<pre><code>#pragma mark 模型属性
+
+//用于存储对应的数据
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, copy) NSString *icon;
+
+
+#pragma mark 模型方法
+
+//用于初始化模型数据
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+
++(instancetype)shopWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<p>实现文件中实现对应的模型方法，</p>
+
+<pre><code>#pragma mark 模型方法de实现
+
+-(instancetype)initWithDict:(NSDictionary *)dict{
+    if (self == [super init]) {
+        //创建模型并且通过字典的键获取里面的值放到模型属性中，方便后面用于数据处理直接食用
+        shopsModel *shop = [[shopsModel alloc] init];
+        shop.name = dict[@"name"];
+        shop.icon = dict[@"icon"];
+    }
+    return self;
+}
+
++(instancetype)shopWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+</code></pre>
+
+<h3>二：View</h3>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>纯代码</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>************/</p>
+
+<p>创建一个视图类，用于显示对应的视图（控件，数据）</p>
+
+<p>头文件中通过模型定义一个属性，并且定义三个快速创建视图View的方法，这种方法是使用较多的，而且让人一看上去就知道怎么用</p>
+
+<pre><code>//引入模型类
+@class shopsModel;
+
+@interface shopsView : UIView
+
+@property (nonatomic, assign) shopsModel *shop;
+
+//实例方法，使用模型快速创建视图View
+-(instancetype)initWIthShop:(shopsModel *)shop;
+
+//类方法，使用模型快速创建视图View
++(instancetype)shopWithShop:(shopsModel *)shop;
+
+//用于创建View的一个类方法
++(instancetype)shopView;
+</code></pre>
+
+<p>实现文件中先导入模型类：</p>
+
+<pre><code> 1 #import "shopsModel.h" 
+</code></pre>
+
+<p>然后实现对应的创建View的方法，</p>
+
+<pre><code>-(instancetype)initWIthShop:(shopsModel *)shop
+{
+    if (self == [super init]) {
+        self.shop = shop;
+    }
+    return self;
+}
+
++(instancetype)shopWithShop:(shopsModel *)shop
+{
+    return [[self alloc] initWIthShop:shop];
+}
+
++(instancetype)shopView
+{
+    return [[self alloc] init];
+}
+</code></pre>
+
+<p>记得平时我们自定义View的时候，都是直接在init方法中做的，但是，这里有一个细节需要注意的，就是init方法内部会自动调用initWithFrame方法，我们要自定义View一般要做的就是设置View的布局和View的创建，而initWithFrame正好是控件布局之前创建控件的时候调用的，所以我们建议在这里设置他的Frame</p>
+
+<p>这里我们先要在私有拓展中定义两个属性用于记录我们所创建的View的属性</p>
+
+<pre><code>@property (nonatomic, weak) UIImageView *imageV;
+
+@property (nonatomic, weak) UILabel *label;
+</code></pre>
+
+<p> 实现空间创建的View方法</p>
+
+<p>//初始化View的方法
+-(instancetype)initWithFrame:(CGRect)frame
+{</p>
+
+<pre><code>if (self == [super initWithFrame:frame]) {
+    //创建UIImageView和UILabel把它加到自定义View上面，并且使用我们定义的属性纪录他，方便后面使用
+
+    UIImageView *image = [[UIImageView alloc] init];
+    [self addSubview:image];
+    self.imageV = image;
+
+    UILabel *label = [[UILabel alloc] init];
+    [self addSubview:label];
+    self.label = label;
+}
+return self;
+</code></pre>
+
+<p>}
+在View中布局空间的时候就会调用下面的方法</p>
+
+<p>//布局子控件方法
+-(void)layoutSubviews
+{
+    [super layoutSubviews];</p>
+
+<pre><code>//获取宽高
+CGFloat W = self.frame.size.width;
+CGFloat H = self.frame.size.height;
+
+//设置自定义View中对应控件的Frame
+self.imageV.frame = CGRectMake(0, 0, W, W);
+self.label.frame = CGRectMake(0, W, W, H - W);
+</code></pre>
+
+<p>}
+我们还有一个事情要做，就是重写通过模型创建的那个属性，将模型里面的属性设置到控件中对应的属性，</p>
+
+<p>//重写Set方法，设置对应的数据
+-(void)setSpView:(shopsModel *)shop
+{
+    _shop = shop;</p>
+
+<pre><code>//使用模型中的数据设置控件对应的属性
+self.imageV.image = [UIImage imageNamed:shop.icon];
+self.label.text = shop.name;
+</code></pre>
+
+<p>}</p>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Xib</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>************/</p>
+
+<p>关于Xib这里就不多做解释了</p>
+
+<p>说一下怎么使用Xib创建一个我们自定义的View并且，在控制器里面显示</p>
+
+<p>首先新建一个文件选中interface Builder中的空文件设置一个名字，就可以创建一个Xib文件</p>
+
+<p>图片</p>
+
+<p>————然后创建一个自定义View的类。</p>
+
+<p>点击Xib会看到里面什么也没有，因为我需要自定View所以拖一个View到Xib内部，并且拖我们对应要实现的控件到View里面作为他的子控件，这里需要注意的我们需要设置Xib文件对应的类为我们创建的那个类的名字：</p>
+
+<p>图片</p>
+
+<p>然后我们要做的就是将我们放在View里面的属性设置对输出口（这里就是拖线）这里我们一般是拖到实现文件中的私有拓展中</p>
+
+<pre><code>1 //控件输出口
+2 
+3 @property (weak, nonatomic) IBOutlet UIImageView *icon;
+4 
+5 @property (weak, nonatomic) IBOutlet UILabel *name;
+</code></pre>
+
+<p>再后面的操作之前我们还需要在头文件引入这个类，并且通过模型创建一个属性</p>
+
+<pre><code> 1 //模型商品属性 
+ 2 @property (nonatomic, strong) shopsModel *shop; 
+</code></pre>
+
+<p>定义一个通过模型快速创建View的方法</p>
+
+<pre><code> 1 //快速创建并且加载Xib文件的方法 
+ 2 +(instancetype)shopViewWithShop:(shopsModel *)shop; 
+</code></pre>
+
+<p>然后就是在实现文件中实现这个方法，我们是将Xib的加载封装在里面更好的实现解耦和不被外界知道</p>
+
+<p>这里加载Xib文件的方式有两种</p>
+
+<pre><code>/**
+ *  便利创建自定义View的方法
+ */
++(instancetype)shopViewWithShop:(shopsModel *)shop
+{
+
+    /**
+     *  加载Xib文件
+     */
+    iCocosView *shops = [[[NSBundle mainBundle] loadNibNamed:@"shops.plist" owner:nil options:nil] lastObject];
+    /**
+     *  第二种方法
+     */
+//    UINib *nib = [UINib nibWithNibName:@"shops.plist" bundle:[NSBundle mainBundle]];
+//    NSArray *arr = [nib instantiateWithOwner:nil options:nil].lastObject;
+
+    shops.shop = shop;
+    return shops;
+}
+</code></pre>
+
+<p>这里同样需要实现重写那个通过模型创建的属性的Setter方法</p>
+
+<pre><code>//重写Setter方法，设置View中对应的控件的属性为模型中的数据
+-(void)setShop:(shopsModel *)shop
+{
+    _shop = shop;
+
+    //设置模型属性
+    self.icon.image = [UIImage imageNamed:shop.icon];
+    self.name.text = shop.name;
+}
+</code></pre>
+
+<h3>三：Controller</h3>
+
+<p>完成上面之后，控制器里面实现久简单多了</p>
+
+<p>定义一个可变数组用于存放我们的模型数据</p>
+
+<p> 1 @property (nonatomic, strong) NSMutableArray *shops;</p>
+
+<p> 使用懒加载的方式加载那个plist数据，并且转成模型放到一个数组中，方便后面的使用</p>
+
+<pre><code>//懒加载
+-(NSMutableArray *)shops
+{
+    if (_shops == nil) {
+        //加载plist数据并且把他放到一个数组中
+        NSArray *shopsArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil]];
+        //初始化存放数据的可变模型数组
+        _shops = [NSMutableArray array];
+
+        //遍历那个存放好了plist数组的数组，把他放到一个字典中
+        for (NSDictionary *arr in shopsArray) {
+
+            //使用快速创建模型的方法创建一个模型对象，并且将他加到可变的模型数组中，方便后面使用
+            shopsModel *shop = [shopsModel shopWithDict:arr];
+            [_shops addObject:shop];
+        }
+    }
+    return _shops;
+
+}
+</code></pre>
+
+<p>最后我们就只需要在控制器里面控制并且使用上面的模型和View了，</p>
+
+<p>先来看看纯代码是怎么实现的</p>
+
+<pre><code>1     //使用快速创建方法去存放模型数据的数组中取出数据，通过View内部的实现显示到View上面
+2     shopsView *shView = [shopsView shopWithShop:self.shops[count]];
+3     //设置View的frame
+4     shView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+5     //将自定义View加到界面中显示
+6     [self.shopView addSubview:shView];
+</code></pre>
+
+<p>如果你使用的是Xib，方法和思路还是一样的</p>
+
+<pre><code>//去存放模型数据的数组中取出数据
+iCocosView *shop = self.shops[index];
+//通过取出来的数据快速创建一个View放到view内部实现并且使用
+iCocosView *shopView = [iCocosView shopViewWithShop:shop];
+//设置View的Frame
+shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+//将自定义的View添加到界面显示
+[self.shopsView addSubview:shopView];
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Swift实现</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>********/</p>
+
+<p>注：如果你没有一点Swift基础（基本语法都不知道，虽然和OC很相似，但看了也是没有用的），建议保留此文，后面学习的Swift过程中遇到的时候再拿来看看就完全不一样了。</p>
+
+<p>最近swift被炒的很火，由于苹果今年做了一个很大的决定，就是Swift2.0将开源，9月份将会放出源码，就意味着我们可以知道这里面是怎么实现的，并且可以在Linux平台上写，我想好处远远不止这些。</p>
+
+<p>笔者对swift也有些一些研究，平时在OC上面学习到一个好东西的时候都会使用实现一遍，所以这个就更不能例外了。</p>
+
+<h3>一：Model</h3>
+
+<p>第一步我们同样从模型下手，这里喝OC有些不同的是Swift只是在一个文件里面实现的</p>
+
+<pre><code>import UIKit
+
+class Shop: NSObject {
+
+//定义变量字符串属性
+var name:String!
+var icon:String!
+
+//初始化模型方法
+init(dict:[String:String]) {
+    super.init()
+
+    //设置模型对应的属性
+    self.name = dict["name"]
+    self.icon = dict["icon"]
+
+    //使用封装好的方法设置模型属性
+    setValuesForKeysWithDictionary(dict)
+}
+
+}
+</code></pre>
+
+<h3>二：View</h3>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>纯代码</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<p>自定义View中实现的方法也是差不多的，只是方法的形式和关键字不同而已</p>
+
+<pre><code>import UIKit
+
+class ShopView: UIView {
+
+/// 懒加载控件
+lazy var iconView:UIImageView = UIImageView()
+lazy var nameView:UILabel = UILabel()
+
+
+/**
+初始化Frame
+*/
+override init(frame: CGRect) {
+    super.init(frame: frame)
+
+    //添加子控件到界面
+    self.addSubview(iconView)
+    self.addSubview(nameView)
+    //设置Label的文字剧中
+    nameView.textAlignment = NSTextAlignment.Center
+}
+
+/**
+从文件中加载数据（Xib／StoryBoard）
+*/
+required init(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+}
+
+/**
+布局子控件方法
+*/
+override func layoutSubviews() {
+    //获取宽高
+    var W:CGFloat = self.frame.size.width
+    var H:CGFloat = self.frame.size.height
+
+    //设置UIImageView和UIlable的frame
+    self.iconView.frame = CGRectMake(0, 0, W, W)
+    self.nameView.frame = CGRectMake(0, W, W, H - W)
+}
+</code></pre>
+
+<p>}</p>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Xib</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<p>使用Xib方式同样是先创建Xib，创建对应的类文件，设置Xib对应为我们创建的类，添加子控件，设置输出口，然后就实现对应的方法</p>
+
+<pre><code>import UIKit
+
+    class XMGShopView: UIView {
+
+/** 图片 */
+@IBOutlet weak var iconView: UIImageView!
+/** 名字 */
+@IBOutlet weak var nameLabel: UILabel!
+
+var shop: Shop? {
+    didSet {
+        // 重写set方法
+        iconView.image = UIImage(named: shop!.icon)
+        nameLabel.text = shop!.name
+    }
+}
+//加载Xib实现方法
+class func shopView() -&gt; XMGShopView{
+    return NSBundle.mainBundle().loadNibNamed("XMGShopView", owner: nil, options: nil).last as! XMGShopView
+}
+}
+</code></pre>
+
+<p>注：这里最值得注意的地方是didSet这个方法，其实在swift中海油一个方法叫willSet，他们是相对应的，使用来监听属性变化的，就相当于OC里面的KVO不过在这里叫做属性观察者，分别是在设置属性后和之前调用，这里由于需要只实现了设置之后观察属性的变化</p>
+
+<h3>三：Conreoller</h3>
+
+<p>关于控制器里面实现的代码和OC里面就有许多不同的地方了，特别是懒加载（lazy）这里，笔者也是搞了好久才搞明白</p>
+
+<p>懒加载</p>
+
+<pre><code>//使用lazy实现懒加载，这里使用的是一个叫做闭包返回值的东西来实现的
+lazy var shops:NSMutableArray = {
+    //从MainBundle中获取plist文件的路径
+    let path:String = NSBundle.mainBundle().pathForResource("shops.plist", ofType: nil)!
+    //加载plist文件放到一个可变数组里面，
+    let tempArr:NSMutableArray = NSMutableArray(contentsOfFile: path)!
+    //定义一个可变的数组，数组的大小就是上面那个存放plist数据的数组的大小
+    let shopsArrM:NSMutableArray = NSMutableArray(capacity: tempArr.count)
+    //遍历存放plist数据的那个数组，放到一个字典中去
+    for dict in tempArr
+    {
+        //使用模型中实现的方法创建一个模型对象
+        let shop: Shop = Shop(dict: dict as! [String : String])
+        //将模型对象放到plist数组中
+        shopsArrM.addObject(shop)
+    }
+    //返回那个存放模型数据的数组
+    return shopsArrM
+    }()下面就死创建并且显示View的实现
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>纯代码</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<pre><code>    //创建一个自定义的View
+    let shopView: ShopView = ShopView()
+    //设置他的frame
+    shopView.frame = CGRect(x: shopX, y: shopY, width: shopW, height: shopH)
+    //取出模型数组中对应的数组设置到试图中（这里使用了？表示类型转换）
+    shopView.shop = self.shops[index] as? Shop
+    //添加并显示
+    self.shopsView.addSubview(shopView)
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Xib</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<pre><code>//创建一个自定义的View
+  let shopView: iCocosView = iCocosView.shopView()
+  //设置他的frame
+  shopView.frame = CGRect(x: shopX, y: shopY, width: shopW, height: shopH)
+  //取出模型数组中对应的数组设置到试图中（这里使用了？表示类型转换）
+  shopView.shop = self.shops[index] as? Shop
+  //添加并显示
+  self.shopsView.addSubview(shopView)
+</code></pre>
+
+<p>使用纯代码和Xib的方式没有什么不同，最主要是自定义View内部的实现。</p>
+
+<p>mvc机制</p>
+
+<p>说明：</p>
+
+<ul>
+<li><p>（1）在开发过程中，作为控制器处理的量级应该很轻，不该操心的不操心。协调好模型和视图就ok了，要学会当一个好老板。</p></li>
+<li><p>（2）三个部分各司其职，数据模型只负责数据的处理，视图部分只负责把拿到的数据进行显示，两个部分都是被动的，等待着大管家控制器的调遣。</p></li>
+<li><p>（3）在OC中，如果视图和数据模型之间有通道，那控制器是否处于失控状态呢？</p></li>
+</ul>
+
+
+<p>网上有人是这里理解MVC的：</p>
+
+<p>MVC是Model-VIew-Controller，就是模型－视图－控制器，这些都是什么东西呢？MVC把软件系统分为三个部分：Model，View。controller。在cocoa中，你的程序中的每一个object（对象）都将明显地仅属于这三部分中的一个，而完全不属于另外两个。</p>
+
+<p>　　　　　　Model = 你的程序是什么(而不是你的程序是如何显示的)</p>
+
+<p>让我们举个例子，我们上中学的时候，我们的步步高电子词典中有个游戏叫“雷霆战机”，也就是“打飞机”的游戏，Model就是：你的小飞机的攻击力是多少？你的小飞机上装的是什么武器，炮弹，导弹，还是激光炮？你的小飞机还有多少血？等等。再概括点说，就是你的程序将要实现的功能，或者是它所能干的事情。</p>
+
+<pre><code>              Controller = 如何使你的模型呈现给用户(程序逻辑)
+</code></pre>
+
+<p>Controller是程序内部的逻辑，大多情况下你将看不到它，它将Model和View捆绑在一起，它将处理用户的输入，例如，你按开炮的键子，Controller就会通过内部的逻辑来处理你的要求，并在屏幕上做出相应的显示，你将看到屏幕上的小飞机发出炮弹击中敌机。这也是Controller控制View的显示的例子。所以你可以把Controller看成是连接M和V的桥梁。</p>
+
+<pre><code>              View ＝ 在屏幕上你所看到的（是你的Controller的“奴才”）
+</code></pre>
+
+<p>接着前面的小飞机，View就是：你的小飞机是什么样子的，有一个还是两个翅膀，有几挺枪炮；还有，你的飞机在屏幕上的位置等等。总之，你在屏幕上看到的组件都可以归类为View。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/03/21/mvc/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/21/init%20pic/">初始化图片</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一.读取图片</h3>
+
+<h6>1.从资源(resource)读取</h6>
+
+<pre><code>UIImage* image=[UIImage imageNamed:@"1.jpg"];  
+</code></pre>
+
+<h6>2.从网络读取</h6>
+
+<pre><code>NSURL *url=[NSURL URLWithString:@"http://www.sinaimg.cn/qc/photo_auto/chezhan/2012/50/00/15/80046_950.jpg"];  
+UIImage *imgFromUrl =[[UIImage alloc]initWithData:[NSData dataWithContentsOfURL:url]];  
+</code></pre>
+
+<h6>3.从手机本地读取</h6>
+
+<p>读取本地图片非resource</p>
+
+<pre><code>NSString *aPath3=[NSString stringWithFormat:@"%@/Documents/%@.jpg",NSHomeDirectory(),@"test"];  
+UIImage *imgFromUrl3=[[UIImage alloc]initWithContentsOfFile:aPath3];  
+UIImageView* imageView3=[[UIImageView alloc]initWithImage:imgFromUrl3];  
+</code></pre>
+
+<h6>4.从现有的context中获得图像</h6>
+
+<pre><code>//add ImageIO.framework and #import     
+CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)url, NULL);  
+CGImageRef img= CGImageSourceCreateImageAtIndex(source,0,NULL);  
+CGContextRef ctx=UIGraphicsGetCurrentContext();  
+CGContextSaveGState(ctx);  
+//transformCTM的2种方式  
+//CGContextConcatCTM(ctx, CGAffineTransformMakeScale(.2, -0.2));  
+//CGContextScaleCTM(ctx,1,-1);  
+//注意坐标要反下,用ctx来作为图片源   
+CGImageRef capture=CGBitmapContextCreateImage(ctx);  
+CGContextDrawImage(ctx, CGRectMake(160, 0, 160, 230), [image CGImage]);  
+CGContextDrawImage(ctx, CGRectMake(160, 230, 160, 230), img);  
+CGImageRef capture2=CGBitmapContextCreateImage(ctx);  
+</code></pre>
+
+<h6>5.用Quartz的CGImageSourceRef来读取图片</h6>
+
+<pre><code>CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)url, NULL);  
+CGImageRef img= CGImageSourceCreateImageAtIndex(source,0,NULL);  
+</code></pre>
+
+<h3>二.保存图片</h3>
+
+<h6>1.转换成NSData来保存图片（imgFromUrl是UIImage）</h6>
+
+<p>保存图片 2种获取路径都可以</p>
+
+<pre><code>//NSArray*paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);  
+//NSString*documentsDirectory=[paths objectAtIndex:0];    
+//NSString*aPath=[documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.jpg",@"test"]];   
+NSString *aPath=[NSString stringWithFormat:@"%@/Documents/%@.jpg",NSHomeDirectory(),@"test"];  
+NSData *imgData = UIImageJPEGRepresentation(imgFromUrl,0);      
+[imgData writeToFile:aPath atomically:YES];     
+</code></pre>
+
+<h6>2.用Quartz的CGImageDestinationRef来输出图片，这个方式不常见，所以不做介绍，详细可以看apple文档Quartz 2D Programming Guide</h6>
+
+<h3>三.绘制图(draw|painting)</h3>
+
+<h6>1.UIImageView方式加入到UIView层</h6>
+
+<pre><code>UIImageView* imageView=[[UIImageView alloc]initWithImage:image];  
+imageView.frame=CGRectMake(0, 0, 320, 480);  
+[self addSubview:imageView];  
+[imageView release];  
+</code></pre>
+
+<h6>2.[img drawAtPoint]系列方法</h6>
+
+<pre><code>[image4 drawAtPoint:CGPointMake(100, 0)];    
+</code></pre>
+
+<h6>3.CGContextDrawImage</h6>
+
+<pre><code>CGContextDrawImage(ctx, CGRectMake(160, 0, 160, 230), [image CGImage]);  
+</code></pre>
+
+<h6>4.CGLayer</h6>
+
+<p>这个是apple推荐的一种offscreen的绘制方法，相比bitmapContext更好，因为它似乎会利用iphone硬件(drawing-card)加速</p>
+
+<pre><code>CGLayerRef cg=CGLayerCreateWithContext(ctx, CGSizeMake(320, 480), NULL);  
+//需要将CGLayerContext来作为缓存context，这个是必须的  
+CGContextRef layerContext=CGLayerGetContext(cg);  
+CGContextDrawImage(layerContext, CGRectMake(160, 230, 160, 230), img);   
+CGContextDrawLayerAtPoint(ctx, CGPointMake(0, 0), cg);  
+</code></pre>
+
+<h6>5.CALayer的contents</h6>
+
+<pre><code>UIImage* image=[UIImage imageNamed:@"1.jpg"];  
+CALayer *ly=[CALayer layer];  
+ly.frame=CGRectMake(0, 0, 320, 460);  
+ly.contents=[image CGImage];  
+[self.layer addSublayer:ly];  
+</code></pre>
+
+<h3>四.其它</h3>
+
+<h6>1.CGImage和UIImage互换</h6>
+
+<p>这样就可以随时切换UIKit和Quartz之间类型，并且选择您熟悉的方式来处理图片.</p>
+
+<pre><code>CGImage cgImage=[uiImage CGImage];
+UIImage* uiImage=[UIImage imageWithCGImage:cgImage];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/03/21/init%20pic/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/12/yufajingxuan/">语法精选</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>一、NSSet、NSMutableSet集合的介绍</h4>
+
+<p>1）NSSet、NSMutableSet集合，元素是无序的，不能有重复的值。</p>
+
+<p>2）用实例方法创建一个不可变集合对象</p>
+
+<p>例如：</p>
+
+<pre><code>//宏定义
+#define TOBJ(n) [NSNumber numberWithInt:n]
+NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+</code></pre>
+
+<p>2）用类方法创建一个不可变集合对象 例如：</p>
+
+<p>1 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];</p>
+
+<p>3）NSSet 快速遍历方法（无序，所以没有下标）例如：</p>
+
+<pre><code>1  for(id num in set1){
+2     NSLog(@"%@",num);
+3 }
+</code></pre>
+
+<p>4）setSet 用于修改集合内容 例如：[mSet setSet:set1];</p>
+
+<p>5）intersectSet 用于获取两个集合的交集(返回两个集合中相同的元素)。例如：</p>
+
+<pre><code>#define TOBJ(n) [NSNumber numberWithInt:n]
+NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
+[mSet intersectSet:set2];
+NSLog(@"intersect:%@",mSet); //结果：2
+</code></pre>
+
+<p>6）unionSet 用于获取两个集合的并集(返回两个集合中所有的元素,如果重复只显示其中一个) 例如：</p>
+
+<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
+2 NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
+4 [mSet intersectSet:set2];
+5 NSLog(@"intersect:%@",mSet); //结果：123456
+</code></pre>
+
+<p>7）minusSet 用于获取两个集合的差集 例如：</p>
+
+<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
+2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
+4 [mSet minusSet:set2];
+5 NSLog(@"intersect:%@",mSet); //结果：13456
+</code></pre>
+
+<p>8）allObjects 用于将集合转换为数组 例如：</p>
+
+<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
+2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+3 NSArray *array= [mSet allObjects];
+</code></pre>
+
+<p>9）anyObject 取set中任意一个元素（如果set中只有一个元素，取值）</p>
+
+<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
+2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
+3 id value=[mSet anyObject];
+</code></pre>
+
+<h4>二、NSIndexSet、NSMutableIndexSet 可变索引集合的介绍</h4>
+
+<p>1）索引集合，表示唯一的整数的集合,有可变和不可变之分。</p>
+
+<p>2）initWithIndexesInRange 用指定的范围对应的索引创建索引对象 例如：</p>
+
+<pre><code>1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:
+2 NSMakeRange(2,   3)];//结果 2,3,4
+3）objectsAtIndexes 根据索引集合中的索引取出数组中对应的元素（返回数组） 例如：
+
+1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:NSMakeRange(2,   3)]; 
+2 NSArray *array=@[@"one",@"two",@"three",@"four",@"five",@"sex"];
+3 NSArray *array2=[array objectsAtIndexes:indexSet1];
+4 NSLog(@"array2:%@",array2); //结果：array2:three four five
+</code></pre>
+
+<p>4）创建一个可变的集合索引(初始化时有一个索引）(可以存储不连续的索引值） 例如：</p>
+
+<pre><code>1 NSMutableIndexSet *indexSet2=[NSMutableIndexSet indexSetWithIndex:2];
+2 [indexSet2 addIndex:4];
+3 [indexSet2 addIndex:1];
+4 [indexSet2 addIndex:2];
+5 NSLog(@"count:%ld",indexSet2.count);//获取个数
+6 NSArray *array3=[array objectsAtIndexes:indexSet2];//结果：two three  five
+</code></pre>
+
+<p>5）NSNull:类表示空, 只有一个类方法[NSNull null]获取空对象，在数组中nil表示元素结束（不能用nil表示空元素</p>
+
+<p>可采用[NSNull null]表示空元素） 例如：</p>
+
+<pre><code>1 NSArray *array5=[NSArray arrayWithObjects:@"red",[NSNull null],@"yellow",@"blue", nil];
+</code></pre>
+
+<h4>三、Category 介绍</h4>
+
+<p>1）Category 意为： 类别、分类、类目</p>
+
+<p>1、可以在不改变类名的情况下，扩充类的功能（给类增加方法）</p>
+
+<p>2、可以将类的功能拆成多个文件编译</p>
+
+<p>3、类别中不能增加成员变量，可以访问原来类中的成员变量</p>
+
+<p>4、类别中可以增加与原来类中同名的方法，调用时优先调用</p>
+
+<p>5、添加文件时选择Objective-C File 那个文件同时注意选择要拓展的类名</p>
+
+<p>2）类别的声明类似于类的声明，@interface要扩充功能的类名（类别名）</p>
+
+<p>1、类别不能实例化对象</p>
+
+<p>2、类别中不能增加成员变量。</p>
+
+<p>3、类别中的方法可以访问原来类中的成员变量</p>
+
+<p>4、类别可以调用原来类中的方法</p>
+
+<p>5、类别中的方法可以被子类继承</p>
+
+<p>6、类别可以添加与原来类中相同的方法，调用时类别中的方法优先调用，一般不建议这样操作（无法再调用原来类中的方法）</p>
+
+<p>3）字符串、NSNumber是簇类，底层是由很多类组成的，不能有子类 ,因为子类调用不了父类中的方法</p>
+
+<p>4）Category 文件名格式为：父类文件名+子类文件名 如：NSMutaleString+Resvrse.h</p>
+
+<p>5）Category .m文件中的方法表现形式： 1 @implementation NSMutableString (Reverse)</p>
+
+<h4>四、Extension 的介绍</h4>
+
+<p>1）extension：相当于未命名的Category，可以扩展类的功能（增加方法），也可以增加成员变量。</p>
+
+<p>2）extension：只有.h文件</p>
+
+<p>3）extension  表现形式 @interface 类名（）例如： 1 @interface Person (){}</p>
+
+<p>4）在.m文件中也可以声明成员变量，不会将其放在接口h文件中暴露给使用者。 例如：</p>
+
+<pre><code>复制代码
+1 @interface Person()
+2 { 
+3     int _num;
+4 }
+5 //将方法声明为私有的
+6 -(void)print2;
+7 @end
+复制代码
+</code></pre>
+
+<h4>五、SEL的介绍</h4>
+
+<p>1）SEL是一种类型，将方法名封装为sel的变量，通过SEL找到方法的地址，调用方法。</p>
+
+<p>2）SEL 封装方法实例代码：</p>
+
+<pre><code>复制代码
+1  //将play方法名封装成SEL类型的数据
+2 SEL sel=@selector(play);
+3  //判断p1所属的类是否实现了sel中的方法
+4 if([p1 respondsToSelector:sel]){
+5  //p1查找sel中方法的地址，再调用对应的方法
+6 [p1 performSelector:sel];
+7  }
+复制代码
+</code></pre>
+
+<p>3）performSelector 用于执行SEL封装的方法 例如： 1 [p1 performSelector:@selector(jump)];</p>
+
+<p>4)SEL 封装带参数的方法实例代码：</p>
+
+<pre><code>1  //将带一个参数的方法封装为SEL的变量，执行，参数是id类型
+2  [p1 performSelector:@selector(print:) withObject:@"hello"];
+</code></pre>
+
+<p>5)NSSelectorFromString 用于将字符串形式的方法名封装成SEL的数据 实例代码：</p>
+
+<pre><code>1  SEL sel2=NSSelectorFromString(@"study");
+2  [p1 performSelector:sel2];
+</code></pre>
+
+<p>6）<em>cmd 表示当前执行的方法 例如： 1NSLog(@&ldquo;*****metheod:%@&rdquo;,NSStringFromSelector(</em>cmd));</p>
+
+<p>7)在C语言中 <strong>func 表示获取当前执行方法 例如： 1 NSLog(@&ldquo;func=%s&rdquo;,</strong>func__);</p>
+
+<pre><code>__DATE__ 表示获取当前系统时间  1 NSLog(@"date=%s",__DATE__); 
+</code></pre>
+
+<p>8）SEL实现数组排序 实例代码：</p>
+
+<pre><code>复制代码
+1 void testSel()
+2 {
+3     Person *p1;
+4     Person *p2;
+5     Person *p3;
+6     NSMutableArray *array1=[[NSMutableArray alloc]initWithObjects:p1,p2,p3, nil];
+7     [array1 sortUsingSelector:@selector(comparePerson:)];
+8     
+9 }
+复制代码
+</code></pre>
+
+<h4>六、构造OC中的二维数组</h4>
+
+<p>实例代码：</p>
+
+<pre><code>复制代码
+//创建一个空的外层数组
+ 2         NSMutableArray *bigArray=[NSMutableArray array];
+ 3         //创建一个存放4个数据对象的数组
+ 4         NSMutableArray *array1=[[NSMutableArray alloc]init];
+ 5         for(int i=0;i&lt;4;i++){
+ 6             [array1 addObject:[NSNumber numberWithInt:i]];
+ 7         }
+ 8         //创建一个存放3个字符串的数组
+ 9         NSMutableArray *array2=[[NSMutableArray alloc]init];
+10         for(int i=0;i&lt;3;i++){
+11             [array2 addObject:[NSString stringWithFormat:@"str%d",i+1]];
+12         }
+13         //将array1和array2两个数组对象存入外层数组（相当于创建了一个二维数组）
+14         [bigArray addObject:array1];
+15         [bigArray addObject:array2];
+16         
+17         //遍历，显示所有的元素
+18         for(int i=0;i&lt;bigArray.count;i++){
+19             for(int j=0;j&lt;[bigArray[i] count];j++){
+20                 //取出数组中第i行第j列的元素（每行又是一个数组对象）
+21                 if([bigArray[i][j] isKindOfClass:[NSNumber class]]){
+22                     NSLog(@"number:%@",bigArray[i][j]);
+23                 }
+24                 else if ([[[bigArray objectAtIndex:i] objectAtIndex:j] isKindOfClass:[NSString class]]){
+25                     NSLog(@"string:%@",[[bigArray objectAtIndex:i] objectAtIndex:j]);
+26                 }
+27             }
+28         }
+复制代码
+</code></pre>
+
+<h4>七、Class (类)的介绍</h4>
+
+<p>1）类的本质也是一个对象，是Class类型的对象，获取类对象（可以通过实例方法或类方法获取）,</p>
+
+<p>每个类只有一个类对象。</p>
+
+<p>2）load 方法当程序启动时会加载所有的类和分类，调用load方法，先加载父类，再加载子类，然后是分类 例如：</p>
+
+<pre><code>1  +(void)load
+2  {
+3      NSLog(@"Person---load");
+4  }
+</code></pre>
+
+<p>3）initialize方法 当第一次使用类的时候，调用initialize方法，先调用父类的，再调用子类的 例如：</p>
+
+<pre><code>1 +(void)initialize
+2  {
+3     NSLog(@"Person---initialize");
+4  }
+</code></pre>
+
+<p>本博文由博主（iCocos）独立编写或者借鉴别人的好文章进行修改而成，如果不对的地方望指正，谢谢！ 如果您还有看到新浪博客关于IOS梦工厂的博文，麻烦请到这里找更完整更清晰的版本，博主已从<a href="http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD">http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/03/12/yufajingxuan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h5>简介</h5>
+
+<p>Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.)</p>
+
+<p>根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10.8.3)利用Octopress搭建一个Github博客。本文需要读者熟悉一些shell命令，并掌握基本的git操作。</p>
+
+<p>目录</p>
+
+<h2>一： 快速搭建</h2>
+
+<ol>
+<li>安装Ruby</li>
+<li>安装Octopress</li>
+<li>配置Octopress</li>
+<li>将博客部署到GitHub上</li>
+<li>开始写博客</li>
+</ol>
+
+
+<h2>二： 个性化配置（个性化初级篇）</h2>
+
+<ol>
+<li>Header（标题栏）</li>
+<li>Navigation（导航栏）</li>
+<li>footer（尾栏）</li>
+<li>添加背景图片</li>
+<li>LOGO图片</li>
+<li>导航栏倒圆角</li>
+<li>滑动返回顶部按钮</li>
+<li>二维码展示</li>
+</ol>
+
+
+<h2>三： 个性化配置（个性化中级篇）</h2>
+
+<ol>
+<li>提高博客访问速度</li>
+<li>设置链接在新窗口打开</li>
+<li>首页文章以摘要形式展示</li>
+<li>代码着色</li>
+<li>修改代码生成css</li>
+<li>添加侧边栏文章分类（category）</li>
+<li>添加多说评论</li>
+<li>自动为图片添加url前缀</li>
+<li>添加访客统计</li>
+</ol>
+
+
+<h2>四： 个性化配置（个性化高级篇）</h2>
+
+<ol>
+<li>侧边栏</li>
+<li>最新文章</li>
+<li>GitHub Repos</li>
+<li>微博秀</li>
+<li>豆瓣展示</li>
+<li>访客地图</li>
+<li>酷站博客</li>
+<li>最热文章</li>
+<li>3D标签云与标签列表</li>
+<li>相关文章功能</li>
+<li>社会化评论与分享</li>
+<li>为博文添加原文链接及声明</li>
+<li>添加版权声明</li>
+<li>公益404</li>
+</ol>
+
+
+<h2>五： 其他</h2>
+
+<ol>
+<li>mackdown语法<br></li>
+</ol>
+
+
+<hr />
+
+<h1>一： 快速搭建</h1>
+
+<h3>安装Ruby</h3>
+
+<p>Octopress需要Ruby环境，RVM(Ruby Version Manager)负责安装和管理Ruby的环境。所以我们先在终端输入如下命令，来安装RVM：</p>
+
+<pre><code>curl -L https://get.rvm.io | bash -s stable --ruby  
+</code></pre>
+
+<p>接着是安装Ruby 1.9.3，在终端依次运行如下命令：</p>
+
+<pre><code>rvm install 1.9.3  
+rvm use 1.9.3  
+rvm rubygems latest  
+</code></pre>
+
+<p>完成上面的操作之后，运行ruby &ndash;version应该可以看到ruby 1.9.3环境已经安装好了。
+参考：Installing Ruby With RVM</p>
+
+<h3>安装Octopress</h3>
+
+<p>在安装Octopress之前，请确保你的电脑上已经安装有git了，在终端输入git &ndash;version，应该可以看到电脑中的git版本(我电脑上输出:git version 1.7.12.4 (Apple Git-37))，如果没有显示相关内容，请先安装git。
+git安装之后，利用git命令将octopress从github上clone到本机，如下命令：</p>
+
+<pre><code>git clone git://github.com/imathis/octopress.git octopress  
+cd octopress    # If you use RVM, You'll be asked if you trust  the .rvmrc file (say yes).  
+ruby --version  # Should report Ruby 1.9.3  
+</code></pre>
+
+<p>接着安装相关依赖项：</p>
+
+<pre><code>gem install bundler  
+rbenv rehash    # If you use rbenv, rehash to be able to run the    bundle command  
+bundle install  
+</code></pre>
+
+<p>最后安装默认的Octopress 主题。</p>
+
+<pre><code>rake install  
+</code></pre>
+
+<h3>配置Octopress</h3>
+
+<p>Octopress的作者已经尽量让配置简化了。大多数情况下只需要配置_config.yml和Rakefile文件即可。其中Rakefile是跟博客部署相关，一般情况下并不需要修改这个文件，除非使用了rsync。</p>
+
+<p>config.yml是博客重要的一个配置文件，在config.yml文件中有三大配置项：Main Configs、Jekyll &amp; Plugins和3rd Party Settings。</p>
+
+<p>一般，该文件中其中url是必须要填写的，这里的url是在github上创建的一个仓库地址，具体请看第四步中创建的地址。另外再修改一下title、subtitle和author，根据需求，在开启一些第三方组件服务。</p>
+
+<p>关于_config.yml文件中的更多内容，请看这里的内容：Configuring Octopress</p>
+
+<p>建议：最好把里面的twitter相关的信息全部删掉，否则由于GFW的原因，将会造成页面load很慢。同理，修改定制文件/source/_includes/custom/head.html 把google的自定义字体去掉。from唐巧的博文中—配置。</p>
+
+<h3>将博客部署到GitHub上</h3>
+
+<p>Github的Page service可以免费托管博客，并且还可以自定义域名。
+首先需要在GitHub上创建一个仓库，并将仓库名称按照这样的方式进行命名：username.github.com或organization.github.com。等后面配置完毕之后，我们就可以在浏览器中使用页面地址</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>来访问我们的博客。一般来说，我们希望在将博客的源码放到source分支下，并把生成的内容提交到master分支。</p>
+
+<p>创建好仓库之后，我们需要利用octopress的一个配置rake任务来自动配置上面创建的仓库：可以让我们方便的部署GitHub page。在终端输入如下命令：
+C代码  收藏代码</p>
+
+<pre><code>$ rake setup_github_pages  
+</code></pre>
+
+<p>上面的命令会做一些事情(详细介绍看下面给出的参考链接)。其中最主要的就是创建一个_deploy目录，目录用来存放部署到master分支的内容。期间会要求你输入仓库的url，根据提示，进行输入即可。</p>
+
+<p>完成上面的命令之后，我们就可以生成博客并真正的部署到仓库中了。执行如下命令：</p>
+
+<pre><code>rake generate  
+rake deploy  
+</code></pre>
+
+<p>上面的命令首先生成博客文件，并将生成的博客文件拷贝到_deploy/目录下，然后将这些内容添加到git中，并commit和push到仓库的master分支。</p>
+
+<p>现在可以访问</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>注意：有时候可能会有延时，要等几分钟才能打开。
+至此，我们的博客已经完成基本的部署，不过博客的source需要单独提交，执行如下命令就可以将source提交到仓库的source分支下。</p>
+
+<pre><code>$ git add .  
+$ git commit -m 'Initial source commit'  
+$ git push origin source  
+</code></pre>
+
+<p>如果在部署到仓库之前，需要先预览一下博客，可以在终端输入rake preview命令，然后就能在浏览器中进行本地预览访问了：</p>
+
+<pre><code>http://127.0.0.1:4000/
+</code></pre>
+
+<p>或</p>
+
+<pre><code>http://localhost:4000/
+</code></pre>
+
+<p>效果跟仓库中的一样。</p>
+
+<h3>开始写博客</h3>
+
+<p>Octopress为我们提供了一些task来创建博文和页面。博文必须存储在source/_posts目录下，并且需要按照Jekyll的命名规范对文章进行命名：YYYY-MM-DD-post-title.markdown。文章的名字会被当做url的一部分，而其中的日期用于对博文的区分和排序。</p>
+
+<p>通过Octopress提供的task可以正确的按照命名规范创建一个博文，并且在博文中会附带常用的一些yaml元数据。只需要在终端输入如下命令：</p>
+
+<pre><code>rake new_post["title"]  
+</code></pre>
+
+<p>其中title为博文的文件名，创建出来的文件默认是markdown格式。上面的命令会创建出这样一个文件：source/_posts/2013-08-03-title.markdown。打开这个文件，可以看到里面有如下一些内容了(告诉Jekyll博客引擎如何处理博文和页面)：</p>
+
+<pre><code>layout: post  
+title: "title"  
+date: 2013-08-03 16:36  
+comments: true  
+categories:   
+</code></pre>
+
+<p>接着我们就可以在这个文件中写我们的博文啦。完成之后，我们可以预览和部署博文。下面是创建并部署博文的一个完整过程：</p>
+
+<pre><code>$ rake new_post["New Post"]  
+$ rake generate  
+$ git add .  
+$ git commit -am "Some comment here."   
+$ git push origin source  
+$ rake deploy  
+</code></pre>
+
+<h6>本节介绍了如何利用Octopress搭建一个Github博客，下面讲介绍桌面去个性化你的博客。</h6>
+
+<hr />
+
+<h1>个性化配置（初级篇）</h1>
+
+<p>这几个部分是经常需要个性化定制的，在 source/<em>includes 中存在其对应的HTML文件，这是主题默认的文件，更换主题，更新octopress会被覆盖，所以应该编辑 source/</em>includes/custom 下的文件来实现修改。</p>
+
+<h2>Header，Navigation，footer</h2>
+
+<h3>Header（标题栏）</h3>
+
+<p>标题栏显示的内容为 /source/<em>includes/custom/header.html 所实现的，其中title和subtitle在 </em>config.yml 中定义，你可以进行适量的修改：</p>
+
+<pre><code>    &lt;hgroup&gt;
+ &lt;h1&gt;&lt;a href="/"&gt;iOS梦工厂&lt;/a&gt;&lt;/h1&gt;
+
+&lt;h2&gt;不战胜自己，何以改变未来！&lt;/h2&gt;
+
+&lt;/hgroup&gt;
+</code></pre>
+
+<h3>Navigation（导航栏）</h3>
+
+<p>可以自行为导航栏添加项目，链接至不同的页面，在 /source/_includes/custom/navigation.html 中编辑即可。</p>
+
+<pre><code>&lt;ul class="main-navigation"&gt;
+&lt;li&gt;&lt;a href="/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;a href="/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如</p>
+
+<pre><code>&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt; 
+</code></pre>
+
+<h3>footer（尾栏）</h3>
+
+<p>在 source/_includes/custom/footer.html 中编辑尾栏：</p>
+
+<pre><code>&lt;p&gt;
+    Copyright © 2015 - iCocos -
+&lt;span class="credit"&gt;
+      Powered by
+      &lt;a href="http://octopress.org"&gt;Octopress&lt;/a&gt;
+&lt;/span&gt;
+&lt;/p&gt;
+</code></pre>
+
+<p>默认显示 Copyright@2013 - author - Powered by Octopress ，你可以添加自己想显示在尾栏的东西，第三方统计流量统计工具也可以添加到这，如CNZZ、Google analytics和百度统计等，使用这些工具可以更详细的分析网站流量，改善引流措施，完善网站，具体添加方法见统计工具与SEO。</p>
+
+<h3>添加背景图片</h3>
+
+<p>在 sass/custom/_styles.scss 中添加：</p>
+
+<pre><code>html {
+    background: #555555 url("/images/bg3.jpg");
+    //background: #555555;
+}
+
+body &gt; div {
+    background-image: none;
+    //background: #F5F5D5
+} //侧边栏
+
+body &gt; div &gt; div { //文章内容
+    background-image: none;
+    //background: #F5F5D5; 
+    //background: url("/images/bg.jpg");
+}
+</code></pre>
+
+<p>将背景图片放入 source/images/ 中，修改上述代码中的路径指向想要的图片，即可 更改博客、侧边栏或文章的背景图片。博客使用背景图片后，与Header区不太和谐， 所以我在 /sass/base/_theme.scss 中将 header-bg 设置成透明色了。</p>
+
+<h3>LOGO图片</h3>
+
+<p>我所说的logo图片有两种，一个是打开一个网页时，标签栏上显示的小图片。还有一个是标题栏主标题旁的图片。</p>
+
+<p>首先针对于第一种可以选择你喜欢的图片（大小适中），替换 source 目录下的 favicon.png 即可。</p>
+
+<p>或者将logo图片放入 source/images 中，然后修改 source/_includes/head.html ，找到 favicon.png ，修改其路径指向你的图片即可。</p>
+
+<p>对于主标题旁的图片需要在 sass/custom/_styles.scss 中填入如下语句：</p>
+
+<pre><code>//Blog logo pic
+@media only screen and (min-width: 550px) {
+
+    body &gt; header h1{
+            background: url("/images/logo1.png") no-repeat 0 1px;
+            padding-left: 65px;
+    }
+
+    body &gt; header h2 { padding-left: 65px; }
+}
+</code></pre>
+
+<p>根据自己情况进行修改即可。</p>
+
+<h3>导航栏倒圆角</h3>
+
+<p>我设置的header区背景色透明，所以导航栏的直角有些尖锐，在 sass/custom/_styles.scss 中添加如下语句，将其修改为圆角：</p>
+
+<pre><code>//倒圆角
+@media only screen and (min-width: 1040px) {
+    body &gt; nav {
+            @include border-top-radius(.4em);
+    }
+
+    body &gt; footer {
+            @include border-bottom-radius(.4em);
+    }
+}
+</code></pre>
+
+<h3>滑动返回顶部按钮</h3>
+
+<p>当文章较长，通常希望有一个返回顶部的按钮，如下方法实现了在页面右下方添加一个返回顶部的图片按钮，点击后可以滑动的返回顶部。</p>
+
+<p>首先创建 source/javascripts/top.js ，实现滑动返回顶部效果，添加如下代码：</p>
+
+<pre><code>function goTop(acceleration, time)
+{
+    acceleration = acceleration || 0.1;
+    time = time || 16;
+
+    var x1 = 0;
+    var y1 = 0;
+    var x2 = 0;
+    var y2 = 0;
+    var x3 = 0;
+    var y3 = 0;
+
+    if (document.documentElement)
+    {
+            x1 = document.documentElement.scrollLeft || 0;
+            y1 = document.documentElement.scrollTop || 0;
+    }
+    if (document.body)
+    {
+            x2 = document.body.scrollLeft || 0;
+            y2 = document.body.scrollTop || 0;
+    }
+    var x3 = window.scrollX || 0;
+    var y3 = window.scrollY || 0;
+
+    var x = Math.max(x1, Math.max(x2, x3));
+    var y = Math.max(y1, Math.max(y2, y3));
+
+    var speed = 1 + acceleration;
+    window.scrollTo(Math.floor(x / speed), Math.floor(y / speed));
+
+    if(x &gt; 0 || y &gt; 0)
+    {
+            var invokeFunction = "goTop(" + acceleration + ", " + time + ")";
+            window.setTimeout(invokeFunction, time);
+    }
+}
+</code></pre>
+
+<p>然后创建 source/_includes/custom/totop.html ，设置返回顶部按钮样式和位置，代码如下：</p>
+
+<pre><code>&lt;!--返回顶部开始--&gt;
+&lt;div id="full" style="width:0px; height:0px; position:fixed; right:180px; bottom:150px; z-index:100; text-align:center; background-color:transparent; cursor:pointer;"&gt;
+    &lt;a href="#" onclick="goTop();return false;"&gt;&lt;img src="/images/top.png" border=0 alt="返回顶部"&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;script src="/javascripts/top.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;!--返回顶部结束--&gt;
+</code></pre>
+
+<p>最后，还需要将返回顶部的图片放入 source/images ，命名为 top.png （或修改totop.html中图片的路径）。</p>
+
+<h3>二维码展示</h3>
+
+<p>在关于页面或边栏可以展示你的个人博客的二维码，方便移动终端扫描访问你的博客，插件主页 点击这里 。</p>
+
+<p>在侧边栏显示，则将 qrcode.html 放入 source/<em>includes/custom/asides/ 中，在 </em>config.yml 中 default_asides 添加 custom/asides/qrcode.html 即可显示。</p>
+
+<p>或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。</p>
+
+<hr />
+
+<h1>个性化配置（中级篇）</h1>
+
+<h3>提高博客访问速度</h3>
+
+<p>因为“墙”的关系，所以Octopress建立以后会发现访问速度奇慢无比，竟然超过了40s。</p>
+
+<p>仔细分析后我们发现其中都是一些被墙的请求报了404Error，所以导致访问博客巨慢无比，下面我们就一次阉割掉这些被墙的请求。T_T</p>
+
+<h4>替换Google JS公共库</h4>
+
+<p>Octopress默认使用的是Google的JS公共库地址，加载的过程无比的缓慢。因此我们要把它改为 百度的JS公共库 ，需要把 /source/_includes/head.html 文件中的Google公共库地址改为：</p>
+
+<script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+
+
+<h4>去掉Twitter</h4>
+
+<p>从上图可以看出加载失败的还有twitter，这个也得给去掉。</p>
+
+<p>把在根目录下的 _config.yml 文件中Twitter内容给注释掉。</p>
+
+<pre><code># Twitter
+#twitter_user:
+#twitter_tweet_button: true
+</code></pre>
+
+<p>把 \source_includes\after_footer.html 文件中的twitter内容给注释掉：</p>
+
+<pre><code>include twitter_sharing.html
+</code></pre>
+
+<h4>删除Google font</h4>
+
+<p>把在 \source_includes\custom\head.html 中的Google font样式给删除：</p>
+
+<pre><code>&lt;link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre>
+
+<h3>设置链接在新窗口打开</h3>
+
+<p>在博文中，如果点击链接直接在本窗口打开了，那么用户体验就不是很好。而markdown的标准语法是不支持链接在新窗口打开的，虽然可以通过在markdown中直接写html标签来解决这个问题，但是这与markdown的简洁书写特性不符。但是我们可以通过设置Octopress来达到这种效果，即在 \source_includes\custom\head.html 文件中添加如下一段代码：</p>
+
+<pre><code>&lt;script&gt;
+function addBlankTargetForLinks () {
+$('a[href^="http"]').each(function(){
+  $(this).attr('target', '_blank');
+});
+}
+$(document).bind('DOMNodeInserted', function(event) {
+addBlankTargetForLinks();
+});
+&lt;/script&gt;
+</code></pre>
+
+<h3>首页文章以摘要形式展示</h3>
+
+<p>2.在文章对应的markdown文件中，在需要显示在首页的文字后面添加 </div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/10/metal/">Metal深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
+
+<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
+
+<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
+
+<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
+
+<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
+
+<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
+
+<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
+
+<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
+</code></pre>
+
+<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
+
+<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
+
+<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
+
+<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
+
+<p>但是，还是有两个很好的原因来学习Metal：</p>
+
+<ul>
+<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
+<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
+</ul>
+
+
+<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
+
+<h4>Metal vs OpenGL ES</h4>
+
+<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
+
+<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
+
+<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
+
+<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
+
+<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
+
+<p>让我们开始看看一些Metal代码吧！</p>
+
+<p>开头
+Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
+
+<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
+
+<p>有七个步骤来设置metal：</p>
+
+<ul>
+<li>1.创建一个MTLDevice</li>
+<li>2.创建一个CAMetalLayer</li>
+<li>3.创建一个Vertex Buffer</li>
+<li>4.创建一个Vertex Shader</li>
+<li>5.创建一个Fragment Shader</li>
+<li>6.创建一个Render Pipeline</li>
+<li>7.创建一个Command Queue</li>
+</ul>
+
+
+<p>让我们一个个看它们。</p>
+
+<h5>1)创建一个MTLDevice</h5>
+
+<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
+
+<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
+
+<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
+
+<pre><code>import Metal 
+</code></pre>
+
+<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
+
+<pre><code>var device: MTLDevice! = nil 
+</code></pre>
+
+<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
+
+<pre><code>device = MTLCreateSystemDefaultDevice() 
+</code></pre>
+
+<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
+
+<h5>2）创建一个CAMetalLayer</h5>
+
+<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
+
+<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
+
+<p>首先在这个文件的上方添加import语句。</p>
+
+<pre><code>import QuartzCore 
+</code></pre>
+
+<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
+
+<p>然后把新属性添加到类中：</p>
+
+<pre><code>var metalLayer: CAMetalLayer! = nil 
+</code></pre>
+
+<p>这将会存储你新layer的引用。</p>
+
+<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
+
+<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
+ 2 
+ 3 metalLayer.device = device           // 2 
+ 4 
+ 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
+ 6 
+ 7 metalLayer.framebufferOnly = true    // 4 
+ 8 
+ 9 metalLayer.frame = view.layer.frame  // 5 
+10 
+11 view.layer.addSublayer(metalLayer)   // 6 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你创建了一个CAMetalLayer</li>
+<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
+<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
+<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
+<li>e.你把layer的frame设置为view的frame。</li>
+<li>f.你把layer作为view.layer下的子layer添加。</li>
+</ul>
+
+
+<h5>3）创建一个Vertex Buffer</h5>
+
+<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
+
+<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
+
+<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
+
+<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
+
+<pre><code>let vertexData:[Float] = [ 
+  0.0, 1.0, 0.0, 
+  -1.0, -1.0, 0.0, 
+  1.0, -1.0, 0.0] 
+</code></pre>
+
+<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
+
+<p>添加另一个新的属性：</p>
+
+<pre><code>var vertexBuffer: MTLBuffer! = nil 
+然后在 viewDidLoad 方法的最后添加以下代码：
+let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
+vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
+<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
+</ul>
+
+
+<h5>4）创建一个Vertex Shader</h5>
+
+<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
+
+<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
+
+<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
+
+<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
+
+<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
+
+<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
+在Shaders.metal底部添加下列代码：</p>
+
+<pre><code>metalLayer = CAMetalLayer()          // 1 
+
+metalLayer.device = device           // 2 
+
+metalLayer.pixelFormat = .BGRA8Unorm // 3 
+
+metalLayer.framebufferOnly = true    // 4 
+
+metalLayer.frame = view.layer.frame  // 5 
+
+view.layer.addSublayer(metalLayer)   // 6
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
+<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
+<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
+<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
+</ul>
+
+
+<h5>5）创建一个Fragment Shader</h5>
+
+<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
+
+<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
+
+<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
+
+<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
+
+<p>在Shader.metal的底部添加下列代码：</p>
+
+<pre><code>1 fragment half4 basic_fragment() { // 1 
+2 
+3 return half4(1.0);              // 2 
+4 
+5 } 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li><ol type="a">
+<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
+</ol>
+</li>
+<li><ol type="a">
+<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>6）创建一个Render Pipeline</h5>
+
+<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
+
+<ol>
+<li><p>首先在ViewController.swift里添加一个属性：
+var pipelineState: MTLRenderPipelineState! = nil
+这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
+<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
+</ol>
+
+
+<p>// 1</p>
+
+<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
+2 
+3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
+4 
+5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
+</code></pre>
+
+<p>// 2</p>
+
+<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
+
+pipelineStateDescriptor.vertexFunction = vertexProgram 
+
+pipelineStateDescriptor.fragmentFunction = fragmentProgram 
+
+pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
+</code></pre>
+
+<p>//3</p>
+
+<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
+
+if !pipelineState { 
+
+  println("Failed to create pipeline state, error \(pipelineError)") 
+
+}
+</code></pre>
+
+<p>让我们分部分看这些代码：</p>
+
+<ul>
+<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
+<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
+<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
+</ul>
+
+
+<h5>7）创建一个Command Queue</h5>
+
+<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
+
+<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
+
+<p>要创建一个command queue，简单地添加一个属性：</p>
+
+<pre><code>var commandQueue: MTLCommandQueue! = nil 
+</code></pre>
+
+<p>把下面这行添加到 viewDidLoad 的最后：</p>
+
+<pre><code>commandQueue = device.newCommandQueue() 
+</code></pre>
+
+<p>恭喜，你的预设置的代码完成了。</p>
+
+<p>渲染三角形
+现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
+
+<p>它将在五个步骤中被完成：</p>
+
+<ul>
+<li>1.创建一个Display link。</li>
+<li>2.创建一个Render Pass Descriptor</li>
+<li>3.创建一个Command Buffer</li>
+<li>4.创建一个Render Command Encoder</li>
+<li>5.提交你Command Buffer的内容。</li>
+</ul>
+
+
+<p>让我们深入来看！</p>
+
+<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
+
+<h6>1）创建一个Display Link</h6>
+
+<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
+
+<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
+
+<p>为了使用它，在类里添加一个新的属性：</p>
+
+<pre><code> 1 var timer: CADisplayLink! = nil  
+</code></pre>
+
+<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
+
+<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
+
+timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
+</code></pre>
+
+<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
+
+<pre><code>func render() { 
+
+// TODO 
+
+} 
+
+func gameloop() { 
+  autoreleasepool { 
+
+    self.render() 
+
+  } 
+
+} 
+</code></pre>
+
+<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
+
+<h6>2）创建一个Render Pass Descriptor</h6>
+
+<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
+
+<p>简单地在 render 函数里添加以下行：</p>
+
+<pre><code>var drawable = metalLayer.nextDrawable() 
+
+let renderPassDescriptor = MTLRenderPassDescriptor() 
+renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
+
+renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
+
+renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
+</code></pre>
+
+<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
+
+<h6>3）创建一个Command Buffer</h6>
+
+<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
+
+<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
+</code></pre>
+
+<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
+
+<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
+
+<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
+
+<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
+renderEncoder.setRenderPipelineState(pipelineState) 
+
+renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
+
+renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
+
+renderEncoder.endEncoding()
+</code></pre>
+
+<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
+
+<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
+
+<p>当你完成后，你只要调用 endEncoding()。</p>
+
+<h6>5）提交你的Command Buffer</h6>
+
+<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
+
+<pre><code>commandBuffer.presentDrawable(drawable)
+commandBuffer.commit()
+</code></pre>
+
+<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
+
+<p>我见过最赞的三角形！</p>
+
+<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
+
+<p>最后:这是我们教程最终的项目。</p></blockquote>
+
+<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
+</code></pre>
+
+<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/02/10/metal/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
+
+<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
+
+<hr />
+
+<p>版权声明：欢迎转载，请贴上源地址</p>
+
+<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
+
+<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+
+<p>更多精彩请关注</p>
+
+<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+<h4>drawRect在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 掉用是在Controller->loadView, Controller->viewDidLoad 两方法之后掉用的.所以不用担心在 控制器中,这些View的drawRect就开始画了.这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量 值).</li>
+<li>2、该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
+<li>3、通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
+<li>4、直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
+</ul>
+
+
+<blockquote><p>以上1,2推荐；而3,4不提倡</p></blockquote>
+
+<h6>drawRect方法使用注意点：</h6>
+
+<ul>
+<li><p>1、 若使用UIView绘图，只能在drawRect：方法中获取相应的contextRef并绘图。如果在其他方法中获取将获取到一个invalidate 的ref并且不能用于画图。drawRect：方法不能手动显示调用，必须通过调用setNeedsDisplay 或 者 setNeedsDisplayInRect，让系统自动调该方法。</p></li>
+<li><p>2、若使用calayer绘图，只能在drawInContext: 中（类似鱼drawRect）绘制，或者在delegate中的相应方法绘制。同样也是调用setNeedDisplay等间接调用以上方法
+3、若要实时画图，不能使用gestureRecognizer，只能使用touchbegan等方法来掉用setNeedsDisplay实时刷新屏幕</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/01/23/layoutsubviews%20drawrects/#comments">更多评论</a>
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/posts/6">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (16)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (24)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/posts/7/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/posts/7/index.html" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

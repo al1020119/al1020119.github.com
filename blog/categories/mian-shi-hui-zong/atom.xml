@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 面试汇总 | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/mian-shi-hui-zong/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2015-12-04T22:07:02+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[面试会问到的？]]></title>
+    <link href="http://al1020119.github.io/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/"/>
+    <updated>2014-07-19T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/07/19/uiview-calayer-uiscreenuiwindow</id>
+    <content type="html"><![CDATA[<h4>1、UIScreen可以获取设备屏幕的大小。</h4>
+
+<pre><code>// 整个屏幕的大小
+CGRect bounds = [UIScreen mainScreen].bounds;
+NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
+</code></pre>
+
+<p><code>{0, 0, 320, 480}</code></p>
+
+<pre><code>// 应用程序窗口大小 
+CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
+NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));
+</code></pre>
+
+<p><code>{0, 20, 320, 460}</code></p>
+
+<h4>2、UIView对象定义了一个屏幕上的一个矩形区域，同时处理该区域的绘制和触屏事件。</h4>
+
+<p>可以在这个区域内绘制图形和文字，还可以接收用户的操作。一个UIView的实例可以包含和管理若干个子UIView。</p>
+
+<p>ViewController.m</p>
+
+<pre><code>-(void)viewDidAppear:(BOOL)animated
+
+{
+
+    [super
+ viewDidAppear:animated];
+
+    UIView*
+ myView = [[UIView alloc] initWithFrame:CGRectMake(10, 10, 100, 100)];
+
+    myView.backgroundColor=[UIColor
+ redColor];
+
+    [self.view
+ addSubview:myView];
+
+}
+</code></pre>
+
+<h4>3、UIWindow对象是所有UIView的根，管理和协调的应用程序的显示</h4>
+
+<p>UIWindow类是UIView的子类，可以看作是特殊的UIView。一般应用程序只有一个UIWindow对象，即使有多个UIWindow对象，也只有一个UIWindow可以接受到用户的触屏事件。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<p> ####4、UIViewController对象负责管理所有UIView的层次结构，并响应设备的方向变化。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    UIViewController
+ *myViewController = [[UIViewController alloc] initWithNibName:nil bundle:nil];
+
+    myWindow.rootViewController
+ = myViewController;
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<h4>CALayer是在/System/Library/Frameworks/QuartzCore.framework定义的。而且CALayer作为一个低级的，可以承载绘制内容的底层对象出现在该框架中。</h4>
+
+<p>现在比较一下uiview和calayer都可以显示图片文字等信息。难道apple提供了，两套绘图机制吗？不会。</p>
+
+<p> UIView相比CALayer最大区别是UIView可以响应用户事件，而CALayer不可以。UIView侧重于对显示内容的管理，CALayer侧重于对内容的绘制。</p>
+
+<p> 大家都知道QuartzCore是IOS中提供图像绘制的基础库。并且CALayer是定义该框架中。难道UIView的底层实现是CALayer？？</p>
+
+<p>官方做出了明确的解释：</p>
+
+<pre><code>Core Animation doesn't provide a means for actually displaying layers in a window, they must be hosted by a view. When paired with a view, the view must provide event-handling for the underlying layers, while the layers provide display of the content.
+
+The view system in iOS is built directly on top of Core Animation layers. Every instance of UIView automatically creates an instance of a CALayer class and sets it as the value of the view’s layer property. You can add sublayers to the view’s layer as needed.
+
+On Mac OS X you must configure an NSView instance in such a way that it can host a layer.
+</code></pre>
+
+<p>由此可见UIView是基于CALayer的高层封装。The view system in iOS is built directly on top of Core Animation layers.</p>
+
+<blockquote><p>结论：
+ UIView来自CALayer，高于CALayer，是CALayer高层实现与封装。UIView的所有特性来源于CALayer支持。</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>

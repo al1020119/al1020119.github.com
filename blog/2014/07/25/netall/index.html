@@ -1,0 +1,883 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>网络开发总结 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="网络开发总结 ordinal 一、一个HTTP请求的基本要素 1.请求URL：客户端通过哪个路径找到服务器 2.请求参数：客户端发送给服务器的数据 比如登录时需要发送的用户名和密码 3.返回结果：服务器返回给客户端的数据 一般是JSON数据或者XML数据 二、基本的HTTP请求的步骤（移动客户端 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2014/07/25/netall/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">网络开发总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>一、一个HTTP请求的基本要素</h3>
+
+<p>1.请求URL：客户端通过哪个路径找到服务器</p>
+
+<p>2.请求参数：客户端发送给服务器的数据</p>
+
+<ul>
+<li>比如登录时需要发送的用户名和密码</li>
+</ul>
+
+
+<p>3.返回结果：服务器返回给客户端的数据</p>
+
+<ul>
+<li>一般是JSON数据或者XML数据</li>
+</ul>
+
+
+<h3>二、基本的HTTP请求的步骤（移动客户端）</h3>
+
+<p>1.拼接"请求URL" + &ldquo;?&rdquo; + &ldquo;请求参数&rdquo;</p>
+
+<ul>
+<li>请求参数的格式：参数名=参数值</li>
+<li>多个请求参数之间用&amp;隔开：参数名1=参数值1&amp;参数名2=参数值2</li>
+<li>比如：<a href="http://localhost:8080/MJServer/login?username=123&amp;pwd=456">http://localhost:8080/MJServer/login?username=123&amp;pwd=456</a></li>
+</ul>
+
+
+<p>2.发送请求</p>
+
+<p>3.解析服务器返回的数据</p>
+
+<h3>三、JSON解析</h3>
+
+<p>1.利用NSJSONSerialization类解析</p>
+
+<ul>
+<li>JSON数据（NSData） &ndash;> Foundation-OC对象（NSDictionary、NSArray、NSString、NSNumber）</li>
+<li>(id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error;</li>
+</ul>
+
+
+<p>2.JSON解析规律</p>
+
+<ul>
+<li>{ } &ndash;> NSDictionary @{ }</li>
+<li>[ ] &ndash;> NSArray @[ ]</li>
+<li>&ldquo; &rdquo; &ndash;> NSString @&ldquo; &rdquo;</li>
+<li>10 &ndash;> NSNumber @10</li>
+</ul>
+
+
+<h3>四、NSURLConnection</h3>
+
+<p>1.发布异步请求01&ndash;block回调</p>
+
+<pre><code>+ (void)sendAsynchronousRequest:(NSURLRequest*) request
+    queue:(NSOperationQueue*) queue
+    completionHandler:(void (^)(NSURLResponse* response, NSData* data, NSError* connectionError)) handler
+</code></pre>
+
+<ul>
+<li>request : 需要发送的请求</li>
+<li>queue : 一般用主队列，存放handler这个任务</li>
+<li>handler : 当请求完毕后，会自动调用这个block</li>
+</ul>
+
+
+<p>2.利用NSURLConnection发送请求的基本步骤
+1> 创建URL</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://4234324/5345345"];
+</code></pre>
+
+<p>2> 创建request</p>
+
+<pre><code>NSURLRequest *request = [NSURLRequest requestWithURL:url];
+</code></pre>
+
+<p>3> 发送请求</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
+ ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+4&gt; 处理服务器返回的数据
+
+ }];
+</code></pre>
+
+<h3>五、XML</h3>
+
+<p>1.语法
+1> 文档声明</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+</code></pre>
+
+<p>2> 元素
+3> 属性</p>
+
+<pre><code>&lt;videos&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+&lt;/videos&gt;
+</code></pre>
+
+<ul>
+<li>videos和video是元素（节点）</li>
+<li>name和length叫做元素的属性</li>
+<li>video元素是videos元素的子元素</li>
+</ul>
+
+
+<p>2.解析
+1> SAX解析：逐个元素往下解析，适合大文件</p>
+
+<ul>
+<li>NSXMLParser</li>
+</ul>
+
+
+<p>2> DOM解析：一口气将整个XML文档加载进内存，适合小文件，使用最简单</p>
+
+<ul>
+<li>GDataXML</li>
+</ul>
+
+
+<h3>六、HTTP的通信过程</h3>
+
+<p>1.请求
+1> 请求行 : 请求方法、请求路径、HTTP协议的版本</p>
+
+<pre><code>GET /MJServer/resources/images/1.jpg HTTP/1.1
+</code></pre>
+
+<p>2> 请求头 : 客户端的一些描述信息</p>
+
+<ul>
+<li>User-Agent : 客户端的环境（软件环境）</li>
+</ul>
+
+
+<p>3> 请求体 : POST请求才有这个东西</p>
+
+<ul>
+<li>请求参数，发给服务器的数据</li>
+</ul>
+
+
+<p>2.响应
+1> 状态行（响应行）: HTTP协议的版本、响应状态码、响应状态描述</p>
+
+<p>HTTP/1.1 200 OK</p>
+
+<p>2> 响应头：服务器的一些描述信息</p>
+
+<ul>
+<li>Content-Type : 服务器返回给客户端的内容类型</li>
+<li>Content-Length : 服务器返回给客户端的内容的长度（比如文件的大小）</li>
+</ul>
+
+
+<p>3> 实体内容（响应体）</p>
+
+<ul>
+<li>服务器返回给客户端具体的数据，比如文件数据</li>
+</ul>
+
+
+<p>七、HTTP的请求方法
+1.GET
+1> 特点</p>
+
+<ul>
+<li>所有请求参数都拼接在url后面</li>
+</ul>
+
+
+<p>2> 缺点</p>
+
+<ul>
+<li>在url中暴露了所有的请求数据，不太安全</li>
+<li>url的长度有限制，不能发送太多的参数</li>
+</ul>
+
+
+<p>3> 使用场合</p>
+
+<ul>
+<li>如果仅仅是向服务器索要数据，一般用GET请求</li>
+</ul>
+
+
+<p>4> 如何发送一个GET请求</p>
+
+<pre><code>* 默认就是GET请求
+// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.发送请求
+
+[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.POST
+1> 特点</p>
+
+<ul>
+<li>把所有请求参数放在请求体（HTTPBody）中</li>
+<li>理论上讲，发给服务器的数据的大小是没有限制</li>
+</ul>
+
+
+<p>2> 使用场合</p>
+
+<ul>
+<li>除开向服务器索要数据以外的请求，都可以用POST请求</li>
+<li>如果发给服务器的数据是一些隐私、敏感的数据，绝对要用POST请求</li>
+</ul>
+
+
+<p>3> 如何发送一个POST请求
+    // 1.创建一个URL ： 请求路径</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login"];
+
+// 2.创建一个请求
+
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+// 设置请求方法
+request.HTTPMethod = @"POST";
+// 设置请求体 : 请求参数
+NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
+// NSString --&gt; NSData
+request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
+</code></pre>
+
+<h3>八、NSMutableURLRequest的常用方法</h3>
+
+<p>1.设置超时
+    request.timeoutInterval = 5;
+    // NSURLRequest是不能设置超时的，因为这个对象是不可变的</p>
+
+<h3>九、URL转码</h3>
+
+<p>1.URL中不能包含中文，得对中文进行转码(加上一堆的%)</p>
+
+<pre><code>NSString *urlStr = [NSString stringWithFormat:@"http://localhost/login?username=喝喝&amp;pwd=123"];
+urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// urlStr == @"http://localhost/login?username=%E5%96%9D%E5%96%9D&amp;pwd=123"
+</code></pre>
+
+<h3>十、数据安全</h3>
+
+<p>1.网络数据加密
+1> 加密对象：隐私数据，比如密码、银行信息
+2> 加密方案</p>
+
+<ul>
+<li>提交隐私数据，必须用POST请求</li>
+<li><p>使用加密算法对隐私数据进行加密，比如MD5
+3> 加密增强：为了加大破解的难度</p></li>
+<li><p>对明文进行2次MD5 ： MD5(MD5($pass))</p></li>
+<li>先对明文撒盐，再进行MD5 ： MD5($pass.$salt)</li>
+</ul>
+
+
+<p>2.本地存储加密</p>
+
+<p>1> 加密对象：重要的数据，比如游戏数据</p>
+
+<p>3.代码安全问题</p>
+
+<p>1> 现在已经有工具和技术能反编译出源代码：逆向工程</p>
+
+<ul>
+<li>反编译出来的都是纯C语言的，可读性不高</li>
+<li>最起码能知道源代码里面用的是哪些框架</li>
+</ul>
+
+
+<p>2> 参考书籍：《iOS逆向工程》</p>
+
+<p>3> 解决方案：发布之前对代码进行混淆</p>
+
+<p> 混淆之前</p>
+
+<pre><code>@interface iCocosPerson :NSObject
+- (void)run;
+- (void)eat;
+@end
+</code></pre>
+
+<p> 混淆之后</p>
+
+<pre><code>@interface A :NSObject
+- (void)a;
+- (void)b;
+@end
+</code></pre>
+
+<p>十一、监测网络状态</p>
+
+<p>1.主动监测监测网络状态</p>
+
+<pre><code>// 是否WIFI
+
++ (BOOL)isEnableWIFI {
+    return ([[Reachability reachabilityForLocalWiFi] currentReachabilityStatus] != NotReachable);
+}
+
+
+// 是否3G
+
++ (BOOL)isEnable3G {
+    return ([[Reachability reachabilityForInternetConnection] currentReachabilityStatus] != NotReachable);
+}
+</code></pre>
+
+<p>2.监控网络状态</p>
+
+<p>1> 监听通知</p>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkStateChange) name:kReachabilityChangedNotification object:nil];
+</code></pre>
+
+<p>2> 开始监听网络状态</p>
+
+<pre><code>// 获得Reachability对象
+self.reachability = [Reachability reachabilityForInternetConnection];
+// 开始监控网络
+[self.reachability startNotifier];
+</code></pre>
+
+<p>3> 移除监听</p>
+
+<pre><code>[self.reachability stopNotifier];
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+</code></pre>
+
+<p>————————————————————————————————————————————————————————————————————————————————————————</p>
+
+<h3>一、大文件下载</h3>
+
+<p>1.方案：利用NSURLConnection和它的代理方法
+1> 发送一个请求</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/resources/videos.zip"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>2> 在代理方法中处理服务器返回的数据</p>
+
+<pre><code>/**
+ 在接收到服务器的响应时：
+ 1.创建一个空的文件
+ 2.用一个句柄对象关联这个空的文件，目的是：方便后面用句柄对象往文件后面写数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+
+{
+
+    // 文件路径
+
+    NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+
+    NSString *filepath = [caches stringByAppendingPathComponent:@"videos.zip"];
+
+
+
+    // 创建一个空的文件 到 沙盒中
+
+    NSFileManager *mgr = [NSFileManager defaultManager];
+
+    [mgr createFileAtPath:filepath contents:nil attributes:nil];
+
+
+
+    // 创建一个用来写数据的文件句柄
+
+    self.writeHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
+
+}
+
+
+/**
+ 在接收到服务器返回的文件数据时，利用句柄对象往文件的最后面追加数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+
+{
+
+    // 移动到文件的最后面
+
+    [self.writeHandle seekToEndOfFile];
+
+
+
+    // 将数据写入沙盒
+
+    [self.writeHandle writeData:data];
+
+}
+
+
+/**
+ 在所有数据接收完毕时，关闭句柄对象
+ */
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+
+{
+
+    // 关闭文件
+
+    [self.writeHandle closeFile];
+
+    self.writeHandle = nil;
+
+}
+</code></pre>
+
+<p>2.注意点：千万不能用NSMutableData来拼接服务器返回的数据</p>
+
+<h3>二、NSURLConnection发送异步请求的方法</h3>
+
+<p>1.block形式 - 除开大文件下载以外的操作，都可以用这种形式</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:&lt;#(NSURLRequest *)#&gt; queue:&lt;#(NSOperationQueue *)#&gt; completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.代理形式 - 一般用在大文件下载</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login?username=123&amp;pwd=123"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<h3>三、NSURLSession</h3>
+
+<p>1.使用步骤</p>
+
+<p>1> 获得NSURLSession对象
+2> 利用NSURLSession对象创建对应的任务（Task）
+3> 开始任务（[task resume]）</p>
+
+<p>2.获得NSURLSession对象</p>
+
+<p>1> [NSURLSession sharedSession]</p>
+
+<p>2></p>
+
+<pre><code>NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
+self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+</code></pre>
+
+<p>3.任务类型</p>
+
+<h6>1> NSURLSessionDataTask</h6>
+
+<p>用途：用于非文件下载的GET\POST请求</p>
+
+<pre><code>NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+}];
+</code></pre>
+
+<h6>2> NSURLSessionDownloadTask</h6>
+
+<p>用途：用于文件下载（小文件、大文件）</p>
+
+<pre><code>NSURLSessionDownloadTask *task = [self.session downloadTaskWithRequest:request];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {   
+}];
+</code></pre>
+
+<p> ————————————————————————————————————————————————————————————————</p>
+
+<h2>AFN与ASI的区别（面试用）</h2>
+
+<h3>一、底层实现</h3>
+
+<p>1> AFN的底层基于OC的NSURLConnection和NSURLSession
+2> ASI的底层基于纯C语言的CFNetwork框架
+3> ASI的运行性能 高于 AFN</p>
+
+<h3>二、对服务器返回的数据处理</h3>
+
+<p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string
+2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li>JSON处理</li>
+<li>XML处理</li>
+<li>其他处理</li>
+</ul>
+
+
+<h3>三、监听请求的过程</h3>
+
+<p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li>success : 请求成功后调用</li>
+<li>failure : 请求失败后调用</li>
+</ul>
+
+
+<p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程
+（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<ul>
+<li>成为代理，遵守协议，实现协议中的代理方法</li>
+<li>成为代理，不遵守协议，自定义代理方法</li>
+<li>设置block</li>
+</ul>
+
+
+<h3>四、在文件下载和文件上传的使用难易度</h3>
+
+<p>1> AFN</p>
+
+<ul>
+<li>不容易监听下载进度和上传进度</li>
+<li>不容易实现断点续传</li>
+<li>一般只用来下载不大的文件</li>
+</ul>
+
+
+<p>2> ASI</p>
+
+<ul>
+<li>非常容易实现下载和上传</li>
+<li>非常容易监听下载进度和上传进度</li>
+<li>非常容易实现断点续传</li>
+<li>下载或大或小的文件都行</li>
+</ul>
+
+
+<h3>五、ASI提供了更多的实用功能</h3>
+
+<p>1> 控制圈圈要不要在请求过程中转
+2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
+3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li>暂停\恢复\取消所有的请求</li>
+<li>监听整个队列中所有请求的下载进度和上传进度</li>
+</ul>
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/07/23/netuse/" title="Previous Post: 网络请求初探">&laquo; 网络请求初探</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/08/14/unio/" title="Next Post: 独一无二">独一无二 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (16)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (24)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2014/07/25/netall/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/07/25/netall/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

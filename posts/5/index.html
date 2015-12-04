@@ -1,0 +1,4321 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="MKNetWorking是撒？ ordinal 常用框架比如： AFNetworking
+ASIHttpRequest
+SDWebImage
+MKNetWorKit等。 iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/posts/5/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/11/mknetworking/">MKNetWorking是撒？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>常用框架比如：</p>
+
+<ul>
+<li>AFNetworking</li>
+<li>ASIHttpRequest</li>
+<li>SDWebImage</li>
+<li>MKNetWorKit等。</li>
+</ul>
+
+
+<p>iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。</p>
+
+<p>现在MKNetWorkKi吸取了ASIHttpRequest与AFNetWorking的优点，并加入了自己特有的功能。</p>
+
+<p>下载：</p>
+
+<pre><code>gitHub地址：https://github.com/MugunthKumar/MKNetworkKit.git
+
+官方使用说明：http://blog.mugunthkumar.com/products/ios-framework-introducing-mknetworkkit/
+</code></pre>
+
+<p>github下载了该项目后，如果想运行其demo，一定要打开MKNetworkKit.xcworkspace该文件，若单独打开，则编译时会提示缺少libMKNetworkKit-iOS.a文件！！！</p>
+
+<h6>安装：</h6>
+
+<p>克隆下来之后把其中的 MKNetworkKit文件夹拖入项目，然后引入3个framework：</p>
+
+<ul>
+<li>CFNetwork.Framework</li>
+<li>SystemConfiguration.framework</li>
+<li><p>Security.framework</p>
+
+<p> <img src="/images/MKNet001.png" title="Caption" ></p></li>
+</ul>
+
+
+<blockquote><p>注意：由于MKNetworkKit支持ARC，我们在项目中要开启ARC，不然会报错</p></blockquote>
+
+<p><img src="/images/MKNet002.png" title="Caption" ></p>
+
+<p>开启ARC自动内存控制机制：(开启ARC之后项目中所有的dealloc 、release 、autorelease都得注释掉)</p>
+
+<p> <img src="/images/MKNet003.png" title="Caption" ></p>
+
+<h6>使用方法：</h6>
+
+<p>  在需要使用的地方导入：#import"MKNetworkKit.h"</p>
+
+<h1>http方式：</h1>
+
+<h3>GET请求：</h3>
+
+<pre><code>MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"192.168.2.176:3000" customHeaderFields:nil];  
+MKNetworkOperation *op = [engine operationWithPath:@"/index" params:nil httpMethod:@"GET" ssl:NO];  
+[op addCompletionHandler:^(MKNetworkOperation *operation) {  
+    NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+}errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+    NSLog(@"MKNetwork request error : %@", [err localizedDescription]);  
+}];  
+[engine enqueueOperation:op];  
+</code></pre>
+
+<h3>POST请求：</h3>
+
+<pre><code>MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"192.168.2.176:3000" customHeaderFields:nil];  
+NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];  
+[dic setValue:@"admin" forKey:@"username"];  
+[dic setValue:@"123" forKey:@"password"];  
+
+MKNetworkOperation *op = [engine operationWithPath:@"/login" params:dic httpMethod:@"POST"];  
+[op addCompletionHandler:^(MKNetworkOperation *operation) {  
+    NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+}errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+    NSLog(@"MKNetwork request error : %@", [err localizedDescription]);  
+}];  
+[engine enqueueOperation:op];  
+</code></pre>
+
+<h1>https方式：</h1>
+
+<pre><code>#define serverHost               @"192.168.1.84:5558"  
+
+- (NSDictionary *)getDataFromURL:(NSString *)Path params:(NSDictionary *)data  
+{  
+    NSLog(@"MKNetwork request URL:  %@%@   \n Data: %@",serverHost,Path,data);  
+
+    __block NSDictionary *responseJSON;  
+    __block NSError *error = nil;  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:serverHost customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithPath:Path  params:data httpMethod:@"POST" ssl:YES];  
+//    在请求中添加证书  
+    op.clientCertificate = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"client.p12"];  
+    op.clientCertificatePassword = @"test";  
+//   当服务器端证书不合法时是否继续访问  
+    op.shouldContinueWithInvalidCertificate=YES;  
+    [op addCompletionHandler:^(MKNetworkOperation *operation) {  
+        NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+        responseJSON=[NSJSONSerialization JSONObjectWithData:[operation responseData] options:kNilOptions error:&amp;error];  
+        if(error) {  
+            NSLog(@"JSONSerialization failed! - error: %@", error);  
+        };  
+        error=nil;  
+    } errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+        error=err;  
+    }];  
+    [engine enqueueOperation:op];  
+    while(!error&amp;&amp;!responseJSON){}  
+    if (error) {  
+        NSLog(@"MKNetwork request error : %@", error);  
+        return nil;  
+    }  
+    if(responseJSON){  
+        NSLog(@"JSONSerialization successed! - responseJSON: %@", responseJSON);  
+    }  
+    return responseJSON;  
+}  
+
+
+    NSDictionary *params=[NSDictionary dictionaryWithObjectsAndKeys:@"admin",@"userName", @"123",@"password", nil];  
+    NSDictionary *responseDict = [self getDataFromURL:@"/login" params:params];  
+</code></pre>
+
+<h3>下载文件：</h3>
+
+<pre><code>+(MKNetworkOperation*) downloadFatAssFileFrom:(NSString*) remoteURL toFile:(NSString*) filePath {  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"127.0.0.1:5558" customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithURLString:remoteURL  
+                                                   params:nil  
+                                               httpMethod:@"GET"];  
+
+    [op addDownloadStream:[NSOutputStream outputStreamToFileAtPath:filePath  
+                                                            append:YES]];  
+    [engine enqueueOperation:op];  
+    return op;  
+}  
++(void)testDownload{  
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);  
+    NSString *cachesDirectory = [paths objectAtIndex:0];  
+    NSString *downloadPath = [cachesDirectory stringByAppendingPathComponent:@"DownloadedFile.pdf"];  
+
+    MKNetworkOperation *downloadOperation=[HttpManager downloadFatAssFileFrom:@"http://127.0.0.1:5558/QQ"  
+                                                                      toFile:downloadPath];  
+
+    [downloadOperation onDownloadProgressChanged:^(double progress) {  
+        //下载进度  
+        NSLog(@"download progress: %.2f", progress*100.0);  
+    }];  
+    //事件处理  
+    [downloadOperation addCompletionHandler:^(MKNetworkOperation* completedRequest) {  
+        NSLog(@"download file finished!");  
+    }  errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+        NSLog(@"download file error: %@", err);  
+    }];  
+}  
+</code></pre>
+
+<h3>上传文件：</h3>
+
+<pre><code>+(MKNetworkOperation*) uploadImageFromFile:(NSString*) filePath mimeType:(NSString *)fileType{  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"127.0.0.1:5558" customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithPath:@"upload"  
+                                              params:[NSDictionary dictionaryWithObjectsAndKeys:  
+                                                      @"admin", @"username",  
+                                                      @"123", @"password",nil]  
+                                          httpMethod:@"POST"];  
+
+    [op addFile:filePath forKey:@"media" mimeType:fileType];  
+
+    // setFreezable uploads your images after connection is restored!  
+    [op setFreezable:YES];  
+
+    [op addCompletionHandler:^(MKNetworkOperation* completedOperation) {  
+
+        NSString *responseString = [completedOperation responseString];  
+        NSLog(@"server response: %@",responseString);  
+    } errorHandler:^(MKNetworkOperation *errorOp, NSError* err){  
+
+        NSLog(@"Upload file error: %@", err);  
+    }];  
+
+    [engine enqueueOperation:op];  
+
+    return op;  
+}  
+
++(void)testUpload{  
+    NSString *uploadPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SampleImage.jpg"];  
+    //    NSData *myData = [NSData dataWithContentsOfFile:uploadPath];  
+    //    NSLog(@"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;%@",myData);  
+    MKNetworkOperation *uploadOperation = [HttpManager uploadImageFromFile:uploadPath mimeType:@"jpg"];  
+    [uploadOperation onUploadProgressChanged:^(double progress) {  
+        //        上传进度  
+        DLog(@"Upload file progress: %.2f", progress*100.0);  
+    }];  
+}  
+</code></pre>
+
+<h3>上传文件时服务器端程序(Node.Js):</h3>
+
+<pre><code>var express = require('express')  
+    ,fs=require('fs');  
+
+var app = module.exports = express.createServer();  
+// Configuration  
+app.configure(function(){  
+    app.use(express.bodyParser());  
+    app.use(express.methodOverride());  
+    app.use(app.router);  
+});  
+// Routes  
+app.post('/upload', function(req, res) {  
+    console.log(req);  
+    var tmp_path = req.files.media.path; // 获得文件的临时路径  
+    var target_path = './'+req.files.media.name;// 指定文件上传后的目录  
+    fs.rename(tmp_path, target_path, function(err) { // 移动文件  
+        if (err) throw err;  
+        fs.unlink(tmp_path, function() {// 删除临时文件夹文件,  
+            if (err) throw err;  
+            res.send({server:'success'});  
+            res.end();  
+        });  
+    });  
+});  
+app.listen(5558);  
+console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);  
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/11/11/mknetworking/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/10/22/collectionview/">玩转CollectionView</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>实现步骤</p>
+
+<h3>一、新建两个类</h3>
+
+<p>1.继承自UIScrollView的子类，比如iCocosWaterflowView</p>
+
+<ul>
+<li>瀑布流显示控件，用来显示所有的瀑布流数据</li>
+</ul>
+
+
+<p>2.继承自UIView的子类，比如iCocosWaterflowViewCell</p>
+
+<ul>
+<li>代表着瀑布流数据中的一个单元（一个格子）</li>
+</ul>
+
+
+<p>3.总结</p>
+
+<ul>
+<li>iCocosWaterflowView和iCocosWaterflowViewCell的关系实际上类似于
+UITableView和UITableViewCell的关系</li>
+</ul>
+
+
+<h3>二、设计iCocosWaterflowView的接口</h3>
+
+<p>1.模仿UITableView的接口来设计</p>
+
+<ul>
+<li>设计一套数据源和代理方法</li>
+</ul>
+
+
+<h3>三、iCocosWaterflowView的实现</h3>
+
+<p>1.reloadData</p>
+
+<ul>
+<li>作用：刷新数据</li>
+<li>步骤：
+1> 清空以前残余的数据
+2> 计算所有新数据对应的frame</li>
+</ul>
+
+
+<p>2.layoutSubviews</p>
+
+<ul>
+<li>作用：显示和移除子控件</li>
+<li><p>步骤：</p>
+
+<ul>
+<li><p>检测每一个数据对应的frame在不在屏幕上（用户能不能看见）</p></li>
+<li><p>如果这个数据对应的frame在屏幕上：向数据源索要这个数据对应的cell，添加这个cell到iCocosWaterflowView中显示</p></li>
+<li><p>如果这个数据对应的frame不在屏幕上：从iCocosWaterflowView中移除这个数据对应的cell，并将这个cell添加到缓存池中</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>View.h文件</p>
+
+<pre><code>#import &lt;UIKit/UIKit.h&gt;
+
+typedef enum {
+    iCocosWaterflowViewMarginTypeTop,
+    iCocosWaterflowViewMarginTypeBottom,
+    iCocosWaterflowViewMarginTypeLeft,
+    iCocosWaterflowViewMarginTypeRight,
+    iCocosWaterflowViewMarginTypeColumn, // 每一列
+    iCocosWaterflowViewMarginTypeRow, // 每一行
+} iCocosWaterflowViewMarginType;
+
+@class iCocosWaterflowView, iCocosWaterflowViewCell;
+
+/**
+ *  数据源方法
+ */
+@protocol iCocosWaterflowViewDataSource &lt;NSObject&gt;
+@required
+/**
+ *  一共有多少个数据
+ */
+- (NSUInteger)numberOfCellsInWaterflowView:(iCocosWaterflowView *)waterflowView;
+/**
+ *  返回index位置对应的cell
+ */
+- (iCocosWaterflowViewCell *)waterflowView:(iCocosWaterflowView *)waterflowView cellAtIndex:(NSUInteger)index;
+
+@optional
+/**
+ *  一共有多少列
+ */
+- (NSUInteger)numberOfColumnsInWaterflowView:(iCocosWaterflowView *)waterflowView;
+@end
+
+/**
+ *  代理方法
+ */
+@protocol iCocosWaterflowViewDelegate &lt;UIScrollViewDelegate&gt;
+@optional
+/**
+ *  第index位置cell对应的高度
+ */
+- (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView heightAtIndex:(NSUInteger)index;
+/**
+ *  选中第index位置的cell
+ */
+- (void)waterflowView:(iCocosWaterflowView *)waterflowView didSelectAtIndex:(NSUInteger)index;
+/**
+ *  返回间距
+ */
+- (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView marginForType:(iCocosWaterflowViewMarginType)type;
+@end
+
+/**
+ *  瀑布流控件
+ */
+@interface iCocosWaterflowView : UIScrollView
+/**
+ *  数据源
+ */
+@property (nonatomic, weak) id&lt;iCocosWaterflowViewDataSource&gt; dataSource;
+/**
+ *  代理
+ */
+@property (nonatomic, weak) id&lt;iCocosWaterflowViewDelegate&gt; delegate;
+
+/**
+ *  刷新数据（只要调用这个方法，会重新向数据源和代理发送请求，请求数据）
+ */
+- (void)reloadData;
+
+/**
+ *  cell的宽度
+ */
+- (CGFloat)cellWidth;
+
+/**
+ *  根据标识去缓存池查找可循环利用的cell
+ */
+- (id)dequeueReusableCellWithIdentifier:(NSString *)identifier;
+@end
+</code></pre>
+
+<p>复制代码</p>
+
+<p>View.m文件</p>
+
+<pre><code>#import "iCocosWaterflowView.h"
+#import "iCocosWaterflowViewCell.h"
+
+#define iCocosWaterflowViewDefaultCellH 70
+#define iCocosWaterflowViewDefaultMargin 8
+#define iCocosWaterflowViewDefaultNumberOfColumns 3
+
+@interface iCocosWaterflowView()
+/**
+ *  所有cell的frame数据
+ */
+@property (nonatomic, strong) NSMutableArray *cellFrames;
+/**
+ *  正在展示的cell
+ */
+@property (nonatomic, strong) NSMutableDictionary *displayingCells;
+/**
+ *  缓存池（用Set，存放离开屏幕的cell）
+ */
+@property (nonatomic, strong) NSMutableSet *reusableCells;
+@end
+
+@implementation iCocosWaterflowView
+
+#pragma mark - 初始化
+- (NSMutableArray *)cellFrames
+{
+    if (_cellFrames == nil) {
+        self.cellFrames = [NSMutableArray array];
+    }
+    return _cellFrames;
+}
+
+- (NSMutableDictionary *)displayingCells
+{
+    if (_displayingCells == nil) {
+        self.displayingCells = [NSMutableDictionary dictionary];
+    }
+    return _displayingCells;
+}
+
+- (NSMutableSet *)reusableCells
+{
+    if (_reusableCells == nil) {
+        self.reusableCells = [NSMutableSet set];
+    }
+    return _reusableCells;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+
+    }
+    return self;
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    [self reloadData];
+}
+
+#pragma mark - 公共接口
+/**
+ *  cell的宽度
+ */
+- (CGFloat)cellWidth
+{
+    // 总列数
+    int numberOfColumns = [self numberOfColumns];
+    CGFloat leftM = [self marginForType:iCocosWaterflowViewMarginTypeLeft];
+    CGFloat rightM = [self marginForType:iCocosWaterflowViewMarginTypeRight];
+    CGFloat columnM = [self marginForType:iCocosWaterflowViewMarginTypeColumn];
+    return (self.bounds.size.width - leftM - rightM - (numberOfColumns - 1) * columnM) / numberOfColumns;
+}
+
+/**
+ *  刷新数据
+ */
+- (void)reloadData
+{
+    // 清空之前的所有数据
+    // 移除正在正在显示cell
+    [self.displayingCells.allValues makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [self.displayingCells removeAllObjects];
+    [self.cellFrames removeAllObjects];
+    [self.reusableCells removeAllObjects];
+
+    // cell的总数
+    int numberOfCells = [self.dataSource numberOfCellsInWaterflowView:self];
+
+    // 总列数
+    int numberOfColumns = [self numberOfColumns];
+
+    // 间距
+    CGFloat topM = [self marginForType:iCocosWaterflowViewMarginTypeTop];
+    CGFloat bottomM = [self marginForType:iCocosWaterflowViewMarginTypeBottom];
+    CGFloat leftM = [self marginForType:iCocosWaterflowViewMarginTypeLeft];
+    CGFloat columnM = [self marginForType:iCocosWaterflowViewMarginTypeColumn];
+    CGFloat rowM = [self marginForType:iCocosWaterflowViewMarginTypeRow];
+
+    // cell的宽度
+    CGFloat cellW = [self cellWidth];
+
+    // 用一个C语言数组存放所有列的最大Y值
+    CGFloat maxYOfColumns[numberOfColumns];
+    for (int i = 0; i&lt;numberOfColumns; i++) {
+        maxYOfColumns[i] = 0.0;
+    }
+
+    // 计算所有cell的frame
+    for (int i = 0; i&lt;numberOfCells; i++) {
+        // cell处在第几列(最短的一列)
+        NSUInteger cellColumn = 0;
+        // cell所处那列的最大Y值(最短那一列的最大Y值)
+        CGFloat maxYOfCellColumn = maxYOfColumns[cellColumn];
+        // 求出最短的一列
+        for (int j = 1; j&lt;numberOfColumns; j++) {
+            if (maxYOfColumns[j] &lt; maxYOfCellColumn) {
+                cellColumn = j;
+                maxYOfCellColumn = maxYOfColumns[j];
+            }
+        }
+
+        // 询问代理i位置的高度
+        CGFloat cellH = [self heightAtIndex:i];
+
+        // cell的位置
+        CGFloat cellX = leftM + cellColumn * (cellW + columnM);
+        CGFloat cellY = 0;
+        if (maxYOfCellColumn == 0.0) { // 首行
+            cellY = topM;
+        } else {
+            cellY = maxYOfCellColumn + rowM;
+        }
+
+        // 添加frame到数组中
+        CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+        [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
+
+        // 更新最短那一列的最大Y值
+        maxYOfColumns[cellColumn] = CGRectGetMaxY(cellFrame);
+    }
+
+    // 设置contentSize
+    CGFloat contentH = maxYOfColumns[0];
+    for (int j = 1; j&lt;numberOfColumns; j++) {
+        if (maxYOfColumns[j] &gt; contentH) {
+            contentH = maxYOfColumns[j];
+        }
+    }
+    contentH += bottomM;
+    self.contentSize = CGSizeMake(0, contentH);
+}
+
+/**
+ *  当UIScrollView滚动的时候也会调用这个方法
+ */
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    // 向数据源索要对应位置的cell
+    NSUInteger numberOfCells = self.cellFrames.count;
+    for (int i = 0; i&lt;numberOfCells; i++) {
+        // 取出i位置的frame
+        CGRect cellFrame = [self.cellFrames[i] CGRectValue];
+
+        // 优先从字典中取出i位置的cell
+        iCocosWaterflowViewCell *cell = self.displayingCells[@(i)];
+
+        // 判断i位置对应的frame在不在屏幕上（能否看见）
+        if ([self isInScreen:cellFrame]) { // 在屏幕上
+            if (cell == nil) {
+                cell = [self.dataSource waterflowView:self cellAtIndex:i];
+                cell.frame = cellFrame;
+                [self addSubview:cell];
+
+                // 存放到字典中
+                self.displayingCells[@(i)] = cell;
+            }
+        } else {  // 不在屏幕上
+            if (cell) {
+                // 从scrollView和字典中移除
+                [cell removeFromSuperview];
+                [self.displayingCells removeObjectForKey:@(i)];
+
+                // 存放进缓存池
+                [self.reusableCells addObject:cell];
+            }
+        }
+    }
+}
+
+- (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
+{
+    __block iCocosWaterflowViewCell *reusableCell = nil;
+
+    [self.reusableCells enumerateObjectsUsingBlock:^(iCocosWaterflowViewCell *cell, BOOL *stop) {
+        if ([cell.identifier isEqualToString:identifier]) {
+            reusableCell = cell;
+            *stop = YES;
+        }
+    }];
+
+    if (reusableCell) { // 从缓存池中移除
+        [self.reusableCells removeObject:reusableCell];
+    }
+    return reusableCell;
+}
+
+#pragma mark - 私有方法
+/**
+ *  判断一个frame有无显示在屏幕上
+ */
+- (BOOL)isInScreen:(CGRect)frame
+{
+    return (CGRectGetMaxY(frame) &gt; self.contentOffset.y) &amp;&amp;
+    (CGRectGetMinY(frame) &lt; self.contentOffset.y + self.bounds.size.height);
+}
+
+/**
+ *  间距
+ */
+- (CGFloat)marginForType:(iCocosWaterflowViewMarginType)type
+{
+    if ([self.delegate respondsToSelector:@selector(waterflowView:marginForType:)]) {
+        return [self.delegate waterflowView:self marginForType:type];
+    } else {
+        return iCocosWaterflowViewDefaultMargin;
+    }
+}
+/**
+ *  总列数
+ */
+- (NSUInteger)numberOfColumns
+{
+    if ([self.dataSource respondsToSelector:@selector(numberOfColumnsInWaterflowView:)]) {
+        return [self.dataSource numberOfColumnsInWaterflowView:self];
+    } else {
+        return iCocosWaterflowViewDefaultNumberOfColumns;
+    }
+}
+/**
+ *  index位置对应的高度
+ */
+- (CGFloat)heightAtIndex:(NSUInteger)index
+{
+    if ([self.delegate respondsToSelector:@selector(waterflowView:heightAtIndex:)]) {
+        return [self.delegate waterflowView:self heightAtIndex:index];
+    } else {
+        return iCocosWaterflowViewDefaultCellH;
+    }
+}
+
+#pragma mark - 事件处理
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (![self.delegate respondsToSelector:@selector(waterflowView:didSelectAtIndex:)]) return;
+
+    // 获得触摸点
+    UITouch *touch = [touches anyObject];
+    //    CGPoint point = [touch locationInView:touch.view];
+    CGPoint point = [touch locationInView:self];
+
+    __block NSNumber *selectIndex = nil;
+    [self.displayingCells enumerateKeysAndObjectsUsingBlock:^(id key, iCocosWaterflowViewCell *cell, BOOL *stop) {
+        if (CGRectContainsPoint(cell.frame, point)) {
+            selectIndex = key;
+            *stop = YES;
+        }
+    }];
+
+    if (selectIndex) {
+        [self.delegate waterflowView:self didSelectAtIndex:selectIndex.unsignedIntegerValue];
+    }
+}
+</code></pre>
+
+<p>复制代码</p>
+
+<p>Cell.h文件</p>
+
+<pre><code> #import &lt;UIKit/UIKit.h&gt;
+
+ @interface iCocosWaterflowViewCell : UIView
+ @property (nonatomic, copy) NSString *identifier;
+ @end
+</code></pre>
+
+<p>使用方法：</p>
+
+<p>1:新建一个Cell模型</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+@interface iCocosShop : NSObject
+@property (nonatomic, assign) CGFloat w;
+@property (nonatomic, assign) CGFloat h;
+@property (nonatomic, copy) NSString *img;
+@property (nonatomic, copy) NSString *price;
+@end
+</code></pre>
+
+<p>2：定义一个集成自上面的Cell的Cell</p>
+
+<pre><code>#import "iCocosWaterflowViewCell.h"
+@class iCocosWaterflowView, iCocosShop;
+
+@interface iCocosShopCell : iCocosWaterflowViewCell
++ (instancetype)cellWithWaterflowView:(iCocosWaterflowView *)waterflowView;
+
+@property (nonatomic, strong) iCocosShop *shop;
+@end
+</code></pre>
+
+<p>实现这个Cell：</p>
+
+<pre><code>#import "iCocosShopCell.h"
+#import "iCocosWaterflowView.h"
+#import "UIImageView+WebCache.h"
+#import "iCocosShop.h"
+
+@interface iCocosShopCell()
+@property (weak, nonatomic) UIImageView *imageView;
+@property (weak, nonatomic) UILabel *priceLabel;
+@end
+
+@implementation iCocosShopCell
+
+
++ (instancetype)cellWithWaterflowView:(iCocosWaterflowView *)waterflowView
+{
+    static NSString *ID = @"SHOP";
+    iCocosShopCell *cell = [waterflowView dequeueReusableCellWithIdentifier:ID];
+    if (cell == nil) {
+        cell = [[iCocosShopCell alloc] init];
+        cell.identifier = ID;
+    }
+    return cell;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+
+        UIImageView *imageView = [[UIImageView alloc] init];
+        [self addSubview:imageView];
+        self.imageView = imageView;
+
+        UILabel *priceLabel = [[UILabel alloc] init];
+        priceLabel.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
+        priceLabel.textAlignment = NSTextAlignmentCenter;
+        priceLabel.textColor = [UIColor whiteColor];
+        [self addSubview:priceLabel];
+        self.priceLabel = priceLabel;
+    }
+    return self;
+}
+
+- (void)setShop:(iCocosShop *)shop
+{
+    _shop = shop;
+
+    self.priceLabel.text = shop.price;
+    [self.imageView sd_setImageWithURL:[NSURL URLWithString:shop.img] placeholderImage:[UIImage imageNamed:@"loading"]];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    self.imageView.frame = self.bounds;
+
+    CGFloat priceX = 0;
+    CGFloat priceH = 25;
+    CGFloat priceY = self.bounds.size.height - priceH;
+    CGFloat priceW = self.bounds.size.width;
+    self.priceLabel.frame = CGRectMake(priceX, priceY, priceW, priceH);
+}
+</code></pre>
+
+<p>3:在控制器中直接使用：</p>
+
+<pre><code>    #import "iCocosShopsViewController.h"
+    #import "iCocosShopCell.h"
+    #import "iCocosWaterflowView.h"
+    #import "iCocosShop.h"
+    #import "MJExtension.h"
+    #import "MJRefresh.h"
+
+    @interface iCocosShopsViewController ()&lt;iCocosWaterflowViewDataSource, iCocosWaterflowViewDelegate&gt;
+    @property (nonatomic, strong) NSMutableArray *shops;
+    @property (nonatomic, weak) iCocosWaterflowView *waterflowView;
+    @end
+
+    @implementation iCocosShopsViewController
+
+    - (NSMutableArray *)shops
+    {
+        if (_shops == nil) {
+            self.shops = [NSMutableArray array];
+        }
+        return _shops;
+    }
+
+    - (void)viewDidLoad
+    {
+        [super viewDidLoad];
+
+        // 0.初始化数据
+        NSArray *newShops = [iCocosShop objectArrayWithFilename:@"2.plist"];
+        [self.shops addObjectsFromArray:newShops];
+
+        // 1.瀑布流控件
+        iCocosWaterflowView *waterflowView = [[iCocosWaterflowView alloc] init];
+        waterflowView.backgroundColor = [UIColor redColor];
+        // 跟随着父控件的尺寸而自动伸缩
+        waterflowView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        waterflowView.frame = self.view.bounds;
+        waterflowView.dataSource = self;
+        waterflowView.delegate = self;
+        [self.view addSubview:waterflowView];
+        self.waterflowView = waterflowView;
+
+        // 2.继承刷新控件
+    //    [waterflowView addFooterWithCallback:^{
+    //        NSLog(@"进入上拉加载状态");
+    //    }];
+
+    //    [waterflowView addHeaderWithCallback:^{
+    //        NSLog(@"进入下拉加载状态");
+        //    }];
+
+        [waterflowView addHeaderWithTarget:self action:@selector(loadNewShops)];
+        [waterflowView addFooterWithTarget:self action:@selector(loadMoreShops)];
+    }
+
+    - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+    {
+    //    NSLog(@"屏幕旋转完毕");
+        [self.waterflowView reloadData];
+    }
+
+    - (void)loadNewShops
+    {
+        static dispatch_once_t onceToken;
+        dispatch_once(&amp;onceToken, ^{
+            // 加载1.plist
+            NSArray *newShops = [iCocosShop objectArrayWithFilename:@"1.plist"];
+            [self.shops insertObjects:newShops atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, newShops.count)]];
+        });
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // 刷新瀑布流控件
+            [self.waterflowView reloadData];
+
+            // 停止刷新
+            [self.waterflowView headerEndRefreshing];
+        });
+    }
+
+    - (void)loadMoreShops
+    {
+        static dispatch_once_t onceToken;
+        dispatch_once(&amp;onceToken, ^{
+            // 加载3.plist
+            NSArray *newShops = [iCocosShop objectArrayWithFilename:@"3.plist"];
+            [self.shops addObjectsFromArray:newShops];
+        });
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+            // 刷新瀑布流控件
+            [self.waterflowView reloadData];
+
+            // 停止刷新
+            [self.waterflowView footerEndRefreshing];
+        });
+    }
+
+    #pragma mark - 数据源方法
+    - (NSUInteger)numberOfCellsInWaterflowView:(iCocosWaterflowView *)waterflowView
+    {
+        return self.shops.count;
+    }
+
+    - (iCocosWaterflowViewCell *)waterflowView:(iCocosWaterflowView *)waterflowView cellAtIndex:(NSUInteger)index
+    {
+        iCocosShopCell *cell = [iCocosShopCell cellWithWaterflowView:waterflowView];
+
+        cell.shop = self.shops[index];
+
+        return cell;
+    }
+
+    - (NSUInteger)numberOfColumnsInWaterflowView:(iCocosWaterflowView *)waterflowView
+    {
+        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
+            // 竖屏
+            return 3;
+        } else {
+            return 5;
+        }
+    }
+
+    #pragma mark - 代理方法
+    - (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView heightAtIndex:(NSUInteger)index
+    {
+        iCocosShop *shop = self.shops[index];
+        // 根据cell的宽度 和 图片的宽高比 算出 cell的高度
+        return waterflowView.cellWidth * shop.h / shop.w;
+    }
+</code></pre>
+
+<p>注：这里还需要引入第三方库和相应的工具类</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/10/22/collectionview/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/28/protocol/">不平的条约（协议）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>协议声明类需要实现的的方法，为不同的类提供公用方法，一个类可以有多个协议，但只能有一个父类，即单继承。它类似java中的接口。</p>
+
+<h2>正式协议（formal protocol）</h2>
+
+<p>声明正式协议使用@protocol指令，以@end结尾。</p>
+
+<pre><code>@protocol MyXMLSupport
+- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
+- (NSXMLElement *)XMLRepresentation;
+@end
+</code></pre>
+
+<p>可以在协议声明中使用@optional和@required指令来指定协议中的方法是否必须要实现。如果没有为方法指定任何指令，@required是协议中默认的指令。</p>
+
+<pre><code>@protocol MyProtocol
+- (void)requiredMethod;
+@optional
+- (void)anOptionalMethod;
+- (void)anotherOptionalMethod;
+@required
+- (void)anotherRequiredMethod; 
+@end
+</code></pre>
+
+<h2>非正式协议（informal protocol）</h2>
+
+<p>非正式协议通过分类（category）来实现，不过在Mac OS X v10.6+中可以在协议中通过@optional指令来取代这个别扭的方案。</p>
+
+<pre><code>@interface NSObject ( MyXMLSupport )
+- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
+- (NSXMLElement *)XMLRepresentation;
+@end
+</code></pre>
+
+<h2>协议对象（protocol objects）</h2>
+
+<p>Objective C中定义了协议对象，通过@protocol指令可以获取protocol实例。</p>
+
+<pre><code>Protocol *myXMLSupportProtocol = @protocol(MyXMLSupport);
+</code></pre>
+
+<p>当类采用（adopt）接口或在代码中通过@protocol（XX）指令时，编译器会创建protocol实例。</p>
+
+<h2>协议的使用</h2>
+
+<p>协议的采用（adopt）和声明父类类似，可以在父类后面用尖括号将要采用的协议括起来，多个协议用逗号（comma）隔开。
+类和分类都可以采用协议。</p>
+
+<pre><code>@interface ClassName : ItsSuperclass &lt; protocol list &gt;
+@interface ClassName ( CategoryName ) &lt; protocol list &gt;
+</code></pre>
+
+<p>在接口部分不需要重新声明协议中的方法。但在类的实现部分需要实现协议中的@required方法。</p>
+
+<h2>是否遵循某协议</h2>
+
+<p>检查一个类或实例对象是否遵循某协议可以用NSObject类的类方法conformsToProtocol和实例方法conformsToProtocol</p>
+
+<pre><code>if ( ! [receiver conformsToProtocol:@protocol(MyXMLSupport)]  ) {
+    // Object does not conform to MyXMLSupport protocol
+    // If you are expecting receiver to implement methods declared in the
+    //  MyXMLSupport protocol, this is probably an error
+}
+</code></pre>
+
+<h2>使用协议进行类型声明</h2>
+
+<p>声明对象类型时可以在声明中指定协议，这样可以让编译器在编译阶段强制对象遵循某协议。</p>
+
+<pre><code>- (id &lt;Formatting&gt;)formattingService;
+id &lt;MyXMLSupport&gt; anObject;
+</code></pre>
+
+<h2>协议的继承</h2>
+
+<p>协议也可以继承或采用其他的协议，需要采用某协议的类必须实现该协议的required方法和该协议继承的协议中的required方法。
+    @protocol ProtocolName &lt; protocol list ></p>
+
+<h2>在协议中使用其它的协议</h2>
+
+<p>在一个大型的应用中，你可能会遇到如下代码：</p>
+
+<pre><code>#import "B.h"
+@protocol A
+- foo:(id &lt;B&gt;)anObject;
+@end
+
+
+#import "A.h"
+@protocol B
+- bar:(id &lt;A&gt;)anObject;
+@end
+</code></pre>
+
+<p>A、B协议在互相引用，如果这里都用import来引入协议文件，编译器会报错。需要改为如下方式：</p>
+
+<pre><code>@protocol B;
+@protocol A
+- foo:(id &lt;B&gt;)anObject;
+@end
+</code></pre>
+
+<p>@protocol B只是简单告诉编译器B是一个协议，不会引入B的文件。
+NScoder  和 NScoding 有将自己定义的类的对象写入磁盘的作用
+NScoding 是一个协议，主要有下面两个方法</p>
+
+<pre><code>-(id)initWithCoder:(NSCoder *)coder;//从coder中读取数据，保存到相应的变量中，即反序列化数据
+-(void)encodeWithCoder:(NSCoder *)coder;// 读取实例变量，并把这些数据写到coder中去。序列化数据
+</code></pre>
+
+<p>NSCoder 是一个抽象类，抽象类不能被实例话，只能提供一些想让子类继承的方法。</p>
+
+<p>NSKeyedUnarchiver   从二进制流读取对象。
+NSKeyedArchiver       把对象写到二进制流中去。
+4一个简单的例子</p>
+
+<p>一般是在自己定义的类中需要在.h 文件中加入<NScoding></p>
+
+<p>在.m 文件众实现他的的两个代理方法，这个代理方法将会被自动调用</p>
+
+<pre><code>1 - (void)encodeWithCoder:(NSCoder *)aCoder 
+2 {
+3     [aCoder encodeObject:self.InsureSolutionID forKey:@"personName"];
+4     [aCoder encodeObject:self.InsureSolutionName forKey:@"personAge"];
+5 }
+</code></pre>
+
+<p>encodeWithCoder 可以调用的方法：</p>
+
+<p>1）、如果是类 就用encodeObject: forKey：</p>
+
+<p>2）、如果是普通的数据类型就用   eg、encodeInt： forKey：</p>
+
+<pre><code>- (id)initWithCoder:(NSCoder *)aDecoder 
+
+{
+    self = [super init];
+    if (self) 
+    {
+        self.InsureSolutionID = [aDecoder decodeObjectForKey:@"personName"];
+        self.InsureSolutionName = [aDecoder decodeObjectForKey:@"personAge"];
+    }
+    return self;
+}
+</code></pre>
+
+<p>initWithCoder 可以调用的方法：</p>
+
+<p>1）、如果是类 就用decodeObjectForKey：</p>
+
+<p>2）、如果是普通的数据类型就用   eg、decodeIntForKey：</p>
+
+<p>以下是对该类序列化和反序列化。</p>
+
+<pre><code>1 NSData *archiveCarPriceData = [NSKeyedArchiver archivedDataWithRootObject:self.DataArray];
+2     [[NSUserDefaults standardUserDefaults] setObject:archiveCarPriceData forKey:@"DataArray"];
+3  
+4 
+5  NSData *myEncodedObject = [[NSUserDefaults standardUserDefaults] objectForKey:@"DataArray"];
+6      self.dataList = [NSKeyedUnarchiver unarchiveObjectWithData: myEncodedObject];
+</code></pre>
+
+<p>nscopying协议蛮好用的。</p>
+
+<p>一个方法：
+zone是一个内存区域，通常object，指向指针，所以copywithzone重要。</p>
+
+<pre><code>- (id)copyWithZone:(NSZone *)zone
+
+{
+
+    FourLines *copy = [[[self class] allocWithZone:zone] init];
+
+    copy.field1 = [self.field1 copyWithZone:zone];
+
+    copy.field2 = [self.field2 copyWithZone:zone];
+
+    copy.field3 = [self.field3 copyWithZone:zone];
+
+    copy.field4 = [self.field4 copyWithZone:zone];
+
+    return copy;
+
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/08/28/protocol/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/15/uiview%20calayer/">UIView&CALayer是撒？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>UIView与CALayer详解</p>
+
+<p>研究Core Animation已经有段时间了，关于Core Animation，网上没什么好的介绍。苹果网站上有篇专门的总结性介绍，但是似乎原理性的东西不多，看得人云山雾罩，感觉，写那篇东西的人，其实是假 设读的人了解界面动画技术的原理的。今天有点别的事情要使用Linux，忘掉了ssh的密码，没办法重新设ssh，结果怎么也想不起来怎么设ssh远程登 陆了，没办法又到网上查了一遍，太浪费时间了，痛感忘记记笔记是多么可怕的事情。鉴于Core Animation的内容实在是非常繁杂，应用的Obj-C语言本身的特性也很多，所以写个备忘录记录一下，懂的人看了后如果发现了错误，还不吝指教。</p>
+
+<ul>
+<li>1.UIView 是iOS系统中界面元素的基础，所有的界面元素都继承自它。它本身完全是由CoreAnimation来实现的（Mac下似乎不是这样）。它真正的绘图部 分，是由一个叫CALayer（Core Animation Layer）的类来管理。UIView本身，更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等等， 实际上内部都是在访问它所包含的CALayer的相关属性。</li>
+</ul>
+
+
+<p>2.UIView有个layer属性，可以返回它的主CALayer实例，UIView有一个layerClass方法，返回主layer所使用的类，UIView的子类，可以通过重载这个方法，来让UIView使用不同的CALayer来显示，例如通过</p>
+
+<pre><code>- (class) layerClass {
+
+  return ([CAEAGLLayer class]);
+
+}
+</code></pre>
+
+<p>使某个UIView的子类使用GL来进行绘制。</p>
+
+<ul>
+<li>3.UIView的CALayer类似UIView的子View树形结构，也可以向它的layer上添加子layer，来完成某些特殊的表示。</li>
+</ul>
+
+
+<p>例如下面的代码</p>
+
+<pre><code>grayCover = [[CALayer alloc] init];
+
+grayCover.backgroundColor = [[[UIColor blackColor] colorWithAlphaComponent:0.2] CGColor];
+
+[self.layer addSubLayer: grayCover];
+</code></pre>
+
+<p>会在目标View上敷上一层黑色的透明薄膜。</p>
+
+<ul>
+<li>4.UIView的layer树形在系统内部，被系统维护着三份copy（这段理解有点吃不准）。</li>
+</ul>
+
+
+<p>例如：</p>
+
+<pre><code>第一份，逻辑树，就是代码里可以操纵的，例如更改layer的属性等等就在这一份。
+第二份，动画树，这是一个中间层，系统正在这一层上更改属性，进行各种渲染操作。
+第三份，显示树，这棵树的内容是当前正被显示在屏幕上的内容。
+这三棵树的逻辑结构都是一样的，区别只有各自的属性。
+</code></pre>
+
+<ul>
+<li><p>5.动画的运作
+UIView 的主layer以外（我觉得是这样），对它的subLayer，也就是子layer的属性进行更改，系统将自动进行动画生成，动画持续时间有个缺省时间， 个人感觉大概是0.5秒。在动画时间里，系统自动判定哪些属性更改了，自动对更改的属性进行动画插值，生成中间帧然后连续显示产生动画效果。</p></li>
+<li><p>6.坐标系系统（对position和anchorPoint的关系还是犯晕）
+CALayer 的坐标系系统和UIView有点不一样，它多了一个叫anchorPoint的属性，它使用CGPoint结构，但是值域是0~1，也就是按照比例来设 置。这个点是各种图形变换的坐标原点，同时会更改layer的position的位置，它的缺省值是{0.5, 0.5}，也就是在layer的中央。
+某layer.anchorPoint = CGPointMake(0.f, 0.f);
+如果这么设置，layer的左上角就会被挪到原来的中间的位置，
+加上这样一句就好了
+某layer.position = CGPointMake(0.f, 0.f);</p></li>
+<li><p>7.真实例子的分析</p></li>
+</ul>
+
+
+<p>这 是iphone上iBook翻页的效果，假设每一页都是一个UIView，我觉得一个页面是贴了俩个Layer，文字Layer显示正面的内容，背面 layer用文字layer的快照做affine翻转，贴在文字layer的后面。因为Layer可以设置显示阴影，也许后面的阴影效果没有使用单独的一 个layer来显示。至于这个曲面效果，我查了很多资料也没有结果，估计是使用了GL的曲面绘图？</p>
+
+<ul>
+<li>8.最后一个让人恶心的。
+layer 可以设置圆角显示，例如UIButton的效果，也可以设置阴影显示，但是如果layer树中的某个layer设置了圆角，树中所有layer的阴影效果 都将显示不了了。如果既想有圆角又想要阴影，好像只能做两个重叠的UIView，一个的layer显示圆角，一个的layer显示阴影&hellip;..</li>
+</ul>
+
+
+<p>CALayer属于Core Animation部分的内容，比较重要而不太好理解。以下是园子中看到的一篇文章的摘录：</p>
+
+<ol>
+<li><p>UIView是iOS系统中界面元素的基础，所有的界面元素都是继承自它。它本身完全是由CoreAnimation来实现的。它真正的绘图部分，是由一个CALayer类来管理。UIView本身更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等，实际上内部都是在访问它所包含的CALayer的相关属性。</p></li>
+<li><p>UIView有个重要属性layer，可以返回它的主CALayer实例。</p></li>
+</ol>
+
+
+<p>// 要访问层，读取UIView实例的layer属性</p>
+
+<pre><code>CALayer *layer = myView.layer
+</code></pre>
+
+<p>所有从UIView继承来的对象都继承了这个属性。这意味着你可以转换、缩放、旋转，甚至可以在Navigation bars，Tables，Text boxes等其它的View类上增加动画。每个UIView都有一个层，控制着各自的内容最终被显示在屏幕上的方式。</p>
+
+<p>UIView的layerClass方法，可以返回主layer所使用的类，UIView的子类可以通过重载这个方法，来让UIView使用不同的CALayer来显示。代码示例：</p>
+
+<pre><code>- (class)layerClass {
+   return ([CAEAGLLayer class]);
+
+}
+</code></pre>
+
+<p>上述代码使得某个UIView的子类使用GL来进行绘制。</p>
+
+<ol>
+<li>UIView的CALayer类似UIView的子View树形结构，也可以向它的layer上添加子layer，来完成某些特殊的表示。即CALayer层是可以嵌套的。</li>
+</ol>
+
+
+<p>示例代码：</p>
+
+<pre><code>grayCover = [[CALayer alloc] init];
+
+grayCover.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2] CGColor];
+[self.layer addSubLayer:grayCover];
+</code></pre>
+
+<p>上述代码会在目标View上敷上一层黑色透明薄膜的效果。</p>
+
+<ol>
+<li><p>UIView的layer树形在系统内部，被维护着三份copy。分别是逻辑树，这里是代码可以操纵的；动画树，是一个中间层，系统就在这一层上更改属性，进行各种渲染操作；显示树，其内容就是当前正被显示在屏幕上得内容。</p></li>
+<li><p>动画的运作：对UIView的subLayer（非主Layer）属性进行更改，系统将自动进行动画生成，动画持续时间的缺省值似乎是0.5秒。</p></li>
+<li><p>坐标系统：CALayer的坐标系统比UIView多了一个anchorPoint属性，使用CGPoint结构表示，值域是0~1，是个比例值。这个点是各种图形变换的坐标原点，同时会更改layer的position的位置，它的缺省值是{0.5,0.5}，即在layer的中央。</p></li>
+</ol>
+
+
+<p>某layer.anchorPoint = CGPointMake(0.f,0.f);
+如果这么设置，只会将layer的左上角被挪到原来的中间位置，必须加上这一句：
+某layer.position = CGPointMake(0.f,0.f);
+最后：layer可以设置圆角显示（cornerRadius），也可以设置阴影 (shadowColor)。但是如果layer树中某个 layer设置了圆角，树种所有layer的阴影效果都将不显示了。因此若是要有圆角又要阴影，变通方法只能做两个重叠的UIView，一个的layer 显示圆角，一个layer显示阴影&hellip;&hellip;</p>
+
+<p>7.渲染：当更新层，改变不能立即显示在屏幕上。当所有的层都准备好时，可以调用setNeedsDisplay方法来重绘显示。</p>
+
+<pre><code>[gameLayer setNeedsDisplay];
+</code></pre>
+
+<p>若要重绘部分屏幕区域，请使用setNeedsDisplayInRect:方法，通过在CGRect结构的区域更新：</p>
+
+<pre><code>[gameLayer setNeedsDisplayInRect:CGRectMake(150.0,100.0,50.0,75.0)];
+</code></pre>
+
+<p>如果是用的Core Graphics框架来执行渲染的话，可以直接渲染Core Graphics的内容。用renderInContext:来做这个事。</p>
+
+<pre><code>[gameLayer renderInContext:UIGraphicsGetCurrentContext()];
+</code></pre>
+
+<p>8.变换：要在一个层中添加一个3D或仿射变换，可以分别设置层的transform或affineTransform属性。</p>
+
+<pre><code>1 characterView.layer.transform = CATransform3DMakeScale(-1.0,-1.0,1.0);
+2 
+3 CGAffineTransform transform = CGAffineTransformMakeRotation(45.0);
+4 backgroundView.layer.affineTransform = transform;
+</code></pre>
+
+<p>9.变形：Quartz Core的渲染能力，使二维图像可以被自由操纵，就好像是三维的。图像可以在一个三维坐标系中以任意角度被旋转，缩放和倾斜。CATransform3D的一套方法提供了一些魔术般的变换效果。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/08/15/uiview%20calayer/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
+
+<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
+
+<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
+
+<h5>一.UDID(Unique Device Identifier)</h5>
+
+<pre><code> UDID的全称是Unique Device Identifier，顾名思义，它就是苹果IOS设备的唯一识别码，它由40个字符的字母和数字组成。
+</code></pre>
+
+<h5>二.UUID(Universally Unique Identifier)</h5>
+
+<pre><code>UUID是Universally Unique Identifier的缩写,中文意思是通用唯一识别码.
+</code></pre>
+
+<h5>三.MAC Address</h5>
+
+<h5>四.OPEN UDID</h5>
+
+<h5>五.广告标示符（IDFA-identifierForIdentifier）</h5>
+
+<h5>六.Vindor标示符 (IDFV-identifierForVendor)</h5>
+
+<p>Vendor是CFBundleIdentifier（反转DNS格式）的前两部分。来自同一个运营商的应用运行在同一个设备上，此属性的值是相同的；不同的运营商应用运行在同一个设备上值不同。</p>
+
+<p>经测试，只要设备上有一个tencent的app，重新安装后的identifierForVendor值不变，如果tencent的app全部删除，重新安装后的identifierForVendor值改变。</p>
+
+<p>但是很不幸，上面所有这些表示设备唯一号的标识，在IOS7中要么被禁止使用，要么重新安装程序后两次获取的标识符不一样。</p>
+
+<p>由于IOS系统存储的数据都是在sandBox里面，一旦删除App，sandBox也不复存在。好在有一个例外，那就是keychain（钥匙串）。</p>
+
+<p>通常情况下，IOS系统用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。</p>
+
+<p>keychain里保存的信息不会因App被删除而丢失。所以，可以利用这个keychain这个特点来保存设备唯一标识。</p>
+
+<p>那么，如何在应用里使用使用keyChain呢，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。</p>
+
+<p>直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，我们可以使用已经封装好了的工具类KeychainItemWrapper来对keychain进行操作。</p>
+
+<p>KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，</p>
+
+<p>只需要把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
+
+<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
+KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
+                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
+
+//保存数据
+[wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
+
+[wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
+
+//从keychain里取出帐号密码
+NSString *password = [wrapper objectForKey:(id)kSecValueData];      
+
+//清空设置
+[wrapper resetKeychainItem];
+</code></pre>
+
+<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会出错！</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/08/14/unio/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/25/netall/">网络开发总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一、一个HTTP请求的基本要素</h3>
+
+<p>1.请求URL：客户端通过哪个路径找到服务器</p>
+
+<p>2.请求参数：客户端发送给服务器的数据</p>
+
+<ul>
+<li>比如登录时需要发送的用户名和密码</li>
+</ul>
+
+
+<p>3.返回结果：服务器返回给客户端的数据</p>
+
+<ul>
+<li>一般是JSON数据或者XML数据</li>
+</ul>
+
+
+<h3>二、基本的HTTP请求的步骤（移动客户端）</h3>
+
+<p>1.拼接"请求URL" + &ldquo;?&rdquo; + &ldquo;请求参数&rdquo;</p>
+
+<ul>
+<li>请求参数的格式：参数名=参数值</li>
+<li>多个请求参数之间用&amp;隔开：参数名1=参数值1&amp;参数名2=参数值2</li>
+<li>比如：<a href="http://localhost:8080/MJServer/login?username=123&amp;pwd=456">http://localhost:8080/MJServer/login?username=123&amp;pwd=456</a></li>
+</ul>
+
+
+<p>2.发送请求</p>
+
+<p>3.解析服务器返回的数据</p>
+
+<h3>三、JSON解析</h3>
+
+<p>1.利用NSJSONSerialization类解析</p>
+
+<ul>
+<li>JSON数据（NSData） &ndash;> Foundation-OC对象（NSDictionary、NSArray、NSString、NSNumber）</li>
+<li>(id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error;</li>
+</ul>
+
+
+<p>2.JSON解析规律</p>
+
+<ul>
+<li>{ } &ndash;> NSDictionary @{ }</li>
+<li>[ ] &ndash;> NSArray @[ ]</li>
+<li>&ldquo; &rdquo; &ndash;> NSString @&ldquo; &rdquo;</li>
+<li>10 &ndash;> NSNumber @10</li>
+</ul>
+
+
+<h3>四、NSURLConnection</h3>
+
+<p>1.发布异步请求01&ndash;block回调</p>
+
+<pre><code>+ (void)sendAsynchronousRequest:(NSURLRequest*) request
+    queue:(NSOperationQueue*) queue
+    completionHandler:(void (^)(NSURLResponse* response, NSData* data, NSError* connectionError)) handler
+</code></pre>
+
+<ul>
+<li>request : 需要发送的请求</li>
+<li>queue : 一般用主队列，存放handler这个任务</li>
+<li>handler : 当请求完毕后，会自动调用这个block</li>
+</ul>
+
+
+<p>2.利用NSURLConnection发送请求的基本步骤
+1> 创建URL</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://4234324/5345345"];
+</code></pre>
+
+<p>2> 创建request</p>
+
+<pre><code>NSURLRequest *request = [NSURLRequest requestWithURL:url];
+</code></pre>
+
+<p>3> 发送请求</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
+ ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+4&gt; 处理服务器返回的数据
+
+ }];
+</code></pre>
+
+<h3>五、XML</h3>
+
+<p>1.语法
+1> 文档声明</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+</code></pre>
+
+<p>2> 元素
+3> 属性</p>
+
+<pre><code>&lt;videos&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+&lt;/videos&gt;
+</code></pre>
+
+<ul>
+<li>videos和video是元素（节点）</li>
+<li>name和length叫做元素的属性</li>
+<li>video元素是videos元素的子元素</li>
+</ul>
+
+
+<p>2.解析
+1> SAX解析：逐个元素往下解析，适合大文件</p>
+
+<ul>
+<li>NSXMLParser</li>
+</ul>
+
+
+<p>2> DOM解析：一口气将整个XML文档加载进内存，适合小文件，使用最简单</p>
+
+<ul>
+<li>GDataXML</li>
+</ul>
+
+
+<h3>六、HTTP的通信过程</h3>
+
+<p>1.请求
+1> 请求行 : 请求方法、请求路径、HTTP协议的版本</p>
+
+<pre><code>GET /MJServer/resources/images/1.jpg HTTP/1.1
+</code></pre>
+
+<p>2> 请求头 : 客户端的一些描述信息</p>
+
+<ul>
+<li>User-Agent : 客户端的环境（软件环境）</li>
+</ul>
+
+
+<p>3> 请求体 : POST请求才有这个东西</p>
+
+<ul>
+<li>请求参数，发给服务器的数据</li>
+</ul>
+
+
+<p>2.响应
+1> 状态行（响应行）: HTTP协议的版本、响应状态码、响应状态描述</p>
+
+<p>HTTP/1.1 200 OK</p>
+
+<p>2> 响应头：服务器的一些描述信息</p>
+
+<ul>
+<li>Content-Type : 服务器返回给客户端的内容类型</li>
+<li>Content-Length : 服务器返回给客户端的内容的长度（比如文件的大小）</li>
+</ul>
+
+
+<p>3> 实体内容（响应体）</p>
+
+<ul>
+<li>服务器返回给客户端具体的数据，比如文件数据</li>
+</ul>
+
+
+<p>七、HTTP的请求方法
+1.GET
+1> 特点</p>
+
+<ul>
+<li>所有请求参数都拼接在url后面</li>
+</ul>
+
+
+<p>2> 缺点</p>
+
+<ul>
+<li>在url中暴露了所有的请求数据，不太安全</li>
+<li>url的长度有限制，不能发送太多的参数</li>
+</ul>
+
+
+<p>3> 使用场合</p>
+
+<ul>
+<li>如果仅仅是向服务器索要数据，一般用GET请求</li>
+</ul>
+
+
+<p>4> 如何发送一个GET请求</p>
+
+<pre><code>* 默认就是GET请求
+// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.发送请求
+
+[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.POST
+1> 特点</p>
+
+<ul>
+<li>把所有请求参数放在请求体（HTTPBody）中</li>
+<li>理论上讲，发给服务器的数据的大小是没有限制</li>
+</ul>
+
+
+<p>2> 使用场合</p>
+
+<ul>
+<li>除开向服务器索要数据以外的请求，都可以用POST请求</li>
+<li>如果发给服务器的数据是一些隐私、敏感的数据，绝对要用POST请求</li>
+</ul>
+
+
+<p>3> 如何发送一个POST请求
+    // 1.创建一个URL ： 请求路径</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login"];
+
+// 2.创建一个请求
+
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+// 设置请求方法
+request.HTTPMethod = @"POST";
+// 设置请求体 : 请求参数
+NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
+// NSString --&gt; NSData
+request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
+</code></pre>
+
+<h3>八、NSMutableURLRequest的常用方法</h3>
+
+<p>1.设置超时
+    request.timeoutInterval = 5;
+    // NSURLRequest是不能设置超时的，因为这个对象是不可变的</p>
+
+<h3>九、URL转码</h3>
+
+<p>1.URL中不能包含中文，得对中文进行转码(加上一堆的%)</p>
+
+<pre><code>NSString *urlStr = [NSString stringWithFormat:@"http://localhost/login?username=喝喝&amp;pwd=123"];
+urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// urlStr == @"http://localhost/login?username=%E5%96%9D%E5%96%9D&amp;pwd=123"
+</code></pre>
+
+<h3>十、数据安全</h3>
+
+<p>1.网络数据加密
+1> 加密对象：隐私数据，比如密码、银行信息
+2> 加密方案</p>
+
+<ul>
+<li>提交隐私数据，必须用POST请求</li>
+<li><p>使用加密算法对隐私数据进行加密，比如MD5
+3> 加密增强：为了加大破解的难度</p></li>
+<li><p>对明文进行2次MD5 ： MD5(MD5($pass))</p></li>
+<li>先对明文撒盐，再进行MD5 ： MD5($pass.$salt)</li>
+</ul>
+
+
+<p>2.本地存储加密</p>
+
+<p>1> 加密对象：重要的数据，比如游戏数据</p>
+
+<p>3.代码安全问题</p>
+
+<p>1> 现在已经有工具和技术能反编译出源代码：逆向工程</p>
+
+<ul>
+<li>反编译出来的都是纯C语言的，可读性不高</li>
+<li>最起码能知道源代码里面用的是哪些框架</li>
+</ul>
+
+
+<p>2> 参考书籍：《iOS逆向工程》</p>
+
+<p>3> 解决方案：发布之前对代码进行混淆</p>
+
+<p> 混淆之前</p>
+
+<pre><code>@interface iCocosPerson :NSObject
+- (void)run;
+- (void)eat;
+@end
+</code></pre>
+
+<p> 混淆之后</p>
+
+<pre><code>@interface A :NSObject
+- (void)a;
+- (void)b;
+@end
+</code></pre>
+
+<p>十一、监测网络状态</p>
+
+<p>1.主动监测监测网络状态</p>
+
+<pre><code>// 是否WIFI
+
++ (BOOL)isEnableWIFI {
+    return ([[Reachability reachabilityForLocalWiFi] currentReachabilityStatus] != NotReachable);
+}
+
+
+// 是否3G
+
++ (BOOL)isEnable3G {
+    return ([[Reachability reachabilityForInternetConnection] currentReachabilityStatus] != NotReachable);
+}
+</code></pre>
+
+<p>2.监控网络状态</p>
+
+<p>1> 监听通知</p>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkStateChange) name:kReachabilityChangedNotification object:nil];
+</code></pre>
+
+<p>2> 开始监听网络状态</p>
+
+<pre><code>// 获得Reachability对象
+self.reachability = [Reachability reachabilityForInternetConnection];
+// 开始监控网络
+[self.reachability startNotifier];
+</code></pre>
+
+<p>3> 移除监听</p>
+
+<pre><code>[self.reachability stopNotifier];
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+</code></pre>
+
+<p>————————————————————————————————————————————————————————————————————————————————————————</p>
+
+<h3>一、大文件下载</h3>
+
+<p>1.方案：利用NSURLConnection和它的代理方法
+1> 发送一个请求</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/resources/videos.zip"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>2> 在代理方法中处理服务器返回的数据</p>
+
+<pre><code>/**
+ 在接收到服务器的响应时：
+ 1.创建一个空的文件
+ 2.用一个句柄对象关联这个空的文件，目的是：方便后面用句柄对象往文件后面写数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+
+{
+
+    // 文件路径
+
+    NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+
+    NSString *filepath = [caches stringByAppendingPathComponent:@"videos.zip"];
+
+
+
+    // 创建一个空的文件 到 沙盒中
+
+    NSFileManager *mgr = [NSFileManager defaultManager];
+
+    [mgr createFileAtPath:filepath contents:nil attributes:nil];
+
+
+
+    // 创建一个用来写数据的文件句柄
+
+    self.writeHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
+
+}
+
+
+/**
+ 在接收到服务器返回的文件数据时，利用句柄对象往文件的最后面追加数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+
+{
+
+    // 移动到文件的最后面
+
+    [self.writeHandle seekToEndOfFile];
+
+
+
+    // 将数据写入沙盒
+
+    [self.writeHandle writeData:data];
+
+}
+
+
+/**
+ 在所有数据接收完毕时，关闭句柄对象
+ */
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+
+{
+
+    // 关闭文件
+
+    [self.writeHandle closeFile];
+
+    self.writeHandle = nil;
+
+}
+</code></pre>
+
+<p>2.注意点：千万不能用NSMutableData来拼接服务器返回的数据</p>
+
+<h3>二、NSURLConnection发送异步请求的方法</h3>
+
+<p>1.block形式 - 除开大文件下载以外的操作，都可以用这种形式</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:&lt;#(NSURLRequest *)#&gt; queue:&lt;#(NSOperationQueue *)#&gt; completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.代理形式 - 一般用在大文件下载</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login?username=123&amp;pwd=123"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<h3>三、NSURLSession</h3>
+
+<p>1.使用步骤</p>
+
+<p>1> 获得NSURLSession对象
+2> 利用NSURLSession对象创建对应的任务（Task）
+3> 开始任务（[task resume]）</p>
+
+<p>2.获得NSURLSession对象</p>
+
+<p>1> [NSURLSession sharedSession]</p>
+
+<p>2></p>
+
+<pre><code>NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
+self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+</code></pre>
+
+<p>3.任务类型</p>
+
+<h6>1> NSURLSessionDataTask</h6>
+
+<p>用途：用于非文件下载的GET\POST请求</p>
+
+<pre><code>NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+}];
+</code></pre>
+
+<h6>2> NSURLSessionDownloadTask</h6>
+
+<p>用途：用于文件下载（小文件、大文件）</p>
+
+<pre><code>NSURLSessionDownloadTask *task = [self.session downloadTaskWithRequest:request];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {   
+}];
+</code></pre>
+
+<p> ————————————————————————————————————————————————————————————————</p>
+
+<h2>AFN与ASI的区别（面试用）</h2>
+
+<h3>一、底层实现</h3>
+
+<p>1> AFN的底层基于OC的NSURLConnection和NSURLSession
+2> ASI的底层基于纯C语言的CFNetwork框架
+3> ASI的运行性能 高于 AFN</p>
+
+<h3>二、对服务器返回的数据处理</h3>
+
+<p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string
+2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li>JSON处理</li>
+<li>XML处理</li>
+<li>其他处理</li>
+</ul>
+
+
+<h3>三、监听请求的过程</h3>
+
+<p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li>success : 请求成功后调用</li>
+<li>failure : 请求失败后调用</li>
+</ul>
+
+
+<p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程
+（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<ul>
+<li>成为代理，遵守协议，实现协议中的代理方法</li>
+<li>成为代理，不遵守协议，自定义代理方法</li>
+<li>设置block</li>
+</ul>
+
+
+<h3>四、在文件下载和文件上传的使用难易度</h3>
+
+<p>1> AFN</p>
+
+<ul>
+<li>不容易监听下载进度和上传进度</li>
+<li>不容易实现断点续传</li>
+<li>一般只用来下载不大的文件</li>
+</ul>
+
+
+<p>2> ASI</p>
+
+<ul>
+<li>非常容易实现下载和上传</li>
+<li>非常容易监听下载进度和上传进度</li>
+<li>非常容易实现断点续传</li>
+<li>下载或大或小的文件都行</li>
+</ul>
+
+
+<h3>五、ASI提供了更多的实用功能</h3>
+
+<p>1> 控制圈圈要不要在请求过程中转
+2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
+3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li>暂停\恢复\取消所有的请求</li>
+<li>监听整个队列中所有请求的下载进度和上传进度</li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/25/netall/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/23/netuse/">网络请求初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天来说说关于iOS开发过程中的网络请求。</p>
+
+<p>关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。</p>
+
+<p>一、同步GET</p>
+
+<pre><code>// 1.将网址初始化成一个OC字符串对象
+NSString *urlStr = [NSString stringWithFormat:@"%@?query=%@®ion=%@&amp;output=json&amp;ak=6E823f587c95f0148c19993539b99295", kBusinessInfoURL, @"银行", @"济南"];
+// 如果网址中存在中文,进行URLEncode
+NSString *newUrlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// 2.构建网络URL对象, NSURL
+NSURL *url = [NSURL URLWithString:newUrlStr];
+// 3.创建网络请求
+NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+// 创建同步链接
+NSURLResponse *response = nil;
+NSError *error = nil;
+NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];
+</code></pre>
+
+<p>当创建好同步链接以后， 就可以采用相应的方法进行解析。下面创建异步连接也是一样的。</p>
+
+<p>二、同步POST</p>
+
+<pre><code>// 1.根据网址初始化OC字符串对象
+    NSString *urlStr = [NSString stringWithFormat:@"%@", kVideoURL];
+    // 2.创建NSURL对象
+    NSURL *url = [NSURL URLWithString:urlStr];
+    // 3.创建请求
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    // 4.创建参数字符串对象
+    NSString *parmStr = @"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10";
+    // 5.将字符串转为NSData对象
+    NSData *pramData = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
+    // 6.设置请求体
+    [request setHTTPBody:pramData];
+    // 7.设置请求方式
+    [request setHTTPMethod:@"POST"];
+
+    // 创建同步链接
+    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+三、异步GET
+
+    NSString *urlStr = [NSString stringWithFormat:@"http://image.zcool.com.cn/56/13/1308200901454.jpg"];
+    NSString *newStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *url = [NSURL URLWithString:newStr];
+    NSURLRequest *requst = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+    //异步链接(形式1,较少用)
+    [NSURLConnection sendAsynchronousRequest:requst queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        self.imageView.image = [UIImage imageWithData:data];
+        // 解析
+        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+        NSLog(@"%@", dic);
+    }];
+</code></pre>
+
+<p>四、异步POST</p>
+
+<pre><code>// POST请求
+    NSString *urlString = [NSString stringWithFormat:@"%@",kVideoURL];
+    //创建url对象
+    NSURL *url = [NSURL URLWithString:urlString];
+    //创建请求
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+    //创建参数字符串对象
+    NSString *parmStr = [NSString stringWithFormat:@"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10"];
+    //将字符串转换为NSData对象
+    NSData *data = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPBody:data];
+    [request setHTTPMethod:@"POST"];
+    //创建异步连接（形式二）
+    [NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>一般的，当创建异步连接时， 很少用到第一种方式，经常使用的是代理方法。关于NSURLConnectionDataDelegate，我们经常使用的协议方法为一下几个：</p>
+
+<pre><code>// 服务器接收到请求时
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+}
+// 当收到服务器返回的数据时触发, 返回的可能是资源片段
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+}
+// 当服务器返回所有数据时触发, 数据返回完毕
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+}
+// 请求数据失败时触发
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+</code></pre>
+
+<p>最后，分析一下这几种呢网络请求的区别。</p>
+
+<h6>GET请求和POST请求的区别：</h6>
+
+<ol>
+<li><p>GET请求的接口会包含参数部分，参数会作为网址的一部分，服务器地址与参数之间通过 ? 来间隔。POST请求会将服务器地址与参数分开，请求接口中只有服务器地址，而参数会作为请求的一部分，提交后台服务器。</p></li>
+<li><p>GET请求参数会出现在接口中，不安全。而POST请求相对安全。</p></li>
+<li><p>虽然GET请求和POST请求都可以用来请求和提交数据，但是一般的GET多用于从后台请求数据，POST多用于向后台提交数据。</p></li>
+</ol>
+
+
+<h6>同步和异步的区别：</h6>
+
+<ul>
+<li><p>同步链接：主线程去请求数据，当数据请求完毕之前，其他线程一律不响应，会造成程序就假死现象。</p></li>
+<li><p>异步链接：会单独开一个线程去处理网络请求，主线程依然处于可交互状态,程序运行流畅。</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/23/netuse/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/">面试会问到的？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>1、UIScreen可以获取设备屏幕的大小。</h4>
+
+<pre><code>// 整个屏幕的大小
+CGRect bounds = [UIScreen mainScreen].bounds;
+NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
+</code></pre>
+
+<p><code>{0, 0, 320, 480}</code></p>
+
+<pre><code>// 应用程序窗口大小 
+CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
+NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));
+</code></pre>
+
+<p><code>{0, 20, 320, 460}</code></p>
+
+<h4>2、UIView对象定义了一个屏幕上的一个矩形区域，同时处理该区域的绘制和触屏事件。</h4>
+
+<p>可以在这个区域内绘制图形和文字，还可以接收用户的操作。一个UIView的实例可以包含和管理若干个子UIView。</p>
+
+<p>ViewController.m</p>
+
+<pre><code>-(void)viewDidAppear:(BOOL)animated
+
+{
+
+    [super
+ viewDidAppear:animated];
+
+    UIView*
+ myView = [[UIView alloc] initWithFrame:CGRectMake(10, 10, 100, 100)];
+
+    myView.backgroundColor=[UIColor
+ redColor];
+
+    [self.view
+ addSubview:myView];
+
+}
+</code></pre>
+
+<h4>3、UIWindow对象是所有UIView的根，管理和协调的应用程序的显示</h4>
+
+<p>UIWindow类是UIView的子类，可以看作是特殊的UIView。一般应用程序只有一个UIWindow对象，即使有多个UIWindow对象，也只有一个UIWindow可以接受到用户的触屏事件。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<p> ####4、UIViewController对象负责管理所有UIView的层次结构，并响应设备的方向变化。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    UIViewController
+ *myViewController = [[UIViewController alloc] initWithNibName:nil bundle:nil];
+
+    myWindow.rootViewController
+ = myViewController;
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<h4>CALayer是在/System/Library/Frameworks/QuartzCore.framework定义的。而且CALayer作为一个低级的，可以承载绘制内容的底层对象出现在该框架中。</h4>
+
+<p>现在比较一下uiview和calayer都可以显示图片文字等信息。难道apple提供了，两套绘图机制吗？不会。</p>
+
+<p> UIView相比CALayer最大区别是UIView可以响应用户事件，而CALayer不可以。UIView侧重于对显示内容的管理，CALayer侧重于对内容的绘制。</p>
+
+<p> 大家都知道QuartzCore是IOS中提供图像绘制的基础库。并且CALayer是定义该框架中。难道UIView的底层实现是CALayer？？</p>
+
+<p>官方做出了明确的解释：</p>
+
+<pre><code>Core Animation doesn't provide a means for actually displaying layers in a window, they must be hosted by a view. When paired with a view, the view must provide event-handling for the underlying layers, while the layers provide display of the content.
+
+The view system in iOS is built directly on top of Core Animation layers. Every instance of UIView automatically creates an instance of a CALayer class and sets it as the value of the view’s layer property. You can add sublayers to the view’s layer as needed.
+
+On Mac OS X you must configure an NSView instance in such a way that it can host a layer.
+</code></pre>
+
+<p>由此可见UIView是基于CALayer的高层封装。The view system in iOS is built directly on top of Core Animation layers.</p>
+
+<blockquote><p>结论：
+ UIView来自CALayer，高于CALayer，是CALayer高层实现与封装。UIView的所有特性来源于CALayer支持。</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/12/popkeyboard/">你是怎么退出键盘的？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS开发中键盘的退出方法用很多中我们应该在合适的地方使用合适的方法才能更好的提高开发的效率和应用的性能</p>
+
+<p>下面给大家介绍几种最常用的键盘退出方法，基本上iOS开发中的键盘退出方法都是这几种中的一种活着几种。</p>
+
+<p>一：textView</p>
+
+<pre><code>//通过委托来实现放弃第一响应者
+#pragma mark - UITextView Delegate  Method
+-(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    if([text isEqualToString:@"\n"]) {
+        [textView resignFirstResponder];
+        return NO;
+    }
+    return YES;
+}
+</code></pre>
+
+<p>二：textFiled</p>
+
+<pre><code>//通过委托来实现放弃第一响应者
+#pragma mark - UITextField Delegate Method
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    return YES;
+}
+</code></pre>
+
+<p>三：触摸屏幕</p>
+
+<pre><code>1 ／／所有的界面都可以实现
+2 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+3 {
+4     [self.view endEditing:YES];
+5 }
+</code></pre>
+
+<p>四：ScrollView拖拽</p>
+
+<pre><code> 1 -(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView 
+ 2 { 
+ 3      [self.view endEditing:YES]; 
+ 4 } 
+</code></pre>
+
+<blockquote><p>注：结合使用endEditing和resignFirstResponder</p></blockquote>
+
+<p>五：通知方式</p>
+
+<p>注册与移除通知</p>
+
+<pre><code>-(void) viewWillAppear:(BOOL)animated {
+
+    //注册键盘出现通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:)
+                                                 name: UIKeyboardDidShowNotification object:nil];
+    //注册键盘隐藏通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:)
+                                                 name: UIKeyboardDidHideNotification object:nil];
+    [super viewWillAppear:animated];
+}
+
+
+-(void) viewWillDisappear:(BOOL)animated {
+    //解除键盘出现通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name: UIKeyboardDidShowNotification object:nil];
+    //解除键盘隐藏通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name: UIKeyboardDidHideNotification object:nil];
+
+    [super viewWillDisappear:animated];
+}
+</code></pre>
+
+<p>实现通知的方法：</p>
+
+<pre><code>-(void) keyboardDidShow: (NSNotification *)notif {
+
+    if (keyboardVisible) {//键盘已经出现要忽略通知
+        return;
+    }
+    // 获得键盘尺寸
+    NSDictionary* info = [notif userInfo];
+    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGSize keyboardSize = [aValue CGRectValue].size;
+
+    //重新定义ScrollView的尺寸
+    CGRect viewFrame = self.scrollView.frame;
+    viewFrame.size.height -= (keyboardSize.height);
+    self.scrollView.frame = viewFrame;
+
+    //滚动到当前文本框
+    CGRect textFieldRect = [self.textField frame];
+    [self.scrollView scrollRectToVisible:textFieldRect animated:YES];
+
+    keyboardVisible = YES;
+}
+
+-(void) keyboardDidHide: (NSNotification *)notif {
+
+    NSDictionary* info = [notif userInfo];
+    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGSize keyboardSize = [aValue CGRectValue].size;
+
+    CGRect viewFrame = self.scrollView.frame;
+    viewFrame.size.height += keyboardSize.height;
+    self.scrollView.frame = viewFrame;
+
+    if (!keyboardVisible) {
+        return;
+    }
+
+    keyboardVisible = NO;
+
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/12/popkeyboard/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/06/25/data%20model/">数据与模型</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>/******************************************************************************/</p>
+
+<h3>一:简单plist读取</h3>
+
+<p>1:定义一个数组用来保存读取出来的plist数据</p>
+
+<pre><code> 1 @property (nonatomic, strong) NSArray *shops; 
+</code></pre>
+
+<p>2:使用懒加载的方式加载plist文件，并且放到数组中</p>
+
+<pre><code>// 懒加载
+
+// 1.第一次用到时再去加载
+
+// 2.只会加载一次
+
+- (NSArray *)shops
+
+{
+
+    if (_shops == nil) {
+
+        // 获得plist文件的全路径
+
+        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
+
+
+
+        // 从plist文件中加载一个数组对象
+
+        _shops = [NSArray arrayWithContentsOfFile:file];
+
+    }
+
+    return _shops;
+
+}
+</code></pre>
+
+<p>3:使用数组中的数据</p>
+
+<pre><code>// 设置数据
+
+1 NSDictionary *shop = self.shops[index];
+2 
+3 iconView.image = [UIImage imageNamed:shop[@"icon"]];
+4 
+5 nameLabel.text = shop[@"name"];
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>二：字典转模型</h3>
+
+<h6>1:创建一个model类并且在里面创建对应的模型属性</h6>
+
+<pre><code>/** 名字 */
+
+ 1 @property (nonatomic, strong) NSString *name; 
+
+/** 图标 */
+
+ 1 @property (nonatomic, strong) NSString *icon; 
+</code></pre>
+
+<h6>2:定义一个数组用来保存读取出来的plist数据</h6>
+
+<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
+</code></pre>
+
+<h6>3:使用懒加载的方式加载plist文件，并且放到模型中</h6>
+
+<pre><code>// 懒加载
+
+// 1.第一次用到时再去加载
+
+// 2.只会加载一次
+
+- (NSMutableArray *)shops
+
+{
+
+    if (_shops == nil) {
+
+        // 创建"模型数组"
+
+        _shops = [NSMutableArray array];
+
+
+
+        // 获得plist文件的全路径
+
+        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
+
+
+
+        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
+
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
+
+
+
+        // 将 “字典数组” 转换为 “模型数据”
+
+        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
+
+            // 将 “字典” 转换为 “模型”
+
+            Shop *shop = [[Shop alloc] init];
+
+            shop.name = dict[@"name"];
+
+            shop.icon = dict[@"icon"];
+
+
+
+            // 将 “模型” 添加到 “模型数组中”
+
+            [_shops addObject:shop];
+
+        }
+
+    }
+
+    return _shops;
+
+}
+</code></pre>
+
+<p>4:使用模型中的数据</p>
+
+<pre><code>// 设置数据 
+Shop *shop = self.shops[index];
+
+iconView.image = [UIImage imageNamed:shop.icon];
+
+nameLabel.text = shop.name;
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>三：字典转模型封装</h3>
+
+<h6>1:创建一个model类并且在里面创建对应的模型属性，定义两个模型方法</h6>
+
+<pre><code>/** 名字 */
+
+@property (nonatomic, copy) NSString *name;
+
+/** 图标 */
+
+@property (nonatomic, copy) NSString *icon;
+
+
+
+/** 通过一个字典来初始化模型对象 */
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+
+
+
+/** 通过一个字典来创建模型对象 */
+
++ (instancetype)shopWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>2:模型方法的实现</h6>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+
+{
+
+    if (self = [super init]) {
+
+        self.name = dict[@"name"];
+
+        self.icon = dict[@"icon"];
+
+    }
+
+    return self;
+
+}
+
+
+
++ (instancetype)shopWithDict:(NSDictionary *)dict
+
+{
+
+    // 这里要用self
+
+    return [[self alloc] initWithDict:dict];
+
+} 
+</code></pre>
+
+<h6>3:定义一个数组用来保存读取出来的plist数据</h6>
+
+<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
+</code></pre>
+
+<h6>4:使用懒加载的方式加载plist文件，并且放到模型中</h6>
+
+<pre><code>// 懒加载
+
+// 1.第一次用到时再去加载
+
+// 2.只会加载一次
+- (NSMutableArray *)shops
+
+{
+
+    if (_shops == nil) {
+
+        // 创建"模型数组"
+
+        _shops = [NSMutableArray array];
+
+
+
+        // 获得plist文件的全路径
+
+        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
+
+
+
+        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
+
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
+
+
+
+        // 将 “字典数组” 转换为 “模型数据”
+
+        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
+
+            // 将 “字典” 转换为 “模型”
+
+            XMGShop *shop = [XMGShop shopWithDict:dict];
+
+
+
+            // 将 “模型” 添加到 “模型数组中”
+
+            [_shops addObject:shop];
+
+        }
+
+    }
+
+    return _shops;
+
+}
+</code></pre>
+
+<h6>5:使用模型中的数据</h6>
+
+<pre><code>// 设置数据
+
+XMGShop *shop = self.shops[index];
+
+iconView.image = [UIImage imageNamed:shop.icon];
+
+nameLabel.text = shop.name;
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>四：自定义View</h3>
+
+<h6>1:创建一个model类并且在里面创建对应的模型属性，定义两个模型方法</h6>
+
+<pre><code>/** 名字 */
+
+@property (nonatomic, copy) NSString *name;
+
+/** 图标 */
+
+@property (nonatomic, copy) NSString *icon;
+
+
+
+/** 通过一个字典来初始化模型对象 */
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+
+
+
+/** 通过一个字典来创建模型对象 */
+
++ (instancetype)shopWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>2:模型方法的实现</h6>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+
+{
+
+    if (self = [super init]) {
+
+        self.name = dict[@"name"];
+
+        self.icon = dict[@"icon"];
+
+    }
+
+    return self;
+
+}
+
+
+
++ (instancetype)shopWithDict:(NSDictionary *)dict
+
+{
+
+    // 这里要用self
+
+    return [[self alloc] initWithDict:dict];
+
+}
+</code></pre>
+
+<h6>3:自定义一个View，引入模型类，并且创建模型类的属性</h6>
+
+<pre><code>@class XMGShop;
+
+
+
+/** 商品模型 */
+
+@property (nonatomic, strong) XMGShop *shop;
+</code></pre>
+
+<h6>4:实现文件中，定义相应的控件属性</h6>
+
+<pre><code>/** 图片 */
+
+@property (nonatomic, weak) UIImageView *iconView;
+
+
+
+/** 名字 */
+
+@property (nonatomic, weak) UILabel *nameLabel;
+</code></pre>
+
+<h6>5:实现自定义View的相应方法</h6>
+
+<pre><code>- (instancetype)init
+
+{
+
+    if (self = [super init]) {
+
+        // 添加一个图片
+
+        UIImageView *iconView = [[UIImageView alloc] init];
+
+        [self addSubview:iconView];
+
+        self.iconView = iconView;
+
+
+
+        // 添加一个文字
+
+        UILabel *nameLabel = [[UILabel alloc] init];
+
+        nameLabel.textAlignment = NSTextAlignmentCenter;
+
+        [self addSubview:nameLabel];
+
+        self.nameLabel = nameLabel;
+
+    }
+
+    return self;
+
+}
+
+
+
+/**
+
+ * 这个方法专门用来布局子控件，设置子控件的frame
+
+ */
+
+- (void)layoutSubviews
+
+{
+
+    // 一定要调用super方法
+
+    [super layoutSubviews];
+
+
+
+    CGFloat shopW = self.frame.size.width;
+
+    CGFloat shopH = self.frame.size.height;
+
+
+
+    self.iconView.frame = CGRectMake(0, 0, shopW, shopW);
+
+    self.nameLabel.frame = CGRectMake(0, shopW, shopW, shopH - shopW);
+
+}
+
+
+
+-(void)setShop:(XMGShop *)shop
+
+{
+
+    _shop = shop;
+
+
+
+    self.iconView.image = [UIImage imageNamed:shop.icon];
+
+    self.nameLabel.text = shop.name;
+
+}
+</code></pre>
+
+<h6>6:定义一个数组用来保存读取出来的plist数据</h6>
+
+<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
+</code></pre>
+
+<h6>7:使用懒加载的方式加载plist文件，并且放到模型中</h6>
+
+<pre><code>// 懒加载
+
+// 1.第一次用到时再去加载
+
+// 2.只会加载一次
+
+- (NSMutableArray *)shops
+
+{
+
+    if (_shops == nil) {
+
+        // 创建"模型数组"
+
+        _shops = [NSMutableArray array];
+
+
+
+        // 获得plist文件的全路径
+
+        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
+
+
+
+        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
+
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
+
+
+
+        // 将 “字典数组” 转换为 “模型数据”
+
+        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
+
+            // 将 “字典” 转换为 “模型”
+
+            XMGShop *shop = [XMGShop shopWithDict:dict];
+
+
+
+            // 将 “模型” 添加到 “模型数组中”
+
+            [_shops addObject:shop];
+
+        }
+
+    }
+
+    return _shops;
+
+} 
+</code></pre>
+
+<h6>8:使用View</h6>
+
+<pre><code>// 创建一个商品父控件
+
+XMGShopView *shopView = [[XMGShopView alloc] init];
+
+shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+
+// 将商品父控件添加到shopsView中
+
+[self.shopsView addSubview:shopView];
+
+
+
+
+/**
+
+
+
+NSDictionary *dict = nil; // 从其他地方加载的字典
+
+
+
+ XMGShop *shop = [XMGShop shopWithDict:dict];
+
+
+
+ XMGShopView *shopView = [[XMGShopView alloc] init];
+
+ shopView.shop = shop;
+
+ shopView.frame = CGRectMake(0, 0, 70, 100);
+
+ [self.view addSubview:shopView];
+
+
+
+
+
+
+ // 扩展性差
+
+ // 扩展好的体现：即使改变了需求。我们也不需要动大刀子
+
+ */
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>五：initWithFrame</h3>
+
+<p>1:在上一步的基础上只要修改init方法为</p>
+
+<pre><code>/** init方法内部会自动调用initWithFrame:方法 */
+
+- (instancetype)initWithFrame:(CGRect)frame
+
+{
+
+    if (self = [super initWithFrame:frame]) {
+
+        // 添加一个图片
+
+        UIImageView *iconView = [[UIImageView alloc] init];
+
+        [self addSubview:iconView];
+
+        self.iconView = iconView;
+
+
+
+        // 添加一个文字
+
+        UILabel *nameLabel = [[UILabel alloc] init];
+
+        nameLabel.textAlignment = NSTextAlignmentCenter;
+
+        [self addSubview:nameLabel];
+
+        self.nameLabel = nameLabel;
+
+    }
+
+    return self;
+
+}
+</code></pre>
+
+<p>2:最后设置数据的时候也可以使用下面的方法实现View的创建</p>
+
+<pre><code> 1 XMGShopView *shopView = [[XMGShopView alloc] initWithFrame:CGRectMake(shopX, shopY, shopW, shopH)]; 
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>六：MVC</h3>
+
+<h6>1:model</h6>
+
+<pre><code>@interface XMGShop : NSObject
+
+/** 名字 */
+
+@property (nonatomic, copy) NSString *name;
+
+/** 图标 */
+
+@property (nonatomic, copy) NSString *icon;
+
+/** 通过一个字典来初始化模型对象 */
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+
+
+
+/** 通过一个字典来创建模型对象 */
+
++ (instancetype)shopWithDict:(NSDictionary *)dict;
+
+@end
+
+
+
+
+
+
+@implementation XMGShop
+
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+
+{
+
+    if (self = [super init]) {
+
+        self.name = dict[@"name"];
+
+        self.icon = dict[@"icon"];
+
+    }
+
+    return self;
+
+}
+
+
+
++ (instancetype)shopWithDict:(NSDictionary *)dict
+
+{
+
+    // 这里要用self
+
+    return [[self alloc] initWithDict:dict];
+
+}
+
+
+
+@end
+</code></pre>
+
+<h6>2:view</h6>
+
+<pre><code>@class XMGShop;
+
+
+
+@interface XMGShopView : UIView
+
+/** 商品模型 */
+
+@property (nonatomic, strong) XMGShop *shop;
+
+
+
+- (instancetype)initWithShop:(XMGShop *)shop;
+
++ (instancetype)shopViewWithShop:(XMGShop *)shop;
+
++ (instancetype)shopView;
+
+@end
+
+
+
+
+
+
+@interface XMGShopView()
+
+/** 图片 */
+
+@property (nonatomic, weak) UIImageView *iconView;
+
+
+
+/** 名字 */
+
+@property (nonatomic, weak) UILabel *nameLabel;
+
+@end
+
+
+
+@implementation XMGShopView
+
+
+
+- (instancetype)initWithShop:(XMGShop *)shop
+
+{
+
+    if (self = [super init]) {
+
+        self.shop = shop;
+
+    }
+
+    return self;
+
+}
+
+
+
++ (instancetype)shopViewWithShop:(XMGShop *)shop
+
+{
+
+    return [[self alloc] initWithShop:shop];
+
+}
+
+
+
++ (instancetype)shopView
+
+{
+
+    return [[self alloc] init];
+
+}
+
+
+
+/** init方法内部会自动调用initWithFrame:方法 */
+
+- (instancetype)initWithFrame:(CGRect)frame
+
+{
+
+    if (self = [super initWithFrame:frame]) {
+
+        // 添加一个图片
+
+        UIImageView *iconView = [[UIImageView alloc] init];
+
+        [self addSubview:iconView];
+
+        self.iconView = iconView;
+
+
+
+        // 添加一个文字
+
+        UILabel *nameLabel = [[UILabel alloc] init];
+
+        nameLabel.textAlignment = NSTextAlignmentCenter;
+
+        [self addSubview:nameLabel];
+
+        self.nameLabel = nameLabel;
+
+    }
+
+    return self;
+
+}
+
+
+
+/**
+
+ * 当前控件的frame发生改变的时候就会调用
+
+ * 这个方法专门用来布局子控件，设置子控件的frame
+
+ */
+
+- (void)layoutSubviews
+
+{
+
+    // 一定要调用super方法
+
+    [super layoutSubviews];
+
+
+
+    CGFloat shopW = self.frame.size.width;
+
+    CGFloat shopH = self.frame.size.height;
+
+
+
+    self.iconView.frame = CGRectMake(0, 0, shopW, shopW);
+
+    self.nameLabel.frame = CGRectMake(0, shopW, shopW, shopH - shopW);
+
+}
+
+
+
+- (void)setShop:(XMGShop *)shop
+
+{
+
+    _shop = shop;
+
+
+
+    self.iconView.image = [UIImage imageNamed:shop.icon];
+
+    self.nameLabel.text = shop.name;
+
+}
+
+
+
+@end
+</code></pre>
+
+<h6>controller</h6>
+
+<pre><code>@property (nonatomic, strong) NSMutableArray *shops;
+
+
+
+
+
+
+
+// 懒加载
+
+// 1.第一次用到时再去加载
+
+// 2.只会加载一次
+
+- (NSMutableArray *)shops
+
+{
+
+    if (_shops == nil) {
+
+        // 创建"模型数组"
+
+        _shops = [NSMutableArray array];
+
+
+
+        // 获得plist文件的全路径
+
+        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
+
+
+
+        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
+
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
+
+
+
+        // 将 “字典数组” 转换为 “模型数据”
+
+        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
+
+            // 将 “字典” 转换为 “模型”
+
+            XMGShop *shop = [XMGShop shopWithDict:dict];
+
+
+
+            // 将 “模型” 添加到 “模型数组中”
+
+            [_shops addObject:shop];
+
+        }
+
+    }
+
+    return _shops;
+
+}
+
+
+
+// 创建一个商品父控件
+
+XMGShopView *shopView = [XMGShopView shopViewWithShop:self.shops[index]];
+
+// 设置frame
+
+shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+
+// 将商品父控件添加到shopsView中
+
+[self.shopsView addSubview:shopView];
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>七：XIB</h3>
+
+<p>1:xibView中</p>
+
+<pre><code>/** 商品模型 */
+
+@property (nonatomic, strong) XMGShop *shop;
+
++ (instancetype)shopViewWithShop:(XMGShop *)shop;
+
+
+
++ (instancetype)shopViewWithShop:(XMGShop *)shop
+
+{
+
+    // self == XMGShopView
+
+    // NSStringFromClass(self) == @"XMGShopView"
+
+    XMGShopView *shopView = [[[NSBundle mainBundle] loadNibNamed:NSStringFromClass(self) owner:nil options:nil] lastObject];
+
+    shopView.shop = shop;
+
+    return shopView;
+
+}
+
+
+
+- (void)setShop:(XMGShop *)shop
+
+{
+
+    _shop = shop;
+
+
+
+    UIImageView *iconView = (UIImageView *)[self viewWithTag:1];
+
+    iconView.image = [UIImage imageNamed:shop.icon];
+
+
+
+    UILabel *nameLabel = (UILabel *)[self viewWithTag:2];
+
+    nameLabel.text = shop.name;
+
+}
+</code></pre>
+
+<h6>2:控制器中设置数据</h6>
+
+<pre><code>// 从xib中加载一个商品控件
+
+XMGShopView *shopView = [XMGShopView shopViewWithShop:self.shops[index]];
+
+// 设置frame
+
+shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+
+// 添加商品控件
+
+[self.shopsView addSubview:shopView];
+</code></pre>
+
+<p>/******************************************************************************/</p>
+
+<h3>八：MJExtension</h3>
+
+<h6>1:是一套“字典和模型之间互相转换”的轻量级框架，模型属性</h6>
+
+<pre><code>/**
+
+ *  微博文本内容
+
+ */
+
+@property (copy, nonatomic) NSString *text;
+
+
+
+/**
+
+ *  微博作者
+
+ */
+
+@property (strong, nonatomic) User *user;
+
+
+
+/**
+
+ *  转发的微博
+
+ */
+
+@property (strong, nonatomic) Status *retweetedStatus;
+
+
+
+/**
+
+ *  存放着某一页微博数据（里面都是Status模型）
+
+ */
+
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+
+
+/**
+
+ *  总数
+
+ */
+
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+
+
+/**
+
+ *  上一页的游标
+
+ */
+
+@property (assign, nonatomic) long long previousCursor;
+
+
+
+/**
+
+ *  下一页的游标
+
+ */
+
+@property (assign, nonatomic) long long nextCursor;
+
+
+
+
+
+/**
+
+ *  名称
+
+ */
+
+@property (copy, nonatomic) NSString *name;
+
+
+
+/**
+
+ *  头像
+
+ */
+
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>2:对应方法的实现</h6>
+
+<ul>
+<li><p>1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架</p></li>
+<li><p>2.MJExtension能完成的功能</p>
+
+<ul>
+<li><p>字典 &ndash;> 模型</p></li>
+<li><p>模型 &ndash;> 字典</p></li>
+<li><p>字典数组 &ndash;> 模型数组</p></li>
+<li><p>模型数组 &ndash;> 字典数组</p></li>
+</ul>
+</li>
+<li><p>3.具体用法主要参考 main.m中各个函数 以及 &ldquo;NSObject+MJKeyValue.h&rdquo;</p></li>
+<li><p>4.希望各位大神能用得爽</p>
+
+<pre><code> #import &lt;Foundation/Foundation.h&gt;
+
+ #import "MJExtension.h"
+
+ #import "User.h"
+
+ #import "Status.h"
+
+ #import "StatusResult.h"
+
+
+
+ /**
+
+  *  简单的字典 -&gt; 模型
+
+  */
+
+ void keyValues2object()
+
+ {
+
+     // 1.定义一个字典
+
+     NSDictionary *dict = @{
+
+                            @"name" : @"Jack",
+
+                            @"icon" : @"lufy.png",
+
+                            };
+
+
+
+     // 2.将字典转为User模型
+
+     User *user = [User objectWithKeyValues:dict];
+
+
+
+     // 3.打印User模型的属性
+
+     NSLog(@"name=%@, icon=%@", user.name, user.icon);
+
+ }
+
+
+
+ /**
+
+  *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+
+  */
+
+ void keyValues2object2()
+
+ {
+
+     // 1.定义一个字典
+
+     NSDictionary *dict = @{
+
+                            @"text" : @"是啊，今天天气确实不错！",
+
+
+
+                            @"user" : @{
+
+                                    @"name" : @"Jack",
+
+                                    @"icon" : @"lufy.png"
+
+                                    },
+
+
+
+                            @"retweetedStatus" : @{
+
+                                    @"text" : @"今天天气真不错！",
+
+
+
+                                    @"user" : @{
+
+                                            @"name" : @"Rose",
+
+                                            @"icon" : @"nami.png"
+
+                                            }
+
+                                    }
+
+                            };
+
+
+
+     // 2.将字典转为Status模型
+
+     Status *status = [Status objectWithKeyValues:dict];
+
+
+
+     // 3.打印status的属性
+
+     NSString *text = status.text;
+
+     NSString *name = status.user.name;
+
+     NSString *icon = status.user.icon;
+
+     NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+
+
+     // 4.打印status.retweetedStatus的属性
+
+     NSString *text2 = status.retweetedStatus.text;
+
+     NSString *name2 = status.retweetedStatus.user.name;
+
+     NSString *icon2 = status.retweetedStatus.user.icon;
+
+     NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+
+ }
+
+
+
+ /**
+
+  *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+
+  */
+
+ void keyValues2object3()
+
+ {
+
+     // 1.定义一个字典
+
+     NSDictionary *dict = @{
+
+                            @"statuses" : @[
+
+                                    @{
+
+                                        @"text" : @"今天天气真不错！",
+
+
+
+                                        @"user" : @{
+
+                                                @"name" : @"Rose",
+
+                                                @"icon" : @"nami.png"
+
+                                                }
+
+                                        },
+
+
+
+                                    @{
+
+                                        @"text" : @"明天去旅游了",
+
+
+
+                                        @"user" : @{
+
+                                                @"name" : @"Jack",
+
+                                                @"icon" : @"lufy.png"
+
+                                                }
+
+                                        },
+
+
+
+                                    @{
+
+                                        @"text" : @"嘿嘿，这东西不错哦！",
+
+
+
+                                        @"user" : @{
+
+                                                @"name" : @"Jim",
+
+                                                @"icon" : @"zero.png"
+
+                                                }
+
+                                        }
+
+
+
+                                    ],
+
+
+
+                            @"totalNumber" : @"2014",
+
+
+
+                            @"previousCursor" : @"13476589",
+
+
+
+                            @"nextCursor" : @"13476599"
+
+                            };
+
+
+
+     // 2.将字典转为StatusResult模型
+
+     StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+
+
+     // 3.打印StatusResult模型的简单属性
+
+     NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+
+
+     // 4.打印statuses数组中的模型属性
+
+     for (Status *status in result.statuses) {
+
+         NSString *text = status.text;
+
+         NSString *name = status.user.name;
+
+         NSString *icon = status.user.icon;
+
+         NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+     }
+
+ }
+
+
+
+ /**
+
+  *  字典数组 -&gt; 模型数组
+
+  */
+
+ void keyValuesArray2objectArray()
+
+ {
+
+     // 1.定义一个字典数组
+
+     NSArray *dictArray = @[
+
+                            @{
+
+                                @"name" : @"Jack",
+
+                                @"icon" : @"lufy.png",
+
+                                },
+
+
+
+                            @{
+
+                                @"name" : @"Rose",
+
+                                @"icon" : @"nami.png",
+
+                                },
+
+
+
+                            @{
+
+                                @"name" : @"Jim",
+
+                                @"icon" : @"zero.png",
+
+                                }
+
+                            ];
+
+
+
+     // 2.将字典数组转为User模型数组
+
+     NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+
+
+     // 3.打印userArray数组中的User模型属性
+
+     for (User *user in userArray) {
+
+         NSLog(@"name=%@, icon=%@", user.name, user.icon);
+
+     }
+
+ }
+
+
+
+ /**
+
+  *  模型 -&gt; 字典
+
+  */
+
+ void object2keyValues()
+
+ {
+
+     // 1.新建模型
+
+     User *user = [[User alloc] init];
+
+     user.name = @"Jack";
+
+     user.icon = @"lufy.png";
+
+
+
+     Status *status = [[Status alloc] init];
+
+     status.user = user;
+
+     status.text = @"今天的心情不错！";
+
+
+
+     // 2.将模型转为字典
+
+     //    NSDictionary *dict = [status keyValues];
+
+     NSDictionary *dict = status.keyValues;
+
+     NSLog(@"%@", dict);
+
+ }
+
+
+
+ /**
+
+  *  模型数组 -&gt; 字典数组
+
+  */
+
+ void objectArray2keyValuesArray()
+
+ {
+
+     // 1.新建模型数组
+
+     User *user1 = [[User alloc] init];
+
+     user1.name = @"Jack";
+
+     user1.icon = @"lufy.png";
+
+
+
+     User *user2 = [[User alloc] init];
+
+     user2.name = @"Rose";
+
+     user2.icon = @"nami.png";
+
+
+
+     User *user3 = [[User alloc] init];
+
+     user3.name = @"Jim";
+
+     user3.icon = @"zero.png";
+
+
+
+     NSArray *userArray = @[user1, user2, user3];
+
+
+
+     // 2.将模型数组转为字典数组
+
+     NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+
+     NSLog(@"%@", dictArray);
+
+ }
+
+
+
+ int main(int argc, const char * argv[])
+
+ {
+
+     @autoreleasepool {
+
+         // 简单的字典 -&gt; 模型
+
+         keyValues2object();
+
+
+
+         // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+
+         keyValues2object2();
+
+
+
+         // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+
+         keyValues2object3();
+
+
+
+         // 字典数组 -&gt; 模型数组
+
+         keyValuesArray2objectArray();
+
+
+
+         // 模型转字典
+
+         object2keyValues();
+
+
+
+         // 模型数组 -&gt; 字典数组
+
+         objectArray2keyValuesArray();
+
+     }
+
+     return 0;
+
+ }
+</code></pre></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/06/25/data%20model/#comments">更多评论</a>
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/posts/6">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/posts/4">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (1)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (16)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (24)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/posts/5/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/posts/5/index.html" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
