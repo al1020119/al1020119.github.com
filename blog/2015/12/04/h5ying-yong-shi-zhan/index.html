@@ -5,13 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>站在AFN上看ASI - iOS梦工厂</title>
+  <title>H5应用实战 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="站在AFN上看ASI ordinal 一、底层实现 1> AFN的底层基于OC的NSURLConnection和NSURLSession
-2> ASI的底层基于纯C语言的CFNetwork框架
-3> ASI的运行性能 高于 AFN 二、对服务器返回的数据处理 1> &hellip;">
+  <meta name="description" content="H5应用实战 ordinal 前言:
+ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。 标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -20,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/04/h5ying-yong-shi-zhan/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -79,7 +78,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">站在AFN上看ASI</h1>
+      <h1 class="entry-title">H5应用实战</h1>
     
     
       <p class="meta">
@@ -99,90 +98,146 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><h6>一、底层实现</h6>
+<div class="entry-content"><blockquote><p>前言:
+ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
 
-<ul>
-<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
-<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
-<li><p>3> ASI的运行性能 高于 AFN</p></li>
-</ul>
+<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
 
+<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
 
-<h6>二、对服务器返回的数据处理</h6>
+<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
 
-<ul>
-<li><p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string</p></li>
-<li><p>2> AFN提供了多种对服务器数据处理的方式</p>
+<h3>OC——调用——HTML</h3>
 
-<ul>
-<li><p>JSON处理</p></li>
-<li><p>XML处理</p></li>
-<li><p>其他处理</p></li>
-</ul>
-</li>
-</ul>
+<p>这里有两种方式
+直接使用网络链接（接口）
+使用本地的html</p>
 
+<p>由于没有完成一个完整的html项目，这里就以链接演示。</p>
 
-<h6>三、监听请求的过程</h6>
+<p>先来看看官方链接显示情况
+<img src="/images/html&oc001.png" title="Caption" ></p>
 
-<ul>
-<li><p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节），并且增加一个指示器</p>
 
-<ul>
-<li><p>success : 请求成功后调用</p></li>
-<li><p>failure : 请求失败后调用</p></li>
-</ul>
-</li>
-<li><p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程</p></li>
-</ul>
+<pre><code>// 加载网页
+NSURL *url = [NSURL URLWithString:@"http://www.xianhua.cn/m/"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
 
+self.webView.scrollView.hidden = YES;
+self.webView.backgroundColor = [UIColor grayColor];
 
-<p>（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
-
-<pre><code>* 成为代理，遵守协议，实现协议中的代理方法
-
-* 成为代理，不遵守协议，自定义代理方法
-
-* 设置block
+UIActivityIndicatorView *displayView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+[displayView startAnimating];
+self.displayView = displayView;
+displayView.center = self.view.center;
+[self.webView addSubview:displayView];
 </code></pre>
 
-<h6>四、在文件下载和文件上传的使用难易度</h6>
+<p>2.在WebView加载完成的方法中实现我们想要的功能需求</p>
 
-<ul>
-<li><p>1> AFN</p>
+<pre><code>#pragma mark -&lt;UIWebViewDelegate&gt;
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
 
-<ul>
-<li><p>不容易监听下载进度和上传进度</p></li>
-<li><p>不容易实现断点续传</p></li>
-<li><p>一般只用来下载不大的文件</p></li>
-</ul>
-</li>
-<li><p>2> ASI</p>
+    // 改变标题
+    NSString *str = @"document.getElementsByTagName('h1')[0].innerText = 'iCocos鲜花网';";
+    [webView stringByEvaluatingJavaScriptFromString:str];
 
-<ul>
-<li><p>非常容易实现下载和上传</p></li>
-<li><p>非常容易监听下载进度和上传进度</p></li>
-<li><p>非常容易实现断点续传</p></li>
-<li><p>下载或大或小的文件都行</p></li>
-</ul>
-</li>
-</ul>
+    // 删除广告
+    NSString *str2 =@"document.getElementsByClassName('detail_btns2')[0].remove();";
+    [webView stringByEvaluatingJavaScriptFromString:str2];
 
+    // 改变尾部
+    NSString *str3 = @"document.getElementById('xiazaiapp').getElementsByTagName('a')[0].innerText='iCocos鲜花网App';";
+    [webView stringByEvaluatingJavaScriptFromString:str3];
 
-<h6>五、ASI提供了更多的实用功能</h6>
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.webView.scrollView.hidden = NO;
+        [self.displayView stopAnimating];
+    });
+}
+</code></pre>
 
-<ul>
-<li><p>1> 控制圈圈要不要在请求过程中转</p></li>
-<li><p>2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象</p></li>
-<li><p>3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+<p>修改后子在手机就是这样的效果</p>
 
-<ul>
-<li><p>暂停\恢复\取消所有的请求</p></li>
-<li><p>监听整个队列中所有请求的下载进度和上传进度</p></li>
-</ul>
-</li>
-</ul>
+<p><img src="/images/html&oc002.png" title="Caption" ></p>
 
+<h3>HTML——调用——OC</h3>
+
+<p>这里的例子是通过在html中点击一个按钮去调用OC代码，访问系统系相册</p>
+
+<h6>先来看看OC中需要怎么写：</h6>
+
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节）</p>
+
+<pre><code>// 加载网页
+NSURL *url = [[NSBundle mainBundle] URLForResource:@"test" withExtension:@"html"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
+</code></pre>
+
+<p>2.在Web开始加载请求的代理方法中拼接方法（包装）</p>
+
+<pre><code>#pragma mark - &lt;UIWebViewDelegate&gt;
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+//    NSLog(@"------%@", request.URL.absoluteString);
+    NSString *requestUrl = request.URL.absoluteString;
+    NSRange range = [requestUrl rangeOfString:@"ds3q:///"];
+    NSUInteger location = range.location;
+    if (location != NSNotFound) {
+        NSString *str = [requestUrl substringFromIndex:location + range.length];
+        NSLog(@"%@", str);
+        // 包装SEL
+        SEL method = NSSelectorFromString(str);
+        [self performSelector:method];
+    }
+
+    return YES;
+}
+</code></pre>
+
+<p>3.实现打开相册的OC方法</p>
+
+<pre><code>// 打开相册
+- (void)openCamera{
+    UIImagePickerController *vc = [[UIImagePickerController alloc] init];
+    vc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    [self presentViewController:vc animated:YES completion:nil];
+}
+</code></pre>
+
+<p>4.再来看看html中简单的写法</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head lang="en"&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;style&gt;
+        body{
+            margin-top: 50px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;button onclick="openCamera();"&gt;访问相册&lt;/button&gt;
+    &lt;script type="text/javascript"&gt;
+        function openCamera(){
+            window.location.href = 'ds3q:///openCamera';
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p> 显示效果</p>
+
+<p> <img src="/images/html&oc003.png" title="Caption" ></p>
+
+<hr />
+
+<p>  <img src="/images/html&oc004.png" title="Caption" ></p>
 </div>
 
 
@@ -209,12 +264,6 @@ $(document).bind('DOMNodeInserted', function(event) {
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
       
 
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
-  
-</span>
-
 
       
 
@@ -240,10 +289,10 @@ $(document).bind('DOMNodeInserted', function(event) {
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/04/h5ying-yong-shi-zhan/" title="Previous Post: H5应用实战">&laquo; H5应用实战</a>
+        <a class="basic-alignment left" href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/" title="Previous Post: App卡顿了怎么办？">&laquo; App卡顿了怎么办？</a>
       
       
-        <a class="basic-alignment right" href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/" title="Next Post: 图片加载优化深究">图片加载优化深究 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/" title="Next Post: 站在AFN上看ASI">站在AFN上看ASI &raquo;</a>
       
     </p>
   </footer>
@@ -331,7 +380,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/12/05/zhan-zai-afnshang-kan-asi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/05/zhan-zai-afnshang-kan-asi/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/04/h5ying-yong-shi-zhan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/04/h5ying-yong-shi-zhan/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
