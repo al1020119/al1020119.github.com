@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 项目实战 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xiang-mu-shi-zhan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-04T11:29:51+08:00</updated>
+  <updated>2015-12-04T11:40:09+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -1070,116 +1070,150 @@ block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在�
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[全屏返回（Runtime）]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/02/quan-ping-fan-hui-(runtime)/"/>
-    <updated>2015-12-02T02:51:33+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/02/quan-ping-fan-hui-(runtime)</id>
-    <content type="html"><![CDATA[<blockquote><p>前言</p>
+    <title type="html"><![CDATA[H5应用实战]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/04/h5ying-yong-shi-zhan/"/>
+    <updated>2015-12-04T11:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/04/h5ying-yong-shi-zhan</id>
+    <content type="html"><![CDATA[<blockquote><p>前言:
+ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
 
-<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
+<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
 
-<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
+<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
 
-<h5>一、自定义导航控制器</h5>
+<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
 
-<p>目的：以后需要使用全屏滑动返回功能，就使用自己定义的导航控制器。</p>
+<h3>OC——调用——HTML</h3>
 
-<h5>二、分析导航控制器侧滑功能</h5>
+<p>这里有两种方式
+直接使用网络链接（接口）
+使用本地的html</p>
 
-<p>效果：导航控制器默认自带了侧滑功能，当用户在界面的左边滑动的时候，就会有侧滑功能。</p>
+<p>由于没有完成一个完整的html项目，这里就以链接演示。</p>
 
-<p>系统自带的侧滑效果：</p>
+<p>先来看看官方链接显示情况
+<img src="/images/html&amp;oc001.png" title="Caption" ></p>
 
-<p>分析：</p>
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节），并且增加一个指示器</p>
 
-<ul>
-<li><p>1.导航控制器的view自带了滑动手势，只不过手势的触发范围只能在左边。</p></li>
-<li><p>2.当用户在界面左边拖动，就会触发滑动手势方法，并且有滑动返回功能，说明系统手势触发的方法已经实现了滑动返回功能。</p></li>
-<li><p>3.为什么说系统手势触发的方法已经实现了滑动返回功能？</p></li>
-</ul>
+<pre><code>// 加载网页
+NSURL *url = [NSURL URLWithString:@"http://www.xianhua.cn/m/"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
 
+self.webView.scrollView.hidden = YES;
+self.webView.backgroundColor = [UIColor grayColor];
 
-<h3>原因：</h3>
-
-<p>创建滑动手势对象的时候，需要绑定监听者，当触发手势的时候会调用target的action。</p>
-
-<p>UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:action];
-当用户在界面左边滑动，有滑动返回功能，这是因为触发手势了，调用target的action方法，说明action方法内部实现滑动返回功能，否则就不会有滑动返回效果。</p>
-
-<h5>三、实现全屏滑动功能分析</h5>
-
-<p>打印导航控制器自带的滑动手势，看下它的真实面目。</p>
-
-<p>系统自带的滑动手势interactivePopGestureRecognizer</p>
-
-<pre><code>//  self指向的导航控制器，在导航控制器的viewDidLoad方法打印 
-- (void)viewDidLoad { 
-    [super viewDidLoad]; 
-    NSLog(@"%@",self.interactivePopGestureRecognizer); 
-} 
+UIActivityIndicatorView *displayView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+[displayView startAnimating];
+self.displayView = displayView;
+displayView.center = self.view.center;
+[self.webView addSubview:displayView];
 </code></pre>
 
-<p>由图中可知：</p>
+<p>2.在WebView加载完成的方法中实现我们想要的功能需求</p>
 
-<ul>
-<li><p>1.系统自带的手势是UIScreenEdgePanGestureRecognizer类型对象,屏幕边缘滑动手势</p></li>
-<li><p>2.系统自带手势target是_UINavigationInteractiveTransition类型的对象</p></li>
-<li><p>3.target调用的action方法名叫handleNavigationTransition:</p></li>
-</ul>
+<pre><code>#pragma mark -&lt;UIWebViewDelegate&gt;
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
 
+    // 改变标题
+    NSString *str = @"document.getElementsByTagName('h1')[0].innerText = 'iCocos鲜花网';";
+    [webView stringByEvaluatingJavaScriptFromString:str];
 
-<p>分析：</p>
+    // 删除广告
+    NSString *str2 =@"document.getElementsByClassName('detail_btns2')[0].remove();";
+    [webView stringByEvaluatingJavaScriptFromString:str2];
 
-<p>UIScreenEdgePanGestureRecognizer，看名称就知道，这个手势的范围只能在屏幕的周边，就是因为这个手势，系统自带的滑动效果，只能实现侧边滑动。</p>
+    // 改变尾部
+    NSString *str3 = @"document.getElementById('xiazaiapp').getElementsByTagName('a')[0].innerText='iCocos鲜花网App';";
+    [webView stringByEvaluatingJavaScriptFromString:str3];
 
-<h5>四、如何实现全屏滑动功能</h5>
-
-<p>给自己的导航控制器，添加一个全屏的滑动手势，调用系统自带滑动手势的target的action方法，利用系统实现的滑动返回功能，加上自己全屏滑动手势，就有全屏滑动功能了。</p>
-
-<p>问题：如何拿到系统自带的target对象?，action方法名已经知道，而且系统肯定在target对象实现了，只要拿到target对象，调用这个方法就行。</p>
-
-<p>通过打印系统自带的滑动手势的代理，发现正好是_UINavigationInteractiveTransition对象，因此我猜测这个代理对象就是target对象,只要拿到它，就拿到系统自带滑动手势的target对象。</p>
-
-<pre><code>// 打印系统自带滑动手势的代理对象 
-SLog(@"%@",self.interactivePopGestureRecognizer.delegate); 
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.webView.scrollView.hidden = NO;
+        [self.displayView stopAnimating];
+    });
+}
 </code></pre>
 
-<p>导航控制器全屏滑动注意点:</p>
+<p>修改后子在手机就是这样的效果</p>
 
-<ul>
-<li><p>1.禁止系统自带滑动手势使用。</p></li>
-<li><p>2.只有导航控制器的非根控制器才需要触发手势，使用手势代理，控制手势触发。</p></li>
-</ul>
+<p><img src="/images/html&amp;oc002.png" title="Caption" ></p>
 
+<h3>HTML——调用——OC</h3>
 
-<p>全屏滑动代码实现</p>
+<p>这里的例子是通过在html中点击一个按钮去调用OC代码，访问系统系相册</p>
 
-<pre><code>- (void)viewDidLoad { 
-    [super viewDidLoad]; 
-    // 获取系统自带滑动手势的target对象 
-    id target = self.interactivePopGestureRecognizer.delegate; 
-    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法 
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)]; 
-    // 设置手势代理，拦截手势触发 
-    pan.delegate = self; 
-    // 给导航控制器的view添加全屏滑动手势 
-    [self.view addGestureRecognizer:pan]; 
-    // 禁止使用系统自带的滑动手势 
-    self.interactivePopGestureRecognizer.enabled = NO; 
-} 
-// 什么时候调用：每次触发手势之前都会询问下代理，是否触发。 
-// 作用：拦截手势触发 
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer 
-{ 
-    // 注意：只有非根控制器才有滑动返回功能，根控制器没有。 
-    // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器 
-    if (self.childViewControllers.count == 1) { 
-        // 表示用户在根控制器界面，就不需要触发滑动手势， 
-        return NO; 
-    } 
-    return YES; 
-} 
+<h6>先来看看OC中需要怎么写：</h6>
+
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节）</p>
+
+<pre><code>// 加载网页
+NSURL *url = [[NSBundle mainBundle] URLForResource:@"test" withExtension:@"html"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
 </code></pre>
+
+<p>2.在Web开始加载请求的代理方法中拼接方法（包装）</p>
+
+<pre><code>#pragma mark - &lt;UIWebViewDelegate&gt;
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+//    NSLog(@"------%@", request.URL.absoluteString);
+    NSString *requestUrl = request.URL.absoluteString;
+    NSRange range = [requestUrl rangeOfString:@"ds3q:///"];
+    NSUInteger location = range.location;
+    if (location != NSNotFound) {
+        NSString *str = [requestUrl substringFromIndex:location + range.length];
+        NSLog(@"%@", str);
+        // 包装SEL
+        SEL method = NSSelectorFromString(str);
+        [self performSelector:method];
+    }
+
+    return YES;
+}
+</code></pre>
+
+<p>3.实现打开相册的OC方法</p>
+
+<pre><code>// 打开相册
+- (void)openCamera{
+    UIImagePickerController *vc = [[UIImagePickerController alloc] init];
+    vc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    [self presentViewController:vc animated:YES completion:nil];
+}
+</code></pre>
+
+<p>4.再来看看html中简单的写法</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head lang="en"&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;style&gt;
+        body{
+            margin-top: 50px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;button onclick="openCamera();"&gt;访问相册&lt;/button&gt;
+    &lt;script type="text/javascript"&gt;
+        function openCamera(){
+            window.location.href = 'ds3q:///openCamera';
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p> 显示效果</p>
+
+<p> <img src="/images/html&amp;oc003.png" title="Caption" ></p>
+
+<hr />
+
+<p>  <img src="/images/html&amp;oc004.png" title="Caption" ></p>
 ]]></content>
   </entry>
   
