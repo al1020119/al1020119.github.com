@@ -3,7 +3,7 @@ layout: post
 title: "Core Image 初探"
 date: 2015-12-10 10:09:37 +0800
 comments: true
-categories: 
+categories: 高级开发
 ---
 
 > 前言：
