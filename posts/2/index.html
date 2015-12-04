@@ -9,11 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="目录 什么是block？ block编译转换结构
-block实际结构 block的类型 NSConcreteGlobalBlock和NSConcreteStackBlock
-NSConcreteMallocBlock 捕捉变量对block结构的影响 局部变量
-全局变量
-局部静态变量 &hellip;">
+  <meta name="description" content="说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。 从闭包说起
+在Lisp这样的语言中， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,6 +75,196 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shi-zhan/">Block实战</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
+
+<p>从闭包说起
+在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
+
+<p>所谓词法作用域，顾名思义，是指一个符号引用的是其词法环境中的变量，而无关程序在运行时的状态。这么说可能有点抽象，让我来看一段Common Lisp3代码：</p>
+
+<pre><code>(defvar printer (let ((x 42))
+          (lambda () (format t "~a" x))))
+</code></pre>
+
+<p>这里我们定义了一个变量printer，它的值是一个函数，这个函数会打印词法作用域中的变量x（其值为42）。
+现在我们来调用这个函数：</p>
+
+<pre><code>CL-USER&gt; (funcall printer)
+</code></pre>
+
+<p>42
+可以看到，我们调用了printer中存放的函数之后，打印出来的数字是42，跟我们的预期相符。</p>
+
+<p>接下来再让我们看一个可能会出乎意料的结果：</p>
+
+<pre><code>CL-USER&gt; (let ((x 1))
+       (funcall printer))
+</code></pre>
+
+<p>42
+我们在调用之前把x设置为了1，但是打印的结果仍然是42。</p>
+
+<p>为什么？因为printer中存放的函数在被调用时所引用的变量位于其词法作用域中， 即该函数被定义时所处的词法环境中，所以程序在运行时设置的变量x对函数不起作用。</p>
+
+<p>前面我们讲过，所谓闭包，就是函数及其词法作用域的合称，具体到上例，那么匿名函数和x就构成了一个闭包，它会为函数保存一种状态，有点类似于全局变量，不过除了那个匿名函数，其他函数无法访问到x。</p>
+
+<p>说了这么多，似乎跟block毫无关系？事实上，block为C带来了闭包。</p>
+
+<p>Block
+Apple从OS X 10.6和iOS 4以后开始支持block，让我们用C把上面的例子重写一下：</p>
+
+<pre><code>#include &lt;stdio.h&gt;
+
+int main ()
+{
+    int x = 42;
+    void (^block)() = ^() {
+        printf("%d\n", x);
+    };
+    block();
+    x = 1;
+    block();
+
+    return 0;
+}
+</code></pre>
+
+<p>编译运行后得到的输出同样是两个42。</p>
+
+<p>到了这里，相信读者对闭包已经有一个直观的认识了，但是它有什么用？有什么好处？
+设想如下场景，我们要请求一个URL，并以block的形式传入回调函数，并在回调函数中用到刚才这个URL：</p>
+
+<pre><code>NSURL *someURL = …;
+[SomeClass getURL:someURL finished:^(id responseObject) {
+    // process responseObject with someURL
+}];
+</code></pre>
+
+<p>这里网络请求是异步的，所以当block中代码执行时，getURL:finished:方法调用所在的栈很可能已经不存在了，但是因为回调block和someURL构成了closure，所以即使栈不存在，block仍然可以引用到someURL。</p>
+
+<p>可能你会说，“我在block中增加一个NSURL类型的参数，把someURL传回来不也可以实现同样的目的吗？”不妨设想如果我们在block中要引用的对象有10个之多，用参数列表传递明显不再现实，用容器类或者专门定义一个类来传递虽然可以，但是前者没有编译器为我们检查错误，后者则相当繁琐。而利用闭包，可以轻易达到灵活性和简洁性的平衡。事实上，美团客户端就大量利用了闭包，在UI层发出请求，在回调中更新某些UI组件。</p>
+
+<p>函数式编程4
+在Lisp中，函数是一等公民，可以随时创建、作为参数传递、作为返回值返回，Objective C在没有block之前，没有类似的机制，有了block，Objective C也就具备了函数式编程的能力，block是对象，有自己的ISA指针，可以随时创建，作为参数传递，作为返回值返回。</p>
+
+<p>先来看看block的经典用法：</p>
+
+<pre><code>[UIView animateWithDuration:0.25 animations:^{
+            self.view.alpha = 1.0f;
+        }];
+</code></pre>
+
+<p>UIView的animateWithDuration:animations:方法的第二个参数是一个block，它把跟动画相关的操作封装起来传递进去，以实现动画效果。</p>
+
+<p>现在让我们发掘一下类似的用法：</p>
+
+<pre><code>[SAKBaseModel comboRequest:^() {
+ [dealModel fetchDealByID:123456
+               withFields:nil
+               completion:^(MTDeal *deal, NSError *error) {
+                   ...
+               }];
+ [orderModel fetchOrderByID:654321
+             withDealFields:nil
+                 completion:^(MTOrder *order, NSError *error) {
+                ...
+             }];
+}];
+</code></pre>
+
+<p>这里我们为SAKBaseModel设计了一个类似于UIView的接口叫comboRequest，它会接受一个block作为参数，在这个block中发出的请求都会作为combo请求的一部分。如果dealModel或者orderModel的任何一个请求不是出现在block中，那么它就是一个普通的请求。这样做的好处是dealModel和orderModel的接口不需要关心自己是不是属于一个combo请求，调用者则可以灵活地调整代码。</p>
+
+<p>那么怎么实现这样的接口呢？还是从UIView上获取灵感。我们知道UIView有个方法setAnimationsEnabled:，实际上SAKBaseModel也可以有这么一个方法：setComboRequestEnabled:，而在comboRequest方法的实现中，在调用传进来的block之前先setComboRequestEnabled:YES，调用完后再恢复为原状态。相应的，在实际的model接口中，检查comboRequest是否为YES，如果是，则把自己作为一个combo请求的一部分，否则正常发出请求即可。</p>
+
+<p>Think Big
+Lisp最强大的特性之一是condition系统，它可以分离异常的检测、异常的解决和异常解决方式的决策，看一段示例代码：</p>
+
+<pre><code>(define-condition network-timeout-error (error)
+    ((url :initarg :url :accessor url)))
+
+(defun try-again (condition)
+    (let ((restart (find-restart ‘try-again)))
+      (when restart (invoke-restart restart))))
+
+(defun deal-requester (deal-id)
+    (handler-bind ((network-timeout-error #’try-again))
+      (request-from-url (format nil “http://api.mobile.meituan.com/deal/~a” deal-id)
+        (lambda (deal error)
+        (if error
+            (format t “error: ~a”, error)
+            (process-deal))))))
+(defun request-from-url (url finished)
+    (let ((callback (lambda (response error)
+              (if (network-timeout-error-p error)
+                (error ‘network-timeout-error :url url)
+                (funcall finished (parse-deal response) error)))))
+      (restart-bind
+        ((try-again (lambda () (http-request url callback))))
+        (http-request url callback))))
+</code></pre>
+
+<p>可以看到，condition系统对于代码的分层提供了良好的支持，请求超时的错误在底层代码被检测到，在发出请求前注册一个restart，而在业务层去决定要不要调用restart。</p>
+
+<p>一直以来，C语言要实现优雅的异常处理就是一件不简单的事情，而Objective-C虽然加入了try-catch支持，但是苹果并不鼓励使用，那么能否实现类似于condition系统这样的异常处理机制呢？</p>
+
+<p>答案是能。让我们来看看接口设计：</p>
+
+<pre><code>typedef void (^RESTART)(id userInfo);
+typedef void (^HANDLER)(id condition);
+
+void restart_bind(void (^body)(), NSString *restartName, RESTART restart, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void handler_bind(void (^body)(), Class class, HANDLER handler, ...) NS_REQUIRES_NIL_TERMINATION;
+
+void notify(id condition);
+
+RESTART find_restart(NSString *restartName);
+</code></pre>
+
+<p>如下图所示，handler_bind首先在栈中注册好handler，而restart_bind则在handler有效的环境中注册restart，当有异常发生时，notify函数会在当前环境中寻找handler，找到后，控制会转移到上层的handler代码中，这时handler可以用find_restart在栈中搜索restart，找到之后可以调用，从而实现异常的恢复，做完这一切，控制回到notify发生的点继续向下执行。</p>
+
+<p>完整的代码敬请期待美团iOS的开源项目。</p>
+
+<p>有了SAKCondition，我们可以实现任意底层代码的逻辑穿透到上层代码，比如网络层和UI层，使得上层代码可以在不了解下层代码实现细节的情况下调用恢复机制。事实上，美团的iPhone客户端就是利用SAKCondition实现了美团账户的安全解锁功能。</p>
+
+<p>总结
+block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/06/fen-lei-shi-zhan/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2645,182 +2832,6 @@ FastImageCache采用了另一种读写文件的方法，就是用mmap把文件�
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/04/h5ying-yong-shi-zhan/">H5应用实战</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>前言:
-ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
-
-<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
-
-<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
-
-<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
-
-<h3>OC——调用——HTML</h3>
-
-<p>这里有两种方式
-直接使用网络链接（接口）
-使用本地的html</p>
-
-<p>由于没有完成一个完整的html项目，这里就以链接演示。</p>
-
-<p>先来看看官方链接显示情况
-<img src="/images/html&oc001.png" title="Caption" ></p>
-
-<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节），并且增加一个指示器</p>
-
-<pre><code>// 加载网页
-NSURL *url = [NSURL URLWithString:@"http://www.xianhua.cn/m/"];
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-[self.webView loadRequest:request];
-
-self.webView.scrollView.hidden = YES;
-self.webView.backgroundColor = [UIColor grayColor];
-
-UIActivityIndicatorView *displayView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-[displayView startAnimating];
-self.displayView = displayView;
-displayView.center = self.view.center;
-[self.webView addSubview:displayView];
-</code></pre>
-
-<p>2.在WebView加载完成的方法中实现我们想要的功能需求</p>
-
-<pre><code>#pragma mark -&lt;UIWebViewDelegate&gt;
-- (void)webViewDidFinishLoad:(UIWebView *)webView{
-
-    // 改变标题
-    NSString *str = @"document.getElementsByTagName('h1')[0].innerText = 'iCocos鲜花网';";
-    [webView stringByEvaluatingJavaScriptFromString:str];
-
-    // 删除广告
-    NSString *str2 =@"document.getElementsByClassName('detail_btns2')[0].remove();";
-    [webView stringByEvaluatingJavaScriptFromString:str2];
-
-    // 改变尾部
-    NSString *str3 = @"document.getElementById('xiazaiapp').getElementsByTagName('a')[0].innerText='iCocos鲜花网App';";
-    [webView stringByEvaluatingJavaScriptFromString:str3];
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.webView.scrollView.hidden = NO;
-        [self.displayView stopAnimating];
-    });
-}
-</code></pre>
-
-<p>修改后子在手机就是这样的效果</p>
-
-<p><img src="/images/html&oc002.png" title="Caption" ></p>
-
-<h3>HTML——调用——OC</h3>
-
-<p>这里的例子是通过在html中点击一个按钮去调用OC代码，访问系统系相册</p>
-
-<h6>先来看看OC中需要怎么写：</h6>
-
-<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节）</p>
-
-<pre><code>// 加载网页
-NSURL *url = [[NSBundle mainBundle] URLForResource:@"test" withExtension:@"html"];
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-[self.webView loadRequest:request];
-</code></pre>
-
-<p>2.在Web开始加载请求的代理方法中拼接方法（包装）</p>
-
-<pre><code>#pragma mark - &lt;UIWebViewDelegate&gt;
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
-//    NSLog(@"------%@", request.URL.absoluteString);
-    NSString *requestUrl = request.URL.absoluteString;
-    NSRange range = [requestUrl rangeOfString:@"ds3q:///"];
-    NSUInteger location = range.location;
-    if (location != NSNotFound) {
-        NSString *str = [requestUrl substringFromIndex:location + range.length];
-        NSLog(@"%@", str);
-        // 包装SEL
-        SEL method = NSSelectorFromString(str);
-        [self performSelector:method];
-    }
-
-    return YES;
-}
-</code></pre>
-
-<p>3.实现打开相册的OC方法</p>
-
-<pre><code>// 打开相册
-- (void)openCamera{
-    UIImagePickerController *vc = [[UIImagePickerController alloc] init];
-    vc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    [self presentViewController:vc animated:YES completion:nil];
-}
-</code></pre>
-
-<p>4.再来看看html中简单的写法</p>
-
-<pre><code>&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head lang="en"&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;&lt;/title&gt;
-    &lt;style&gt;
-        body{
-            margin-top: 50px;
-        }
-    &lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;button onclick="openCamera();"&gt;访问相册&lt;/button&gt;
-    &lt;script type="text/javascript"&gt;
-        function openCamera(){
-            window.location.href = 'ds3q:///openCamera';
-        }
-    &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-
-<p> 显示效果</p>
-
-<p> <img src="/images/html&oc003.png" title="Caption" ></p>
-
-<hr />
-
-<p>  <img src="/images/html&oc004.png" title="Caption" ></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/04/h5ying-yong-shi-zhan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
       <h1 class="entry-title"><a href="/blog/2015/12/04/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
     
     
@@ -3539,6 +3550,10 @@ static FMDatabase *_db;
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
       </li>
     
@@ -3552,10 +3567,6 @@ static FMDatabase *_db;
     
       <li class="post">
         <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
       </li>
     
   </ul>
