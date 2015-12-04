@@ -2,7 +2,7 @@
 
 layout: post
 title: "iOS版本适配问题（6，7，8，9）"
-date: 2015-11-30 20:52:45 +0800
+date: 2015-6-10 20:52:45 +0800
 comments: true
 categories: 适配问题
 

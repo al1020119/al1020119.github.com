@@ -2,7 +2,7 @@
 
 layout: post
 title: "传值方式总结"
-date: 2015-12-01 02:32:36 +0800
+date: 2015-7-01 02:32:36 +0800
 comments: true
 categories: 项目实战
 
