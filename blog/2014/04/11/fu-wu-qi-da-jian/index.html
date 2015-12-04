@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>不平的条约（协议） - iOS梦工厂</title>
+  <title>服务器搭建 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="不平的条约（协议） ordinal 协议声明类需要实现的的方法，为不同的类提供公用方法，一个类可以有多个协议，但只能有一个父类，即单继承。它类似java中的接口。 正式协议（formal protocol） 声明正式协议使用@protocol指令，以@end结尾。 @protocol &hellip;">
+  <meta name="description" content="服务器搭建 ordinal 一、简单说明 说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。 提示：提前准备好的软件 apache-tomcat-6.0.41.tar
+eclipse-jee-kepler-SR2-macosx- &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2014/08/28/protocol/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2014/04/11/fu-wu-qi-da-jian/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +78,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">不平的条约（协议）</h1>
+      <h1 class="entry-title">服务器搭建</h1>
     
     
       <p class="meta">
@@ -97,191 +98,133 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>协议声明类需要实现的的方法，为不同的类提供公用方法，一个类可以有多个协议，但只能有一个父类，即单继承。它类似java中的接口。</p>
+<div class="entry-content"><h3>一、简单说明</h3>
 
-<h2>正式协议（formal protocol）</h2>
+<p>说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。</p>
 
-<p>声明正式协议使用@protocol指令，以@end结尾。</p>
+<p>提示：提前准备好的软件</p>
 
-<pre><code>@protocol MyXMLSupport
-- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
-- (NSXMLElement *)XMLRepresentation;
-@end
-</code></pre>
-
-<p>可以在协议声明中使用@optional和@required指令来指定协议中的方法是否必须要实现。如果没有为方法指定任何指令，@required是协议中默认的指令。</p>
-
-<pre><code>@protocol MyProtocol
-- (void)requiredMethod;
-@optional
-- (void)anOptionalMethod;
-- (void)anotherOptionalMethod;
-@required
-- (void)anotherRequiredMethod; 
-@end
-</code></pre>
-
-<h2>非正式协议（informal protocol）</h2>
-
-<p>非正式协议通过分类（category）来实现，不过在Mac OS X v10.6+中可以在协议中通过@optional指令来取代这个别扭的方案。</p>
-
-<pre><code>@interface NSObject ( MyXMLSupport )
-- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
-- (NSXMLElement *)XMLRepresentation;
-@end
-</code></pre>
-
-<h2>协议对象（protocol objects）</h2>
-
-<p>Objective C中定义了协议对象，通过@protocol指令可以获取protocol实例。</p>
-
-<pre><code>Protocol *myXMLSupportProtocol = @protocol(MyXMLSupport);
-</code></pre>
-
-<p>当类采用（adopt）接口或在代码中通过@protocol（XX）指令时，编译器会创建protocol实例。</p>
-
-<h2>协议的使用</h2>
-
-<p>协议的采用（adopt）和声明父类类似，可以在父类后面用尖括号将要采用的协议括起来，多个协议用逗号（comma）隔开。
-类和分类都可以采用协议。</p>
-
-<pre><code>@interface ClassName : ItsSuperclass &lt; protocol list &gt;
-@interface ClassName ( CategoryName ) &lt; protocol list &gt;
-</code></pre>
-
-<p>在接口部分不需要重新声明协议中的方法。但在类的实现部分需要实现协议中的@required方法。</p>
-
-<h2>是否遵循某协议</h2>
-
-<p>检查一个类或实例对象是否遵循某协议可以用NSObject类的类方法conformsToProtocol和实例方法conformsToProtocol</p>
-
-<pre><code>if ( ! [receiver conformsToProtocol:@protocol(MyXMLSupport)]  ) {
-    // Object does not conform to MyXMLSupport protocol
-    // If you are expecting receiver to implement methods declared in the
-    //  MyXMLSupport protocol, this is probably an error
-}
-</code></pre>
-
-<h2>使用协议进行类型声明</h2>
-
-<p>声明对象类型时可以在声明中指定协议，这样可以让编译器在编译阶段强制对象遵循某协议。</p>
-
-<pre><code>- (id &lt;Formatting&gt;)formattingService;
-id &lt;MyXMLSupport&gt; anObject;
-</code></pre>
-
-<h2>协议的继承</h2>
-
-<p>协议也可以继承或采用其他的协议，需要采用某协议的类必须实现该协议的required方法和该协议继承的协议中的required方法。
-    @protocol ProtocolName &lt; protocol list ></p>
-
-<h2>在协议中使用其它的协议</h2>
-
-<p>在一个大型的应用中，你可能会遇到如下代码：</p>
-
-<pre><code>#import "B.h"
-@protocol A
-- foo:(id &lt;B&gt;)anObject;
-@end
+<ul>
+<li><p>apache-tomcat-6.0.41.tar</p></li>
+<li><p>eclipse-jee-kepler-SR2-macosx-cocoa-x86_64.tar.gz</p></li>
+<li><p>jdk-8u5-macosx-x64.dmg</p></li>
+</ul>
 
 
-#import "A.h"
-@protocol B
-- bar:(id &lt;A&gt;)anObject;
-@end
-</code></pre>
+<h3>二、安装和配置本地服务器环境（java）步骤：</h3>
 
-<p>A、B协议在互相引用，如果这里都用import来引入协议文件，编译器会报错。需要改为如下方式：</p>
+<ul>
+<li>(1)在文档路径下，新建一个文件夹（NetWord），解压eclipse压缩包文件</li>
+</ul>
 
-<pre><code>@protocol B;
-@protocol A
-- foo:(id &lt;B&gt;)anObject;
-@end
-</code></pre>
 
-<p>@protocol B只是简单告诉编译器B是一个协议，不会引入B的文件。
-NScoder  和 NScoding 有将自己定义的类的对象写入磁盘的作用
-NScoding 是一个协议，主要有下面两个方法</p>
+<p><img src="/images/fuwuqi001.png" title="Caption" ></p>
 
-<pre><code>-(id)initWithCoder:(NSCoder *)coder;//从coder中读取数据，保存到相应的变量中，即反序列化数据
--(void)encodeWithCoder:(NSCoder *)coder;// 读取实例变量，并把这些数据写到coder中去。序列化数据
-</code></pre>
+<ul>
+<li>(2)先安装jdk</li>
+</ul>
 
-<p>NSCoder 是一个抽象类，抽象类不能被实例话，只能提供一些想让子类继承的方法。</p>
 
-<p>NSKeyedUnarchiver   从二进制流读取对象。
-NSKeyedArchiver       把对象写到二进制流中去。
-4一个简单的例子</p>
+<p><img src="/images/fuwuqi002.png" title="Caption" ></p>
 
-<p>一般是在自己定义的类中需要在.h 文件中加入<NScoding></p>
+<ul>
+<li>(3)点击安装eclipse，设置工作空间，点击确定。</li>
+</ul>
 
-<p>在.m 文件众实现他的的两个代理方法，这个代理方法将会被自动调用</p>
 
-<pre><code>1 - (void)encodeWithCoder:(NSCoder *)aCoder 
-2 {
-3     [aCoder encodeObject:self.InsureSolutionID forKey:@"personName"];
-4     [aCoder encodeObject:self.InsureSolutionName forKey:@"personAge"];
-5 }
-</code></pre>
+<p><img src="/images/fuwuqi003.png" title="Caption" ></p>
 
-<p>encodeWithCoder 可以调用的方法：</p>
+<p>设置工作空间
+<img src="/images/fuwuqi004.png" title="Caption" ></p>
 
-<p>1）、如果是类 就用encodeObject: forKey：</p>
+<p><img src="/images/fuwuqi0004.png" title="Caption" ></p>
 
-<p>2）、如果是普通的数据类型就用   eg、encodeInt： forKey：</p>
+<ul>
+<li>(4)把提前写好的服务器代码，拷贝到工作空间中。</li>
+</ul>
 
-<pre><code>- (id)initWithCoder:(NSCoder *)aDecoder 
 
-{
-    self = [super init];
-    if (self) 
-    {
-        self.InsureSolutionID = [aDecoder decodeObjectForKey:@"personName"];
-        self.InsureSolutionName = [aDecoder decodeObjectForKey:@"personAge"];
-    }
-    return self;
-}
-</code></pre>
+<p> <img src="/images/fuwuqi005.png" title="Caption" ></p>
 
-<p>initWithCoder 可以调用的方法：</p>
+<p> <img src="/images/fuwuqi006.png" title="Caption" ></p>
 
-<p>1）、如果是类 就用decodeObjectForKey：</p>
+<ul>
+<li><p>(5)导入项目，导入已经存在的项目到工作空间中。
+<img src="/images/fuwuqi007.png" title="Caption" ><br/>
+<img src="/images/fuwuqi008.png" title="Caption" ><br/>
+<img src="/images/fuwuqi009.png" title="Caption" ></p></li>
+<li><p>(6)导入项目之后，项目报错且格式乱码，下面进行调整。</p></li>
+</ul>
 
-<p>2）、如果是普通的数据类型就用   eg、decodeIntForKey：</p>
 
-<p>以下是对该类序列化和反序列化。</p>
+<p><img src="/images/fuwuqi010.png" title="Caption" ><br/>
+<img src="/images/fuwuqi011.png" title="Caption" ><br/>
+<img src="/images/fuwuqi012.png" title="Caption" ></p>
 
-<pre><code>1 NSData *archiveCarPriceData = [NSKeyedArchiver archivedDataWithRootObject:self.DataArray];
-2     [[NSUserDefaults standardUserDefaults] setObject:archiveCarPriceData forKey:@"DataArray"];
-3  
-4 
-5  NSData *myEncodedObject = [[NSUserDefaults standardUserDefaults] objectForKey:@"DataArray"];
-6      self.dataList = [NSKeyedUnarchiver unarchiveObjectWithData: myEncodedObject];
-</code></pre>
+<ul>
+<li><p>(7)配置容器，apache-tomcat.</p>
 
-<p>nscopying协议蛮好用的。</p>
+<p> <img src="/images/fuwuqi013.png" title="Caption" >    <br/>
+<img src="/images/fuwuqi014.png" title="Caption" ></p></li>
+</ul>
 
-<p>一个方法：
-zone是一个内存区域，通常object，指向指针，所以copywithzone重要。</p>
 
-<pre><code>- (id)copyWithZone:(NSZone *)zone
+<p> <img src="/images/fuwuqi015.png" title="Caption" ></p>
 
-{
+<p>点击ok。创建一个新的容器</p>
 
-    FourLines *copy = [[[self class] allocWithZone:zone] init];
+<p><img src="/images/fuwuqi016.png" title="Caption" ></p>
 
-    copy.field1 = [self.field1 copyWithZone:zone];
+<p>选择容器的路径</p>
 
-    copy.field2 = [self.field2 copyWithZone:zone];
+<p><img src="/images/fuwuqi017.png" title="Caption" ></p>
 
-    copy.field3 = [self.field3 copyWithZone:zone];
+<p>安装好后显示如下：</p>
 
-    copy.field4 = [self.field4 copyWithZone:zone];
+<p><img src="/images/fuwuqi018.png" title="Caption" ></p>
 
-    return copy;
+<ul>
+<li>(8)启动服务器。以debug的方式启动，方便做一些调试</li>
+</ul>
 
-}
-</code></pre>
+
+<p><img src="/images/fuwuqi019.png" title="Caption" ></p>
+
+<p>测试：server已经成功启动。</p>
+
+<p><img src="/images/fuwuqi020.png" title="Caption" ></p>
+
+<ul>
+<li>(9)部署程序</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi021.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi022.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi023.png" title="Caption" ></p>
+
+<ul>
+<li>(10)在火狐浏览器中输入服务器的地址，访问项目</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi024.png" title="Caption" ></p>
+
+<p>至此本地服务器环境搭建完成。</p>
+
+<h3>访问服务器的资源</h3>
+
+<p><img src="/images/fuwuqi025.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi026.png" title="Caption" ></p>
+
+<p>使用模拟器上的浏览器也可以访问本地服务器。输入地址192.168.1.53：8080/MJServer</p>
+
+<p>补充：浏览器打开页面，文字乱码调整。</p>
+
+<p><img src="/images/fuwuqi027.png" title="Caption" ></p>
 </div>
 
 
@@ -310,7 +253,7 @@ zone是一个内存区域，通常object，指向指针，所以copywithzone重�
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
+    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
   
 </span>
 
@@ -339,10 +282,10 @@ zone是一个内存区域，通常object，指向指针，所以copywithzone重�
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/08/15/uiview%20calayer/" title="Previous Post: UIView&CALayer是撒？">&laquo; UIView&CALayer是撒？</a>
+        <a class="basic-alignment left" href="/blog/2014/04/02/duoxianchengshiyong/" title="Previous Post: 多线程详解">&laquo; 多线程详解</a>
       
       
-        <a class="basic-alignment right" href="/blog/2014/10/22/collectionview/" title="Next Post: 玩转CollectionView">玩转CollectionView &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2014/04/14/nscache%20nsdictionary/" title="Next Post: NSCache&NSDcitionary你了解多少？">NSCache&NSDcitionary你了解多少？ &raquo;</a>
       
     </p>
   </footer>
@@ -431,7 +374,7 @@ zone是一个内存区域，通常object，指向指针，所以copywithzone重�
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2014/08/28/protocol/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/08/28/protocol/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2014/04/11/fu-wu-qi-da-jian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/04/11/fu-wu-qi-da-jian/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
