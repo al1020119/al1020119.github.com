@@ -9,10 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="MKNetWorking是撒？ ordinal 常用框架比如： AFNetworking
-ASIHttpRequest
-SDWebImage
-MKNetWorKit等。 iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。 &hellip;">
+  <meta name="description" content="FMDB你了解多少？ ordinal FMDB详解 前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。 于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -77,6 +74,246 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/25/fmdb/">FMDB你了解多少？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>FMDB详解</p>
+
+<p>前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。</p>
+
+<p>于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、sqlitepersistentobjects等，FMDB (<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a>) 是一款简洁、易用的封装库，这一篇文章简单介绍下FMDB的使用。</p>
+
+<p>在FMDB下载文件后，工程中必须导入，并使用 libsqlite3.dylib 依赖包。</p>
+
+<p>FMDB同时兼容ARC和非ARC工程，会自动根据工程配置来调整相关的内存管理代码。</p>
+
+<p>FMDB常用类：</p>
+
+<ul>
+<li>FMDatabase ： 一个单一的SQLite数据库，用于执行SQL语句。</li>
+<li>FMResultSet ：执行查询一个FMDatabase结果集，这个和Android的Cursor类似。</li>
+<li>FMDatabaseQueue ：在多个线程来执行查询和更新时会使用这个类。</li>
+</ul>
+
+
+<h3>创建数据库：</h3>
+
+<pre><code>db = [FMDatabase databaseWithPath:database_path];
+</code></pre>
+
+<p>1、当数据库文件不存在时，fmdb会自己创建一个。
+2、 如果你传入的参数是空串：@&ldquo;&rdquo; ，则fmdb会在临时文件目录下创建这个数据库，数据库断开连接时，数据库文件被删除。
+3、如果你传入的参数是 NULL，则它会建立一个在内存中的数据库，数据库断开连接时，数据库文件被删除。</p>
+
+<h3>打开数据库：</h3>
+
+<pre><code>[db open]
+</code></pre>
+
+<p>返回BOOL型。</p>
+
+<h3>关闭数据库：</h3>
+
+<pre><code>[db close]
+</code></pre>
+
+<h3>数据库增删改等操作：</h3>
+
+<p>除了查询操作，FMDB数据库操作都执行executeUpdate方法，这个方法返回BOOL型。</p>
+
+<p>数据库操作(使用FMDB)</p>
+
+<p>看一下例子：</p>
+
+<h5>创建表：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *sqlCreateTable =  [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS '%@' ('%@' INTEGER PRIMARY KEY AUTOINCREMENT, '%@' TEXT, '%@' INTEGER, '%@' TEXT)",TABLENAME,ID,NAME,AGE,ADDRESS];
+        BOOL res = [db executeUpdate:sqlCreateTable];
+        if (!res) {
+            NSLog(@"error when creating db table");
+        } else {
+            NSLog(@"success to creating db table");
+        }
+        [db close];
+
+    }
+</code></pre>
+
+<h5>添加数据：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *insertSql1= [NSString stringWithFormat:
+                              @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
+                              TABLENAME, NAME, AGE, ADDRESS, @"张三", @"13", @"济南"];
+        BOOL res = [db executeUpdate:insertSql1];
+        NSString *insertSql2 = [NSString stringWithFormat:
+                                @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
+                                TABLENAME, NAME, AGE, ADDRESS, @"李四", @"12", @"济南"];
+        BOOL res2 = [db executeUpdate:insertSql2];
+
+    if (!res) {
+        NSLog(@"error when insert db table");
+    } else {
+        NSLog(@"success to insert db table");
+    }
+    [db close];
+
+}
+</code></pre>
+
+<h5>修改数据：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *updateSql = [NSString stringWithFormat:
+                              @"UPDATE '%@' SET '%@' = '%@' WHERE '%@' = '%@'",
+                              TABLENAME,  AGE,  @"15" ,AGE,  @"13"];
+        BOOL res = [db executeUpdate:updateSql];
+        if (!res) {
+            NSLog(@"error when update db table");
+        } else {
+            NSLog(@"success to update db table");
+        }
+        [db close];
+
+    }
+</code></pre>
+
+<h5>删除数据：</h5>
+
+<pre><code>if ([db open]) {
+
+    NSString *deleteSql = [NSString stringWithFormat:
+                          @"delete from %@ where %@ = '%@'",
+                          TABLENAME, NAME, @"张三"];
+    BOOL res = [db executeUpdate:deleteSql];
+
+    if (!res) {
+        NSLog(@"error when delete db table");
+    } else {
+        NSLog(@"success to delete db table");
+    }
+    [db close];
+
+}
+</code></pre>
+
+<h5>数据库查询操作：</h5>
+
+<p>查询操作使用了executeQuery，并涉及到FMResultSet。</p>
+
+<pre><code>if ([db open]) {
+        NSString * sql = [NSString stringWithFormat:
+                          @"SELECT * FROM %@",TABLENAME];
+        FMResultSet * rs = [db executeQuery:sql];
+        while ([rs next]) {
+            int Id = [rs intForColumn:ID];
+            NSString * name = [rs stringForColumn:NAME];
+            NSString * age = [rs stringForColumn:AGE];
+            NSString * address = [rs stringForColumn:ADDRESS];
+            NSLog(@"id = %d, name = %@, age = %@  address = %@", Id, name, age, address);
+        }
+        [db close];
+    }
+</code></pre>
+
+<p>FMDB的FMResultSet提供了多个方法来获取不同类型的数据：</p>
+
+<h3>数据库操作(使用FMDB)</h3>
+
+<h5>数据库多线程操作：</h5>
+
+<p>如果应用中使用了多线程操作数据库，那么就需要使用FMDatabaseQueue来保证线程安全了。 应用中不可在多个线程中共同使用一个FMDatabase对象操作数据库，这样会引起数据库数据混乱。 为了多线程操作数据库安全，FMDB使用了FMDatabaseQueue，使用FMDatabaseQueue很简单，首先用一个数据库文件地址来初使 化FMDatabaseQueue，然后就可以将一个闭包(block)传入inDatabase方法中。 在闭包中操作数据库，而不直接参与FMDatabase的管理。</p>
+
+<pre><code>FMDatabaseQueue * queue = [FMDatabaseQueue databaseQueueWithPath:database_path];
+    dispatch_queue_t q1 = dispatch_queue_create("queue1", NULL);
+    dispatch_queue_t q2 = dispatch_queue_create("queue2", NULL);
+
+dispatch_async(q1, ^{
+    for (int i = 0; i &lt; 50; ++i) {
+        [queue inDatabase:^(FMDatabase *db2) {
+
+            NSString *insertSql1= [NSString stringWithFormat:
+                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
+                                  TABLENAME, NAME, AGE, ADDRESS];
+
+            NSString * name = [NSString stringWithFormat:@"jack %d", i];
+            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
+
+
+            BOOL res = [db2 executeUpdate:insertSql1, name, age,@"济南"];
+            if (!res) {
+                NSLog(@"error to inster data: %@", name);
+            } else {
+                NSLog(@"succ to inster data: %@", name);
+            }
+        }];
+    }
+});
+
+dispatch_async(q2, ^{
+    for (int i = 0; i &lt; 50; ++i) {
+        [queue inDatabase:^(FMDatabase *db2) {
+            NSString *insertSql2= [NSString stringWithFormat:
+                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
+                                  TABLENAME, NAME, AGE, ADDRESS];
+
+            NSString * name = [NSString stringWithFormat:@"lilei %d", i];
+            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
+
+            BOOL res = [db2 executeUpdate:insertSql2, name, age,@"北京"];
+            if (!res) {
+                NSLog(@"error to inster data: %@", name);
+            } else {
+                NSLog(@"succ to inster data: %@", name);
+            }
+        }];
+    }
+});
+</code></pre>
+
+<blockquote><p>注：FMDB最重要的就是下面两个方法的使用，</p></blockquote>
+
+<ul>
+<li>executeUpdate ：创建。修改，删除</li>
+<li>executeQuery ：查询</li>
+</ul>
+
+
+<p>关键是SQL语句的使用</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/11/25/fmdb/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2618,1572 +2855,6 @@ On Mac OS X you must configure an NSView instance in such a way that it can host
 
 
 | <a href="/blog/2014/07/12/popkeyboard/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/06/25/data%20model/">数据与模型</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>/******************************************************************************/</p>
-
-<h3>一:简单plist读取</h3>
-
-<p>1:定义一个数组用来保存读取出来的plist数据</p>
-
-<pre><code> 1 @property (nonatomic, strong) NSArray *shops; 
-</code></pre>
-
-<p>2:使用懒加载的方式加载plist文件，并且放到数组中</p>
-
-<pre><code>// 懒加载
-
-// 1.第一次用到时再去加载
-
-// 2.只会加载一次
-
-- (NSArray *)shops
-
-{
-
-    if (_shops == nil) {
-
-        // 获得plist文件的全路径
-
-        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
-
-
-
-        // 从plist文件中加载一个数组对象
-
-        _shops = [NSArray arrayWithContentsOfFile:file];
-
-    }
-
-    return _shops;
-
-}
-</code></pre>
-
-<p>3:使用数组中的数据</p>
-
-<pre><code>// 设置数据
-
-1 NSDictionary *shop = self.shops[index];
-2 
-3 iconView.image = [UIImage imageNamed:shop[@"icon"]];
-4 
-5 nameLabel.text = shop[@"name"];
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>二：字典转模型</h3>
-
-<h6>1:创建一个model类并且在里面创建对应的模型属性</h6>
-
-<pre><code>/** 名字 */
-
- 1 @property (nonatomic, strong) NSString *name; 
-
-/** 图标 */
-
- 1 @property (nonatomic, strong) NSString *icon; 
-</code></pre>
-
-<h6>2:定义一个数组用来保存读取出来的plist数据</h6>
-
-<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
-</code></pre>
-
-<h6>3:使用懒加载的方式加载plist文件，并且放到模型中</h6>
-
-<pre><code>// 懒加载
-
-// 1.第一次用到时再去加载
-
-// 2.只会加载一次
-
-- (NSMutableArray *)shops
-
-{
-
-    if (_shops == nil) {
-
-        // 创建"模型数组"
-
-        _shops = [NSMutableArray array];
-
-
-
-        // 获得plist文件的全路径
-
-        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
-
-
-
-        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
-
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
-
-
-
-        // 将 “字典数组” 转换为 “模型数据”
-
-        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
-
-            // 将 “字典” 转换为 “模型”
-
-            Shop *shop = [[Shop alloc] init];
-
-            shop.name = dict[@"name"];
-
-            shop.icon = dict[@"icon"];
-
-
-
-            // 将 “模型” 添加到 “模型数组中”
-
-            [_shops addObject:shop];
-
-        }
-
-    }
-
-    return _shops;
-
-}
-</code></pre>
-
-<p>4:使用模型中的数据</p>
-
-<pre><code>// 设置数据 
-Shop *shop = self.shops[index];
-
-iconView.image = [UIImage imageNamed:shop.icon];
-
-nameLabel.text = shop.name;
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>三：字典转模型封装</h3>
-
-<h6>1:创建一个model类并且在里面创建对应的模型属性，定义两个模型方法</h6>
-
-<pre><code>/** 名字 */
-
-@property (nonatomic, copy) NSString *name;
-
-/** 图标 */
-
-@property (nonatomic, copy) NSString *icon;
-
-
-
-/** 通过一个字典来初始化模型对象 */
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-
-
-
-/** 通过一个字典来创建模型对象 */
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>2:模型方法的实现</h6>
-
-<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
-
-{
-
-    if (self = [super init]) {
-
-        self.name = dict[@"name"];
-
-        self.icon = dict[@"icon"];
-
-    }
-
-    return self;
-
-}
-
-
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict
-
-{
-
-    // 这里要用self
-
-    return [[self alloc] initWithDict:dict];
-
-} 
-</code></pre>
-
-<h6>3:定义一个数组用来保存读取出来的plist数据</h6>
-
-<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
-</code></pre>
-
-<h6>4:使用懒加载的方式加载plist文件，并且放到模型中</h6>
-
-<pre><code>// 懒加载
-
-// 1.第一次用到时再去加载
-
-// 2.只会加载一次
-- (NSMutableArray *)shops
-
-{
-
-    if (_shops == nil) {
-
-        // 创建"模型数组"
-
-        _shops = [NSMutableArray array];
-
-
-
-        // 获得plist文件的全路径
-
-        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
-
-
-
-        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
-
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
-
-
-
-        // 将 “字典数组” 转换为 “模型数据”
-
-        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
-
-            // 将 “字典” 转换为 “模型”
-
-            XMGShop *shop = [XMGShop shopWithDict:dict];
-
-
-
-            // 将 “模型” 添加到 “模型数组中”
-
-            [_shops addObject:shop];
-
-        }
-
-    }
-
-    return _shops;
-
-}
-</code></pre>
-
-<h6>5:使用模型中的数据</h6>
-
-<pre><code>// 设置数据
-
-XMGShop *shop = self.shops[index];
-
-iconView.image = [UIImage imageNamed:shop.icon];
-
-nameLabel.text = shop.name;
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>四：自定义View</h3>
-
-<h6>1:创建一个model类并且在里面创建对应的模型属性，定义两个模型方法</h6>
-
-<pre><code>/** 名字 */
-
-@property (nonatomic, copy) NSString *name;
-
-/** 图标 */
-
-@property (nonatomic, copy) NSString *icon;
-
-
-
-/** 通过一个字典来初始化模型对象 */
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-
-
-
-/** 通过一个字典来创建模型对象 */
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>2:模型方法的实现</h6>
-
-<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
-
-{
-
-    if (self = [super init]) {
-
-        self.name = dict[@"name"];
-
-        self.icon = dict[@"icon"];
-
-    }
-
-    return self;
-
-}
-
-
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict
-
-{
-
-    // 这里要用self
-
-    return [[self alloc] initWithDict:dict];
-
-}
-</code></pre>
-
-<h6>3:自定义一个View，引入模型类，并且创建模型类的属性</h6>
-
-<pre><code>@class XMGShop;
-
-
-
-/** 商品模型 */
-
-@property (nonatomic, strong) XMGShop *shop;
-</code></pre>
-
-<h6>4:实现文件中，定义相应的控件属性</h6>
-
-<pre><code>/** 图片 */
-
-@property (nonatomic, weak) UIImageView *iconView;
-
-
-
-/** 名字 */
-
-@property (nonatomic, weak) UILabel *nameLabel;
-</code></pre>
-
-<h6>5:实现自定义View的相应方法</h6>
-
-<pre><code>- (instancetype)init
-
-{
-
-    if (self = [super init]) {
-
-        // 添加一个图片
-
-        UIImageView *iconView = [[UIImageView alloc] init];
-
-        [self addSubview:iconView];
-
-        self.iconView = iconView;
-
-
-
-        // 添加一个文字
-
-        UILabel *nameLabel = [[UILabel alloc] init];
-
-        nameLabel.textAlignment = NSTextAlignmentCenter;
-
-        [self addSubview:nameLabel];
-
-        self.nameLabel = nameLabel;
-
-    }
-
-    return self;
-
-}
-
-
-
-/**
-
- * 这个方法专门用来布局子控件，设置子控件的frame
-
- */
-
-- (void)layoutSubviews
-
-{
-
-    // 一定要调用super方法
-
-    [super layoutSubviews];
-
-
-
-    CGFloat shopW = self.frame.size.width;
-
-    CGFloat shopH = self.frame.size.height;
-
-
-
-    self.iconView.frame = CGRectMake(0, 0, shopW, shopW);
-
-    self.nameLabel.frame = CGRectMake(0, shopW, shopW, shopH - shopW);
-
-}
-
-
-
--(void)setShop:(XMGShop *)shop
-
-{
-
-    _shop = shop;
-
-
-
-    self.iconView.image = [UIImage imageNamed:shop.icon];
-
-    self.nameLabel.text = shop.name;
-
-}
-</code></pre>
-
-<h6>6:定义一个数组用来保存读取出来的plist数据</h6>
-
-<pre><code> 1 @property (nonatomic, strong) NSMutableArray *shops; 
-</code></pre>
-
-<h6>7:使用懒加载的方式加载plist文件，并且放到模型中</h6>
-
-<pre><code>// 懒加载
-
-// 1.第一次用到时再去加载
-
-// 2.只会加载一次
-
-- (NSMutableArray *)shops
-
-{
-
-    if (_shops == nil) {
-
-        // 创建"模型数组"
-
-        _shops = [NSMutableArray array];
-
-
-
-        // 获得plist文件的全路径
-
-        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
-
-
-
-        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
-
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
-
-
-
-        // 将 “字典数组” 转换为 “模型数据”
-
-        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
-
-            // 将 “字典” 转换为 “模型”
-
-            XMGShop *shop = [XMGShop shopWithDict:dict];
-
-
-
-            // 将 “模型” 添加到 “模型数组中”
-
-            [_shops addObject:shop];
-
-        }
-
-    }
-
-    return _shops;
-
-} 
-</code></pre>
-
-<h6>8:使用View</h6>
-
-<pre><code>// 创建一个商品父控件
-
-XMGShopView *shopView = [[XMGShopView alloc] init];
-
-shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
-
-// 将商品父控件添加到shopsView中
-
-[self.shopsView addSubview:shopView];
-
-
-
-
-/**
-
-
-
-NSDictionary *dict = nil; // 从其他地方加载的字典
-
-
-
- XMGShop *shop = [XMGShop shopWithDict:dict];
-
-
-
- XMGShopView *shopView = [[XMGShopView alloc] init];
-
- shopView.shop = shop;
-
- shopView.frame = CGRectMake(0, 0, 70, 100);
-
- [self.view addSubview:shopView];
-
-
-
-
-
-
- // 扩展性差
-
- // 扩展好的体现：即使改变了需求。我们也不需要动大刀子
-
- */
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>五：initWithFrame</h3>
-
-<p>1:在上一步的基础上只要修改init方法为</p>
-
-<pre><code>/** init方法内部会自动调用initWithFrame:方法 */
-
-- (instancetype)initWithFrame:(CGRect)frame
-
-{
-
-    if (self = [super initWithFrame:frame]) {
-
-        // 添加一个图片
-
-        UIImageView *iconView = [[UIImageView alloc] init];
-
-        [self addSubview:iconView];
-
-        self.iconView = iconView;
-
-
-
-        // 添加一个文字
-
-        UILabel *nameLabel = [[UILabel alloc] init];
-
-        nameLabel.textAlignment = NSTextAlignmentCenter;
-
-        [self addSubview:nameLabel];
-
-        self.nameLabel = nameLabel;
-
-    }
-
-    return self;
-
-}
-</code></pre>
-
-<p>2:最后设置数据的时候也可以使用下面的方法实现View的创建</p>
-
-<pre><code> 1 XMGShopView *shopView = [[XMGShopView alloc] initWithFrame:CGRectMake(shopX, shopY, shopW, shopH)]; 
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>六：MVC</h3>
-
-<h6>1:model</h6>
-
-<pre><code>@interface XMGShop : NSObject
-
-/** 名字 */
-
-@property (nonatomic, copy) NSString *name;
-
-/** 图标 */
-
-@property (nonatomic, copy) NSString *icon;
-
-/** 通过一个字典来初始化模型对象 */
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-
-
-
-/** 通过一个字典来创建模型对象 */
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict;
-
-@end
-
-
-
-
-
-
-@implementation XMGShop
-
-
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-
-{
-
-    if (self = [super init]) {
-
-        self.name = dict[@"name"];
-
-        self.icon = dict[@"icon"];
-
-    }
-
-    return self;
-
-}
-
-
-
-+ (instancetype)shopWithDict:(NSDictionary *)dict
-
-{
-
-    // 这里要用self
-
-    return [[self alloc] initWithDict:dict];
-
-}
-
-
-
-@end
-</code></pre>
-
-<h6>2:view</h6>
-
-<pre><code>@class XMGShop;
-
-
-
-@interface XMGShopView : UIView
-
-/** 商品模型 */
-
-@property (nonatomic, strong) XMGShop *shop;
-
-
-
-- (instancetype)initWithShop:(XMGShop *)shop;
-
-+ (instancetype)shopViewWithShop:(XMGShop *)shop;
-
-+ (instancetype)shopView;
-
-@end
-
-
-
-
-
-
-@interface XMGShopView()
-
-/** 图片 */
-
-@property (nonatomic, weak) UIImageView *iconView;
-
-
-
-/** 名字 */
-
-@property (nonatomic, weak) UILabel *nameLabel;
-
-@end
-
-
-
-@implementation XMGShopView
-
-
-
-- (instancetype)initWithShop:(XMGShop *)shop
-
-{
-
-    if (self = [super init]) {
-
-        self.shop = shop;
-
-    }
-
-    return self;
-
-}
-
-
-
-+ (instancetype)shopViewWithShop:(XMGShop *)shop
-
-{
-
-    return [[self alloc] initWithShop:shop];
-
-}
-
-
-
-+ (instancetype)shopView
-
-{
-
-    return [[self alloc] init];
-
-}
-
-
-
-/** init方法内部会自动调用initWithFrame:方法 */
-
-- (instancetype)initWithFrame:(CGRect)frame
-
-{
-
-    if (self = [super initWithFrame:frame]) {
-
-        // 添加一个图片
-
-        UIImageView *iconView = [[UIImageView alloc] init];
-
-        [self addSubview:iconView];
-
-        self.iconView = iconView;
-
-
-
-        // 添加一个文字
-
-        UILabel *nameLabel = [[UILabel alloc] init];
-
-        nameLabel.textAlignment = NSTextAlignmentCenter;
-
-        [self addSubview:nameLabel];
-
-        self.nameLabel = nameLabel;
-
-    }
-
-    return self;
-
-}
-
-
-
-/**
-
- * 当前控件的frame发生改变的时候就会调用
-
- * 这个方法专门用来布局子控件，设置子控件的frame
-
- */
-
-- (void)layoutSubviews
-
-{
-
-    // 一定要调用super方法
-
-    [super layoutSubviews];
-
-
-
-    CGFloat shopW = self.frame.size.width;
-
-    CGFloat shopH = self.frame.size.height;
-
-
-
-    self.iconView.frame = CGRectMake(0, 0, shopW, shopW);
-
-    self.nameLabel.frame = CGRectMake(0, shopW, shopW, shopH - shopW);
-
-}
-
-
-
-- (void)setShop:(XMGShop *)shop
-
-{
-
-    _shop = shop;
-
-
-
-    self.iconView.image = [UIImage imageNamed:shop.icon];
-
-    self.nameLabel.text = shop.name;
-
-}
-
-
-
-@end
-</code></pre>
-
-<h6>controller</h6>
-
-<pre><code>@property (nonatomic, strong) NSMutableArray *shops;
-
-
-
-
-
-
-
-// 懒加载
-
-// 1.第一次用到时再去加载
-
-// 2.只会加载一次
-
-- (NSMutableArray *)shops
-
-{
-
-    if (_shops == nil) {
-
-        // 创建"模型数组"
-
-        _shops = [NSMutableArray array];
-
-
-
-        // 获得plist文件的全路径
-
-        NSString *file = [[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil];
-
-
-
-        // 从plist文件中加载一个数组对象(这个数组中存放的都是NSDictionary对象)
-
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:file];
-
-
-
-        // 将 “字典数组” 转换为 “模型数据”
-
-        for (NSDictionary *dict in dictArray) { // 遍历每一个字典
-
-            // 将 “字典” 转换为 “模型”
-
-            XMGShop *shop = [XMGShop shopWithDict:dict];
-
-
-
-            // 将 “模型” 添加到 “模型数组中”
-
-            [_shops addObject:shop];
-
-        }
-
-    }
-
-    return _shops;
-
-}
-
-
-
-// 创建一个商品父控件
-
-XMGShopView *shopView = [XMGShopView shopViewWithShop:self.shops[index]];
-
-// 设置frame
-
-shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
-
-// 将商品父控件添加到shopsView中
-
-[self.shopsView addSubview:shopView];
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>七：XIB</h3>
-
-<p>1:xibView中</p>
-
-<pre><code>/** 商品模型 */
-
-@property (nonatomic, strong) XMGShop *shop;
-
-+ (instancetype)shopViewWithShop:(XMGShop *)shop;
-
-
-
-+ (instancetype)shopViewWithShop:(XMGShop *)shop
-
-{
-
-    // self == XMGShopView
-
-    // NSStringFromClass(self) == @"XMGShopView"
-
-    XMGShopView *shopView = [[[NSBundle mainBundle] loadNibNamed:NSStringFromClass(self) owner:nil options:nil] lastObject];
-
-    shopView.shop = shop;
-
-    return shopView;
-
-}
-
-
-
-- (void)setShop:(XMGShop *)shop
-
-{
-
-    _shop = shop;
-
-
-
-    UIImageView *iconView = (UIImageView *)[self viewWithTag:1];
-
-    iconView.image = [UIImage imageNamed:shop.icon];
-
-
-
-    UILabel *nameLabel = (UILabel *)[self viewWithTag:2];
-
-    nameLabel.text = shop.name;
-
-}
-</code></pre>
-
-<h6>2:控制器中设置数据</h6>
-
-<pre><code>// 从xib中加载一个商品控件
-
-XMGShopView *shopView = [XMGShopView shopViewWithShop:self.shops[index]];
-
-// 设置frame
-
-shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
-
-// 添加商品控件
-
-[self.shopsView addSubview:shopView];
-</code></pre>
-
-<p>/******************************************************************************/</p>
-
-<h3>八：MJExtension</h3>
-
-<h6>1:是一套“字典和模型之间互相转换”的轻量级框架，模型属性</h6>
-
-<pre><code>/**
-
- *  微博文本内容
-
- */
-
-@property (copy, nonatomic) NSString *text;
-
-
-
-/**
-
- *  微博作者
-
- */
-
-@property (strong, nonatomic) User *user;
-
-
-
-/**
-
- *  转发的微博
-
- */
-
-@property (strong, nonatomic) Status *retweetedStatus;
-
-
-
-/**
-
- *  存放着某一页微博数据（里面都是Status模型）
-
- */
-
-@property (strong, nonatomic) NSMutableArray *statuses;
-
-
-
-/**
-
- *  总数
-
- */
-
-@property (assign, nonatomic) NSNumber *totalNumber;
-
-
-
-/**
-
- *  上一页的游标
-
- */
-
-@property (assign, nonatomic) long long previousCursor;
-
-
-
-/**
-
- *  下一页的游标
-
- */
-
-@property (assign, nonatomic) long long nextCursor;
-
-
-
-
-
-/**
-
- *  名称
-
- */
-
-@property (copy, nonatomic) NSString *name;
-
-
-
-/**
-
- *  头像
-
- */
-
-@property (copy, nonatomic) NSString *icon;
-</code></pre>
-
-<h6>2:对应方法的实现</h6>
-
-<ul>
-<li><p>1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架</p></li>
-<li><p>2.MJExtension能完成的功能</p>
-
-<ul>
-<li><p>字典 &ndash;> 模型</p></li>
-<li><p>模型 &ndash;> 字典</p></li>
-<li><p>字典数组 &ndash;> 模型数组</p></li>
-<li><p>模型数组 &ndash;> 字典数组</p></li>
-</ul>
-</li>
-<li><p>3.具体用法主要参考 main.m中各个函数 以及 &ldquo;NSObject+MJKeyValue.h&rdquo;</p></li>
-<li><p>4.希望各位大神能用得爽</p>
-
-<pre><code> #import &lt;Foundation/Foundation.h&gt;
-
- #import "MJExtension.h"
-
- #import "User.h"
-
- #import "Status.h"
-
- #import "StatusResult.h"
-
-
-
- /**
-
-  *  简单的字典 -&gt; 模型
-
-  */
-
- void keyValues2object()
-
- {
-
-     // 1.定义一个字典
-
-     NSDictionary *dict = @{
-
-                            @"name" : @"Jack",
-
-                            @"icon" : @"lufy.png",
-
-                            };
-
-
-
-     // 2.将字典转为User模型
-
-     User *user = [User objectWithKeyValues:dict];
-
-
-
-     // 3.打印User模型的属性
-
-     NSLog(@"name=%@, icon=%@", user.name, user.icon);
-
- }
-
-
-
- /**
-
-  *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
-
-  */
-
- void keyValues2object2()
-
- {
-
-     // 1.定义一个字典
-
-     NSDictionary *dict = @{
-
-                            @"text" : @"是啊，今天天气确实不错！",
-
-
-
-                            @"user" : @{
-
-                                    @"name" : @"Jack",
-
-                                    @"icon" : @"lufy.png"
-
-                                    },
-
-
-
-                            @"retweetedStatus" : @{
-
-                                    @"text" : @"今天天气真不错！",
-
-
-
-                                    @"user" : @{
-
-                                            @"name" : @"Rose",
-
-                                            @"icon" : @"nami.png"
-
-                                            }
-
-                                    }
-
-                            };
-
-
-
-     // 2.将字典转为Status模型
-
-     Status *status = [Status objectWithKeyValues:dict];
-
-
-
-     // 3.打印status的属性
-
-     NSString *text = status.text;
-
-     NSString *name = status.user.name;
-
-     NSString *icon = status.user.icon;
-
-     NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-
-
-
-     // 4.打印status.retweetedStatus的属性
-
-     NSString *text2 = status.retweetedStatus.text;
-
-     NSString *name2 = status.retweetedStatus.user.name;
-
-     NSString *icon2 = status.retweetedStatus.user.icon;
-
-     NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
-
- }
-
-
-
- /**
-
-  *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
-
-  */
-
- void keyValues2object3()
-
- {
-
-     // 1.定义一个字典
-
-     NSDictionary *dict = @{
-
-                            @"statuses" : @[
-
-                                    @{
-
-                                        @"text" : @"今天天气真不错！",
-
-
-
-                                        @"user" : @{
-
-                                                @"name" : @"Rose",
-
-                                                @"icon" : @"nami.png"
-
-                                                }
-
-                                        },
-
-
-
-                                    @{
-
-                                        @"text" : @"明天去旅游了",
-
-
-
-                                        @"user" : @{
-
-                                                @"name" : @"Jack",
-
-                                                @"icon" : @"lufy.png"
-
-                                                }
-
-                                        },
-
-
-
-                                    @{
-
-                                        @"text" : @"嘿嘿，这东西不错哦！",
-
-
-
-                                        @"user" : @{
-
-                                                @"name" : @"Jim",
-
-                                                @"icon" : @"zero.png"
-
-                                                }
-
-                                        }
-
-
-
-                                    ],
-
-
-
-                            @"totalNumber" : @"2014",
-
-
-
-                            @"previousCursor" : @"13476589",
-
-
-
-                            @"nextCursor" : @"13476599"
-
-                            };
-
-
-
-     // 2.将字典转为StatusResult模型
-
-     StatusResult *result = [StatusResult objectWithKeyValues:dict];
-
-
-
-     // 3.打印StatusResult模型的简单属性
-
-     NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
-
-
-
-     // 4.打印statuses数组中的模型属性
-
-     for (Status *status in result.statuses) {
-
-         NSString *text = status.text;
-
-         NSString *name = status.user.name;
-
-         NSString *icon = status.user.icon;
-
-         NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-
-     }
-
- }
-
-
-
- /**
-
-  *  字典数组 -&gt; 模型数组
-
-  */
-
- void keyValuesArray2objectArray()
-
- {
-
-     // 1.定义一个字典数组
-
-     NSArray *dictArray = @[
-
-                            @{
-
-                                @"name" : @"Jack",
-
-                                @"icon" : @"lufy.png",
-
-                                },
-
-
-
-                            @{
-
-                                @"name" : @"Rose",
-
-                                @"icon" : @"nami.png",
-
-                                },
-
-
-
-                            @{
-
-                                @"name" : @"Jim",
-
-                                @"icon" : @"zero.png",
-
-                                }
-
-                            ];
-
-
-
-     // 2.将字典数组转为User模型数组
-
-     NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
-
-
-
-     // 3.打印userArray数组中的User模型属性
-
-     for (User *user in userArray) {
-
-         NSLog(@"name=%@, icon=%@", user.name, user.icon);
-
-     }
-
- }
-
-
-
- /**
-
-  *  模型 -&gt; 字典
-
-  */
-
- void object2keyValues()
-
- {
-
-     // 1.新建模型
-
-     User *user = [[User alloc] init];
-
-     user.name = @"Jack";
-
-     user.icon = @"lufy.png";
-
-
-
-     Status *status = [[Status alloc] init];
-
-     status.user = user;
-
-     status.text = @"今天的心情不错！";
-
-
-
-     // 2.将模型转为字典
-
-     //    NSDictionary *dict = [status keyValues];
-
-     NSDictionary *dict = status.keyValues;
-
-     NSLog(@"%@", dict);
-
- }
-
-
-
- /**
-
-  *  模型数组 -&gt; 字典数组
-
-  */
-
- void objectArray2keyValuesArray()
-
- {
-
-     // 1.新建模型数组
-
-     User *user1 = [[User alloc] init];
-
-     user1.name = @"Jack";
-
-     user1.icon = @"lufy.png";
-
-
-
-     User *user2 = [[User alloc] init];
-
-     user2.name = @"Rose";
-
-     user2.icon = @"nami.png";
-
-
-
-     User *user3 = [[User alloc] init];
-
-     user3.name = @"Jim";
-
-     user3.icon = @"zero.png";
-
-
-
-     NSArray *userArray = @[user1, user2, user3];
-
-
-
-     // 2.将模型数组转为字典数组
-
-     NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
-
-     NSLog(@"%@", dictArray);
-
- }
-
-
-
- int main(int argc, const char * argv[])
-
- {
-
-     @autoreleasepool {
-
-         // 简单的字典 -&gt; 模型
-
-         keyValues2object();
-
-
-
-         // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
-
-         keyValues2object2();
-
-
-
-         // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
-
-         keyValues2object3();
-
-
-
-         // 字典数组 -&gt; 模型数组
-
-         keyValuesArray2objectArray();
-
-
-
-         // 模型转字典
-
-         object2keyValues();
-
-
-
-         // 模型数组 -&gt; 字典数组
-
-         objectArray2keyValuesArray();
-
-     }
-
-     return 0;
-
- }
-</code></pre></li>
-</ul>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/06/25/data%20model/#comments">更多评论</a>
 
     </article>
   

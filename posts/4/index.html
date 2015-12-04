@@ -9,11 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="传值方式总结 ordinal 简单总结 代理
-Block
-通知 简单实用 代理
-Block
-通知 虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制， &hellip;">
+  <meta name="description" content="ScrollView回到顶部复原 ordinal 相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示: 单个scrollView单击顶部状态栏系统自带功能展示 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,6 +74,200 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
+
+<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
+
+<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
+
+<ul>
+<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
+</ul>
+
+
+<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
+
+<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
+
+<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
+
+<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
+
+<ul>
+<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
+<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
+<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
+<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
+</ul>
+
+
+<h4>Swift的代码</h4>
+
+<pre><code>import UIKit
+class TopWindow: UIWindow {
+    private static let window_: UIWindow = UIWindow()
+    ///  类初始化方法,保证window_只被创建一次
+    override class func initialize() {
+        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
+        window_.windowLevel = UIWindowLevelAlert
+        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
+    }
+    class func topWindowClick() {
+        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
+        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
+    }
+    private class func searchAllowScrollViewInView(superView: UIView) {
+        for subview: UIView in superView.subviews as! [UIView] {
+            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
+                // 拿到scrollView的contentOffset
+                var offest = (subview as! UIScrollView).contentOffset
+                // 将offest的y轴还原成最开始的值
+                offest.y = -(subview as! UIScrollView).contentInset.top
+                // 重新设置scrollView的内容
+                (subview as! UIScrollView).setContentOffset(offest, animated: true)
+            }
+            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
+            searchAllowScrollViewInView(subview)
+        }
+    }
+    ///  添加topWindow,使手势生效
+    class func showTopWindow() {
+        window_.hidden = false
+    }
+    ///  隐藏topWindow,移除手势
+    class func hiddenTopWindow() {
+        window_.hidden = true
+    }
+}
+///  对UIView的一个扩展
+extension UIView {
+    ///  判断调用方法的view是否在keyWindow中
+    func viewIsInKeyWindow() -&gt; Bool {
+        let keyWindow = UIApplication.sharedApplication().keyWindow!
+        // 将当前view的坐标系转换到window.bounds
+        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
+        let keyWindowBounds = keyWindow.bounds
+        // 判断当前view是否在keyWindow的范围内
+        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
+        // 判断是否满足所有条件
+        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
+    }   
+}
+</code></pre>
+
+<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
+
+<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
+      // 添加顶部的window
+      TopWindow.showTopWindow()
+      return true
+  }
+</code></pre>
+
+<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
+
+<h4>Objective-C代码</h4>
+
+<p>.h文件只暴露显示和隐藏方法</p>
+
+<pre><code>#import @interface WNXTopWindow : NSObject
++ (void)show;
++ (void)hide;
+@end
+</code></pre>
+
+<p>.m文件</p>
+
+<pre><code>#import "WNXTopWindow.h"
+@implementation WNXTopWindow
+static UIWindow *window_;
+//初始化window
++ (void)initialize {
+  window_ = [[UIWindow alloc] init];
+  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
+  window_.windowLevel = UIWindowLevelAlert;
+  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
+}  
++ (void)show {
+  window_.hidden = NO;
+}
++ (void)hide {
+  window_.hidden = YES;
+}
+// 监听窗口点击
++ (void)windowClick {
+  UIWindow *window = [UIApplication sharedApplication].keyWindow;
+  [self searchScrollViewInView:window];
+}
++ (void)searchScrollViewInView:(UIView *)superview {
+  for (UIScrollView *subview in superview.subviews) {
+      // 如果是scrollview, 滚动最顶部
+      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
+          CGPoint offset = subview.contentOffset;
+          offset.y = - subview.contentInset.top;
+          [subview setContentOffset:offset animated:YES];
+      }
+      // 递归继续查找子控件
+      [self searchScrollViewInView:subview];
+  }
+}
++ (BOOL)isShowingOnKeyWindow:(UIView *)view {
+  // 主窗口
+  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+  // 以主窗口左上角为坐标原点, 计算self的矩形框
+  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
+  CGRect winBounds = keyWindow.bounds;
+  // 主窗口的bounds 和 self的矩形框 是否有重叠
+  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
+  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
+}
+@end
+</code></pre>
+
+<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
+  [WNXTopWindow show];
+  return YES;
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2911,246 +3101,6 @@ selector是方法名     class是描述类的类    SEL method=@selector（方�
 
 
 | <a href="/blog/2014/12/05/kvc%20kvo/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/11/25/fmdb/">FMDB你了解多少？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>FMDB详解</p>
-
-<p>前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。</p>
-
-<p>于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、sqlitepersistentobjects等，FMDB (<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a>) 是一款简洁、易用的封装库，这一篇文章简单介绍下FMDB的使用。</p>
-
-<p>在FMDB下载文件后，工程中必须导入，并使用 libsqlite3.dylib 依赖包。</p>
-
-<p>FMDB同时兼容ARC和非ARC工程，会自动根据工程配置来调整相关的内存管理代码。</p>
-
-<p>FMDB常用类：</p>
-
-<ul>
-<li>FMDatabase ： 一个单一的SQLite数据库，用于执行SQL语句。</li>
-<li>FMResultSet ：执行查询一个FMDatabase结果集，这个和Android的Cursor类似。</li>
-<li>FMDatabaseQueue ：在多个线程来执行查询和更新时会使用这个类。</li>
-</ul>
-
-
-<h3>创建数据库：</h3>
-
-<pre><code>db = [FMDatabase databaseWithPath:database_path];
-</code></pre>
-
-<p>1、当数据库文件不存在时，fmdb会自己创建一个。
-2、 如果你传入的参数是空串：@&ldquo;&rdquo; ，则fmdb会在临时文件目录下创建这个数据库，数据库断开连接时，数据库文件被删除。
-3、如果你传入的参数是 NULL，则它会建立一个在内存中的数据库，数据库断开连接时，数据库文件被删除。</p>
-
-<h3>打开数据库：</h3>
-
-<pre><code>[db open]
-</code></pre>
-
-<p>返回BOOL型。</p>
-
-<h3>关闭数据库：</h3>
-
-<pre><code>[db close]
-</code></pre>
-
-<h3>数据库增删改等操作：</h3>
-
-<p>除了查询操作，FMDB数据库操作都执行executeUpdate方法，这个方法返回BOOL型。</p>
-
-<p>数据库操作(使用FMDB)</p>
-
-<p>看一下例子：</p>
-
-<h5>创建表：</h5>
-
-<pre><code>if ([db open]) {
-        NSString *sqlCreateTable =  [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS '%@' ('%@' INTEGER PRIMARY KEY AUTOINCREMENT, '%@' TEXT, '%@' INTEGER, '%@' TEXT)",TABLENAME,ID,NAME,AGE,ADDRESS];
-        BOOL res = [db executeUpdate:sqlCreateTable];
-        if (!res) {
-            NSLog(@"error when creating db table");
-        } else {
-            NSLog(@"success to creating db table");
-        }
-        [db close];
-
-    }
-</code></pre>
-
-<h5>添加数据：</h5>
-
-<pre><code>if ([db open]) {
-        NSString *insertSql1= [NSString stringWithFormat:
-                              @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
-                              TABLENAME, NAME, AGE, ADDRESS, @"张三", @"13", @"济南"];
-        BOOL res = [db executeUpdate:insertSql1];
-        NSString *insertSql2 = [NSString stringWithFormat:
-                                @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
-                                TABLENAME, NAME, AGE, ADDRESS, @"李四", @"12", @"济南"];
-        BOOL res2 = [db executeUpdate:insertSql2];
-
-    if (!res) {
-        NSLog(@"error when insert db table");
-    } else {
-        NSLog(@"success to insert db table");
-    }
-    [db close];
-
-}
-</code></pre>
-
-<h5>修改数据：</h5>
-
-<pre><code>if ([db open]) {
-        NSString *updateSql = [NSString stringWithFormat:
-                              @"UPDATE '%@' SET '%@' = '%@' WHERE '%@' = '%@'",
-                              TABLENAME,  AGE,  @"15" ,AGE,  @"13"];
-        BOOL res = [db executeUpdate:updateSql];
-        if (!res) {
-            NSLog(@"error when update db table");
-        } else {
-            NSLog(@"success to update db table");
-        }
-        [db close];
-
-    }
-</code></pre>
-
-<h5>删除数据：</h5>
-
-<pre><code>if ([db open]) {
-
-    NSString *deleteSql = [NSString stringWithFormat:
-                          @"delete from %@ where %@ = '%@'",
-                          TABLENAME, NAME, @"张三"];
-    BOOL res = [db executeUpdate:deleteSql];
-
-    if (!res) {
-        NSLog(@"error when delete db table");
-    } else {
-        NSLog(@"success to delete db table");
-    }
-    [db close];
-
-}
-</code></pre>
-
-<h5>数据库查询操作：</h5>
-
-<p>查询操作使用了executeQuery，并涉及到FMResultSet。</p>
-
-<pre><code>if ([db open]) {
-        NSString * sql = [NSString stringWithFormat:
-                          @"SELECT * FROM %@",TABLENAME];
-        FMResultSet * rs = [db executeQuery:sql];
-        while ([rs next]) {
-            int Id = [rs intForColumn:ID];
-            NSString * name = [rs stringForColumn:NAME];
-            NSString * age = [rs stringForColumn:AGE];
-            NSString * address = [rs stringForColumn:ADDRESS];
-            NSLog(@"id = %d, name = %@, age = %@  address = %@", Id, name, age, address);
-        }
-        [db close];
-    }
-</code></pre>
-
-<p>FMDB的FMResultSet提供了多个方法来获取不同类型的数据：</p>
-
-<h3>数据库操作(使用FMDB)</h3>
-
-<h5>数据库多线程操作：</h5>
-
-<p>如果应用中使用了多线程操作数据库，那么就需要使用FMDatabaseQueue来保证线程安全了。 应用中不可在多个线程中共同使用一个FMDatabase对象操作数据库，这样会引起数据库数据混乱。 为了多线程操作数据库安全，FMDB使用了FMDatabaseQueue，使用FMDatabaseQueue很简单，首先用一个数据库文件地址来初使 化FMDatabaseQueue，然后就可以将一个闭包(block)传入inDatabase方法中。 在闭包中操作数据库，而不直接参与FMDatabase的管理。</p>
-
-<pre><code>FMDatabaseQueue * queue = [FMDatabaseQueue databaseQueueWithPath:database_path];
-    dispatch_queue_t q1 = dispatch_queue_create("queue1", NULL);
-    dispatch_queue_t q2 = dispatch_queue_create("queue2", NULL);
-
-dispatch_async(q1, ^{
-    for (int i = 0; i &lt; 50; ++i) {
-        [queue inDatabase:^(FMDatabase *db2) {
-
-            NSString *insertSql1= [NSString stringWithFormat:
-                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
-                                  TABLENAME, NAME, AGE, ADDRESS];
-
-            NSString * name = [NSString stringWithFormat:@"jack %d", i];
-            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
-
-
-            BOOL res = [db2 executeUpdate:insertSql1, name, age,@"济南"];
-            if (!res) {
-                NSLog(@"error to inster data: %@", name);
-            } else {
-                NSLog(@"succ to inster data: %@", name);
-            }
-        }];
-    }
-});
-
-dispatch_async(q2, ^{
-    for (int i = 0; i &lt; 50; ++i) {
-        [queue inDatabase:^(FMDatabase *db2) {
-            NSString *insertSql2= [NSString stringWithFormat:
-                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
-                                  TABLENAME, NAME, AGE, ADDRESS];
-
-            NSString * name = [NSString stringWithFormat:@"lilei %d", i];
-            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
-
-            BOOL res = [db2 executeUpdate:insertSql2, name, age,@"北京"];
-            if (!res) {
-                NSLog(@"error to inster data: %@", name);
-            } else {
-                NSLog(@"succ to inster data: %@", name);
-            }
-        }];
-    }
-});
-</code></pre>
-
-<blockquote><p>注：FMDB最重要的就是下面两个方法的使用，</p></blockquote>
-
-<ul>
-<li>executeUpdate ：创建。修改，删除</li>
-<li>executeQuery ：查询</li>
-</ul>
-
-
-<p>关键是SQL语句的使用</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/11/25/fmdb/#comments">更多评论</a>
 
     </article>
   

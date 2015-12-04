@@ -9,7 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="这两天认真研究了一下MVC设计模式，在iOS开发中这个算是重点中的重点了，如果对MVC模式不理解或者说不会用，那么你iOS肯定学不好，或者写不出好的东西，当然本人目前也在学习中，不过既然能看到这篇文档，说明你已经开始着手学习并且想深入研究它了，个人也是研究很久才搞懂，就写下来希望对各位有用， &hellip;">
+  <meta name="description" content="一、进程和线程 1.什么是进程 进程是指在系统中正在运行的一个应用程序 每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内 比如同时打开QQ、Xcode，系统就会分别启动2个进程
+通过“活动监视器”可以查看Mac系统中所开启的进程 2.什么是线程 1个进程要想执行任务，必须得有线程（ &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +75,246 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/01/duoxianchenghuizong/">多线程总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一、进程和线程</h3>
+
+<h5>1.什么是进程</h5>
+
+<p>进程是指在系统中正在运行的一个应用程序</p>
+
+<p>每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内</p>
+
+<ul>
+<li><p>比如同时打开QQ、Xcode，系统就会分别启动2个进程</p></li>
+<li><p>通过“活动监视器”可以查看Mac系统中所开启的进程</p></li>
+</ul>
+
+
+<h5>2.什么是线程</h5>
+
+<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）</p>
+
+<p>线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行</p>
+
+<p>比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行</p>
+
+<h5>3.线程的串行</h5>
+
+<p>1个线程中任务的执行是串行的</p>
+
+<p>如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务</p>
+
+<p>也就是说，在同一时间内，1个线程只能执行1个任务</p>
+
+<p>比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）</p>
+
+<h3>二、多线程</h3>
+
+<h5>1.什么是多线程</h5>
+
+<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务</p>
+
+<p>进程 ->车间，线程->车间工人</p>
+
+<p>多线程技术可以提高程序的执行效率</p>
+
+<p>比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）</p>
+
+<h5>2.多线程的原理</h5>
+
+<p>同一时间，CPU只能处理1条线程，只有1条线程在工作（执行）
+多线程并发（同时）执行，其实是CPU快速地在多条线程之间调度（切换）
+如果CPU调度线程的时间足够快，就造成了多线程并发执行的假象
+思考：如果线程非常非常多，会发生什么情况？
+CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
+每条线程被调度执行的频次会降低（线程的执行效率降低）</p>
+
+<h5>3.多线程的优缺点</h5>
+
+<ul>
+<li>多线程的优点</li>
+</ul>
+
+
+<p>能适当提高程序的执行效率</p>
+
+<p>能适当提高资源利用率（CPU、内存利用率）</p>
+
+<ul>
+<li>多线程的缺点</li>
+</ul>
+
+
+<p>开启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</p>
+
+<p>线程越多，CPU在调度线程上的开销就越大</p>
+
+<p>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</p>
+
+<h5>4.多线程在iOS开发中的应用</h5>
+
+<p>主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”</p>
+
+<p>主线程的主要作用</p>
+
+<p>显示\刷新UI界面</p>
+
+<p>处理UI事件（比如点击事件、滚动事件、拖拽事件等）</p>
+
+<p>主线程的使用注意:别将比较耗时的操作放到主线程中。</p>
+
+<p>耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验</p>
+
+<h5>5.代码示例</h5>
+
+<pre><code>//  YYViewController.m
+//  01-阻塞主线程
+//
+//  Created by apple on 14-6-23.
+//  Copyright (c) 2014年 itcase. All rights reserved.
+//
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+- (IBAction)btnClick;
+@end
+
+
+@implementation YYViewController
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+}
+
+
+//按钮的点击事件
+- (IBAction)btnClick {
+    //1.获取当前线程
+    NSThread *current=[NSThread currentThread];
+    //2.使用for循环执行一些耗时操作
+    for (int i=0; i&lt;10000; i++) {
+        //3.输出线程
+        NSLog(@"btnClick---%d---%@",i,current);
+    }
+}
+
+@end
+</code></pre>
+
+<blockquote><p>说明：当点击执行的时候，textView点击无响应。</p></blockquote>
+
+<p>执行分析：等待主线程串行执行。</p>
+
+<p>开启子线程。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/04/01/duoxianchenghuizong/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+<h4>drawRect在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 掉用是在Controller->loadView, Controller->viewDidLoad 两方法之后掉用的.所以不用担心在 控制器中,这些View的drawRect就开始画了.这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量 值).</li>
+<li>2、该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
+<li>3、通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
+<li>4、直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
+</ul>
+
+
+<blockquote><p>以上1,2推荐；而3,4不提倡</p></blockquote>
+
+<h6>drawRect方法使用注意点：</h6>
+
+<ul>
+<li><p>1、 若使用UIView绘图，只能在drawRect：方法中获取相应的contextRef并绘图。如果在其他方法中获取将获取到一个invalidate 的ref并且不能用于画图。drawRect：方法不能手动显示调用，必须通过调用setNeedsDisplay 或 者 setNeedsDisplayInRect，让系统自动调该方法。</p></li>
+<li><p>2、若使用calayer绘图，只能在drawInContext: 中（类似鱼drawRect）绘制，或者在delegate中的相应方法绘制。同样也是调用setNeedDisplay等间接调用以上方法
+3、若要实时画图，不能使用gestureRecognizer，只能使用touchbegan等方法来掉用setNeedsDisplay实时刷新屏幕</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1591,479 +1832,6 @@ addBlankTargetForLinks();
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/02/10/metal/">Metal深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
-
-<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
-
-<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
-
-<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
-
-<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
-
-<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
-
-<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
-
-<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
-</code></pre>
-
-<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
-
-<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
-
-<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
-
-<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
-
-<p>但是，还是有两个很好的原因来学习Metal：</p>
-
-<ul>
-<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
-<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
-</ul>
-
-
-<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
-
-<h4>Metal vs OpenGL ES</h4>
-
-<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
-
-<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
-
-<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
-
-<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
-
-<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
-
-<p>让我们开始看看一些Metal代码吧！</p>
-
-<p>开头
-Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
-
-<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
-
-<p>有七个步骤来设置metal：</p>
-
-<ul>
-<li>1.创建一个MTLDevice</li>
-<li>2.创建一个CAMetalLayer</li>
-<li>3.创建一个Vertex Buffer</li>
-<li>4.创建一个Vertex Shader</li>
-<li>5.创建一个Fragment Shader</li>
-<li>6.创建一个Render Pipeline</li>
-<li>7.创建一个Command Queue</li>
-</ul>
-
-
-<p>让我们一个个看它们。</p>
-
-<h5>1)创建一个MTLDevice</h5>
-
-<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
-
-<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
-
-<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
-
-<pre><code>import Metal 
-</code></pre>
-
-<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
-
-<pre><code>var device: MTLDevice! = nil 
-</code></pre>
-
-<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
-
-<pre><code>device = MTLCreateSystemDefaultDevice() 
-</code></pre>
-
-<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
-
-<h5>2）创建一个CAMetalLayer</h5>
-
-<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
-
-<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
-
-<p>首先在这个文件的上方添加import语句。</p>
-
-<pre><code>import QuartzCore 
-</code></pre>
-
-<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
-
-<p>然后把新属性添加到类中：</p>
-
-<pre><code>var metalLayer: CAMetalLayer! = nil 
-</code></pre>
-
-<p>这将会存储你新layer的引用。</p>
-
-<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
-
-<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
- 2 
- 3 metalLayer.device = device           // 2 
- 4 
- 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
- 6 
- 7 metalLayer.framebufferOnly = true    // 4 
- 8 
- 9 metalLayer.frame = view.layer.frame  // 5 
-10 
-11 view.layer.addSublayer(metalLayer)   // 6 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.你创建了一个CAMetalLayer</li>
-<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
-<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
-<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
-<li>e.你把layer的frame设置为view的frame。</li>
-<li>f.你把layer作为view.layer下的子layer添加。</li>
-</ul>
-
-
-<h5>3）创建一个Vertex Buffer</h5>
-
-<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
-
-<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
-
-<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
-
-<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
-
-<pre><code>let vertexData:[Float] = [ 
-  0.0, 1.0, 0.0, 
-  -1.0, -1.0, 0.0, 
-  1.0, -1.0, 0.0] 
-</code></pre>
-
-<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
-
-<p>添加另一个新的属性：</p>
-
-<pre><code>var vertexBuffer: MTLBuffer! = nil 
-然后在 viewDidLoad 方法的最后添加以下代码：
-let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
-vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
-<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
-</ul>
-
-
-<h5>4）创建一个Vertex Shader</h5>
-
-<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
-
-<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
-
-<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
-
-<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
-
-<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
-
-<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
-在Shaders.metal底部添加下列代码：</p>
-
-<pre><code>metalLayer = CAMetalLayer()          // 1 
-
-metalLayer.device = device           // 2 
-
-metalLayer.pixelFormat = .BGRA8Unorm // 3 
-
-metalLayer.framebufferOnly = true    // 4 
-
-metalLayer.frame = view.layer.frame  // 5 
-
-view.layer.addSublayer(metalLayer)   // 6
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
-<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
-<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
-<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
-</ul>
-
-
-<h5>5）创建一个Fragment Shader</h5>
-
-<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
-
-<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
-
-<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
-
-<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
-
-<p>在Shader.metal的底部添加下列代码：</p>
-
-<pre><code>1 fragment half4 basic_fragment() { // 1 
-2 
-3 return half4(1.0);              // 2 
-4 
-5 } 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li><ol type="a">
-<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
-</ol>
-</li>
-</ul>
-
-
-<h5>6）创建一个Render Pipeline</h5>
-
-<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
-
-<ol>
-<li><p>首先在ViewController.swift里添加一个属性：
-var pipelineState: MTLRenderPipelineState! = nil
-这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
-<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
-</ol>
-
-
-<p>// 1</p>
-
-<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
-2 
-3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
-4 
-5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
-</code></pre>
-
-<p>// 2</p>
-
-<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
-
-pipelineStateDescriptor.vertexFunction = vertexProgram 
-
-pipelineStateDescriptor.fragmentFunction = fragmentProgram 
-
-pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
-</code></pre>
-
-<p>//3</p>
-
-<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
-
-if !pipelineState { 
-
-  println("Failed to create pipeline state, error \(pipelineError)") 
-
-}
-</code></pre>
-
-<p>让我们分部分看这些代码：</p>
-
-<ul>
-<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
-<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
-<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
-</ul>
-
-
-<h5>7）创建一个Command Queue</h5>
-
-<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
-
-<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
-
-<p>要创建一个command queue，简单地添加一个属性：</p>
-
-<pre><code>var commandQueue: MTLCommandQueue! = nil 
-</code></pre>
-
-<p>把下面这行添加到 viewDidLoad 的最后：</p>
-
-<pre><code>commandQueue = device.newCommandQueue() 
-</code></pre>
-
-<p>恭喜，你的预设置的代码完成了。</p>
-
-<p>渲染三角形
-现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
-
-<p>它将在五个步骤中被完成：</p>
-
-<ul>
-<li>1.创建一个Display link。</li>
-<li>2.创建一个Render Pass Descriptor</li>
-<li>3.创建一个Command Buffer</li>
-<li>4.创建一个Render Command Encoder</li>
-<li>5.提交你Command Buffer的内容。</li>
-</ul>
-
-
-<p>让我们深入来看！</p>
-
-<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
-
-<h6>1）创建一个Display Link</h6>
-
-<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
-
-<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
-
-<p>为了使用它，在类里添加一个新的属性：</p>
-
-<pre><code> 1 var timer: CADisplayLink! = nil  
-</code></pre>
-
-<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
-
-<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
-
-timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
-</code></pre>
-
-<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
-
-<pre><code>func render() { 
-
-// TODO 
-
-} 
-
-func gameloop() { 
-  autoreleasepool { 
-
-    self.render() 
-
-  } 
-
-} 
-</code></pre>
-
-<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
-
-<h6>2）创建一个Render Pass Descriptor</h6>
-
-<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
-
-<p>简单地在 render 函数里添加以下行：</p>
-
-<pre><code>var drawable = metalLayer.nextDrawable() 
-
-let renderPassDescriptor = MTLRenderPassDescriptor() 
-renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
-
-renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
-
-renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
-</code></pre>
-
-<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
-
-<h6>3）创建一个Command Buffer</h6>
-
-<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
-
-<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
-</code></pre>
-
-<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
-
-<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
-
-<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
-
-<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
-renderEncoder.setRenderPipelineState(pipelineState) 
-
-renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
-
-renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
-
-renderEncoder.endEncoding()
-</code></pre>
-
-<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
-
-<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
-
-<p>当你完成后，你只要调用 endEncoding()。</p>
-
-<h6>5）提交你的Command Buffer</h6>
-
-<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
-
-<pre><code>commandBuffer.presentDrawable(drawable)
-commandBuffer.commit()
-</code></pre>
-
-<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
-
-<p>我见过最赞的三角形！</p>
-
-<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
-
-<p>最后:这是我们教程最终的项目。</p></blockquote>
-
-<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
-</code></pre>
-
-<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/02/10/metal/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
       <h1 class="entry-title"><a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
     
     
@@ -2112,77 +1880,6 @@ commandBuffer.commit()
 
 
 | <a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/01/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
-
-<h4>layoutSubviews在以下情况下会被调用：</h4>
-
-<ul>
-<li>1、init初始化不会触发layoutSubviews。</li>
-<li>2、addSubview会触发layoutSubviews。</li>
-<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
-<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
-<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
-<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
-<li>7、直接调用setLayoutSubviews。</li>
-</ul>
-
-
-<h4>drawRect在以下情况下会被调用：</h4>
-
-<ul>
-<li>1、如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 掉用是在Controller->loadView, Controller->viewDidLoad 两方法之后掉用的.所以不用担心在 控制器中,这些View的drawRect就开始画了.这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量 值).</li>
-<li>2、该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
-<li>3、通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
-<li>4、直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
-</ul>
-
-
-<blockquote><p>以上1,2推荐；而3,4不提倡</p></blockquote>
-
-<h6>drawRect方法使用注意点：</h6>
-
-<ul>
-<li><p>1、 若使用UIView绘图，只能在drawRect：方法中获取相应的contextRef并绘图。如果在其他方法中获取将获取到一个invalidate 的ref并且不能用于画图。drawRect：方法不能手动显示调用，必须通过调用setNeedsDisplay 或 者 setNeedsDisplayInRect，让系统自动调该方法。</p></li>
-<li><p>2、若使用calayer绘图，只能在drawInContext: 中（类似鱼drawRect）绘制，或者在delegate中的相应方法绘制。同样也是调用setNeedDisplay等间接调用以上方法
-3、若要实时画图，不能使用gestureRecognizer，只能使用touchbegan等方法来掉用setNeedsDisplay实时刷新屏幕</p></li>
-</ul>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/01/23/layoutsubviews%20drawrects/#comments">更多评论</a>
 
     </article>
   
