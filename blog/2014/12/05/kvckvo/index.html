@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>NSCache&NSDcitionary你了解多少？ - iOS梦工厂</title>
+  <title>谈谈KVO与KVC精髓 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="NSCache&NSDcitionary你了解多少？ ordinal NSCache NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下： NSCache具有自动删除的功能，以减少系统占用的内存；
-NSCache是线程安全的， &hellip;">
+  <meta name="description" content="谈谈KVO与KVC精髓 ordinal Swift中使用KVC和KVO的类都必须必须继承自NSObject 由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@ NSCache是线程安全的， &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2014/04/14/nscache%20nsdictionary/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2014/12/05/kvckvo/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -78,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">NSCache&NSDcitionary你了解多少？</h1>
+      <h1 class="entry-title">谈谈KVO与KVC精髓</h1>
     
     
       <p class="meta">
@@ -98,182 +97,178 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>NSCache</p>
+<div class="entry-content"><p>Swift中使用KVC和KVO的类都必须必须继承自NSObject</p>
 
-<p>NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下：</p>
-
-<ol>
-<li><p>NSCache具有自动删除的功能，以减少系统占用的内存；</p></li>
-<li><p>NSCache是线程安全的，不需要加线程锁；</p></li>
-<li><p>键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。</p></li>
-</ol>
-
-
-<h5>NSCache的属性以及方法介绍：</h5>
-
-<pre><code>@property NSUInteger totalCostLimit;
-</code></pre>
-
-<p>设置缓存占用的内存大小，并不是一个严格的限制，当总数超过了totalCostLimit设定的值，系统会清除一部分缓存，直至总消耗低于totalCostLimit的值。</p>
-
-<pre><code>@property NSUInteger countLimit;
-</code></pre>
-
-<p>设置缓存对象的大小，这也不是一个严格的限制。</p>
-
-<pre><code>- (id)objectForKey:(id)key;
-</code></pre>
-
-<p>获取缓存对象，基于key-value对</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key; // 0 cost
-</code></pre>
-
-<p>存储缓存对象，考虑缓存的限制属性；</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;
-</code></pre>
-
-<p>存储缓存对象，cost是提前知道该缓存对象占用的字节数，也会考虑缓存的限制属性，建议直接使用  - (void)setObject:(id)obj forKey:(id)key;</p>
-
-<h5>NSCacheDelegate代理</h5>
-
-<p>代理属性声明如下：</p>
-
-<pre><code>@property (assign) id&lt;NSCacheDelegate&gt;delegate;
-</code></pre>
-
-<p>实现了NSCacheDelegate代理的对象，在缓存对象即将被清理的时候，系统回调代理方法如下：</p>
-
-<pre><code>- (void)cache:(NSCache *)cache willEvictObject:(id)obj;
-</code></pre>
-
-<p>第一个参数是当前缓存（NSCache），不要修改该对象；</p>
-
-<p>第二个参数是当前将要被清理的对象，如果需要存储该对象，可以在此操作（存入Sqlite or CoreData）;</p>
-
-<p>该代理方法的调用会在缓存对象即将被清理的时候调用，如下场景会调用：</p>
-
-<ol>
-<li><ul>
-<li>(void)removeObjectForKey:(id)key; 手动删除对象；</li>
-</ul>
-</li>
-<li><p>缓存对象超过了NSCache的属性限制；（countLimit 和 totalCostLimit ）</p></li>
-<li><p>App进入后台会调用；</p></li>
-<li><p>系统发出内存警告；</p></li>
-</ol>
-
-
-<h5>NSDiscardableContent协议</h5>
-
-<p>NSDiscardableContent是一个协议，实现这个协议的目的是为了让我们的对象在不被使用时，可以将其丢弃，以让程序占用更少的内存。</p>
-
-<p>一个NSDiscardableContent对象的生命周期依赖于一个“counter”变量。一个NSDiscardableContent对象实际是一个可清理内存块，这个内存记录了对象当前是否被其它对象使用。如果这块内存正在被读取，或者仍然被需要，则它的counter变量是大于或等于1的；当它不再被使用时，就可以丢弃，此时counter变量将等于0。当counter变量等于0时，如果当前时间点内存比较紧张的话，内存块就可能被丢弃。这点类似于MRC&amp;ARC，对象内存回收机制。</p>
-
-<pre><code>- (void)discardContentIfPossible
-</code></pre>
-
-<p>当counter等于0的时候，为了丢弃这些对象，会调用这个方法。</p>
-
-<p>默认情况下，NSDiscardableContent对象的counter变量初始值为1，以确保对象不会被内存管理系统立即释放。</p>
-
-<pre><code>- (BOOL)beginContentAccess    (counter++)
-</code></pre>
-
-<p>调用该方法，对象的counter会加1；</p>
-
-<p>与beginContentAccess相对应的是endContentAccess。如果可丢弃内存不再被访问时调用。其声明如下：</p>
-
-<pre><code>- (void)endContentAccess  （counter--）
-</code></pre>
-
-<p>该方法会减少对象的counter变量，通常是让对象的counter值变回为0，这样在对象的内容不再被需要时，就要以将其丢弃。</p>
-
-<p>NSCache类提供了一个属性，来标识缓存是否自动舍弃那些内存已经被丢弃的对象(默认该属性为YES)，其声明如下：</p>
-
-<pre><code>@property BOOL evictsObjectsWithDiscardedContent
-</code></pre>
-
-<p>如果设置为YES，则在对象的内存被丢弃时舍弃对象。</p>
-
-<p>个人建议：如果需要使用缓存，直接用系统的NSCache就OK了，不要做死。</p>
-
-<h4>区别：</h4>
-
-<p>NSCache</p>
+<p>由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、键值监听（KVO）特性：</p>
 
 <ul>
-<li>(1)可以存储(当然是使用内存)</li>
-<li>(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary</li>
-<li>(3)有固定客户.</li>
+<li>键值编码KVC</li>
+<li>键值监听KVO</li>
 </ul>
 
+
+<h5>键值编码KVC</h5>
+
+<p>我们知道在C#中可以通过反射读写一个对象的属性，有时候这种方式特别方便，因为你可以利用字符串的方式去动态控制一个对象。其实由于ObjC的语言特性，你根部不必进行任何操作就可以进行属性的动态读写，这种方式就是Key Value Coding（简称KVC）。</p>
+
+<p>KVC的操作方法由NSKeyValueCoding协议提供，而NSObject就实现了这个协议，也就是说ObjC中几乎所有的对象都支持KVC操作，常用的KVC操作方法如下：</p>
+
+<ul>
+<li>动态设置： setValue:属性值 forKey:属性名（用于简单路径）、setValue:属性值 forKeyPath:属性路径（用于复合路径，例如Person有一个Account类型的属性，那么person.account就是一个复合属性）
+动态读取： valueForKey:属性名 、valueForKeyPath:属性名（用于复合路径）</li>
+</ul>
+
+
+<h5>键值监听KVO</h5>
+
+<p>我们知道在WPF、Silverlight中都有一种双向绑定机制，如果数据模型修改了之后会立即反映到UI视图上，类似的还有如今比较流行的基于MVVM设计模式的前端框架，例如Knockout.js。其实在ObjC中原生就支持这种机制，它叫做Key Value Observing（简称KVO）。</p>
+
+<p>KVO其实是一种观察者模式，利用它可以很容易实现视图组件和数据模型的分离，当数据模型的属性值改变之后作为监听器的视图组件就会被激发，激发时就会回调监听器自身。在ObjC中要实现KVO则必须实现NSKeyValueObServing协议，不过幸运的是NSObject已经实现了该协议，因此几乎所有的ObjC对象都可以使用KVO。</p>
+
+<p>在ObjC中使用KVO操作常用的方法如下：</p>
+
+<ul>
+<li>注册指定Key路径的监听器： addObserver: forKeyPath: options:  context:</li>
+<li>删除指定Key路径的监听器： removeObserver: forKeyPath、removeObserver: forKeyPath: context:</li>
+<li>回调监听： observeValueForKeyPath: ofObject: change: context:</li>
+</ul>
+
+
+<blockquote><p>KVO的使用步骤也比较简单：
+通过addObserver: forKeyPath: options: context:为被监听对象（它通常是数据模型）注册监听器
+重写监听器的observeValueForKeyPath: ofObject: change: context:方法</p></blockquote>
 
 <hr />
 
-<pre><code>+---------------------------+------------------------------+
-| NSCache | NSMutableDictionary |
-+---------------------------+------------------------------+
-| NSDiscardableContent | NSObject |
-+---------------------------+------------------------------+
+<h3>KVC</h3>
+
+<p>key-value coding
+是1种间接访问对象的机制
+key的值就是属性名称的字符串，返回的value是任意类型，需要自己转化为需要的类型
+KVC主要就是两个方法</p>
+
+<ul>
+<li>（1）通过key设置对应的属性</li>
+<li>（2）通过key获得对应的属性</li>
+</ul>
+
+
+<p>举例</p>
+
+<pre><code>class TestForKVC:NSObject{ var hwcCSDN = "hello world" } var instance = TestForKVC() var value = instance.valueForKey("hwcCSDN") as String instance.setValue("hello hwc",forKey:"hwcCSDN")
 </code></pre>
 
-<p>下面是 UIImageView+AFNetworking的使用:</p>
+<h3>KVO</h3>
 
-<pre><code>@interface AFImageCache :NSCache
-- (UIImage *)cachedImageForRequest:(NSURLRequest *)request;
-- (void)cacheImage:(UIImage *)image
-forRequest:(NSURLRequest *)request;
-@end
+<p>key-value observing
+建立在KVC之上的的机制
+主要功能是检测对象属性的变化
+这是1个完善的机制，不需要用户自己设计复杂的视察者模式
+对需要视察的属性要在前面加上dynamic关键字
+举例</p>
+
+<h5>第1步，对要视察的对象的属性加上dynamic关键字</h5>
+
+<pre><code>class ToObserver:NSObject{ dynamic var hwcDate = NSDate() func updateDate(){ hwcDate = NSDate() } }
 </code></pre>
 
-<p>NSURLCache</p>
+<h5>第2步，声明1个全局的用来辨别是哪一个被视察属性的变量</h5>
 
-<p>iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
-这里有详细的说明:here
-这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.</p>
-
-<p>映射关系:</p>
-
-<pre><code>+---------------------------+---------------------------------+
-| NSURLRequest ----|----&gt; NSCachedURLResponse |
-+---------------------------+---------------------------------+
+<pre><code>private var mycontext = 0
 </code></pre>
 
-<p>通过这样的映射关系实现缓存. 这里存的是NSCachedURLResponse. 也就是说这里的NSURLCache也是一个类似于NSCache的容器.
-只不过data是NSCachedURLResponse对象. 并不是类似于image这样的data.</p>
+<h5>第3步，在要视察的类中addObserver,在析构中removeObserver，重写observerValueForKeyPath</h5>
 
-<p>这篇文章可以的: NSURLCache使用心得here
-我测试了一下UIImage->NSData->URL,NSURLConnection, UIWebView不同时候调用</p>
-
-<pre><code>- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request;
--(void)storeCachedResponse:(NSCachedURLResponse *)cachedResponse forRequest:(NSURLRequest *)request;
+<pre><code>class TestForCSDN:UIViewController{ var testVariable = ToObserver() override func viewDidLoad(){ super.viewDidLoad() testVariable.addObserver(self,forKeyPath:"hwcDate",options:.New,context:&amp;mycontext) } deinit{ testVariable.removeObserver(self,forKeyPath:"hwcDate") } overfide func observeValueForKeyPath(keyPath:String,ofObject:AnyObject,change:[NSObject:AnyObject],context:UnsafeMutablePointer&lt;Void&gt;){ if(context == &amp;mycontext){ println("Changed to:(change[NSKeyValueChangeNewKey]!)") } } }
 </code></pre>
 
-<p>的情况:</p>
+<p>这样，就能够在函数observeValueForKeyPath检测到变化了</p>
 
-<pre><code>+-------------+---------------------+----------------------+------------------+
-| | UIImage-&gt;URL | NSURLConnection | UIWebView |
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|1’s time |---+---------------------+----------------------+------------------+
-| | s | first called | second called | second called | 
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|2’s time +---+---------------------+----------------------+------------------+
-| | s | first called | X | X | 
-+---------+---+---------------------+----------------------+------------------+
+<p>下面来看看OC是怎么实现KVO和KVC的</p>
+
+<h3>1、KVC</h3>
+
+<p>KVC(KeyValueCoding)　“键-值-编码”是一种可以直接通过字符串的名字（key）来访问类实例变量的机制，是通过setter、getter方法访问。
+属性的访问和设置
+KVC可以用来访问和设置实例变量的值。key是属性名称</p>
+
+<pre><code>设置方式：[self setValue:aName forKey:@"name"]
+等同于　self.name = aName;
 </code></pre>
 
-<blockquote><p>注意</p></blockquote>
+<hr />
 
-<pre><code>* c 表示 cachedResponseForRequest
-* s 表示 storeCachedResponse
-* X 表示不被调用
+<pre><code>访问方式： aString　=　[self valueForKey:@"name"]
+等同于　aString = self.name;
 </code></pre>
 
-<p>结果显示: UIImage->URL 是同步的请求. 因为cachedResponseForRequest不能发起同步请求来请求网络.</p>
+<h3>2、KVO 观察者</h3>
+
+<p>KVO(KeyValueObserver)　“键-值-监听”定义了这样一种机制，当对象的属性值发生变化的时候，我们能收到一个“通知”。观察者更准确
+NSObject提供了监听机制。所有子类也就全都能进行监听
+KVO是基于KVC来实现的。 实现监听步骤</p>
+
+<ul>
+<li>（1）注册监听对象。</li>
+</ul>
+
+
+<p>anObserver指监听者，keyPath就是要监听的属性值，而context方便传输你需要的数据，它是个指针类型。</p>
+
+<pre><code>-(void)addObserver:(NSObject *)anObserver
+　　　　forKeyPath:(NSString *)keyPath
+　　　　　　options:(NSKeyValueObservingOptio
+
+
+ns)options            
+　　　　　　context:(void *)context//（void*）是任何指针类型
+</code></pre>
+
+<p>其中， options是监听的选项，也就是说明监听返回的字典包含什么值。有两个常用的选项：
+NSKeyValueObservingOptionNew　指返回的字典包含新值。
+NSKeyValueObservingOptionOld    指返回的字典包含旧值。</p>
+
+<ul>
+<li>（2）实现监听方法。</li>
+</ul>
+
+
+<p>监听方法在Value（属性的值）发生变化的时候自动调用。</p>
+
+<pre><code>-(void) observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+</code></pre>
+
+<p>其中，object指被监听的对象。change里存储了一些变化的数据，比如变化前的数据，变化后的数据。</p>
+
+<h3>3、通知</h3>
+
+<p>通知是iOS开发框架中的一种设计模式，内部的实现机制由Cocoa框架支持。
+通知一般用于M、V、C的间的信息传递。像我在设置页面设置App皮肤。
+M是modol模型 V是view视图 C是control控制器。
+系统通知</p>
+
+<pre><code>//注册通知
+[[NSNotificationCenter defaultCenter] addObserver:self
+selector:@selector(didFinish:) //didFinish:是方法名   self （谁的）和  didFinish:确定方法
+name:MPMoviePlayerPlaybackDidFinishNotification
+　object:nil];
+selector是方法名     class是描述类的类    SEL method=@selector（方法名）
+通知用完要移除
+//移除通知
+[[NSNotificationCenter defaultCenter] removeObserver:self
+         name:MPMoviePlayerPlaybackDidFinishNotification
+                                              object:nil];
+</code></pre>
+
+<blockquote><p>总结:这一篇就介绍了iOS开发中比较有特色的两个机制：KVC和KVO</p></blockquote>
+
+<pre><code>    KVC：就是可以暴力的去get/set类的私有属性，同时还有强大的键值路径对数组类型的属性进行操作
+
+    KVO：监听类中属性值变化的
+</code></pre>
 </div>
 
 
@@ -302,7 +297,7 @@ forRequest:(NSURLRequest *)request;
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/xing-neng-wen-ti/'>性能问题</a>
+    <a class='category' href='/blog/categories/di-ceng-kai-fa/'>底层开发</a>
   
 </span>
 
@@ -331,10 +326,10 @@ forRequest:(NSURLRequest *)request;
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/04/11/fu-wu-qi-da-jian/" title="Previous Post: 服务器搭建">&laquo; 服务器搭建</a>
+        <a class="basic-alignment left" href="/blog/2014/11/25/fmdb/" title="Previous Post: FMDB你了解多少？">&laquo; FMDB你了解多少？</a>
       
       
-        <a class="basic-alignment right" href="/blog/2014/05/05/keyoc/" title="Next Post: 常用关键字汇总">常用关键字汇总 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/" title="Next Post: 底层开发之越狱开发">底层开发之越狱开发 &raquo;</a>
       
     </p>
   </footer>
@@ -423,7 +418,7 @@ forRequest:(NSURLRequest *)request;
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2014/04/14/nscache%20nsdictionary/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/04/14/nscache%20nsdictionary/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2014/12/05/kvckvo/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/12/05/kvckvo/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
