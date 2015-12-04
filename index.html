@@ -9,7 +9,11 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。 &hellip;">
+  <meta name="description" content="前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。 用途 在照片、视频处理，把滤镜作为最后一步，添加水印
+给照相机提供实时效果
+面部检测，自动滤镜增益,图片分析算法
+更多 coreimage framework 组成 apple &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +78,281 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。</p>
+
+<ul>
+<li>用途
+
+<ul>
+<li>在照片、视频处理，把滤镜作为最后一步，添加水印</li>
+<li>给照相机提供实时效果</li>
+<li>面部检测，自动滤镜增益,图片分析算法</li>
+<li>更多</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+
+<h2>coreimage framework 组成</h2>
+
+<p>apple 已经帮我们把image的处理分类好，来看看它的结构：</p>
+
+<p><img src="/images/coreimage001.png" title="Caption" ></p>
+
+<p>主要分为三部分：</p>
+
+<h5>定义部分：</h5>
+
+<p> CoreImage 何CoreImageDefines。见名思义，代表了CoreImage 这个框架和它的定义。</p>
+
+<h5>操作部分：</h5>
+
+<pre><code>滤镜（CIFliter）：CIFilter 产生一个CIImage。典型的，接受一到多的图片作为输入，经过一些过滤操作，产生指定输出的图片。
+
+检测（CIDetector）：CIDetector 检测处理图片的特性，如使用来检测图片中人脸的眼睛、嘴巴、等等。
+
+特征（CIFeature）：CIFeature 代表由 detector处理后产生的特征。
+</code></pre>
+
+<h5>图像部分：</h5>
+
+<pre><code>画布（CIContext）：画布类可被用与处理Quartz 2D 或者 OpenGL。可以用它来关联CoreImage类。如滤镜、颜色等渲染处理。
+
+颜色（CIColor）：   图片的关联与画布、图片像素颜色的处理。
+
+向量（CIVector）： 图片的坐标向量等几何方法处理。
+
+图片（CIImage）： 代表一个图像，可代表关联后输出的图像。　　
+</code></pre>
+
+<p><img src="/images/coreimage002.jpg" title="Caption" ></p>
+
+<h2>2.  处理步骤：</h2>
+
+<pre><code>  1）create a ciimage object;
+
+  2) create a cifilter object and set input values
+
+  3)  create a cicontext object.
+
+  4) render the filter output image into a cgimage
+</code></pre>
+
+<p>　　　　</p>
+
+<h2>3.注意</h2>
+
+<p>　　　　a。关注Ciimage 产生的途径：</p>
+
+<p>　　　　　　　　1）通过URL和Data</p>
+
+<p>　　　　　　　　 2）通过其他图片类转换，CGImageRef或其他图片。</p>
+
+<p>　　　　　　　　 3）通过CVpixelBufferRef。</p>
+
+<p>　　　　　　　　 4）一组像素Data。</p>
+
+<p>　　　　b.  图片颜色，KCCImageColorSpace 来重载默认颜色空间。</p>
+
+<p>　　　　c. 图片Metadata。</p>
+
+<p>　　　　</p>
+
+<h2>4. 使用滤镜。</h2>
+
+<p>　　　　CISepiaTone、CiColorControls、CIHueBlendMode。</p>
+
+<p><img src="/images/coreimage003.png" title="Caption" ></p>
+
+<p>处理过程：多个CImage输入 －－ 》 CIHeBlendMode  －－》 CiSepiatone。</p>
+
+<p><img src="/images/coreimage004.jpg" title="Caption" ></p>
+
+<p>渲染输出：</p>
+
+<p><img src="/images/coreimage005.jpg" title="Caption" ></p>
+
+<p>流程： 获取context  －》 转成CIimage －》 渲染成CGImageRef  －》 转换为UIimage －》 释放 CGImageRef －》 使用UIImage。</p>
+
+<h2>5.脸部检测</h2>
+
+<p>　　自动增强： CIRedEyeCorrection  、CIFaceBalance（调整图片来给出更好的皮肤色调）、CIVibrance（在不扭曲皮肤色调的情况下，增加饱和度）、CIToneCurve（调整图片对比）、高亮阴影调整。
+　　
+　　</p>
+
+<hr />
+
+<p>&mdash;-基本使用&mdash;-</p>
+
+<hr />
+
+<h5>Core Image 处理图片的工作流程</h5>
+
+<ul>
+<li>创建新的CIImage</li>
+<li>创建新的CIFilter，通过键-值编码设置输入值，一定要给inputImage加入一个值，这个属性是图像数据源</li>
+<li>从CIFilter中生成输出图片。通过访问CIFilter的outputImage属性，可以得到输出图像，这是一个新的CIImage对象，包含了原始图片的数据以及一个滤镜链。 在得到输出图像后，可以使用滤镜来渲染出最终的效果图像。也可以将其作为一个新滤镜的输入图像，这样会产生出一条滤镜链</li>
+<li>用CIContext 渲染CIImage 对象，这个CIContext 可以是基于CPU的，输出为CGImageRef，通过 LibDispatch（GCD）渲染 ，更加可靠，也更加易用。也可以是基于GPU的，开发者可通过Open ES 2.0 画出来。使用GPU渲染时CPU没有负担，更好地性能，但无法在后台运行</li>
+</ul>
+
+
+<p>使用例子：</p>
+
+<pre><code> CIImage *myCoreImage = [CIImage imageWithCGImage:self.myImageView.image.CGImage options:nil];  
+
+// 创建Filter，@"CISepiaTone"这个名字是系统指定的  
+CIFilter *sepia = [CIFilter filterWithName:@"CISepiaTone"];  
+
+// 设置Filter  
+[sepia setValue:myCoreImage forKey:@"inputImage"];  
+
+NSNumber *intensity = [NSNumber numberWithFloat:.5f];  
+[sepia setValue:intensity forKey:@"inputIntensity"];  
+
+// 生成新的 CIImage  
+CIImage *outputImage = [sepia outputImage];  
+
+// 取出UIImage  
+CGImageRef renderImage = [_imageContext createCGImage:outputImage fromRect:[outputImage extent]];  
+[self.myImageView setImage:[UIImage imageWithCGImage:renderImage]];
+</code></pre>
+
+<blockquote><p>DemoCoreImage 是直接从IOS 核心框架拿过来的。
+CoreImageMySelf 是我自己提取的只为实现优化功能的demo
+提取的功能模块有，filter的使用、自动优化的使用、脸部检测</p></blockquote>
+
+<p>再来看看常见的使用方式</p>
+
+<ul>
+<li>CIImage</li>
+</ul>
+
+
+<p>保存图像数据的类，可以通过UIImage，图像文件或者像素数据来创建，包括未处理的像素数据如：</p>
+
+<pre><code>- imageWithCVPixelBuffer:
+
+- imageWithData:
+</code></pre>
+
+<p>方法等等。</p>
+
+<p>也可以通过图像数据类比如UIImage，CGImageRef等等。</p>
+
+<ul>
+<li>CIFilter</li>
+</ul>
+
+
+<p>滤镜类，这个框架中对图片属性进行细节处理的类。它对所有的像素进行操作，用一些键-值设置来决定具体操作的程度。</p>
+
+<ul>
+<li>CIContext</li>
+</ul>
+
+
+<p>上下文类，如CoreGraphics以及CoreData中的上下文用于处理绘制渲染以及处理托管对象一样，CoreImage的上下文也是实现对图像处理的具体对象。</p>
+
+<p>这里需要注意的是在Context创建的时候，我们需要给它设定为是基于GPU还是CPU。(这里使用GPU)</p>
+
+<blockquote><p>基于GPU的话，处理速度更快，因为利用了GPU硬件的并行优势。但是GPU受限于硬件纹理尺寸，而且如果你的程序在后台继续处理和保存图片的话，那么需要使用CPU，因为当app切换到后台状态时GPU处理会被打断。</p></blockquote>
+
+<h3>使用步骤：</h3>
+
+<h6>0.导入CIImage图片</h6>
+
+<pre><code>CIImage *ciImage = [[CIImage alloc]initWithImage:[UIImage imageNamed:@"test.jpg"]];
+</code></pre>
+
+<h6>1.创建出Filter滤镜</h6>
+
+<pre><code>CIFilter *filterOne = [CIFilter filterWithName:@"CIPixellate"];
+[filterOne setValue:ciImage forKey:kCIInputImageKey];
+[filterOne setDefaults];
+
+CIImage *outImage = [filterOne valueForKey:kCIOutputImageKey];
+</code></pre>
+
+<h6>2.用CIContext将滤镜中的图片渲染出来</h6>
+
+<pre><code>CIContext *context = [CIContext contextWithOptions:nil];
+
+CGImageRef cgImage = [context createCGImage:outImage fromRect:[outImage extent]];
+</code></pre>
+
+<h6>3.导出图片</h6>
+
+<pre><code>UIImage *showImage = [UIImage imageWithCGImage:cgImage];
+CGImageRelease(cgImage);
+</code></pre>
+
+<h6>4.加载图片</h6>
+
+<pre><code> _image.image = showImage;
+</code></pre>
+
+<hr />
+
+<h3>如果要使用组合滤镜</h3>
+
+<h6>在步骤1中设置组合滤镜，只需要将上一个滤镜的输出变为下一个滤镜的输入就行了</h6>
+
+<pre><code>//第一个滤镜
+CIFilter *filterOne = [CIFilter filterWithName:@"CIPixellate"];
+[filterOne setValue:ciImage forKey:kCIInputImageKey];
+[filterOne setDefaults];
+CIImage *outImage = [filterOne valueForKey:kCIOutputImageKey];
+//第二个滤镜
+CIFilter *filterTwo = [CIFilter filterWithName:@"CIHueAdjust"];
+[filterTwo setValue:outImage forKey:kCIInputImageKey];
+[filterTwo setDefaults];
+[filterTwo setValue:@(1.f) forKey:kCIInputAngleKey];
+CIImage *outputImage = [filterTwo valueForKey:kCIOutputImageKey];
+</code></pre>
+
+<h6>记住渲染的时候，步骤2，要将最后输出的CIImage传入</h6>
+
+<pre><code>CIContext *context = [CIContext contextWithOptions:nil];
+
+CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outImage extent]];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/10/core-image-chu-tan/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -277,6 +556,413 @@ self.displayLink = nil;
 
 
 | <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
+
+<ul>
+<li>iOS RunLoop都干了什么</li>
+<li>iOS 为什么必须在主线程中操作UI</li>
+<li>事件响应</li>
+<li>CALayer</li>
+<li>CADisplayLink 和 NSTimer</li>
+<li>iOS 渲染过程</li>
+<li>渲染时机</li>
+<li>CPU 和 GPU渲染</li>
+<li>Core Animation</li>
+<li>Facebook Pop介绍</li>
+<li>AsyncDisplay介绍</li>
+<li>参考文章</li>
+</ul>
+
+
+<h5>iOS RunLoop都干了什么</h5>
+
+<p>RunLoop是一个接收处理异步消息事件的循环，一个循环中：等待事件发生，然后将这个事件送到能处理它的地方。
+如图1-1所示，描述了一个触摸事件从操作系统层传送到应用内的main runloop中的简单过程。</p>
+
+<p><img src="/images/tupianxuanran001.jpg" title="Caption" ></p>
+
+<p>简单的说，RunLoop是事件驱动的一个大循环，如下代码所示</p>
+
+<pre><code>int main(int argc, char * argv[]) {
+     //程序一直运行状态
+     while (AppIsRunning) {
+          //睡眠状态，等待唤醒事件
+          id whoWakesMe = SleepForWakingU  p();
+          //得到唤醒事件
+          id event = GetEvent(whoWakesMe);
+          //开始处理事件
+          HandleEvent(event);
+     }
+     return 0;
+}
+</code></pre>
+
+<p>RunLoop主要处理以下6类事件：</p>
+
+<pre><code>static void __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__();
+static void __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__();
+</code></pre>
+
+<ul>
+<li><p>Observer事件，runloop中状态变化时进行通知。（微信卡顿监控就是利用这个事件通知来记录下最近一次main runloop活动时间，在另一个check线程中用定时器检测当前时间距离最后一次活动时间过久来判断在主线程中的处理逻辑耗时和卡主线程）。这里还需要特别注意，CAAnimation是由RunloopObserver触发回调来重绘，接下来会讲到。</p></li>
+<li><p>Block事件，非延迟的NSObject PerformSelector立即调用，dispatch_after立即调用，block回调。</p></li>
+<li><p>Main_Dispatch_Queue事件：GCD中dispatch到main queue的block会被dispatch到main loop执行。</p></li>
+<li><p>Timer事件：延迟的NSObject PerformSelector，延迟的dispatch_after，timer事件。</p></li>
+<li><p>Source0事件：处理如UIEvent，CFSocket这类事件。需要手动触发。触摸事件其实是</p></li>
+<li>Source1接收系统事件后在回调 <em>_IOHIDEventSystemClientQueueCallback() 内触发的 Source0，Source0 再触发的 </em>UIApplicationHandleEventQueue()。source0一定是要唤醒runloop及时响应并执行的，如果runloop此时在休眠等待系统的 mach_msg事件，那么就会通过source1来唤醒runloop执行。</li>
+</ul>
+
+
+<blockquote><p>Source1事件：处理系统内核的mach_msg事件。（推测CADisplayLink也是这里触发）。</p></blockquote>
+
+<p>RunLoop执行顺序的伪代码</p>
+
+<pre><code>SetupThisRunLoopRunTimeoutTimer(); // by GCD timer
+//通知即将进入runloop__CFRUNLLOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(KCFRunLoopEntry);
+do {
+     __CFRunLoopDoObservers(kCFRunLoopBeforeTimers);
+     __CFRunLoopDoObservers(kCFRunLoopBeforeSources);
+
+     __CFRunLoopDoBlocks();  //一个循环中会调用两次，确保非延迟的NSObject PerformSelector调用和非延迟的dispatch_after调用在当前runloop执行。还有回调block
+     __CFRunLoopDoSource0(); //例如UIKit处理的UIEvent事件
+
+     CheckIfExistMessagesInMainDispatchQueue(); //GCD dispatch main queue
+
+     __CFRunLoopDoObservers(kCFRunLoopBeforeWaiting); //即将进入休眠，会重绘一次界面
+     var wakeUpPort = SleepAndWaitForWakingUpPorts();
+     // mach_msg_trap，陷入内核等待匹配的内核mach_msg事件
+     // Zzz...
+     // Received mach_msg, wake up
+     __CFRunLoopDoObservers(kCFRunLoopAfterWaiting);
+     // Handle msgs
+     if (wakeUpPort == timerPort) {
+          __CFRunLoopDoTimers();
+     } else if (wakeUpPort == mainDispatchQueuePort) {
+          //GCD当调用dispatch_async(dispatch_get_main_queue(),block)时，libDispatch会向主线程的runloop发送mach_msg消息唤醒runloop，并在这里执行。这里仅限于执行dispatch到主线程的任务，dispatch到其他线程的仍然是libDispatch来处理。
+          __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__()
+     } else {
+          __CFRunLoopDoSource1();  //CADisplayLink是source1的mach_msg触发？
+     }
+ __CFRunLoopDoBlocks();
+} while (!stop &amp;&amp; !timeout);
+
+//通知observers，即将退出runloop
+__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBERVER_CALLBACK_FUNCTION__(CFRunLoopExit);
+</code></pre>
+
+<p>结合上面的Runloop事件执行顺序，思考下面代码逻辑中为什么可以标识tableview是否reload完成</p>
+
+<pre><code>dispatch_async(dispatch_get_main_queue(), ^{
+    _isReloadDone = NO;
+    [tableView reload]; //会自动设置tableView layoutIfNeeded为YES，意味着将会在runloop结束时重绘table
+    dispatch_async(dispatch_get_main_queue(),^{
+        _isReloadDone = YES;
+    });
+});
+</code></pre>
+
+<blockquote><p>提示：这里在GCD dispatch main queue中插入了两个任务，一次RunLoop有两个机会执行GCD dispatch main queue中的任务，分别在休眠前和被唤醒后。</p></blockquote>
+
+<h5>iOS 为什么必须在主线程中操作UI</h5>
+
+<blockquote><p>因为UIKit不是线程安全的。试想下面这几种情况：</p></blockquote>
+
+<p>两个线程同时设置同一个背景图片，那么很有可能因为当前图片被释放了两次而导致应用崩溃。
+两个线程同时设置同一个UIView的背景颜色，那么很有可能渲染显示的是颜色A，而此时在UIView逻辑树上的背景颜色属性为B。
+两个线程同时操作view的树形结构：在线程A中for循环遍历并操作当前View的所有subView，然后此时线程B中将某个subView直接删除，这就导致了错乱还可能导致应用崩溃。
+iOS4之后苹果将大部分绘图的方法和诸如 UIColor 和 UIFont 这样的类改写为了线程安全可用，但是仍然强烈建议讲UI操作保证在主线程中执行。</p>
+
+<h6>事件响应</h6>
+
+<p>苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 __IOHIDEventSystemClientQueueCallback()。</p>
+
+<p>当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 IOKit.framework 生成一个 IOHIDEvent 事件并由 SpringBoard 接收。</p>
+
+<ul>
+<li><p>SpringBoard 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 Event，随后用 mach port 转发给需要的App进程。随后苹果注册的那个 Source1 就会触发回调，并调用 _UIApplicationHandleEventQueue() 进行应用内部的分发。</p></li>
+<li><p>_UIApplicationHandleEventQueue() 会把 IOHIDEvent 处理并包装成 UIEvent 进行处理或分发，其中包括识别 UIGesture/处理屏幕旋转/发送给 UIWindow 等。通常事件比如 UIButton 点击、touchesBegin/Move/End/Cancel 事件都是在这个回调中完成的。</p></li>
+</ul>
+
+
+<h6>CALayer</h6>
+
+<p>在iOS当中，所有的视图都从一个叫做UIVIew的基类派生而来，UIView可以处理触摸事件，可以支持基于Core Graphics绘图，可以做仿射变换（例如旋转或者缩放），或者简单的类似于滑动或者渐变的动画。</p>
+
+<p>CALayer类在概念上和UIView类似，同样也是一些被层级关系树管理的矩形块，同样也可以包含一些内容（像图片，文本或者背景色），管理子图层的位置。它们有一些方法和属性用来做动画和变换。和UIView最大的不同是CALayer不处理用户的交互。CALayer并不清楚具体的响应链。</p>
+
+<p>UIView和CALayer是一个平行的层级关系，每一个UIView都有一个CALayer实例的图层属性，也就是所谓的backing layer，视图的职责就是创建并管理这个图层，以确保当子视图在层级关系中添加或者被移除的时候，他们关联的图层也同样对应在层级关系树当中有相同的操作。实际上这些背后关联的Layer图层才是真正用来在屏幕上显示和做动画，UIView仅仅是对它的一个封装，提供了一些iOS类似于处理触摸的具体功能，以及Core Animation底层方法的高级接口。</p>
+
+<h6>UIView 的 Layer 在系统内部，被维护着三份同样的树形数据结构，分别是：</h6>
+
+<pre><code>图层树（这里是代码可以操纵的，设置属性的最终值会立刻在这里更新）；
+呈现树（是一个中间层，系统就在这一层上更改属性，进行各种渲染操作。比如一个动画是更改alpha值从0到1，那么在逻辑树上此属性会被立刻更新为最终属性1，而在动画树上会根据设置的动画时间从0逐步变化到1）；
+渲染树（其属性值就是当前正被显示在屏幕上的属性值）；
+</code></pre>
+
+<h5>CADisplayLink 和 NSTimer</h5>
+
+<p>NSTimer 其实就是 CFRunLoopTimerRef。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。</p>
+
+<ul>
+<li><p>RunLoop为了节省资源，并不会在非常准确的时间点回调这个Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。如果某个时间点被错过了，例如执行了一个很长的任务，则那个时间点的回调也会跳过去，不会延后执行。</p></li>
+<li><p>RunLoop 是用GCD的 dispatch_source_t 实现的 Timer。 当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效。</p></li>
+<li><p>CADisplayLink 是一个和屏幕刷新率（每秒刷新60次）一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 Source）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去，造成界面卡顿的感觉。</p></li>
+</ul>
+
+
+<h5>iOS 渲染过程</h5>
+
+<p><img src="/images/tupianxuanran002.png" title="Caption" ></p>
+
+<p>通常来说，计算机系统中 CPU、GPU、显示器是以上面这种方式协同工作的。CPU 计算好显示内容提交到 GPU，GPU 渲染完成后将渲染结果放入帧缓冲区，随后视频控制器会按照 VSync 信号如下图1-4所示，逐行读取帧缓冲区的数据，经过可能的数模转换传递给显示器显示。</p>
+
+<p><img src="/images/tupianxuanran003.png" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。从上图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+<p><img src="/images/tupianxuanran004.png" title="Caption" ></p>
+
+<p>iOS 的显示系统是由 VSync 信号驱动的，VSync 信号由硬件时钟生成，每秒钟发出 60 次（这个值取决设备硬件，比如 iPhone 真机上通常是 59.97）。iOS 图形服务接收到 VSync 信号后，会通过 IPC 通知到 App 内。App 的 Runloop 在启动后会注册对应的 CFRunLoopSource 通过 mach_port 接收传过来的时钟信号通知，随后 Source 的回调会驱动整个 App 的动画与显示。</p>
+
+<p>Core Animation 在 RunLoop 中注册了一个 Observer，监听了 BeforeWaiting 和 Exit 事件。当一个触摸事件到来时，RunLoop 被唤醒，App 中的代码会执行一些操作，比如创建和调整视图层级、设置 UIView 的 frame、修改 CALayer 的透明度、为视图添加一个动画；这些操作最终都会被 CALayer 标记，并通过 CATransaction 提交到一个中间状态去。当上面所有操作结束后，RunLoop 即将进入休眠（或者退出）时，关注该事件的 Observer 都会得到通知。这时 Core Animation 注册的那个 Observer 就会在回调中，把所有的中间状态合并提交到 GPU 去显示；如果此处有动画，通过 DisplayLink 稳定的刷新机制会不断的唤醒runloop，使得不断的有机会触发observer回调，从而根据时间来不断更新这个动画的属性值并绘制出来。</p>
+
+<blockquote><p>为了不阻塞主线程，Core Animation 的核心是 OpenGL ES 的一个抽象物，所以大部分的渲染是直接提交给GPU来处理。 而Core Graphics/Quartz 2D的大部分绘制操作都是在主线程和CPU上同步完成的，比如自定义UIView的drawRect里用CGContext来画图。</p></blockquote>
+
+<h5>渲染时机</h5>
+
+<p>上面已经提到过：Core Animation 在 RunLoop 中注册了一个 Observer 监听 BeforeWaiting(即将进入休眠) 和 Exit (即将退出Loop) 事件 。当在操作 UI 时，比如改变了 Frame、更新了 UIView/CALayer 的层次时，或者手动调用了 UIView/CALayer 的 setNeedsLayout/setNeedsDisplay方法后，这个 UIView/CALayer 就被标记为待处理，并被提交到一个全局的容器去。当Oberver监听的事件到来时，回调执行函数中会遍历所有待处理的UIView/CAlayer 以执行实际的绘制和调整，并更新 UI 界面。</p>
+
+<p>这个函数内部的调用栈大概是这样的：</p>
+
+<pre><code>_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
+    QuartzCore:CA::Transaction::observer_callback:
+        CA::Transaction::commit();
+            CA::Context::commit_transaction();
+                CA::Layer::layout_and_display_if_needed();
+                    CA::Layer::layout_if_needed();
+                          [CALayer layoutSublayers];
+                          [UIView layoutSubviews];
+                    CA::Layer::display_if_needed();
+                          [CALayer display];
+                          [UIView drawRect];
+</code></pre>
+
+<h5>CPU 和 GPU渲染</h5>
+
+<p>OpenGL中，GPU屏幕渲染有以下两种方式：</p>
+
+<ul>
+<li>On-Screen Rendering</li>
+</ul>
+
+
+<p>意为当前屏幕渲染，指的是GPU的渲染操作是在当前用于显示的屏幕缓冲区中进行。</p>
+
+<ul>
+<li>Off-Screen Rendering</li>
+</ul>
+
+
+<p>意为离屏渲染，指的是GPU在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作。</p>
+
+<blockquote><p>按照这样的说法，如果将不在GPU的当前屏幕缓冲区中进行的渲染都称为离屏渲染，那么就还有另一种特殊的“离屏渲染”方式：CPU渲染。如果我们重写了drawRect方法，并且使用任何Core Graphics的技术进行了绘制操作，就涉及到了CPU渲染。整个渲染过程由CPU在App内同步地完成，渲染得到的bitmap最后再交由GPU用于显示。</p></blockquote>
+
+<p>相比于当前屏幕渲染，离屏渲染的代价是很高的，主要体现在两个方面：</p>
+
+<pre><code>创建新缓冲区 
+要想进行离屏渲染，首先要创建一个新的缓冲区。
+上下文切换 
+</code></pre>
+
+<p>离屏渲染的整个过程，需要多次切换上下文环境：</p>
+
+<ul>
+<li>先是从当前屏幕（On-Screen）切换到离屏（Off-Screen）</li>
+<li>等到离屏渲染结束以后，将离屏缓冲区的渲染结果显示到屏幕上有需要将上下文环境从离屏切换到当前屏幕</li>
+<li><p>而上下文环境的切换是要付出很大代价的。</p></li>
+<li><p>设置了以下属性时，都会触发离屏绘制：</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>shouldRasterize（光栅化）
+masks（遮罩）
+shadows（阴影）
+edge antialiasing（抗锯齿）
+group opacity（不透明） 
+</code></pre>
+
+<blockquote><p>需要注意的是，如果shouldRasterize被设置成YES，在触发离屏绘制的同时，会将光栅化后的内容缓存起来，如果对应的layer及其sublayers没有发生改变，在下一帧的时候可以直接复用。这将在很大程度上提升渲染性能。</p></blockquote>
+
+<p>而其它属性如果是开启的，就不会有缓存，离屏绘制会在每一帧都发生。
+在开发时需要根据实际情况来选择最优的实现方式，尽量使用On-Screen Rendering。简单的Off-Screen Rendering可以考虑使用Core Graphics让CPU来渲染。</p>
+
+<h5>Core Animation</h5>
+
+<ol>
+<li>隐式动画</li>
+</ol>
+
+
+<p>隐式动画是系统框架自动完成的。Core Animation在每个runloop周期中自动开始一次新的事务，即使你不显式的用[CATransaction begin]开始一次事务，任何在一次runloop循环中属性的改变都会被集中起来，然后做一次0.25秒的动画。</p>
+
+<pre><code>在iOS4中，苹果对UIView添加了一种基于block的动画方法：+animateWithDuration:animations:。 
+</code></pre>
+
+<p>这样写对做一堆的属性动画在语法上会更加简单，但实质上它们都是在做同样的事情。
+CATransaction的+begin和+commit方法在+animateWithDuration:animations:内部自动调用，这样block中所有属性的改变都会被事务所包含。</p>
+
+<p>Core Animation通常对CALayer的所有属性（可动画的属性）做动画，但是UIView是怎么把它关联的图层的这个特性关闭了呢？
+每个UIView对它关联的图层都扮演了一个委托，并且提供了-actionForLayer:forKey的实现方法。当不在一个动画块的实现中，UIView对所有图层行为返回nil，但是在动画block范围之内，它就返回了一个非空值。</p>
+
+<pre><code>@interface ViewController ()
+
+@property (nonatomic, weak) IBOutlet UIView *layerView;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    //test layer action when outside of animation block
+    NSLog(@"Outside: %@", [self.layerView actionForLayer:self.layerView.layer forKey:@"backgroundColor"]);
+    //begin animation block
+    [UIView beginAnimations:nil context:nil];
+    //test layer action when inside of animation block
+    NSLog(@"Inside: %@", [self.layerView actionForLayer:self.layerView.layer forKey:@"backgroundColor"]);
+    //end animation block
+    [UIView commitAnimations];
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>$ LayerTest[21215:c07] Outside: &lt;null&gt;
+$ LayerTest[21215:c07] Inside: &lt;CABasicAnimation: 0x757f090&gt;
+</code></pre>
+
+<ol>
+<li>显式动画</li>
+</ol>
+
+
+<p>Core Animation提供的显式动画类型，既可以直接对退曾属性做动画，也可以覆盖默认的图层行为。</p>
+
+<p>我们经常使用的CABasicAnimation，CAKeyframeAnimation，CATransitionAnimation，CAAnimationGroup等都是显式动画类型，这些CAAnimation类型可以直接提交到CALayer上。</p>
+
+<p>无论是隐式动画还是显式动画，提交到layer后，经过一系列处理，最后都经过上文描述的绘制过程最终被渲染出来。</p>
+
+<h5>Facebook Pop介绍</h5>
+
+<p>在计算机的世界里面，其实并不存在绝对连续的动画，你所看到的屏幕上的动画本质上都是离散的，只是在一秒的时间里面离散的帧多到一定的数量人眼就觉得是连续的了，</p>
+
+<p>在iOS中，最大的帧率是60帧每秒。 iOS提供了Core Animation框架，只需要开发者提供关键帧信息，比如提供某个animatable属性终点的关键帧信息，然后中间的值则通过一定的算法进行插值计算，从而实现补间动画。 Core Aniamtion中进行插值计算所依赖的时间曲线由CAMediaTimingFunction提供。</p>
+
+<blockquote><p>Pop Animation在使用上和Core Animation很相似，都涉及Animation对象以及Animation的载体的概念，不同的是Core Animation的载体只能是CALayer，而Pop Animation可以是任意基于NSObject的对象。当然大多数情况Animation都是界面上显示的可视的效果，所以动画执行的载体一般都直接或者间接是UIView或者CALayer。</p></blockquote>
+
+<p>但是如果你只是想研究Pop Animation的变化曲线，你也完全可以将其应用于一个普通的数据对象。Pop Animation应用于CALayer时，在动画运行的任何时刻，layer和其presentationLayer的相关属性值始终保持一致，而Core Animation做不到。 Pop Animation可以应用任何NSObject的对象，而Core Aniamtion必须是CALayer。</p>
+
+<p>下面这个例子就是自定义Pop readBlock和writeBlock处理自定义的动画属性：</p>
+
+<pre><code>prop = [POPAnimatableProperty propertyWithName:@"com.foo.radio.volume" initializer:^(POPMutableAnimatableProperty *prop) {
+    // read value
+    prop.readBlock = ^(id obj, CGFloat values[]) {
+        values[0] = [obj volume];
+    };
+    // write value
+    prop.writeBlock = ^(id obj, const CGFloat values[]) {
+        [obj setVolume:values[0]];
+    };
+    // dynamics threshold
+    prop.threshold = 0.01;
+}];
+
+POPSpringAnimation *anim = [POPSpringAnimation animation];
+anim.property = prop;
+</code></pre>
+
+<p>Pop实现依赖的核心就是CADisplayLink。</p>
+
+<p>最后附上一篇介绍Facebook Pop如何使用的文章 《Introducing Facebook Pop》</p>
+
+<h5>AsyncDisplay介绍</h5>
+
+<p>阻塞主线程的绘制任务主要是这三大类：</p>
+
+<ul>
+<li><p>Layout计算视图布局文本宽高</p></li>
+<li><p>Rendering文本渲染图片解码图片绘制</p></li>
+<li><p>UIKit对象创建更新释放。</p></li>
+</ul>
+
+
+<p>除了UIKit和CoreAnimation相关操作必须在主线程中进行，其他的都可以挪到后台线程异步执行。</p>
+
+<p>AsyncDisplay通过抽象UIView的关系创建了ASDisplayNode类，ASDisplayNode是线程安全的，它可以在后台线程创建和修改。Node 刚创建时，并不会在内部新建 UIView 和 CALayer，直到第一次在主线程访问 view 或 layer 属性时，它才会在内部生成对应的对象。当它的属性（比如frame/transform）改变后，它并不会立刻同步到其持有的 view 或 layer 去，而是把被改变的属性保存到内部的一个中间变量，稍后在需要时，再通过某个机制一次性设置到内部的 view 或 layer。从而可以实现异步并发操作。</p>
+
+<p>AsyncDisplay实现依赖如同Core Animation在runloop中注册observer事件来触发。
+同样附上一篇介绍AsyncDisplay的好文 《iOS保持界面流畅的技巧和AsyncDisplay介绍》</p>
+
+<hr />
+
+<p>参考文章</p>
+
+<p><a href="https://github.com/ming1016/study/wiki/CFRunLoop">runloop原理</a></p>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/">深入理解runloop</a></p>
+
+<p><a href="http://objccn.io/issue-2-4/">线程安全类的设计</a></p>
+
+<p><a href="http://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS保持界面流畅的技巧和AsyncDisplay介绍</a></p>
+
+<p><a href="http://foggry.com/blog/2015/05/06/chi-ping-xuan-ran-xue-xi-bi-ji/">离屏渲染</a></p>
+
+<p><a href="https://zsisme.gitbooks.io/ios-/content/index.html">ios核心动画高级技巧</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/#comments">更多评论</a>
 
     </article>
   
@@ -615,7 +1301,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#58;&#x6d;&#97;&#106;&#105;&#97;&#48;&#51;&#x40;&#x6d;&#101;&#105;&#116;&#x75;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;">&#109;&#97;&#x6a;&#x69;&#x61;&#x30;&#51;&#64;&#109;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#111;&#x3a;&#109;&#x61;&#106;&#x69;&#x61;&#x30;&#x33;&#x40;&#109;&#x65;&#105;&#116;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;">&#x6d;&#x61;&#106;&#x69;&#97;&#x30;&#51;&#64;&#109;&#101;&#105;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -2590,1779 +3276,6 @@ block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/06/blockshen-jiu/">Block深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>目录</h2>
-
-<ul>
-<li><h5>什么是block？</h5>
-
-<ul>
-<li>block编译转换结构</li>
-<li>block实际结构</li>
-</ul>
-</li>
-<li><h5>block的类型</h5>
-
-<ul>
-<li>NSConcreteGlobalBlock和NSConcreteStackBlock</li>
-<li>NSConcreteMallocBlock</li>
-</ul>
-</li>
-<li><h5>捕捉变量对block结构的影响</h5>
-
-<ul>
-<li>局部变量</li>
-<li>全局变量</li>
-<li>局部静态变量</li>
-<li>__block修饰的变量</li>
-<li>self隐式循环引用</li>
-</ul>
-</li>
-<li><h5>不同类型block的复制</h5>
-
-<ul>
-<li>栈block</li>
-<li>堆block</li>
-<li>全局block</li>
-</ul>
-</li>
-<li><h5>block辅助函数</h5>
-
-<ul>
-<li>__block修饰的基本类型的辅助函数</li>
-<li>对象的辅助函数</li>
-</ul>
-</li>
-<li><h5>ARC中block的工作</h5>
-
-<ul>
-<li>block试验</li>
-<li>block作为参数传递</li>
-<li>block作为返回值</li>
-<li>block属性</li>
-</ul>
-</li>
-</ul>
-
-
-<h3>参考博文</h3>
-
-<p>最近看了一些block的资料，并动手做了一些实践，摘录并添加了一些结论。</p>
-
-<h3>什么是block？</h3>
-
-<p>首先，看一个极简的block：</p>
-
-<pre><code>    int main(int argc, const char * argv[]) {
-        @autoreleasepool {
-
-            ^{ };
-        }
-        return 0;
-    }
-</code></pre>
-
-<h5>block编译转换结构</h5>
-
-<p>对其执行clang -rewrite-objc编译转换成C++实现，得到以下代码：</p>
-
-<pre><code>    struct __block_impl {
-        void *isa;
-        int Flags;
-        int Reserved;
-        void *FuncPtr;
-    };
-
-    struct __main_block_impl_0 {
-      struct __block_impl impl;
-      struct __main_block_desc_0* Desc;
-      __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-        impl.isa = &amp;_NSConcreteStackBlock;
-        impl.Flags = flags;
-        impl.FuncPtr = fp;
-        Desc = desc;
-      }
-    };
-    static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-    }
-
-    static struct __main_block_desc_0 {
-      size_t reserved;
-      size_t Block_size;
-    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
-    int main(int argc, const char * argv[]) {
-        /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-            (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
-        }
-        return 0;
-    }
-</code></pre>
-
-<p>不难看出其中的<strong>main_block_impl_0就是block的一个C++的实现(最后面的_0代表是main中的第几个block)，也就是说也是一个结构体。
-其中</strong>block_impl的定义如下：</p>
-
-<pre><code>struct __block_impl {
-  void *isa;
-  int Flags;
-  int Reserved;
-  void *FuncPtr;
-};
-</code></pre>
-
-<p>其结构体成员如下：</p>
-
-<ul>
-<li>isa，指向所属类的指针，也就是block的类型</li>
-<li>flags，标志变量，在实现block的内部操作时会用到</li>
-<li>Reserved，保留变量</li>
-<li>FuncPtr，block执行时调用的函数指针</li>
-<li>可以看出，它包含了isa指针（包含isa指针的皆为对象），也就是说block也是一个对象* (runtime里面，对象和类都是用结构体表示)。</li>
-</ul>
-
-
-<p>__main_block_desc_0的定义如下：</p>
-
-<pre><code>    static struct __main_block_desc_0 {
-      size_t reserved;
-      size_t Block_size;
-    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
-</code></pre>
-
-<p>其结构成员含义如下：</p>
-
-<ul>
-<li>reserved：保留字段</li>
-<li>Block_size：block大小(sizeof(struct __main_block_impl_0))</li>
-<li>以上代码在定义<strong>main_block_desc_0结构体时，同时创建了</strong>main_block_desc_0_DATA，并给它赋值，以供在main函数中对__main_block_impl_0进行初始化。</li>
-</ul>
-
-
-<p>__main_block_impl_0定义了显式的构造函数，其函数体如下：</p>
-
-<pre><code>  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-</code></pre>
-
-<p>可以看出，</p>
-
-<ul>
-<li><em>_main_block_impl_0的isa指针指向了</em>NSConcreteStackBlock，</li>
-<li>从main函数中看， <strong>main_block_impl_0的FuncPtr指向了函数</strong>main_block_func_0</li>
-<li><strong>main_block_impl_0的Desc也指向了定义</strong>main_block_desc_0时就创建的__main_block_desc_0_DATA，其中纪录了block结构体大小等信息。</li>
-<li>以上就是根据编译转换的结果，对一个简单block的解析，后面会将block操作不同类型的外部变量，对block结构的影响进行相应的说明。</li>
-</ul>
-
-
-<h5>block实际结构</h5>
-
-<p>接下来观察下Block_private.h文件中对block的相关结构体的真实定义：</p>
-
-<pre><code>/* Revised new layout. */
-struct Block_descriptor {
-    unsigned long int reserved;
-    unsigned long int size;
-    void (*copy)(void *dst, void *src);
-    void (*dispose)(void *);
-};
-
-
-struct Block_layout {
-    void *isa;
-    int flags;
-    int reserved;
-    void (*invoke)(void *, ...);
-    struct Block_descriptor *descriptor;
-    /* Imported variables. */
-};
-</code></pre>
-
-<p>有了上文对编译转换的分析，这里只针对略微不同的成员进行分析：</p>
-
-<p>invoke，同上文的FuncPtr，block执行时调用的函数指针，block定义时内部的执行代码都在这个函数中
-Block_descriptor，block的详细描述</p>
-
-<ul>
-<li>copy/dispose，辅助拷贝/销毁函数，处理block范围外的变量时使用</li>
-<li>总体来说，block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。</li>
-</ul>
-
-
-<h3>block的类型</h3>
-
-<p>block的常见类型有3种：</p>
-
-<ul>
-<li>_NSConcreteGlobalBlock（全局）</li>
-<li>_NSConcreteStackBlock（栈）</li>
-<li>_NSConcreteMallocBlock（堆）</li>
-</ul>
-
-
-<p>附上APUE的进程虚拟内存段分布图：</p>
-
-<p><img src="/images/block001.png" title="Caption" ></p>
-
-<p>进程虚拟内存空间分布</p>
-
-<ul>
-<li>其中前2种在Block.h种声明，后1种在Block_private.h中声明，所以最后1种基本不会在源码中出现。</li>
-<li>由于无法直接创建_NSConcreteMallocBlock类型的block，所以这里只对前面2种进行手动创建分析，最后1种通过源代码分析。</li>
-</ul>
-
-
-<h5>NSConcreteGlobalBlock和NSConcreteStackBlock</h5>
-
-<p>首先，根据前面两种类型，编写以下代码：</p>
-
-<pre><code>void (^globalBlock)() = ^{
-
-};
-
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        void (^stackBlock1)() = ^{
-
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>对其进行编译转换后得到以下缩略代码：</p>
-
-<pre><code>// globalBlock
-struct __globalBlock_block_impl_0 {
-  struct __block_impl impl;
-  struct __globalBlock_block_desc_0* Desc;
-  __globalBlock_block_impl_0(void *fp, struct __globalBlock_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteGlobalBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-...
-
-// stackBlock
-struct __main_block_impl_0 {
-  struct __block_impl impl;
-  struct __main_block_desc_0* Desc;
-  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-...
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-        void (*stackBlock)() = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
-    }
-    return 0;
-}
-</code></pre>
-
-<p>可以看出globalBlock的isa指向了<em>NSConcreteGlobalBlock，即在全局区域创建，编译时具体的代码就已经确定在上图中的代码段中了，block变量存储在全局数据存储区；stackBlock的isa指向了</em>NSConcreteStackBlock，即在栈区创建。</p>
-
-<h5>NSConcreteMallocBlock</h5>
-
-<ul>
-<li><p>接下来是在堆中的block，堆中的block无法直接创建，其需要由<em>NSConcreteStackBlock类型的block拷贝而来(也就是说block需要执行copy之后才能存放到堆中)。由于block的拷贝最终都会调用</em>Block_copy_internal函数，所以观察这个函数就可以知道堆中block是如何被创建的了：</p>
-
-<pre><code>  static void *_Block_copy_internal(const void *arg, const int flags) {
-      struct Block_layout *aBlock;
-      ...
-      aBlock = (struct Block_layout *)arg;
-      ...
-      // Its a stack block.  Make a copy.
-      if (!isGC) {
-          // 申请block的堆内存
-          struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
-          if (!result) return (void *)0;
-          // 拷贝栈中block到刚申请的堆内存中
-          memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
-          // reset refcount
-          result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
-          result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
-          // 改变isa指向_NSConcreteMallocBlock，即堆block类型
-          result-&gt;isa = _NSConcreteMallocBlock;
-          if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-              //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
-              (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
-          }
-          return result;
-      }
-      else {
-          ...
-      }
-  }
-</code></pre>
-
-<p>从以上代码以及注释可以很清楚的看出，函数通过memmove将栈中的block的内容拷贝到了堆中，并使isa指向了_NSConcreteMallocBlock。
-block主要的一些学问就出在栈中block向堆中block的转移过程中了。</p></li>
-</ul>
-
-
-<p>捕捉变量对block结构的影响
-接下来会编译转换捕捉不同变量类型的block，以对比它们的区别。</p>
-
-<h5>局部变量</h5>
-
-<p>前：</p>
-
-<pre><code>- (void)test
-{
-    int a;
-    ^{a;};
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  int a;
-  // a(_a)是构造函数的参数列表初始化形式，相当于a = _a。从_I_Person_test看，传入的就是a
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int _a, int flags=0) : a(_a) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  int a = __cself-&gt;a; // bound by copy
-a;}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    int a;
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, a);
-}
-</code></pre>
-
-<p>可以看到，block相对于文章开头增加了一个int类型的成员变量，他就是用来存储外部变量a的。可以看出，这次拷贝只是一次值传递。并且当我们想在block中进行以下操作时，将会发生错误</p>
-
-<pre><code>^{a = 10;};
-</code></pre>
-
-<p>编译器会提示</p>
-
-<p><img src="/images/block002.png" title="Caption" ></p>
-
-<p>错误提示
-。因为_I_Person_test函数中的a和Persontest_block_func_0函数中的a并没有在同一个作用域，所以在block对a进行赋值是没有意义的，所以编译器给出了错误。我们可以通过地址传递来消除以上错误：</p>
-
-<pre><code>- (void)test
-{
-    int a = 0;
-    // 利用指针p存储a的地址
-    int *p = &amp;a;
-
-    ^{
-        // 通过a的地址设置a的值
-        *p = 10;
-    };
-}
-</code></pre>
-
-<p>但是变量a的生命周期是和方法test的栈相关联的，当test运行结束，栈随之销毁，那么变量a就会被销毁，p也就成为了野指针。如果block是作为参数或者返回值，这些类型都是跨栈的，也就是说再次调用会造成野指针错误。</p>
-
-<h5>全局变量</h5>
-
-<p>前：</p>
-
-<pre><code>// 全局静态
-static int a;
-// 全局
-int b;
-- (void)test
-{
-
-    ^{
-        a = 10;
-        b = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>static int a;
-int b;
-
-struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-
-        a = 10;
-        b = 10;
-    }
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA);
-}
-</code></pre>
-
-<p>可以看出，因为全局变量都是在静态数据存储区，在程序结束前不会被销毁，所以block直接访问了对应的变量，而没有在Persontest_block_impl_0结构体中给变量预留位置。</p>
-
-<h5>局部静态变量</h5>
-
-<p>前</p>
-
-<pre><code>- (void)test
-{
-    static int a;
-    ^{
-        a = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  int *a;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int *_a, int flags=0) : a(_a) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  int *a = __cself-&gt;a; // bound by copy
-        // 这里通过局部静态变量a的地址来对其进行修改
-        (*a) = 10;
-    }
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    static int a;
-    // 传入a的地址
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, &amp;a);
-}
-</code></pre>
-
-<p>需要注意一点的是静态局部变量是存储在静态数据存储区域的，也就是和程序拥有一样的生命周期，也就是说在程序运行时，都能够保证block访问到一个有效的变量。但是其作用范围还是局限于定义它的函数中，所以只能在block通过静态局部变量的地址来进行访问。
-关于变量的存储我原来的这篇博客有提及：c语言臆想&ndash;全局&mdash;局部变量</p>
-
-<h5>__block修饰的变量</h5>
-
-<p>前：</p>
-
-<pre><code>- (void)test
-{
-   __block int a;
-    ^{
-        a = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  __Block_byref_a_0 *a; // by ref
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
-        // 注意，这里的_forwarding用来保证操作的始终是堆中的拷贝a，而不是栈中的a
-        (a-&gt;__forwarding-&gt;a) = 10;
-    }
-static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
-  void (*dispose)(struct __Person__test_block_impl_0*);
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    // __block将a包装成了一个对象
-   __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
-;
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-}
-</code></pre>
-
-<p>可以看到，对比上面的结果，明显多了<strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，</strong>Person<strong>test_block_impl_0的拷贝辅助函数</strong>Person<strong>test_block_copy_0会将</strong>Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作。其中<strong>Block_byref_a_0成员指针</strong>forwarding用来指向它在堆中的拷贝，其依据源码如下：</p>
-
-<pre><code>static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
-    struct Block_byref **destp = (struct Block_byref **)dest;
-    struct Block_byref *src = (struct Block_byref *)arg;
-
-    ...
-    // 堆中拷贝的forwarding指向它自己
-    copy-&gt;forwarding = copy; // patch heap copy to point to itself (skip write-barrier)
-    // 栈中的forwarding指向堆中的拷贝
-    src-&gt;forwarding = copy;  // patch stack to point to heap copy
-    ...
-}
-</code></pre>
-
-<p>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
-至于block如何实现对局部变量的拷贝，下面会详细说明。</p>
-
-<h5>self隐式循环引用</h5>
-
-<p>前：</p>
-
-<pre><code>@implementation Person
-{
-    int _a;
-    void (^_block)();
-}
-- (void)test
-{
-  void (^_block)() = ^{
-        _a = 10;
-    };
-}
-
-@end
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  // 可以看到，block强引用了self
-  Person *self;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, Person *_self, int flags=0) : self(_self) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  Person *self = __cself-&gt;self; // bound by copy
-
-        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
-    }
-static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;self, (void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
-  void (*dispose)(struct __Person__test_block_impl_0*);
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-  void (*_block)() = (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, self, 570425344);
-}
-</code></pre>
-
-<p>如果在编译转换前，将<em>a改成self.a，能很明显地看出是产生了循环引用(self强引用block，block强引用self)。那么使用</em>a呢？经过编译转换后，依然可以在<strong>Person</strong>test_block_impl_0看见self的身影。且在函数<em>I_Person_test中，传入的参数也是self。通过以下语句，可以看出，不管是用什么形式访问实例变量，最终都会转换成self+变量内存偏移的形式。所以在上面例子中使用</em>a也会造成循环引用。</p>
-
-<pre><code>static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  Person *self = __cself-&gt;self; // bound by copy
-        // self＋实例变量a的偏移值
-        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
-    }
-</code></pre>
-
-<h3>不同类型block的复制</h3>
-
-<p>block的复制代码在_Block_copy_internal函数中。</p>
-
-<h5>栈block</h5>
-
-<p>从以下代码可以看出，栈block的复制不仅仅复制了其内容，还添加了一些额外的东西</p>
-
-<pre><code>* 1、往flags中并入了BLOCK_NEEDS_FREE（这个标志表明block需要释放，在release以及再次拷贝时会用到）
-
-* 2、如果有辅助copy函数（BLOCK_HAS_COPY_DISPOSE），那么就调用（这个辅助copy函数是用来拷贝block捕获的变量的）
-
-struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
-if (!result) return (void *)0;
-  memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
-// reset refcount
-result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
-result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
-result-&gt;isa = _NSConcreteMallocBlock;
-if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-      //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
-      (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
-  }
-  return result;
-</code></pre>
-
-<h5>堆block</h5>
-
-<p>从以下代码看出，如果block的flags中有BLOCK_NEEDS_FREE标志（block从栈中拷贝到堆时添加的标志），就执行latching_incr_int操作，其功能就是让block的引用计数加1。所以堆中block的拷贝只是单纯地改变了引用计数</p>
-
-<pre><code>  ...
-  if (aBlock-&gt;flags &amp; BLOCK_NEEDS_FREE) {
-        // latches on high
-        latching_incr_int(&amp;aBlock-&gt;flags);
-        return aBlock;
-    }
-  ...
-</code></pre>
-
-<h5>全局block</h5>
-
-<p>从以下代码看出，对于全局block，函数没有做任何操作，直接返回了传入的block</p>
-
-<pre><code>else if (aBlock-&gt;flags &amp; BLOCK_IS_GLOBAL) {
-      return aBlock;
-}
-</code></pre>
-
-<h3>block辅助函数</h3>
-
-<ul>
-<li>上文提及到了block辅助copy与dispose处理函数，这里分析下这两个函数的内部实现。在捕* 获变量为__block修饰的基本类型，或者为对象时，block才会有这两个辅助函数。</li>
-<li>block捕捉变量拷贝函数为<em>Block_object_assign。在调用复制block的函数</em>Block_copy_internal时，会根据block有无辅助函数来对捕捉变量拷贝函数<em>Block_object_assign进行调用。而在</em>Block_object_assign函数中，也会判断捕捉变量包装而成的对象(Block_byref结构体)是否有辅助函数，来进行调用。</li>
-</ul>
-
-
-<h5>__block修饰的基本类型的辅助函数</h5>
-
-<p>编写以下代码：</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        __block int a;
-        Block block = ^ {
-            a;
-        };
-}
-</code></pre>
-
-<p>转换成C++代码后：</p>
-
-<pre><code>typedef void(*Block)();
-// __block int a
-struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-// block
-struct __main_block_impl_0 {
-  struct __block_impl impl;
-  struct __main_block_desc_0* Desc;
-  __Block_byref_a_0 *a; // by ref
-  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-
-// block函数体
-static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
-
-            (a-&gt;__forwarding-&gt;a);
-        }
-// 辅助copy函数
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-// 辅助dispose函数
-static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static struct __main_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
-  void (*dispose)(struct __main_block_impl_0*);
-} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0};
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-        // 这里创建了，并将a的flags设置为0
-        __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
-;
-        Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-    }
-    return 0;
-}
-</code></pre>
-
-<p>从上面代码中，被<strong>block修饰的a变量变为了</strong>Block_byref_a_0类型，根据这个格式，从源码中查看得到相似的定义：</p>
-
-<pre><code>struct Block_byref {
-    void *isa;
-    struct Block_byref *forwarding;
-    int flags; /* refcount; */
-    int size;
-    void (*byref_keep)(struct Block_byref *dst, struct Block_byref *src);
-    void (*byref_destroy)(struct Block_byref *);
-    /* long shared[0]; */
-};
-
-// 做下对比
-struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-// flags/_flags类型
-enum {
-        /* See function implementation for a more complete description of these fields and combinations */
-        // 是一个对象
-        BLOCK_FIELD_IS_OBJECT   =  3,  /* id, NSObject, __attribute__((NSObject)), block, ... */
-        // 是一个block
-        BLOCK_FIELD_IS_BLOCK    =  7,  /* a block variable */
-        // 被__block修饰的变量
-        BLOCK_FIELD_IS_BYREF    =  8,  /* the on stack structure holding the __block variable */
-        // 被__weak修饰的变量，只能被辅助copy函数使用
-        BLOCK_FIELD_IS_WEAK     = 16,  /* declared __weak, only used in byref copy helpers */
-        // block辅助函数调用（告诉内部实现不要进行retain或者copy）
-        BLOCK_BYREF_CALLER      = 128  /* called from __block (byref) copy/dispose support routines. */
-    };
-</code></pre>
-
-<p>可以看出，__block将原来的基本类型包装成了对象。因为以上两个结构体的前4个成员的类型都是一样的，内存空间排列一致，所以可以进行以下操作：</p>
-
-<pre><code>// 转换成C++代码
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-// _Block_object_assign源码
-void _Block_object_assign(void *destAddr, const void *object, const int flags) {
-...
-    else if ((flags &amp; BLOCK_FIELD_IS_BYREF) == BLOCK_FIELD_IS_BYREF)  {
-        // copying a __block reference from the stack Block to the heap
-        // flags will indicate if it holds a __weak reference and needs a special isa
-        _Block_byref_assign_copy(destAddr, object, flags);
-    }
-...
-}
-
-// _Block_byref_assign_copy源码
-static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
-    // 这里因为前面4个成员的内存分布一样，所以直接转换后，使用Block_byref的成员变量名，能访问到__Block_byref_a_0的前面4个成员
-    struct Block_byref **destp = (struct Block_byref **)dest;
-    struct Block_byref *src = (struct Block_byref *)arg;
-...
-    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_REFCOUNT_MASK) == 0) {
-        // 从main函数对__Block_byref_a_0的初始化，可以看到初始化时将flags赋值为0
-        // 这里表示第一次拷贝，会进行复制操作，并修改原来flags的值
-        // static int _Byref_flag_initial_value = BLOCK_NEEDS_FREE | 2;
-        // 可以看出，复制后，会并入BLOCK_NEEDS_FREE，后面的2是block的初始引用计数
-        ...
-        copy-&gt;flags = src-&gt;flags | _Byref_flag_initial_value;
-        ...
-    }
-    // 已经拷贝到堆了，只增加引用计数
-    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_NEEDS_FREE) == BLOCK_NEEDS_FREE) {
-        latching_incr_int(&amp;src-&gt;forwarding-&gt;flags);
-    }
-    // 普通的赋值，里面最底层就*destptr = value;这句表达式
-    _Block_assign(src-&gt;forwarding, (void **)destp);
-}
-</code></pre>
-
-<p>主要操作都在代码注释中了，总体来说，__block修饰的基本类型会被包装为对象，并且只在最初block拷贝时复制一次，后面的拷贝只会增加这个捕获变量的引用计数。</p>
-
-<h5>对象的辅助函数</h5>
-
-<p>没有__block修饰</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        NSObject *a = [[NSObject alloc] init];
-        Block block = ^ {
-            a;
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>首先，在没有__block修饰时，对象编译转换的结果如下，删除了一些变化不大的代码：</p>
-
-<pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-  NSObject *a = __cself-&gt;a; // bound by copy
-            a;
-        }
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static struct __main_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
-  void (*dispose)(struct __main_block_impl_0*);
-} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0),
-</code></pre>
-
-<p>对象在没有<strong>block修饰时，并没有产生</strong>Block_byref_a_0结构体，只是将标志位修改为BLOCK_FIELD_IS_OBJECT。而在_Block_object_assign中对应的判断分支代码如下：</p>
-
-<pre><code>else if ((flags &amp; BLOCK_FIELD_IS_OBJECT) == BLOCK_FIELD_IS_OBJECT) {
-    _Block_retain_object(object);
-    _Block_assign((void *)object, destAddr);
-}
-</code></pre>
-
-<p>可以看到，block复制时，会retain捕捉对象，以增加其引用计数。</p>
-
-<p>有__block修饰</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        __block NSObject *a = [[NSObject alloc] init];
-        Block block = ^ {
-            a;
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>在这种情况下，编译转换的部分结果如下：</p>
-
-<pre><code>struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- void (*__Block_byref_id_object_copy)(void*, void*);
- void (*__Block_byref_id_object_dispose)(void*);
- NSObject *a;
-};
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 33554432, sizeof(__Block_byref_a_0), __Block_byref_id_object_copy_131, __Block_byref_id_object_dispose_131,....};
-Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-}
-
-// 以下的40表示__Block_byref_a_0对象a的位移（4个指针(32字节)＋2个int变量(8字节)＝40字节）
-    static void __Block_byref_id_object_copy_131(void *dst, void *src) {
-     _Block_object_assign((char*)dst + 40, *(void * *) ((char*)src + 40), 131);
-    }
-    static void __Block_byref_id_object_dispose_131(void *src) {
-     _Block_object_dispose(*(void * *) ((char*)src + 40), 131);
-    }
-</code></pre>
-
-<ol>
-<li><p>可以看到，对于对象，<strong>Block_byref_a_0另外增加了两个辅助函数</strong>Block_byref_id_object_copy、__Block_byref_id_object_dispose,以实现对对象</p></li>
-<li><p>内存的管理。其中两者的最后一个参数131表示BLOCK_BYREF_CALLER|BLOCK_FIELD_IS_OBJECT，BLOCK_BYREF_CALLER表示在内部实现中不对a对象进行retain或copy；以下为相关源码</p></li>
-</ol>
-
-
-<hr />
-
-<pre><code>if ((flags &amp; BLOCK_BYREF_CALLER) == BLOCK_BYREF_CALLER) {
-    ...
-    else {
-        // do *not* retain or *copy* __block variables whatever they are
-        _Block_assign((void *)object, destAddr);
-    }
-}
-</code></pre>
-
-<p>_Block_byref_assign_copy函数的以下代码会对上面的辅助函数（__Block_byref_id_object_copy_131）进行调用；570425344表示BLOCK_HAS_COPY_DISPOSE|BLOCK_HAS_DESCRIPTOR，所以会执行以下相关源码：</p>
-
-<pre><code>if (src-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-    // Trust copy helper to copy everything of interest
-    // If more than one field shows up in a byref block this is wrong XXX
-    copy-&gt;byref_keep = src-&gt;byref_keep;
-    copy-&gt;byref_destroy = src-&gt;byref_destroy;
-    (*src-&gt;byref_keep)(copy, src);
-}
-</code></pre>
-
-<h3>ARC中block的工作</h3>
-
-<p><img src="/images/block003.png" title="Caption" ></p>
-
-<p>苹果说明</p>
-
-<p>苹果文档提及，在ARC模式下，在栈间传递block时，不需要手动copy栈中的block，即可让block正常工作。主要原因是ARC对栈中的block自动执行了copy，将<em>NSConcreteStackBlock类型的block转换成了</em>NSConcreteMallocBlock的block。</p>
-
-<h5>block试验</h5>
-
-<p>下面对block做点实验：</p>
-
-<p>int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        int i = 10;
-        void (^block)() = ^{i;};</p>
-
-<pre><code>    __weak void (^weakBlock)() = ^{i;};
-
-    void (^stackBlock)() = ^{};
-
-    // ARC情况下
-
-    // 创建时，都会在栈中
-    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
-    NSLog(@"%@", ^{i;});
-
-    // 因为stackBlock为strong类型，且捕获了外部变量，所以赋值时，自动进行了copy
-    // &lt;__NSMallocBlock__: 0x100206920&gt;
-    NSLog(@"%@", block);
-
-    // 如果是weak类型的block，依然不会自动进行copy
-    // &lt;__NSStackBlock__: 0x7fff5fbff728&gt;
-    NSLog(@"%@", weakBlock);
-
-    // 如果block是strong类型，并且没有捕获外部变量，那么就会转换成__NSGlobalBlock__
-    // &lt;__NSGlobalBlock__: 0x100001110&gt;
-    NSLog(@"%@", stackBlock);
-
-    // 在非ARC情况下，产生以下输出
-    // &lt;__NSStackBlock__: 0x7fff5fbff6d0&gt;
-    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
-    // &lt;__NSStackBlock__: 0x7fff5fbff700&gt;
-    // &lt;__NSGlobalBlock__: 0x1000010d0&gt;
-}
-return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>可以看出，ARC对类型为strong且捕获了外部变量的block进行了copy。并且当block类型为strong，但是创建时没有捕获外部变量，block最终会变成<strong>NSGlobalBlock</strong>类型（这里可能因为block中的代码没有捕获外部变量，所以不需要在栈中开辟变量，也就是说，在编译时，这个block的所有内容已经在代码段中生成了，所以就把block的类型转换为全局类型）</p>
-
-<h5>block作为参数传递</h5>
-
-<p>再来看下使用在栈中的block需要注意的情况：</p>
-
-<pre><code>NSMutableArray *arrayM;
-void myBlock()
-{
-    int a = 5;
-    Block block = ^ {
-        NSLog(@"%d", a);
-    };
-
-    [arrayM addObject:block];
-    NSLog(@"%@", block);
-}
-
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        arrayM = @[].mutableCopy;
-
-        myBlock();
-
-        Block block = [arrayM firstObject];
-        // 非ARC这里崩溃
-        block();
- }
-
-// ARC情况下输出
-// &lt;__NSMallocBlock__: 0x100214480&gt;
-
-// 非ARC情况下输出
-// &lt;__NSStackBlock__: 0x7fff5fbff738&gt;
-// 崩溃，野指针错误
-</code></pre>
-
-<p>可以看到，ARC情况下因为自动执行了copy，所以返回类型为<strong>NSMallocBlock</strong>，在函数结束后依然可以访问；而非ARC情况下，需要我们手动调用[block copy]来将block拷贝到堆中，否则因为栈中的block生命周期和函数中的栈生命周期关联，当函数退出后，相应的堆被销毁，block也就不存在了。
-如果把block的以下代码删除：</p>
-
-<pre><code>NSLog(@"%d", a);
-那么block就会变成全局类型，在main中访问也不会出崩溃。
-</code></pre>
-
-<h5>block作为返回值</h5>
-
-<pre><code>在非ARC情况下，如果返回值是block，则一般这样操作：
-
-return [[block copy] autorelease];
-</code></pre>
-
-<p>对于外部要使用的block，更趋向于把它拷贝到堆中，使其脱离栈生命周期的约束。</p>
-
-<h5>block属性</h5>
-
-<p>这里还有一点关于block类型的ARC属性。上文也说明了，ARC会自动帮strong类型且捕获外部变量的block进行copy，所以在定义block类型的属性时也可以使用strong，不一定使用copy。也就是以下代码：</p>
-
-<pre><code>/** 假如有栈block赋给以下两个属性 **/
-
-// 这里因为ARC，当栈block中会捕获外部变量时，这个block会被copy进堆中
-// 如果没有捕获外部变量，这个block会变为全局类型
-// 不管怎么样，它都脱离了栈生命周期的约束
-
-@property (strong, nonatomic) Block *strongBlock;
-
-// 这里都会被copy进堆中
-@property (copy, nonatomic) Block *copyBlock;
-</code></pre>
-
-<p>参考博文
-谈Objective-C Block的实现(<a href="http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/">http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/</a>)
-iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/details/7756763">http://blog.csdn.net/jasonblog/article/details/7756763</a>)
-A look inside blocks: Episode 3
-runtime.c
-Block_private.h</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/06/blockshen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shen-jiu/">分类深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱majia03@meituan.com）。
-本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
-
-<ul>
-<li>初入宝地-category简介</li>
-<li>连类比事-category和extension</li>
-<li>挑灯细览-category真面目</li>
-<li>追本溯源-category如何加载</li>
-<li>旁枝末叶-category和+load方法</li>
-<li>触类旁通-category和方法覆盖</li>
-<li>更上一层-category和关联对象</li>
-</ul>
-
-
-<h3>1、初入宝地-category简介</h3>
-
-<p>category是Objective-C 2.0之后添加的语言特性，category的主要作用是为已经存在的类添加方法。除此之外，apple还推荐了category的另外两个使用场景1</p>
-
-<p>可以把类的实现分开在几个不同的文件里面。这样做有几个显而易见的好处，a)可以减少单个文件的体积 b)可以把不同的功能组织到不同的category里 c)可以由多个开发者共同完成一个类 d)可以按需加载想要的category 等等。
-声明私有方法
-不过除了apple推荐的使用场景，广大开发者脑洞大开，还衍生出了category的其他几个使用场景：</p>
-
-<p>模拟多继承
-把framework的私有方法公开
-Objective-C的这个语言特性对于纯动态语言来说可能不算什么，比如javascript，你可以随时为一个“类”或者对象添加任意方法和实例变量。但是对于不是那么“动态”的语言而言，这确实是一个了不起的特性。</p>
-
-<h3>2、连类比事-category和extension</h3>
-
-<p>extension看起来很像一个匿名的category，但是extension和有名字的category几乎完全是两个东西。 extension在编译期决议，它就是类的一部分，在编译期和头文件里的@interface以及实现文件里的@implement一起形成一个完整的类，它伴随类的产生而产生，亦随之一起消亡。extension一般用来隐藏类的私有信息，你必须有一个类的源码才能为一个类添加extension，所以你无法为系统的类比如NSString添加extension。（详见2）</p>
-
-<p>但是category则完全不一样，它是在运行期决议的。
-就category和extension的区别来看，我们可以推导出一个明显的事实，extension可以添加实例变量，而category是无法添加实例变量的（因为在运行期，对象的内存布局已经确定，如果添加实例变量就会破坏类的内部布局，这对编译型语言来说是灾难性的）。</p>
-
-<h3>3、挑灯细览-category真面目</h3>
-
-<p>我们知道，所有的OC类和对象，在runtime层都是用struct表示的，category也不例外，在runtime层，category用结构体category_t（在objc-runtime-new.h中可以找到此定义），它包含了
-1)、类的名字（name）
-2)、类（cls）
-3)、category中所有给类添加的实例方法的列表（instanceMethods）
-4)、category中所有添加的类方法的列表（classMethods）
-5)、category实现的所有协议的列表（protocols）
-6)、category中添加的所有属性（instanceProperties）</p>
-
-<pre><code>typedef struct category_t {
-    const char *name;
-    classref_t cls;
-    struct method_list_t *instanceMethods;
-    struct method_list_t *classMethods;
-    struct protocol_list_t *protocols;
-    struct property_list_t *instanceProperties;
-} category_t;
-</code></pre>
-
-<p>从category的定义也可以看出category的可为（可以添加实例方法，类方法，甚至可以实现协议，添加属性）和不可为（无法添加实例变量）。
-ok，我们先去写一个category看一下category到底为何物：</p>
-
-<p>MyClass.h：</p>
-
-<pre><code>#import &lt;Foundation/Foundation.h&gt;
-
-@interface MyClass : NSObject
-
-- (void)printName;
-
-@end
-</code></pre>
-
-<hr />
-
-<pre><code>@interface MyClass(MyAddition)
-
-@property(nonatomic, copy) NSString *name;
-
-- (void)printName;
-
-@end
-</code></pre>
-
-<p>MyClass.m：</p>
-
-<pre><code>#import "MyClass.h"
-
-@implementation MyClass
-
-- (void)printName
-{
-    NSLog(@"%@",@"MyClass");
-}
-
-@end
-</code></pre>
-
-<hr />
-
-<pre><code>@implementation MyClass(MyAddition)
-
-- (void)printName
-{
-    NSLog(@"%@",@"MyAddition");
-}
-
-@end
-</code></pre>
-
-<p>我们使用clang的命令去看看category到底会变成什么：</p>
-
-<p>clang -rewrite-objc MyClass.m
-好吧，我们得到了一个3M大小，10w多行的.cpp文件（这绝对是Apple值得吐槽的一点），我们忽略掉所有和我们无关的东西，在文件的最后，我们找到了如下代码片段：</p>
-
-<pre><code>static struct /*_method_list_t*/ {
-unsigned int entsize;  // sizeof(struct _objc_method)
-unsigned int method_count;
-struct _objc_method method_list[1];
-} _OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
-sizeof(_objc_method),
-1,
-
-};
-
-static struct /*_prop_list_t*/ {
-unsigned int entsize;  // sizeof(struct _prop_t)
-unsigned int count_of_properties;
-struct _prop_t prop_list[1];
-} _OBJC_$_PROP_LIST_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
-sizeof(_prop_t),
-1,
-name
-};
-
-extern "C" __declspec(dllexport) struct _class_t OBJC_CLASS_$_MyClass;
-
-static struct _category_t _OBJC_$_CATEGORY_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) =
-{
-"MyClass",
-0, // &amp;OBJC_CLASS_$_MyClass,
-(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition,
-0,
-0,
-(const struct _prop_list_t *)&amp;_OBJC_$_PROP_LIST_MyClass_$_MyAddition,
-};
-static void OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition(void ) {
-_OBJC_$_CATEGORY_MyClass_$_MyAddition.cls = &amp;OBJC_CLASS_$_MyClass;
-}
-#pragma section(".objc_inithooks$B", long, read, write)
-__declspec(allocate(".objc_inithooks$B")) static void *OBJC_CATEGORY_SETUP[] = {
-(void *)&amp;OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition,
-};
-static struct _class_t *L_OBJC_LABEL_CLASS_$ [1] __attribute__((used, section ("__DATA, __objc_classlist,regular,no_dead_strip")))= {
-&amp;OBJC_CLASS_$_MyClass,
-};
-static struct _class_t *_OBJC_LABEL_NONLAZY_CLASS_$[] = {
-&amp;OBJC_CLASS_$_MyClass,
-};
-static struct _category_t *L_OBJC_LABEL_CATEGORY_$ [1] __attribute__((used, section ("__DATA, __objc_catlist,regular,no_dead_strip")))= {
-&amp;_OBJC_$_CATEGORY_MyClass_$_MyAddition,
-};
-</code></pre>
-
-<p>我们可以看到，</p>
-
-<ul>
-<li><p>1)、首先编译器生成了实例方法列表OBJC$CATEGORY_INSTANCE_METHODS_MyClass$MyAddition和属性列表_OBJC$PROP_LIST_MyClass$MyAddition，两者的命名都遵循了公共前缀+类名+category名字的命名方式，而且实例方法列表里面填充的正是我们在MyAddition这个category里面写的方法printName，而属性列表里面填充的也正是我们在MyAddition里添加的name属性。</p>
-
-<ul>
-<li>还有一个需要注意到的事实就是category的名字用来给各种列表以及后面的category结构体本身命名，而且有static来修饰，所以在同一个编译单元里我们的category名不能重复，否则会出现编译错误。</li>
-</ul>
-</li>
-<li><p>2)、其次，编译器生成了category本身_OBJC$CATEGORY_MyClass$MyAddition，并用前面生成的列表来初始化category本身。</p></li>
-<li>3)、最后，编译器在DATA段下的objc_catlist section里保存了一个大小为1的category_t的数组L_OBJC_LABEL_CATEGORY$（当然，如果有多个category，会生成对应长度的数组^_^），用于运行期category的加载。
-到这里，编译器的工作就接近尾声了，对于category在运行期怎么加载，我们下节揭晓。</li>
-</ul>
-
-
-<h3>4、追本溯源-category如何加载</h3>
-
-<p>我们知道，Objective-C的运行是依赖OC的runtime的，而OC的runtime和其他系统库一样，是OS X和iOS通过dyld动态加载的。
-想了解更多dyld地同学可以移步这里（3）。</p>
-
-<p>对于OC运行时，入口方法如下（在objc-os.mm文件中）：</p>
-
-<pre><code>void _objc_init(void)
-{
-    static bool initialized = false;
-    if (initialized) return;
-    initialized = true;
-
-    // fixme defer initialization until an objc-using image is found?
-    environ_init();
-    tls_init();
-    lock_init();
-    exception_init();
-
-    // Register for unmap first, in case some +load unmaps something
-    _dyld_register_func_for_remove_image(&amp;unmap_image);
-    dyld_register_image_state_change_handler(dyld_image_state_bound,
-                                             1/*batch*/, &amp;map_images);
-    dyld_register_image_state_change_handler(dyld_image_state_dependents_initialized, 0/*not batch*/, &amp;load_images);
-}
-</code></pre>
-
-<p>category被附加到类上面是在map_images的时候发生的，在new-ABI的标准下，<em>objc_init里面的调用的map_images最终会调用objc-runtime-new.mm里面的</em>read_images方法，而在_read_images方法的结尾，有以下的代码片段：</p>
-
-<pre><code>// Discover categories. 
-    for (EACH_HEADER) {
-        category_t **catlist =
-            _getObjc2CategoryList(hi, &amp;count);
-        for (i = 0; i &lt; count; i++) {
-            category_t *cat = catlist[i];
-            class_t *cls = remapClass(cat-&gt;cls);
-
-            if (!cls) {
-                // Category's target class is missing (probably weak-linked).
-                // Disavow any knowledge of this category.
-                catlist[i] = NULL;
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: IGNORING category \?\?\?(%s) %p with "
-                                 "missing weak-linked target class",
-                                 cat-&gt;name, cat);
-                }
-                continue;
-            }
-
-            // Process this category. 
-            // First, register the category with its target class. 
-            // Then, rebuild the class's method lists (etc) if 
-            // the class is realized. 
-            BOOL classExists = NO;
-            if (cat-&gt;instanceMethods ||  cat-&gt;protocols 
-                ||  cat-&gt;instanceProperties)
-            {
-                addUnattachedCategoryForClass(cat, cls, hi);
-                if (isRealized(cls)) {
-                    remethodizeClass(cls);
-                    classExists = YES;
-                }
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: found category -%s(%s) %s",
-                                 getName(cls), cat-&gt;name,
-                                 classExists ? "on existing class" : "");
-                }
-            }
-
-            if (cat-&gt;classMethods  ||  cat-&gt;protocols 
-                /* ||  cat-&gt;classProperties */)
-            {
-                addUnattachedCategoryForClass(cat, cls-&gt;isa, hi);
-                if (isRealized(cls-&gt;isa)) {
-                    remethodizeClass(cls-&gt;isa);
-                }
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: found category +%s(%s)",
-                                 getName(cls), cat-&gt;name);
-                }
-            }
-        }
-    }
-</code></pre>
-
-<p>首先，我们拿到的catlist就是上节中讲到的编译器为我们准备的category_t数组，关于是如何加载catlist本身的，我们暂且不表，这和category本身的关系也不大，有兴趣的同学可以去研究以下Apple的二进制格式和load机制。
-略去PrintConnecting这个用于log的东西，这段代码很容易理解：</p>
-
-<ul>
-<li>1)、把category的实例方法、协议以及属性添加到类上</li>
-<li>2)、把category的类方法和协议添加到类的metaclass上</li>
-</ul>
-
-
-<p>值得注意的是，在代码中有一小段注释 / || cat->classProperties /，看来苹果有过给类添加属性的计划啊。
-ok，我们接着往里看，category的各种列表是怎么最终添加到类上的，就拿实例方法列表来说吧：
-在上述的代码片段里，addUnattachedCategoryForClass只是把类和category做一个关联映射，而remethodizeClass才是真正去处理添加事宜的功臣。</p>
-
-<pre><code>static void remethodizeClass(class_t *cls)
-{
-    category_list *cats;
-    BOOL isMeta;
-
-    rwlock_assert_writing(&amp;runtimeLock);
-
-    isMeta = isMetaClass(cls);
-
-    // Re-methodizing: check for more categories
-    if ((cats = unattachedCategoriesForClass(cls))) {
-        chained_property_list *newproperties;
-        const protocol_list_t **newprotos;
-
-        if (PrintConnecting) {
-            _objc_inform("CLASS: attaching categories to class '%s' %s",
-                         getName(cls), isMeta ? "(meta)" : "");
-        }
-
-        // Update methods, properties, protocols
-
-        BOOL vtableAffected = NO;
-        attachCategoryMethods(cls, cats, &amp;vtableAffected);
-
-        newproperties = buildPropertyList(NULL, cats, isMeta);
-        if (newproperties) {
-            newproperties-&gt;next = cls-&gt;data()-&gt;properties;
-            cls-&gt;data()-&gt;properties = newproperties;
-        }
-
-        newprotos = buildProtocolList(cats, NULL, cls-&gt;data()-&gt;protocols);
-        if (cls-&gt;data()-&gt;protocols  &amp;&amp;  cls-&gt;data()-&gt;protocols != newprotos) {
-            _free_internal(cls-&gt;data()-&gt;protocols);
-        }
-        cls-&gt;data()-&gt;protocols = newprotos;
-
-        _free_internal(cats);
-
-        // Update method caches and vtables
-        flushCaches(cls);
-        if (vtableAffected) flushVtables(cls);
-    }
-}
-</code></pre>
-
-<p>而对于添加类的实例方法而言，又会去调用attachCategoryMethods这个方法，我们去看下attachCategoryMethods：</p>
-
-<pre><code>static void 
-attachCategoryMethods(class_t *cls, category_list *cats,
-                      BOOL *inoutVtablesAffected)
-{
-    if (!cats) return;
-    if (PrintReplacedMethods) printReplacements(cls, cats);
-
-    BOOL isMeta = isMetaClass(cls);
-    method_list_t **mlists = (method_list_t **)
-        _malloc_internal(cats-&gt;count * sizeof(*mlists));
-
-    // Count backwards through cats to get newest categories first
-    int mcount = 0;
-    int i = cats-&gt;count;
-    BOOL fromBundle = NO;
-    while (i--) {
-        method_list_t *mlist = cat_method_list(cats-&gt;list[i].cat, isMeta);
-        if (mlist) {
-            mlists[mcount++] = mlist;
-            fromBundle |= cats-&gt;list[i].fromBundle;
-        }
-    }
-
-    attachMethodLists(cls, mlists, mcount, NO, fromBundle, inoutVtablesAffected);
-
-    _free_internal(mlists);
-
-}
-</code></pre>
-
-<p>attachCategoryMethods做的工作相对比较简单，它只是把所有category的实例方法列表拼成了一个大的实例方法列表，然后转交给了attachMethodLists方法（我发誓，这是本节我们看的最后一段代码了^_^），这个方法有点长，我们只看一小段：</p>
-
-<pre><code>for (uint32_t m = 0;
-             (scanForCustomRR || scanForCustomAWZ)  &amp;&amp;  m &lt; mlist-&gt;count;
-             m++)
-        {
-            SEL sel = method_list_nth(mlist, m)-&gt;name;
-            if (scanForCustomRR  &amp;&amp;  isRRSelector(sel)) {
-                cls-&gt;setHasCustomRR();
-                scanForCustomRR = false;
-            } else if (scanForCustomAWZ  &amp;&amp;  isAWZSelector(sel)) {
-                cls-&gt;setHasCustomAWZ();
-                scanForCustomAWZ = false;
-            }
-        }
-
-        // Fill method list array
-        newLists[newCount++] = mlist;
-    .
-    .
-    .
-
-    // Copy old methods to the method list array
-    for (i = 0; i &lt; oldCount; i++) {
-        newLists[newCount++] = oldLists[i];
-    }
-</code></pre>
-
-<p>需要注意的有两点：</p>
-
-<ul>
-<li>1)、category的方法没有“完全替换掉”原来类已经有的方法，也就是说如果category和原来类都有methodA，那么category附加完成之后，类的方法列表里会有两个methodA</li>
-<li>2)、category的方法被放到了新方法列表的前面，而原来类的方法被放到了新方法列表的后面，这也就是我们平常所说的category的方法会“覆盖”掉原来类的同名方法，这是因为运行时在查找方法的时候是顺着方法列表的顺序查找的，它只要一找到对应名字的方法，就会罢休^_^，殊不知后面可能还有一样名字的方法。</li>
-</ul>
-
-
-<h3>5、旁枝末叶-category和+load方法</h3>
-
-<p>我们知道，在类和category中都可以有+load方法，那么有两个问题：</p>
-
-<ul>
-<li>1)、在类的+load方法调用的时候，我们可以调用category中声明的方法么？</li>
-<li>2)、这么些个+load方法，调用顺序是咋样的呢？
-鉴于上述几节我们看的代码太多了，对于这两个问题我们先来看一点直观的：</li>
-</ul>
-
-
-<p>项目结构</p>
-
-<p>我们的代码里有MyClass和MyClass的两个category （Category1和Category2），MyClass和两个category都添加了+load方法，并且Category1和Category2都写了MyClass的printName方法。
-在Xcode中点击Edit Scheme，添加如下两个环境变量（可以在执行load方法以及加载category的时候打印log信息，更多的环境变量选项可参见objc-private.h）:</p>
-
-<p>环境变量</p>
-
-<p>运行项目，我们会看到控制台打印很多东西出来，我们只找到我们想要的信息，顺序如下：</p>
-
-<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category1
-objc[1187]: REPLACED: -[MyClass printName] by category Category2
-.
-.
-.
-objc[1187]: LOAD: class 'MyClass' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
-objc[1187]: LOAD: +[MyClass load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category1) load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category2) load]
-</code></pre>
-
-<p>所以，对于上面两个问题，答案是很明显的：</p>
-
-<ul>
-<li>1)、可以调用，因为附加category到类的工作会先于+load方法的执行</li>
-<li>2)、+load的执行顺序是先类，后category，而category的+load执行顺序是根据编译顺序决定的。
-目前的编译顺序是这样的：</li>
-</ul>
-
-
-<p>编译顺序1</p>
-
-<p>我们调整一个Category1和Category2的编译顺序，run。ok，我们可以看到控制台的输出顺序变了：</p>
-
-<p>编译顺序2</p>
-
-<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category2
-objc[1187]: REPLACED: -[MyClass printName] by category Category1
-.
-.
-.
-objc[1187]: LOAD: class 'MyClass' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
-objc[1187]: LOAD: +[MyClass load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category2) load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category1) load]
-</code></pre>
-
-<p>虽然对于+load的执行顺序是这样，但是对于“覆盖”掉的方法，则会先找到最后一个编译的category里的对应方法。
-这一节我们只是用很直观的方式得到了问题的答案，有兴趣的同学可以继续去研究一下OC的运行时代码。</p>
-
-<h3>6、触类旁通-category和方法覆盖</h3>
-
-<p>鉴于上面几节我们已经把原理都讲了，这一节只有一个问题:
-怎么调用到原来类中被category覆盖掉的方法？
-对于这个问题，我们已经知道category其实并不是完全替换掉原来类的同名方法，只是category在方法列表的前面而已，所以我们只要顺着方法列表找到最后一个对应名字的方法，就可以调用原来类的方法：</p>
-
-<pre><code>Class currentClass = [MyClass class];
-MyClass *my = [[MyClass alloc] init];
-
-if (currentClass) {
-    unsigned int methodCount;
-    Method *methodList = class_copyMethodList(currentClass, &amp;methodCount);
-    IMP lastImp = NULL;
-    SEL lastSel = NULL;
-    for (NSInteger i = 0; i &lt; methodCount; i++) {
-        Method method = methodList[i];
-        NSString *methodName = [NSString stringWithCString:sel_getName(method_getName(method)) 
-                                        encoding:NSUTF8StringEncoding];
-        if ([@"printName" isEqualToString:methodName]) {
-            lastImp = method_getImplementation(method);
-            lastSel = method_getName(method);
-        }
-    }
-    typedef void (*fn)(id,SEL);
-
-    if (lastImp != NULL) {
-        fn f = (fn)lastImp;
-        f(my,lastSel);
-    }
-    free(methodList);
-}
-</code></pre>
-
-<h3>7、更上一层-category和关联对象</h3>
-
-<p>如上所见，我们知道在category里面是无法为category添加实例变量的。但是我们很多时候需要在category中添加和对象关联的值，这个时候可以求助关联对象来实现。</p>
-
-<p>MyClass+Category1.h:</p>
-
-<pre><code>#import "MyClass.h"
-
-@interface MyClass (Category1)
-
-@property(nonatomic,copy) NSString *name;
-
-@end
-</code></pre>
-
-<p>MyClass+Category1.m:</p>
-
-<pre><code>#import "MyClass+Category1.h"
-#import &lt;objc/runtime.h&gt;
-
-@implementation MyClass (Category1)
-
-+ (void)load
-{
-    NSLog(@"%@",@"load in Category1");
-}
-
-- (void)setName:(NSString *)name
-{
-    objc_setAssociatedObject(self,
-                             "name",
-                             name,
-                             OBJC_ASSOCIATION_COPY);
-}
-
-- (NSString*)name
-{
-    NSString *nameObject = objc_getAssociatedObject(self, "name");
-    return nameObject;
-}
-
-@end
-</code></pre>
-
-<p>但是关联对象又是存在什么地方呢？ 如何存储？ 对象销毁时候如何处理关联对象呢？
-我们去翻一下runtime的源码，在objc-references.mm文件中有个方法_object_set_associative_reference：</p>
-
-<pre><code>void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
-    // retain the new value (if any) outside the lock.
-    ObjcAssociation old_association(0, nil);
-    id new_value = value ? acquireValue(value, policy) : nil;
-    {
-        AssociationsManager manager;
-        AssociationsHashMap &amp;associations(manager.associations());
-        disguised_ptr_t disguised_object = DISGUISE(object);
-        if (new_value) {
-            // break any existing association.
-            AssociationsHashMap::iterator i = associations.find(disguised_object);
-            if (i != associations.end()) {
-                // secondary table exists
-                ObjectAssociationMap *refs = i-&gt;second;
-                ObjectAssociationMap::iterator j = refs-&gt;find(key);
-                if (j != refs-&gt;end()) {
-                    old_association = j-&gt;second;
-                    j-&gt;second = ObjcAssociation(policy, new_value);
-                } else {
-                    (*refs)[key] = ObjcAssociation(policy, new_value);
-                }
-            } else {
-                // create the new association (first time).
-                ObjectAssociationMap *refs = new ObjectAssociationMap;
-                associations[disguised_object] = refs;
-                (*refs)[key] = ObjcAssociation(policy, new_value);
-                _class_setInstancesHaveAssociatedObjects(_object_getClass(object));
-            }
-        } else {
-            // setting the association to nil breaks the association.
-            AssociationsHashMap::iterator i = associations.find(disguised_object);
-            if (i !=  associations.end()) {
-                ObjectAssociationMap *refs = i-&gt;second;
-                ObjectAssociationMap::iterator j = refs-&gt;find(key);
-                if (j != refs-&gt;end()) {
-                    old_association = j-&gt;second;
-                    refs-&gt;erase(j);
-                }
-            }
-        }
-    }
-    // release the old value (outside of the lock).
-    if (old_association.hasValue()) ReleaseValue()(old_association);
-}
-</code></pre>
-
-<p>我们可以看到所有的关联对象都由AssociationsManager管理，而AssociationsManager定义如下：</p>
-
-<pre><code>class AssociationsManager {
-    static OSSpinLock _lock;
-    static AssociationsHashMap *_map;               // associative references:  object pointer -&gt; PtrPtrHashMap.
-public:
-    AssociationsManager()   { OSSpinLockLock(&amp;_lock); }
-    ~AssociationsManager()  { OSSpinLockUnlock(&amp;_lock); }
-
-    AssociationsHashMap &amp;associations() {
-        if (_map == NULL)
-            _map = new AssociationsHashMap();
-        return *_map;
-    }
-};
-</code></pre>
-
-<p>AssociationsManager里面是由一个静态AssociationsHashMap来存储所有的关联对象的。这相当于把所有对象的关联对象都存在一个全局map里面。而map的的key是这个对象的指针地址（任意两个不同对象的指针地址一定是不同的），而这个map的value又是另外一个AssociationsHashMap，里面保存了关联对象的kv对。
-而在对象的销毁逻辑里面，见objc-runtime-new.mm:</p>
-
-<pre><code>void *objc_destructInstance(id obj) 
-{
-    if (obj) {
-        Class isa_gen = _object_getClass(obj);
-        class_t *isa = newcls(isa_gen);
-
-        // Read all of the flags at once for performance.
-        bool cxx = hasCxxStructors(isa);
-        bool assoc = !UseGC &amp;&amp; _class_instancesHaveAssociatedObjects(isa_gen);
-
-        // This order is important.
-        if (cxx) object_cxxDestruct(obj);
-        if (assoc) _object_remove_assocations(obj);
-
-        if (!UseGC) objc_clear_deallocating(obj);
-    }
-
-    return obj;
-}
-</code></pre>
-
-<p>嗯，runtime的销毁对象函数objc_destructInstance里面会判断这个对象有没有关联对象，如果有，会调用_object_remove_assocations做关联对象的清理工作。</p>
-
-<blockquote><p>后记
-正如侯捷先生所讲-“源码面前，了无秘密”，Apple的Cocoa Touch框架虽然并不开源，但是Objective-C的runtime和Core Foundation却是完全开放源码的(在<a href="http://www.opensource.apple.com/tarballs/">DEMO</a>可以下载到全部的开源代码)。
-本系列runtime源码学习将会持续更新，意犹未尽的同学可以自行到上述网站下载源码学习。行笔简陋，如有错误，望指正。</p></blockquote>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/12/06/fen-lei-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -4394,7 +3307,15 @@ public:
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
       </li>
     
       <li class="post">
@@ -4403,14 +3324,6 @@ public:
     
       <li class="post">
         <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
       </li>
     
   </ul>

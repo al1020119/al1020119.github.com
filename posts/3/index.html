@@ -9,7 +9,10 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="消除警告 ordinal 前言： 现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间， &hellip;">
+  <meta name="description" content="够逼格的注释习惯总结 首先关于注意这里就不说什么VVDocument了，来点新鲜的！ 也许你使用过#warning 警告提示 也许你也使用过#pragma marks。 但是你见过或者使用过下面这个吗？ Comments containing:
+MARK:
+TODO:
+FIXME &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +77,463 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">够逼格的注释习惯</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>够逼格的注释习惯总结</p>
+
+<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+
+<h6>也许你使用过#warning 警告提示</h6>
+
+<h6>也许你也使用过#pragma marks。</h6>
+
+<p>但是你见过或者使用过下面这个吗？</p>
+
+<pre><code>Comments containing:
+MARK:
+TODO:
+FIXME:
+!!!:
+???:
+</code></pre>
+
+<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+
+<p> 首先说一下三个最常用的：</p>
+
+<ul>
+<li>1、TODO</li>
+</ul>
+
+
+<p> 等待实现的功能</p>
+
+<ul>
+<li>2、FIXME</li>
+</ul>
+
+
+<p> 需要修正的功能</p>
+
+<ul>
+<li>3、！！！</li>
+</ul>
+
+
+<p> 需要改进的功能</p>
+
+<p>具体使用</p>
+
+<pre><code>// FIXME:sss
+/* FIXME: sss */
+
+
+// MARK:sss
+/* MARK:sss */
+
+
+// !!!:sss
+/* !!!: sss */
+
+
+// ???:sss
+/* ???: sss */
+
+
+// TODO:sss
+/* TODO: sss */
+
+
+// Comments containing: sss
+/* Comments containing: sss */
+</code></pre>
+
+<p>注意空格.</p>
+
+<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+
+<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/03/nian-tie-shen-jiu/">粘贴深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
+
+<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
+
+<ul>
+<li>1、UITextView</li>
+<li>2、UITextField</li>
+<li>3、UIWebView</li>
+</ul>
+
+
+<h3>二、UIKit framework提供了几个类和协议方便我们在自己的应用程序中实现剪贴板的功能。</h3>
+
+<ul>
+<li>1、UIPasteboard：我们可以向其中写入数据，也可以读取数据</li>
+<li>2、UIMenuController：显示一个快捷菜单，用来复制、剪贴、粘贴选择的项。</li>
+<li>3、UIResponder中的 canPerformAction:withSender:用于控制哪些命令显示在快捷菜单中。</li>
+<li>4、当快捷菜单上的命令点击的时候，UIResponderStandardEditActions将会被调用。</li>
+</ul>
+
+
+<h3>三、下面这些项能被放置到剪贴板中</h3>
+
+<ul>
+<li>1、UIPasteboardTypeListString —  字符串数组, 包含kUTTypeUTF8PlainText</li>
+<li>2、UIPasteboardTypeListURL —   URL数组，包含kUTTypeURL</li>
+<li>3、UIPasteboardTypeListImage —   图形数组, 包含kUTTypePNG 和kUTTypeJPEG</li>
+<li>4、UIPasteboardTypeListColor —   颜色数组</li>
+</ul>
+
+
+<h3>四、剪贴板的类型分为两种：</h3>
+
+<p>系统级：使用UIPasteboardNameGeneral和UIPasteboardNameFind创建，系统级的剪贴板，当应用程序关闭，或者卸载时，数据都不会丢失。
+应用程序级：通过设置，可以让数据在应用程序关闭之后仍然保存在剪贴板中，但是应用程序卸载之后数据就会失去。我们可用通过pasteboardWithName:create：来创建。</p>
+
+<p>了解这些之后，下面通过一系列的例子来说明如何在应用程序中使用剪贴板。</p>
+
+<p>例子：</p>
+
+<h5>1、复制剪贴文本。</h5>
+
+<pre><code>下面通过一个例子，可以在tableview上显示一个快捷菜单，上面只有复制按钮，复制tableview上的数据之后，然后粘贴到title上。
+</code></pre>
+
+<p>定义一个单元格类CopyTableViewCell，在这个类的上显示快捷菜单，实现复制功能。</p>
+
+<pre><code>@interface CopyTableViewCell : UITableViewCell {
+    id delegate;
+}
+@property (nonatomic, retain) id delegate;
+@end
+</code></pre>
+
+<p>实现CopyTableViewCell ：</p>
+
+<pre><code>#import "CopyTableViewCell.h"
+
+@implementation CopyTableViewCell
+
+@synthesize delegate;
+
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
+    }
+    return self;
+}
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+}
+- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [[self delegate] performSelector:@selector(showMenu:)
+                          withObject:self afterDelay:0.9f];
+
+    [super setHighlighted:highlighted animated:animated];
+
+}
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
+    if (action == @selector(cut:)){
+        return NO;
+    }
+    else if(action == @selector(copy:)){
+        return YES;
+    }
+    else if(action == @selector(paste:)){
+        return NO;
+    }
+    else if(action == @selector(select:)){
+        return NO;
+    }
+    else if(action == @selector(selectAll:)){
+        return NO;
+    }
+    else
+    {
+        return [super canPerformAction:action withSender:sender];
+    }
+}
+- (void)copy:(id)sender {
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    [pasteboard setString:[[self textLabel]text]];
+}
+- (void)dealloc {
+    [super dealloc];
+}
+@end
+</code></pre>
+
+<p>复制代码
+定义CopyPasteTextController，实现粘贴功能。
+    @interface CopyPasteTextController : UIViewController<UITableViewDelegate> {
+        //用来标识是否显示快捷菜单
+        BOOL menuVisible;
+        UITableView *tableView;
+    }</p>
+
+<pre><code>@property (nonatomic, getter=isMenuVisible) BOOL menuVisible;
+
+@property (nonatomic, retain) IBOutlet UITableView *tableView;
+@end
+</code></pre>
+
+<p>实现CopyPasteTextController ：</p>
+
+<pre><code>#import "CopyPasteTextController.h"
+#import "CopyTableViewCell.h"
+
+@implementation CopyPasteTextController
+@synthesize menuVisible,tableView;
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self setTitle:@"文字复制粘贴"];
+    //点击这个按钮将剪贴板的内容粘贴到title上
+    UIBarButtonItem *addButton = [[[UIBarButtonItem alloc]
+                                      initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
+                                      target:self
+                                      action:@selector(readFromPasteboard:)]
+                                     autorelease];
+    [[self navigationItem] setRightBarButtonItem:addButton];
+}
+
+
+// Customize the number of sections in the table view.
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 9;
+}
+
+// Customize the appearance of table view cells.
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *CellIdentifier =@"Cell";
+    CopyTableViewCell *cell = (CopyTableViewCell *)[tableView
+                                                           dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[[CopyTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+        [cell setDelegate:self];
+    }
+
+    // Configure the cell.
+    NSString *text = [NSString stringWithFormat:@"Row %d", [indexPath row]];
+    [[cell textLabel] setText:text];
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if([self isMenuVisible])
+    {
+        return;
+    }
+    [[[self tableView] cellForRowAtIndexPath:indexPath] setSelected:YES
+                                                           animated:YES];
+}
+//显示菜单
+- (void)showMenu:(id)cell {
+    if ([cell isHighlighted]) {
+        [cell becomeFirstResponder];
+
+        UIMenuController * menu = [UIMenuController sharedMenuController];
+        [menu setTargetRect: [cell frame] inView: [self view]];
+        [menu setMenuVisible: YES animated: YES];
+    }
+}
+- (void)readFromPasteboard:(id)sender {
+    [self setTitle:[NSString stringWithFormat:@"Pasteboard = %@",
+                      [[UIPasteboard generalPasteboard] string]]];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    // Releases the view if it doesn't have a superview.
+    [super didReceiveMemoryWarning];
+
+    // Relinquish ownership any cached data, images, etc that aren't in use.
+}
+
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+    [self.tableView release];
+
+    // Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
+    // For example: self.myOutlet = nil;
+}
+</code></pre>
+
+<p>复制一行数据：
+点击右上角的按钮粘贴，将数据显示在title上：</p>
+
+<h6>2、图片复制粘贴</h6>
+
+<p>   下面通过一个例子，将图片复制和剪贴到另外一个UIImageView中间。</p>
+
+<ul>
+<li>1、在界面上放置两个uiimageview，一个是图片的数据源，一个是将图片粘贴到的地方。CopyPasteImageViewController 代码如下：</li>
+</ul>
+
+
+<p>@interface CopyPasteImageViewController : UIViewController {
+    UIImageView <em>imageView;
+    UIImageView </em>pasteView;
+    UIImageView <em>selectedView;
+}
+@property (nonatomic, retain) IBOutlet UIImageView </em>imageView;
+@property (nonatomic, retain) IBOutlet UIImageView <em>pasteView;
+@property (nonatomic, retain) UIImageView </em>selectedView;
+- (void)placeImageOnPasteboard:(id)view;
+@end
+* 2、当触摸图片的时候我们显示快捷菜单：</p>
+
+<hr />
+
+<pre><code>- (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
+    NSSet *copyTouches = [event touchesForView:imageView];
+    NSSet *pasteTouches = [event touchesForView:pasteView];
+
+    [self becomeFirstResponder];
+    if ([copyTouches count] &gt; 0) {
+        [self performSelector:@selector(showMenu:)
+                   withObject:imageView afterDelay:0.9f];
+    }
+    else  if([pasteTouches count] &gt; 0) {
+        [self performSelector:@selector(showMenu:)
+                   withObject:pasteView afterDelay:0.9f];
+    }
+    [super touchesBegan:touches withEvent:event];
+}
+
+- (void)showMenu:(id)view {
+    [self setSelectedView:view];
+
+    UIMenuController * menu = [UIMenuController sharedMenuController];
+    [menu setTargetRect: CGRectMake(5, 10, 1, 1) inView: view];
+    [menu setMenuVisible: YES animated: YES];
+}
+</code></pre>
+
+<p>这里的快捷菜单，显示三个菜单项：剪贴、粘贴、复制：</p>
+
+<hr />
+
+<pre><code>- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
+    if (action == @selector(cut:)) {
+        return ([self selectedView] == imageView) ? YES : NO;
+    } else if (action == @selector(copy:)) {
+        return ([self selectedView] == imageView) ? YES : NO;
+    } else if (action == @selector(paste:)) {
+        return ([self selectedView] == pasteView) ? YES : NO;
+    } else if (action == @selector(select:)) {
+        return NO;
+    } else if (action == @selector(selectAll:)) {
+        return NO;
+    } else {
+        return [super canPerformAction:action withSender:sender];
+    }
+}
+- (void)cut:(id)sender {
+    [self copy:sender];
+    [imageView setHidden:YES];
+}
+- (void)copy:(id)sender {
+    [self placeImageOnPasteboard:[self imageView]];
+}
+- (void)paste:(id)sender {
+    UIPasteboard *appPasteBoard =
+    [UIPasteboard pasteboardWithName:@"CopyPasteImage" create:YES];
+    NSData *data =[appPasteBoard dataForPasteboardType:@"com.marizack.CopyPasteImage.imageView"];
+    pasteView.image = [UIImage imageWithData:data];
+}
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/03/nian-tie-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/03/nian-tie-shen-jiu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1997,1122 +2457,6 @@ header.delegate = self; //让控制器充当代理
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/">iOS版本适配问题（6，7，8，9）</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>iOS6新特性</h2>
-
-<h4>一、关于内存警告</h4>
-
-<p>ios6中废除了viewDidUnload，viewWillUnload这两个系统回调，收到内存警告时在didReceiveMemoryWarning中进行相关的处理。</p>
-
-<pre><code>- (void)viewDidUnload {
-    [super viewDidUnload];
-    // 处理 ios6 以下的系统内存警告系统回调消息
-}
-
-// 这里处理ios6 的内存警告
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-
-float sysVer = [[[UIDevice currentDevice] systemVersion] floatValue];
-//ios6 的特殊处理
-
-if (sysVer &gt;= 6.0f) {
-    // 保证 invisible,  因为即使在当前界面也会收到系统回调
-    if (self.view.window == nil) {
-        //.......
-        // 做相关的释放操作
-        self.view = nil;   // 确保下次会重新加载
-    }
-}
-}
-</code></pre>
-
-<h4>二、关于屏幕旋转</h4>
-
-<p>同样ios6 废除了shouldAutorotateToInterfaceOrientation这个旋转屏幕的设置接口。</p>
-
-<ul>
-<li><p>必须在两个新接口中设置旋转属性:shouldAutorotate、supportedInterfaceOrientations。</p></li>
-<li><p>收到旋转事件后的处理，同样在willRotateToInterfaceOrientation和didRotateFromInterfaceOrientation中进行。</p></li>
-</ul>
-
-
-<h4>三、UISwitch</h4>
-
-<p>ios6下，新增了以下几个属性，可以设置开关的颜色以及背景图。</p>
-
-<pre><code>@property (nonatomic,  retain) UIColor *tintColor;
-
-@property (nonatomic,  retain) UIColor *thumbTintColor;
-
-@property (nonatomic,  retain) UIImage *onImage;
-
-@property (nonatomic,  retain) UIImage *offImage;
-</code></pre>
-
-<h4>四、UINavigationBar</h4>
-
-<p>ios6新增了，设置阴影图片的属性。</p>
-
-<pre><code>@property (nonatomic, retain) UIImage *shadowImage;
-</code></pre>
-
-<h4>五、UIImage</h4>
-
-<p>可以在ios6下设置图片的scale比例尺寸了。</p>
-
-<pre><code>+ (UIImage *)imageWithData:(NSData *)data scale:(CGFloat)scale;
-
-- (id)initWithData:(NSData *)data scale:(CGFloat)scale;
-</code></pre>
-
-<h4>六、UIRefreshControl</h4>
-
-<p>之前苹果官方是没有现成的下拉刷新的控件，都是自己实现或者使用比较成熟的开源库。</p>
-
-<ul>
-<li>ios6苹果加入了UIRefreshControl，配合UITableView直接实现下拉刷新。</li>
-</ul>
-
-
-<h4>七、UICollectionView</h4>
-
-<p>全新的集合控件，应用场景有类似照片墙，瀑布流等。</p>
-
-<h2>iOS7新特性</h2>
-
-<h4>一、已禁用-[UIDevice uniqueIdentifier]</h4>
-
-<p>苹果总是把用户的隐私看的很重要。-[UIDevice uniqueIdentifier]在iOS5实际在iOS5的时候已经被遗弃了，但是iOS7中已经完全的禁用了它。Xcode5甚至不会允许你编译包含了指引到-[UIDevice uniqueIdentifier]的app。</p>
-
-<ul>
-<li>此外，iOS7之前的使用了-[UIDevice uniqueIdentifier] 的app如果在iOS7上运行，它不会返回设备的UUID，而是会返回一串字符串，以FFFFFFFF开头，跟着-[UIDevice identifierForVendor]的十六进制值。</li>
-</ul>
-
-
-<h4>二、UIPasteboard由共享变为沙盒化了</h4>
-
-<p>UIPasteboard过去是用来做app之间的数据分享的。UIPasteboard本无问题，但是开发者开始使用它来存储标识符，和其他的相关app分享这些标识符的时候问题就出现了。有一个使用这种把戏的就是OpenUDID。</p>
-
-<ul>
-<li>在iOS7中，使用 +[UIPasteboard pasteboardWithName:create:]和 +[UIPasteboard pasteboardWithUniqueName]创建剪贴板，而且只对相同的app group可见，这样就让OpenUDID不那么有用了。</li>
-</ul>
-
-
-<h4>三、MAC地址不能再用来设别设备</h4>
-
-<p>还有一个生成iOS设备唯一标示符的方法是使用iOS设备的Media Access Control（MAC）地址。一个MAC地址是一个唯一的号码，它是物理网络层级方面分配给网络适配器的。这个地址苹果还有其他的名字，比如说是硬件地址（Hardware Address)或是Wifi地址，都是指同样的东西。</p>
-
-<ul>
-<li><p>有很多工程和框架都使用这个方法来生成唯一的设备ID。比如说ODIN。然而，苹果并不希望有人通过MAC地址来分辨用户，所以如果你在iOS7系统上查询MAC地址，它现在只会返回02:00:00:00:00:00。</p></li>
-<li><p>现在苹果明确的表明你应该使用-[UIDevice identifierForVendor]或是-[ASIdentifierManager advertisingIdentifier]来作为你框架和应用的唯一标示符。坦白的来说，应对这些变化也不是那么的难，见以下代码片段：</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code>NSString *identifierForVendor = [[UIDevice currentDevice].identifierForVendor UUIDString];
-
-NSString *identifierForAdvertising = [[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString];
-</code></pre>
-
-<p>每种方法都适配一种特别的用法：</p>
-
-<ul>
-<li><p>identifierForVendor对供应商来说是唯一的一个值，也就是说，由同一个公司发行的的app在相同的设备上运行的时候都会有这个相同的标识符。然而，如果用户删除了这个供应商的app然后再重新安装的话，这个标识符就会不一致。</p></li>
-<li><p>advertisingIdentifier会返回给在这个设备上所有软件供应商相同的 一个值，所以只能在广告的时候使用。这个值会因为很多情况而有所变化，比如说用户初始化设备的时候便会改变。</p></li>
-</ul>
-
-
-<h4>四、iOS现在要求app如需使用麦克风，需要征得用户同意</h4>
-
-<p>以前如果app需要使用用户的位置，通讯录，日历，提醒以及照片，接受推送消息，使用用户的社交网络的时候需要征得用户的同意。现在在iOS7当中，使用麦克风也需要取得用户同意了。如果用户不允许app使用麦克风的话，那么需要使用麦克风的app就不能接收不到任何声音。</p>
-
-<p>以下的代码是用来查询用户是否允许app使用麦克风：</p>
-
-<pre><code>//第一次调用这个方法的时候，系统会提示用户让他同意你的app获取麦克风的数据
-// 其他时候调用方法的时候，则不会提醒用户
-// 而会传递之前的值来要求用户同意
-[[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
-    if (granted) {
-        // 用户同意获取数据
-    } else {
-        // 可以显示一个提示框告诉用户这个app没有得到允许？
-    }
-}];
-</code></pre>
-
-<p>你同时还要注意，如果你在获得用户的同意之前使用任何方法来使用麦克风的话，会引起iOS系统弹出以下警示栏：</p>
-
-<p><img src="/images/banbenshipei001.jpg" title="Caption" ></p>
-
-<h4>五、[NSArray firstObject]的实现</h4>
-
-<p>-[NSArray firstObject]可能是Objective-C中被调用做多的API。在Open Radar上一个简单的调查显示有一些需求苹果已经做了记录。好消息是现在这些需求已经得到了解决。. firstObject的使用可以追溯到iOS4.0，但是那时仅仅是一个私有方法。在iOS7以前，工程师用下面的方式来使用它：</p>
-
-<pre><code>NSArray *arr = @[];
-id item = [arr firstObject];
-
-// 在之前你需要做以下工作
-id item = [arr count] &gt; 0 ? arr[0] : nil;
-</code></pre>
-
-<p>因为上面的方式很平常，有些人将它作为一个类增加到NSArray中，然后创建他们自己的firstObject方法。</p>
-
-<p>这个方法的问题是这个方法的名字必须是唯一的，否则的话这个方法所引发的问题无法预估。</p>
-
-<ul>
-<li>请确保检查你是否有任何自定义的代码在NSArray上实现了firstObject，如果有的话看看它是否是必须的，不是必须的话就把它全部移除。</li>
-</ul>
-
-
-<h4>六、增加了instancetype</h4>
-
-<p>instancetype让iOS7API变得更加难懂。苹果改变了大部分 initializer和简易构造函数（convenience constructors），用instancetype代替id作返回类型。但是这个instancetype是什么呢？</p>
-
-<ul>
-<li><p>instancetype用来在声明一个方法时告诉编译器其返回类型，它表示返回调用该方法的类的对象。</p></li>
-<li><p>这比之前返回id的通常做法要好，编译器可以对返回类型做一些检查，如果出现错误，在编译时就能提醒你，而不是在程序运行时发生崩溃。</p></li>
-<li><p>同时，在调用子类方法时，使用它还可以省去对返回值的强制类型转换，编译器能够正确推断方法的返回值类型。</p></li>
-<li><p>要说到instancetaype的缺点和优点吗？基本上，在任何可能的情况下都可以使用它。</p></li>
-</ul>
-
-
-<h4>七、设置UIImage的渲染模式：UIImage.renderingMode</h4>
-
-<p>着色（Tint Color）是iOS7界面中的一个重大改变，你可以设置一个UIImage在渲染时是否使用当前视图的Tint Color。</p>
-
-<pre><code>UIImage新增了一个只读属性：renderingMode，对应的还有一个新增方法：*imageWithRenderingMode:，它使用UIImageRenderingMode枚举值来设置图片的renderingMode属性。该枚举中包含下列值：
-
-
-
-// 根据图片的使用环境和所处的绘图上下文自动调整渲染模式
-UIImageRenderingModeAutomatic 
-
-// 始终绘制图片原始状态，不使用Tint Color
-UIImageRenderingModeAlwaysOriginal 
-
-// 始终根据Tint Color绘制图片，忽略图片的颜色信息
-UIImageRenderingModeAlwaysTemplate
-</code></pre>
-
-<p>renderingMode属性的默认值是UIImageRenderingModeAutomatic，即UIImage是否使用
-Tint Color取决于它显示的位置。其他情况可以看下面的图例：</p>
-
-<p><img src="/images/banbenshipei002.png" title="Caption" ></p>
-
-<p>以下的代码说明了使用一个既定的rendering模式创建图片是多么简单：</p>
-
-<pre><code>UIImage *img = [UIImage imageNamed:@"myimage"];
-
-img = [img imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-</code></pre>
-
-<h4>八、tintcolor VS barTintColor</h4>
-
-<p>iOS7中你可以使用一个给定的颜色，甚至是记入颜色主题来给整个app着色，帮助你的app脱颖而出。设置app的tint color很简答，只要使用UIView的新属性tintColor即可。</p>
-
-<p>这个属性是否听上去很熟悉呢？应该很熟悉，有些类，比如说UINaviagtionBar，UISearchBar，UITabBar以及UIToolbar已经有了这么命名的属性。他们现在有了一个新的属性：barTintColor。</p>
-
-<p>为了避免使用新属性的时候犯错误，如果你的appp需要支持iOS6以前的系统的时候，请检查一下。</p>
-
-<pre><code>UINavigationBar *bar = self.navigationController.navigationBar;
-UIColor *color = [UIColor greenColor];
-
-if ([bar respondsToSelector:@selector(setBarTintColor:)]) { // iOS 7+
-    bar.barTintColor = color;
-} else { // what year is this? 2012?
-    bar.tintColor = color;
-}
-</code></pre>
-
-<h4>九、去掉了纹理颜色</h4>
-
-<p><img src="/images/banbenshipei003.jpg" title="Caption" ></p>
-
-<p>纹理颜色？对，不再使用他们了，不能再创建可以展现纹理的颜色。</p>
-
-<p>根据UIInterface.h文件中的注释，-[UIColor groupTableViewBackgroundColor]应该是要在iOS6当中即被删除了，但是它仅仅只是不像之前那样返回纹理颜色了。然而，以下的颜色在iOS7当中被删除了:</p>
-
-<pre><code>+ (UIColor *)viewFlipsideBackgroundColor;
-
-+ (UIColor *)scrollViewTexturedBackgroundColor;
-
-+ (UIColor *)underPageBackgroundColor;
-</code></pre>
-
-<h4>十、UIButtonTypeRoundRect被UIButtonTypeSystem取代了</h4>
-
-<p><img src="/images/banbenshipei004.jpg" title="Caption" ></p>
-
-<ul>
-<li><p>在iOS开发刚开始就陪伴着你的老朋友现在也被删除了，它就是UIButtonTypeRoundRect ，被新的UIButtonTypeSystem取代了。</p></li>
-<li><p>如果每次iOS系统的发布都没有一些新的功能会是什么样子？这些新功能相信大部分开发者已经知道了，你可能会发现一些新颖的方式将它们整合到你的app中去！</p></li>
-</ul>
-
-
-<h4>十一、检查无线路由是否可用</h4>
-
-<p>定制一个视频播放器的能力在iOS版本每次的发布中一直有所进步。比如说，在iOS6之前，你不能在MPVolumeView中改变AirPlay的icon。</p>
-
-<p>在iOS7当中，你可以通过AirPlay，蓝牙或是其他的虚线机制了解是否有一个远程的设备可用。了解它的话，就可以让你的app在恰当的时候做恰当的事，比如说，在没有远程设备的时候就不显示AirPlay的icon。</p>
-
-<p>以下是新增加到MPVolumeView的新属性和推送</p>
-
-<pre><code>@property (nonatomic, readonly) BOOL wirelessRoutesAvailable; //  是否有设备可以连接的无线线路？
-@property (nonatomic, readonly) BOOL wirelessRouteActive; // 设备现在是否连接上了网络
-NSString *const MPVolumeViewWirelessRoutesAvailableDidChangeNotification;
-NSString *const MPVolumeViewWirelessRouteActiveDidChangeNotification;
-</code></pre>
-
-<h4>十二、了解蜂窝网络</h4>
-
-<p>在iOS7之前，是使用Reachability来检测设备是否连接到WWAN或是Wifi的。iOS7在这个基础上更进了一步，它会告诉你的设备连接上的是那种蜂窝网络，比如说是Edge网络，HSDPA网络，或是LTE网络。告诉用户他们连接上的是哪种网络可以优化用户体验，因为这样他们会知道网速如何，不会去请求需要高网速的网络请求。</p>
-
-<p>这是CTTelephonyNetworkInfo的部分功能，它是CoreTelephony框架的一部分。iOS7还增加了currentRadioAccessTechnology属性和CTRadioAccessTechnologyDidChangeNotification到这个类。还有一些新的字符串常量来定义可能的值，比如说是CTRadioAccessTechnologyLTE。</p>
-
-<p>以下代码告诉你在app delegate中如何使用这个新功能：</p>
-
-<pre><code>@import CoreTelephony.CTTelephonyNetworkInfo; // new modules syntax!
-@interface AppDelegate ()
-// we need to keep a reference to the CTTelephonyNetworkInfo object, otherwise the notifications won't be fired!
-@property (nonatomic, strong) CTTelephonyNetworkInfo *networkInfo;
-@end
-
-@implementation ViewController
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // whatever stuff your method does...
-
-    self.networkInfo = [[CTTelephonyNetworkInfo alloc] init];
-    NSLog(@"Initial cell connection: %@", self.networkInfo.currentRadioAccessTechnology);
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(radioAccessChanged) name:
-     CTRadioAccessTechnologyDidChangeNotification object:nil];
-
-    // whatever stuff your method does...
-}
-
-- (void)radioAccessChanged {
-    NSLog(@"Now you're connected via %@", self.networkInfo.currentRadioAccessTechnology);
-}
-
-@end
-</code></pre>
-
-<h6>##注意：研究一下CTTelephonyNetworkInfo.h 文件来看看是否有其他无线网络类型的的字符串常量。如果设备没有连上的话，currentRadioAccessTechnology 则会返回nil。</h6>
-
-<h4>十三、通过iCloud同步用户设备的密码</h4>
-
-<p>iOS7以及Mavericks增加了iCloud Keychain来提供密码，以及iCloud中一些敏感数据的同步。开发者可以通过keychain中的kSecAttrSynchronizable key来遍历dictionary对象。</p>
-
-<p>由于直接处理keychain比较难，封装库提供了一个简单的处理keychain的方法。SSKeychain封装库可能是最有名的的一个，作为一种福利，现在它支持在iCloud同步。</p>
-
-<p>以下代码片段显示了如何使用SSKeychain：</p>
-
-<pre><code>#import &lt;SSKeychain.h&gt;
-
-- (BOOL)saveCredentials:(NSError **)error {
-    SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
-    query.password = @"MySecretPassword";
-    query.service = @"MyAwesomeService";
-    query.account = @"John Doe";
-    query.synchronizable = YES;
-    return [query save:&amp;error];
-}
-
-- (NSString *)savedPassword:(NSError **)error {
-    SSKeychainQuery *query = [[SSKeychainQuery alloc] init];
-    query.service = @"MyAwesomeService";
-    query.account = @"John Doe";
-    query.synchronizable = YES;
-    query.password = nil;
-    if ([query fetch:&amp;error]) {
-        return query.password;
-    }
-    return nil;
-}
-</code></pre>
-
-<p>不要忘记CocoaPods是快速便捷安装SSKeychian的好方法。</p>
-
-<h4>十四、使用NSAttributedString显示HTML</h4>
-
-<p>在app中使用webview有时会让人非常沮丧，即使只是显示少量的HTMLneirong ,webview也会消耗大量的内存。现在iOS7让这些变得简单了，你可以从用少量代码在HTML文件中创建一个NSAttributedString，比如：</p>
-
-<pre><code>NSString *html = @"&lt;bold&gt;Wow!&lt;/bold&gt; Now &lt;em&gt;iOS&lt;/em&gt; can create &lt;h3&gt;NSAttributedString&lt;/h3&gt; from HTMLs!";
-NSDictionary *options = @{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType};
-
-NSAttributedString *attrString = [[NSAttributedString alloc] initWithData:[html dataUsingEncoding:NSUTF8StringEncoding] options:options documentAttributes:nil error:nil];
-</code></pre>
-
-<p>现在你可以在任意的UIKit对象上使用NSAttributedString 了，比如说是一个UILabel或是一个UITextField。</p>
-
-<p>注意：NSHTMLTextDocumentType 只是NSDocumentTypeDocumentAttribute key一种可能的值。你还可以使用NSPlainTextDocumentType，NSRTFTextDocumentType或是NSRTFDTextDocumentType。</p>
-
-<p>你还可以从NSAttributedString中创建一个HTML字符串，如下：</p>
-
-<pre><code>NSAttributedString *attrString; // from previous code
-NSDictionary *options = @{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType};
-
-NSData *htmlData = [attrString dataFromRange:NSMakeRange(0, [attrString length]) documentAttributes:options error:nil];
-NSString *htmlString = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
-</code></pre>
-
-<p>现在你估计在app中会更多的使用HTML了。</p>
-
-<h4>十五、使用原生的Base64</h4>
-
-<p>Base64是使用ASCII码显示二进制数据的一种流行方法。直到现在，开发者还不得不使用开源的工具来编码解码Base64的内容。</p>
-
-<p>现在iOS7引入了以下四种新的NSData方法来操作Base64编码的数据：</p>
-
-<pre><code>// From NSData.h
-- (id)initWithBase64EncodedString:(NSString *)base64String options:(NSDataBase64DecodingOptions)options;
-
-- (NSString *)base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)options;
-
-- (id)initWithBase64EncodedData:(NSData *)base64Data options:(NSDataBase64DecodingOptions)options;
-
-- (NSData *)base64EncodedDataWithOptions:(NSDataBase64EncodingOptions)options;
-这些方法可以帮助你轻易的将NSData对象转化为Base64，或者将Base64转化为NSData object。见以下的例子：
-
-
-NSData* sampleData = [@"Some sample data" dataUsingEncoding:NSUTF8StringEncoding];
-
-NSString * base64String = [sampleData base64EncodedStringWithOptions:0];
-NSLog(@"Base64-encoded string is %@", base64String); // prints "U29tZSBzYW1wbGUgZGF0YQ=="
-
-NSData* dataFromString = [[NSData alloc] initWithBase64EncodedString:base64String options:0];
-NSLog(@"String is %@",[NSString stringWithUTF8String:[dataFromString bytes]]); // prints "String is Some sample data"
-</code></pre>
-
-<p>如果你需要支持iOS6或者更早以前的系统，你可以使用以下两个方法：</p>
-
-<pre><code>/* These methods first appeared in NSData.h on OS X 10.9 and iOS 7.0. They are deprecated in the same releases in favor of
- the methods in the &lt;code&gt;NSDataBase64Encoding&lt;/code&gt; category. However, these methods have existed for several releases, so
- they may be used for applications targeting releases prior to OS X 10.9 and iOS 7.0.
- */
-- (id)initWithBase64Encoding:(NSString *)base64String;
-- (NSString *)base64Encoding;
-</code></pre>
-
-<h4>十六、使用UIApplicationUserDidTakeScreenshotNotification来检查截图</h4>
-
-<p>在iOS7之前，像Snapshot或是Facebook Poke这样的app是使用一些很精巧的方法来检测用户是否有截图。然而，iOS7提供一个崭新的推送方法：UIApplicationUserDidTakeScreenshotNotification。只要像往常一样订阅即可知道什么时候截图了。</p>
-
-<p>注意：UIApplicationUserDidTakeScreenshotNotification 将会在截图完成之后显示。现在在截图截取之前无法得到通知。希望苹果会在iOS8当中增加UIApplicationUserWillTakeScreenshotNotification。</p>
-
-<h4>十七、实现多语言语音合成</h4>
-
-<p>如果可以让app说话会不会很好呢？iOS7加入了两个新类：AVSpeechSynthesizer 以及AVSpeechUtterance。这两个类可以给你的app发声。很有意思不是吗？有多种语言可供选择——Siri不会说的语言也有，比如说巴西葡萄牙语。</p>
-
-<p>使用这两个类给app提供语言合成的功能非常简单。AVSpeechUtterance 代表你想说什么，如何说。AVSpeechSynthesizer 用来发出这些声音，见以下代码片段：</p>
-
-<pre><code>AVSpeechSynthesizer *synthesizer = [[AVSpeechSynthesizer alloc] init];
-AVSpeechUtterance *utterance =
-[AVSpeechUtterance speechUtteranceWithString:@"Wow, I have such a nice voice!"];
-utterance.rate = AVSpeechUtteranceMaximumSpeechRate / 4.0f;
-utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"]; // defaults to your system language
-[synthesizer speakUtterance:utterance];
-</code></pre>
-
-<h4>十八、使用了新的UIScreenEdgePanGestureRecognizer</h4>
-
-<p>UIScreenEdgePanGestureRecognizer 继承自UIPanGestureRecognizer ，它可以让你从屏幕边界即可检测手势。</p>
-
-<p>使用新的手势识别器很简单，见以下：</p>
-
-<pre><code>UIScreenEdgePanGestureRecognizer *recognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(handleScreenEdgeRecognizer:)];
-recognizer.edges = UIRectEdgeLeft;
-</code></pre>
-
-<p>[self.view addGestureRecognizer:recognizer];
-十九、使用UIScrollViewKeyboardDismissMode实现了Message app的行为
-像Messages app一样在滚动的时候可以让键盘消失是一种非常好的体验。然而，将这种行为整合到你的app很难。幸运的是，苹果给UIScrollView添加了一个很好用的属性keyboardDismissMode，这样可以方便很多。</p>
-
-<p>现在仅仅只需要在Storyboard中改变一个简单的属性，或者增加一行代码，你的app可以和办到和Messages app一样的事情了。</p>
-
-<p>这个属性使用了新的UIScrollViewKeyboardDismissMode enum枚举类型。这个enum枚举类型可能的值如下：</p>
-
-<pre><code>UIScrollViewKeyboardDismissModeNone        // the keyboard is not dismissed automatically when scrolling
-UIScrollViewKeyboardDismissModeOnDrag      // dismisses the keyboard when a drag begins
-UIScrollViewKeyboardDismissModeInteractive // the keyboard follows the dragging touch off screen, and may be
-pulled upward again to cancel the dismiss
-</code></pre>
-
-<p>以下是让键盘可以在滚动的时候消失需要设置的属性：</p>
-
-<p><img src="/images/banbenshipei005.png" title="Caption" ></p>
-
-<h4>二十、使用Core Image来检测眨眼以及微笑</h4>
-
-<p>iOS给Core Image增加了两种人脸检测功能：CIDetectorEyeBlink以及CIDetectorSmile。这也就是说你现在可以在照片中检测微笑以及眨眼。</p>
-
-<p>以下是在app中使用它的方法：</p>
-
-<pre><code>UIImage *image = [UIImage imageNamed:@"myImage"];
-CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeFace
-                                          context:nil
-                                          options:@{CIDetectorAccuracy: CIDetectorAccuracyHigh}];
-
-NSDictionary *options = @{ CIDetectorSmile: @YES, CIDetectorEyeBlink: @YES };
-
-NSArray *features = [detector featuresInImage:image.CIImage options:options];
-
-for (CIFaceFeature *feature in features) {
-    NSLog(@"Bounds: %@", NSStringFromCGRect(feature.bounds));
-
-if (feature.hasSmile) {
-    NSLog(@"Nice smile!");
-} else {
-    NSLog(@"Why so serious?");
-
-if (feature.leftEyeClosed || feature.rightEyeClosed) {
-    NSLog(@"Open your eyes!");
-}
-</code></pre>
-
-<p>}</p>
-
-<h4>二十一、给UITextView增加了链接</h4>
-
-<p>现在在iOS添加你自己的Twitter账户更加简单了，现在你可以给一个NSAttributedString增加链接了，然后当它被点击的时候唤起一个定制的action。</p>
-
-<p>首先，创建一个NSAttributedString然后增加给它增加一个NSLinkAttributeName 属性，见以下：</p>
-
-<pre><code>NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@"This is an example by @marcelofabri_"];
-[attributedString addAttribute:NSLinkAttributeName
-                         value:@"username://marcelofabri_"
-                         range:[[attributedString string] rangeOfString:@"@marcelofabri_"]];
-
-
-NSDictionary *linkAttributes = @{NSForegroundColorAttributeName: [UIColor greenColor],
-                                 NSUnderlineColorAttributeName: [UIColor lightGrayColor],
-                                 NSUnderlineStyleAttributeName: @(NSUnderlinePatternSolid)};
-
-// assume that textView is a UITextView previously created (either by code or Interface Builder)
-textView.linkTextAttributes = linkAttributes; // customizes the appearance of links
-textView.attributedText = attributedString;
-textView.delegate = self;
-</code></pre>
-
-<p>这样就可以让链接在文本中显示。然而，你也可以控制当链接被点击的时候会发生什么，实现这个可以使用UITextViewDelegate协议的新的shouldInteractWithURL方法，就像这样：</p>
-
-<pre><code>- (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange {
-    if ([[URL scheme] isEqualToString:@"username"]) {
-        NSString *username = [URL host];
-        // do something with this username
-        // ...
-        return NO;
-    }
-    return YES; // let the system open this URL
-}
-</code></pre>
-
-<h2>iOS8新特性</h2>
-
-<h4>一、UIAlertController对alert&amp;actionSheet的封装</h4>
-
-<p>UIAlertController.h</p>
-
-<p>提示框按钮的选择</p>
-
-<pre><code>typedef NS_ENUM(NSInteger, UIAlertActionStyle) {
-
-UIAlertActionStyleDefault = 0,
-
-UIAlertActionStyleCancel,
-
-UIAlertActionStyleDestructive
-
-} NS_ENUM_AVAILABLE_IOS(8_0);
-</code></pre>
-
-<p>提示框的样式</p>
-
-<pre><code>typedef NS_ENUM(NSInteger, UIAlertControllerStyle) {
-
-UIAlertControllerStyleActionSheet = 0,
-
-UIAlertControllerStyleAlert
-
-} NS_ENUM_AVAILABLE_IOS(8_0);
-
-NS_CLASS_AVAILABLE_IOS(8_0) @interface UIAlertAction : NSObject &lt;NSCopying&gt;
-</code></pre>
-
-<p>创建提示框按钮</p>
-
-<pre><code>+ (instancetype)actionWithTitle:(NSString *)title style:(UIAlertActionStyle)style handler:(void (^)(UIAlertAction *action))handler;
-
-@property (nonatomic, readonly) NSString *title;
-
-@property (nonatomic, readonly) UIAlertActionStyle style;
-
-@property (nonatomic, getter=isEnabled) BOOL enabled;
-
-@end
-
-NS_CLASS_AVAILABLE_IOS(8_0) @interface UIAlertController : UIViewController
-</code></pre>
-
-<p>创建提示框</p>
-
-<pre><code>+ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle;
-</code></pre>
-
-<p>添加按钮</p>
-
-<pre><code>- (void)addAction:(UIAlertAction *)action;
-
-@property (nonatomic, readonly) NSArray *actions;
-</code></pre>
-
-<p>添加文本输入框</p>
-
-<pre><code>- (void)addTextFieldWithConfigurationHandler:(void (^)(UITextField *textField))configurationHandler;
-
-@property (nonatomic, readonly) NSArray *textFields;
-
-@property (nonatomic, copy) NSString *title;
-
-@property (nonatomic, copy) NSString *message;
-
-@property (nonatomic, readonly) UIAlertControllerStyle preferredStyle;
-</code></pre>
-
-<p>简单实用示例：</p>
-
-<pre><code>// 1.创建提示框对象，默认是actionSheet效果
-UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"注意" message:@"我的呈现方式变了" preferredStyle:UIAlertControllerStyleAlert];
-
-// 2.创建取消按钮并添加到提示框上
-[alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-
-    NSLog(@"取消按钮被点击了");
-}]];
-
-// 3.呈现提示框
-[self presentViewController:alert animated:YES completion:nil];
-</code></pre>
-
-<h4>二、UIPopoverController直接通过present方式呈现</h4>
-
-<pre><code>UIViewController.h
-
-
-typedef NS_ENUM(NSInteger, UIModalPresentationStyle) {
-
-UIModalPresentationFullScreen = 0,
-
-UIModalPresentationPageSheet NS_ENUM_AVAILABLE_IOS(3_2),
-
-UIModalPresentationFormSheet NS_ENUM_AVAILABLE_IOS(3_2),
-
-UIModalPresentationCurrentContext NS_ENUM_AVAILABLE_IOS(3_2),
-
-UIModalPresentationCustom NS_ENUM_AVAILABLE_IOS(7_0),
-
-UIModalPresentationOverFullScreen NS_ENUM_AVAILABLE_IOS(8_0),
-
-UIModalPresentationOverCurrentContext NS_ENUM_AVAILABLE_IOS(8_0),
-
-UIModalPresentationPopover NS_ENUM_AVAILABLE_IOS(8_0),
-
-UIModalPresentationNone NS_ENUM_AVAILABLE_IOS(7_0) = -1,
-
-};
-
-@property (nonatomic,readonly) UIPopoverPresentationController *popoverPresentationController NS_AVAILABLE_IOS(8_0);
-</code></pre>
-
-<p>使用示例：</p>
-
-<pre><code>// 1.创建内容控制器
-UITableViewController *contentVc = [[UITableViewController alloc] init];
-
-// 2.1 设置呈现方式
-contentVc.modalPresentationStyle = UIModalPresentationPopover;
-
-// 2.2设置在导航栏的左边按钮呈现
-contentVc.popoverPresentationController.barButtonItem = self.navigationItem.leftBarButtonItem;
-
-// 3.呈现
-[self presentViewController:contentVc animated:YES completion:nil];
-以前的方式：
-
-
-
-// 1.创建内容控制器
-UITableViewController *contentVc = [[UITableViewController alloc] init];
-
-// 2.创建popover
-UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:contentVc];
-
-popover.popoverContentSize = CGSizeMake(100, 100);
-
-// 3.呈现
-[popover presentPopoverFromBarButtonItem:self.navigationItem.leftBarButtonItem permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-</code></pre>
-
-<h4>三、获取用户授权的用户隐私保护</h4>
-
-<p>地图定位示例 ：</p>
-
-<pre><code>// 导入定位框架
-#import &lt;CoreLocation/CoreLocation.h&gt;
-
-@interface ViewController ()&lt;CLLocationManagerDelegate&gt;
-
-// 设置定位对象
-@property(nonatomic,strong)CLLocationManager* maneger;
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    // 当使用iOS8定位的时候需要请求用户授权，且在info.plist里添加字段NSLocationAlwaysUsageDescription 请求用户授权的描述
-    // iOS7仅仅需要在info.plist里添加字段Privacy - Location Usage Description 请求用户授权的描述
-    // 不需要再写下面的代码
-    if (IOS8) {
-        [self.maneger requestAlwaysAuthorization];//请求用户授权 
-    }
-
-    // 开启定位
-    [self.maneger startUpdatingLocation];
-
-}
-</code></pre>
-
-<h4>四、针对屏幕适配应运而生的size classes</h4>
-
-<p>size classes是为了解决storyboard只能订制一种屏幕样式的问题，它不再是具体的尺寸，而是抽象尺寸通过宽/高 的compact、any、regular 组成了九种组合包含了所有苹果设备的尺寸。</p>
-
-<h2>iOS9新特性</h2>
-
-<h4>一、网络适配</h4>
-
-<p>iOS9系统发送的网络请求将统一使用TLS 1.2 SSL。采用TLS 1.2 协议，目的是强制增强数据访问安全，而且系统Foundation框架下的相关网络请求，将不再默认使用HTTP等不安全的网络协议，而默认采用TLS 1.2。服务器因此需要更新，以解析相关数据。如不更新，可通过在 info.plist 中声明，倒退回不安全的网络请求。</p>
-
-<p>什么是SSL/TLS？跟HTTP和HTTPS有什么关系？</p>
-
-<p>跟往常一样，先说结论：</p>
-
-<p>HTTP + SSL/TLS + TCP = HTTPS
-TLS 是 SSL 新的别称。举个例子：</p>
-
-<p>“TLS1.0”之于“SSL3.1”，犹“公元2015”之于“民国104”，或者是“一千克”之于“一公斤”，或者是“半斤”之于“八两”：称呼不同，但意思相同。</p>
-
-<p>SSL 3.0版本之后的迭代版本被重新命名为TLS 1.0，也就是说：</p>
-
-<p>TLS 1.0 ＝ SSL 3.1
-所以他们是一个东西，我们平常也经常简单见到 “SSL/TLS” 这种说法。常用的是下面这些：</p>
-
-<pre><code>SSL 2.0
-
-SSL 3.0
-
-TLS 1.0 (SSL 3.1)
-
-TLS 1.1 (SSL 3.1)
-
-TLS 1.2 (SSL 3.1)
-</code></pre>
-
-<p>那为什么标题是“使用HTTPS”而没有提及SSL和TLS什么事？ 要理解这个，要看下一个公式：</p>
-
-<pre><code>HTTP + SSL/TLS + TCP = HTTPS
-</code></pre>
-
-<p>打个比方：如果原来的 HTTP 是塑料水管，容易被戳破；那么如今新设计的 HTTPS 就像是在原有的塑料水管之外，再包一层金属水管。一来，原有的塑料水管照样运行；二来，用金属加固了之后，不容易被戳破。</p>
-
-<p>目前，应用最广泛的是TLS 1.0，接下来是SSL 3.0。但是，主流浏览器都已经实现了TLS 1.2的支持。Apple让你的HTTP采用SSL/TLS协议，就是让你从HTTP转到HTTPS。</p>
-
-<p>以前的HTTP不是也能用吗？为什么要用SSL/TLS，闲得慌？！Apple是不是又在反人类？</p>
-
-<p>不使用SSL/TLS的HTTP通信，就是不加密的通信！</p>
-
-<p>所有信息明文传播，带来了三大风险：</p>
-
-<pre><code>窃听风险（eavesdropping）：第三方可以获知通信内容。
-
-篡改风险（tampering）：第三方可以修改通信内容。
-
-冒充风险（pretending）：第三方可以冒充他人身份参与通信。
-</code></pre>
-
-<p>SSL/TLS协议是为了解决这三大风险而设计的，希望达到：</p>
-
-<pre><code>所有信息都是加密传播，第三方无法窃听。
-
-具有校验机制，一旦被篡改，通信双方会立刻发现。
-
-配备身份证书，防止身份被冒充。
-
-如何适配？---弱弱地问下：加班要多久？
-</code></pre>
-
-<p>正如文章开头所说：</p>
-
-<p>TLS 1.2 协议 强制增强数据访问安全 系统 Foundation 框架下的相关网络请求，将不再默认使用 HTTP 等不安全的网络协议，而默认采用 TLS 1.2。服务器因此需要更新，以解析相关数据。如不更新，可通过在 Info.plist 中声明，倒退回不安全的网络请求。</p>
-
-<ul>
-<li><p>方案一：立即让公司的服务端升级使用TLS 1.2。</p></li>
-<li><p>方案二：虽Apple不建议，但可通过在 Info.plist 中声明，倒退回不安全的网络请求依然能让App访问指定http，甚至任意的http。</p></li>
-</ul>
-
-
-<p>info.plist 配置中的XML源码如下所示:</p>
-
-<p><img src="/images/banbenshipei006.jpg" title="Caption" ></p>
-
-<p>上面是比较严谨的做法，指定了能访问哪些特定的HTTP。当然也有暴力的做法： 彻底倒退回不安全的HTTP网络请求，能任意进行HTTP请求，比如你在开发一款浏览器App，或者你想偷懒，或者后台想偷懒，或者公司不给你升级服务器。但目前Apple的官方文档并未提及如何在 info.plist 配置可以参考本文：<a href="http://blog.6ag.cn/1065.html">http://blog.6ag.cn/1065.html</a></p>
-
-<h4>二、更灵活的后台定位</h4>
-
-<p>如果不适配iOS9，就不能偷偷在后台定位。不过苹果将允许出现这种场景：</p>
-
-<p>同一App中的多个location manager，一些只能在前台定位，另一些可在后台定位，并可随时开启或者关闭特定location manager的后台定位。</p>
-
-<p>如何偷偷在后台定位：</p>
-
-<pre><code>// 1. 实例化定位管理器
-_locationManager = [[CLLocationManager alloc] init];
-
-// 2. 设置代理
-_locationManager.delegate = self;
-
-// 3. 定位精度
-[_locationManager setDesiredAccuracy:kCLLocationAccuracyBest];
-
-// 4.请求用户权限：分为：?只在前台开启定位?在后台也可定位，
-//注意：建议只请求?和?中的一个，如果两个权限都需要，只请求?即可，
-//??这样的顺序，将导致bug：第一次启动程序后，系统将只请求?的权限，?的权限系统不会请求，只会在下一次启动应用时请求?
-if ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 8) {
-    //[_locationManager requestWhenInUseAuthorization];//?只在前台开启定位
-    [_locationManager requestAlwaysAuthorization];//?在后台也可定位
-}
-
-// 5.iOS9新特性：将允许出现这种场景：同一app中多个location manager：一些只能在前台定位，另一些可在后台定位（并可随时禁止其后台定位）。
-if ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 9) {
-    _locationManager.allowsBackgroundLocationUpdates = YES;
-}
-
-// 6. 更新用户位置
-[_locationManager startUpdatingLocation];
-但是如果照着这种方式尝试，而没有配置info.plist，100%你的程序会崩溃掉，并报错：
-
-*** Assertion failure in -[CLLocationManager setAllowsBackgroundLocationUpdates:], /BuildRoot/Library/Caches/com.apple.xbs/Sources/CoreLocationFramework_Sim/CoreLocation-1808.1.5/Framework/CoreLocation/CLLocationManager.m:593
-</code></pre>
-
-<p>要将 info.plist 配置如下：</p>
-
-<p><img src="/images/banbenshipei007.png" title="Caption" ></p>
-
-<p>对应的 Info.plist 的XML源码是：</p>
-
-<p><img src="/images/banbenshipei008.jpg" title="Caption" ></p>
-
-<h4>三、Bitcode</h4>
-
-<p>bitcode的理解应该是把程序编译成的一种过渡代码，然后苹果再把这个过渡代码编译成可执行的程序。bitcode也允许苹果在后期重新优化我们程序的二进制文件，有类似于App瘦身的思想。未来Watch应用须包含Bitcode，iOS不强制，但Xcode7默认会开启Bitcode。</p>
-
-<p>用了xcode7的编译器编译之前没问题的项目可能会出现下列报错。</p>
-
-<pre><code>XXXX’ does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode forthistarget. forarchitecture arm64
-</code></pre>
-
-<p>问题的原因是：某些第三方库还不支持bitcode。要不然是等待库的开发者升级了此项功能我们更新库，要不就是把这个bitcode禁用。禁用Bitcode，方法见下图：</p>
-
-<p><img src="/images/banbenshipei009.png" title="Caption" ></p>
-
-<h4>四、企业级分发</h4>
-
-<p>iOS9之前，企业级分发十分方便：点击App出现“信任按钮”。</p>
-
-<p>iOS9以后，企业级分发ipa包将遭到与Mac上dmg安装包一样的待遇。默认不能安装，也不再出现“信任按钮”，必须让用户进行gif图中的设置。</p>
-
-<p><img src="/images/banbenshipei010.png" title="Caption" ></p>
-
-<h4>五、URL scheme</h4>
-
-<p>URL scheme一般使用的场景是应用程序有分享或跳其他平台授权的功能，分享或授权后再跳回来。在iOS8并没有做过多限制，在iOS9中，如果使用URL scheme必须在"info.plist"中将你要在外部调用的URL scheme列为白名单，否则不能使用。</p>
-
-<pre><code>canOpenURL: failed forURL : "mqzone://qqapp"- error: "This app is not allowed to query for scheme mqzone"
-</code></pre>
-
-<p>具体的解决方案也是要在info.plist中设置 LSApplicationQueriesSchemes 类型为数组，下面添加所有你用到的scheme</p>
-
-<p><img src="/images/banbenshipei011.png" title="Caption" ></p>
-
-<p>推荐一篇博客: <a href="http://awkwardhare.com/post/121196006730/quick-take-on-ios-9-url-scheme-changes">http://awkwardhare.com/post/121196006730/quick-take-on-ios-9-url-scheme-changes</a></p>
-
-<p>其中最关键的是以下部分：</p>
-
-<pre><code>If you call the “canOpenURL” method on a URL that is not in your whitelist, it will return “NO”, even if there is an app installed that has registered to handle this scheme. A “This app is not allowed to query for scheme xxx” syslog entry will appear.
-
-If you call the “openURL” method on a URL that is not in your whitelist, it will fail silently. A “This app is not allowed to query for scheme xxx” syslog entry will appear.
-</code></pre>
-
-<h4>六、新字体</h4>
-
-<p>iOS8中，字体是Helvetica，中文的字体有点类似于“华文细黑”。只是苹果手机自带渲染，所以看上去可能比普通的华文细黑要美观。iOS9中，中文系统字体变为了专为中国设计的“苹方” 有点类似于一种word字体“幼圆”。字体有轻微的加粗效果，并且最关键的是字体间隙变大了！</p>
-
-<p>所以很多原本写死了width的label可能会出现“&hellip;”的情况。</p>
-
-<p><img src="/images/banbenshipei012.png" title="Caption" ></p>
-
-<p><img src="/images/banbenshipei013.png" title="Caption" ></p>
-
-<p>上面这两张图也可以直观的看出同一个界面，同一个label的变化。</p>
-
-<p>所以为了在界面显示上不出错，就算是固定长度的文字也还是建议使用sizetofit 或者ios向上取整 ceilf() 或者提前计算。</p>
-
-<pre><code>CGSize size = [title sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:14.0f]}];
-CGSize adjustedSize = CGSizeMake(ceilf(size.width), ceilf(size.height));
-</code></pre>
-
-<h4>七、tableview</h4>
-
-<p>虽然现在的iOS9已经推送正式版了，但是iOS9使用时还是会感觉到App比以前更加卡顿了，tableView拖动时卡顿显示的最为明显。 并且之前遇到一个bug，原本好的项目用xcode7一编译，tableView刷新出了问题 ，[tableView reloadData]无效，有一行cell明明改变了但是刷新不出来。 感觉可能是这个方法和某种新加的特性冲突了，猜测可能是reloadData的操作被推迟到下一个RunLoop执行最终失效。</p>
-
-<p>解决的方法是，注释[tableView reloadData]，改用局部刷新，问题居然就解决了。</p>
-
-<p>[self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];</p>
-
-<h4>八、iPad适配Slide Over 和 Split View</h4>
-
-<p>iPad适配Slide Over 和 Split View，若想适配multi tasking特性，唯一的建议：</p>
-
-<p>弃纯代码，改用storyboard、xib，纵观苹果WWDC所有Demo均是如此。</p>
-
-<pre><code>Mysteries of Auto Layout, Part 1
-What's New in Storyboards
-Implementing UI Designs in Interface Builder
-Getting Started with Multitasking on iPad in iOS 9
-Optimizing Your App for Multitasking on iPad in iOS
-</code></pre>
-
-<p>本文部分内容来自网络整理，如有错误请留言指出，谢谢！</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/30/iosban-ben-gua-pei-wen-ti-(6,7,8,9)/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
-
-<ul>
-<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
-<li>定义自定义的相册，并且保存到自定义相册</li>
-</ul>
-
-
-<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
-App中自定义的相册呗删除之后再次保存相片无法成功</p>
-
-<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
-
-<p>先来看看咱们取得相册中的相片</p>
-
-<pre><code>- (void)getAllPhotos
-{
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
-    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
-        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
-            // 缩略图
-            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
-            // 获得原始图片
-            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
-        }];
-
-   } failureBlock:nil];
-}
-</code></pre>
-
-<p>下面我们看看代码具体的实现</p>
-
-<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
-
-<pre><code> /** 相册库 */
-@property (nonatomic, strong) ALAssetsLibrary *library;
-</code></pre>
-
-<p>二：然后就懒加载这个属性</p>
-
-<pre><code>- (ALAssetsLibrary *)library
-{
-    if (!_library) {
-        _library = [[ALAssetsLibrary alloc] init];
-    }
-    return _library;
-}
-</code></pre>
-
-<p>三：点击保存按钮的实现</p>
-
-<pre><code>- (IBAction)save
-{
-// 获得文件夹的名字
-__block NSString *groupName = [self groupName];
-
-// self的弱引用
-XMGWeakSelf;
-
-// 图片库
-__weak ALAssetsLibrary *weakLibrary = self.library;
-
-// 创建文件夹
-[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-    if (group) { // 新创建的文件夹
-        // 添加图片到文件夹中
-        [weakSelf addImageToGroup:group];
-    } else { // 文件夹已经存在
-        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
-            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
-                // 添加图片到文件夹中
-
-                [weakSelf addImageToGroup:group];
-
-                *stop = YES; // 停止遍历
-            } else if ([name isEqualToString:@"Camera Roll"]) {
-                // 文件夹被用户强制删除了
-                groupName = [groupName stringByAppendingString:@" "];
-                // 存储新的名字
-                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-                // 创建新的文件夹
-                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
-                    // 添加图片到文件夹中
-                    [weakSelf addImageToGroup:group];
-                } failureBlock:nil];
-            }
-        } failureBlock:nil];
-    }
-
-    } failureBlock:nil];
-    }
-</code></pre>
-
-<p>四：添加图片</p>
-
-<pre><code>/**
- * 添加一张图片到某个文件夹中
- */
-- (void)addImageToGroup:(ALAssetsGroup *)group
-{
-__weak ALAssetsLibrary *weakLibrary = self.library;
-// 需要保存的图片
-
-CGImageRef image = self.imageView.image.CGImage;
-
-// 添加图片到【相机胶卷】
-[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
-        // 添加一张图片到自定义的文件夹中
-        [group addAsset:asset];
-        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
-    } failureBlock:nil];
-}];
-}
-</code></pre>
-
-<p>五：关于沙河中的组名</p>
-
-<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
-
-<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
-static NSString * const iCocosDefaultGroupName = @"iCocos";
-</code></pre>
-
-<p>实现祖名的存取</p>
-
-<pre><code>- (NSString *)groupName
-{
-    // 先从沙盒中取得名字
-
-    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
-    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
-   groupName = XMGDefaultGroupName;
-
-    // 存储名字到沙盒中
-    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
- [[NSUserDefaults standardUserDefaults] synchronize];
-}
-return groupName;
-}
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -3146,7 +2490,15 @@ return groupName;
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
       </li>
     
       <li class="post">
@@ -3155,14 +2507,6 @@ return groupName;
     
       <li class="post">
         <a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/ibeaconchu-tan/">iBeacon初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a>
       </li>
     
   </ul>
