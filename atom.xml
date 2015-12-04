@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-04T10:28:57+08:00</updated>
+  <updated>2015-12-04T10:36:27+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -1103,7 +1103,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#111;&#x3a;&#109;&#x61;&#106;&#x69;&#x61;&#x30;&#x33;&#x40;&#109;&#x65;&#105;&#116;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;">&#x6d;&#x61;&#106;&#x69;&#97;&#x30;&#51;&#64;&#109;&#101;&#105;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#x3a;&#x6d;&#97;&#x6a;&#105;&#97;&#48;&#51;&#x40;&#x6d;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#46;&#99;&#x6f;&#109;">&#x6d;&#x61;&#106;&#105;&#x61;&#x30;&#x33;&#64;&#109;&#x65;&#x69;&#x74;&#x75;&#97;&#x6e;&#x2e;&#99;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -6228,15 +6228,6 @@ Avro解析性能高并且序列化之后的数据非常简洁，比较适合于�
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[完整定时器]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/03/wan-zheng-ding-shi-qi/"/>
-    <updated>2015-12-03T18:25:33+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/03/wan-zheng-ding-shi-qi</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[常用关键字总结]]></title>
     <link href="http://al1020119.github.io/blog/2015/12/03/chang-yong-guan-jian-zi-zong-jie/"/>
     <updated>2015-12-03T17:43:59+08:00</updated>
@@ -6322,6 +6313,91 @@ Avro解析性能高并且序列化之后的数据非常简洁，比较适合于�
 </tr>
 </tbody>
 </table>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[够逼格的注释习惯]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"/>
+    <updated>2015-12-03T02:59:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de</id>
+    <content type="html"><![CDATA[<p>够逼格的注释习惯总结</p>
+
+<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+
+<h6>也许你使用过#warning 警告提示</h6>
+
+<h6>也许你也使用过#pragma marks。</h6>
+
+<p>但是你见过或者使用过下面这个吗？</p>
+
+<pre><code>Comments containing:
+MARK:
+TODO:
+FIXME:
+!!!:
+???:
+</code></pre>
+
+<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+
+<p> 首先说一下三个最常用的：</p>
+
+<ul>
+<li>1、TODO</li>
+</ul>
+
+
+<p> 等待实现的功能</p>
+
+<ul>
+<li>2、FIXME</li>
+</ul>
+
+
+<p> 需要修正的功能</p>
+
+<ul>
+<li>3、！！！</li>
+</ul>
+
+
+<p> 需要改进的功能</p>
+
+<p>具体使用</p>
+
+<pre><code>// FIXME:sss
+/* FIXME: sss */
+
+
+// MARK:sss
+/* MARK:sss */
+
+
+// !!!:sss
+/* !!!: sss */
+
+
+// ???:sss
+/* ???: sss */
+
+
+// TODO:sss
+/* TODO: sss */
+
+
+// Comments containing: sss
+/* Comments containing: sss */
+</code></pre>
+
+<p>注意空格.</p>
+
+<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+
+<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+
+<!--more-->
 
 ]]></content>
   </entry>
