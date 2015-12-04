@@ -1,0 +1,216 @@
+---
+
+layout: post
+title: "签名机制"
+date: 2014-05-20 13:53:19 +0800
+comments: true
+categories: 性能问题 
+
+--- 
+
+
+
+最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。
+
+下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。本文的前提是已经对非对称加密有了一定的了解。
+
+####一、数字签名（digital signature）
+
+对指定信息使用哈希算法，得到一个固定长度的信息摘要，然后再使用 私钥 （注意必须是私钥）对该摘要加密，就得到了数字签名。所谓的代码签名就是这个意思。
+
+####二、数字证书（digital certificate）
+
+证书生成
+
+开 发者在申请iOS开发证书时，需要通过keychain生成一个CSR文件（Certificate Signing Request），提交给苹果的 Apple Worldwide Developer Relations Certification Authority(WWDR)证书认证中心进行签名，最后从苹果官网下载并安装使用。这个过程中还会产生一个私钥，证书和私钥在keychain中得位 置如图：
+
+iphone-developer-keychain.png
+
+证书组成
+
+经过WWDR数字签名后的数字证书长这个样子：
+
+20130603170838968.png
+
+其中包含两大部分：
+
+· 证书本身
+
+包含用户的公钥、用户个人信息、证书颁发机构信息、证书有效期等信息。
+
+· 证书签名
+
+WWDR将上述证书本身内容的使用哈希算法得到一个固定长度的信息摘要，然后使用自己的私钥对该信息摘要加密生成数字签名，整个过程如图所示：
+
+20130603170752859.png
+
+证书使用
+
+iOS 系统原本就持有WWDR的公钥，系统首先会对证书内容通过指定的哈希算法计算得到一个信息摘要；然后使用WWDR的公钥对证书中包含的数字签名解密，从而 得到经过WWDR的私钥加密过的信息摘要；最后对比两个信息摘要，如果内容相同就说明该证书可信。整个过程如图所示：
+
+20130603170924312.png
+
+在验证了证书是可信的以后，iOS系统就可以获取到证书中包含的开发者的公钥，并使用该公钥来判断代码签名的可用性了。
+
+证书存在的意义
+
+通过证书使用过程可以看出，证书本身只是一个中间媒介，iOS系统对证书并不关心，它其实只想要证书中包含的开发者的公钥！！
+
+但是开发者怎么才能证明公钥是自己的呢？iOS安全系统怎么才能相信这个公钥就是这个开发者的呢？
+
+不 管是哪一个开发者对iOS的安全系统说，这个公钥就是我的，系统是都不相信的，即系统对开发者有着百分之百的不信任感。但是iOS安全系统对自家的 WWDR是可信任的，苹果将WWDR的公钥内置在了iOS系统中。有了证书，iOS安全系统只需要通过WWDR的公钥就可以获取到任何一个开发者的可信任 的公钥了，这就是证书存在的意义！！
+
+####三、公钥（public key）
+
+公钥被包含在数字证书里，数字证书又被包含在描述文件(Provisioning File)中，描述文件在应用被安装的时候会被拷贝到iOS设备中。
+
+iOS安全系统通过证书就能够确定开发者身份，就能够通过从证书中获取到的公钥来验证开发者用该公钥对应的私钥签名后的代码、资源文件等有没有被更改破坏，最终确定应用能否合法的在iOS设备上合法运行。
+
+####四、私钥（private key）
+
+每个证书（其实是公钥）都对应有一个私钥，
+
+私钥会被用来对代码、资源文件等签名。只有开发证书和描述文件是没办法正常调试的，因为没有私钥根本无法签名。
+
+此后的内容基本都是从《代码签名探析》摘抄过来的笔记，建议大家看原文好了。
+
+####五、签名相关命令
+
+快捷查看系统中能用来对代码进行签名的证书
+
+可以使用如下命令：
+
+	1 $security find-identity -v -p codesigning  
+	2   1) F10B42FFDE18DF28BA21190121439F2E04BEE4B8 "iPhone Developer: weizheng li (P7QJ74LFSA)"
+	3      1 valid identities found
+ 
+
+这就说明当前有一个同时有公钥和私钥的可用证书。
+
+对未签名app手动签名
+
+使用如下命令：
+
+	 1 $ codesign -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
+对已签名app重新签名
+
+为了重新设置签名，你必须带上 -f 参数，有了这个参数，codesign 会用你选择的签名替换掉已经存在的那一个：
+
+	 1 $ codesign -f -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
+查看指定app的签名信息
+
+codesign 还可以为你提供有关一个可执行文件签名状态的信息，这些信息在出现不明错误时会提供巨大的帮助：
+
+	 1 $ codesign -vv -d Example.app 
+会列出以下有关 Example.app 的签名信息：
+
+
+	 1 Executable=/Users/toto/Library/Developer/Xcode/DerivedData/Example-cfsbhbvmswdivqhekxfykvkpngkg/Build/Products/Debug-iphoneos/Example.app/Example  
+	 2 Identifier=ch.kollba.example  
+	 3 Format=bundle with Mach-O thin (arm64)  
+	 4 CodeDirectory v=20200 size=26663 flags=0x0(none) hashes=1324+5 location=embedded  
+	 5 Signature size=4336  
+	 6 Authority=iPhone Developer: Thomas Kollbach (7TPNXN7G6K)  
+	 7 Authority=Apple Worldwide Developer Relations Certification Authority  
+	 8 Authority=Apple Root CA  
+	 9 Signed Time=29.09.2014 22:29:07  
+	10 Info.plist entries=33  
+	11 TeamIdentifier=DZM8538E3E  
+	12 Sealed Resources version=2 rules=4 files=120  
+	13 Internal requirements count=1 size=184
+ 
+ 
+
+验证签名文件的完整性
+
+检查已签名的文件是否完整可以使用如下命令：
+
+	 1 $ codesign --verify Example.app 
+就像大多数 UNIX 工具一样，没有任何输出代表签名是完好的。如果修改一下这个二进制文件：
+
+	 1 $ echo 'lol' >> Example.app/Example 2 $ codesign --verify Example.app 3 Example.app: main executable failed strict validation 
+和预料中的一样，修改已经签名的应用会导致数字签名验证不通过。
+
+####六、资源文件签名
+
+iOS 和 OS X 的应用和框架则是包含了它们所需要的资源在其中的。这些资源包括图片和不同的语言文件，资源中也包括很重要的应用组成部分例如 XIB/NIB 文件，存档文件(archives)，甚至是证书文件。所以为一个程序包设置签名时，这个包中的所有资源文件也都会被设置签名。
+
+为了达到为 所有文件设置签名的目的，签名的过程中会在程序包（即Example.app）中新建一个叫做 _CodeSignatue/CodeResources 的文件，这个文件中存储了被签名的程序包中所有文件的签名。你可以自己去查看这个签名列表文件，它仅仅是一个 plist 格式文件。
+
+> 这个列表文件中不光包含了文件和它们的签名的列表，还包含了一系列规则，这些规则决定了哪些资源文件应当被设置签名。伴随 OS X 10.10 DP 5 和 10.9.5 版本的发布，苹果改变了代码签名的格式，也改变了有关资源的规则。如果你使用10.9.5或者更高版本的 codesign 工具，在 CodeResources 文件中会有4个不同区域，其中的 rules 和 files 是为老版本准备的，而 files2 和 rules2 是为新的第二版的代码签名准备的。最主要的区别是在新版本中你无法再将某些资源文件排除在代码签名之外，在过去你是可以的，只要在被设置签名的程序包中添 加一个名为 ResourceRules.plist 的文件，这个文件会规定哪些资源文件在检查代码签名是否完好时应该被忽略。但是在新版本的代码签名中，这种做法不再有效。所有的代码文件和资源文件都必须 设置签名，不再可以有例外。在新版本的代码签名规定中，一个程序包中的可执行程序包，例如扩展 (extension)，是一个独立的需要设置签名的个体，在检查签名是否完整时应当被单独对待。
+
+####七、授权文件（entitlements）
+
+在 iOS 上你的应用能做什么依然是沙盒限制的，这些限制大多情况下都由授权文件（entitlements）来决定。授权机制决定了哪些系统资源在什么情况下允许被一个应用使用，简单的说它就是一个沙盒的配置列表。
+
+运行如下命令：
+
+	 1 $ codesign -d --entitlements - Example.app 
+会得到类似的结果：
+
+	 1 <!--?xml version="1.0" encoding="UTF-8"?-->  
+	 2    
+	 3 <plist version="1.0">  
+	 4 <dict>  
+	 5         <key>application-identifier</key>
+	 6         <string>7TPNXN7G6K.ch.kollba.example</string>
+	 7         <key>aps-environment</key>
+	 8         <string>development</string>
+	 9         <key>com.apple.developer.team-identifier</key>
+	10         <string>7TPNXN7G6K</string>
+	11         <key>com.apple.developer.ubiquity-container-identifiers</key>
+	12         <array>
+	13                 <string>7TPNXN7G6K.ch.kollba.example</string>
+	14         </array>
+	15         <key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	16         <string>7TPNXN7G6K.ch.kollba.example</string>
+	17         <key>com.apple.security.application-groups</key>
+	18         <array>
+	19                 <string>group.ch.kollba.example</string>
+	20         </array>
+	21         <key>get-task-allow</key>
+	22         <true>
+	23 </true></dict>  
+	24 </plist version="1.0">
+ 
+ 
+
+在 Xcode 的 Capabilities 选项卡下选择一些选项之后，Xcode 就会生成这样一段 XML。 Xcode 会自动生成一个 .entitlements 文件，然后在需要的时候往里面添加条目。当构建整个应用时，这个文件也会提交给 codesign 作为应用所需要拥有哪些授权的参考。这些授权信息必须都在开发者中心的 App ID 中启用，并且包含在后文介绍的描述文件中。在构建应用时需要使用的授权文件可以在 Xcode build setting 中的 code signing entitlements中设置。
+
+在新版本的 Xcode 6 之后，授权信息列表会以 Example.app.xcent 这样的名字的文件形式包含在应用包中。这么做或许是为了在出现配置错误时提供更加有用的错误信息。
+
+####八、描述文件（provisioning file）
+
+在整个代码签名和沙盒机制中有一个组成部分将签名，授权和沙盒联系了起来，那就是描述文件 (provisioning profiles)。
+
+OS X中保存目录
+
+Xcode 将从开发者中心下载的全部配置文件都放在了这里：
+
+	 1 ~/Library/MobileDevice/Provisioning Profiles 
+文件格式
+
+描述文件并不是一个普通的plist文件，它是一个根据密码讯息语法 (Cryptographic Message Syntax) 加密的文件。
+
+以XML格式查看该文件的命令：
+
+	 1 $ security cms -D -i example.mobileprovision 
+文件内容
+
+描述文件主要包含以下内容：
+
+*  UUID
+
+每一个配置文件都有它自己的 UUID 。Xcode 会用这个 UUID 来作为标识，记录你在 build settings 中选择了哪一个配置文件。
+
+*  ProvisionedDevices
+
+记录所有可用于调试的设备ID。
+
+*  DeveloperCertificates
+
+包含了可以为使用这个配置文件的应用签名的所有证书。所有的证书都是基于 Base64 编码符合 PEM (Privacy Enhanced Mail, RFC 1848) 格式的。
+
+*  Entitlements
+
+有关前面讲到的配置文件的所有内容都会被保存在这里。
