@@ -8,20 +8,20 @@ categories: 面试汇总
 
 --- 
 
-UIView／UIWindow／UIScreen／CALayer
-
- 
-
 ####1、UIScreen可以获取设备屏幕的大小。
  
 
-	// 整个屏幕的大小 {{0, 0}, {320, 480}}
+	// 整个屏幕的大小
 	CGRect bounds = [UIScreen mainScreen].bounds;
 	NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
+	
+` {0, 0, 320, 480}`
  
-	// 应用程序窗口大小 {{0, 20}, {320, 460}}
+	// 应用程序窗口大小 
 	CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
 	NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));
+
+`{0, 20, 320, 460}`
 ####2、UIView对象定义了一个屏幕上的一个矩形区域，同时处理该区域的绘制和触屏事件。
 可以在这个区域内绘制图形和文字，还可以接收用户的操作。一个UIView的实例可以包含和管理若干个子UIView。
 
@@ -132,6 +132,7 @@ AppDelegate.m
 	On Mac OS X you must configure an NSView instance in such a way that it can host a layer.
  
 由此可见UIView是基于CALayer的高层封装。The view system in iOS is built directly on top of Core Animation layers. 
+ 
  
 > 结论：
  UIView来自CALayer，高于CALayer，是CALayer高层实现与封装。UIView的所有特性来源于CALayer支持。
