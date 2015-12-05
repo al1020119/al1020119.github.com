@@ -9,9 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。 一、在iOS中下面三个控件，自身就有复制-粘贴的功能： 1、UITextView
-2、UITextField
-3、 &hellip;">
+  <meta name="description" content="　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +74,507 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/11/xcode-menu/">Xcode Menu</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
+
+<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
+
+<h2>File:</h2>
+
+<p><img src="/images/xcodemenu001.png" title="Caption" ></p>
+
+<pre><code>New : 可以新建tap,窗口，新文件，playground，workspace，target等等。
+
+Add Files to XX: 为这个项目中引入文件
+
+Open ：打开文件
+
+Open Recent  ：打开最近的打开的项目或者工作组
+
+Open Quickly  ：通过搜索文件名快速打开一个文件
+
+Close ：这几个选项的都是关闭操作。
+
+Save ：保存
+
+Duplicate：复制
+
+Revert  to Saved：将此文件的修改直接回退到上次保存时
+
+Unlock ：要对第三方库或系统文件进行修改时解锁
+
+Show in Finder ：在Finder 中展示
+
+Open with External Editor  ：使用外部编辑器打开
+
+Save As Workspace： 另存为工作组
+
+Page Setup ：页面设置，为打印而生
+
+Print… ：用打印机打印当前文件 
+</code></pre>
+
+<h2>Edit:</h2>
+
+<p><img src="/images/xcodemenu002.png" title="Caption" ></p>
+
+<pre><code>Undo: 撤销
+
+Redo ：反撤销
+
+Cut ：剪切
+
+Copy ：拷贝
+
+Paste ：粘贴
+
+Special Paste ：特殊粘贴 ??
+
+Paste and Preserve formatter ：粘贴并匹配样式
+
+Duplicate :复制
+
+Delete :删除
+
+Select All :全选
+
+Filter : 筛选，可以选择在导航栏中筛选和在库中筛选
+
+Sort：排序 (还不知道怎么用)
+
+Format ：格式
+
+          Font ：可以打开字体和颜色的设置框，可以copy样式。
+
+          Text ：可以设置编码的页面左右对齐，显示顶部标尺。
+
+          Spelling and Grammar ：拼写提示和语法提示。
+
+          Substitutions：会出来个仪表盘，提供微操。
+
+          Transformations ：可以将英文转成全大写，全小写，首字母大写。
+
+          Speech ：开始说话结束说话。
+
+Refactor: 重构
+
+          Rename 重命名
+
+          Extract 提取
+
+          Create Superclass  创建超类
+
+          Move Up 上移
+
+          Move Down 下移
+
+Convert：转换成ARC,swift等
+
+Encapsulate 封装
+
+Start Dictation: 开始听写
+
+Emoji &amp; symbols：emoji表情和特殊符号 
+</code></pre>
+
+<h2>View:</h2>
+
+<p><img src="/images/xcodemenu003.png" title="Caption" ></p>
+
+<pre><code>Standard Editor ：标准模块
+
+Assistant Editor ：助理模块
+
+Version Editor： 版本模块
+
+Navigators：里面包含了xcode左边8个导航模块的切换。
+
+Debug Area：中下部的调试框和打印输出框。
+
+Untilities: xcode右边的上面两个选项和下面的四个选项。
+
+          Show File Inspector：显示文件检查
+
+          Show Quick Help Inspector：显示快速帮助
+
+          File Template Library  文件模板库
+
+          Code Snippet Library  代码片段库
+
+          Object Library  对象库
+
+          Media Library  媒体库
+
+          Hide Utilities  隐藏实体工具
+
+Hide Toolbar  隐藏工具栏（XCode顶部）
+
+Hide Tab Bar  隐藏标签栏（用了cmd+T出来的tab切换）
+
+Enter Full Screen：全屏
+</code></pre>
+
+<p> ##Find:</p>
+
+<p><img src="/images/xcodemenu004.png" title="Caption" ></p>
+
+<pre><code>Find in Workspace… 在工作组中查找
+
+Find and Replace in Workspace… 在工作组中查找和替换
+
+...
+
+上面4个是在哪地方查找或替换，中间4个是在你几个选中的文件或组中查找，
+
+再下面4个是查找或替换，然后是替换。
+
+Find Call Hierarchy：查找到调用层级。
+
+Hide Find Bar：隐藏查找栏
+
+Use Selection for Find ：使用选择的地方去查找
+
+Use Selection for Replace：使用选择的地方去替换
+</code></pre>
+
+<h2>Navigate:</h2>
+
+<p><img src="/images/xcodemenu005.png" title="Caption" ></p>
+
+<pre><code>Reveal in Project Navigator ：在项目导航中揭示出此文件
+
+Reveal in Symbol Navigator  ：在符号导航中揭示出某方法
+
+Open in Assistant Editor：用分屏助理打开
+
+Open in ..   你想怎么打开
+
+Move Focus To Next Area  将焦点移动到下一个区域
+
+Move Focus To Editor   将焦点移动到编辑器
+
+Go Forward  前进，相当于两个手指左划右划
+
+Go back  后退
+
+Jump to Selection 跳转到选择
+
+Jump to Definition 跳转到定义
+
+Jump to OriginalSource 跳到源文件
+
+Jump to Next Issue  跳转到下一个问题
+
+Jump to Previous Issue  跳转到上一个问题
+
+Jump to Next Counterpart  ：??
+
+Jump to Previous Counterpart : ??
+
+Jump to Line in xxx.m ：跳到这个文件的第几行。
+
+Jump to Next Placeholder ：??
+
+Jump to Previous Placeholder：??
+</code></pre>
+
+<h2>Editor:(选中文件状态下)</h2>
+
+<p><img src="/images/xcodemenu006.png" title="Caption" ></p>
+
+<pre><code>Show Completions : 显示自动补全
+
+Edit All in Scope: 在当前文件全文修改选中的一个变量或单词
+
+Fix All in Scope: 在当前文件自动处理他能解决的error，相当于点 
+
+Show issue: 展示错误和隐藏错误，相当于点左边的按钮 
+
+Issues: 可以控制展示全部错误警告，还是仅仅展示警告。
+
+Structure: 构造
+
+Balance Delimiter：直接选中光标所在的整个大括号
+
+Re-Indent : 将格式缩进整理一下
+
+这里还有四个，分别是往前或往后移一个tab，往上往下移一行
+
+Code Folding: 提供各种折叠和取消折叠
+
+Focus Follow Selection：高亮聚焦你光标所在的模块
+
+Syntax Coloring: 设置各个语法的高亮配色
+
+Show Invisibles: 显示所有隐藏的东西，比如空格。
+
+Show Blame for Line: 显示选中的行的修改者和log。
+
+Show Code Coverage: 展示代码的覆盖范围
+</code></pre>
+
+<h2>Editor:(选中xib状态下)</h2>
+
+<p><img src="/images/xcodemenu007.png" title="Caption" ></p>
+
+<pre><code>Canvas 画布
+
+          Show Selection Highlights: 显示选中控件的高亮
+
+   Show Resize Knobs：显示约束旁边的小方块
+
+Show Constraints ：显示约束
+
+Show Involved Views For Selected Constraints：显示约束涉及到的视图
+
+          Show Layout Rectangles  布局矩形
+
+Size Class: 屏幕布局相关，相当于点xib下面的按钮
+
+Show Bounds Rectangles  显示边界矩形
+
+Hide Document Outline：隐藏或显示左边的层级图
+
+Reveal in Document Outline：在左边的层级图中揭示出来
+
+Align  对准
+
+          Align Left Edges  左边缘对齐
+
+          Align Right Edges  右边缘对齐
+
+          Align Top Edges  顶部边缘对齐
+
+          Align Bottom Edges  底部边缘对齐
+
+          Align Horizontal Centers  横向中心对齐
+
+          Align Vertical Centers  竖向中心对齐
+
+          Align Baselines  基线对齐
+
+          Align Horizontal Center In Container   对齐容器中的水平中心
+
+          Align Vertical Center In Container   对齐容器中的垂直中心
+
+Arrange : 可以上移下移或移到背景等
+
+Embed ： 嵌入，可以嵌nav，tabbar，scrollView
+
+Unembed   解除嵌入
+
+Size to Fit ：大小以适合
+
+Snap to Guides：让引导线具有吸附功能，让控件靠近就自动对齐
+
+Guides：设置引导标尺线
+
+Add Horizontal Guide ： 添加横向标尺线
+
+Add Vertical Guide ： 添加垂直标尺线
+
+Automatically Refresh Views：自动刷新视图
+
+Refresh All Views：刷新所有视图
+
+Debug Selected Views：调试选中的视图？
+
+Resolve Auto Layout issues：解决自动布局的问题，类似于点 
+
+Refactor to Storyboard：把VC重构成SB？
+</code></pre>
+
+<h2>Product:</h2>
+
+<p><img src="/images/xcodemenu008.png" title="Caption" ></p>
+
+<pre><code>Run：运行
+
+Test：??
+
+Profile：打开instrument之类的
+
+Analyze：进行代码分析，可以检测一些不规范的OC语法
+
+Archive：归档
+
+Build for：和上面的功能相似。
+
+Perform Action：??
+
+Build：编译
+
+Clean：清一下之前编译的缓存
+
+Stop：停止
+</code></pre>
+
+<h2>Debug:</h2>
+
+<p><img src="/images/xcodemenu009.png" title="Caption" ></p>
+
+<pre><code>Pause : 暂停 会 切换成继续
+
+Continue to Current Line：走到你光标选中的这行
+
+Step Over ： 跨越
+
+Step Into ：步入
+
+Step Out ：走出
+
+Step Over Instruction： 跨过指示
+
+Step Over Thread ：单步执行在线程
+
+Step Into Instruction ：步入指示
+
+Step Into Thread ：单步执行线程
+
+Capture GPU Frame: 捕获GPU位置
+
+Simulate Location: 模拟模拟器的位置
+
+Simulate Background Fetch: 让模拟器去后台
+
+iCloud: 苹果云相关
+
+View Debugging: 关于视图的调试
+
+Take Screenshot of Active Device：截图
+
+Capture View Hierarchy: 用3D图 来捕获视图层次
+
+Show View Frame: 在模拟器上显示各个控件的尺寸大小
+
+Show Alignment Rectangles: 显示对齐矩形
+
+Show View Drawing: 显示查看绘图
+
+Show Responsive Scrolling Status: 显示响应滚动状态
+
+Deactivate Breakpoints  停用中断点。
+
+Breakpoints: 相当于左下角的加号，增加各种断点。
+
+Debug Workflow：可以显示内存和清除打印等操作。
+
+Always Show Disassembly: 这要是勾上就只显示堆栈信息不看代码
+
+Attach to Process by PID or Name: 设置权限id或name
+
+Attach to Progress: 附加到进程
+
+Detach: 跳过所有的断点
+</code></pre>
+
+<h4>Source Control:</h4>
+
+<p><img src="/images/xcodemenu0010.png" title="Caption" ></p>
+
+<pre><code>第一行是分支管理，可以创建分支合并分支，配置分支的源等等。
+
+Create Working Copy：项目中如果有地方是引用的那就copy一下。
+
+Checkout：可以选择切换分支。
+
+Commit  ：提交
+
+Push ： 上传代码
+
+Pull ：拉代码
+
+Refresh Status：刷新状态
+
+Discard Changes ：放弃所有修改。
+
+Add Selected Files : 将选中的这些问号文件add一下。
+
+Discard Changes  in selected Files : 将选中的这些文件放弃修改。
+
+Mark Selected  Files as Resolved: 相当于合并或rebase过程中的解决。
+
+History：可以看当前分支的log历史。
+</code></pre>
+
+<h2>Window:</h2>
+
+<p><img src="/images/xcodemenu011.png" title="Caption" ></p>
+
+<pre><code>Minimize: 最小化
+
+Zoom：相当于windows的“还原”
+
+Show next tab: 如果你有两个tab的话这个就是切换tab
+
+Show previous tab: 同上
+
+Documentation and API Reference：打开xcode文档
+
+welcome to xcode: 来到开始页面
+
+Device：硬件，能看到MAC ，模拟器和手机
+
+Organizer：打开可以看到Archives 和 Crashes
+
+Project：查看最近项目，也可以在这里删除Derived Data
+
+Bring all to Front：把所有xcode打开的都置顶。
+</code></pre>
+
+<h2>Help:</h2>
+
+<p><img src="/images/xcodemenu012.png" title="Caption" ></p>
+
+<pre><code>Search : 在目录中搜索功能。
+
+Documentation and API Reference：打开xcode文档
+
+Xcode OverView：打开xcode综述
+
+Release Notes：打开xcode各版本更新迭代的log。
+
+What's New in Xcode：有什么新特性
+
+Quick help for selected Item：快速帮助，相当于按着option点。
+
+Search Documentation for Selected  Text：详细帮 助，直接在文档里找到这个。
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/11/xcode-menu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2778,453 +3277,6 @@ Optimizing Your App for Multitasking on iPad in iOS
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/04/12/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：
-最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
-
-<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
-
-<h6>##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（RFC-3920），同时还提供了用于读写XML的工具，大大简化了基于XMPP的通信应用的开发。</h6>
-
-<h3>关于连接的</h3>
-
-<pre><code>//此方法在stream开始连接服务器的时候调用
- - (void)xmppStreamDidConnect:(XMPPStream *)sender
- //此方法在stream连接断开的时候调用
- - (void)xmppStreamDidDisconnect:(XMPPStream *)sender withError:(NSError *)error;
-</code></pre>
-
-<h3>关于验证的</h3>
-
-<pre><code>//验证失败后调用
- - (void)xmppStream:(XMPPStream *)sender didNotAuthenticate:(NSXMLElement *)error
-//验证成功后调用
- - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
-</code></pre>
-
-<h3>关于通信的</h3>
-
-<pre><code>//收到消息后调用
-- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
-//接受到好友状态更新
-- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
-</code></pre>
-
-<h4>简单实战</h4>
-
-<h6>登录和好友上下线</h6>
-
-<h5>XMPP中常用对象们</h5>
-
-<pre><code>XMPPStream：xmpp基础服务类
-XMPPRoster：好友列表类
-XMPPRosterCoreDataStorage：好友列表（用户账号）在core data中的操作类
-XMPPvCardCoreDataStorage：好友名片（昵称，签名，性别，年龄等信息）在core data中的操作类
-XMPPvCardTemp：好友名片实体类，从数据库里取出来的都是它
-xmppvCardAvatarModule：好友头像
-XMPPReconnect：如果失去连接,自动重连
-XMPPRoom：提供多用户聊天支持
-</code></pre>
-
-<p>XMPPPubSub：发布订阅</p>
-
-<h5>登录操作，也就是连接xmpp服务器</h5>
-
-<pre><code>- (void)connect {
-    if (self.xmppStream == nil) {
-        self.xmppStream = [[XMPPStream alloc] init];
-        [self.xmppStream addDelegate:self delegateQueue:dispatch_get_main_queue()];
-    }
-    if (![self.xmppStream isConnected]) {
-        NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"username"];
-        XMPPJID *jid = [XMPPJID jidWithUser:username domain:@"lizhen" resource:@"Ework"];
-        [self.xmppStream setMyJID:jid];
-        [self.xmppStream setHostName:@"10.4.125.113"];
-        NSError *error = nil;
-        if (![self.xmppStream connect:&amp;error]) {
-            NSLog(@"Connect Error: %@", [[error userInfo] description]);
-        }
-    }
-}
-</code></pre>
-
-<p>connect成功之后会依次调用XMPPStreamDelegate的方法，首先调用</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender socketDidConnect:(GCDAsyncSocket *)socket
-</code></pre>
-
-<p>&hellip;
-然后</p>
-
-<ul>
-<li><p>(void)xmppStreamDidConnect:(XMPPStream *)sender
-在该方法下面需要使用xmppStream 的authenticateWithPassword方法进行密码验证，成功的话会响应delegate的方法，就是下面这个</p></li>
-<li><p>(void)xmppStreamDidAuthenticate:(XMPPStream *)sender</p></li>
-</ul>
-
-
-<h5>上线</h5>
-
-<p>实现 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender 委托方法</p>
-
-<pre><code>- (void)xmppStreamDidAuthenticate:(XMPPStream *)sender {
-     XMPPPresence *presence = [XMPPPresence presenceWithType:@"available"];
-    [self.xmppStream sendElement:presence];
- }
-</code></pre>
-
-<h5>退出并断开连接</h5>
-
-<pre><code> - (void)disconnect {
-     XMPPPresence *presence = [XMPPPresence presenceWithType:@"unavailable"];
-    [self.xmppStream sendElement:presence];
-
-      [self.xmppStream disconnect];
-  }
-</code></pre>
-
-<h5>好友状态</h5>
-
-<p>获取好友状态，通过实现</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
-</code></pre>
-
-<p>&hellip;
-方法，当接收到 presence 标签的内容时，XMPPFramework 框架回调该方法</p>
-
-<pre><code>presence 的状态：
-available 上线
-away 离开
-do not disturb 忙碌
-unavailable 下线
-
-- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence {
-    NSString *presenceType = [presence type];
-    NSString *presenceFromUser = [[presence from] user];
-    if (![presenceFromUser isEqualToString:[[sender myJID] user]]) {
-        if ([presenceType isEqualToString:@"available"]) {
-            //
-        } else if ([presenceType isEqualToString:@"unavailable"]) {
-            //
-        }
-    }
-}
-</code></pre>
-
-<h3>接收消息和发送消息</h3>
-
-<h5>接收消息</h5>
-
-<p>通过实现</p>
-
-<ul>
-<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message;
-当接收到 message 标签的内容时，XMPPFramework 框架回调该方法
-根据 XMPP 协议，消息体的内容存储在标签 body 内</p></li>
-<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message {
-  NSString *messageBody = [[message elementForName:@&ldquo;body&rdquo;] stringValue];
-}</p></li>
-</ul>
-
-
-<h5>发送消息</h5>
-
-<p>发送消息，我们需要根据 XMPP 协议，将数据放到标签内</p>
-
-<pre><code>- (void)sendMessage:(NSString *) message toUser:(NSString *) user {
-    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
-    [body setStringValue:message];
-    NSXMLElement *message = [NSXMLElement elementWithName:@"message"];
-    [message addAttributeWithName:@"type" stringValue:@"chat"];
-    NSString *to = [NSString stringWithFormat:@"%@@example.com", user];
-    [message addAttributeWithName:@"to" stringValue:to];
-    [message addChild:body];
-    [self.xmppStream sendElement:message];
-}
-</code></pre>
-
-<h3>获取好友信息和删除好友</h3>
-
-<h5>好友列表和好友名片</h5>
-
-<pre><code>[_xmppRoster fetchRoster];//获取好友列表
-//获取到一个好友节点
-- (void)xmppRoster:(XMPPRoster *)sender didRecieveRosterItem:(NSXMLElement *)item
-//获取完好友列表
-- (void)xmppRosterDidEndPopulating:(XMPPRoster *)sender
-//到服务器上请求联系人名片信息
-- (void)fetchvCardTempForJID:(XMPPJID *)jid;
-//请求联系人的名片，如果数据库有就不请求，没有就发送名片请求
-- (void)fetchvCardTempForJID:(XMPPJID *)jid ignoreStorage:(BOOL)ignoreStorage;
-//获取联系人的名片，如果数据库有就返回，没有返回空，并到服务器上抓取
-- (XMPPvCardTemp *)vCardTempForJID:(XMPPJID *)jid shouldFetch:(BOOL)shouldFetch;
-//更新自己的名片信息
-- (void)updateMyvCardTemp:(XMPPvCardTemp *)vCardTemp;
-//获取到一盒联系人的名片信息的回调
-- (void)xmppvCardTempModule:(XMPPvCardTempModule *)vCardTempModule
-        didReceivevCardTemp:(XMPPvCardTemp *)vCardTemp
-                     forJID:(XMPPJID *)jid
-</code></pre>
-
-<h5>添加好友</h5>
-
-<pre><code>//name为用户账号
-    - (void)XMPPAddFriendSubscribe:(NSString *)name
-    {
-        //XMPPHOST 就是服务器名，  主机名
-        XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];
-        //[presence addAttributeWithName:@"subscription" stringValue:@"好友"];
-        [xmppRoster subscribePresenceToUser:jid];
-
-    }
-</code></pre>
-
-<h5>收到添加好友的请求</h5>
-
-<pre><code>- (void)xmppRoster:(XMPPRoster *)sender didReceivePresenceSubscriptionRequest:(XMPPPresence *)presence
-    {
-        //取得好友状态
-        NSString *presenceType = [NSString stringWithFormat:@"%@", [presence type]]; //online/offline
-        //请求的用户
-        NSString *presenceFromUser =[NSString stringWithFormat:@"%@", [[presence from] user]];
-        NSLog(@"presenceType:%@",presenceType);
-
-        NSLog(@"presence2:%@  sender2:%@",presence,sender);
-
-        XMPPJID *jid = [XMPPJID jidWithString:presenceFromUser];
-        //接收添加好友请求
-        [xmppRoster acceptPresenceSubscriptionRequestFrom:jid andAddToRoster:YES];
-
-    }
-</code></pre>
-
-<h5>删除好友</h5>
-
-<pre><code>//删除好友，name为好友账号
-- (void)removeBuddy:(NSString *)name  
-{  
-    XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];  
-
-    [self xmppRoster] removeUser:jid];  
-}
-</code></pre>
-
-<h5>聊天室</h5>
-
-<p>初始化聊天室</p>
-
-<pre><code>     XMPPJID *roomJID = [XMPPJID jidWithString:ROOM_JID];
-
-    xmppRoom = [[XMPPRoom alloc] initWithRoomStorage:self jid:roomJID];
-
-    [xmppRoom activate:xmppStream];
-     [xmppRoom addDelegate:self delegateQueue:dispatch_get_main_queue()];
-</code></pre>
-
-<p>创建聊天室成功</p>
-
-<pre><code>`- (void)xmppRoomDidCreate:(XMPPRoom *)sender
-{
-    DDLogInfo(@"%@: %@", THIS_FILE, THIS_METHOD);
-}`
-</code></pre>
-
-<p>加入聊天室，使用昵称</p>
-
-<pre><code>[xmppRoom joinRoomUsingNickname:@"quack" history:nil];
-</code></pre>
-
-<p>获取聊天室信息</p>
-
-<pre><code>- (void)xmppRoomDidJoin:(XMPPRoom *)sender
-    {
-        [xmppRoom fetchConfigurationForm];
-        [xmppRoom fetchBanList];
-        [xmppRoom fetchMembersList];
-        [xmppRoom fetchModeratorsList];
-    }
-</code></pre>
-
-<p>如果房间存在，会调用委托</p>
-
-<pre><code>    // 收到禁止名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchBanList:(NSArray *)items;
-    // 收到好友名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchMembersList:(NSArray *)items;
-    // 收到主持人名单列表
-
-    - (void)xmppRoom:(XMPPRoom *)sender didFetchModeratorsList:(NSArray *)items;
-房间不存在，调用委托
-
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchBanList:(XMPPIQ *)iqError;
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchMembersList:(XMPPIQ *)iqError;
-    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchModeratorsList:(XMPPIQ *)iqError;
-</code></pre>
-
-<p>离开房间</p>
-
-<pre><code>[xmppRoom deactivate:xmppStream];
-</code></pre>
-
-<p>XMPPRoomDelegate的其他代理方法:</p>
-
-<p>离开聊天室</p>
-
-<pre><code>    - (void)xmppRoomDidLeave:(XMPPRoom *)sender
-    {
-        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>新人加入群聊</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidJoin:(XMPPJID *)occupantJID
-     {
-         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>有人退出群聊</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidLeave:(XMPPJID *)occupantJID
-    {
-        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<p>有人在群里发言</p>
-
-<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID
-     {
-         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    }
-</code></pre>
-
-<h5>消息回执</h5>
-
-<p>这个是XEP－0184协议的内容
-发送消息时附加回执请求
-代码实现</p>
-
-<pre><code>NSString *siID = [XMPPStream generateUUID];
-    //发送消息
-    XMPPMessage *message = [XMPPMessage messageWithType:@"chat" to:jid elementID:siID];
-    NSXMLElement *receipt = [NSXMLElement elementWithName:@"request" xmlns:@"urn:xmpp:receipts"];
-    [message addChild:receipt];
-    [message addBody:@"测试"];
-    [self.xmppStream sendElement:message];
-</code></pre>
-
-<p>收到回执请求的消息，发送回执</p>
-
-<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
-    {
-        //回执判断
-        NSXMLElement *request = [message elementForName:@"request"];
-        if (request)
-        {
-            if ([request.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
-            {
-                //组装消息回执
-                XMPPMessage *msg = [XMPPMessage messageWithType:[message attributeStringValueForName:@"type"] to:message.from elementID:[message attributeStringValueForName:@"id"]];
-                NSXMLElement *recieved = [NSXMLElement elementWithName:@"received" xmlns:@"urn:xmpp:receipts"];
-                [msg addChild:recieved];
-
-                //发送回执
-                [self.xmppStream sendElement:msg];
-            }
-        }else
-        {
-            NSXMLElement *received = [message elementForName:@"received"];
-            if (received)
-            {
-                if ([received.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
-                {
-                    //发送成功
-                    NSLog(@"message send success!");
-                }  
-            }  
-        }  
-
-        //消息处理  
-        //...  
-    }
-</code></pre>
-
-<h5>添加AutoPing</h5>
-
-<p>为 了监听服务器是否有效，增加心跳监听。用XEP-0199协议，在XMPPFrameWork框架下，封装了 XMPPAutoPing 和 XMPPPing两个类都可以使用，因为XMPPAutoPing已经组合进了XMPPPing类，所以XMPPAutoPing使用起来更方便。</p>
-
-<pre><code>//初始化并启动ping
--(void)autoPingProxyServer:(NSString*)strProxyServer
-{
-    _xmppAutoPing = [[XMPPAutoPingalloc] init];
-    [_xmppAutoPingactivate:_xmppStream];
-    [_xmppAutoPingaddDelegate:selfdelegateQueue:  dispatch_get_main_queue()];
-    _xmppAutoPing.respondsToQueries = YES;
-    _xmppAutoPing.pingInterval=2;//ping 间隔时间
-    if (nil != strProxyServer)
-    {
-       _xmppAutoPing.targetJID = [XMPPJID jidWithString: strProxyServer ];//设置ping目标服务器，如果为nil,则监听socketstream当前连接上的那个服务器
-    }
-}
-//卸载监听
- [_xmppAutoPing   deactivate];
-  [_xmppAutoPing   removeDelegate:self];
-   _xmppAutoPing = nil;
-//ping XMPPAutoPingDelegate的委托方法:
-- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender");
-}
-- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender");
-}
-
-- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender
-{
-    NSLog(@"- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender");
-}
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/04/12/xmppshi-yong-zong-jie/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -3243,7 +3295,7 @@ unavailable 下线
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -3260,6 +3312,10 @@ unavailable 下线
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/anquan/">安全机制</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
@@ -3272,11 +3328,7 @@ unavailable 下线
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+        <a href="/blog/2015/12/11/python/">Python</a>
       </li>
     
   </ul>

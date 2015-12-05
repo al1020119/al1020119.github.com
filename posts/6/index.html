@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="独一无二 ordinal WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。 更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。 IOS系统中，获取设备唯一标识的方法有很多： 一.UDID( &hellip;">
+  <meta name="description" content="UIView&CALayer是撒？ ordinal UIView与CALayer详解 研究Core Animation已经有段时间了，关于Core Animation，网上没什么好的介绍。苹果网站上有篇专门的总结性介绍，但是似乎原理性的东西不多，看得人云山雾罩，感觉，写那篇东西的人，其实是假 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,188 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/15/uiview%20calayer/">UIView&CALayer是撒？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>UIView与CALayer详解</p>
+
+<p>研究Core Animation已经有段时间了，关于Core Animation，网上没什么好的介绍。苹果网站上有篇专门的总结性介绍，但是似乎原理性的东西不多，看得人云山雾罩，感觉，写那篇东西的人，其实是假 设读的人了解界面动画技术的原理的。今天有点别的事情要使用Linux，忘掉了ssh的密码，没办法重新设ssh，结果怎么也想不起来怎么设ssh远程登 陆了，没办法又到网上查了一遍，太浪费时间了，痛感忘记记笔记是多么可怕的事情。鉴于Core Animation的内容实在是非常繁杂，应用的Obj-C语言本身的特性也很多，所以写个备忘录记录一下，懂的人看了后如果发现了错误，还不吝指教。</p>
+
+<ul>
+<li>1.UIView 是iOS系统中界面元素的基础，所有的界面元素都继承自它。它本身完全是由CoreAnimation来实现的（Mac下似乎不是这样）。它真正的绘图部 分，是由一个叫CALayer（Core Animation Layer）的类来管理。UIView本身，更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等等， 实际上内部都是在访问它所包含的CALayer的相关属性。</li>
+</ul>
+
+
+<p>2.UIView有个layer属性，可以返回它的主CALayer实例，UIView有一个layerClass方法，返回主layer所使用的类，UIView的子类，可以通过重载这个方法，来让UIView使用不同的CALayer来显示，例如通过</p>
+
+<pre><code>- (class) layerClass {
+
+  return ([CAEAGLLayer class]);
+
+}
+</code></pre>
+
+<p>使某个UIView的子类使用GL来进行绘制。</p>
+
+<ul>
+<li>3.UIView的CALayer类似UIView的子View树形结构，也可以向它的layer上添加子layer，来完成某些特殊的表示。</li>
+</ul>
+
+
+<p>例如下面的代码</p>
+
+<pre><code>grayCover = [[CALayer alloc] init];
+
+grayCover.backgroundColor = [[[UIColor blackColor] colorWithAlphaComponent:0.2] CGColor];
+
+[self.layer addSubLayer: grayCover];
+</code></pre>
+
+<p>会在目标View上敷上一层黑色的透明薄膜。</p>
+
+<ul>
+<li>4.UIView的layer树形在系统内部，被系统维护着三份copy（这段理解有点吃不准）。</li>
+</ul>
+
+
+<p>例如：</p>
+
+<pre><code>第一份，逻辑树，就是代码里可以操纵的，例如更改layer的属性等等就在这一份。
+第二份，动画树，这是一个中间层，系统正在这一层上更改属性，进行各种渲染操作。
+第三份，显示树，这棵树的内容是当前正被显示在屏幕上的内容。
+这三棵树的逻辑结构都是一样的，区别只有各自的属性。
+</code></pre>
+
+<ul>
+<li><p>5.动画的运作
+UIView 的主layer以外（我觉得是这样），对它的subLayer，也就是子layer的属性进行更改，系统将自动进行动画生成，动画持续时间有个缺省时间， 个人感觉大概是0.5秒。在动画时间里，系统自动判定哪些属性更改了，自动对更改的属性进行动画插值，生成中间帧然后连续显示产生动画效果。</p></li>
+<li><p>6.坐标系系统（对position和anchorPoint的关系还是犯晕）
+CALayer 的坐标系系统和UIView有点不一样，它多了一个叫anchorPoint的属性，它使用CGPoint结构，但是值域是0~1，也就是按照比例来设 置。这个点是各种图形变换的坐标原点，同时会更改layer的position的位置，它的缺省值是{0.5, 0.5}，也就是在layer的中央。
+某layer.anchorPoint = CGPointMake(0.f, 0.f);
+如果这么设置，layer的左上角就会被挪到原来的中间的位置，
+加上这样一句就好了
+某layer.position = CGPointMake(0.f, 0.f);</p></li>
+<li><p>7.真实例子的分析</p></li>
+</ul>
+
+
+<p>这 是iphone上iBook翻页的效果，假设每一页都是一个UIView，我觉得一个页面是贴了俩个Layer，文字Layer显示正面的内容，背面 layer用文字layer的快照做affine翻转，贴在文字layer的后面。因为Layer可以设置显示阴影，也许后面的阴影效果没有使用单独的一 个layer来显示。至于这个曲面效果，我查了很多资料也没有结果，估计是使用了GL的曲面绘图？</p>
+
+<ul>
+<li>8.最后一个让人恶心的。
+layer 可以设置圆角显示，例如UIButton的效果，也可以设置阴影显示，但是如果layer树中的某个layer设置了圆角，树中所有layer的阴影效果 都将显示不了了。如果既想有圆角又想要阴影，好像只能做两个重叠的UIView，一个的layer显示圆角，一个的layer显示阴影&hellip;..</li>
+</ul>
+
+
+<p>CALayer属于Core Animation部分的内容，比较重要而不太好理解。以下是园子中看到的一篇文章的摘录：</p>
+
+<ol>
+<li><p>UIView是iOS系统中界面元素的基础，所有的界面元素都是继承自它。它本身完全是由CoreAnimation来实现的。它真正的绘图部分，是由一个CALayer类来管理。UIView本身更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等，实际上内部都是在访问它所包含的CALayer的相关属性。</p></li>
+<li><p>UIView有个重要属性layer，可以返回它的主CALayer实例。</p></li>
+</ol>
+
+
+<p>// 要访问层，读取UIView实例的layer属性</p>
+
+<pre><code>CALayer *layer = myView.layer
+</code></pre>
+
+<p>所有从UIView继承来的对象都继承了这个属性。这意味着你可以转换、缩放、旋转，甚至可以在Navigation bars，Tables，Text boxes等其它的View类上增加动画。每个UIView都有一个层，控制着各自的内容最终被显示在屏幕上的方式。</p>
+
+<p>UIView的layerClass方法，可以返回主layer所使用的类，UIView的子类可以通过重载这个方法，来让UIView使用不同的CALayer来显示。代码示例：</p>
+
+<pre><code>- (class)layerClass {
+   return ([CAEAGLLayer class]);
+
+}
+</code></pre>
+
+<p>上述代码使得某个UIView的子类使用GL来进行绘制。</p>
+
+<ol>
+<li>UIView的CALayer类似UIView的子View树形结构，也可以向它的layer上添加子layer，来完成某些特殊的表示。即CALayer层是可以嵌套的。</li>
+</ol>
+
+
+<p>示例代码：</p>
+
+<pre><code>grayCover = [[CALayer alloc] init];
+
+grayCover.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2] CGColor];
+[self.layer addSubLayer:grayCover];
+</code></pre>
+
+<p>上述代码会在目标View上敷上一层黑色透明薄膜的效果。</p>
+
+<ol>
+<li><p>UIView的layer树形在系统内部，被维护着三份copy。分别是逻辑树，这里是代码可以操纵的；动画树，是一个中间层，系统就在这一层上更改属性，进行各种渲染操作；显示树，其内容就是当前正被显示在屏幕上得内容。</p></li>
+<li><p>动画的运作：对UIView的subLayer（非主Layer）属性进行更改，系统将自动进行动画生成，动画持续时间的缺省值似乎是0.5秒。</p></li>
+<li><p>坐标系统：CALayer的坐标系统比UIView多了一个anchorPoint属性，使用CGPoint结构表示，值域是0~1，是个比例值。这个点是各种图形变换的坐标原点，同时会更改layer的position的位置，它的缺省值是{0.5,0.5}，即在layer的中央。</p></li>
+</ol>
+
+
+<p>某layer.anchorPoint = CGPointMake(0.f,0.f);
+如果这么设置，只会将layer的左上角被挪到原来的中间位置，必须加上这一句：
+某layer.position = CGPointMake(0.f,0.f);
+最后：layer可以设置圆角显示（cornerRadius），也可以设置阴影 (shadowColor)。但是如果layer树中某个 layer设置了圆角，树种所有layer的阴影效果都将不显示了。因此若是要有圆角又要阴影，变通方法只能做两个重叠的UIView，一个的layer 显示圆角，一个layer显示阴影&hellip;&hellip;</p>
+
+<p>7.渲染：当更新层，改变不能立即显示在屏幕上。当所有的层都准备好时，可以调用setNeedsDisplay方法来重绘显示。</p>
+
+<pre><code>[gameLayer setNeedsDisplay];
+</code></pre>
+
+<p>若要重绘部分屏幕区域，请使用setNeedsDisplayInRect:方法，通过在CGRect结构的区域更新：</p>
+
+<pre><code>[gameLayer setNeedsDisplayInRect:CGRectMake(150.0,100.0,50.0,75.0)];
+</code></pre>
+
+<p>如果是用的Core Graphics框架来执行渲染的话，可以直接渲染Core Graphics的内容。用renderInContext:来做这个事。</p>
+
+<pre><code>[gameLayer renderInContext:UIGraphicsGetCurrentContext()];
+</code></pre>
+
+<p>8.变换：要在一个层中添加一个3D或仿射变换，可以分别设置层的transform或affineTransform属性。</p>
+
+<pre><code>1 characterView.layer.transform = CATransform3DMakeScale(-1.0,-1.0,1.0);
+2 
+3 CGAffineTransform transform = CGAffineTransformMakeRotation(45.0);
+4 backgroundView.layer.affineTransform = transform;
+</code></pre>
+
+<p>9.变形：Quartz Core的渲染能力，使二维图像可以被自由操纵，就好像是三维的。图像可以在一个三维坐标系中以任意角度被旋转，缩放和倾斜。CATransform3D的一套方法提供了一些魔术般的变换效果。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/08/15/uiview%20calayer/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -3394,271 +3576,6 @@ while ([result next]) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/20/sign/">签名机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。</p>
-
-<p>下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。本文的前提是已经对非对称加密有了一定的了解。</p>
-
-<h4>一、数字签名（digital signature）</h4>
-
-<p>对指定信息使用哈希算法，得到一个固定长度的信息摘要，然后再使用 私钥 （注意必须是私钥）对该摘要加密，就得到了数字签名。所谓的代码签名就是这个意思。</p>
-
-<h4>二、数字证书（digital certificate）</h4>
-
-<p>证书生成</p>
-
-<p>开 发者在申请iOS开发证书时，需要通过keychain生成一个CSR文件（Certificate Signing Request），提交给苹果的 Apple Worldwide Developer Relations Certification Authority(WWDR)证书认证中心进行签名，最后从苹果官网下载并安装使用。这个过程中还会产生一个私钥，证书和私钥在keychain中得位 置如图：</p>
-
-<p>iphone-developer-keychain.png</p>
-
-<p>证书组成</p>
-
-<p>经过WWDR数字签名后的数字证书长这个样子：</p>
-
-<p>20130603170838968.png</p>
-
-<p>其中包含两大部分：</p>
-
-<p>· 证书本身</p>
-
-<p>包含用户的公钥、用户个人信息、证书颁发机构信息、证书有效期等信息。</p>
-
-<p>· 证书签名</p>
-
-<p>WWDR将上述证书本身内容的使用哈希算法得到一个固定长度的信息摘要，然后使用自己的私钥对该信息摘要加密生成数字签名，整个过程如图所示：</p>
-
-<p>20130603170752859.png</p>
-
-<p>证书使用</p>
-
-<p>iOS 系统原本就持有WWDR的公钥，系统首先会对证书内容通过指定的哈希算法计算得到一个信息摘要；然后使用WWDR的公钥对证书中包含的数字签名解密，从而 得到经过WWDR的私钥加密过的信息摘要；最后对比两个信息摘要，如果内容相同就说明该证书可信。整个过程如图所示：</p>
-
-<p>20130603170924312.png</p>
-
-<p>在验证了证书是可信的以后，iOS系统就可以获取到证书中包含的开发者的公钥，并使用该公钥来判断代码签名的可用性了。</p>
-
-<p>证书存在的意义</p>
-
-<p>通过证书使用过程可以看出，证书本身只是一个中间媒介，iOS系统对证书并不关心，它其实只想要证书中包含的开发者的公钥！！</p>
-
-<p>但是开发者怎么才能证明公钥是自己的呢？iOS安全系统怎么才能相信这个公钥就是这个开发者的呢？</p>
-
-<p>不 管是哪一个开发者对iOS的安全系统说，这个公钥就是我的，系统是都不相信的，即系统对开发者有着百分之百的不信任感。但是iOS安全系统对自家的 WWDR是可信任的，苹果将WWDR的公钥内置在了iOS系统中。有了证书，iOS安全系统只需要通过WWDR的公钥就可以获取到任何一个开发者的可信任 的公钥了，这就是证书存在的意义！！</p>
-
-<h4>三、公钥（public key）</h4>
-
-<p>公钥被包含在数字证书里，数字证书又被包含在描述文件(Provisioning File)中，描述文件在应用被安装的时候会被拷贝到iOS设备中。</p>
-
-<p>iOS安全系统通过证书就能够确定开发者身份，就能够通过从证书中获取到的公钥来验证开发者用该公钥对应的私钥签名后的代码、资源文件等有没有被更改破坏，最终确定应用能否合法的在iOS设备上合法运行。</p>
-
-<h4>四、私钥（private key）</h4>
-
-<p>每个证书（其实是公钥）都对应有一个私钥，</p>
-
-<p>私钥会被用来对代码、资源文件等签名。只有开发证书和描述文件是没办法正常调试的，因为没有私钥根本无法签名。</p>
-
-<p>此后的内容基本都是从《代码签名探析》摘抄过来的笔记，建议大家看原文好了。</p>
-
-<h4>五、签名相关命令</h4>
-
-<p>快捷查看系统中能用来对代码进行签名的证书</p>
-
-<p>可以使用如下命令：</p>
-
-<pre><code>1 $security find-identity -v -p codesigning  
-2   1) F10B42FFDE18DF28BA21190121439F2E04BEE4B8 "iPhone Developer: weizheng li (P7QJ74LFSA)"
-3      1 valid identities found
-</code></pre>
-
-<p>这就说明当前有一个同时有公钥和私钥的可用证书。</p>
-
-<p>对未签名app手动签名</p>
-
-<p>使用如下命令：</p>
-
-<pre><code> 1 $ codesign -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
-</code></pre>
-
-<p>对已签名app重新签名</p>
-
-<p>为了重新设置签名，你必须带上 -f 参数，有了这个参数，codesign 会用你选择的签名替换掉已经存在的那一个：</p>
-
-<pre><code> 1 $ codesign -f -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
-</code></pre>
-
-<p>查看指定app的签名信息</p>
-
-<p>codesign 还可以为你提供有关一个可执行文件签名状态的信息，这些信息在出现不明错误时会提供巨大的帮助：</p>
-
-<pre><code> 1 $ codesign -vv -d Example.app 
-</code></pre>
-
-<p>会列出以下有关 Example.app 的签名信息：</p>
-
-<pre><code> 1 Executable=/Users/toto/Library/Developer/Xcode/DerivedData/Example-cfsbhbvmswdivqhekxfykvkpngkg/Build/Products/Debug-iphoneos/Example.app/Example  
- 2 Identifier=ch.kollba.example  
- 3 Format=bundle with Mach-O thin (arm64)  
- 4 CodeDirectory v=20200 size=26663 flags=0x0(none) hashes=1324+5 location=embedded  
- 5 Signature size=4336  
- 6 Authority=iPhone Developer: Thomas Kollbach (7TPNXN7G6K)  
- 7 Authority=Apple Worldwide Developer Relations Certification Authority  
- 8 Authority=Apple Root CA  
- 9 Signed Time=29.09.2014 22:29:07  
-10 Info.plist entries=33  
-11 TeamIdentifier=DZM8538E3E  
-12 Sealed Resources version=2 rules=4 files=120  
-13 Internal requirements count=1 size=184
-</code></pre>
-
-<p>验证签名文件的完整性</p>
-
-<p>检查已签名的文件是否完整可以使用如下命令：</p>
-
-<pre><code> 1 $ codesign --verify Example.app 
-</code></pre>
-
-<p>就像大多数 UNIX 工具一样，没有任何输出代表签名是完好的。如果修改一下这个二进制文件：</p>
-
-<pre><code> 1 $ echo 'lol' &gt;&gt; Example.app/Example 2 $ codesign --verify Example.app 3 Example.app: main executable failed strict validation 
-</code></pre>
-
-<p>和预料中的一样，修改已经签名的应用会导致数字签名验证不通过。</p>
-
-<h4>六、资源文件签名</h4>
-
-<p>iOS 和 OS X 的应用和框架则是包含了它们所需要的资源在其中的。这些资源包括图片和不同的语言文件，资源中也包括很重要的应用组成部分例如 XIB/NIB 文件，存档文件(archives)，甚至是证书文件。所以为一个程序包设置签名时，这个包中的所有资源文件也都会被设置签名。</p>
-
-<p>为了达到为 所有文件设置签名的目的，签名的过程中会在程序包（即Example.app）中新建一个叫做 _CodeSignatue/CodeResources 的文件，这个文件中存储了被签名的程序包中所有文件的签名。你可以自己去查看这个签名列表文件，它仅仅是一个 plist 格式文件。</p>
-
-<blockquote><p>这个列表文件中不光包含了文件和它们的签名的列表，还包含了一系列规则，这些规则决定了哪些资源文件应当被设置签名。伴随 OS X 10.10 DP 5 和 10.9.5 版本的发布，苹果改变了代码签名的格式，也改变了有关资源的规则。如果你使用10.9.5或者更高版本的 codesign 工具，在 CodeResources 文件中会有4个不同区域，其中的 rules 和 files 是为老版本准备的，而 files2 和 rules2 是为新的第二版的代码签名准备的。最主要的区别是在新版本中你无法再将某些资源文件排除在代码签名之外，在过去你是可以的，只要在被设置签名的程序包中添 加一个名为 ResourceRules.plist 的文件，这个文件会规定哪些资源文件在检查代码签名是否完好时应该被忽略。但是在新版本的代码签名中，这种做法不再有效。所有的代码文件和资源文件都必须 设置签名，不再可以有例外。在新版本的代码签名规定中，一个程序包中的可执行程序包，例如扩展 (extension)，是一个独立的需要设置签名的个体，在检查签名是否完整时应当被单独对待。</p></blockquote>
-
-<h4>七、授权文件（entitlements）</h4>
-
-<p>在 iOS 上你的应用能做什么依然是沙盒限制的，这些限制大多情况下都由授权文件（entitlements）来决定。授权机制决定了哪些系统资源在什么情况下允许被一个应用使用，简单的说它就是一个沙盒的配置列表。</p>
-
-<p>运行如下命令：</p>
-
-<pre><code> 1 $ codesign -d --entitlements - Example.app 
-</code></pre>
-
-<p>会得到类似的结果：</p>
-
-<pre><code> 1 &lt;!--?xml version="1.0" encoding="UTF-8"?--&gt;  
- 2    
- 3 &lt;plist version="1.0"&gt;  
- 4 &lt;dict&gt;  
- 5         &lt;key&gt;application-identifier&lt;/key&gt;
- 6         &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
- 7         &lt;key&gt;aps-environment&lt;/key&gt;
- 8         &lt;string&gt;development&lt;/string&gt;
- 9         &lt;key&gt;com.apple.developer.team-identifier&lt;/key&gt;
-10         &lt;string&gt;7TPNXN7G6K&lt;/string&gt;
-11         &lt;key&gt;com.apple.developer.ubiquity-container-identifiers&lt;/key&gt;
-12         &lt;array&gt;
-13                 &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
-14         &lt;/array&gt;
-15         &lt;key&gt;com.apple.developer.ubiquity-kvstore-identifier&lt;/key&gt;
-16         &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
-17         &lt;key&gt;com.apple.security.application-groups&lt;/key&gt;
-18         &lt;array&gt;
-19                 &lt;string&gt;group.ch.kollba.example&lt;/string&gt;
-20         &lt;/array&gt;
-21         &lt;key&gt;get-task-allow&lt;/key&gt;
-22         &lt;true&gt;
-23 &lt;/true&gt;&lt;/dict&gt;  
-24 &lt;/plist version="1.0"&gt;
-</code></pre>
-
-<p>在 Xcode 的 Capabilities 选项卡下选择一些选项之后，Xcode 就会生成这样一段 XML。 Xcode 会自动生成一个 .entitlements 文件，然后在需要的时候往里面添加条目。当构建整个应用时，这个文件也会提交给 codesign 作为应用所需要拥有哪些授权的参考。这些授权信息必须都在开发者中心的 App ID 中启用，并且包含在后文介绍的描述文件中。在构建应用时需要使用的授权文件可以在 Xcode build setting 中的 code signing entitlements中设置。</p>
-
-<p>在新版本的 Xcode 6 之后，授权信息列表会以 Example.app.xcent 这样的名字的文件形式包含在应用包中。这么做或许是为了在出现配置错误时提供更加有用的错误信息。</p>
-
-<h4>八、描述文件（provisioning file）</h4>
-
-<p>在整个代码签名和沙盒机制中有一个组成部分将签名，授权和沙盒联系了起来，那就是描述文件 (provisioning profiles)。</p>
-
-<p>OS X中保存目录</p>
-
-<p>Xcode 将从开发者中心下载的全部配置文件都放在了这里：</p>
-
-<pre><code> 1 ~/Library/MobileDevice/Provisioning Profiles 
-</code></pre>
-
-<p>文件格式</p>
-
-<p>描述文件并不是一个普通的plist文件，它是一个根据密码讯息语法 (Cryptographic Message Syntax) 加密的文件。</p>
-
-<p>以XML格式查看该文件的命令：</p>
-
-<pre><code> 1 $ security cms -D -i example.mobileprovision 
-</code></pre>
-
-<p>文件内容</p>
-
-<p>描述文件主要包含以下内容：</p>
-
-<ul>
-<li>UUID</li>
-</ul>
-
-
-<p>每一个配置文件都有它自己的 UUID 。Xcode 会用这个 UUID 来作为标识，记录你在 build settings 中选择了哪一个配置文件。</p>
-
-<ul>
-<li>ProvisionedDevices</li>
-</ul>
-
-
-<p>记录所有可用于调试的设备ID。</p>
-
-<ul>
-<li>DeveloperCertificates</li>
-</ul>
-
-
-<p>包含了可以为使用这个配置文件的应用签名的所有证书。所有的证书都是基于 Base64 编码符合 PEM (Privacy Enhanced Mail, RFC 1848) 格式的。</p>
-
-<ul>
-<li>Entitlements</li>
-</ul>
-
-
-<p>有关前面讲到的配置文件的所有内容都会被保存在这里。</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/05/20/sign/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/7">&larr; Older</a>
@@ -3677,7 +3594,7 @@ while ([result next]) {
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -3694,6 +3611,10 @@ while ([result next]) {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/anquan/">安全机制</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
@@ -3706,11 +3627,7 @@ while ([result next]) {
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+        <a href="/blog/2015/12/11/python/">Python</a>
       </li>
     
   </ul>

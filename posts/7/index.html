@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="排序算法精髓 ordinal 1、序言 ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题， &hellip;">
+  <meta name="description" content="签名机制 ordinal 最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,271 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/20/sign/">签名机制</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。</p>
+
+<p>下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。本文的前提是已经对非对称加密有了一定的了解。</p>
+
+<h4>一、数字签名（digital signature）</h4>
+
+<p>对指定信息使用哈希算法，得到一个固定长度的信息摘要，然后再使用 私钥 （注意必须是私钥）对该摘要加密，就得到了数字签名。所谓的代码签名就是这个意思。</p>
+
+<h4>二、数字证书（digital certificate）</h4>
+
+<p>证书生成</p>
+
+<p>开 发者在申请iOS开发证书时，需要通过keychain生成一个CSR文件（Certificate Signing Request），提交给苹果的 Apple Worldwide Developer Relations Certification Authority(WWDR)证书认证中心进行签名，最后从苹果官网下载并安装使用。这个过程中还会产生一个私钥，证书和私钥在keychain中得位 置如图：</p>
+
+<p>iphone-developer-keychain.png</p>
+
+<p>证书组成</p>
+
+<p>经过WWDR数字签名后的数字证书长这个样子：</p>
+
+<p>20130603170838968.png</p>
+
+<p>其中包含两大部分：</p>
+
+<p>· 证书本身</p>
+
+<p>包含用户的公钥、用户个人信息、证书颁发机构信息、证书有效期等信息。</p>
+
+<p>· 证书签名</p>
+
+<p>WWDR将上述证书本身内容的使用哈希算法得到一个固定长度的信息摘要，然后使用自己的私钥对该信息摘要加密生成数字签名，整个过程如图所示：</p>
+
+<p>20130603170752859.png</p>
+
+<p>证书使用</p>
+
+<p>iOS 系统原本就持有WWDR的公钥，系统首先会对证书内容通过指定的哈希算法计算得到一个信息摘要；然后使用WWDR的公钥对证书中包含的数字签名解密，从而 得到经过WWDR的私钥加密过的信息摘要；最后对比两个信息摘要，如果内容相同就说明该证书可信。整个过程如图所示：</p>
+
+<p>20130603170924312.png</p>
+
+<p>在验证了证书是可信的以后，iOS系统就可以获取到证书中包含的开发者的公钥，并使用该公钥来判断代码签名的可用性了。</p>
+
+<p>证书存在的意义</p>
+
+<p>通过证书使用过程可以看出，证书本身只是一个中间媒介，iOS系统对证书并不关心，它其实只想要证书中包含的开发者的公钥！！</p>
+
+<p>但是开发者怎么才能证明公钥是自己的呢？iOS安全系统怎么才能相信这个公钥就是这个开发者的呢？</p>
+
+<p>不 管是哪一个开发者对iOS的安全系统说，这个公钥就是我的，系统是都不相信的，即系统对开发者有着百分之百的不信任感。但是iOS安全系统对自家的 WWDR是可信任的，苹果将WWDR的公钥内置在了iOS系统中。有了证书，iOS安全系统只需要通过WWDR的公钥就可以获取到任何一个开发者的可信任 的公钥了，这就是证书存在的意义！！</p>
+
+<h4>三、公钥（public key）</h4>
+
+<p>公钥被包含在数字证书里，数字证书又被包含在描述文件(Provisioning File)中，描述文件在应用被安装的时候会被拷贝到iOS设备中。</p>
+
+<p>iOS安全系统通过证书就能够确定开发者身份，就能够通过从证书中获取到的公钥来验证开发者用该公钥对应的私钥签名后的代码、资源文件等有没有被更改破坏，最终确定应用能否合法的在iOS设备上合法运行。</p>
+
+<h4>四、私钥（private key）</h4>
+
+<p>每个证书（其实是公钥）都对应有一个私钥，</p>
+
+<p>私钥会被用来对代码、资源文件等签名。只有开发证书和描述文件是没办法正常调试的，因为没有私钥根本无法签名。</p>
+
+<p>此后的内容基本都是从《代码签名探析》摘抄过来的笔记，建议大家看原文好了。</p>
+
+<h4>五、签名相关命令</h4>
+
+<p>快捷查看系统中能用来对代码进行签名的证书</p>
+
+<p>可以使用如下命令：</p>
+
+<pre><code>1 $security find-identity -v -p codesigning  
+2   1) F10B42FFDE18DF28BA21190121439F2E04BEE4B8 "iPhone Developer: weizheng li (P7QJ74LFSA)"
+3      1 valid identities found
+</code></pre>
+
+<p>这就说明当前有一个同时有公钥和私钥的可用证书。</p>
+
+<p>对未签名app手动签名</p>
+
+<p>使用如下命令：</p>
+
+<pre><code> 1 $ codesign -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
+</code></pre>
+
+<p>对已签名app重新签名</p>
+
+<p>为了重新设置签名，你必须带上 -f 参数，有了这个参数，codesign 会用你选择的签名替换掉已经存在的那一个：</p>
+
+<pre><code> 1 $ codesign -f -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app 
+</code></pre>
+
+<p>查看指定app的签名信息</p>
+
+<p>codesign 还可以为你提供有关一个可执行文件签名状态的信息，这些信息在出现不明错误时会提供巨大的帮助：</p>
+
+<pre><code> 1 $ codesign -vv -d Example.app 
+</code></pre>
+
+<p>会列出以下有关 Example.app 的签名信息：</p>
+
+<pre><code> 1 Executable=/Users/toto/Library/Developer/Xcode/DerivedData/Example-cfsbhbvmswdivqhekxfykvkpngkg/Build/Products/Debug-iphoneos/Example.app/Example  
+ 2 Identifier=ch.kollba.example  
+ 3 Format=bundle with Mach-O thin (arm64)  
+ 4 CodeDirectory v=20200 size=26663 flags=0x0(none) hashes=1324+5 location=embedded  
+ 5 Signature size=4336  
+ 6 Authority=iPhone Developer: Thomas Kollbach (7TPNXN7G6K)  
+ 7 Authority=Apple Worldwide Developer Relations Certification Authority  
+ 8 Authority=Apple Root CA  
+ 9 Signed Time=29.09.2014 22:29:07  
+10 Info.plist entries=33  
+11 TeamIdentifier=DZM8538E3E  
+12 Sealed Resources version=2 rules=4 files=120  
+13 Internal requirements count=1 size=184
+</code></pre>
+
+<p>验证签名文件的完整性</p>
+
+<p>检查已签名的文件是否完整可以使用如下命令：</p>
+
+<pre><code> 1 $ codesign --verify Example.app 
+</code></pre>
+
+<p>就像大多数 UNIX 工具一样，没有任何输出代表签名是完好的。如果修改一下这个二进制文件：</p>
+
+<pre><code> 1 $ echo 'lol' &gt;&gt; Example.app/Example 2 $ codesign --verify Example.app 3 Example.app: main executable failed strict validation 
+</code></pre>
+
+<p>和预料中的一样，修改已经签名的应用会导致数字签名验证不通过。</p>
+
+<h4>六、资源文件签名</h4>
+
+<p>iOS 和 OS X 的应用和框架则是包含了它们所需要的资源在其中的。这些资源包括图片和不同的语言文件，资源中也包括很重要的应用组成部分例如 XIB/NIB 文件，存档文件(archives)，甚至是证书文件。所以为一个程序包设置签名时，这个包中的所有资源文件也都会被设置签名。</p>
+
+<p>为了达到为 所有文件设置签名的目的，签名的过程中会在程序包（即Example.app）中新建一个叫做 _CodeSignatue/CodeResources 的文件，这个文件中存储了被签名的程序包中所有文件的签名。你可以自己去查看这个签名列表文件，它仅仅是一个 plist 格式文件。</p>
+
+<blockquote><p>这个列表文件中不光包含了文件和它们的签名的列表，还包含了一系列规则，这些规则决定了哪些资源文件应当被设置签名。伴随 OS X 10.10 DP 5 和 10.9.5 版本的发布，苹果改变了代码签名的格式，也改变了有关资源的规则。如果你使用10.9.5或者更高版本的 codesign 工具，在 CodeResources 文件中会有4个不同区域，其中的 rules 和 files 是为老版本准备的，而 files2 和 rules2 是为新的第二版的代码签名准备的。最主要的区别是在新版本中你无法再将某些资源文件排除在代码签名之外，在过去你是可以的，只要在被设置签名的程序包中添 加一个名为 ResourceRules.plist 的文件，这个文件会规定哪些资源文件在检查代码签名是否完好时应该被忽略。但是在新版本的代码签名中，这种做法不再有效。所有的代码文件和资源文件都必须 设置签名，不再可以有例外。在新版本的代码签名规定中，一个程序包中的可执行程序包，例如扩展 (extension)，是一个独立的需要设置签名的个体，在检查签名是否完整时应当被单独对待。</p></blockquote>
+
+<h4>七、授权文件（entitlements）</h4>
+
+<p>在 iOS 上你的应用能做什么依然是沙盒限制的，这些限制大多情况下都由授权文件（entitlements）来决定。授权机制决定了哪些系统资源在什么情况下允许被一个应用使用，简单的说它就是一个沙盒的配置列表。</p>
+
+<p>运行如下命令：</p>
+
+<pre><code> 1 $ codesign -d --entitlements - Example.app 
+</code></pre>
+
+<p>会得到类似的结果：</p>
+
+<pre><code> 1 &lt;!--?xml version="1.0" encoding="UTF-8"?--&gt;  
+ 2    
+ 3 &lt;plist version="1.0"&gt;  
+ 4 &lt;dict&gt;  
+ 5         &lt;key&gt;application-identifier&lt;/key&gt;
+ 6         &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
+ 7         &lt;key&gt;aps-environment&lt;/key&gt;
+ 8         &lt;string&gt;development&lt;/string&gt;
+ 9         &lt;key&gt;com.apple.developer.team-identifier&lt;/key&gt;
+10         &lt;string&gt;7TPNXN7G6K&lt;/string&gt;
+11         &lt;key&gt;com.apple.developer.ubiquity-container-identifiers&lt;/key&gt;
+12         &lt;array&gt;
+13                 &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
+14         &lt;/array&gt;
+15         &lt;key&gt;com.apple.developer.ubiquity-kvstore-identifier&lt;/key&gt;
+16         &lt;string&gt;7TPNXN7G6K.ch.kollba.example&lt;/string&gt;
+17         &lt;key&gt;com.apple.security.application-groups&lt;/key&gt;
+18         &lt;array&gt;
+19                 &lt;string&gt;group.ch.kollba.example&lt;/string&gt;
+20         &lt;/array&gt;
+21         &lt;key&gt;get-task-allow&lt;/key&gt;
+22         &lt;true&gt;
+23 &lt;/true&gt;&lt;/dict&gt;  
+24 &lt;/plist version="1.0"&gt;
+</code></pre>
+
+<p>在 Xcode 的 Capabilities 选项卡下选择一些选项之后，Xcode 就会生成这样一段 XML。 Xcode 会自动生成一个 .entitlements 文件，然后在需要的时候往里面添加条目。当构建整个应用时，这个文件也会提交给 codesign 作为应用所需要拥有哪些授权的参考。这些授权信息必须都在开发者中心的 App ID 中启用，并且包含在后文介绍的描述文件中。在构建应用时需要使用的授权文件可以在 Xcode build setting 中的 code signing entitlements中设置。</p>
+
+<p>在新版本的 Xcode 6 之后，授权信息列表会以 Example.app.xcent 这样的名字的文件形式包含在应用包中。这么做或许是为了在出现配置错误时提供更加有用的错误信息。</p>
+
+<h4>八、描述文件（provisioning file）</h4>
+
+<p>在整个代码签名和沙盒机制中有一个组成部分将签名，授权和沙盒联系了起来，那就是描述文件 (provisioning profiles)。</p>
+
+<p>OS X中保存目录</p>
+
+<p>Xcode 将从开发者中心下载的全部配置文件都放在了这里：</p>
+
+<pre><code> 1 ~/Library/MobileDevice/Provisioning Profiles 
+</code></pre>
+
+<p>文件格式</p>
+
+<p>描述文件并不是一个普通的plist文件，它是一个根据密码讯息语法 (Cryptographic Message Syntax) 加密的文件。</p>
+
+<p>以XML格式查看该文件的命令：</p>
+
+<pre><code> 1 $ security cms -D -i example.mobileprovision 
+</code></pre>
+
+<p>文件内容</p>
+
+<p>描述文件主要包含以下内容：</p>
+
+<ul>
+<li>UUID</li>
+</ul>
+
+
+<p>每一个配置文件都有它自己的 UUID 。Xcode 会用这个 UUID 来作为标识，记录你在 build settings 中选择了哪一个配置文件。</p>
+
+<ul>
+<li>ProvisionedDevices</li>
+</ul>
+
+
+<p>记录所有可用于调试的设备ID。</p>
+
+<ul>
+<li>DeveloperCertificates</li>
+</ul>
+
+
+<p>包含了可以为使用这个配置文件的应用签名的所有证书。所有的证书都是基于 Base64 编码符合 PEM (Privacy Enhanced Mail, RFC 1848) 格式的。</p>
+
+<ul>
+<li>Entitlements</li>
+</ul>
+
+
+<p>有关前面讲到的配置文件的所有内容都会被保存在这里。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/05/20/sign/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2644,309 +2909,6 @@ UIImage* uiImage=[UIImage imageWithCGImage:cgImage];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/03/12/yufajingxuan/">语法精选</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h4>一、NSSet、NSMutableSet集合的介绍</h4>
-
-<p>1）NSSet、NSMutableSet集合，元素是无序的，不能有重复的值。</p>
-
-<p>2）用实例方法创建一个不可变集合对象</p>
-
-<p>例如：</p>
-
-<pre><code>//宏定义
-#define TOBJ(n) [NSNumber numberWithInt:n]
-NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-</code></pre>
-
-<p>2）用类方法创建一个不可变集合对象 例如：</p>
-
-<p>1 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];</p>
-
-<p>3）NSSet 快速遍历方法（无序，所以没有下标）例如：</p>
-
-<pre><code>1  for(id num in set1){
-2     NSLog(@"%@",num);
-3 }
-</code></pre>
-
-<p>4）setSet 用于修改集合内容 例如：[mSet setSet:set1];</p>
-
-<p>5）intersectSet 用于获取两个集合的交集(返回两个集合中相同的元素)。例如：</p>
-
-<pre><code>#define TOBJ(n) [NSNumber numberWithInt:n]
-NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-[mSet intersectSet:set2];
-NSLog(@"intersect:%@",mSet); //结果：2
-</code></pre>
-
-<p>6）unionSet 用于获取两个集合的并集(返回两个集合中所有的元素,如果重复只显示其中一个) 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-4 [mSet intersectSet:set2];
-5 NSLog(@"intersect:%@",mSet); //结果：123456
-</code></pre>
-
-<p>7）minusSet 用于获取两个集合的差集 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-4 [mSet minusSet:set2];
-5 NSLog(@"intersect:%@",mSet); //结果：13456
-</code></pre>
-
-<p>8）allObjects 用于将集合转换为数组 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSArray *array= [mSet allObjects];
-</code></pre>
-
-<p>9）anyObject 取set中任意一个元素（如果set中只有一个元素，取值）</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 id value=[mSet anyObject];
-</code></pre>
-
-<h4>二、NSIndexSet、NSMutableIndexSet 可变索引集合的介绍</h4>
-
-<p>1）索引集合，表示唯一的整数的集合,有可变和不可变之分。</p>
-
-<p>2）initWithIndexesInRange 用指定的范围对应的索引创建索引对象 例如：</p>
-
-<pre><code>1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:
-2 NSMakeRange(2,   3)];//结果 2,3,4
-3）objectsAtIndexes 根据索引集合中的索引取出数组中对应的元素（返回数组） 例如：
-
-1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:NSMakeRange(2,   3)]; 
-2 NSArray *array=@[@"one",@"two",@"three",@"four",@"five",@"sex"];
-3 NSArray *array2=[array objectsAtIndexes:indexSet1];
-4 NSLog(@"array2:%@",array2); //结果：array2:three four five
-</code></pre>
-
-<p>4）创建一个可变的集合索引(初始化时有一个索引）(可以存储不连续的索引值） 例如：</p>
-
-<pre><code>1 NSMutableIndexSet *indexSet2=[NSMutableIndexSet indexSetWithIndex:2];
-2 [indexSet2 addIndex:4];
-3 [indexSet2 addIndex:1];
-4 [indexSet2 addIndex:2];
-5 NSLog(@"count:%ld",indexSet2.count);//获取个数
-6 NSArray *array3=[array objectsAtIndexes:indexSet2];//结果：two three  five
-</code></pre>
-
-<p>5）NSNull:类表示空, 只有一个类方法[NSNull null]获取空对象，在数组中nil表示元素结束（不能用nil表示空元素</p>
-
-<p>可采用[NSNull null]表示空元素） 例如：</p>
-
-<pre><code>1 NSArray *array5=[NSArray arrayWithObjects:@"red",[NSNull null],@"yellow",@"blue", nil];
-</code></pre>
-
-<h4>三、Category 介绍</h4>
-
-<p>1）Category 意为： 类别、分类、类目</p>
-
-<p>1、可以在不改变类名的情况下，扩充类的功能（给类增加方法）</p>
-
-<p>2、可以将类的功能拆成多个文件编译</p>
-
-<p>3、类别中不能增加成员变量，可以访问原来类中的成员变量</p>
-
-<p>4、类别中可以增加与原来类中同名的方法，调用时优先调用</p>
-
-<p>5、添加文件时选择Objective-C File 那个文件同时注意选择要拓展的类名</p>
-
-<p>2）类别的声明类似于类的声明，@interface要扩充功能的类名（类别名）</p>
-
-<p>1、类别不能实例化对象</p>
-
-<p>2、类别中不能增加成员变量。</p>
-
-<p>3、类别中的方法可以访问原来类中的成员变量</p>
-
-<p>4、类别可以调用原来类中的方法</p>
-
-<p>5、类别中的方法可以被子类继承</p>
-
-<p>6、类别可以添加与原来类中相同的方法，调用时类别中的方法优先调用，一般不建议这样操作（无法再调用原来类中的方法）</p>
-
-<p>3）字符串、NSNumber是簇类，底层是由很多类组成的，不能有子类 ,因为子类调用不了父类中的方法</p>
-
-<p>4）Category 文件名格式为：父类文件名+子类文件名 如：NSMutaleString+Resvrse.h</p>
-
-<p>5）Category .m文件中的方法表现形式： 1 @implementation NSMutableString (Reverse)</p>
-
-<h4>四、Extension 的介绍</h4>
-
-<p>1）extension：相当于未命名的Category，可以扩展类的功能（增加方法），也可以增加成员变量。</p>
-
-<p>2）extension：只有.h文件</p>
-
-<p>3）extension  表现形式 @interface 类名（）例如： 1 @interface Person (){}</p>
-
-<p>4）在.m文件中也可以声明成员变量，不会将其放在接口h文件中暴露给使用者。 例如：</p>
-
-<pre><code>复制代码
-1 @interface Person()
-2 { 
-3     int _num;
-4 }
-5 //将方法声明为私有的
-6 -(void)print2;
-7 @end
-复制代码
-</code></pre>
-
-<h4>五、SEL的介绍</h4>
-
-<p>1）SEL是一种类型，将方法名封装为sel的变量，通过SEL找到方法的地址，调用方法。</p>
-
-<p>2）SEL 封装方法实例代码：</p>
-
-<pre><code>复制代码
-1  //将play方法名封装成SEL类型的数据
-2 SEL sel=@selector(play);
-3  //判断p1所属的类是否实现了sel中的方法
-4 if([p1 respondsToSelector:sel]){
-5  //p1查找sel中方法的地址，再调用对应的方法
-6 [p1 performSelector:sel];
-7  }
-复制代码
-</code></pre>
-
-<p>3）performSelector 用于执行SEL封装的方法 例如： 1 [p1 performSelector:@selector(jump)];</p>
-
-<p>4)SEL 封装带参数的方法实例代码：</p>
-
-<pre><code>1  //将带一个参数的方法封装为SEL的变量，执行，参数是id类型
-2  [p1 performSelector:@selector(print:) withObject:@"hello"];
-</code></pre>
-
-<p>5)NSSelectorFromString 用于将字符串形式的方法名封装成SEL的数据 实例代码：</p>
-
-<pre><code>1  SEL sel2=NSSelectorFromString(@"study");
-2  [p1 performSelector:sel2];
-</code></pre>
-
-<p>6）<em>cmd 表示当前执行的方法 例如： 1NSLog(@&ldquo;*****metheod:%@&rdquo;,NSStringFromSelector(</em>cmd));</p>
-
-<p>7)在C语言中 <strong>func 表示获取当前执行方法 例如： 1 NSLog(@&ldquo;func=%s&rdquo;,</strong>func__);</p>
-
-<pre><code>__DATE__ 表示获取当前系统时间  1 NSLog(@"date=%s",__DATE__); 
-</code></pre>
-
-<p>8）SEL实现数组排序 实例代码：</p>
-
-<pre><code>复制代码
-1 void testSel()
-2 {
-3     Person *p1;
-4     Person *p2;
-5     Person *p3;
-6     NSMutableArray *array1=[[NSMutableArray alloc]initWithObjects:p1,p2,p3, nil];
-7     [array1 sortUsingSelector:@selector(comparePerson:)];
-8     
-9 }
-复制代码
-</code></pre>
-
-<h4>六、构造OC中的二维数组</h4>
-
-<p>实例代码：</p>
-
-<pre><code>复制代码
-//创建一个空的外层数组
- 2         NSMutableArray *bigArray=[NSMutableArray array];
- 3         //创建一个存放4个数据对象的数组
- 4         NSMutableArray *array1=[[NSMutableArray alloc]init];
- 5         for(int i=0;i&lt;4;i++){
- 6             [array1 addObject:[NSNumber numberWithInt:i]];
- 7         }
- 8         //创建一个存放3个字符串的数组
- 9         NSMutableArray *array2=[[NSMutableArray alloc]init];
-10         for(int i=0;i&lt;3;i++){
-11             [array2 addObject:[NSString stringWithFormat:@"str%d",i+1]];
-12         }
-13         //将array1和array2两个数组对象存入外层数组（相当于创建了一个二维数组）
-14         [bigArray addObject:array1];
-15         [bigArray addObject:array2];
-16         
-17         //遍历，显示所有的元素
-18         for(int i=0;i&lt;bigArray.count;i++){
-19             for(int j=0;j&lt;[bigArray[i] count];j++){
-20                 //取出数组中第i行第j列的元素（每行又是一个数组对象）
-21                 if([bigArray[i][j] isKindOfClass:[NSNumber class]]){
-22                     NSLog(@"number:%@",bigArray[i][j]);
-23                 }
-24                 else if ([[[bigArray objectAtIndex:i] objectAtIndex:j] isKindOfClass:[NSString class]]){
-25                     NSLog(@"string:%@",[[bigArray objectAtIndex:i] objectAtIndex:j]);
-26                 }
-27             }
-28         }
-复制代码
-</code></pre>
-
-<h4>七、Class (类)的介绍</h4>
-
-<p>1）类的本质也是一个对象，是Class类型的对象，获取类对象（可以通过实例方法或类方法获取）,</p>
-
-<p>每个类只有一个类对象。</p>
-
-<p>2）load 方法当程序启动时会加载所有的类和分类，调用load方法，先加载父类，再加载子类，然后是分类 例如：</p>
-
-<pre><code>1  +(void)load
-2  {
-3      NSLog(@"Person---load");
-4  }
-</code></pre>
-
-<p>3）initialize方法 当第一次使用类的时候，调用initialize方法，先调用父类的，再调用子类的 例如：</p>
-
-<pre><code>1 +(void)initialize
-2  {
-3     NSLog(@"Person---initialize");
-4  }
-</code></pre>
-
-<p>本博文由博主（iCocos）独立编写或者借鉴别人的好文章进行修改而成，如果不对的地方望指正，谢谢！ 如果您还有看到新浪博客关于IOS梦工厂的博文，麻烦请到这里找更完整更清晰的版本，博主已从<a href="http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD">http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD</a></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/03/12/yufajingxuan/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/8">&larr; Older</a>
@@ -2965,7 +2927,7 @@ NSLog(@"intersect:%@",mSet); //结果：2
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -2982,6 +2944,10 @@ NSLog(@"intersect:%@",mSet); //结果：2
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/anquan/">安全机制</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
@@ -2994,11 +2960,7 @@ NSLog(@"intersect:%@",mSet); //结果：2
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
+        <a href="/blog/2015/12/11/python/">Python</a>
       </li>
     
   </ul>

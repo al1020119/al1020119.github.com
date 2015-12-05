@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>cocoaPods简单粗暴 - iOS梦工厂</title>
+  <title>安全机制 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="cocoaPods简单粗暴 ordinal 直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ 2:新增淘宝镜像 $ &hellip;">
+  <meta name="description" content="安全机制 ordinal 苹果的安全机制 没经过用户同意，你不能随便获取用户信息。2. 所有的程序都在沙盒里运行，B程序不能进入A程序的运行范围。3. 如果跟钱有关，比如说支付宝，这些底层的实现都是保密的，只提供接口供开发者调用，这样的话安全性得到保障。4. 如果要防止代码被反编译， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/11/anquan/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">cocoaPods简单粗暴</h1>
+      <h1 class="entry-title">安全机制</h1>
     
     
       <p class="meta">
@@ -97,107 +97,18 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+<div class="entry-content"><h3>苹果的安全机制</h3>
 
-<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+<ol>
+<li>没经过用户同意，你不能随便获取用户信息。2.  所有的程序都在沙盒里运行，B程序不能进入A程序的运行范围。3.   如果跟钱有关，比如说支付宝，这些底层的实现都是保密的，只提供接口供开发者调用，这样的话安全性得到保障。4. 如果要防止代码被反编译，可以将自己的代码中的.m文件封装成静态库（.a文件）或者是framework文件，只提供给其它人.h文件。这样就保证了个人代码的安全性。5.    网络登录的话跟用户名跟密码相关要发送POST请求，如果是GET请求的话密码会直接在URL中显示。然后同时要对帐号密码采用加密技术
+<code>加一句：我们公司用的是MD5，但是现在MD5有一个专门的网站来破解，为了防止这个，可以采用加盐技术。</code>
 
-<pre><code> $ gem sources --remove https://rubygems.org/ 
-</code></pre>
+<h3>客户端开发安全机制1.    网络数据传输(敏感数据[账号\密码\消费数据\银行卡账号], 不能明文发送)2.  协议的问题(自定义协议, 游戏代练)3.    本地文件存储(游戏的存档)4.   源代码***</h3>
 
-<p>2:新增淘宝镜像</p>
+<p>其中网络安全是非常重要的，所以总结了几个网络相关技术。
+TCP：安全的协议，能保证数据顺序和正确性，服务器和客户端能随时互发数据。如果服务器要主动发送数据给客户端，可以用这个协议   UDP：非安全的协议，容易丢失数据，一般用于联机对战的游戏   XMPP：基于XML通讯的协议，基于TCP发送XML数据，一般用于即时通讯（比如QQ、微信）    HTTP：一般用于非实时连接的请求，只有客户端主动向服务器发送请求时，服务器才能返回数据给客户端    SOCKET：套接口，可以使用TCP/UDP/XMPP通讯</p></li>
+</ol>
 
-<pre><code>$ gem sources -a http://ruby.taobao.org/ 
-</code></pre>
-
-<p>3:查看列表</p>
-
-<pre><code> $ gem sources -l 
-</code></pre>
-
-<p>成功的征兆：</p>
-
-<pre><code>*** CURRENT SOURCES ***
-http://ruby.taobao.org/
-$ sudo gem install cocoapods
-</code></pre>
-
-<p>4:正式安装</p>
-
-<pre><code> sudo gem install cocoapods 
-</code></pre>
-
-<p>接下来就是开始使用了。</p>
-
-<p>查看对应的框架</p>
-
-<pre><code> $ pod search AFNetworking 
-</code></pre>
-
-<p>创建文件</p>
-
-<pre><code> $ vim Podfile 
-</code></pre>
-
-<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
-
-<pre><code>touch Podfile
-</code></pre>
-
-<p>新建一个文件</p>
-
-<p>然后在Podfile文件中输入以下文字：</p>
-
-<pre><code>platform :ios, '7.0'
-pod "AFNetworking", "~&gt; 2.0”
-</code></pre>
-
-<p>安装</p>
-
-<pre><code> pod install  
-</code></pre>
-
-<p>更新</p>
-
-<pre><code> $ pod update 
-</code></pre>
-
-<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
-
-<pre><code>pod update 换成pod update --verbose --no-repo-update
-pod install 换成pod install --verbose --no-repo-update
-</code></pre>
-
-<ul>
-<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
-$ pod update会更新所有的类库，获取最新版本的类库。
-或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
-</ul>
-
-
-<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
-
-<ul>
-<li>解决方案</li>
-</ul>
-
-
-<p>LNJ替换为你自己的用户名</p>
-
-<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
-</code></pre>
-
-<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
-
-<ul>
-<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
-<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
-  <code>$ pod update。</code></p></li>
-</ul>
-
-
-<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
-
-<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
 </div>
 
 
@@ -226,7 +137,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/kai-fa-gong-ju/'>开发工具</a>
+    <a class='category' href='/blog/categories/xing-neng-xiang-guan/'>性能相关</a>
   
 </span>
 
@@ -255,10 +166,8 @@ $ pod update会更新所有的类库，获取最新版本的类库。
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/" title="Previous Post: 底层开发之越狱开发">&laquo; 底层开发之越狱开发</a>
+        <a class="basic-alignment left" href="/blog/2015/12/11/java/" title="Previous Post: 爬虫必备-java抓包">&laquo; 爬虫必备-java抓包</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/" title="Next Post: 蓝牙开发你知道多少">蓝牙开发你知道多少 &raquo;</a>
       
     </p>
   </footer>
@@ -347,7 +256,7 @@ $ pod update会更新所有的类库，获取最新版本的类库。
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/01/28/cocoapodsjian-dan-cu-bao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/01/28/cocoapodsjian-dan-cu-bao/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/11/anquan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/11/anquan/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
