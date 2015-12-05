@@ -14,6 +14,13 @@ categories: 高级开发
 典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
 等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。
 
+
+
+<!--more-->
+
+
+
+
 ####Apple Store 中的 iBeacon 支持
  
 ######特点

@@ -18,6 +18,13 @@ categories: 程序员必备
 | CFBooleanRef| 	struct| 	CoreFoundation.h	| kCFBooleanTrue| 	kCFBooleanFalse| 
 
 
+
+
+<!--more-->
+
+
+
+
 | 标志	| 值| 	含义| 
 | ------------- |:-------------:| -----:|
 | NULL| 	(void *)0	| C指针的字面零值| 

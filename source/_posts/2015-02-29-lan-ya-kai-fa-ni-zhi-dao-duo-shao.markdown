@@ -18,6 +18,13 @@ categories: 高级开发
 * iOS与iOS设备之间进行数据通信，使用gameKit.framework
 * iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework
 
+
+
+<!--more-->
+
+
+
+
 ###iOS中蓝牙的实现方案
 
 iOS中提供了4个框架用于实现蓝牙连接

@@ -24,6 +24,13 @@ categories: 高级开发
 * 更上一层-category和关联对象
 
 
+
+<!--more-->
+
+
+
+
+
 ###1、初入宝地-category简介
 category是Objective-C 2.0之后添加的语言特性，category的主要作用是为已经存在的类添加方法。除此之外，apple还推荐了category的另外两个使用场景1
 

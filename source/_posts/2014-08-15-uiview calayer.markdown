@@ -12,6 +12,13 @@ UIView与CALayer详解
 
 研究Core Animation已经有段时间了，关于Core Animation，网上没什么好的介绍。苹果网站上有篇专门的总结性介绍，但是似乎原理性的东西不多，看得人云山雾罩，感觉，写那篇东西的人，其实是假 设读的人了解界面动画技术的原理的。今天有点别的事情要使用Linux，忘掉了ssh的密码，没办法重新设ssh，结果怎么也想不起来怎么设ssh远程登 陆了，没办法又到网上查了一遍，太浪费时间了，痛感忘记记笔记是多么可怕的事情。鉴于Core Animation的内容实在是非常繁杂，应用的Obj-C语言本身的特性也很多，所以写个备忘录记录一下，懂的人看了后如果发现了错误，还不吝指教。
 
+
+
+<!--more-->
+
+
+
+
 * 1.UIView 是iOS系统中界面元素的基础，所有的界面元素都继承自它。它本身完全是由CoreAnimation来实现的（Mac下似乎不是这样）。它真正的绘图部 分，是由一个叫CALayer（Core Animation Layer）的类来管理。UIView本身，更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等等， 实际上内部都是在访问它所包含的CALayer的相关属性。
 
 2.UIView有个layer属性，可以返回它的主CALayer实例，UIView有一个layerClass方法，返回主layer所使用的类，UIView的子类，可以通过重载这个方法，来让UIView使用不同的CALayer来显示，例如通过

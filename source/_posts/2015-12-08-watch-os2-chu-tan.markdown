@@ -17,6 +17,13 @@ categories: 新技术
 * 如何创建WKInterfaceController的子类并连线
 
 
+
+<!--more-->
+
+
+
+
+
 正式开始吧
 
 首先下载教程的起始项目吧。

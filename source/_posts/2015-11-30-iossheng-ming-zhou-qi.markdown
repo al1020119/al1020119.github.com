@@ -20,6 +20,13 @@ categories: 面试总结＋技术
 	5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
 	6、viewDidAppear               视图已在屏幕上渲染完成
 
+
+
+<!--more-->
+
+
+
+
 当一个视图被移除屏幕并且销毁的时候的执行顺序，这个顺序差不多和上面的相反
 
 	1、viewWillDisappear            视图将被从屏幕上移除之前执行

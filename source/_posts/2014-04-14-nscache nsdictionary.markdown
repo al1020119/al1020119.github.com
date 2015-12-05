@@ -19,6 +19,13 @@ NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存
 
 3. 键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。
 
+
+
+<!--more-->
+
+
+
+
 #####NSCache的属性以及方法介绍：
 
 

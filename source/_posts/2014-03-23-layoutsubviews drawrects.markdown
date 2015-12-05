@@ -23,6 +23,13 @@ categories: 高级开发
 * 6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。
 * 7、直接调用setLayoutSubviews。
 
+
+
+<!--more-->
+
+
+
+
 ####drawRect在以下情况下会被调用：
  
 

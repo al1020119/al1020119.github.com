@@ -20,6 +20,13 @@ categories: 项目实战
 
 * jdk-8u5-macosx-x64.dmg
 
+
+
+<!--more-->
+
+
+
+
 ###二、安装和配置本地服务器环境（java）步骤：
 
 * (1)在文档路径下，新建一个文件夹（NetWord），解压eclipse压缩包文件

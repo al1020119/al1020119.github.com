@@ -17,6 +17,13 @@ categories: 面试汇总
 	
 ` {0, 0, 320, 480}`
  
+
+
+<!--more-->
+
+
+
+
 	// 应用程序窗口大小 
 	CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
 	NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));

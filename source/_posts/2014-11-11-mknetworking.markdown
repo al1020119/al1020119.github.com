@@ -19,6 +19,13 @@ iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了�
 
 现在MKNetWorkKi吸取了ASIHttpRequest与AFNetWorking的优点，并加入了自己特有的功能。
 
+
+
+<!--more-->
+
+
+
+
 下载：
 
 	gitHub地址：https://github.com/MugunthKumar/MKNetworkKit.git

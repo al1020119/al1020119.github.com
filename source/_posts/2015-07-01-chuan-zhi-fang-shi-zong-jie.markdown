@@ -25,6 +25,13 @@ categories: 项目实战
 	- Block
 	- 通知
 
+
+
+<!--more-->
+
+
+
+
 虽然这一期的主题是关于Foundation Framework的，不过本文中还介绍了一些超出Foundation Framework(KVO和Notification)范围的一些消息传递机制，另外还介绍了delegation，block和target- action。
  
 大多数情况下，消息传递该使用什么机制，是很明确的了，当然了，在某些情况下该使用什么机制并没有明确的答案，需要你亲自去尝试一下。

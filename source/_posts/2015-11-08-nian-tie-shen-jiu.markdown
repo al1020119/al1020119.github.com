@@ -19,6 +19,13 @@ categories: 高级开发
 * 2、UITextField
 * 3、UIWebView
 
+
+
+<!--more-->
+
+
+
+
 ###二、UIKit framework提供了几个类和协议方便我们在自己的应用程序中实现剪贴板的功能。
 
 

@@ -16,6 +16,13 @@ categories: 高级开发
 	* 更多
 
 
+
+<!--more-->
+
+
+
+
+
 ##coreimage framework 组成
 
 apple 已经帮我们把image的处理分类好，来看看它的结构：

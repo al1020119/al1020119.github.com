@@ -19,6 +19,13 @@ categories: 程序员必备
 * 1.在终端输入 pip install BeautifulSoup
 * 2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup
 
+
+
+<!--more-->
+
+
+
+
 ####开始写代码吧 
 先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：http://movie.douban.com/chart
 好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime

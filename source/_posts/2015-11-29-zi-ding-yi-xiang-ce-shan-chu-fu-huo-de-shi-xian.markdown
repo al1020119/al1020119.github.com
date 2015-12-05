@@ -22,6 +22,13 @@ App中自定义的相册呗删除之后再次保存相片无法成功
  
 这里使用的是一个系统的库：ALAssetsLibrary
  
+
+
+<!--more-->
+
+
+
+
 先来看看咱们取得相册中的相片
 
 	- (void)getAllPhotos

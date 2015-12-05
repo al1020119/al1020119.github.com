@@ -17,6 +17,13 @@ categories: 适配问题
 ios6中废除了viewDidUnload，viewWillUnload这两个系统回调，收到内存警告时在didReceiveMemoryWarning中进行相关的处理。
 
 
+
+<!--more-->
+
+
+
+
+
 	- (void)viewDidUnload {
 	    [super viewDidUnload];
 	    // 处理 ios6 以下的系统内存警告系统回调消息

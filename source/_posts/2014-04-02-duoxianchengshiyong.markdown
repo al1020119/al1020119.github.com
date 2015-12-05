@@ -19,6 +19,13 @@ categories: 高级开发
 * GCD
 * NSOperation & NSOperationQueue
 
+
+
+<!--more-->
+
+
+
+
 所以接下来，我会一一讲解这些方案的使用方法和一些案例。在将这些内容的时候，我也会顺带说一些多线程周边产品。比如： 线程同步、 延时执行、 单例模式 等等。
 
 ###Pthreads

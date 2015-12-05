@@ -18,6 +18,13 @@ categories: 开发工具
 
 	 $ gem sources --remove https://rubygems.org/ 
 
+
+
+<!--more-->
+
+
+
+
  
 
 2:新增淘宝镜像

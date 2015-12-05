@@ -22,6 +22,13 @@ categories: 项目实战
 
  
 
+
+<!--more-->
+
+
+
+
+
 我记得有时候header是不会停顿的，可是为什么这个时候header和footer都隐藏呢？
 
 后来发现原来设置tableView.tableHeaderView = ?或者footerView的时候就不会停顿，那是当然，因为这个是tableView的一部分，不是section的一部分。

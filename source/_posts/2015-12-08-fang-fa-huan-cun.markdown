@@ -25,6 +25,13 @@ categories: 底层开发
 * 优化，永无止境
 * 从消息决议说起
 
+
+
+<!--more-->
+
+
+
+
 我们都知道，在Objective-C里调用一个方法是这样的：
 
 	[object methodA];

@@ -14,6 +14,13 @@ categories: 性能相关
 
 关于XLNetworkApi
 
+
+
+<!--more-->
+
+
+
+
 XLNetworkApi的一些功能和说明：
 
 使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。

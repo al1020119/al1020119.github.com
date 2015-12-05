@@ -11,6 +11,13 @@ categories: 开发工具
 > 下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。
   
 
+
+
+<!--more-->
+
+
+
+
 ##File:
 
 {% img /images/xcodemenu001.png Caption %}  
