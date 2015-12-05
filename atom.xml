@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-05T23:58:37+08:00</updated>
+  <updated>2015-12-06T00:05:09+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,36 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[安全机制]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/12/an-quan-ji-zhi/"/>
+    <updated>2015-12-12T00:01:47+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/12/an-quan-ji-zhi</id>
+    <content type="html"><![CDATA[<p>关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。</p>
+
+<ul>
+<li>苹果安全机制</li>
+<li>ios开发安全处理</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>苹果安全机制</p>
+
+<ul>
+<li>没经过用户同意，你不能随便获取用户信息。</li>
+<li><p>所有的程序都在沙盒里运行，B程序不能进入A程序的运行范围。<em> 如果跟钱有关，比如说支付宝，这些底层的实现都是保密的，只提供接口供开发者调用，这样的话安全性得到保障。</em> 如果要防止代码被反编译，可以将自己的代码中的.m文件封装成静态库（.a文件）或者是framework文件，只提供给其它人.h文件。这样就保证了个人代码的安全性。* 网络登录的话跟用户名跟密码相关要发送POST请求，如果是GET请求的话密码会直接在URL中显示。然后同时要对帐号密码采用加密技术
+加一句：我们公司用的是MD5，但是现在MD5有一个专门的网站来破解，为了防止这个，可以采用加盐技术。客户端开发安全机制</p></li>
+<li><p>网络数据传输(敏感数据[账号\密码\消费数据\银行卡账号], 不能明文发送)<em> 协议的问题(自定义协议, 游戏代练)</em> 本地文件存储(游戏的存档)* 源代码其中网络安全是非常重要的，所以总结了几个网络相关技术
+  TCP：安全的协议，能保证数据顺序和正确性，服务器和客户端能随时互发数据。如果服务器要主动发送数据给客户端，可以用这个协议
+  UDP：非安全的协议，容易丢失数据，一般用于联机对战的游戏   XMPP：基于XML通讯的协议，基于TCP发送XML数据，一般用于即时通讯（比如QQ、微信）    HTTP：一般用于非实时连接的请求，只有客户端主动向服务器发送请求时，服务器才能返回数据给客户端    SOCKET：套接口，可以使用TCP/UDP/XMPP通讯</p></li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[爬虫必备-java抓包]]></title>
@@ -2151,7 +2181,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#109;&#x61;&#106;&#105;&#97;&#x30;&#x33;&#x40;&#109;&#101;&#x69;&#x74;&#x75;&#x61;&#110;&#x2e;&#99;&#111;&#109;">&#x6d;&#x61;&#106;&#105;&#97;&#48;&#x33;&#64;&#x6d;&#x65;&#x69;&#x74;&#117;&#97;&#x6e;&#46;&#99;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#108;&#116;&#x6f;&#x3a;&#109;&#97;&#x6a;&#105;&#97;&#48;&#x33;&#x40;&#109;&#x65;&#x69;&#x74;&#x75;&#x61;&#x6e;&#x2e;&#99;&#x6f;&#x6d;">&#x6d;&#97;&#106;&#105;&#97;&#x30;&#51;&#x40;&#x6d;&#101;&#x69;&#116;&#117;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -6078,416 +6108,6 @@ FastImageCache采用了另一种读写文件的方法，就是用mmap把文件�
 </ul>
 </li>
 </ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[序列化&amp;反序列化深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/"/>
-    <updated>2015-12-04T09:36:37+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu</id>
-    <content type="html"><![CDATA[<blockquote><p>摘要
-序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</p></blockquote>
-
-<!--more-->
-
-
-<h2>简介</h2>
-
-<p>文章作者服务于美团推荐与个性化组，该组致力于为美团用户提供每天billion级别的高质量个性化推荐以及排序服务。从Terabyte级别的用户行为数据，到Gigabyte级别的Deal/Poi数据；从对实时性要求毫秒以内的用户实时地理位置数据，到定期后台job数据，推荐与重排序系统需要多种类型的数据服务。推荐与重排序系统客户包括各种内部服务、美团客户端、美团网站。为了提供高质量的数据服务，为了实现与上下游各系统进行良好的对接，序列化和反序列化的选型往往是我们做系统设计的一个重要考虑因素。</p>
-
-<p>本文内容按如下方式组织：</p>
-
-<ul>
-<li>第一部分给出了序列化和反序列化的定义，以及其在通讯协议中所处的位置。</li>
-<li>第二部分从使用者的角度探讨了序列化协议的一些特性。</li>
-<li>第三部分描述在具体的实施过程中典型的序列化组件，并与数据库组建进行了类比。</li>
-<li>第四部分分别讲解了目前常见的几种序列化协议的特性，应用场景，并对相关组件进行举例。</li>
-<li>最后一部分，基于各种协议的特性，以及相关benchmark数据，给出了作者的技术选型建议。</li>
-</ul>
-
-
-<h4>一、定义以及相关概念</h4>
-
-<p>互联网的产生带来了机器间通讯的需求，而互联通讯的双方需要采用约定的协议，序列化和反序列化属于通讯协议的一部分。通讯协议往往采用分层模型，不同模型每层的功能定义以及颗粒度不同，例如：TCP/IP协议是一个四层协议，而OSI模型却是七层协议模型。在OSI七层协议模型中展现层（Presentation Layer）的主要功能是把应用层的对象转换成一段连续的二进制串，或者反过来，把二进制串转换成应用层的对象&ndash;这两个功能就是序列化和反序列化。一般而言，TCP/IP协议的应用层对应与OSI七层协议模型的应用层，展示层和会话层，所以序列化协议属于TCP/IP协议应用层的一部分。本文对序列化协议的讲解主要基于OSI七层协议模型。</p>
-
-<ul>
-<li>序列化： 将数据结构或对象转换成二进制串的过程</li>
-<li>反序列化：将在序列化过程中所生成的二进制串转换成数据结构或者对象的过程</li>
-</ul>
-
-
-<p>数据结构、对象与二进制串
-不同的计算机语言中，数据结构，对象以及二进制串的表示方式并不相同。</p>
-
-<p>数据结构和对象：对于类似Java这种完全面向对象的语言，工程师所操作的一切都是对象（Object），来自于类的实例化。在Java语言中最接近数据结构的概念，就是POJO（Plain Old Java Object）或者Javabean－－那些只有setter/getter方法的类。而在C++这种半面向对象的语言中，数据结构和struct对应，对象和class对应。</p>
-
-<p>二进制串：序列化所生成的二进制串指的是存储在内存中的一块数据。C++语言具有内存操作符，所以二进制串的概念容易理解，例如，C++语言的字符串可以直接被传输层使用，因为其本质上就是以'\0'结尾的存储在内存中的二进制串。在Java语言里面，二进制串的概念容易和String混淆。实际上String 是Java的一等公民，是一种特殊对象（Object）。对于跨语言间的通讯，序列化后的数据当然不能是某种语言的特殊数据类型。二进制串在Java里面所指的是byte[]，byte是Java的8中原生数据类型之一（Primitive data types）。</p>
-
-<h4>二、序列化协议特性</h4>
-
-<p>每种序列化协议都有优点和缺点，它们在设计之初有自己独特的应用场景。在系统设计的过程中，需要考虑序列化需求的方方面面，综合对比各种序列化协议的特性，最终给出一个折衷的方案。</p>
-
-<h6>通用性有两个层面的意义：</h6>
-
-<ul>
-<li>第一、技术层面，序列化协议是否支持跨平台、跨语言。如果不支持，在技术层面上的通用性就大大降低了。</li>
-<li>第二、流行程度，序列化和反序列化需要多方参与，很少人使用的协议往往意味着昂贵的学习成本；另一方面，流行度低的协议，往往缺乏稳定而成熟的跨语言、跨平台的公共包。</li>
-</ul>
-
-
-<p>强健性/鲁棒性
-以下两个方面的原因会导致协议不够强健：</p>
-
-<ul>
-<li>第一、成熟度不够，一个协议从制定到实施，到最后成熟往往是一个漫长的阶段。协议的强健性依赖于大量而全面的测试，对于致力于提供高质量服务的系统，采用处于测试阶段的序列化协议会带来很高的风险。</li>
-<li>第二、语言/平台的不公平性。为了支持跨语言、跨平台的功能，序列化协议的制定者需要做大量的工作；但是，当所支持的语言或者平台之间存在难以调和的特性的时候，协议制定者需要做一个艰难的决定&ndash;支持更多人使用的语言/平台，亦或支持更多的语言/平台而放弃某个特性。当协议的制定者决定为某种语言或平台提供更多支持的时候，对于使用者而言，协议的强健性就被牺牲了。</li>
-</ul>
-
-
-<p>可调试性/可读性
-序列化和反序列化的数据正确性和业务正确性的调试往往需要很长的时间，良好的调试机制会大大提高开发效率。序列化后的二进制串往往不具备人眼可读性，为了验证序列化结果的正确性，写入方不得同时撰写反序列化程序，或提供一个查询平台&ndash;这比较费时；另一方面，如果读取方未能成功实现反序列化，这将给问题查找带来了很大的挑战&ndash;难以定位是由于自身的反序列化程序的bug所导致还是由于写入方序列化后的错误数据所导致。对于跨公司间的调试，由于以下原因，问题会显得更严重：</p>
-
-<ul>
-<li>第一、支持不到位，跨公司调试在问题出现后可能得不到及时的支持，这大大延长了调试周期。</li>
-<li>第二、访问限制，调试阶段的查询平台未必对外公开，这增加了读取方的验证难度。</li>
-</ul>
-
-
-<p>如果序列化后的数据人眼可读，这将大大提高调试效率， XML和JSON就具有人眼可读的优点。</p>
-
-<h6>性能包括两个方面，时间复杂度和空间复杂度：</h6>
-
-<ul>
-<li>第一、空间开销（Verbosity）， 序列化需要在原有的数据上加上描述字段，以为反序列化解析之用。如果序列化过程引入的额外开销过高，可能会导致过大的网络，磁盘等各方面的压力。对于海量分布式存储系统，数据量往往以TB为单位，巨大的的额外空间开销意味着高昂的成本。</li>
-<li>第二、时间开销（Complexity），复杂的序列化协议会导致较长的解析时间，这可能会使得序列化和反序列化阶段成为整个系统的瓶颈。</li>
-</ul>
-
-
-<p>可扩展性/兼容性
-移动互联时代，业务系统需求的更新周期变得更快，新的需求不断涌现，而老的系统还是需要继续维护。如果序列化协议具有良好的可扩展性，支持自动增加新的业务字段，而不影响老的服务，这将大大提供系统的灵活度。</p>
-
-<p>安全性/访问限制
-在序列化选型的过程中，安全性的考虑往往发生在跨局域网访问的场景。当通讯发生在公司之间或者跨机房的时候，出于安全的考虑，对于跨局域网的访问往往被限制为基于HTTP/HTTPS的80和443端口。如果使用的序列化协议没有兼容而成熟的HTTP传输层框架支持，可能会导致以下三种结果之一：</p>
-
-<ul>
-<li>第一、因为访问限制而降低服务可用性。</li>
-<li>第二、被迫重新实现安全协议而导致实施成本大大提高。</li>
-<li>第三、开放更多的防火墙端口和协议访问，而牺牲安全性。</li>
-</ul>
-
-
-<h4>三、序列化和反序列化的组件</h4>
-
-<p>典型的序列化和反序列化过程往往需要如下组件：</p>
-
-<ul>
-<li>IDL（Interface description language）文件：参与通讯的各方需要对通讯的内容需要做相关的约定（Specifications）。为了建立一个与语言和平台无关的约定，这个约定需要采用与具体开发语言、平台无关的语言来进行描述。这种语言被称为接口描述语言（IDL），采用IDL撰写的协议约定称之为IDL文件。</li>
-<li>IDL Compiler：IDL文件中约定的内容为了在各语言和平台可见，需要有一个编译器，将IDL文件转换成各语言对应的动态库。</li>
-<li>Stub/Skeleton Lib：负责序列化和反序列化的工作代码。Stub是一段部署在分布式系统客户端的代码，一方面接收应用层的参数，并对其序列化后通过底层协议栈发送到服务端，另一方面接收服务端序列化后的结果数据，反序列化后交给客户端应用层；Skeleton部署在服务端，其功能与Stub相反，从传输层接收序列化参数，反序列化后交给服务端应用层，并将应用层的执行结果序列化后最终传送给客户端Stub。</li>
-<li>Client/Server：指的是应用层程序代码，他们面对的是IDL所生存的特定语言的class或struct。
-底层协议栈和互联网：序列化之后的数据通过底层的传输层、网络层、链路层以及物理层协议转换成数字信号在互联网中传递。
-序列化组件</li>
-</ul>
-
-
-<p>序列化组件与数据库访问组件的对比
-数据库访问对于很多工程师来说相对熟悉，所用到的组件也相对容易理解。下表类比了序列化过程中用到的部分组件和数据库访问组件的对应关系，以便于大家更好的把握序列化相关组件的概念。</p>
-
-<table>
-<thead>
-<tr>
-<th> 序列化组件         </th>
-<th style="text-align:center;"> 数据库组件          </th>
-<th style="text-align:right;"> 说明  </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> IDL           </td>
-<td style="text-align:center;">   DDL              </td>
-<td style="text-align:right;"> 用于建表或者模型的语言</td>
-</tr>
-<tr>
-<td> DL            </td>
-<td style="text-align:center;"> file DB Schema    </td>
-<td style="text-align:right;"> 表创建文件或模型文件</td>
-</tr>
-<tr>
-<td> Stub/Skeleton </td>
-<td style="text-align:center;">  lib  O/R mapping </td>
-<td style="text-align:right;">   将class和Table或者数据模型进行映射</td>
-</tr>
-</tbody>
-</table>
-
-
-<h4>四、几种常见的序列化和反序列化协议</h4>
-
-<p>互联网早期的序列化协议主要有COM和CORBA。</p>
-
-<p>COM主要用于Windows平台，并没有真正实现跨平台，另外COM的序列化的原理利用了编译器中虚表，使得其学习成本巨大（想一下这个场景， 工程师需要是简单的序列化协议，但却要先掌握语言编译器）。由于序列化的数据与编译器紧耦合，扩展属性非常麻烦。</p>
-
-<p>CORBA是早期比较好的实现了跨平台，跨语言的序列化协议。COBRA的主要问题是参与方过多带来的版本过多，版本之间兼容性较差，以及使用复杂晦涩。这些政治经济，技术实现以及早期设计不成熟的问题，最终导致COBRA的渐渐消亡。J2SE 1.3之后的版本提供了基于CORBA协议的RMI-IIOP技术，这使得Java开发者可以采用纯粹的Java语言进行CORBA的开发。</p>
-
-<p>这里主要介绍和对比几种当下比较流行的序列化协议，包括XML、JSON、Protobuf、Thrift和Avro。</p>
-
-<p>一个例子
-如前所述，序列化和反序列化的出现往往晦涩而隐蔽，与其他概念之间往往相互包容。为了更好了让大家理解序列化和反序列化的相关概念在每种协议里面的具体实现，我们将一个例子穿插在各种序列化协议讲解中。在该例子中，我们希望将一个用户信息在多个系统里面进行传递；在应用层，如果采用Java语言，所面对的类对象如下所示：</p>
-
-<pre><code>class Address
-{
-    private String city;
-    private String postcode;
-    private String street;
-}
-public class UserInfo
-{
-    private Integer userid;
-    private String name;
-    private List&lt;Address&gt; address;
-}
-</code></pre>
-
-<h6>XML&amp;SOAP</h6>
-
-<ul>
-<li><p>XML是一种常用的序列化和反序列化协议，具有跨机器，跨语言等优点。 XML历史悠久，其1.0版本早在1998年就形成标准，并被广泛使用至今。XML的最初产生目标是对互联网文档（Document）进行标记，所以它的设计理念中就包含了对于人和机器都具备可读性。 但是，当这种标记文档的设计被用来序列化对象的时候，就显得冗长而复杂（Verbose and Complex）。 XML本质上是一种描述语言，并且具有自我描述（Self-describing）的属性，所以XML自身就被用于XML序列化的IDL。 标准的XML描述格式有两种：DTD（Document Type Definition）和XSD（XML Schema Definition）。作为一种人眼可读（Human-readable）的描述语言，XML被广泛使用在配置文件中，例如O/R mapping、 Spring Bean Configuration File 等。</p></li>
-<li><p>SOAP（Simple Object Access protocol） 是一种被广泛应用的，基于XML为序列化和反序列化协议的结构化消息传递协议。SOAP在互联网影响如此大，以至于我们给基于SOAP的解决方案一个特定的名称&ndash;Web service。SOAP虽然可以支持多种传输层协议，不过SOAP最常见的使用方式还是XML+HTTP。SOAP协议的主要接口描述语言（IDL）是WSDL（Web Service Description Language）。SOAP具有安全、可扩展、跨语言、跨平台并支持多种传输层协议。如果不考虑跨平台和跨语言的需求，XML的在某些语言里面具有非常简单易用的序列化使用方法，无需IDL文件和第三方编译器， 例如Java＋XStream。</p></li>
-</ul>
-
-
-<p>自我描述与递归
-SOAP是一种采用XML进行序列化和反序列化的协议，它的IDL是WSDL. 而WSDL的描述文件是XSD，而XSD自身是一种XML文件。 这里产生了一种有趣的在数学上称之为“递归”的问题，这种现象往往发生在一些具有自我属性（Self-description）的事物上。</p>
-
-<p>IDL文件举例
-采用WSDL描述上述用户基本信息的例子如下：</p>
-
-<pre><code>&lt;xsd:complexType name='Address'&gt;
-     &lt;xsd:attribute name='city' type='xsd:string' /&gt;
-     &lt;xsd:attribute name='postcode' type='xsd:string' /&gt;
-     &lt;xsd:attribute name='street' type='xsd:string' /&gt;
-&lt;/xsd:complexType&gt;
-&lt;xsd:complexType name='UserInfo'&gt;
-     &lt;xsd:sequence&gt;
-     &lt;xsd:element name='address' type='tns:Address'/&gt;
-     &lt;xsd:element name='address1' type='tns:Address'/&gt; 
-     &lt;/xsd:sequence&gt;
-     &lt;xsd:attribute name='userid' type='xsd:int' /&gt;
-     &lt;xsd:attribute name='name' type='xsd:string' /&gt; 
-&lt;/xsd:complexType&gt;
-</code></pre>
-
-<p>典型应用场景和非应用场景
-SOAP协议具有广泛的群众基础，基于HTTP的传输协议使得其在穿越防火墙时具有良好安全特性，XML所具有的人眼可读（Human-readable）特性使得其具有出众的可调试性，互联网带宽的日益剧增也大大弥补了其空间开销大（Verbose）的缺点。对于在公司之间传输数据量相对小或者实时性要求相对低（例如秒级别）的服务是一个好的选择。</p>
-
-<p>由于XML的额外空间开销大，序列化之后的数据量剧增，对于数据量巨大序列持久化应用常景，这意味着巨大的内存和磁盘开销，不太适合XML。另外，XML的序列化和反序列化的空间和时间开销都比较大，对于对性能要求在ms级别的服务，不推荐使用。WSDL虽然具备了描述对象的能力，SOAP的S代表的也是simple，但是SOAP的使用绝对不简单。对于习惯于面向对象编程的用户，WSDL文件不直观。</p>
-
-<p>JSON（Javascript Object Notation）
-JSON起源于弱类型语言Javascript， 它的产生来自于一种称之为"Associative array"的概念，其本质是就是采用"Attribute－value"的方式来描述对象。实际上在Javascript和PHP等弱类型语言中，类的描述方式就是Associative array。JSON的如下优点，使得它快速成为最广泛使用的序列化协议之一：</p>
-
-<ul>
-<li>1、这种Associative array格式非常符合工程师对对象的理解。</li>
-<li>2、它保持了XML的人眼可读（Human-readable）的优点。</li>
-<li>3、相对于XML而言，序列化后的数据更加简洁。 来自于的以下链接的研究表明：XML所产生序列化之后文件的大小接近JSON的两倍。<a href="http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity">http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity</a></li>
-<li>4、它具备Javascript的先天性支持，所以被广泛应用于Web browser的应用常景中，是Ajax的事实标准协议。</li>
-<li>5、与XML相比，其协议比较简单，解析速度比较快。</li>
-<li>6、松散的Associative array使得其具有良好的可扩展性和兼容性。</li>
-</ul>
-
-
-<p>IDL悖论
-JSON实在是太简单了，或者说太像各种语言里面的类了，所以采用JSON进行序列化不需要IDL。这实在是太神奇了，存在一种天然的序列化协议，自身就实现了跨语言和跨平台。然而事实没有那么神奇，之所以产生这种假象，来自于两个原因：</p>
-
-<h6>第一</h6>
-
-<p>Associative array在弱类型语言里面就是类的概念，在PHP和Javascript里面Associative array就是其class的实际实现方式，所以在这些弱类型语言里面，JSON得到了非常良好的支持。</p>
-
-<h6>第二</h6>
-
-<p>IDL的目的是撰写IDL文件，而IDL文件被IDL Compiler编译后能够产生一些代码（Stub/Skeleton），而这些代码是真正负责相应的序列化和反序列化工作的组件。 但是由于Associative array和一般语言里面的class太像了，他们之间形成了一一对应关系，这就使得我们可以采用一套标准的代码进行相应的转化。对于自身支持Associative array的弱类型语言，语言自身就具备操作JSON序列化后的数据的能力；对于Java这强类型语言，可以采用反射的方式统一解决，例如Google提供的Gson。</p>
-
-<p>典型应用场景和非应用场景
-JSON在很多应用场景中可以替代XML，更简洁并且解析速度更快。典型应用场景包括：</p>
-
-<ul>
-<li>1、公司之间传输数据量相对小，实时性要求相对低（例如秒级别）的服务。</li>
-<li>2、基于Web browser的Ajax请求。</li>
-<li>3、由于JSON具有非常强的前后兼容性，对于接口经常发生变化，并对可调式性要求高的场景，例如Mobile app与服务端的通讯。</li>
-<li>4、由于JSON的典型应用场景是JSON＋HTTP，适合跨防火墙访问。</li>
-</ul>
-
-
-<p>总的来说，采用JSON进行序列化的额外空间开销比较大，对于大数据量服务或持久化，这意味着巨大的内存和磁盘开销，这种场景不适合。没有统一可用的IDL降低了对参与方的约束，实际操作中往往只能采用文档方式来进行约定，这可能会给调试带来一些不便，延长开发周期。 由于JSON在一些语言中的序列化和反序列化需要采用反射机制，所以在性能要求为ms级别，不建议使用。</p>
-
-<p>IDL文件举例
-以下是UserInfo序列化之后的一个例子：</p>
-
-<pre><code>{"userid":1,"name":"messi","address":[{"city":"北京","postcode":"1000000","street":"wangjingdonglu"}]}
-</code></pre>
-
-<p>Thrift
-Thrift是Facebook开源提供的一个高性能，轻量级RPC服务框架，其产生正是为了满足当前大数据量、分布式、跨语言、跨平台数据通讯的需求。 但是，Thrift并不仅仅是序列化协议，而是一个RPC框架。相对于JSON和XML而言，Thrift在空间开销和解析性能上有了比较大的提升，对于对性能要求比较高的分布式系统，它是一个优秀的RPC解决方案；但是由于Thrift的序列化被嵌入到Thrift框架里面，Thrift框架本身并没有透出序列化和反序列化接口，这导致其很难和其他传输层协议共同使用（例如HTTP）。</p>
-
-<p>典型应用场景和非应用场景
-对于需求为高性能，分布式的RPC服务，Thrift是一个优秀的解决方案。它支持众多语言和丰富的数据类型，并对于数据字段的增删具有较强的兼容性。所以非常适用于作为公司内部的面向服务构建（SOA）的标准RPC框架。</p>
-
-<p>不过Thrift的文档相对比较缺乏，目前使用的群众基础相对较少。另外由于其Server是基于自身的Socket服务，所以在跨防火墙访问时，安全是一个顾虑，所以在公司间进行通讯时需要谨慎。 另外Thrift序列化之后的数据是Binary数组，不具有可读性，调试代码时相对困难。最后，由于Thrift的序列化和框架紧耦合，无法支持向持久层直接读写数据，所以不适合做数据持久化序列化协议。</p>
-
-<p>IDL文件举例</p>
-
-<pre><code>struct Address
-{ 
-    1: required string city;
-    2: optional string postcode;
-    3: optional string street;
-} 
-struct UserInfo
-{ 
-    1: required string userid;
-    2: required i32 name;
-    3: optional list&lt;Address&gt; address;
-}
-</code></pre>
-
-<p>Protobuf
-Protobuf具备了优秀的序列化协议的所需的众多典型特征：</p>
-
-<ul>
-<li>1、标准的IDL和IDL编译器，这使得其对工程师非常友好。</li>
-<li>2、序列化数据非常简洁，紧凑，与XML相比，其序列化之后的数据量约为1/3到1/10。</li>
-<li>3、解析速度非常快，比对应的XML快约20-100倍。</li>
-<li>4、提供了非常友好的动态库，使用非常简介，反序列化只需要一行代码。</li>
-</ul>
-
-
-<p>Protobuf是一个纯粹的展示层协议，可以和各种传输层协议一起使用；Protobuf的文档也非常完善。 但是由于Protobuf产生于Google，所以目前其仅仅支持Java、C++、Python三种语言。另外Protobuf支持的数据类型相对较少，不支持常量类型。由于其设计的理念是纯粹的展现层协议（Presentation Layer），目前并没有一个专门支持Protobuf的RPC框架。</p>
-
-<p>典型应用场景和非应用场景
-Protobuf具有广泛的用户基础，空间开销小以及高解析性能是其亮点，非常适合于公司内部的对性能要求高的RPC调用。由于Protobuf提供了标准的IDL以及对应的编译器，其IDL文件是参与各方的非常强的业务约束，另外，Protobuf与传输层无关，采用HTTP具有良好的跨防火墙的访问属性，所以Protobuf也适用于公司间对性能要求比较高的场景。由于其解析性能高，序列化后数据量相对少，非常适合应用层对象的持久化场景。</p>
-
-<p>它的主要问题在于其所支持的语言相对较少，另外由于没有绑定的标准底层传输层协议，在公司间进行传输层协议的调试工作相对麻烦。</p>
-
-<p>IDL文件举例</p>
-
-<pre><code>message Address
-{
-    required string city=1;
-        optional string postcode=2;
-        optional string street=3;
-}
-message UserInfo
-{
-    required string userid=1;
-    required string name=2;
-    repeated Address address=3;
-}
-</code></pre>
-
-<p>Avro</p>
-
-<pre><code>Avro的产生解决了JSON的冗长和没有IDL的问题，Avro属于Apache Hadoop的一个子项目。 Avro提供两种序列化格式：JSON格式或者Binary格式。Binary格式在空间开销和解析性能方面可以和Protobuf媲美，JSON格式方便测试阶段的调试。 Avro支持的数据类型非常丰富，包括C++语言里面的union类型。Avro支持JSON格式的IDL和类似于Thrift和Protobuf的IDL（实验阶段），这两者之间可以互转。Schema可以在传输数据的同时发送，加上JSON的自我描述属性，这使得Avro非常适合动态类型语言。 Avro在做文件持久化的时候，一般会和Schema一起存储，所以Avro序列化文件自身具有自我描述属性，所以非常适合于做Hive、Pig和MapReduce的持久化数据格式。对于不同版本的Schema，在进行RPC调用的时候，服务端和客户端可以在握手阶段对Schema进行互相确认，大大提高了最终的数据解析速度。
-</code></pre>
-
-<p>典型应用场景和非应用场景
-Avro解析性能高并且序列化之后的数据非常简洁，比较适合于高性能的序列化服务。</p>
-
-<p>由于Avro目前非JSON格式的IDL处于实验阶段，而JSON格式的IDL对于习惯于静态类型语言的工程师来说不直观。</p>
-
-<p>IDL文件举例</p>
-
-<pre><code>protocol Userservice {
-  record Address {
-   string city;
-   string postcode;
-   string street;
-  }  
-  record UserInfo {
-   string name;
-   int userid;
-   array&lt;Address&gt; address = [];
-  }
-}
-</code></pre>
-
-<p>所对应的JSON Schema格式如下：</p>
-
-<pre><code>{
-  "protocol" : "Userservice",
-  "namespace" : "org.apache.avro.ipc.specific",
-  "version" : "1.0.5",
-  "types" : [ {
-    "type" : "record",
-    "name" : "Address",
-    "fields" : [ {
-      "name" : "city",
-      "type" : "string"
-    }, {
-      "name" : "postcode",
-      "type" : "string"
-    }, {
-      "name" : "street",
-      "type" : "string"
-    } ]
-  }, {
-    "type" : "record",
-    "name" : "UserInfo",
-    "fields" : [ {
-      "name" : "name",
-      "type" : "string"
-    }, {
-      "name" : "userid",
-      "type" : "int"
-    }, {
-      "name" : "address",
-      "type" : {
-        "type" : "array",
-        "items" : "Address"
-      },
-      "default" : [ ]
-    } ]
-  } ],
-  "messages" : { }
-}
-</code></pre>
-
-<h4>五、Benchmark以及选型建议</h4>
-
-<p>Benchmark
-以下数据来自<a href="https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking">https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking</a></p>
-
-<ul>
-<li>解析性能</li>
-<li>序列化之空间开销</li>
-<li>序列化大小</li>
-</ul>
-
-
-<p>从上图可得出如下结论：</p>
-
-<ul>
-<li>1、XML序列化（Xstream）无论在性能和简洁性上比较差。</li>
-<li>2、Thrift与Protobuf相比在时空开销方面都有一定的劣势。</li>
-<li>3、Protobuf和Avro在两方面表现都非常优越。</li>
-</ul>
-
-
-<p>选型建议</p>
-
-<pre><code>以上描述的五种序列化和反序列化协议都各自具有相应的特点，适用于不同的场景：
-1、对于公司间的系统调用，如果性能要求在100ms以上的服务，基于XML的SOAP协议是一个值得考虑的方案。
-2、基于Web browser的Ajax，以及Mobile app与服务端之间的通讯，JSON协议是首选。对于性能要求不太高，或者以动态类型语言为主，或者传输数据载荷很小的的运用场景，JSON也是非常不错的选择。
-3、对于调试环境比较恶劣的场景，采用JSON或XML能够极大的提高调试效率，降低系统开发成本。
-4、当对性能和简洁性有极高要求的场景，Protobuf，Thrift，Avro之间具有一定的竞争关系。
-5、对于T级别的数据的持久化应用场景，Protobuf和Avro是首要选择。如果持久化后的数据存储在Hadoop子项目里，Avro会是更好的选择。
-6、由于Avro的设计理念偏向于动态类型语言，对于动态语言为主的应用场景，Avro是更好的选择。
-7、对于持久层非Hadoop项目，以静态类型语言为主的应用场景，Protobuf会更符合静态类型语言工程师的开发习惯。
-8、如果需要提供一个完整的RPC解决方案，Thrift是一个好的选择。
-9、如果序列化之后需要支持不同的传输层协议，或者需要跨防火墙访问的高性能场景，Protobuf可以优先考虑。
-</code></pre>
-
-<!--more-->
 
 ]]></content>
   </entry>

@@ -5,12 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>切换控制器 - iOS梦工厂</title>
+  <title>安全机制 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="切换控制器 ordinal 从一个视图控制器切换到另一个视图控制器的几种方式 1,模态(modal)画面的显示方法： 例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
-例：点击一个按钮，进入另一个界面 - (IBAction)pressAbout:(id)sender &hellip;">
+  <meta name="description" content="安全机制 ordinal 关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。 苹果安全机制
+ios开发安全处理 苹果安全机制 没经过用户同意，你不能随便获取用户信息。
+所有的程序都在沙盒里运行， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/12/an-quan-ji-zhi/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -78,7 +79,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">切换控制器</h1>
+      <h1 class="entry-title">安全机制</h1>
     
     
       <p class="meta">
@@ -98,56 +99,28 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>从一个视图控制器切换到另一个视图控制器的几种方式</p>
+<div class="entry-content"><p>关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。</p>
+
+<ul>
+<li>苹果安全机制</li>
+<li>ios开发安全处理</li>
+</ul>
+
 
 <!--more-->
 
 
-<h4>1,模态(modal)画面的显示方法：</h4>
-
-<p>例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
-例：点击一个按钮，进入另一个界面
-    - (IBAction)pressAbout:(id)sender {</p>
-
-<pre><code>iCocosViewController *iCocos=[[[iCocosViewController alloc] initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
-
-[self presentModalViewController:aboutanimated:YES];//显示模态画面
-
-关闭模态画面的方法：
-
-[self dissmissModalViewControllerAnimationed:YES];
-</code></pre>
-
-<h4>2,SwitchViewController中有2个控制器的属性：BviewController,CViewController</h4>
+<p>苹果安全机制</p>
 
 <ul>
-<li>使用方法：insertSubview: atIndex:
-这种画面跳转方法并非最佳的跳转方法：</li>
-<li>实际上并非真的实现了两个画面间的跳转，而是同时启动了2个画面，控制其中哪一个画面显示在前台，哪一个画面显示在后台而已。</li>
-<li>这种画面跳转方式有一个很大的缺点，即当画面数量增加时，画面跳转的实现代码将月来越复杂，而且各个画面间不可避免的有相互依赖关系。</li>
+<li>没经过用户同意，你不能随便获取用户信息。</li>
+<li><p>所有的程序都在沙盒里运行，B程序不能进入A程序的运行范围。<em> 如果跟钱有关，比如说支付宝，这些底层的实现都是保密的，只提供接口供开发者调用，这样的话安全性得到保障。</em> 如果要防止代码被反编译，可以将自己的代码中的.m文件封装成静态库（.a文件）或者是framework文件，只提供给其它人.h文件。这样就保证了个人代码的安全性。* 网络登录的话跟用户名跟密码相关要发送POST请求，如果是GET请求的话密码会直接在URL中显示。然后同时要对帐号密码采用加密技术
+加一句：我们公司用的是MD5，但是现在MD5有一个专门的网站来破解，为了防止这个，可以采用加盐技术。客户端开发安全机制</p></li>
+<li><p>网络数据传输(敏感数据[账号\密码\消费数据\银行卡账号], 不能明文发送)<em> 协议的问题(自定义协议, 游戏代练)</em> 本地文件存储(游戏的存档)* 源代码其中网络安全是非常重要的，所以总结了几个网络相关技术
+  TCP：安全的协议，能保证数据顺序和正确性，服务器和客户端能随时互发数据。如果服务器要主动发送数据给客户端，可以用这个协议
+  UDP：非安全的协议，容易丢失数据，一般用于联机对战的游戏   XMPP：基于XML通讯的协议，基于TCP发送XML数据，一般用于即时通讯（比如QQ、微信）    HTTP：一般用于非实时连接的请求，只有客户端主动向服务器发送请求时，服务器才能返回数据给客户端    SOCKET：套接口，可以使用TCP/UDP/XMPP通讯</p></li>
 </ul>
 
-
-<h4>3,UITabBarController实现并列画面跳转（这里其实就是window的切花）</h4>
-
-<pre><code>//将5个viewController实例放入TabBar的viewcontrollers属性中    
-
-self.tabBarController.viewControllers = @[navFrist, navSecond,navThird,navFourth,navFifth];   
-
-self.window.rootViewController = self.tabBarController;
-
-[self.window addSubview:self.tabBarController.view];//将根控制器的视图加到应用程序主窗口
-</code></pre>
-
-<h4>4,UINavigationController实现多层画面跳转，在导航控制器中，载入有层级关系的界面</h4>
-
-<pre><code>- (IBAction)addRightAction:(id)sender
-{
-    iCocosViewController *iCocos=[[[iCocosViewController alloc]initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
-
-[self.navigationController pushViewController:aiCocos animated:YES];
-}
-</code></pre>
 </div>
 
 
@@ -176,7 +149,7 @@ self.window.rootViewController = self.tabBarController;
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
+    <a class='category' href='/blog/categories/xing-neng-xiang-guan/'>性能相关</a>
   
 </span>
 
@@ -205,10 +178,8 @@ self.window.rootViewController = self.tabBarController;
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/" title="Previous Post: ScrollView回到顶部复原">&laquo; ScrollView回到顶部复原</a>
+        <a class="basic-alignment left" href="/blog/2015/12/11/java/" title="Previous Post: 爬虫必备-java抓包">&laquo; 爬虫必备-java抓包</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/10/06/quan-ping-fan-hui-(runtime)/" title="Next Post: 全屏返回（Runtime）">全屏返回（Runtime） &raquo;</a>
       
     </p>
   </footer>
@@ -297,7 +268,7 @@ self.window.rootViewController = self.tabBarController;
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/12/an-quan-ji-zhi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/12/an-quan-ji-zhi/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
