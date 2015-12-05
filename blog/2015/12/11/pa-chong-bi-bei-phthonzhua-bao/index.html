@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>网络请求初探 - iOS梦工厂</title>
+  <title>爬虫必备-Phthon抓包 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="网络请求初探 ordinal 今天来说说关于iOS开发过程中的网络请求。 关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。 一、同步GET // 1. &hellip;">
+  <meta name="description" content="爬虫必备-Phthon抓包 ordinal 由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！ 准备搭建环境 因为是MAC电脑，所以自动安装了Python 2.7的版本 添加一个 库 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2014/07/23/netuse/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">网络请求初探</h1>
+      <h1 class="entry-title">爬虫必备-Phthon抓包</h1>
     
     
       <p class="meta">
@@ -97,119 +97,117 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>今天来说说关于iOS开发过程中的网络请求。</p>
+<div class="entry-content"><p>由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
 
-<p>关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。</p>
+<h4>准备搭建环境</h4>
 
-<p>一、同步GET</p>
+<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
 
-<pre><code>// 1.将网址初始化成一个OC字符串对象
-NSString *urlStr = [NSString stringWithFormat:@"%@?query=%@®ion=%@&amp;output=json&amp;ak=6E823f587c95f0148c19993539b99295", kBusinessInfoURL, @"银行", @"济南"];
-// 如果网址中存在中文,进行URLEncode
-NSString *newUrlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-// 2.构建网络URL对象, NSURL
-NSURL *url = [NSURL URLWithString:newUrlStr];
-// 3.创建网络请求
-NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-// 创建同步链接
-NSURLResponse *response = nil;
-NSError *error = nil;
-NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];
-</code></pre>
-
-<p>当创建好同步链接以后， 就可以采用相应的方法进行解析。下面创建异步连接也是一样的。</p>
-
-<p>二、同步POST</p>
-
-<pre><code>// 1.根据网址初始化OC字符串对象
-    NSString *urlStr = [NSString stringWithFormat:@"%@", kVideoURL];
-    // 2.创建NSURL对象
-    NSURL *url = [NSURL URLWithString:urlStr];
-    // 3.创建请求
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    // 4.创建参数字符串对象
-    NSString *parmStr = @"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10";
-    // 5.将字符串转为NSData对象
-    NSData *pramData = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
-    // 6.设置请求体
-    [request setHTTPBody:pramData];
-    // 7.设置请求方式
-    [request setHTTPMethod:@"POST"];
-
-    // 创建同步链接
-    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-三、异步GET
-
-    NSString *urlStr = [NSString stringWithFormat:@"http://image.zcool.com.cn/56/13/1308200901454.jpg"];
-    NSString *newStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSURL *url = [NSURL URLWithString:newStr];
-    NSURLRequest *requst = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    //异步链接(形式1,较少用)
-    [NSURLConnection sendAsynchronousRequest:requst queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        self.imageView.image = [UIImage imageWithData:data];
-        // 解析
-        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@", dic);
-    }];
-</code></pre>
-
-<p>四、异步POST</p>
-
-<pre><code>// POST请求
-    NSString *urlString = [NSString stringWithFormat:@"%@",kVideoURL];
-    //创建url对象
-    NSURL *url = [NSURL URLWithString:urlString];
-    //创建请求
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    //创建参数字符串对象
-    NSString *parmStr = [NSString stringWithFormat:@"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10"];
-    //将字符串转换为NSData对象
-    NSData *data = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
-    [request setHTTPBody:data];
-    [request setHTTPMethod:@"POST"];
-    //创建异步连接（形式二）
-    [NSURLConnection connectionWithRequest:request delegate:self];
-</code></pre>
-
-<p>一般的，当创建异步连接时， 很少用到第一种方式，经常使用的是代理方法。关于NSURLConnectionDataDelegate，我们经常使用的协议方法为一下几个：</p>
-
-<pre><code>// 服务器接收到请求时
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-}
-// 当收到服务器返回的数据时触发, 返回的可能是资源片段
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-}
-// 当服务器返回所有数据时触发, 数据返回完毕
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-}
-// 请求数据失败时触发
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    NSLog(@"%s", __FUNCTION__);
-}
-</code></pre>
-
-<p>最后，分析一下这几种呢网络请求的区别。</p>
-
-<h6>GET请求和POST请求的区别：</h6>
-
-<ol>
-<li><p>GET请求的接口会包含参数部分，参数会作为网址的一部分，服务器地址与参数之间通过 ? 来间隔。POST请求会将服务器地址与参数分开，请求接口中只有服务器地址，而参数会作为请求的一部分，提交后台服务器。</p></li>
-<li><p>GET请求参数会出现在接口中，不安全。而POST请求相对安全。</p></li>
-<li><p>虽然GET请求和POST请求都可以用来请求和提交数据，但是一般的GET多用于从后台请求数据，POST多用于向后台提交数据。</p></li>
-</ol>
-
-
-<h6>同步和异步的区别：</h6>
+<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
 
 <ul>
-<li><p>同步链接：主线程去请求数据，当数据请求完毕之前，其他线程一律不响应，会造成程序就假死现象。</p></li>
-<li><p>异步链接：会单独开一个线程去处理网络请求，主线程依然处于可交互状态,程序运行流畅。</p></li>
+<li>1.在终端输入 pip install BeautifulSoup</li>
+<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
 </ul>
 
+
+<h4>开始写代码吧</h4>
+
+<p>先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：<a href="http://movie.douban.com/chart">http://movie.douban.com/chart</a>
+好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime
+代码如下 (注意python是严格的缩进,以下代码要顶格写)</p>
+
+<pre><code>#-*- coding:utf-8 -*-
+import urllib2
+import urllib
+html=urllib2.urlopen("http://movie.douban.com/chart").read()
+print html
+</code></pre>
+
+<p>输出的结果就是一个HTML的网页，这里我就看到自己想要抓取的图片和图片名的文字片段</p>
+
+<pre><code>&lt;a class="nbg" href="http://movie.douban.com/subject/24879839/"  title="道士下山"&gt;
+           &lt;img src="http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg" alt="道士下山" class=""/&gt;
+&lt;/a&gt;
+</code></pre>
+
+<p>分析我们想要的，一个是图片的名称，一个是图片的链接地址，直接上Python代码
+    #-<em>- coding:utf-8 -</em>-
+    import urllib2
+    from bs4 import BeautifulSoup</p>
+
+<pre><code>import sys  
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
+# 函数
+def  printPlistCode():
+    #1.得到这个网页的 html 代码 #
+    html = urllib2.urlopen("http://movie.douban.com/chart").read()
+
+    #2.转换 一种格式，方便查找
+    soup = BeautifulSoup(html)
+    #3.  得到 找到的所有 包含 a 属性是class = nbg 的代码块,数组
+    liResutl = soup.findAll('a', attrs = {"class" : "nbg"})
+    #4.用于拼接每个字典的字符串
+    tmpDictM = ''
+
+    #5. 遍历这个代码块  数组
+    for li in liResutl:
+
+        #5.1 找到 img 标签的代码块 数组
+        imageEntityArray = li.findAll('img')
+
+        #5.2 得到每个image 标签
+        for image in imageEntityArray:
+            #5.3 得到src 这个属性的 value  后面也一样 类似 key value
+            link = image.get('src')
+            imageName = image.get('alt')
+            #拼接 由于 py中 {} 是一种数据处理格式，类似占位符
+            tmpDict = '''@{0}@\"name\" : @\"{1}\", @\"imageUrl\" : @\"{2}\"{3},'''
+
+            tmpDict =  tmpDict.format('{',imageName,link,'}')
+
+            tmpDictM = tmpDictM + tmpDict
+
+    #6.去掉最后一个 , 
+    tmpDictM = tmpDictM[0:len(tmpDictM) - 1].decode('utf8')
+
+    #7 拼接全部
+    restultStr = '@[{0}];'.format(tmpDictM)
+
+    print restultStr
+
+
+if __name__ == '__main__':
+    printPlistCode()
+</code></pre>
+
+<p>输出结果就是Objective-C的 数组</p>
+
+<pre><code>@[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+</code></pre>
+
+<p>使用Xcode 写到Plist中去</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+
+
+NSArray *plistArray = @[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+//路径可以自己选择
+[plistArray writeToFile:@"/Users/xxx/Desktop/test/movie.plist" atomically:YES];
+
+return 0;
+</code></pre>
+
+<p>到这里，就可以看到plist 文件可以用于测试了</p>
+
+<p><img src="/images/python001.png" title="Caption" ></p>
+
+<p>这里写图片描述
+如果想要复制粘贴这里面的代码，那就选择Sublime编辑器</p>
 </div>
 
 
@@ -238,7 +236,7 @@ NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
+    <a class='category' href='/blog/categories/cheng-xu-yuan-bi-bei/'>程序员必备</a>
   
 </span>
 
@@ -267,10 +265,10 @@ NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/" title="Previous Post: 面试会问到的？">&laquo; 面试会问到的？</a>
+        <a class="basic-alignment left" href="/blog/2015/12/11/zhengze/" title="Previous Post: 爬虫必备-正则表达式抓包">&laquo; 爬虫必备-正则表达式抓包</a>
       
       
-        <a class="basic-alignment right" href="/blog/2014/07/25/netall/" title="Next Post: 网络开发总结">网络开发总结 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2015/12/11/java/" title="Next Post: 爬虫必备-java抓包">爬虫必备-java抓包 &raquo;</a>
       
     </p>
   </footer>
@@ -359,7 +357,7 @@ NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2014/07/23/netuse/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/07/23/netuse/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-05T22:37:34+08:00</updated>
+  <updated>2015-12-05T22:44:40+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -27,7 +27,11 @@
 <h3>客户端开发安全机制1.    网络数据传输(敏感数据[账号\密码\消费数据\银行卡账号], 不能明文发送)2.  协议的问题(自定义协议, 游戏代练)3.    本地文件存储(游戏的存档)4.   源代码***</h3>
 
 <p>其中网络安全是非常重要的，所以总结了几个网络相关技术。
-TCP：安全的协议，能保证数据顺序和正确性，服务器和客户端能随时互发数据。如果服务器要主动发送数据给客户端，可以用这个协议   UDP：非安全的协议，容易丢失数据，一般用于联机对战的游戏   XMPP：基于XML通讯的协议，基于TCP发送XML数据，一般用于即时通讯（比如QQ、微信）    HTTP：一般用于非实时连接的请求，只有客户端主动向服务器发送请求时，服务器才能返回数据给客户端    SOCKET：套接口，可以使用TCP/UDP/XMPP通讯</p></li>
+TCP：安全的协议，能保证数据顺序和正确性，服务器和客户端能随时互发数据。如果服务器要主动发送数据给客户端，可以用这个协议 <br/>
+UDP：非安全的协议，容易丢失数据，一般用于联机对战的游戏 <br/>
+XMPP：基于XML通讯的协议，基于TCP发送XML数据，一般用于即时通讯（比如QQ、微信）  <br/>
+HTTP：一般用于非实时连接的请求，只有客户端主动向服务器发送请求时，服务器才能返回数据给客户端  <br/>
+SOCKET：套接口，可以使用TCP/UDP/XMPP通讯</p></li>
 </ol>
 
 ]]></content>
@@ -452,7 +456,126 @@ public static void main (String[] args) {
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[爬虫必备-正则表达式]]></title>
+    <title type="html"><![CDATA[爬虫必备-Phthon抓包]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/"/>
+    <updated>2015-12-11T11:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao</id>
+    <content type="html"><![CDATA[<p>由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
+
+<h4>准备搭建环境</h4>
+
+<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
+
+<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
+
+<ul>
+<li>1.在终端输入 pip install BeautifulSoup</li>
+<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
+</ul>
+
+
+<h4>开始写代码吧</h4>
+
+<p>先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：<a href="http://movie.douban.com/chart">http://movie.douban.com/chart</a>
+好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime
+代码如下 (注意python是严格的缩进,以下代码要顶格写)</p>
+
+<pre><code>#-*- coding:utf-8 -*-
+import urllib2
+import urllib
+html=urllib2.urlopen("http://movie.douban.com/chart").read()
+print html
+</code></pre>
+
+<p>输出的结果就是一个HTML的网页，这里我就看到自己想要抓取的图片和图片名的文字片段</p>
+
+<pre><code>&lt;a class="nbg" href="http://movie.douban.com/subject/24879839/"  title="道士下山"&gt;
+           &lt;img src="http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg" alt="道士下山" class=""/&gt;
+&lt;/a&gt;
+</code></pre>
+
+<p>分析我们想要的，一个是图片的名称，一个是图片的链接地址，直接上Python代码
+    #-<em>- coding:utf-8 -</em>-
+    import urllib2
+    from bs4 import BeautifulSoup</p>
+
+<pre><code>import sys  
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
+# 函数
+def  printPlistCode():
+    #1.得到这个网页的 html 代码 #
+    html = urllib2.urlopen("http://movie.douban.com/chart").read()
+
+    #2.转换 一种格式，方便查找
+    soup = BeautifulSoup(html)
+    #3.  得到 找到的所有 包含 a 属性是class = nbg 的代码块,数组
+    liResutl = soup.findAll('a', attrs = {"class" : "nbg"})
+    #4.用于拼接每个字典的字符串
+    tmpDictM = ''
+
+    #5. 遍历这个代码块  数组
+    for li in liResutl:
+
+        #5.1 找到 img 标签的代码块 数组
+        imageEntityArray = li.findAll('img')
+
+        #5.2 得到每个image 标签
+        for image in imageEntityArray:
+            #5.3 得到src 这个属性的 value  后面也一样 类似 key value
+            link = image.get('src')
+            imageName = image.get('alt')
+            #拼接 由于 py中 {} 是一种数据处理格式，类似占位符
+            tmpDict = '''@{0}@\"name\" : @\"{1}\", @\"imageUrl\" : @\"{2}\"{3},'''
+
+            tmpDict =  tmpDict.format('{',imageName,link,'}')
+
+            tmpDictM = tmpDictM + tmpDict
+
+    #6.去掉最后一个 , 
+    tmpDictM = tmpDictM[0:len(tmpDictM) - 1].decode('utf8')
+
+    #7 拼接全部
+    restultStr = '@[{0}];'.format(tmpDictM)
+
+    print restultStr
+
+
+if __name__ == '__main__':
+    printPlistCode()
+</code></pre>
+
+<p>输出结果就是Objective-C的 数组</p>
+
+<pre><code>@[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+</code></pre>
+
+<p>使用Xcode 写到Plist中去</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+
+
+NSArray *plistArray = @[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+//路径可以自己选择
+[plistArray writeToFile:@"/Users/xxx/Desktop/test/movie.plist" atomically:YES];
+
+return 0;
+</code></pre>
+
+<p>到这里，就可以看到plist 文件可以用于测试了</p>
+
+<p><img src="http://al1020119.github.io/images/python001.png" title="Caption" ></p>
+
+<p>这里写图片描述
+如果想要复制粘贴这里面的代码，那就选择Sublime编辑器</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[爬虫必备-正则表达式抓包]]></title>
     <link href="http://al1020119.github.io/blog/2015/12/11/zhengze/"/>
     <updated>2015-12-11T10:03:23+08:00</updated>
     <id>http://al1020119.github.io/blog/2015/12/11/zhengze</id>
@@ -784,134 +907,6 @@ NSMutableArray *arr=[strhtml substringByRegular:regstr];
 <p>这么做的意义：</p>
 
 <p>这里只是简单的更改了一些数字，在页面显示更加直观。实际的操作中，你可以经常用来把某些值改为临界情况以看到App在处理这些临界状况时的反应，这样比找那些临界数据的测试账号成本要低得多。也可以把一些可能不会反回数值的字段找到，直接将里面的值删成nil，看看会不会报异常等等。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Python]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/11/python/"/>
-    <updated>2015-12-11T00:00:00+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/11/python</id>
-    <content type="html"><![CDATA[<hr />
-
-<p>layout: post
-title: &ldquo;爬虫必备-Phthon抓包&rdquo;
-date: 2015-12-11 11:03:23 +0800
-comments: true</p>
-
-<h2>categories: 程序员必备</h2>
-
-<p>由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
-
-<h4>准备搭建环境</h4>
-
-<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
-
-<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
-
-<ul>
-<li>1.在终端输入 pip install BeautifulSoup</li>
-<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
-</ul>
-
-
-<h4>开始写代码吧</h4>
-
-<p>先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：<a href="http://movie.douban.com/chart">http://movie.douban.com/chart</a>
-好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime
-代码如下 (注意python是严格的缩进,以下代码要顶格写)</p>
-
-<pre><code>#-*- coding:utf-8 -*-
-import urllib2
-import urllib
-html=urllib2.urlopen("http://movie.douban.com/chart").read()
-print html
-</code></pre>
-
-<p>输出的结果就是一个HTML的网页，这里我就看到自己想要抓取的图片和图片名的文字片段</p>
-
-<pre><code>&lt;a class="nbg" href="http://movie.douban.com/subject/24879839/"  title="道士下山"&gt;
-           &lt;img src="http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg" alt="道士下山" class=""/&gt;
-&lt;/a&gt;
-</code></pre>
-
-<p>分析我们想要的，一个是图片的名称，一个是图片的链接地址，直接上Python代码
-    #-<em>- coding:utf-8 -</em>-
-    import urllib2
-    from bs4 import BeautifulSoup</p>
-
-<pre><code>import sys  
-reload(sys)  
-sys.setdefaultencoding('utf8')
-
-# 函数
-def  printPlistCode():
-    #1.得到这个网页的 html 代码 #
-    html = urllib2.urlopen("http://movie.douban.com/chart").read()
-
-    #2.转换 一种格式，方便查找
-    soup = BeautifulSoup(html)
-    #3.  得到 找到的所有 包含 a 属性是class = nbg 的代码块,数组
-    liResutl = soup.findAll('a', attrs = {"class" : "nbg"})
-    #4.用于拼接每个字典的字符串
-    tmpDictM = ''
-
-    #5. 遍历这个代码块  数组
-    for li in liResutl:
-
-        #5.1 找到 img 标签的代码块 数组
-        imageEntityArray = li.findAll('img')
-
-        #5.2 得到每个image 标签
-        for image in imageEntityArray:
-            #5.3 得到src 这个属性的 value  后面也一样 类似 key value
-            link = image.get('src')
-            imageName = image.get('alt')
-            #拼接 由于 py中 {} 是一种数据处理格式，类似占位符
-            tmpDict = '''@{0}@\"name\" : @\"{1}\", @\"imageUrl\" : @\"{2}\"{3},'''
-
-            tmpDict =  tmpDict.format('{',imageName,link,'}')
-
-            tmpDictM = tmpDictM + tmpDict
-
-    #6.去掉最后一个 , 
-    tmpDictM = tmpDictM[0:len(tmpDictM) - 1].decode('utf8')
-
-    #7 拼接全部
-    restultStr = '@[{0}];'.format(tmpDictM)
-
-    print restultStr
-
-
-if __name__ == '__main__':
-    printPlistCode()
-</code></pre>
-
-<p>输出结果就是Objective-C的 数组</p>
-
-<pre><code>@[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
-</code></pre>
-
-<p>使用Xcode 写到Plist中去</p>
-
-<pre><code>#import &lt;Foundation/Foundation.h&gt;
-
-int main(int argc, const char * argv[]) {
-
-
-NSArray *plistArray = @[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
-//路径可以自己选择
-[plistArray writeToFile:@"/Users/xxx/Desktop/test/movie.plist" atomically:YES];
-
-return 0;
-</code></pre>
-
-<p>到这里，就可以看到plist 文件可以用于测试了</p>
-
-<p><img src="http://al1020119.github.io/images/python001.png" title="Caption" ></p>
-
-<p>这里写图片描述
-如果想要复制粘贴这里面的代码，那就选择Sublime编辑器</p>
 ]]></content>
   </entry>
   
@@ -2153,7 +2148,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#109;&#97;&#x6a;&#105;&#97;&#x30;&#x33;&#x40;&#x6d;&#x65;&#105;&#x74;&#117;&#x61;&#110;&#x2e;&#99;&#111;&#109;">&#x6d;&#97;&#x6a;&#105;&#97;&#x30;&#51;&#x40;&#x6d;&#x65;&#x69;&#116;&#x75;&#x61;&#x6e;&#46;&#x63;&#111;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#108;&#116;&#111;&#58;&#109;&#97;&#106;&#105;&#97;&#48;&#x33;&#64;&#109;&#101;&#x69;&#x74;&#117;&#x61;&#x6e;&#46;&#99;&#111;&#x6d;">&#109;&#x61;&#x6a;&#105;&#97;&#x30;&#x33;&#x40;&#x6d;&#101;&#x69;&#116;&#117;&#97;&#110;&#x2e;&#99;&#111;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 

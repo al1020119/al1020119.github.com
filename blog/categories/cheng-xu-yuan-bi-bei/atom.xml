@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 程序员必备 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/cheng-xu-yuan-bi-bei/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-05T22:37:34+08:00</updated>
+  <updated>2015-12-05T22:44:40+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -432,7 +432,126 @@ public static void main (String[] args) {
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[爬虫必备-正则表达式]]></title>
+    <title type="html"><![CDATA[爬虫必备-Phthon抓包]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/"/>
+    <updated>2015-12-11T11:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao</id>
+    <content type="html"><![CDATA[<p>由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
+
+<h4>准备搭建环境</h4>
+
+<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
+
+<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
+
+<ul>
+<li>1.在终端输入 pip install BeautifulSoup</li>
+<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
+</ul>
+
+
+<h4>开始写代码吧</h4>
+
+<p>先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：<a href="http://movie.douban.com/chart">http://movie.douban.com/chart</a>
+好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime
+代码如下 (注意python是严格的缩进,以下代码要顶格写)</p>
+
+<pre><code>#-*- coding:utf-8 -*-
+import urllib2
+import urllib
+html=urllib2.urlopen("http://movie.douban.com/chart").read()
+print html
+</code></pre>
+
+<p>输出的结果就是一个HTML的网页，这里我就看到自己想要抓取的图片和图片名的文字片段</p>
+
+<pre><code>&lt;a class="nbg" href="http://movie.douban.com/subject/24879839/"  title="道士下山"&gt;
+           &lt;img src="http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg" alt="道士下山" class=""/&gt;
+&lt;/a&gt;
+</code></pre>
+
+<p>分析我们想要的，一个是图片的名称，一个是图片的链接地址，直接上Python代码
+    #-<em>- coding:utf-8 -</em>-
+    import urllib2
+    from bs4 import BeautifulSoup</p>
+
+<pre><code>import sys  
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
+# 函数
+def  printPlistCode():
+    #1.得到这个网页的 html 代码 #
+    html = urllib2.urlopen("http://movie.douban.com/chart").read()
+
+    #2.转换 一种格式，方便查找
+    soup = BeautifulSoup(html)
+    #3.  得到 找到的所有 包含 a 属性是class = nbg 的代码块,数组
+    liResutl = soup.findAll('a', attrs = {"class" : "nbg"})
+    #4.用于拼接每个字典的字符串
+    tmpDictM = ''
+
+    #5. 遍历这个代码块  数组
+    for li in liResutl:
+
+        #5.1 找到 img 标签的代码块 数组
+        imageEntityArray = li.findAll('img')
+
+        #5.2 得到每个image 标签
+        for image in imageEntityArray:
+            #5.3 得到src 这个属性的 value  后面也一样 类似 key value
+            link = image.get('src')
+            imageName = image.get('alt')
+            #拼接 由于 py中 {} 是一种数据处理格式，类似占位符
+            tmpDict = '''@{0}@\"name\" : @\"{1}\", @\"imageUrl\" : @\"{2}\"{3},'''
+
+            tmpDict =  tmpDict.format('{',imageName,link,'}')
+
+            tmpDictM = tmpDictM + tmpDict
+
+    #6.去掉最后一个 , 
+    tmpDictM = tmpDictM[0:len(tmpDictM) - 1].decode('utf8')
+
+    #7 拼接全部
+    restultStr = '@[{0}];'.format(tmpDictM)
+
+    print restultStr
+
+
+if __name__ == '__main__':
+    printPlistCode()
+</code></pre>
+
+<p>输出结果就是Objective-C的 数组</p>
+
+<pre><code>@[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+</code></pre>
+
+<p>使用Xcode 写到Plist中去</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+
+
+NSArray *plistArray = @[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+//路径可以自己选择
+[plistArray writeToFile:@"/Users/xxx/Desktop/test/movie.plist" atomically:YES];
+
+return 0;
+</code></pre>
+
+<p>到这里，就可以看到plist 文件可以用于测试了</p>
+
+<p><img src="/images/python001.png" title="Caption" ></p>
+
+<p>这里写图片描述
+如果想要复制粘贴这里面的代码，那就选择Sublime编辑器</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[爬虫必备-正则表达式抓包]]></title>
     <link href="http://al1020119.github.io/blog/2015/12/11/zhengze/"/>
     <updated>2015-12-11T10:03:23+08:00</updated>
     <id>http://al1020119.github.io/blog/2015/12/11/zhengze</id>
@@ -850,127 +969,6 @@ NSMutableArray *arr=[strhtml substringByRegular:regstr];
 <td> NSNull    </td>
 <td style="text-align:center;"> [NSNull null] </td>
 <td style="text-align:right;"> 用来表示零值的单独的对象</td>
-</tr>
-</tbody>
-</table>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[常用关键字汇总]]></title>
-    <link href="http://al1020119.github.io/blog/2014/05/05/keyoc/"/>
-    <updated>2014-05-05T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2014/05/05/keyoc</id>
-    <content type="html"><![CDATA[<p>在做iOS开发中，系统的各个关键字处处都是，但是未必每一个关键字都是那么的明白，所以罗列出一些关键字供大家互相学习，有不完善之处请指正，谢谢</p>
-
-<table>
-<thead>
-<tr>
-<th> 关键字 </th>
-<th style="text-align:center;"> 总结</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> atomic    </td>
-<td style="text-align:center;"> atomic是Objc使用的一种线程保护技术，基本上来讲，是防止在写未完成的时候被另外一个线程读取，造成数据错误。而这种机制是耗费系统资源的，所以在iPhone这种小型设备上，如果没有使用多线程间的通讯编程，那么nonatomic是一个非常好的选择。</td>
-</tr>
-<tr>
-<td> super </td>
-<td style="text-align:center;"> 调用父类的方法</td>
-</tr>
-<tr>
-<td> readonly  </td>
-<td style="text-align:center;"> 说明属性是只读的，默认的标记是读写</td>
-</tr>
-<tr>
-<td> readwrite </td>
-<td style="text-align:center;"> 说明属性会被当成读写的，这也是默认属性</td>
-</tr>
-<tr>
-<td> retain    </td>
-<td style="text-align:center;"> 释放旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1</td>
-</tr>
-<tr>
-<td> self</td>
-<td style="text-align:center;">     是隐藏参数，指向当前调用方法的类</td>
-</tr>
-<tr>
-<td> setter    </td>
-<td style="text-align:center;"> 设置指定的set方法</td>
-</tr>
-<tr>
-<td> getter    </td>
-<td style="text-align:center;"> 设置指定的get方法</td>
-</tr>
-<tr>
-<td> property</td>
-<td style="text-align:center;">     设置成员变量的属性（有读／写，赋值assign,retain,copy ,以及对多线程的支持 nonatomic）</td>
-</tr>
-<tr>
-<td> end   </td>
-<td style="text-align:center;"> 类的头文件或者实现文件的结束</td>
-</tr>
-<tr>
-<td> copy</td>
-<td style="text-align:center;">     建立一个索引计数为1的对象，然后释放旧对象 </td>
-</tr>
-<tr>
-<td> assign    </td>
-<td style="text-align:center;"> 简单赋值，不更改引用计数</td>
-</tr>
-<tr>
-<td> synthesize    </td>
-<td style="text-align:center;"> 根据@property设置，自动生成成员变量相应的存取方法，从而可以使用点操作符来方便的存取该成员变量</td>
-</tr>
-<tr>
-<td> import    </td>
-<td style="text-align:center;"> 告诉预处理器,将头文件的内容包含到本文件中</td>
-</tr>
-<tr>
-<td> dynamic   </td>
-<td style="text-align:center;"> 告诉编译器由我们自己来实现访问方法</td>
-</tr>
-<tr>
-<td> nonatomic </td>
-<td style="text-align:center;"> 非原子性访问，对属性赋值的时候不加锁，多线程并发访问会提高性能</td>
-</tr>
-<tr>
-<td> implementation</td>
-<td style="text-align:center;">   表明类的实现</td>
-</tr>
-<tr>
-<td> strong    </td>
-<td style="text-align:center;"> 强引用，只要最后一个strong型指针不再指向对象，那么对象就会被释放，同时所有的weak型指针都将会被清除</td>
-</tr>
-<tr>
-<td> weak  </td>
-<td style="text-align:center;"> 弱引用</td>
-</tr>
-<tr>
-<td> __strong  </td>
-<td style="text-align:center;"> 是缺省的关键词</td>
-</tr>
-<tr>
-<td> __weak    </td>
-<td style="text-align:center;"> 声明了一个可以自动nil化的弱引用</td>
-</tr>
-<tr>
-<td> __unsafe_unretained</td>
-<td style="text-align:center;">  声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了</td>
-</tr>
-<tr>
-<td> __autoreleasing   </td>
-<td style="text-align:center;"> 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放</td>
-</tr>
-<tr>
-<td> unsafe_unretained 弱引用，容易生成野指针，尽量少用unsafe_unretained关键字</td>
-<td></td>
-</tr>
-<tr>
-<td> synchronized  </td>
-<td style="text-align:center;"> 方法加锁</td>
 </tr>
 </tbody>
 </table>
