@@ -9,7 +9,10 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="H5精华 标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group &hellip;">
+  <meta name="description" content="够逼格的注释习惯总结 首先关于注意这里就不说什么VVDocument了，来点新鲜的！ 也许你使用过#warning 警告提示 也许你也使用过#pragma marks。 但是你见过或者使用过下面这个吗？ Comments containing:
+MARK:
+TODO:
+FIXME &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +77,1210 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">够逼格的注释习惯</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>够逼格的注释习惯总结</p>
+
+<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+
+<h6>也许你使用过#warning 警告提示</h6>
+
+<h6>也许你也使用过#pragma marks。</h6>
+
+<p>但是你见过或者使用过下面这个吗？</p>
+
+<pre><code>Comments containing:
+MARK:
+TODO:
+FIXME:
+!!!:
+???:
+</code></pre>
+
+<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+
+<p> 首先说一下三个最常用的：</p>
+
+<ul>
+<li>1、TODO</li>
+</ul>
+
+
+<p> 等待实现的功能</p>
+
+<ul>
+<li>2、FIXME</li>
+</ul>
+
+
+<p> 需要修正的功能</p>
+
+<ul>
+<li>3、！！！</li>
+</ul>
+
+
+<p> 需要改进的功能</p>
+
+<p>具体使用</p>
+
+<pre><code>// FIXME:sss
+/* FIXME: sss */
+
+
+// MARK:sss
+/* MARK:sss */
+
+
+// !!!:sss
+/* !!!: sss */
+
+
+// ???:sss
+/* ???: sss */
+
+
+// TODO:sss
+/* TODO: sss */
+
+
+// Comments containing: sss
+/* Comments containing: sss */
+</code></pre>
+
+<p>注意空格.</p>
+
+<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+
+<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/02/xiao-chu-jing-gao/">消除警告</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>前言：</h6>
+
+<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
+
+<p>本文分为三个部分：</p>
+
+<ul>
+<li>1.简单粗暴的消除警告。</li>
+<li>2.详细科学的消除警告。（包括警告收录）</li>
+<li>3.添加警告。</li>
+</ul>
+
+
+<h4>一、简单粗暴的消除警告</h4>
+
+<p>警告如果是自己项目中的还好直接改了，如果是第三方库，你改了之后，pod下作者更新一下又白改了，所以可以用这种简单粗暴的方法：直接让第三方库的警告不显示</p>
+
+<p> 就是在podfile文件里面加上一行指令 。
+inhibit_all_warnings!
+如果某警告实在无法消除，但是又不想让他显示，可以加入预编译指令</p>
+
+<p>比如我已经知道某行会报上面警告了，我就用这个宏把这几行包住，就不会报引号中-Wunused-variable的警告了</p>
+
+<pre><code>#pragma clang diagnostic push
+#pragma clang diagnostic ignored"-Wunused-variable" //这里是会报警告的代码
+
+#pragma clang diagnostic pop
+</code></pre>
+
+<p>这个-Wunused-variable代表的意思就是 有的东西 你实例化了但是没有使用（同上面第几条）。 但是如何得到一个警告的标示符？</p>
+
+<ol>
+<li><p>如图选择一个警告，点击右键，reveal in log  就能看到右边有个方括号[]里面的东西就是 这个警告对应的标示符</p></li>
+<li><p>如果希望整个项目中都忽略 某种很无聊的警告，就在项目中Build Setting里加上这个标示符，可以连着加的。</p></li>
+<li><p>如果不想整个项目都忽略，只想个别文件忽略，那就找到个别文件加上此指令，这个操作应该使用率不高（一般都是全项目忽略），就不上图了。去Build Phases 里面的 Compile Sources里面改。</p></li>
+</ol>
+
+
+<h4>二、详细科学的消除警告</h4>
+
+<p>其实笔者本意是想把一些第一眼看不懂比较坑的警告收录进来，但是后来发现那基本没几个需要些写了，所以就采用了全收录的方法，遇到的就记录下以后也会不断更新。 可以直接按command+F 在本页面搜索警告</p>
+
+<pre><code>Unused variable 'replyURL'
+</code></pre>
+
+<h6>1.没有使用</h6>
+
+<pre><code>Cannot find protocol definition for 'TencentSessionDelegate'
+</code></pre>
+
+<h6>2.这种明明都能运行还说我没有定义的警告，是因为你这个协议虽然定义了，但是你这个协议可能还遵守了XX协议，然后这个XX协议没有定义导致会报这种警告，所以遇到这种警告要往“父协议”找。 举个栗子，上面这行就是腾讯授权的库里面报的警告，</h6>
+
+<pre><code>@protocol TencentSessionDelegate
+此协议遵守了TencentApiInterfaceDelegate协议，在TencentOAuth.h类中#import "TencentApiInterface.h" 警告可破
+
+
+Null passed to a callee that requires a non-null argument
+</code></pre>
+
+<h6>3.这个警告比较新，是xcode6.3开始 为了让OC也能有swift的？和！的功能，你在声明一个属性的时候加上 <strong>nullable（？可以为空）与</strong>nonnull（！不能为空） 如果放在@property里面的话不用写下划线</h6>
+
+<pre><code>@property (nonatomic, copy, nonnull) NSString * tickets;
+@property (nonatomic, copy) NSString * __nonnull tickets;
+</code></pre>
+
+<p>或者用宏NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END 包住多个属性全部具备nonnull，然后仅对需要nullable的改下就行，有点类似于f-no-objc-arc那种先整体给个路线在单独改个别文件的思想。 此警告就是某属性说好的不能为空，你又在某地方写了XX = nil 所以冲突了。</p>
+
+<pre><code>Auto property synthesis will not synthesize property 'privateCacheDirectory'; it will be implemented by its superclass, use @dynamic to acknowledge intention
+</code></pre>
+
+<h6>4.他说你的父类实现了setget方法，但是如果你什么都不写，就会系统自动生成出最一般的setget方法，请用@dynamic 来承认父类实现的这个getset方法。</h6>
+
+<pre><code>Unsupported Configuration: Scene is unreachable due to lack of entry points and does not have an identifier for runtime access via -instantiateViewControllerWithIdentifier:.
+</code></pre>
+
+<h6>5.一般是storyboard报的警告，简而言之就是你有的页面没有和箭头所指的控制器连起来，导致最终改页面可能无法显示。</h6>
+
+<pre><code>Deprecated: Push segues are deprecated in iOS 8.0 and later
+</code></pre>
+
+<h6>6.iOS8之后呢，不要再用push拖线了，统一用show，他会自己根据你是否有导航栏来判断走push还是走modal</h6>
+
+<pre><code>Unsupported Configuration: Plain Style unsupported in a Navigation Item
+</code></pre>
+
+<h6>7.导航栏的item 不支持用plain ，那就用Bordered呗。</h6>
+
+<pre><code>The launch image set "LaunchImage" has 2 unassigned images.
+The app icon set "AppIcon" has 2 unassigned images.
+</code></pre>
+
+<h6>8.几张图标还是启动图找不到自己的位置，可能是一次导入了全部尺寸图片，但是右边的设置只勾了iOS8的 那iOS7尺寸的图标就会报此警告。删掉，或者对照右边匹配。</h6>
+
+<pre><code>'sizeWithFont:constrainedToSize:lineBreakMode:' is deprecated: first deprecated in iOS 7.0 - Use -boundingRectWithSize:options:attributes:context:
+</code></pre>
+
+<h6>9.方法废除，旧的方法sizeWithFontToSize在iOS7后就废除了取而代之是boundingRectWithSize方法</h6>
+
+<pre><code>Undeclared selector 'historyAction'
+</code></pre>
+
+<h6>10.使用未声明的方法，一般出现在@selector() 括号里写了个不存在的方法或方法名写错了。</h6>
+
+<pre><code>PerformSelector may cause a leak because its selector is unknown
+</code></pre>
+
+<h6>11.这个和上面类似就是直接把上面那个@SEL拿来用会报这个警告</h6>
+
+<pre><code>'strongify' macro redefined
+</code></pre>
+
+<h6>12.这个宏声明重复,删一个吧</h6>
+
+<pre><code>'UITextAttributeFont' is deprecated: first deprecated in iOS 7.0 - Use NSFontAttributeName
+'UITextAttributeTextColor' is deprecated: first deprecated in iOS 7.0 - Use NSForegroundColorAttributeName
+'UITextAttributeTextShadowColor' is deprecated: first deprecated in iOS 7.0 - Use NSShadowAttributeName with an NSShadow instance as the value
+</code></pre>
+
+<h6>13.方法废除,一般一起出现</h6>
+
+<pre><code>Code will never be executed
+</code></pre>
+
+<h6>14.他说这代码永远也轮不到他执行，估计是有几行代码写在了return之后</h6>
+
+<pre><code>Assigning to 'id' from incompatible type 'SXTabViewController *const __strong'
+</code></pre>
+
+<h6>15.一般出现在xxx.delegate = self ，应该在上面遵守协议</h6>
+
+<pre><code>Format specifies type 'unsigned long' but the argument has type 'unsigned int'
+</code></pre>
+
+<h6>16.这个警告一般会出现在NSStringWithFormat里面 前面%d %lu 什么的和后面填进去的参数不匹配就报了警告</h6>
+
+<pre><code>Values of type 'NSInteger' should not be used as format arguments; add an explicit cast to 'long' instead
+</code></pre>
+
+<h6>17.类似于上面，也是format里面前后写的不匹配</h6>
+
+<pre><code>Method 'dealWithURL:andTitle:andKeyword:' in protocol 'SXPostAdDelegate' not implemented
+</code></pre>
+
+<h6>18.经典警告，遵守了协议，但是没有实现协议方法。 也可能你实现了只是又加了个参数或是你写的方法和协议方法名字有点轻微不同</h6>
+
+<pre><code>Using integer absolute value function 'abs' when argument is of floating point type
+</code></pre>
+
+<h6>19.这个可以自动修正，就是说abs适用于整数绝对值，要是float取绝对值要用fabsf</h6>
+
+<pre><code>Attribute Unavailable: Automatic Preferred Max Layout Width is not available on iOS versions prior to 8.0
+</code></pre>
+
+<h6>20.有的方法你用的太落后了，也有的方法你用的太超前了。 说这个最大宽度在iOS8之前的系统是要坑的</h6>
+
+<pre><code>Too many personality routines for compact unwind to encode
+</code></pre>
+
+<h6>21.你可以在otherlink 中加入 -Wl,-no_compact_unwind 去掉该警告，根据苹果的解释，这个是由于某些地方 c/c++/oc/oc++混用会造成编译警告。一般没有什么伤害。</h6>
+
+<pre><code>Property 'ssid' requires method 'ssid' to be defined - use @synthesize, @dynamic or provide a method implementation in this class implementation
+</code></pre>
+
+<h6>22.说这个ssid必须要定义个这个属性的getter方法，如果警告是setSsid就是setter方法， 用@synthesize和@dynamic 都行，一个是让编译器生成getter和setter，一个是自己生成，如果你有模型分发或kvc之类的，选@dynamic就行</h6>
+
+<pre><code>Unknown escape sequence '\)'
+</code></pre>
+
+<h6>23.未知的转义序列。 一般有个斜杠再加个东西他都会以为是转义字符，一看\）不认识就报警告了，一般正则表达式容易报这种警告</h6>
+
+<pre><code>Property 'LoginPort' not found on object of type 'LoginLvsTestTask *'; did you mean to access property loginPort?
+</code></pre>
+
+<h6>24.这种可以点击自动修复，是典型的大小写写错了，他提醒了一下。</h6>
+
+<pre><code>Variable 'type' is used uninitialized whenever switch default is taken
+</code></pre>
+
+<h6>25.这是出现在switch语句中的警告， 一般可能是switch外面定义了个type但是并没有初始化（初始化操作都写在switch的各个分支里），然后在最后return type。 但是switch的有个分支没有对type初始化，他说如果你来到这个分支的话，那还没初始化就要被return。</h6>
+
+<h5>三、添加警告</h5>
+
+<h6>1.首先最常用的就是 普通警告，这也没什么好说的了</h6>
+
+<pre><code>#warning TODO
+</code></pre>
+
+<h6>2.如果是自己写的文件或第三方库，有了新的接口，然后提示旧的接口废除的话需要在方法后加上宏NS_DEPRECATED_IOS和范围</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target NS_DEPRECATED_IOS(2_0, 4_0);
+</code></pre>
+
+<h6>3.如果需要在此方法后加上带信息的警告则需要这么写</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target __attribute((deprecated("这个接口会爆内存 不建议使用")));
+</code></pre>
+
+<p>显示的效果像这样：</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/02/xiao-chu-jing-gao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>引言：
+在文字开始之前先介绍两个软件：</p></blockquote>
+
+<h5>JSONExport</h5>
+
+<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
+
+<h5>JSON Accelerator</h5>
+
+<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
+
+<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+
+<ul>
+<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
+<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+</ul>
+
+
+<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
+
+<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
+
+<h2>一：直接加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
+
+<pre><code>定义一个数组属性 
+@property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>获取Plist文件</h6>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载Plsit中的数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    NSDictionary *dic = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+    */
+     icon.image = [UIImage imageNamed:dic[@"icon"]];
+
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = dic[@"label"];
+
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
+
+    [view addSubview:btn];
+</code></pre>
+
+<h2>二：使用简单的模型加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
+
+<pre><code> 1 //定义一个数组属性
+
+  2 @property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>在模型中定义模型对应的属性</h6>
+
+<pre><code>@property (nonatomic, copy) NSString *icon;
+
+
+@property (nonatomic, copy) NSString *label;
+
+
+@property (nonatomic, copy) NSString *btn;
+</code></pre>
+
+<h6>模型方法</h6>
+
+<pre><code>/**
+ 模型数据方法
+ */
++(instancetype)messageWithDict:(NSDictionary *)dict;
+
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>模型的实现文件</h6>
+
+<pre><code>/**
+ 模型数据方法的实现
+ */
+
++ (instancetype)messageWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>实用模型加载Plist文件</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            appsModel *model = [[appsModel alloc] init];
+            model.label = dic[@"label"];
+            model.btn = dic[@"btn"];
+            model.icon = dic[@"icon"];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载模型中对应的plist数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    appsModel *app = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+     */
+    icon.image = [UIImage imageNamed:app.icon];
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = app.label;
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:app.btn forState:UIControlStateNormal];
+    [view addSubview:btn];
+</code></pre>
+
+<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+{
+self = [super init];
+if (self) {
+    self.label = dict[@"label"];
+    self.btn = dict[@"btn"];
+    self.icon = dict[@"icon"];
+
+//[self setValue:dict[@"label"] forKeyPath:@"label"];
+
+    //封装
+    [self setValuesForKeysWithDictionary:dict];
+}
+
+return self;
+}
+</code></pre>
+
+<p>/<em>*
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ </em>/</p>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+//            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
+
+<p>在模型中定义并且实现一个模型封装的方法</p>
+
+<pre><code>+(NSArray *)appList
+{
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+    }
+    return arrayApps;
+
+}
+</code></pre>
+
+<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+
+        _apps = [appsModel appList];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h2>三：复杂Plist转模型</h2>
+
+<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
+
+<p>比如Plist中海油一个friends这歌子模型</p>
+
+<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
+
+<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
+
+<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
+
+<pre><code>/**
+ 根据plist里面存在的子列中的数据再创建一个模型数据
+ */
+
+/**
+ 设置子模型数据的属性
+ */
+
+@property (nonatomic, assign) NSString *icon;
+
+@property (nonatomic, assign) NSString *intro;
+
+@property (nonatomic, assign) NSString *name;
+
+@property (nonatomic, assign, getter=isVip)BOOL vip;
+
+
+/**
+ 子模型数据的方法
+ */
++ (instancetype)friendWithDict:(NSDictionary *)dict;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>子模型的实现</h6>
+
+<pre><code>/**
+ 子模型数据的方法de实现
+ */
+
++ (instancetype)friendWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>然后就是根模型</h6>
+
+<pre><code>/**
+ 根据plist中的数据创建一个模型数据
+ */
+
+/**
+ 设置模型数据的中的属性
+ */
+
+@property (nonatomic, assign) NSArray *friends;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSNumber *online;
+
+/**
+ 模型数据的方法
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict;
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
+
+<pre><code>/**
+ 模型数据的方法的实现
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+
+        NSMutableArray *friendArray = [NSMutableArray array];
+        for (NSDictionary *dict in self.friends) {
+            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
+            [friendArray addObject:friend];
+        }
+        self.friends = friendArray;
+    }
+    return self;
+}
+</code></pre>
+
+<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
+
+<pre><code>/**
+ 加载模型数据的方法
+ */
+
+- (NSArray *)groups
+{
+    if (_groups == nil) {
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
+
+        NSMutableArray *groupArray = [NSMutableArray array];
+        for (NSDictionary *dict in dictArray) {
+            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
+            [groupArray addObject:group];
+        }
+
+        _groups = groupArray;
+    }
+    return _groups;
+}
+</code></pre>
+
+<h2>四：使用第三份库</h2>
+
+<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
+
+<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
+
+<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
+
+<p>下载好了之后直接讲MJExtension拖到你的项目</p>
+
+<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
+
+<h6>首先根据plist数据新建对应的模型数据</h6>
+
+<p>这里我一新浪微博中的小部分做测试</p>
+
+<pre><code>#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  微博文本内容
+ */
+@property (copy, nonatomic) NSString *text;
+
+/**
+ *  微博作者
+ */
+@property (strong, nonatomic) User *user;
+
+/**
+ *  转发的微博
+ */
+@property (strong, nonatomic) Status *retweetedStatus;
+/**
+ *  存放着某一页微博数据（里面都是Status模型）
+ */
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+/**
+ *  总数
+ */
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+/**
+ *  上一页的游标
+ */
+@property (assign, nonatomic) long long previousCursor;
+
+/**
+ *  下一页的游标
+ */
+@property (assign, nonatomic) long long nextCursor;
+/**
+ *  名称
+ */
+@property (copy, nonatomic) NSString *name;
+
+/**
+ *  头像
+ */
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
+
+<pre><code>/**
+ MJ友情提醒：
+ 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
+ 2.MJExtension能完成的功能
+ * 字典 --&gt; 模型
+ * 模型 --&gt; 字典
+ * 字典数组 --&gt; 模型数组
+ * 模型数组 --&gt; 字典数组
+ 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
+ 4.希望各位大神能用得爽
+ */
+
+#import &lt;Foundation/Foundation.h&gt;
+#import "MJExtension.h"
+#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  简单的字典 -&gt; 模型
+ */
+void keyValues2object()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"name" : @"Jack",
+                           @"icon" : @"lufy.png",
+                           };
+
+    // 2.将字典转为User模型
+    User *user = [User objectWithKeyValues:dict];
+
+    // 3.打印User模型的属性
+    NSLog(@"name=%@, icon=%@", user.name, user.icon);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+ */
+void keyValues2object2()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"text" : @"是啊，今天天气确实不错！",
+
+                           @"user" : @{
+                                   @"name" : @"Jack",
+                                   @"icon" : @"lufy.png"
+                                   },
+
+                           @"retweetedStatus" : @{
+                                   @"text" : @"今天天气真不错！",
+
+                                   @"user" : @{
+                                           @"name" : @"Rose",
+                                           @"icon" : @"nami.png"
+                                           }
+                                   }
+                           };
+
+    // 2.将字典转为Status模型
+    Status *status = [Status objectWithKeyValues:dict];
+
+    // 3.打印status的属性
+    NSString *text = status.text;
+    NSString *name = status.user.name;
+    NSString *icon = status.user.icon;
+    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+    // 4.打印status.retweetedStatus的属性
+    NSString *text2 = status.retweetedStatus.text;
+    NSString *name2 = status.retweetedStatus.user.name;
+    NSString *icon2 = status.retweetedStatus.user.icon;
+    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+ */
+void keyValues2object3()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"statuses" : @[
+                                   @{
+                                       @"text" : @"今天天气真不错！",
+
+                                       @"user" : @{
+                                               @"name" : @"Rose",
+                                               @"icon" : @"nami.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"明天去旅游了",
+
+                                       @"user" : @{
+                                               @"name" : @"Jack",
+                                               @"icon" : @"lufy.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"嘿嘿，这东西不错哦！",
+
+                                       @"user" : @{
+                                               @"name" : @"Jim",
+                                               @"icon" : @"zero.png"
+                                               }
+                                       }
+
+                                   ],
+
+                           @"totalNumber" : @"2014",
+
+                           @"previousCursor" : @"13476589",
+
+                           @"nextCursor" : @"13476599"
+                           };
+
+    // 2.将字典转为StatusResult模型
+    StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+    // 3.打印StatusResult模型的简单属性
+    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+    // 4.打印statuses数组中的模型属性
+    for (Status *status in result.statuses) {
+        NSString *text = status.text;
+        NSString *name = status.user.name;
+        NSString *icon = status.user.icon;
+        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+    }
+}
+
+/**
+ *  字典数组 -&gt; 模型数组
+ */
+void keyValuesArray2objectArray()
+{
+    // 1.定义一个字典数组
+    NSArray *dictArray = @[
+                           @{
+                               @"name" : @"Jack",
+                               @"icon" : @"lufy.png",
+                               },
+
+                           @{
+                               @"name" : @"Rose",
+                               @"icon" : @"nami.png",
+                               },
+
+                           @{
+                               @"name" : @"Jim",
+                               @"icon" : @"zero.png",
+                               }
+                           ];
+
+    // 2.将字典数组转为User模型数组
+    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+    // 3.打印userArray数组中的User模型属性
+    for (User *user in userArray) {
+        NSLog(@"name=%@, icon=%@", user.name, user.icon);
+    }
+}
+
+/**
+ *  模型 -&gt; 字典
+ */
+void object2keyValues()
+{
+    // 1.新建模型
+    User *user = [[User alloc] init];
+    user.name = @"Jack";
+    user.icon = @"lufy.png";
+
+    Status *status = [[Status alloc] init];
+    status.user = user;
+    status.text = @"今天的心情不错！";
+
+    // 2.将模型转为字典
+    //    NSDictionary *dict = [status keyValues];
+    NSDictionary *dict = status.keyValues;
+    NSLog(@"%@", dict);
+}
+
+/**
+ *  模型数组 -&gt; 字典数组
+ */
+void objectArray2keyValuesArray()
+{
+    // 1.新建模型数组
+    User *user1 = [[User alloc] init];
+    user1.name = @"Jack";
+    user1.icon = @"lufy.png";
+
+    User *user2 = [[User alloc] init];
+    user2.name = @"Rose";
+    user2.icon = @"nami.png";
+
+    User *user3 = [[User alloc] init];
+    user3.name = @"Jim";
+    user3.icon = @"zero.png";
+
+    NSArray *userArray = @[user1, user2, user3];
+
+    // 2.将模型数组转为字典数组
+    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+    NSLog(@"%@", dictArray);
+}
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        // 简单的字典 -&gt; 模型
+        keyValues2object();
+
+        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+        keyValues2object2();
+
+        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+        keyValues2object3();
+
+        // 字典数组 -&gt; 模型数组
+        keyValuesArray2objectArray();
+
+        // 模型转字典
+        object2keyValues();
+
+        // 模型数组 -&gt; 字典数组
+        objectArray2keyValuesArray();
+    }
+    return 0;
+}
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/30/iossheng-ming-zhou-qi/">iOS生命周期</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>控制器（View）生命周期</h3>
+
+<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
+
+<pre><code>1、 alloc                                   创建对象，分配空间
+2、init (initWithNibName) 初始化对象，初始化数据
+3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
+4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
+5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
+6、viewDidAppear               视图已在屏幕上渲染完成
+</code></pre>
+
+<p>当一个视图被移除屏幕并且销毁的时候的执行顺序，这个顺序差不多和上面的相反</p>
+
+<pre><code>1、viewWillDisappear            视图将被从屏幕上移除之前执行
+2、viewDidDisappear             视图已经被从屏幕上移除，用户看不到这个视图了
+3、dealloc                                 视图被销毁，此处需要对你在init和viewDidLoad中创建的对象进行释放
+</code></pre>
+
+<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
+
+<h3>app的启动过程</h3>
+
+<pre><code>1.先执行main函数，main内部会调用UIApplicationMain函数
+
+2.UIApplicationMain函数里面做了什么事情：
+
+    1&gt; 创建UIApplication对象
+    2&gt; 创建UIApplication的delegate对象—–PYAppDelegate
+    3&gt; 开启一个消息循环
+
+每监听到对应的系统事件时，就会通知MJAppDelegate
+
+根据plist文件判断是否需要加载storyBoard
+</code></pre>
+
+<p>如果有storyBoard</p>
+
+<pre><code>加载Info.plist文件，读取最主要storyboard文件的名称
+
+加载最主要的storyboard文件，创建白色箭头所指的控制器对象
+
+并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
+
+初始化对应的子控件
+</code></pre>
+
+<p>如果没有storyBoard</p>
+
+<pre><code>在代理的difinishLuaunchWithOPtions中为应用程序创建一个UIWindow对象(继承自UIView)，设置为PYAppDelegate的window属性
+
+并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
+
+初始化对应的子控件
+</code></pre>
+
+<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
+
+<h3>App的生命周期</h3>
+
+<p>这里只是简单的总结，关于有些方法我们并没有解除过，所以就略过了。</p>
+
+<pre><code> 1、application didFinishLaunchingWithOptions：当应用程序启动时执行，应用程序启动入口，只在应用程序启动时执行一次。若用户直接启动，lauchOptions内无数据,若通过其他方式启动应用，lauchOptions包含对应方式的内容。
+ 2、applicationWillResignActive：在应用程序将要由活动状态切换到非活动状态时候，要执行的委托调用，如 按下 home 按钮，返回主屏幕，或全屏之间切换应用程序等。
+
+ 3、applicationDidEnterBackground：在应用程序已进入后台程序时，要执行的委托调用。
+
+ 4、applicationWillEnterForeground：在应用程序将要进入前台时(被激活)，要执行的委托调用，刚好与applicationWillResignActive 方法相对应。
+
+ 5、applicationDidBecomeActive：在应用程序已被激活后，要执行的委托调用，刚好与applicationDidEnterBackground 方法相对应。
+
+ 6、applicationWillTerminate：在应用程序要完全推出的时候，要执行的委托调用，这个需要要设置UIApplicationExitsOnSuspend的键值。
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/11/30/iossheng-ming-zhou-qi/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1782,1081 +2989,6 @@ Search Documentation for Selected  Text：详细帮 助，直接在文档里找�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/08/nian-tie-shen-jiu/">粘贴深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
-
-<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
-
-<ul>
-<li>1、UITextView</li>
-<li>2、UITextField</li>
-<li>3、UIWebView</li>
-</ul>
-
-
-<h3>二、UIKit framework提供了几个类和协议方便我们在自己的应用程序中实现剪贴板的功能。</h3>
-
-<ul>
-<li>1、UIPasteboard：我们可以向其中写入数据，也可以读取数据</li>
-<li>2、UIMenuController：显示一个快捷菜单，用来复制、剪贴、粘贴选择的项。</li>
-<li>3、UIResponder中的 canPerformAction:withSender:用于控制哪些命令显示在快捷菜单中。</li>
-<li>4、当快捷菜单上的命令点击的时候，UIResponderStandardEditActions将会被调用。</li>
-</ul>
-
-
-<h3>三、下面这些项能被放置到剪贴板中</h3>
-
-<ul>
-<li>1、UIPasteboardTypeListString —  字符串数组, 包含kUTTypeUTF8PlainText</li>
-<li>2、UIPasteboardTypeListURL —   URL数组，包含kUTTypeURL</li>
-<li>3、UIPasteboardTypeListImage —   图形数组, 包含kUTTypePNG 和kUTTypeJPEG</li>
-<li>4、UIPasteboardTypeListColor —   颜色数组</li>
-</ul>
-
-
-<h3>四、剪贴板的类型分为两种：</h3>
-
-<p>系统级：使用UIPasteboardNameGeneral和UIPasteboardNameFind创建，系统级的剪贴板，当应用程序关闭，或者卸载时，数据都不会丢失。
-应用程序级：通过设置，可以让数据在应用程序关闭之后仍然保存在剪贴板中，但是应用程序卸载之后数据就会失去。我们可用通过pasteboardWithName:create：来创建。</p>
-
-<p>了解这些之后，下面通过一系列的例子来说明如何在应用程序中使用剪贴板。</p>
-
-<p>例子：</p>
-
-<h5>1、复制剪贴文本。</h5>
-
-<pre><code>下面通过一个例子，可以在tableview上显示一个快捷菜单，上面只有复制按钮，复制tableview上的数据之后，然后粘贴到title上。
-</code></pre>
-
-<p>定义一个单元格类CopyTableViewCell，在这个类的上显示快捷菜单，实现复制功能。</p>
-
-<pre><code>@interface CopyTableViewCell : UITableViewCell {
-    id delegate;
-}
-@property (nonatomic, retain) id delegate;
-@end
-</code></pre>
-
-<p>实现CopyTableViewCell ：</p>
-
-<pre><code>#import "CopyTableViewCell.h"
-
-@implementation CopyTableViewCell
-
-@synthesize delegate;
-
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])) {
-    }
-    return self;
-}
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
-}
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-    [[self delegate] performSelector:@selector(showMenu:)
-                          withObject:self afterDelay:0.9f];
-
-    [super setHighlighted:highlighted animated:animated];
-
-}
-- (BOOL)canBecomeFirstResponder
-{
-    return YES;
-}
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
-    if (action == @selector(cut:)){
-        return NO;
-    }
-    else if(action == @selector(copy:)){
-        return YES;
-    }
-    else if(action == @selector(paste:)){
-        return NO;
-    }
-    else if(action == @selector(select:)){
-        return NO;
-    }
-    else if(action == @selector(selectAll:)){
-        return NO;
-    }
-    else
-    {
-        return [super canPerformAction:action withSender:sender];
-    }
-}
-- (void)copy:(id)sender {
-    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-    [pasteboard setString:[[self textLabel]text]];
-}
-- (void)dealloc {
-    [super dealloc];
-}
-@end
-</code></pre>
-
-<p>复制代码
-定义CopyPasteTextController，实现粘贴功能。
-    @interface CopyPasteTextController : UIViewController<UITableViewDelegate> {
-        //用来标识是否显示快捷菜单
-        BOOL menuVisible;
-        UITableView *tableView;
-    }</p>
-
-<pre><code>@property (nonatomic, getter=isMenuVisible) BOOL menuVisible;
-
-@property (nonatomic, retain) IBOutlet UITableView *tableView;
-@end
-</code></pre>
-
-<p>实现CopyPasteTextController ：</p>
-
-<pre><code>#import "CopyPasteTextController.h"
-#import "CopyTableViewCell.h"
-
-@implementation CopyPasteTextController
-@synthesize menuVisible,tableView;
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    [self setTitle:@"文字复制粘贴"];
-    //点击这个按钮将剪贴板的内容粘贴到title上
-    UIBarButtonItem *addButton = [[[UIBarButtonItem alloc]
-                                      initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
-                                      target:self
-                                      action:@selector(readFromPasteboard:)]
-                                     autorelease];
-    [[self navigationItem] setRightBarButtonItem:addButton];
-}
-
-
-// Customize the number of sections in the table view.
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return 9;
-}
-
-// Customize the appearance of table view cells.
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString *CellIdentifier =@"Cell";
-    CopyTableViewCell *cell = (CopyTableViewCell *)[tableView
-                                                           dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil)
-    {
-        cell = [[[CopyTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-        [cell setDelegate:self];
-    }
-
-    // Configure the cell.
-    NSString *text = [NSString stringWithFormat:@"Row %d", [indexPath row]];
-    [[cell textLabel] setText:text];
-    return cell;
-}
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if([self isMenuVisible])
-    {
-        return;
-    }
-    [[[self tableView] cellForRowAtIndexPath:indexPath] setSelected:YES
-                                                           animated:YES];
-}
-//显示菜单
-- (void)showMenu:(id)cell {
-    if ([cell isHighlighted]) {
-        [cell becomeFirstResponder];
-
-        UIMenuController * menu = [UIMenuController sharedMenuController];
-        [menu setTargetRect: [cell frame] inView: [self view]];
-        [menu setMenuVisible: YES animated: YES];
-    }
-}
-- (void)readFromPasteboard:(id)sender {
-    [self setTitle:[NSString stringWithFormat:@"Pasteboard = %@",
-                      [[UIPasteboard generalPasteboard] string]]];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-
-    // Relinquish ownership any cached data, images, etc that aren't in use.
-}
-
-- (void)viewDidUnload
-{
-    [super viewDidUnload];
-    [self.tableView release];
-
-    // Relinquish ownership of anything that can be recreated in viewDidLoad or on demand.
-    // For example: self.myOutlet = nil;
-}
-</code></pre>
-
-<p>复制一行数据：
-点击右上角的按钮粘贴，将数据显示在title上：</p>
-
-<h6>2、图片复制粘贴</h6>
-
-<p>   下面通过一个例子，将图片复制和剪贴到另外一个UIImageView中间。</p>
-
-<ul>
-<li>1、在界面上放置两个uiimageview，一个是图片的数据源，一个是将图片粘贴到的地方。CopyPasteImageViewController 代码如下：</li>
-</ul>
-
-
-<p>@interface CopyPasteImageViewController : UIViewController {
-    UIImageView <em>imageView;
-    UIImageView </em>pasteView;
-    UIImageView <em>selectedView;
-}
-@property (nonatomic, retain) IBOutlet UIImageView </em>imageView;
-@property (nonatomic, retain) IBOutlet UIImageView <em>pasteView;
-@property (nonatomic, retain) UIImageView </em>selectedView;
-- (void)placeImageOnPasteboard:(id)view;
-@end
-* 2、当触摸图片的时候我们显示快捷菜单：</p>
-
-<hr />
-
-<pre><code>- (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-    NSSet *copyTouches = [event touchesForView:imageView];
-    NSSet *pasteTouches = [event touchesForView:pasteView];
-
-    [self becomeFirstResponder];
-    if ([copyTouches count] &gt; 0) {
-        [self performSelector:@selector(showMenu:)
-                   withObject:imageView afterDelay:0.9f];
-    }
-    else  if([pasteTouches count] &gt; 0) {
-        [self performSelector:@selector(showMenu:)
-                   withObject:pasteView afterDelay:0.9f];
-    }
-    [super touchesBegan:touches withEvent:event];
-}
-
-- (void)showMenu:(id)view {
-    [self setSelectedView:view];
-
-    UIMenuController * menu = [UIMenuController sharedMenuController];
-    [menu setTargetRect: CGRectMake(5, 10, 1, 1) inView: view];
-    [menu setMenuVisible: YES animated: YES];
-}
-</code></pre>
-
-<p>这里的快捷菜单，显示三个菜单项：剪贴、粘贴、复制：</p>
-
-<hr />
-
-<pre><code>- (BOOL)canPerformAction:(SEL)action withSender:(id)sender{
-    if (action == @selector(cut:)) {
-        return ([self selectedView] == imageView) ? YES : NO;
-    } else if (action == @selector(copy:)) {
-        return ([self selectedView] == imageView) ? YES : NO;
-    } else if (action == @selector(paste:)) {
-        return ([self selectedView] == pasteView) ? YES : NO;
-    } else if (action == @selector(select:)) {
-        return NO;
-    } else if (action == @selector(selectAll:)) {
-        return NO;
-    } else {
-        return [super canPerformAction:action withSender:sender];
-    }
-}
-- (void)cut:(id)sender {
-    [self copy:sender];
-    [imageView setHidden:YES];
-}
-- (void)copy:(id)sender {
-    [self placeImageOnPasteboard:[self imageView]];
-}
-- (void)paste:(id)sender {
-    UIPasteboard *appPasteBoard =
-    [UIPasteboard pasteboardWithName:@"CopyPasteImage" create:YES];
-    NSData *data =[appPasteBoard dataForPasteboardType:@"com.marizack.CopyPasteImage.imageView"];
-    pasteView.image = [UIImage imageWithData:data];
-}
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/08/nian-tie-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/08/nian-tie-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/">常用关键字总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<thead>
-<tr>
-<th> Name  </th>
-<th style="text-align:center;"> Typedef</th>
-<th style="text-align:right;">  Header</th>
-<th>     True Value  </th>
-<th> False Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> BOOL</td>
-<td style="text-align:center;">     signed char objc.h</td>
-<td style="text-align:right;">     YES</td>
-<td>    NO</td>
-<td></td>
-</tr>
-<tr>
-<td> bool  </td>
-<td style="text-align:center;"> _Bool (int)   </td>
-<td style="text-align:right;"> stdbool.h true    </td>
-<td> false</td>
-<td></td>
-</tr>
-<tr>
-<td> Boolean</td>
-<td style="text-align:center;">  unsigned char</td>
-<td style="text-align:right;">  MacTypes.h  TRUE    </td>
-<td> FALSE</td>
-<td></td>
-</tr>
-<tr>
-<td> NSNumber</td>
-<td style="text-align:center;">     __NSCFBoolean</td>
-<td style="text-align:right;">  Foundation.h    </td>
-<td> @(YES)</td>
-<td>   @(NO)</td>
-</tr>
-<tr>
-<td> CFBooleanRef</td>
-<td style="text-align:center;">     struct</td>
-<td style="text-align:right;">     CoreFoundation.h    </td>
-<td> kCFBooleanTrue</td>
-<td>   kCFBooleanFalse</td>
-</tr>
-</tbody>
-</table>
-
-
-<table>
-<thead>
-<tr>
-<th> 标志    </th>
-<th style="text-align:center;"> 值</th>
-<th style="text-align:right;">  含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> NULL</td>
-<td style="text-align:center;">     (void *)0   </td>
-<td style="text-align:right;"> C指针的字面零值</td>
-</tr>
-<tr>
-<td> nil   </td>
-<td style="text-align:center;"> (id)0 </td>
-<td style="text-align:right;"> Objective-C对象的字面零值</td>
-</tr>
-<tr>
-<td> Nil   </td>
-<td style="text-align:center;"> (Class)0  </td>
-<td style="text-align:right;"> Objective-C类的字面零值</td>
-</tr>
-<tr>
-<td> NSNull    </td>
-<td style="text-align:center;"> [NSNull null] </td>
-<td style="text-align:right;"> 用来表示零值的单独的对象</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/10/metal/">Metal深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
-
-<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
-
-<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
-
-<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
-
-<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
-
-<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
-
-<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
-
-<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
-</code></pre>
-
-<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
-
-<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
-
-<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
-
-<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
-
-<p>但是，还是有两个很好的原因来学习Metal：</p>
-
-<ul>
-<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
-<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
-</ul>
-
-
-<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
-
-<h4>Metal vs OpenGL ES</h4>
-
-<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
-
-<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
-
-<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
-
-<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
-
-<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
-
-<p>让我们开始看看一些Metal代码吧！</p>
-
-<p>开头
-Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
-
-<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
-
-<p>有七个步骤来设置metal：</p>
-
-<ul>
-<li>1.创建一个MTLDevice</li>
-<li>2.创建一个CAMetalLayer</li>
-<li>3.创建一个Vertex Buffer</li>
-<li>4.创建一个Vertex Shader</li>
-<li>5.创建一个Fragment Shader</li>
-<li>6.创建一个Render Pipeline</li>
-<li>7.创建一个Command Queue</li>
-</ul>
-
-
-<p>让我们一个个看它们。</p>
-
-<h5>1)创建一个MTLDevice</h5>
-
-<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
-
-<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
-
-<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
-
-<pre><code>import Metal 
-</code></pre>
-
-<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
-
-<pre><code>var device: MTLDevice! = nil 
-</code></pre>
-
-<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
-
-<pre><code>device = MTLCreateSystemDefaultDevice() 
-</code></pre>
-
-<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
-
-<h5>2）创建一个CAMetalLayer</h5>
-
-<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
-
-<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
-
-<p>首先在这个文件的上方添加import语句。</p>
-
-<pre><code>import QuartzCore 
-</code></pre>
-
-<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
-
-<p>然后把新属性添加到类中：</p>
-
-<pre><code>var metalLayer: CAMetalLayer! = nil 
-</code></pre>
-
-<p>这将会存储你新layer的引用。</p>
-
-<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
-
-<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
- 2 
- 3 metalLayer.device = device           // 2 
- 4 
- 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
- 6 
- 7 metalLayer.framebufferOnly = true    // 4 
- 8 
- 9 metalLayer.frame = view.layer.frame  // 5 
-10 
-11 view.layer.addSublayer(metalLayer)   // 6 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.你创建了一个CAMetalLayer</li>
-<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
-<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
-<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
-<li>e.你把layer的frame设置为view的frame。</li>
-<li>f.你把layer作为view.layer下的子layer添加。</li>
-</ul>
-
-
-<h5>3）创建一个Vertex Buffer</h5>
-
-<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
-
-<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
-
-<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
-
-<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
-
-<pre><code>let vertexData:[Float] = [ 
-  0.0, 1.0, 0.0, 
-  -1.0, -1.0, 0.0, 
-  1.0, -1.0, 0.0] 
-</code></pre>
-
-<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
-
-<p>添加另一个新的属性：</p>
-
-<pre><code>var vertexBuffer: MTLBuffer! = nil 
-然后在 viewDidLoad 方法的最后添加以下代码：
-let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
-vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
-<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
-</ul>
-
-
-<h5>4）创建一个Vertex Shader</h5>
-
-<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
-
-<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
-
-<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
-
-<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
-
-<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
-
-<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
-在Shaders.metal底部添加下列代码：</p>
-
-<pre><code>metalLayer = CAMetalLayer()          // 1 
-
-metalLayer.device = device           // 2 
-
-metalLayer.pixelFormat = .BGRA8Unorm // 3 
-
-metalLayer.framebufferOnly = true    // 4 
-
-metalLayer.frame = view.layer.frame  // 5 
-
-view.layer.addSublayer(metalLayer)   // 6
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
-<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
-<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
-<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
-</ul>
-
-
-<h5>5）创建一个Fragment Shader</h5>
-
-<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
-
-<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
-
-<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
-
-<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
-
-<p>在Shader.metal的底部添加下列代码：</p>
-
-<pre><code>1 fragment half4 basic_fragment() { // 1 
-2 
-3 return half4(1.0);              // 2 
-4 
-5 } 
-</code></pre>
-
-<p>让我们一行行来看：</p>
-
-<ul>
-<li><ol type="a">
-<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
-</ol>
-</li>
-</ul>
-
-
-<h5>6）创建一个Render Pipeline</h5>
-
-<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
-
-<ol>
-<li><p>首先在ViewController.swift里添加一个属性：
-var pipelineState: MTLRenderPipelineState! = nil
-这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
-<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
-</ol>
-
-
-<p>// 1</p>
-
-<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
-2 
-3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
-4 
-5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
-</code></pre>
-
-<p>// 2</p>
-
-<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
-
-pipelineStateDescriptor.vertexFunction = vertexProgram 
-
-pipelineStateDescriptor.fragmentFunction = fragmentProgram 
-
-pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
-</code></pre>
-
-<p>//3</p>
-
-<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
-
-if !pipelineState { 
-
-  println("Failed to create pipeline state, error \(pipelineError)") 
-
-}
-</code></pre>
-
-<p>让我们分部分看这些代码：</p>
-
-<ul>
-<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
-<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
-<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
-</ul>
-
-
-<h5>7）创建一个Command Queue</h5>
-
-<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
-
-<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
-
-<p>要创建一个command queue，简单地添加一个属性：</p>
-
-<pre><code>var commandQueue: MTLCommandQueue! = nil 
-</code></pre>
-
-<p>把下面这行添加到 viewDidLoad 的最后：</p>
-
-<pre><code>commandQueue = device.newCommandQueue() 
-</code></pre>
-
-<p>恭喜，你的预设置的代码完成了。</p>
-
-<p>渲染三角形
-现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
-
-<p>它将在五个步骤中被完成：</p>
-
-<ul>
-<li>1.创建一个Display link。</li>
-<li>2.创建一个Render Pass Descriptor</li>
-<li>3.创建一个Command Buffer</li>
-<li>4.创建一个Render Command Encoder</li>
-<li>5.提交你Command Buffer的内容。</li>
-</ul>
-
-
-<p>让我们深入来看！</p>
-
-<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
-
-<h6>1）创建一个Display Link</h6>
-
-<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
-
-<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
-
-<p>为了使用它，在类里添加一个新的属性：</p>
-
-<pre><code> 1 var timer: CADisplayLink! = nil  
-</code></pre>
-
-<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
-
-<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
-
-timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
-</code></pre>
-
-<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
-
-<pre><code>func render() { 
-
-// TODO 
-
-} 
-
-func gameloop() { 
-  autoreleasepool { 
-
-    self.render() 
-
-  } 
-
-} 
-</code></pre>
-
-<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
-
-<h6>2）创建一个Render Pass Descriptor</h6>
-
-<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
-
-<p>简单地在 render 函数里添加以下行：</p>
-
-<pre><code>var drawable = metalLayer.nextDrawable() 
-
-let renderPassDescriptor = MTLRenderPassDescriptor() 
-renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
-
-renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
-
-renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
-</code></pre>
-
-<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
-
-<h6>3）创建一个Command Buffer</h6>
-
-<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
-
-<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
-</code></pre>
-
-<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
-
-<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
-
-<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
-
-<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
-renderEncoder.setRenderPipelineState(pipelineState) 
-
-renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
-
-renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
-
-renderEncoder.endEncoding()
-</code></pre>
-
-<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
-
-<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
-
-<p>当你完成后，你只要调用 endEncoding()。</p>
-
-<h6>5）提交你的Command Buffer</h6>
-
-<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
-
-<pre><code>commandBuffer.presentDrawable(drawable)
-commandBuffer.commit()
-</code></pre>
-
-<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
-
-<p>我见过最赞的三角形！</p>
-
-<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
-
-<p>最后:这是我们教程最终的项目。</p></blockquote>
-
-<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
-</code></pre>
-
-<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/10/10/metal/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/06/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>前言</p>
-
-<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
-
-<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
-
-<h5>一、自定义导航控制器</h5>
-
-<p>目的：以后需要使用全屏滑动返回功能，就使用自己定义的导航控制器。</p>
-
-<h5>二、分析导航控制器侧滑功能</h5>
-
-<p>效果：导航控制器默认自带了侧滑功能，当用户在界面的左边滑动的时候，就会有侧滑功能。</p>
-
-<p>系统自带的侧滑效果：</p>
-
-<p>分析：</p>
-
-<ul>
-<li><p>1.导航控制器的view自带了滑动手势，只不过手势的触发范围只能在左边。</p></li>
-<li><p>2.当用户在界面左边拖动，就会触发滑动手势方法，并且有滑动返回功能，说明系统手势触发的方法已经实现了滑动返回功能。</p></li>
-<li><p>3.为什么说系统手势触发的方法已经实现了滑动返回功能？</p></li>
-</ul>
-
-
-<h3>原因：</h3>
-
-<p>创建滑动手势对象的时候，需要绑定监听者，当触发手势的时候会调用target的action。</p>
-
-<p>UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:action];
-当用户在界面左边滑动，有滑动返回功能，这是因为触发手势了，调用target的action方法，说明action方法内部实现滑动返回功能，否则就不会有滑动返回效果。</p>
-
-<h5>三、实现全屏滑动功能分析</h5>
-
-<p>打印导航控制器自带的滑动手势，看下它的真实面目。</p>
-
-<p>系统自带的滑动手势interactivePopGestureRecognizer</p>
-
-<pre><code>//  self指向的导航控制器，在导航控制器的viewDidLoad方法打印 
-- (void)viewDidLoad { 
-    [super viewDidLoad]; 
-    NSLog(@"%@",self.interactivePopGestureRecognizer); 
-} 
-</code></pre>
-
-<p>由图中可知：</p>
-
-<ul>
-<li><p>1.系统自带的手势是UIScreenEdgePanGestureRecognizer类型对象,屏幕边缘滑动手势</p></li>
-<li><p>2.系统自带手势target是_UINavigationInteractiveTransition类型的对象</p></li>
-<li><p>3.target调用的action方法名叫handleNavigationTransition:</p></li>
-</ul>
-
-
-<p>分析：</p>
-
-<p>UIScreenEdgePanGestureRecognizer，看名称就知道，这个手势的范围只能在屏幕的周边，就是因为这个手势，系统自带的滑动效果，只能实现侧边滑动。</p>
-
-<h5>四、如何实现全屏滑动功能</h5>
-
-<p>给自己的导航控制器，添加一个全屏的滑动手势，调用系统自带滑动手势的target的action方法，利用系统实现的滑动返回功能，加上自己全屏滑动手势，就有全屏滑动功能了。</p>
-
-<p>问题：如何拿到系统自带的target对象?，action方法名已经知道，而且系统肯定在target对象实现了，只要拿到target对象，调用这个方法就行。</p>
-
-<p>通过打印系统自带的滑动手势的代理，发现正好是_UINavigationInteractiveTransition对象，因此我猜测这个代理对象就是target对象,只要拿到它，就拿到系统自带滑动手势的target对象。</p>
-
-<pre><code>// 打印系统自带滑动手势的代理对象 
-SLog(@"%@",self.interactivePopGestureRecognizer.delegate); 
-</code></pre>
-
-<p>导航控制器全屏滑动注意点:</p>
-
-<ul>
-<li><p>1.禁止系统自带滑动手势使用。</p></li>
-<li><p>2.只有导航控制器的非根控制器才需要触发手势，使用手势代理，控制手势触发。</p></li>
-</ul>
-
-
-<p>全屏滑动代码实现</p>
-
-<pre><code>- (void)viewDidLoad { 
-    [super viewDidLoad]; 
-    // 获取系统自带滑动手势的target对象 
-    id target = self.interactivePopGestureRecognizer.delegate; 
-    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法 
-    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)]; 
-    // 设置手势代理，拦截手势触发 
-    pan.delegate = self; 
-    // 给导航控制器的view添加全屏滑动手势 
-    [self.view addGestureRecognizer:pan]; 
-    // 禁止使用系统自带的滑动手势 
-    self.interactivePopGestureRecognizer.enabled = NO; 
-} 
-// 什么时候调用：每次触发手势之前都会询问下代理，是否触发。 
-// 作用：拦截手势触发 
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer 
-{ 
-    // 注意：只有非根控制器才有滑动返回功能，根控制器没有。 
-    // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器 
-    if (self.childViewControllers.count == 1) { 
-        // 表示用户在根控制器界面，就不需要触发滑动手势， 
-        return NO; 
-    } 
-    return YES; 
-} 
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/10/06/quan-ping-fan-hui-(runtime)/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -2879,7 +3011,7 @@ SLog(@"%@",self.interactivePopGestureRecognizer.delegate);
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
-<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (6)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
@@ -2892,23 +3024,23 @@ SLog(@"%@",self.interactivePopGestureRecognizer.delegate);
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
   </ul>

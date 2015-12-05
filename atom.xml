@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-05T14:30:11+08:00</updated>
+  <updated>2015-12-05T22:17:57+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,760 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[爬虫必备-java抓包]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/11/java/"/>
+    <updated>2015-12-11T12:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/11/java</id>
+    <content type="html"><![CDATA[<p>前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包</p>
+
+<p>java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包，还能根据自己的喜好选择对应的方式！</p>
+
+<p>我们开始吧！</p>
+
+<p>前提：熟悉java语法（能看懂就行）</p>
+
+<ul>
+<li>准备阶段：从网页中获取html代码</li>
+<li>实战阶段：将对应的html代码使用java语言解析出来，最后保存到plist文件</li>
+</ul>
+
+
+<h2>一:准备阶段－－》获取html代码</h2>
+
+<h6>1:打开你对应想要获取数据的网页，使用firefox打开（因为他有一个自带的神器叫：firebug，关于firebug这里就多说了，反正对于网页开发来说她就是神器），这里我们使用的是dota首页英雄的介绍。</h6>
+
+<p>首先来看看我们需要的数据</p>
+
+<p><img src="http://al1020119.github.io/images/ava001.png" title="Caption" ></p>
+
+<h6>2:由于在网页开发中也是分模块开发的，所以一定的区域在html中对应对应的html代码模块，所以我们选取界面中一个小的模块作为练习。</h6>
+
+<p>找到对应的模块，点击右键在firebug中查看元素</p>
+
+<p><img src="http://al1020119.github.io/images/ava002.png" title="Caption" ></p>
+
+<p>（确保已安装firebug，没有安装的去火狐工具栏中工具标签里面的一个附加组件搜索并下载安装就可以）</p>
+
+<p>这个时候网页的下面就会显示对应模块的html代码，我们需要找到我们想要获取的数据对应的html模块代码，点击右键拷贝我们需要的html。</p>
+
+<p> <img src="http://al1020119.github.io/images/ava003.png" title="Caption" ></p>
+
+<h6>3:在界面简一个html文件将拷贝好的html代码粘贴到文件中，然后就需要哪么一丢丢的html相关知识了，就是补充html中的数据，使他成为完整的html文件</h6>
+
+<p><img src="http://al1020119.github.io/images/ava004.png" title="Caption" ></p>
+
+<p>这里注意一下编码方式：开发中常用的都是utf－8的格式</p>
+
+<h2>二:实战阶段－－》抓取html（网页数据）</h2>
+
+<p>然后我们就要正式开工了，后面才是重点，前面那都是傻瓜是的操作（后面的才做中需要有那么一丢丢的java或者android开发的基础，当然不会耶没有关系，笔者会完整的介绍流程）</p>
+
+<h6>1:代开Eclipse</h6>
+
+<p><img src="http://al1020119.github.io/images/ava005.png" title="Caption" ></p>
+
+<p>新建一个java项目，并且点击项目中的src新建一个class专门用来实现数据的解析</p>
+
+<p><img src="http://al1020119.github.io/images/ava006.png" title="Caption" ></p>
+
+<h6>2:新建好项目之后就要用到我们的一个java的jar包，专门用来抓取网络数据的包：关于包的下载后面笔者会给出下载链接</h6>
+
+<p><img src="http://al1020119.github.io/images/ava007.png" title="Caption" ></p>
+
+<p>将下载好的jar包导入到java工程项目中。</p>
+
+<p>然后我们需要将他添加到build路径（这里是一个常识，java中的jar包没有添加到build路径是不能使用的，添加之后对应的咖啡图标会变成奶瓶）</p>
+
+<p><img src="http://al1020119.github.io/images/ava008.png" title="Caption" ></p>
+
+<p>成功之后的显示</p>
+
+<p><img src="http://al1020119.github.io/images/ava009.png" title="Caption" ></p>
+
+<p>下面开始使用java正式抓取并解析html（网页）数据</p>
+
+<p>根据下面的图片在java工程项目中书写html数据解析的代码：（注意里面的步骤）</p>
+
+<p><img src="http://al1020119.github.io/images/ava0010.png" title="Caption" ></p>
+
+<p>java核心代码：</p>
+
+<pre><code>try {
+
+　　　　　　//文件路径
+
+　　　　　　　　String path = " /Users/icocos/Desktop/iCocos.html";
+
+
+
+　　　　　　　　//加载网页
+
+　　　　　　　　Document doc = Jsoup.parse(new File(path), "UTF-8");
+
+
+
+　　　　　　　　//解析网页
+
+　　　　　　　　Elements lis = doc.select("li");
+
+
+
+　　　　　　　 //遍历数组
+
+　　　　　　　　for(int i = 0; i &lt; eles.size(); i++) {
+
+　　　　　　　　//根据i获取对应的元素
+
+　　　　　　　　Element li = lis.get(i);
+
+
+
+　　　　　　　　//取图片
+
+　　　　　　　　Element img = li.select("img").get(0);
+
+　　　　　　　　// System.out.println(img.attr("src"));
+
+
+
+　　　　　　　　//获取图片名
+
+　　　　　　　　String imgName = img.attr("src");
+
+
+
+　　　　　　　 Element p = li.select("p").get(0);
+
+　　　　　　　　String personName = p.text();
+
+
+
+　　　　　　　　//打印数据
+
+　　　　　　　　System.out.println(imgName + "," + personName);
+
+
+
+　　　　　　}
+
+　　　　　} catch {
+
+　　　　//错误（异常）处理
+
+　　　　e.printStackTrace();
+
+}
+</code></pre>
+
+<p>此时点击Run运行之后，Eclipse就会根据你的代码输出对应的信息</p>
+
+<p><img src="http://al1020119.github.io/images/ava011.png" title="Caption" ></p>
+
+<p>但是这个时候我并不能直接使用数据所以需要在java代码中做一些相应的修改，使得输出的数据可以直接拷贝并且读到plist中，其实就是数组或者字典数据</p>
+
+<p>我们知道在ios开发中从plist文件中读取数据时最常见的，当然你也可以使用其他方式，但是没有比这更简单了。</p>
+
+<p>下面我给java代码做一些调整</p>
+
+<p>1:在for循环之前输入这一行代码，实现数据拼接并且数据</p>
+
+<pre><code>System.out.println("NSArray *apps = @[");
+</code></pre>
+
+<p>2:接着就需要在for循环结束之后输入预知对应的拼接数组结尾标志</p>
+
+<pre><code>System.out.println("]");
+</code></pre>
+
+<p>3:在for循环内部的最后面我们需要在每次循环的时候都要使用上面的代码进行拼接并且使用逗号做相应的分割</p>
+
+<pre><code>System.out.println("@{@\"name\":@\"" + personName + "\", @\"icon\":@\""+ imgName + "\"},");
+</code></pre>
+
+<p>最后完整的java获取并且解析html数据如下；</p>
+
+<pre><code>public class iCocos {
+
+public static void main (String[] args) {
+
+　　　 try {
+
+　　　　　　//文件路径
+
+　　　　　　String path = " /Users/icocos/Desktop/iCocos.html";
+
+　　　　　　//加载网页
+　　　　　　Document doc = Jsoup.parse(new File(path), "UTF-8");
+
+　　　　　　//解析网页
+　　　　　　Elements lis = doc.select("li");
+
+　　　　　　System.out.println("NSArray *apps = @[");
+
+
+　　　　　　//遍历数组
+
+　　　　　　for(int i = 0; i &lt; eles.size(); i++) {
+
+　　　　　　//根据i获取对应的元素
+
+　　　　　　Element li = lis.get(i);
+
+
+　　　　　　//取图片
+
+　　　　　　Element img = li.select("img").get(0);
+
+　　　　　　// System.out.println(img.attr("src"));
+
+　　　　　　//获取图片名
+
+　　　　　　String imgName = img.attr("src");
+
+　　　　　　Element p = li.select("p").get(0);
+
+　　　　　　String personName = p.text();
+
+　　　　　　//打印数据
+　　　　　　// System.out.println(imgName + "," + personName);
+
+　　　　　　System.out.println("@{@\"name\":@\"" + personName + "\", @\"icon\":@\""+ imgName + "\"},");
+　　　　　　}
+　　　　　　System.out.println("]");
+
+　　　　} catch {
+
+　　　　　　//错误（异常）处理
+　　　　　　e.printStackTrace();
+
+　　　　}
+
+　　}
+
+}
+</code></pre>
+
+<p>这个时候回打印输出下面的代码，</p>
+
+<p><img src="http://al1020119.github.io/images/ava012.png" title="Caption" ></p>
+
+<p>下面我们就需要在xcode中做事情了，做什么事呢，就是将输出的以NSArray开头的所有数据在Xcode中转换为plist的数据，当然你也可以不转换，做少部分的修改之后直接使用JSON解析技术去解析，但是那样不是最好的办法。</p>
+
+<p>在Xcode中新建一个项目工程，在ViewDidLoad中粘贴拷贝过来的代码，这个时候是不是看起来非常熟悉，对了，她就是我吗开发中常用到的数组数据。</p>
+
+<p>下面我就使用循环遍历去讲NSArray数组数据写到plist文件中。</p>
+
+<pre><code>- (void)viewDidLoad
+
+{
+
+    [super viewDidLoad];
+
+
+
+    NSArray *apps = @[
+
+  @{@"name":@"敌法师", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/dfss.jpg"},
+
+  @{@"name":@"火枪", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/arjj.jpg"},
+
+  @{@"name":@"德鲁伊", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/dlyy.jpg"},
+
+  @{@"name":@"月骑", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yzqs.jpg"},
+
+  @{@"name":@"变体精灵", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/btjl.jpg"},
+
+  @{@"name":@"娜迦海妖", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/njhy.gif"},
+
+  @{@"name":@"猴子", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/hycm.jpg"},
+
+  @{@"name":@"白虎", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yzjs.jpg"},
+
+  @{@"name":@"隐形刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yxck.jpg"},
+
+  @{@"name":@"巨魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/jmzj.jpg"},
+
+  @{@"name":@"直升机", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/arzs.jpg"},
+
+  @{@"name":@"赏金猎人", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Naka.gif"},
+
+  @{@"name":@"骷髅射手", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/KLSS.gif"},
+
+  @{@"name":@"育母蜘蛛", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YMZZ.gif"},
+
+  @{@"name":@"血魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/XM.gif"},
+
+  @{@"name":@"黑暗游侠", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Nbrn.gif"},
+
+  @{@"name":@"虚空假面", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/EC45.gif"},
+
+  @{@"name":@"蛇发女妖", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/H00V.gif"},
+
+  @{@"name":@"地卜师", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/H00I.gif"},
+
+  @{@"name":@"地穴刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/DXCK.gif"},
+
+  @{@"name":@"蚂蚁", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/DXBZ.gif"},
+
+  @{@"name":@"幻影刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/HYCK.gif"},
+
+  @{@"name":@"闪电幽魂", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/E002.gif"},
+
+  @{@"name":@"影魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YM01.gif"},
+
+  @{@"name":@"小鱼人", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yryx.gif"},
+
+  @{@"name":@"幽鬼", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YG1.gif"},
+
+  @{@"name":@"圣堂刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/E01Y.gif"},
+
+  @{@"name":@"灵魂守卫", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/LHSW.gif"},
+
+  @{@"name":@"熊战士", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Huth.gif"},
+
+  @{@"name":@"剧毒术士", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/JDSS.gif"},
+
+  @{@"name":@"冥界亚龙", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/MJYL.gif"},
+
+  @{@"name":@"复仇之魂", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Hvwd.jpg"},
+
+  @{@"name":@"剑圣", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/jsjs.jpg"}
+
+  ];
+
+
+
+    [newApps writeToFile:@"/Users/icocos/Desktop/apps.plist" atomically:YES];
+</code></pre>
+
+<p>这个时候我吗的左面就有了这个plist文件，打开之后你会看到</p>
+
+<p><img src="http://al1020119.github.io/images/ava013.png" title="Caption" ></p>
+
+<p>最后的步骤就是图片的下载，</p>
+
+<pre><code>//简单写入
+
+//    for (NSDictionary *dict in apps) {
+
+//        NSString *icon = dict[@"icon"];
+
+//        
+
+//        // 新建网络图片的URL路径
+
+//        NSURL *url = [NSURL URLWithString:icon];
+
+//        
+
+//        // 下载图片的二进制数据
+
+//        NSData *data = [NSData dataWithContentsOfURL:url];
+
+//        
+
+//        // 截取文件名
+
+//        NSString *filename = [icon lastPathComponent];
+
+//        
+
+//        // 文件路径
+
+//        NSString *iconPath = [NSString stringWithFormat:@"/Users/icocos/Desktop/Icons/%@", filename];
+
+//        
+
+//        [data writeToFile:iconPath atomically:YES];
+
+//    }
+</code></pre>
+
+<p>由于plist中图片名使用的都是对应链接的最后一个名字，所以我们不能使用上面的方法，还需要做一些处理，才能真正使用</p>
+
+<pre><code>NSMutableArray *newApps = [NSMutableArray array];
+
+    for (NSDictionary *dict in apps) {
+
+        NSMutableDictionary *newDict = [NSMutableDictionary dictionary];
+
+        newDict[@"name"] = dict[@"name"];
+
+        newDict[@"icon"] = [dict[@"icon"] lastPathComponent];
+
+        [newApps addObject:newDict];
+
+    }
+
+
+
+    [newApps writeToFile:@"/Users/icocos/Desktop/apps.plist" atomically:YES];
+
+
+
+}
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ava014.png" title="Caption" ></p>
+
+<p>图片下载完成之后你会回看到对应的文件夹中快速的出现了好多的图片</p>
+
+<p><img src="http://al1020119.github.io/images/ava015.png" title="Caption" ></p>
+
+<p>此时我们就得到了一份和网页想相对应比较完整的plist数据，后面我们要做的就是将我们的plist数据显示到界面，后面我就不介绍了，详细请看：plist文件读取</p>
+
+<blockquote><p>最后总结一下，如果以后遇到了关于需要抓取网络数据实现网络爬虫的功能的时候，我们基本上想到的第一种方法就是使用java语言，当然公司一般不会有这样的要求，公司一般都是使用自己服务器的api来实现，特殊情况除外。</p></blockquote>
+
+<p>当然你也可以使用正则表达式或者Python，关于正则表达式相对来说还是比较难的，主要是细节比较多。而Python本人还没有研究过，有机会尝试一下，如果您还有什么好的方法欢迎笔者联系，相互学习与讨论。</p>
+
+<p>我们基本上可以按照上面的思路去实现，只需要做少部分的修改，这里大致说一下</p>
+
+<ul>
+<li>1:准备阶段根据你需要的数据会有不同的html产生</li>
+<li>2:产生不同的html之后你html内部的结构就会做响应的变化，这个时候你就要去把java那段核心代码搞懂来就没问题了，最重要的还是这里。</li>
+<li>3:根据对应的NSArray数据写入到plist文件中，这里是iOS开发中常用的技术我就不多说。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[爬虫必备-正则表达式]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/11/zhengze/"/>
+    <updated>2015-12-11T10:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/11/zhengze</id>
+    <content type="html"><![CDATA[<p>第一篇我们有介绍到使用青花瓷抓包，也提到了后面会介绍java和python实现，本篇就介绍一下怎么使用python抓取网络数据。</p>
+
+<p>先来看看网络爬虫的基本原理：</p>
+
+<p>一个通用的网络爬虫的框架如图所示：</p>
+
+<p><img src="http://al1020119.github.io/images/zhengze001.png" title="Caption" ></p>
+
+<h5>网络爬虫的基本工作流程如下：</h5>
+
+<ol>
+<li><p>首先选取一部分精心挑选的种子URL；</p></li>
+<li><p>将这些URL放入待抓取URL队列；</p></li>
+<li><p>从待抓取URL队列中取出待抓取在URL，解析DNS，并且得到主机的ip，并将URL对应的网页下载下来，存储进已下载网页库中。此外，将这些URL放进已抓取URL队列。</p></li>
+<li><p>分析已抓取URL队列中的URL，分析其中的其他URL，并且将URL放入待抓取URL队列，从而进入下一个循环。</p></li>
+</ol>
+
+
+<p>以下内容均为本人个人理解。</p>
+
+<p>网络数据抓取</p>
+
+<ol>
+<li>概念：网络数据抓取，也叫网络爬虫。是在我们iOS程序中，获取要抓取到的网页上的数据。</li>
+<li>用处：如果要用到某网站的一些数据，这个时候我们就要用到抓取数据技术。</li>
+<li>建议：建议抓取过程中，多利用分类，多写一些分类方法，有助于提高程序可读性，也可提高效率。</li>
+</ol>
+
+
+<p>今天先来介绍一下第一种：正则表达式</p>
+
+<blockquote><p>注意点：其实网络抓取数据很简单，但是有用到正则表达式，这个有人说难，有人说很难，有人说非常难，其实我们抓取数据只会用到“.&ldquo; 、&rdquo;*&ldquo;、&rdquo;?&ldquo;这三个符号！</p></blockquote>
+
+<p>正则表达式中：“.”是包括任何字符不包括换行符，“*”是任意多个的字符，“？”是指到最近的一个URL，如果没有就是到最远的一个！</p>
+
+<pre><code> NSString *pantten = [NSString stringWithFormat:@"&lt;ul class=\"cs_list\"&gt;(.*?)&lt;/ul&gt;"];
+
+ NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:pantten options:NSRegularExpressionCaseInsensitive |NSRegularExpressionDotMatchesLineSeparators error:NULL];
+</code></pre>
+
+<p>其中有两个参数需要大家了解一下，很重要</p>
+
+<ul>
+<li>NSRegularExpressionCaseinsensitive 不区分大小写</li>
+<li>NSRegularExpressionDotMatcheLineSeparators 让“点”字符可以匹配换行符</li>
+</ul>
+
+
+<p>抓数据，其实主要会写匹配字符串就行</p>
+
+<pre><code>(.*?)表示要抓到的内容
+.*?表示要忽略的内容，爱是啥是啥
+字符串转义双引号用\转义括号用\\
+</code></pre>
+
+<p>在开发项目的过程，很多情况下我们需要利用互联网上的一些数据，在这种情况下，我们可能要写一个爬虫来爬我们所需要的数据。一般情况下都是利用正则表达式来匹配Html,获取我们所需要的数据。一般情况下分以下三步。</p>
+
+<ul>
+<li>1、获取网页的html</li>
+<li>2、利用正则表达式，获取我们所需要的数据</li>
+<li>3、分析，使用获取到的数据，（例如，保存到数据库）</li>
+</ul>
+
+
+<p>接下来我们分析代码：</p>
+
+<h3>1、获取网页的html</h3>
+
+<p>　　对于一些网页，不需要提交Post提交数据时，我们可以简单的利用NSURL类来获取我们所需要的html，交将其转换中kCFStringEncodingGB_18030_2000格式，解决中文乱码问题。</p>
+
+<p>　　</p>
+
+<pre><code>+(NSString*) urlstring:(NSString*)strurl{
+　　　　NSURL *url = [NSURL URLWithString:strurl];
+　　　　NSData *data = [NSData dataWithContentsOfURL:url];
+
+　　　　NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000); 
+　　　　NSString *retStr = [[NSString alloc] initWithData:data encoding:enc];
+
+　　　　//NSLog(@" html = %@",retStr);
+
+　　　　return retStr;
+　　}
+</code></pre>
+
+<p> 对于需要Post提交数据的网页，我们可以利用强大的ASIFormDataRequest类来实现，例如：</p>
+
+<pre><code>+(void)getPostResult:(NSString*)startqi{
+　　　　ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:[NSURL URLWithString:URLPost]];
+
+　　　　[request setPostValue:startqi forKey:@"startqi"];
+　　　　[request setPostValue:@"20990101001" forKey:@"endqi"];
+　　　　[request setPostValue:@"qihao" forKey:@"searchType"];//网页的中的搜索方式
+　　　　[request startSynchronous];
+
+　　　　NSData* data = [request responseData];
+
+　　if (data==nil) {
+　　　　FCLOG(@"has not data");
+　　}
+　　else{
+　　　　NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000); 
+　　　　NSString *retStr = [[NSString alloc] initWithData:data encoding:enc];
+　　　　FCLOG(@"html = %@",retStr); 
+　　}
+}
+</code></pre>
+
+<p>这样的话，我们就通过了两种方式获取了我们所需要的html</p>
+
+<h3>2、分析html</h3>
+
+<p>　　关于利用正则表达式匹配问题，我又对NSString类扩展了一个方法-(NSMutableArray <em>)substringByRegular:(NSString </em>)regular。根据传入的正则表达式，返回所有匹配的数组。</p>
+
+<p>　　</p>
+
+<pre><code>@implementation NSString(StringRegular)
+
+
+-(NSMutableArray *)substringByRegular:(NSString *)regular{
+
+  　　　　　NSString * reg=regular;
+
+　　　　　　NSRange r= [self rangeOfString:reg options:NSRegularExpressionSearch];
+
+　　　　　　NSMutableArray *arr=[NSMutableArray array];
+
+　　　　　　if (r.length != NSNotFound &amp;&amp;r.length != 0) {
+
+　　　　　　int i=0;
+
+　　　　　　while (r.length != NSNotFound &amp;&amp;r.length != 0) {
+
+　　　　　　FCLOG(@"index = %i regIndex = %d loc = %d",(++i),r.length,r.location);
+
+　　　　　　NSString* substr = [self substringWithRange:r];
+
+　　　　　　FCLOG(@"substr = %@",substr);
+
+　　　　　　[arr addObject:substr];
+
+　　　　　　NSRange startr=NSMakeRange(r.location+r.length, [self length]-r.location-r.length);
+
+　　　　　　r=[self rangeOfString:reg options:NSRegularExpressionSearch range:startr];
+　　　　}
+　　}
+　　return arr;
+}
+@end
+</code></pre>
+
+<p>在这种情况下，我们首先我得到我们要获取数据的正则表达式，关于正则表达式这种火星文我就不多说了，我也很纠结，我就不多说了，但是有一点就是，所写的正则表达式一定是我们所需要的数据，并且能够屏蔽无效信息的，有可能在一次匹配中无法获取，可以多次利用正则表达式来分段获取。下面是我的语句，在我的例子中，就是两次利用正则表达式。</p>
+
+<pre><code>NSString *regstr = @"&lt;td class=\'z_bg_05\'&gt;\\w{11}&lt;/td&gt;&lt;td class=\'z_bg_13\'&gt;(\\w{2}\\s{0,1})*&lt;/td&gt;";
+NSMutableArray *arr=[strhtml substringByRegular:regstr];
+</code></pre>
+
+<h3>3、分析或利用数据，在这里，我只是利用上一篇博客上所述方法简单的把这些数据保存到了数据库（sqlite3）中。</h3>
+
+<p>其实在这个arr数组中一条就是对应我数据库表中的一条记录，但是像td class等这些信息我是不需要的，所以再次利用正则表达式来分析NSString</p>
+
+<pre><code>if (arr!=nil&amp;&amp;[arr count]&gt;0) {
+
+　　　　　　NSString *prereg=@"\\w{11}";
+　　　　　　NSString *backreg=@"(\\w{2}\\s{0,1}){8}";
+
+　　　　　　TicketResultService *service=[[TicketResultService alloc] init];
+　　　　　　[[Sqlite3Helper Instance] openDB];
+　　　　for (NSString *sub in arr) {
+
+　　　　　　TicketResult* r=[[[TicketResult alloc] init] autorelease];
+
+　　　　　　NSMutableArray* prearr=[sub substringByRegular:prereg];
+
+　　　　　　if (prearr!=nil&amp;&amp;[prearr count]&gt;0) {
+　　　　　　　　r.sectionID=(NSString*)[prearr objectAtIndex:0];
+　　　　　　}
+　　　　　　else{
+　　　　　　　　continue;
+　　　　　　}
+
+　　　　　　NSMutableArray *backarr=[sub substringByRegular:backreg];
+　　　　　　if (backarr!=nil&amp;&amp;[backarr count]&gt;0) {
+　　　　　　r.result=[backarr objectAtIndex:0];
+　　　　　　}
+　　　　　　else{
+　　　　　　　　continue;
+　　　　　　}
+
+　　　　　　if([service isExist:r.sectionID]){
+　　　　　　　　continue;
+　　　　　　}
+
+　　　　r.type=[NSNumber numberWithInt:1];
+
+　　　　[service addModel:r];
+
+　　}
+　　[[Sqlite3Helper Instance] closeDB];
+
+　　[service release];
+}
+</code></pre>
+
+<blockquote><p>以上爬虫才算正式完成，其实，在此之前还有一个第0步，即判断设备目前的网络状态，如果没有联网的就没有必要去爬虫了，因为你也爬不到任何的数据。判断网络状态我是利用Apple官方的一个例子Reachability，网上也有很多关于这个的例子，我就不再细说了，非常感谢网上的各位大牛们提供的很好的办法，让我能更快的写出这些。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[爬虫必备-青花瓷]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/11/qinghuaci/"/>
+    <updated>2015-12-11T09:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/11/qinghuaci</id>
+    <content type="html"><![CDATA[<p>在之前个人学习ios开发的时候听过抓包相关的技术，但是自己没有实现，所以也只是当听听。</p>
+
+<p>这段时间，由于公司新项目的原因，但是后台和UI都还没有，而又需要我先开始封装对应的工具或者一下大概的逻辑，我当时就蒙了，最后还是乖乖的来做。</p>
+
+<p>网上找了一些接口，也找了不少类似的网站，但是发现再美我用不了有什么用呢？最后我想到了之前听别人说的网络爬虫，找了不少资料研究了一番。发现效果还不错，就在这里记录下来，希望对你有用！</p>
+
+<p>关于网络数据抓取不仅仅在iOS开发中有，其他开发中也有，也叫网络爬虫，大致分为三种方式实现</p>
+
+<ul>
+<li>1: 青花瓷</li>
+<li>2: 正则表达</li>
+<li>3: 利用其他语言的工具包：java／Python</li>
+</ul>
+
+
+<p>写本文的契机主要是前段时间有次用青花瓷抓包有一步忘了，在网上查了半天也没找到写的完整的教程，于是待问题解决后抽时间截了图，自己写一遍封存在博客园中以便以后随时查阅。</p>
+
+<p>charles又名青花瓷，在iOS开发中的抓包中具有重要作用。最大的三点用处，一就是拦截别人软件的发送的请求和后端接口，练习开发。二是自己后端返回的response拦截修改后再接收以达到测试临界数据的作用。三写脚本重复拦截抓取别人的数据。(因为不太道德，本文不提第三点)</p>
+
+<p>如果你不是在董铂然博客园看到本文，请点击查看原文。</p>
+
+<h3>1.开始之前的准备工作</h3>
+
+<p>首先安装一下这个软件</p>
+
+<p>这个相信很多人电脑里应该都安装了，没安装的搜charles破解版也能很容易搜到。如果没安装java环境，首次进入charles会提示让你安装java包得，直接给你链接是苹果官网的，去下一个一键安装就行了。</p>
+
+<p> <img src="http://al1020119.github.io/images/qinghuaci001.jpg" title="Caption" ></p>
+
+<p>安装完成后先打开，在进行下面操作。</p>
+
+<p>然后去自己电脑的系统偏好设置-》网络-》选中现在连着的网(大部分人应该都是WiFi吧)可以查到自己这个电脑在现在这个wifi里的IP地址，比如我现在这个就是192.168.0.105(建议最好用私人网络，用公司网络的话可能会有限制会出现没反应的问题)</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci002.jpg" title="Caption" ></p>
+
+<p>然后找到自己手机也连着这个同名的wifi，然后选中右边的蓝色i。</p>
+
+<p> <img src="http://al1020119.github.io/images/qinghuaci003.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci004.jpg" title="Caption" ></p>
+
+<p>然后进入到了这个无线局域网的高级设置页面。进去之后拉到最下方，找到HTTP代理字样。然后选中手动代理，并在服务器中填自己电脑查到的ip地址，然后把端口调8888，最后点击左上角返回。返回值后系统会自动设置代理重新连接。</p>
+
+<p>这时候你的手机上网的过程中就要经过你的电脑了。刚用手机打开一个联网的程序，你的电脑上应该会显示一个弹窗问你【allow】还是【deny】肯定不能拒绝啊就点allow吧。这个只有第一次才弹窗，图没截上，你到时候看见肯定能看懂的。点了同意之后你手机发出的每一个请求都会被拦截出痕迹。</p>
+
+<h3>2.拦截某个软件的接口数据</h3>
+
+<p>拿网易新闻举例，以前就练习这写过网易新闻的项目，其中网易的接口全是用charles拦截的。拦截到了网易发请求时发的是什么，然后在练习项目中需要获取数据的地方也把这一串链接直接拿过来用即可。</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci005.jpg" title="Caption" ></p>
+
+<p>当然这上面拦到的比较多，如果有过开发经验的话应该能很快看出来右边哪个是真正返回json数据的接口。或者一个一个点看内容也行啊。</p>
+
+<p>比如选中一个url然后右键点击copy。</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci006.jpg" title="Caption" ></p>
+
+<p>放到浏览器地址栏里打一下。能看到</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci007.jpg" title="Caption" ></p>
+
+<p>这就说明这个接口是对的了。可以获取到数据。然后可以给他转化一下看的更清楚。虽然很多人都是用bash看，但我还是推荐一个网址<a href="http://www.w3cschool.cc/jsontool%E3%80%82%E8%BD%ACJSON%E4%B9%8B%E5%90%8E%E7%9C%8B%E7%9A%84%E9%9D%9E%E5%B8%B8%E6%B8%85%E6%99%B0%E3%80%82%E5%A4%A7%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6json%E6%95%B4%E7%90%86%E5%90%8E%E9%83%BD%E6%98%AF%E9%BB%98%E8%AE%A4%E6%8A%8A%E5%A4%A7%E6%8B%AC%E5%8F%B7%E5%85%A8%E9%83%BD%E6%89%93%E5%BC%80%EF%BC%8C%E8%80%8C%E4%BB%85%E6%9C%89%E8%BF%99%E4%B8%AA%E7%BD%91%E7%AB%99%E6%98%AF%E9%BB%98%E8%AE%A4%E5%85%A8%E7%BB%99%E4%BD%A0%E6%8A%8A%E5%A4%A7%E6%8B%AC%E5%8F%B7%E5%85%B3%E4%B8%8A%E3%80%82%E6%83%B3%E7%82%B9%E5%93%AA%E4%B8%AA%E5%86%8D%E7%82%B9%E5%BC%80%EF%BC%8C%E8%80%8C%E4%B8%94%E8%83%BD%E7%9F%A5%E9%81%93%E5%AD%97%E5%85%B8%E9%87%8C%E6%9C%89%E5%A4%9A%E5%B0%91%E4%B8%AA%E9%94%AE%E5%80%BC%E5%AF%B9%EF%BC%8C%E6%89%80%E4%BB%A5%E7%9C%8B%E7%9D%80%E9%9D%9E%E5%B8%B8%E6%B8%85%E6%99%B0%E3%80%82">http://www.w3cschool.cc/jsontool%E3%80%82%E8%BD%ACJSON%E4%B9%8B%E5%90%8E%E7%9C%8B%E7%9A%84%E9%9D%9E%E5%B8%B8%E6%B8%85%E6%99%B0%E3%80%82%E5%A4%A7%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6json%E6%95%B4%E7%90%86%E5%90%8E%E9%83%BD%E6%98%AF%E9%BB%98%E8%AE%A4%E6%8A%8A%E5%A4%A7%E6%8B%AC%E5%8F%B7%E5%85%A8%E9%83%BD%E6%89%93%E5%BC%80%EF%BC%8C%E8%80%8C%E4%BB%85%E6%9C%89%E8%BF%99%E4%B8%AA%E7%BD%91%E7%AB%99%E6%98%AF%E9%BB%98%E8%AE%A4%E5%85%A8%E7%BB%99%E4%BD%A0%E6%8A%8A%E5%A4%A7%E6%8B%AC%E5%8F%B7%E5%85%B3%E4%B8%8A%E3%80%82%E6%83%B3%E7%82%B9%E5%93%AA%E4%B8%AA%E5%86%8D%E7%82%B9%E5%BC%80%EF%BC%8C%E8%80%8C%E4%B8%94%E8%83%BD%E7%9F%A5%E9%81%93%E5%AD%97%E5%85%B8%E9%87%8C%E6%9C%89%E5%A4%9A%E5%B0%91%E4%B8%AA%E9%94%AE%E5%80%BC%E5%AF%B9%EF%BC%8C%E6%89%80%E4%BB%A5%E7%9C%8B%E7%9D%80%E9%9D%9E%E5%B8%B8%E6%B8%85%E6%99%B0%E3%80%82</a></p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci008.jpg" title="Caption" ></p>
+
+<p>到此就已经完成了一次完整的，拉取接口，和获得数据。</p>
+
+<p>这里有两点我想说下：</p>
+
+<p>①就是如果这个App发的请求加密了或是RSA什么的，这个就算拦截了你也弄不到数据。网易是没有做任何加密，所以可以抓取到数据。以前试了拦截百度医生的就不行。他设置的是一分钟内能获取到数据，超过了1分钟这个复制过来的接口就取不到数据了。怀疑可能是用的HMAC方法加密，并且在里面加入了时间判断。32分和33分发出的请求经过编码后是不一样的，后台可能做了容错，会把32分和31分都和你判断下，只要有一个对上就让你过，但是超过了整整一分钟后是肯定获取不到数据了。</p>
+
+<p>②就是很多比较大型的网站，一般会开放一个开发者平台，里面注册开发者账号后会向你公开一个接口文档，你不用再去费事的拦截了。像新浪微博和大众点评都有开发者平台。</p>
+
+<h3>3.更改返回数据来测试临界情况</h3>
+
+<p>这个是重点了。因为这种做法可以让一个iOS前端的开发人员独立完成测试而不用拉过来一个后端一起联调。并且各种特殊维度，或是临界的账号也不用再去辛苦找了，仅仅自己在青花瓷上改来改去就可以达到效果了。比如这个地方如果返回了nil程序会不会崩，直接改response就行了。下面是具体操作方案。</p>
+
+<p>打开青花瓷切换成结构页面</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci009.jpg" title="Caption" ></p>
+
+<p>这里可以看到断点和调试信息</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci010.jpg" title="Caption" ><br/>
+<img src="http://al1020119.github.io/images/qinghuaci011.jpg" title="Caption" ></p>
+
+<p>然后找一个我们公司的页面。这个页面本来应该返回是这样的：如上图右边</p>
+
+<p>你先正常的打开这个页面把玩几下，这个青花瓷就会抓取很多接口和域名分类了。在这里找到你这个页面所属的域名分类应该不难。然后打上断点。这里要注意是在域名上打断点而不是在下面的单个请求上打断点。</p>
+
+<p>再次用手机进入这个页面，就会通过你刚才打断点的那个域名来请求数据，就会被断点拦住，如下图所示。</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci012.jpg" title="Caption" ></p>
+
+<p>右边的信息也很清晰，一开始可以编辑请求。如果点击单步执行，等一下相应回来了也可以编辑响应。</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci013.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci014.jpg" title="Caption" ></p>
+
+<p>这里的有好几种查看的方式，但是推荐使用JSON Text看的比较清楚。 现在我们对拦截回来的数据进行修改，我把这些统计数据全改成999如下图</p>
+
+<p> <img src="http://al1020119.github.io/images/qinghuaci015.jpg" title="Caption" ></p>
+
+<p>然后再次点击下方的Execute单步执行，更改后的数据就会像正常返回回来的数据那样显示到，APP的页面上展示。</p>
+
+<p><img src="http://al1020119.github.io/images/qinghuaci016.jpg" title="Caption" ></p>
+
+<p>能来到这一步就说明已经完整的掌握了用青花瓷篡改返回数据测试App的技术。</p>
+
+<p>如果你不是在董铂然博客园看到本文，请点击查看原文。</p>
+
+<p>这么做的意义：</p>
+
+<p>这里只是简单的更改了一些数字，在页面显示更加直观。实际的操作中，你可以经常用来把某些值改为临界情况以看到App在处理这些临界状况时的反应，这样比找那些临界数据的测试账号成本要低得多。也可以把一些可能不会反回数值的字段找到，直接将里面的值删成nil，看看会不会报异常等等。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[H5应用实战]]></title>
@@ -405,6 +1159,134 @@ CIImage *outputImage = [filterTwo valueForKey:kCIOutputImageKey];
 
 CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outImage extent]];
 </code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Python]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/10/python/"/>
+    <updated>2015-12-10T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/10/python</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;爬虫必备-Phthon抓包&rdquo;
+date: 2015-12-11 11:03:23 +0800
+comments: true</p>
+
+<h2>categories: 程序员必备</h2>
+
+<p>由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
+
+<h4>准备搭建环境</h4>
+
+<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
+
+<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
+
+<ul>
+<li>1.在终端输入 pip install BeautifulSoup</li>
+<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
+</ul>
+
+
+<h4>开始写代码吧</h4>
+
+<p>先找一个想要抓取东西的网站，这里我就随便找一个吧 地址是：<a href="http://movie.douban.com/chart">http://movie.douban.com/chart</a>
+好了在终端输入 vim 我知道这个东西，对于新手来说，就是一个挑战，这里我也建议使用轻量的Sublime
+代码如下 (注意python是严格的缩进,以下代码要顶格写)</p>
+
+<pre><code>#-*- coding:utf-8 -*-
+import urllib2
+import urllib
+html=urllib2.urlopen("http://movie.douban.com/chart").read()
+print html
+</code></pre>
+
+<p>输出的结果就是一个HTML的网页，这里我就看到自己想要抓取的图片和图片名的文字片段</p>
+
+<pre><code>&lt;a class="nbg" href="http://movie.douban.com/subject/24879839/"  title="道士下山"&gt;
+           &lt;img src="http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg" alt="道士下山" class=""/&gt;
+&lt;/a&gt;
+</code></pre>
+
+<p>分析我们想要的，一个是图片的名称，一个是图片的链接地址，直接上Python代码
+    #-<em>- coding:utf-8 -</em>-
+    import urllib2
+    from bs4 import BeautifulSoup</p>
+
+<pre><code>import sys  
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
+# 函数
+def  printPlistCode():
+    #1.得到这个网页的 html 代码 #
+    html = urllib2.urlopen("http://movie.douban.com/chart").read()
+
+    #2.转换 一种格式，方便查找
+    soup = BeautifulSoup(html)
+    #3.  得到 找到的所有 包含 a 属性是class = nbg 的代码块,数组
+    liResutl = soup.findAll('a', attrs = {"class" : "nbg"})
+    #4.用于拼接每个字典的字符串
+    tmpDictM = ''
+
+    #5. 遍历这个代码块  数组
+    for li in liResutl:
+
+        #5.1 找到 img 标签的代码块 数组
+        imageEntityArray = li.findAll('img')
+
+        #5.2 得到每个image 标签
+        for image in imageEntityArray:
+            #5.3 得到src 这个属性的 value  后面也一样 类似 key value
+            link = image.get('src')
+            imageName = image.get('alt')
+            #拼接 由于 py中 {} 是一种数据处理格式，类似占位符
+            tmpDict = '''@{0}@\"name\" : @\"{1}\", @\"imageUrl\" : @\"{2}\"{3},'''
+
+            tmpDict =  tmpDict.format('{',imageName,link,'}')
+
+            tmpDictM = tmpDictM + tmpDict
+
+    #6.去掉最后一个 , 
+    tmpDictM = tmpDictM[0:len(tmpDictM) - 1].decode('utf8')
+
+    #7 拼接全部
+    restultStr = '@[{0}];'.format(tmpDictM)
+
+    print restultStr
+
+
+if __name__ == '__main__':
+    printPlistCode()
+</code></pre>
+
+<p>输出结果就是Objective-C的 数组</p>
+
+<pre><code>@[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+</code></pre>
+
+<p>使用Xcode 写到Plist中去</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+int main(int argc, const char * argv[]) {
+
+
+NSArray *plistArray = @[@{@"name" : @"进击的巨人真人版：前篇", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251690571.jpg"},@{@"name" : @"花与爱丽丝杀人事件", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2222398443.jpg"},@{@"name" : @"小黄人大眼萌", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2258235689.jpg"},@{@"name" : @"小森林 冬春篇", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2215147728.jpg"},@{@"name" : @"道士下山", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2251450614.jpg"},@{@"name" : @"深夜食堂 电影版", @"imageUrl" : @"http://img3.douban.com/view/movie_poster_cover/ipst/public/p2205014862.jpg"},@{@"name" : @"小男孩", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2230105606.jpg"},@{@"name" : @"头脑特工队", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2231021196.jpg"},@{@"name" : @"百元之恋", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2205471169.jpg"},@{@"name" : @"杀破狼2", @"imageUrl" : @"http://img4.douban.com/view/movie_poster_cover/ipst/public/p2246885606.jpg"}];
+//路径可以自己选择
+[plistArray writeToFile:@"/Users/xxx/Desktop/test/movie.plist" atomically:YES];
+
+return 0;
+</code></pre>
+
+<p>到这里，就可以看到plist 文件可以用于测试了</p>
+
+<p><img src="http://al1020119.github.io/images/python001.png" title="Caption" ></p>
+
+<p>这里写图片描述
+如果想要复制粘贴这里面的代码，那就选择Sublime编辑器</p>
 ]]></content>
   </entry>
   
@@ -1251,7 +2133,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#x3a;&#x6d;&#x61;&#x6a;&#105;&#97;&#48;&#51;&#x40;&#109;&#101;&#105;&#x74;&#117;&#97;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;">&#x6d;&#x61;&#x6a;&#x69;&#97;&#48;&#51;&#64;&#109;&#101;&#105;&#x74;&#x75;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#108;&#116;&#x6f;&#58;&#109;&#x61;&#106;&#105;&#97;&#48;&#x33;&#x40;&#109;&#101;&#105;&#116;&#x75;&#x61;&#110;&#46;&#99;&#111;&#109;">&#109;&#x61;&#106;&#x69;&#x61;&#x30;&#51;&#x40;&#x6d;&#101;&#105;&#x74;&#x75;&#97;&#x6e;&#x2e;&#99;&#x6f;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -5559,1096 +6441,6 @@ Avro解析性能高并且序列化之后的数据非常简洁，比较适合于�
 
 <!--more-->
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[够逼格的注释习惯]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"/>
-    <updated>2015-12-03T02:59:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de</id>
-    <content type="html"><![CDATA[<p>够逼格的注释习惯总结</p>
-
-<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
-
-<h6>也许你使用过#warning 警告提示</h6>
-
-<h6>也许你也使用过#pragma marks。</h6>
-
-<p>但是你见过或者使用过下面这个吗？</p>
-
-<pre><code>Comments containing:
-MARK:
-TODO:
-FIXME:
-!!!:
-???:
-</code></pre>
-
-<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
-
-<p> 首先说一下三个最常用的：</p>
-
-<ul>
-<li>1、TODO</li>
-</ul>
-
-
-<p> 等待实现的功能</p>
-
-<ul>
-<li>2、FIXME</li>
-</ul>
-
-
-<p> 需要修正的功能</p>
-
-<ul>
-<li>3、！！！</li>
-</ul>
-
-
-<p> 需要改进的功能</p>
-
-<p>具体使用</p>
-
-<pre><code>// FIXME:sss
-/* FIXME: sss */
-
-
-// MARK:sss
-/* MARK:sss */
-
-
-// !!!:sss
-/* !!!: sss */
-
-
-// ???:sss
-/* ???: sss */
-
-
-// TODO:sss
-/* TODO: sss */
-
-
-// Comments containing: sss
-/* Comments containing: sss */
-</code></pre>
-
-<p>注意空格.</p>
-
-<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
-
-<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
-
-<!--more-->
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[消除警告]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/02/xiao-chu-jing-gao/"/>
-    <updated>2015-12-02T02:51:46+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/02/xiao-chu-jing-gao</id>
-    <content type="html"><![CDATA[<h6>前言：</h6>
-
-<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
-
-<p>本文分为三个部分：</p>
-
-<ul>
-<li>1.简单粗暴的消除警告。</li>
-<li>2.详细科学的消除警告。（包括警告收录）</li>
-<li>3.添加警告。</li>
-</ul>
-
-
-<h4>一、简单粗暴的消除警告</h4>
-
-<p>警告如果是自己项目中的还好直接改了，如果是第三方库，你改了之后，pod下作者更新一下又白改了，所以可以用这种简单粗暴的方法：直接让第三方库的警告不显示</p>
-
-<p> 就是在podfile文件里面加上一行指令 。
-inhibit_all_warnings!
-如果某警告实在无法消除，但是又不想让他显示，可以加入预编译指令</p>
-
-<p>比如我已经知道某行会报上面警告了，我就用这个宏把这几行包住，就不会报引号中-Wunused-variable的警告了</p>
-
-<pre><code>#pragma clang diagnostic push
-#pragma clang diagnostic ignored"-Wunused-variable" //这里是会报警告的代码
-
-#pragma clang diagnostic pop
-</code></pre>
-
-<p>这个-Wunused-variable代表的意思就是 有的东西 你实例化了但是没有使用（同上面第几条）。 但是如何得到一个警告的标示符？</p>
-
-<ol>
-<li><p>如图选择一个警告，点击右键，reveal in log  就能看到右边有个方括号[]里面的东西就是 这个警告对应的标示符</p></li>
-<li><p>如果希望整个项目中都忽略 某种很无聊的警告，就在项目中Build Setting里加上这个标示符，可以连着加的。</p></li>
-<li><p>如果不想整个项目都忽略，只想个别文件忽略，那就找到个别文件加上此指令，这个操作应该使用率不高（一般都是全项目忽略），就不上图了。去Build Phases 里面的 Compile Sources里面改。</p></li>
-</ol>
-
-
-<h4>二、详细科学的消除警告</h4>
-
-<p>其实笔者本意是想把一些第一眼看不懂比较坑的警告收录进来，但是后来发现那基本没几个需要些写了，所以就采用了全收录的方法，遇到的就记录下以后也会不断更新。 可以直接按command+F 在本页面搜索警告</p>
-
-<pre><code>Unused variable 'replyURL'
-</code></pre>
-
-<h6>1.没有使用</h6>
-
-<pre><code>Cannot find protocol definition for 'TencentSessionDelegate'
-</code></pre>
-
-<h6>2.这种明明都能运行还说我没有定义的警告，是因为你这个协议虽然定义了，但是你这个协议可能还遵守了XX协议，然后这个XX协议没有定义导致会报这种警告，所以遇到这种警告要往“父协议”找。 举个栗子，上面这行就是腾讯授权的库里面报的警告，</h6>
-
-<pre><code>@protocol TencentSessionDelegate
-此协议遵守了TencentApiInterfaceDelegate协议，在TencentOAuth.h类中#import "TencentApiInterface.h" 警告可破
-
-
-Null passed to a callee that requires a non-null argument
-</code></pre>
-
-<h6>3.这个警告比较新，是xcode6.3开始 为了让OC也能有swift的？和！的功能，你在声明一个属性的时候加上 <strong>nullable（？可以为空）与</strong>nonnull（！不能为空） 如果放在@property里面的话不用写下划线</h6>
-
-<pre><code>@property (nonatomic, copy, nonnull) NSString * tickets;
-@property (nonatomic, copy) NSString * __nonnull tickets;
-</code></pre>
-
-<p>或者用宏NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END 包住多个属性全部具备nonnull，然后仅对需要nullable的改下就行，有点类似于f-no-objc-arc那种先整体给个路线在单独改个别文件的思想。 此警告就是某属性说好的不能为空，你又在某地方写了XX = nil 所以冲突了。</p>
-
-<pre><code>Auto property synthesis will not synthesize property 'privateCacheDirectory'; it will be implemented by its superclass, use @dynamic to acknowledge intention
-</code></pre>
-
-<h6>4.他说你的父类实现了setget方法，但是如果你什么都不写，就会系统自动生成出最一般的setget方法，请用@dynamic 来承认父类实现的这个getset方法。</h6>
-
-<pre><code>Unsupported Configuration: Scene is unreachable due to lack of entry points and does not have an identifier for runtime access via -instantiateViewControllerWithIdentifier:.
-</code></pre>
-
-<h6>5.一般是storyboard报的警告，简而言之就是你有的页面没有和箭头所指的控制器连起来，导致最终改页面可能无法显示。</h6>
-
-<pre><code>Deprecated: Push segues are deprecated in iOS 8.0 and later
-</code></pre>
-
-<h6>6.iOS8之后呢，不要再用push拖线了，统一用show，他会自己根据你是否有导航栏来判断走push还是走modal</h6>
-
-<pre><code>Unsupported Configuration: Plain Style unsupported in a Navigation Item
-</code></pre>
-
-<h6>7.导航栏的item 不支持用plain ，那就用Bordered呗。</h6>
-
-<pre><code>The launch image set "LaunchImage" has 2 unassigned images.
-The app icon set "AppIcon" has 2 unassigned images.
-</code></pre>
-
-<h6>8.几张图标还是启动图找不到自己的位置，可能是一次导入了全部尺寸图片，但是右边的设置只勾了iOS8的 那iOS7尺寸的图标就会报此警告。删掉，或者对照右边匹配。</h6>
-
-<pre><code>'sizeWithFont:constrainedToSize:lineBreakMode:' is deprecated: first deprecated in iOS 7.0 - Use -boundingRectWithSize:options:attributes:context:
-</code></pre>
-
-<h6>9.方法废除，旧的方法sizeWithFontToSize在iOS7后就废除了取而代之是boundingRectWithSize方法</h6>
-
-<pre><code>Undeclared selector 'historyAction'
-</code></pre>
-
-<h6>10.使用未声明的方法，一般出现在@selector() 括号里写了个不存在的方法或方法名写错了。</h6>
-
-<pre><code>PerformSelector may cause a leak because its selector is unknown
-</code></pre>
-
-<h6>11.这个和上面类似就是直接把上面那个@SEL拿来用会报这个警告</h6>
-
-<pre><code>'strongify' macro redefined
-</code></pre>
-
-<h6>12.这个宏声明重复,删一个吧</h6>
-
-<pre><code>'UITextAttributeFont' is deprecated: first deprecated in iOS 7.0 - Use NSFontAttributeName
-'UITextAttributeTextColor' is deprecated: first deprecated in iOS 7.0 - Use NSForegroundColorAttributeName
-'UITextAttributeTextShadowColor' is deprecated: first deprecated in iOS 7.0 - Use NSShadowAttributeName with an NSShadow instance as the value
-</code></pre>
-
-<h6>13.方法废除,一般一起出现</h6>
-
-<pre><code>Code will never be executed
-</code></pre>
-
-<h6>14.他说这代码永远也轮不到他执行，估计是有几行代码写在了return之后</h6>
-
-<pre><code>Assigning to 'id' from incompatible type 'SXTabViewController *const __strong'
-</code></pre>
-
-<h6>15.一般出现在xxx.delegate = self ，应该在上面遵守协议</h6>
-
-<pre><code>Format specifies type 'unsigned long' but the argument has type 'unsigned int'
-</code></pre>
-
-<h6>16.这个警告一般会出现在NSStringWithFormat里面 前面%d %lu 什么的和后面填进去的参数不匹配就报了警告</h6>
-
-<pre><code>Values of type 'NSInteger' should not be used as format arguments; add an explicit cast to 'long' instead
-</code></pre>
-
-<h6>17.类似于上面，也是format里面前后写的不匹配</h6>
-
-<pre><code>Method 'dealWithURL:andTitle:andKeyword:' in protocol 'SXPostAdDelegate' not implemented
-</code></pre>
-
-<h6>18.经典警告，遵守了协议，但是没有实现协议方法。 也可能你实现了只是又加了个参数或是你写的方法和协议方法名字有点轻微不同</h6>
-
-<pre><code>Using integer absolute value function 'abs' when argument is of floating point type
-</code></pre>
-
-<h6>19.这个可以自动修正，就是说abs适用于整数绝对值，要是float取绝对值要用fabsf</h6>
-
-<pre><code>Attribute Unavailable: Automatic Preferred Max Layout Width is not available on iOS versions prior to 8.0
-</code></pre>
-
-<h6>20.有的方法你用的太落后了，也有的方法你用的太超前了。 说这个最大宽度在iOS8之前的系统是要坑的</h6>
-
-<pre><code>Too many personality routines for compact unwind to encode
-</code></pre>
-
-<h6>21.你可以在otherlink 中加入 -Wl,-no_compact_unwind 去掉该警告，根据苹果的解释，这个是由于某些地方 c/c++/oc/oc++混用会造成编译警告。一般没有什么伤害。</h6>
-
-<pre><code>Property 'ssid' requires method 'ssid' to be defined - use @synthesize, @dynamic or provide a method implementation in this class implementation
-</code></pre>
-
-<h6>22.说这个ssid必须要定义个这个属性的getter方法，如果警告是setSsid就是setter方法， 用@synthesize和@dynamic 都行，一个是让编译器生成getter和setter，一个是自己生成，如果你有模型分发或kvc之类的，选@dynamic就行</h6>
-
-<pre><code>Unknown escape sequence '\)'
-</code></pre>
-
-<h6>23.未知的转义序列。 一般有个斜杠再加个东西他都会以为是转义字符，一看\）不认识就报警告了，一般正则表达式容易报这种警告</h6>
-
-<pre><code>Property 'LoginPort' not found on object of type 'LoginLvsTestTask *'; did you mean to access property loginPort?
-</code></pre>
-
-<h6>24.这种可以点击自动修复，是典型的大小写写错了，他提醒了一下。</h6>
-
-<pre><code>Variable 'type' is used uninitialized whenever switch default is taken
-</code></pre>
-
-<h6>25.这是出现在switch语句中的警告， 一般可能是switch外面定义了个type但是并没有初始化（初始化操作都写在switch的各个分支里），然后在最后return type。 但是switch的有个分支没有对type初始化，他说如果你来到这个分支的话，那还没初始化就要被return。</h6>
-
-<h5>三、添加警告</h5>
-
-<h6>1.首先最常用的就是 普通警告，这也没什么好说的了</h6>
-
-<pre><code>#warning TODO
-</code></pre>
-
-<h6>2.如果是自己写的文件或第三方库，有了新的接口，然后提示旧的接口废除的话需要在方法后加上宏NS_DEPRECATED_IOS和范围</h6>
-
-<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target NS_DEPRECATED_IOS(2_0, 4_0);
-</code></pre>
-
-<h6>3.如果需要在此方法后加上带信息的警告则需要这么写</h6>
-
-<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target __attribute((deprecated("这个接口会爆内存 不建议使用")));
-</code></pre>
-
-<p>显示的效果像这样：</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[字典转模型深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu/"/>
-    <updated>2015-12-01T02:33:18+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/01/zi-dian-zhuan-mo-xing-shen-jiu</id>
-    <content type="html"><![CDATA[<blockquote><p>引言：
-在文字开始之前先介绍两个软件：</p></blockquote>
-
-<h5>JSONExport</h5>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin005.png" title="Caption" ></p>
-
-<h5>JSON Accelerator</h5>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin006.png" title="Caption" ></p>
-
-<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
-
-<ul>
-<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
-<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
-</ul>
-
-
-<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
-
-<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
-
-<h2>一：直接加载Plist数据</h2>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin001.png" title="Caption" ></p>
-
-<pre><code>定义一个数组属性 
-@property (nonatomic, assign) NSArray *apps; 
-</code></pre>
-
-<h6>获取Plist文件</h6>
-
-<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSArray *)apps
-{
-    if (_apps == nil) {
-        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>加载Plsit中的数据</h6>
-
-<pre><code>    //取出数组中对应的数据放到一个字典里面
-    NSDictionary *dic = self.apps[i];
-
-
-    //创建一个UIImageView
-    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
-    /**
-     取出字典中的icon
-    */
-     icon.image = [UIImage imageNamed:dic[@"icon"]];
-
-    [view addSubview:icon];
-
-
-
-    //创建一个Label
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
-    /**
-     取出字典中的label
-     */
-    l.text = dic[@"label"];
-
-    [view addSubview:l];
-
-
-
-    //创建一个按钮
-    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
-    /**
-     取出字典中的btn
-     */
-    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
-
-    [view addSubview:btn];
-</code></pre>
-
-<h2>二：使用简单的模型加载Plist数据</h2>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin002.png" title="Caption" ></p>
-
-<pre><code> 1 //定义一个数组属性
-
-  2 @property (nonatomic, assign) NSArray *apps; 
-</code></pre>
-
-<h6>在模型中定义模型对应的属性</h6>
-
-<pre><code>@property (nonatomic, copy) NSString *icon;
-
-
-@property (nonatomic, copy) NSString *label;
-
-
-@property (nonatomic, copy) NSString *btn;
-</code></pre>
-
-<h6>模型方法</h6>
-
-<pre><code>/**
- 模型数据方法
- */
-+(instancetype)messageWithDict:(NSDictionary *)dict;
-
-
--(instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>模型的实现文件</h6>
-
-<pre><code>/**
- 模型数据方法的实现
- */
-
-+ (instancetype)messageWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-    }
-    return self;
-}
-</code></pre>
-
-<h6>实用模型加载Plist文件</h6>
-
-<pre><code>/**
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- */
-//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSMutableArray *)apps
-{
-    if (_apps == nil) {
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-            appsModel *model = [[appsModel alloc] init];
-            model.label = dic[@"label"];
-            model.btn = dic[@"btn"];
-            model.icon = dic[@"icon"];
-
-            [arrayApps addObject:model];
-        }
-        _apps = arrayApps;
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>加载模型中对应的plist数据</h6>
-
-<pre><code>    //取出数组中对应的数据放到一个字典里面
-    appsModel *app = self.apps[i];
-
-
-    //创建一个UIImageView
-    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
-    /**
-     取出字典中的icon
-     */
-    icon.image = [UIImage imageNamed:app.icon];
-    [view addSubview:icon];
-
-
-
-    //创建一个Label
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
-    /**
-     取出字典中的label
-     */
-    l.text = app.label;
-    [view addSubview:l];
-
-
-
-    //创建一个按钮
-    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
-    /**
-     取出字典中的btn
-     */
-    [btn setTitle:app.btn forState:UIControlStateNormal];
-    [view addSubview:btn];
-</code></pre>
-
-<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
-
-<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
-{
-self = [super init];
-if (self) {
-    self.label = dict[@"label"];
-    self.btn = dict[@"btn"];
-    self.icon = dict[@"icon"];
-
-//[self setValue:dict[@"label"] forKeyPath:@"label"];
-
-    //封装
-    [self setValuesForKeysWithDictionary:dict];
-}
-
-return self;
-}
-</code></pre>
-
-<p>/<em>*
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- </em>/</p>
-
-<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSMutableArray *)apps
-{
-    if (_apps == nil) {
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-//            appsModel *model = [[appsModel alloc] initWithDict:dic];
-            appsModel *model = [appsModel appsWithDict:dic];
-
-            [arrayApps addObject:model];
-        }
-        _apps = arrayApps;
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
-
-<p>在模型中定义并且实现一个模型封装的方法</p>
-
-<pre><code>+(NSArray *)appList
-{
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
-            appsModel *model = [appsModel appsWithDict:dic];
-
-            [arrayApps addObject:model];
-    }
-    return arrayApps;
-
-}
-</code></pre>
-
-<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
-
-<pre><code>/**
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- */
-//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSArray *)apps
-{
-    if (_apps == nil) {
-
-        _apps = [appsModel appList];
-    }
-    return _apps;
-}
-</code></pre>
-
-<h2>三：复杂Plist转模型</h2>
-
-<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
-
-<p>比如Plist中海油一个friends这歌子模型</p>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin003.png" title="Caption" ></p>
-
-<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
-
-<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
-
-<pre><code>/**
- 根据plist里面存在的子列中的数据再创建一个模型数据
- */
-
-/**
- 设置子模型数据的属性
- */
-
-@property (nonatomic, assign) NSString *icon;
-
-@property (nonatomic, assign) NSString *intro;
-
-@property (nonatomic, assign) NSString *name;
-
-@property (nonatomic, assign, getter=isVip)BOOL vip;
-
-
-/**
- 子模型数据的方法
- */
-+ (instancetype)friendWithDict:(NSDictionary *)dict;
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>子模型的实现</h6>
-
-<pre><code>/**
- 子模型数据的方法de实现
- */
-
-+ (instancetype)friendWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-    }
-    return self;
-}
-</code></pre>
-
-<h6>然后就是根模型</h6>
-
-<pre><code>/**
- 根据plist中的数据创建一个模型数据
- */
-
-/**
- 设置模型数据的中的属性
- */
-
-@property (nonatomic, assign) NSArray *friends;
-
-@property (nonatomic, copy) NSString *name;
-
-@property (nonatomic, assign) NSNumber *online;
-
-/**
- 模型数据的方法
- */
-
-+ (instancetype)groupWithDict:(NSDictionary *)dict;
-
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
-
-<pre><code>/**
- 模型数据的方法的实现
- */
-
-+ (instancetype)groupWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-
-        NSMutableArray *friendArray = [NSMutableArray array];
-        for (NSDictionary *dict in self.friends) {
-            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
-            [friendArray addObject:friend];
-        }
-        self.friends = friendArray;
-    }
-    return self;
-}
-</code></pre>
-
-<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
-
-<pre><code>/**
- 加载模型数据的方法
- */
-
-- (NSArray *)groups
-{
-    if (_groups == nil) {
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
-
-        NSMutableArray *groupArray = [NSMutableArray array];
-        for (NSDictionary *dict in dictArray) {
-            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
-            [groupArray addObject:group];
-        }
-
-        _groups = groupArray;
-    }
-    return _groups;
-}
-</code></pre>
-
-<h2>四：使用第三份库</h2>
-
-<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
-
-<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
-
-<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
-
-<p>下载好了之后直接讲MJExtension拖到你的项目</p>
-
-<p><img src="http://al1020119.github.io/images/zidianzhuanmoxin004.png" title="Caption" ></p>
-
-<h6>首先根据plist数据新建对应的模型数据</h6>
-
-<p>这里我一新浪微博中的小部分做测试</p>
-
-<pre><code>#import "User.h"
-#import "Status.h"
-#import "StatusResult.h"
-
-/**
- *  微博文本内容
- */
-@property (copy, nonatomic) NSString *text;
-
-/**
- *  微博作者
- */
-@property (strong, nonatomic) User *user;
-
-/**
- *  转发的微博
- */
-@property (strong, nonatomic) Status *retweetedStatus;
-/**
- *  存放着某一页微博数据（里面都是Status模型）
- */
-@property (strong, nonatomic) NSMutableArray *statuses;
-
-/**
- *  总数
- */
-@property (assign, nonatomic) NSNumber *totalNumber;
-
-/**
- *  上一页的游标
- */
-@property (assign, nonatomic) long long previousCursor;
-
-/**
- *  下一页的游标
- */
-@property (assign, nonatomic) long long nextCursor;
-/**
- *  名称
- */
-@property (copy, nonatomic) NSString *name;
-
-/**
- *  头像
- */
-@property (copy, nonatomic) NSString *icon;
-</code></pre>
-
-<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
-
-<pre><code>/**
- MJ友情提醒：
- 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
- 2.MJExtension能完成的功能
- * 字典 --&gt; 模型
- * 模型 --&gt; 字典
- * 字典数组 --&gt; 模型数组
- * 模型数组 --&gt; 字典数组
- 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
- 4.希望各位大神能用得爽
- */
-
-#import &lt;Foundation/Foundation.h&gt;
-#import "MJExtension.h"
-#import "User.h"
-#import "Status.h"
-#import "StatusResult.h"
-
-/**
- *  简单的字典 -&gt; 模型
- */
-void keyValues2object()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"name" : @"Jack",
-                           @"icon" : @"lufy.png",
-                           };
-
-    // 2.将字典转为User模型
-    User *user = [User objectWithKeyValues:dict];
-
-    // 3.打印User模型的属性
-    NSLog(@"name=%@, icon=%@", user.name, user.icon);
-}
-
-/**
- *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
- */
-void keyValues2object2()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"text" : @"是啊，今天天气确实不错！",
-
-                           @"user" : @{
-                                   @"name" : @"Jack",
-                                   @"icon" : @"lufy.png"
-                                   },
-
-                           @"retweetedStatus" : @{
-                                   @"text" : @"今天天气真不错！",
-
-                                   @"user" : @{
-                                           @"name" : @"Rose",
-                                           @"icon" : @"nami.png"
-                                           }
-                                   }
-                           };
-
-    // 2.将字典转为Status模型
-    Status *status = [Status objectWithKeyValues:dict];
-
-    // 3.打印status的属性
-    NSString *text = status.text;
-    NSString *name = status.user.name;
-    NSString *icon = status.user.icon;
-    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-
-    // 4.打印status.retweetedStatus的属性
-    NSString *text2 = status.retweetedStatus.text;
-    NSString *name2 = status.retweetedStatus.user.name;
-    NSString *icon2 = status.retweetedStatus.user.icon;
-    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
-}
-
-/**
- *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
- */
-void keyValues2object3()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"statuses" : @[
-                                   @{
-                                       @"text" : @"今天天气真不错！",
-
-                                       @"user" : @{
-                                               @"name" : @"Rose",
-                                               @"icon" : @"nami.png"
-                                               }
-                                       },
-
-                                   @{
-                                       @"text" : @"明天去旅游了",
-
-                                       @"user" : @{
-                                               @"name" : @"Jack",
-                                               @"icon" : @"lufy.png"
-                                               }
-                                       },
-
-                                   @{
-                                       @"text" : @"嘿嘿，这东西不错哦！",
-
-                                       @"user" : @{
-                                               @"name" : @"Jim",
-                                               @"icon" : @"zero.png"
-                                               }
-                                       }
-
-                                   ],
-
-                           @"totalNumber" : @"2014",
-
-                           @"previousCursor" : @"13476589",
-
-                           @"nextCursor" : @"13476599"
-                           };
-
-    // 2.将字典转为StatusResult模型
-    StatusResult *result = [StatusResult objectWithKeyValues:dict];
-
-    // 3.打印StatusResult模型的简单属性
-    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
-
-    // 4.打印statuses数组中的模型属性
-    for (Status *status in result.statuses) {
-        NSString *text = status.text;
-        NSString *name = status.user.name;
-        NSString *icon = status.user.icon;
-        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-    }
-}
-
-/**
- *  字典数组 -&gt; 模型数组
- */
-void keyValuesArray2objectArray()
-{
-    // 1.定义一个字典数组
-    NSArray *dictArray = @[
-                           @{
-                               @"name" : @"Jack",
-                               @"icon" : @"lufy.png",
-                               },
-
-                           @{
-                               @"name" : @"Rose",
-                               @"icon" : @"nami.png",
-                               },
-
-                           @{
-                               @"name" : @"Jim",
-                               @"icon" : @"zero.png",
-                               }
-                           ];
-
-    // 2.将字典数组转为User模型数组
-    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
-
-    // 3.打印userArray数组中的User模型属性
-    for (User *user in userArray) {
-        NSLog(@"name=%@, icon=%@", user.name, user.icon);
-    }
-}
-
-/**
- *  模型 -&gt; 字典
- */
-void object2keyValues()
-{
-    // 1.新建模型
-    User *user = [[User alloc] init];
-    user.name = @"Jack";
-    user.icon = @"lufy.png";
-
-    Status *status = [[Status alloc] init];
-    status.user = user;
-    status.text = @"今天的心情不错！";
-
-    // 2.将模型转为字典
-    //    NSDictionary *dict = [status keyValues];
-    NSDictionary *dict = status.keyValues;
-    NSLog(@"%@", dict);
-}
-
-/**
- *  模型数组 -&gt; 字典数组
- */
-void objectArray2keyValuesArray()
-{
-    // 1.新建模型数组
-    User *user1 = [[User alloc] init];
-    user1.name = @"Jack";
-    user1.icon = @"lufy.png";
-
-    User *user2 = [[User alloc] init];
-    user2.name = @"Rose";
-    user2.icon = @"nami.png";
-
-    User *user3 = [[User alloc] init];
-    user3.name = @"Jim";
-    user3.icon = @"zero.png";
-
-    NSArray *userArray = @[user1, user2, user3];
-
-    // 2.将模型数组转为字典数组
-    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
-    NSLog(@"%@", dictArray);
-}
-
-int main(int argc, const char * argv[])
-{
-    @autoreleasepool {
-        // 简单的字典 -&gt; 模型
-        keyValues2object();
-
-        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
-        keyValues2object2();
-
-        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
-        keyValues2object3();
-
-        // 字典数组 -&gt; 模型数组
-        keyValuesArray2objectArray();
-
-        // 模型转字典
-        object2keyValues();
-
-        // 模型数组 -&gt; 字典数组
-        objectArray2keyValuesArray();
-    }
-    return 0;
-}
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[iOS生命周期]]></title>
-    <link href="http://al1020119.github.io/blog/2015/11/30/iossheng-ming-zhou-qi/"/>
-    <updated>2015-11-30T21:52:15+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/11/30/iossheng-ming-zhou-qi</id>
-    <content type="html"><![CDATA[<h3>控制器（View）生命周期</h3>
-
-<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
-
-<pre><code>1、 alloc                                   创建对象，分配空间
-2、init (initWithNibName) 初始化对象，初始化数据
-3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
-4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
-5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
-6、viewDidAppear               视图已在屏幕上渲染完成
-</code></pre>
-
-<p>当一个视图被移除屏幕并且销毁的时候的执行顺序，这个顺序差不多和上面的相反</p>
-
-<pre><code>1、viewWillDisappear            视图将被从屏幕上移除之前执行
-2、viewDidDisappear             视图已经被从屏幕上移除，用户看不到这个视图了
-3、dealloc                                 视图被销毁，此处需要对你在init和viewDidLoad中创建的对象进行释放
-</code></pre>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>app的启动过程</h3>
-
-<pre><code>1.先执行main函数，main内部会调用UIApplicationMain函数
-
-2.UIApplicationMain函数里面做了什么事情：
-
-    1&gt; 创建UIApplication对象
-    2&gt; 创建UIApplication的delegate对象—–PYAppDelegate
-    3&gt; 开启一个消息循环
-
-每监听到对应的系统事件时，就会通知MJAppDelegate
-
-根据plist文件判断是否需要加载storyBoard
-</code></pre>
-
-<p>如果有storyBoard</p>
-
-<pre><code>加载Info.plist文件，读取最主要storyboard文件的名称
-
-加载最主要的storyboard文件，创建白色箭头所指的控制器对象
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>如果没有storyBoard</p>
-
-<pre><code>在代理的difinishLuaunchWithOPtions中为应用程序创建一个UIWindow对象(继承自UIView)，设置为PYAppDelegate的window属性
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>App的生命周期</h3>
-
-<p>这里只是简单的总结，关于有些方法我们并没有解除过，所以就略过了。</p>
-
-<pre><code> 1、application didFinishLaunchingWithOptions：当应用程序启动时执行，应用程序启动入口，只在应用程序启动时执行一次。若用户直接启动，lauchOptions内无数据,若通过其他方式启动应用，lauchOptions包含对应方式的内容。
- 2、applicationWillResignActive：在应用程序将要由活动状态切换到非活动状态时候，要执行的委托调用，如 按下 home 按钮，返回主屏幕，或全屏之间切换应用程序等。
-
- 3、applicationDidEnterBackground：在应用程序已进入后台程序时，要执行的委托调用。
-
- 4、applicationWillEnterForeground：在应用程序将要进入前台时(被激活)，要执行的委托调用，刚好与applicationWillResignActive 方法相对应。
-
- 5、applicationDidBecomeActive：在应用程序已被激活后，要执行的委托调用，刚好与applicationDidEnterBackground 方法相对应。
-
- 6、applicationWillTerminate：在应用程序要完全推出的时候，要执行的委托调用，这个需要要设置UIApplicationExitsOnSuspend的键值。
-</code></pre>
 ]]></content>
   </entry>
   

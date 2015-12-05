@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="在这篇文章中，我将为你整理一下 iOS 开发中几种多线程方案，以及其使用方法和注意事项。当然也会给出几种多线程的案例，在实际使用中感受它们的区别。还有一点需要说明的是，这篇文章将会使用 Swift 和 Objective-c 两种语言讲解，双语幼儿园。OK，let&rsquo;t begin! &hellip;">
+  <meta name="description" content="排序算法精髓 ordinal 1、序言 ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,810 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/20/paixu/">排序算法精髓</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>1、序言</h2>
+
+<p>ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题，但是这不是本篇文章讨论的范围。</p>
+
+<p>后面的文章中，我将会给大家详细介绍八大算法。</p>
+
+<h2>2、冒泡排序</h2>
+
+<h5>2.1 引出</h5>
+
+<p>前面的两篇博客里讲的插入排序是基于“逐个记录插入”，选择排序是基于“选择”，那么冒泡排序其实是基于“交换”。每次从第一个记录开始，一、二两个记录比较，大的往后放，二三两个记录比较&hellip;依次类推，这就是一趟冒泡排序。每一趟冒泡排序后，无序序列中值最大的记录冒到序列末尾，所以称之为冒泡排序。</p>
+
+<h5>2.2 代码</h5>
+
+<pre><code>//冒泡排序
+void bubbleSort(int *a,int n)
+{
+    int i,j;
+    for(i=1;i&lt;n;i++)
+        for(j=1;j&lt;n-i+1;j++){
+            if(a[j+1]&lt;a[j]){
+                a[j]=a[j]+a[j+1];
+                a[j+1]=a[j]-a[j+1];
+                a[j]=a[j]-a[j+1];
+            }
+        }
+}
+</code></pre>
+
+<p> 冒泡排序算法：
+冒泡排序代码</p>
+
+<pre><code> static void Main(string[] args)
+        {
+            ////五次比较
+             for (int i = 1; i &lt;= 5; i++)
+            {
+                List&lt;int&gt; list = new List&lt;int&gt;();
+                //插入2k个随机数到数组中
+                for (int j = 0; j &lt; 2000; j++)
+                {
+                    Thread.Sleep(1);
+                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 100000));
+                }
+                Console.WriteLine("\n第" + i + "次比较：");
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                var result = list.OrderBy(single =&gt; single).ToList();
+                watch.Stop();
+                Console.WriteLine("\n快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                watch.Start();
+                result = BubbleSort(list);
+                watch.Stop();
+                Console.WriteLine("\n冒泡排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                Console.ReadKey();
+            }
+
+      }
+
+ //冒泡排序算法
+        private static List&lt;int&gt; BubbleSort(List&lt;int&gt; list)
+        {
+            int temp;
+            //第一层循环： 表明要比较的次数，比如list.count个数，肯定要比较count-1次
+            for (int i = 0; i &lt; list.Count - 1;i++ ) 
+            {
+                //list.count-1：取数据最后一个数下标，47 
+                //j&gt;i: 从后往前的的下标一定大于从前往后的下标，否则就超越了。
+                for (var j = list.Count-1; j &gt; i;j-- )
+                {
+                    //如果前面一个数大于后面一个数则交换
+                    if (list[j - 1] &gt; list[j])
+                    {
+                        temp = list[j - 1];
+                        list[j - 1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+
+            }
+            return list;
+        } 
+</code></pre>
+
+<h5>2.3 效率分析</h5>
+
+<p>相对于简单选择排序，冒泡排序交换次数明显更多。它是通过不断地交换把最大的数冒出来。冒泡排序平均时间和最坏情况下（逆序）时间为o（n<sup>2</sup>）。最佳情况下虽然不用交换，但比较的次数没有减少，时间复杂度仍为o（n<sup>2</sup>）。此外冒泡排序是稳定的。</p>
+
+<h2>3、快速排序</h2>
+
+<h5>3.1 引出</h5>
+
+<pre><code>快速排序是冒泡排序的一种改进，冒泡排序排完一趟是最大值冒出来了，那么可不可以先选定一个值，然后扫描待排序序列，把小于该值的记录和大于该值的记录分成两个单独的序列，然后分别对这两个序列进行上述操作。这就是快速排序，我们把选定的那个值称为枢纽值，如果枢纽值为序列中的最大值，那么一趟快速排序就变成了一趟冒泡排序。
+</code></pre>
+
+<h5>3.2 代码</h5>
+
+<pre><code>两种版本，第一种是参考《数据结构》，在网上这种写法很流行。第二种是参考《算法导论》，实现起来较复杂。
+
+//快速排序（两端交替着向中间扫描）
+void quickSort1(int *a,int low,int high)
+{
+    int pivotkey=a[low];//以a[low]为枢纽值
+    int i=low,j=high;
+    if(low&gt;=high)
+        return;
+    //一趟快速排序
+    while(i&lt;j){//双向扫描
+        while(i &lt; j &amp;&amp; a[j] &gt;= pivotkey)
+            j--;
+        a[i]=a[j];
+        while(i &lt; j &amp;&amp; a[i] &lt;= pivotkey)
+            i++;
+        a[j]=a[i];
+    }
+    a[i]=pivotkey;//放置枢纽值
+    //分别对左边、右边排序
+    quickSort1(a,low,i-1); 
+    quickSort1(a,i+1,high); 
+}
+
+//快速排序（以最后一个记录的值为枢纽值，单向扫描数组）
+void quickSort2(int *a,int low,int high)
+{
+    int pivotkey=a[high];//以a[high]为枢纽值
+    int i=low-1,temp,j;
+    if(low&gt;=high)
+        return;
+    //一趟快速排序
+    for(j=low;j&lt;high;j++){
+        if(a[j]&lt;=pivotkey){
+            i++;
+            temp=a[i];
+            a[i]=a[j];
+            a[j]=temp;
+        }
+    }
+    i++;
+    //放置枢纽值
+    temp=a[i];
+    a[i]=pivotkey;
+    a[high]=temp;
+    //分别对左边、右边排序
+    quickSort2(a,low,i-1); 
+    quickSort2(a,i+1,high); 
+}
+</code></pre>
+
+<p>快速排序算法：</p>
+
+<p>快速排序法</p>
+
+<pre><code> static void Main(string[] args)
+        {
+
+            //5次比较
+            for (int i = 1; i &lt;= 5; i++)
+            {
+                List&lt;int&gt; list = new List&lt;int&gt;();
+                //插入200个随机数到数组中 
+                for (int j = 0; j &lt; 200; j++)
+                {
+                    Thread.Sleep(1);
+                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 10000));
+                }
+                Console.WriteLine("\n第" + i + "次比较：");
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                var result = list.OrderBy(single =&gt; single).ToList();
+                watch.Stop();
+                Console.WriteLine("\n系统定义的快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                watch.Start();
+                new QuickSortClass().QuickSort(list, 0, list.Count - 1);
+                watch.Stop();
+                Console.WriteLine("\n俺自己写的快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", list.Take(10).ToList()));
+                Console.ReadKey();
+            }
+        }
+
+ public class QuickSortClass
+    {
+
+        ///&lt;summary&gt; 
+        ////// 分割函数 
+        ///&lt;/summary&gt; 
+        //////&lt;param name="list"&gt;待排序的数组&lt;/param&gt; 
+        ///&lt;param name="left"&gt;数组的左下标&lt;/param&gt; 
+        //////&lt;param name="right"&gt;&lt;/param&gt; 
+        ///&lt;returns&gt;&lt;/returns&gt;
+         public int Division(List&lt;int&gt; list, int left, int right) 
+         { 
+             //首先挑选一个基准元素 
+             int baseNum = list[left]; 
+             while (left &lt; right) 
+             { 
+                 //从数组的右端开始向前找，一直找到比base小的数字为止(包括base同等数) 
+                 while (left &lt; right &amp;&amp; list[right] &gt;= baseNum) 
+                     right = right - 1; 
+                 //最终找到了比baseNum小的元素，要做的事情就是此元素放到base的位置 
+                 list[left] = list[right]; 
+                 //从数组的左端开始向后找，一直找到比base大的数字为止（包括base同等数）
+                 while (left &lt; right &amp;&amp; list[left] &lt;= baseNum) 
+                     left = left + 1; 
+                 //最终找到了比baseNum大的元素，要做的事情就是将此元素放到最后的位置 
+                 list[right] = list[left];
+             }
+             //最后就是把baseNum放到该left的位置 
+             list[left] = baseNum;
+             //最终，我们发现left位置的左侧数值部分比left小，left位置右侧数值比left大 
+             //至此，我们完成了第一篇排序 
+             return left;
+         }
+        public void QuickSort(List&lt;int&gt; list, int left, int right)
+        { 
+            //左下标一定小于右下标，否则就超越了 
+            if (left &lt; right) 
+            { 
+                //对数组进行分割，取出下次分割的基准标号 
+                int i = Division(list, left, right);
+                //对“基准标号“左侧的一组数值进行递归的切割，以至于将这些数值完整的排序 
+                QuickSort(list, left, i - 1); 
+                //对“基准标号“右侧的一组数值进行递归的切割，以至于将这些数值完整的排序
+                QuickSort(list, i + 1, right);
+            }
+        }
+    }
+</code></pre>
+
+<h5>3.3 效率分析</h5>
+
+<p> 快速排序时间与划分是否对称有关。快速排序的平均时间复杂度为o（n<em>logn），至于为什么是o（n</em>logn），请参考《算法导论》第7章，书中用递归树的方法阐述了快速排序平均时间。且常数因子很小，所以就平均时间而言，快速排序是很好的内部排序方法。最佳情况下（每次划分都对称）时间复杂度o（n*logn）。最坏情况下（每次划分都不对称，如输入的序列有序或者逆序时）时间复杂度为o(n<sup>2</sup>)，所以在待排序序列有序或逆序时不宜选用快速排序。此外，快速排序是不稳定的。</p>
+
+<p> 最佳情况下，每次划分都是对称的，由于枢纽值不再考虑，所以得到的两个子问题的大小不可能大于n/2，同时一趟快速排序时间为o（n），所以运行时间递归表达式：</p>
+
+<pre><code>T（n）&lt;=2T(n/2)+o(n)。
+</code></pre>
+
+<p>这个递归式的解法请参考下一篇博客中归并排序效率分析。其解为T（n）=o（n*logn）。</p>
+
+<p> 最坏情况下，每次划分都很不对称，T(n)=T(n-1)+o(n),可以用递归树来解，第i层的代价为n-i+1.总共有n层。把每一层代价加起来有n-1个n相加。所以这个递归式的解为T（n）=o（n<sup>2</sup>）,此时就是冒泡排序。</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/05/20/paixu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/05/keyoc/">常用关键字汇总</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在做iOS开发中，系统的各个关键字处处都是，但是未必每一个关键字都是那么的明白，所以罗列出一些关键字供大家互相学习，有不完善之处请指正，谢谢</p>
+
+<table>
+<thead>
+<tr>
+<th> 关键字 </th>
+<th style="text-align:center;"> 总结</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> atomic    </td>
+<td style="text-align:center;"> atomic是Objc使用的一种线程保护技术，基本上来讲，是防止在写未完成的时候被另外一个线程读取，造成数据错误。而这种机制是耗费系统资源的，所以在iPhone这种小型设备上，如果没有使用多线程间的通讯编程，那么nonatomic是一个非常好的选择。</td>
+</tr>
+<tr>
+<td> super </td>
+<td style="text-align:center;"> 调用父类的方法</td>
+</tr>
+<tr>
+<td> readonly  </td>
+<td style="text-align:center;"> 说明属性是只读的，默认的标记是读写</td>
+</tr>
+<tr>
+<td> readwrite </td>
+<td style="text-align:center;"> 说明属性会被当成读写的，这也是默认属性</td>
+</tr>
+<tr>
+<td> retain    </td>
+<td style="text-align:center;"> 释放旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1</td>
+</tr>
+<tr>
+<td> self</td>
+<td style="text-align:center;">     是隐藏参数，指向当前调用方法的类</td>
+</tr>
+<tr>
+<td> setter    </td>
+<td style="text-align:center;"> 设置指定的set方法</td>
+</tr>
+<tr>
+<td> getter    </td>
+<td style="text-align:center;"> 设置指定的get方法</td>
+</tr>
+<tr>
+<td> property</td>
+<td style="text-align:center;">     设置成员变量的属性（有读／写，赋值assign,retain,copy ,以及对多线程的支持 nonatomic）</td>
+</tr>
+<tr>
+<td> end   </td>
+<td style="text-align:center;"> 类的头文件或者实现文件的结束</td>
+</tr>
+<tr>
+<td> copy</td>
+<td style="text-align:center;">     建立一个索引计数为1的对象，然后释放旧对象 </td>
+</tr>
+<tr>
+<td> assign    </td>
+<td style="text-align:center;"> 简单赋值，不更改引用计数</td>
+</tr>
+<tr>
+<td> synthesize    </td>
+<td style="text-align:center;"> 根据@property设置，自动生成成员变量相应的存取方法，从而可以使用点操作符来方便的存取该成员变量</td>
+</tr>
+<tr>
+<td> import    </td>
+<td style="text-align:center;"> 告诉预处理器,将头文件的内容包含到本文件中</td>
+</tr>
+<tr>
+<td> dynamic   </td>
+<td style="text-align:center;"> 告诉编译器由我们自己来实现访问方法</td>
+</tr>
+<tr>
+<td> nonatomic </td>
+<td style="text-align:center;"> 非原子性访问，对属性赋值的时候不加锁，多线程并发访问会提高性能</td>
+</tr>
+<tr>
+<td> implementation</td>
+<td style="text-align:center;">   表明类的实现</td>
+</tr>
+<tr>
+<td> strong    </td>
+<td style="text-align:center;"> 强引用，只要最后一个strong型指针不再指向对象，那么对象就会被释放，同时所有的weak型指针都将会被清除</td>
+</tr>
+<tr>
+<td> weak  </td>
+<td style="text-align:center;"> 弱引用</td>
+</tr>
+<tr>
+<td> __strong  </td>
+<td style="text-align:center;"> 是缺省的关键词</td>
+</tr>
+<tr>
+<td> __weak    </td>
+<td style="text-align:center;"> 声明了一个可以自动nil化的弱引用</td>
+</tr>
+<tr>
+<td> __unsafe_unretained</td>
+<td style="text-align:center;">  声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了</td>
+</tr>
+<tr>
+<td> __autoreleasing   </td>
+<td style="text-align:center;"> 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放</td>
+</tr>
+<tr>
+<td> unsafe_unretained 弱引用，容易生成野指针，尽量少用unsafe_unretained关键字</td>
+<td></td>
+</tr>
+<tr>
+<td> synchronized  </td>
+<td style="text-align:center;"> 方法加锁</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/05/05/keyoc/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/14/nscache%20nsdictionary/">NSCache&NSDcitionary你了解多少？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>NSCache</p>
+
+<p>NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下：</p>
+
+<ol>
+<li><p>NSCache具有自动删除的功能，以减少系统占用的内存；</p></li>
+<li><p>NSCache是线程安全的，不需要加线程锁；</p></li>
+<li><p>键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。</p></li>
+</ol>
+
+
+<h5>NSCache的属性以及方法介绍：</h5>
+
+<pre><code>@property NSUInteger totalCostLimit;
+</code></pre>
+
+<p>设置缓存占用的内存大小，并不是一个严格的限制，当总数超过了totalCostLimit设定的值，系统会清除一部分缓存，直至总消耗低于totalCostLimit的值。</p>
+
+<pre><code>@property NSUInteger countLimit;
+</code></pre>
+
+<p>设置缓存对象的大小，这也不是一个严格的限制。</p>
+
+<pre><code>- (id)objectForKey:(id)key;
+</code></pre>
+
+<p>获取缓存对象，基于key-value对</p>
+
+<pre><code>- (void)setObject:(id)obj forKey:(id)key; // 0 cost
+</code></pre>
+
+<p>存储缓存对象，考虑缓存的限制属性；</p>
+
+<pre><code>- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;
+</code></pre>
+
+<p>存储缓存对象，cost是提前知道该缓存对象占用的字节数，也会考虑缓存的限制属性，建议直接使用  - (void)setObject:(id)obj forKey:(id)key;</p>
+
+<h5>NSCacheDelegate代理</h5>
+
+<p>代理属性声明如下：</p>
+
+<pre><code>@property (assign) id&lt;NSCacheDelegate&gt;delegate;
+</code></pre>
+
+<p>实现了NSCacheDelegate代理的对象，在缓存对象即将被清理的时候，系统回调代理方法如下：</p>
+
+<pre><code>- (void)cache:(NSCache *)cache willEvictObject:(id)obj;
+</code></pre>
+
+<p>第一个参数是当前缓存（NSCache），不要修改该对象；</p>
+
+<p>第二个参数是当前将要被清理的对象，如果需要存储该对象，可以在此操作（存入Sqlite or CoreData）;</p>
+
+<p>该代理方法的调用会在缓存对象即将被清理的时候调用，如下场景会调用：</p>
+
+<ol>
+<li><ul>
+<li>(void)removeObjectForKey:(id)key; 手动删除对象；</li>
+</ul>
+</li>
+<li><p>缓存对象超过了NSCache的属性限制；（countLimit 和 totalCostLimit ）</p></li>
+<li><p>App进入后台会调用；</p></li>
+<li><p>系统发出内存警告；</p></li>
+</ol>
+
+
+<h5>NSDiscardableContent协议</h5>
+
+<p>NSDiscardableContent是一个协议，实现这个协议的目的是为了让我们的对象在不被使用时，可以将其丢弃，以让程序占用更少的内存。</p>
+
+<p>一个NSDiscardableContent对象的生命周期依赖于一个“counter”变量。一个NSDiscardableContent对象实际是一个可清理内存块，这个内存记录了对象当前是否被其它对象使用。如果这块内存正在被读取，或者仍然被需要，则它的counter变量是大于或等于1的；当它不再被使用时，就可以丢弃，此时counter变量将等于0。当counter变量等于0时，如果当前时间点内存比较紧张的话，内存块就可能被丢弃。这点类似于MRC&amp;ARC，对象内存回收机制。</p>
+
+<pre><code>- (void)discardContentIfPossible
+</code></pre>
+
+<p>当counter等于0的时候，为了丢弃这些对象，会调用这个方法。</p>
+
+<p>默认情况下，NSDiscardableContent对象的counter变量初始值为1，以确保对象不会被内存管理系统立即释放。</p>
+
+<pre><code>- (BOOL)beginContentAccess    (counter++)
+</code></pre>
+
+<p>调用该方法，对象的counter会加1；</p>
+
+<p>与beginContentAccess相对应的是endContentAccess。如果可丢弃内存不再被访问时调用。其声明如下：</p>
+
+<pre><code>- (void)endContentAccess  （counter--）
+</code></pre>
+
+<p>该方法会减少对象的counter变量，通常是让对象的counter值变回为0，这样在对象的内容不再被需要时，就要以将其丢弃。</p>
+
+<p>NSCache类提供了一个属性，来标识缓存是否自动舍弃那些内存已经被丢弃的对象(默认该属性为YES)，其声明如下：</p>
+
+<pre><code>@property BOOL evictsObjectsWithDiscardedContent
+</code></pre>
+
+<p>如果设置为YES，则在对象的内存被丢弃时舍弃对象。</p>
+
+<p>个人建议：如果需要使用缓存，直接用系统的NSCache就OK了，不要做死。</p>
+
+<h4>区别：</h4>
+
+<p>NSCache</p>
+
+<ul>
+<li>(1)可以存储(当然是使用内存)</li>
+<li>(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary</li>
+<li>(3)有固定客户.</li>
+</ul>
+
+
+<hr />
+
+<pre><code>+---------------------------+------------------------------+
+| NSCache | NSMutableDictionary |
++---------------------------+------------------------------+
+| NSDiscardableContent | NSObject |
++---------------------------+------------------------------+
+</code></pre>
+
+<p>下面是 UIImageView+AFNetworking的使用:</p>
+
+<pre><code>@interface AFImageCache :NSCache
+- (UIImage *)cachedImageForRequest:(NSURLRequest *)request;
+- (void)cacheImage:(UIImage *)image
+forRequest:(NSURLRequest *)request;
+@end
+</code></pre>
+
+<p>NSURLCache</p>
+
+<p>iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
+这里有详细的说明:here
+这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.</p>
+
+<p>映射关系:</p>
+
+<pre><code>+---------------------------+---------------------------------+
+| NSURLRequest ----|----&gt; NSCachedURLResponse |
++---------------------------+---------------------------------+
+</code></pre>
+
+<p>通过这样的映射关系实现缓存. 这里存的是NSCachedURLResponse. 也就是说这里的NSURLCache也是一个类似于NSCache的容器.
+只不过data是NSCachedURLResponse对象. 并不是类似于image这样的data.</p>
+
+<p>这篇文章可以的: NSURLCache使用心得here
+我测试了一下UIImage->NSData->URL,NSURLConnection, UIWebView不同时候调用</p>
+
+<pre><code>- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request;
+-(void)storeCachedResponse:(NSCachedURLResponse *)cachedResponse forRequest:(NSURLRequest *)request;
+</code></pre>
+
+<p>的情况:</p>
+
+<pre><code>+-------------+---------------------+----------------------+------------------+
+| | UIImage-&gt;URL | NSURLConnection | UIWebView |
++---------+---+---------------------+----------------------+------------------+
+| | c | X | first called | first called | 
+|1’s time |---+---------------------+----------------------+------------------+
+| | s | first called | second called | second called | 
++---------+---+---------------------+----------------------+------------------+
+| | c | X | first called | first called | 
+|2’s time +---+---------------------+----------------------+------------------+
+| | s | first called | X | X | 
++---------+---+---------------------+----------------------+------------------+
+</code></pre>
+
+<blockquote><p>注意</p></blockquote>
+
+<pre><code>* c 表示 cachedResponseForRequest
+* s 表示 storeCachedResponse
+* X 表示不被调用
+</code></pre>
+
+<p>结果显示: UIImage->URL 是同步的请求. 因为cachedResponseForRequest不能发起同步请求来请求网络.</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/04/14/nscache%20nsdictionary/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/11/fu-wu-qi-da-jian/">服务器搭建</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一、简单说明</h3>
+
+<p>说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。</p>
+
+<p>提示：提前准备好的软件</p>
+
+<ul>
+<li><p>apache-tomcat-6.0.41.tar</p></li>
+<li><p>eclipse-jee-kepler-SR2-macosx-cocoa-x86_64.tar.gz</p></li>
+<li><p>jdk-8u5-macosx-x64.dmg</p></li>
+</ul>
+
+
+<h3>二、安装和配置本地服务器环境（java）步骤：</h3>
+
+<ul>
+<li>(1)在文档路径下，新建一个文件夹（NetWord），解压eclipse压缩包文件</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi001.png" title="Caption" ></p>
+
+<ul>
+<li>(2)先安装jdk</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi002.png" title="Caption" ></p>
+
+<ul>
+<li>(3)点击安装eclipse，设置工作空间，点击确定。</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi003.png" title="Caption" ></p>
+
+<p>设置工作空间
+<img src="/images/fuwuqi004.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi0004.png" title="Caption" ></p>
+
+<ul>
+<li>(4)把提前写好的服务器代码，拷贝到工作空间中。</li>
+</ul>
+
+
+<p> <img src="/images/fuwuqi005.png" title="Caption" ></p>
+
+<p> <img src="/images/fuwuqi006.png" title="Caption" ></p>
+
+<ul>
+<li><p>(5)导入项目，导入已经存在的项目到工作空间中。
+<img src="/images/fuwuqi007.png" title="Caption" ><br/>
+<img src="/images/fuwuqi008.png" title="Caption" ><br/>
+<img src="/images/fuwuqi009.png" title="Caption" ></p></li>
+<li><p>(6)导入项目之后，项目报错且格式乱码，下面进行调整。</p></li>
+</ul>
+
+
+<p><img src="/images/fuwuqi010.png" title="Caption" ><br/>
+<img src="/images/fuwuqi011.png" title="Caption" ><br/>
+<img src="/images/fuwuqi012.png" title="Caption" ></p>
+
+<ul>
+<li><p>(7)配置容器，apache-tomcat.</p>
+
+<p> <img src="/images/fuwuqi013.png" title="Caption" >    <br/>
+<img src="/images/fuwuqi014.png" title="Caption" ></p></li>
+</ul>
+
+
+<p> <img src="/images/fuwuqi015.png" title="Caption" ></p>
+
+<p>点击ok。创建一个新的容器</p>
+
+<p><img src="/images/fuwuqi016.png" title="Caption" ></p>
+
+<p>选择容器的路径</p>
+
+<p><img src="/images/fuwuqi017.png" title="Caption" ></p>
+
+<p>安装好后显示如下：</p>
+
+<p><img src="/images/fuwuqi018.png" title="Caption" ></p>
+
+<ul>
+<li>(8)启动服务器。以debug的方式启动，方便做一些调试</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi019.png" title="Caption" ></p>
+
+<p>测试：server已经成功启动。</p>
+
+<p><img src="/images/fuwuqi020.png" title="Caption" ></p>
+
+<ul>
+<li>(9)部署程序</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi021.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi022.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi023.png" title="Caption" ></p>
+
+<ul>
+<li>(10)在火狐浏览器中输入服务器的地址，访问项目</li>
+</ul>
+
+
+<p><img src="/images/fuwuqi024.png" title="Caption" ></p>
+
+<p>至此本地服务器环境搭建完成。</p>
+
+<h3>访问服务器的资源</h3>
+
+<p><img src="/images/fuwuqi025.png" title="Caption" ></p>
+
+<p><img src="/images/fuwuqi026.png" title="Caption" ></p>
+
+<p>使用模拟器上的浏览器也可以访问本地服务器。输入地址192.168.1.53：8080/MJServer</p>
+
+<p>补充：浏览器打开页面，文字乱码调整。</p>
+
+<p><img src="/images/fuwuqi027.png" title="Caption" ></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/04/11/fu-wu-qi-da-jian/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2143,553 +2947,9 @@ NSLog(@"intersect:%@",mSet); //结果：2
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">带你玩虐Ocotpress＋Github博客</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h5>简介</h5>
-
-<p>Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.)</p>
-
-<p>根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10.8.3)利用Octopress搭建一个Github博客。本文需要读者熟悉一些shell命令，并掌握基本的git操作。</p>
-
-<p>目录</p>
-
-<h2>一： 快速搭建</h2>
-
-<ol>
-<li>安装Ruby</li>
-<li>安装Octopress</li>
-<li>配置Octopress</li>
-<li>将博客部署到GitHub上</li>
-<li>开始写博客</li>
-</ol>
-
-
-<h2>二： 个性化配置（个性化初级篇）</h2>
-
-<ol>
-<li>Header（标题栏）</li>
-<li>Navigation（导航栏）</li>
-<li>footer（尾栏）</li>
-<li>添加背景图片</li>
-<li>LOGO图片</li>
-<li>导航栏倒圆角</li>
-<li>滑动返回顶部按钮</li>
-<li>二维码展示</li>
-</ol>
-
-
-<h2>三： 个性化配置（个性化中级篇）</h2>
-
-<ol>
-<li>提高博客访问速度</li>
-<li>设置链接在新窗口打开</li>
-<li>首页文章以摘要形式展示</li>
-<li>代码着色</li>
-<li>修改代码生成css</li>
-<li>添加侧边栏文章分类（category）</li>
-<li>添加多说评论</li>
-<li>自动为图片添加url前缀</li>
-<li>添加访客统计</li>
-</ol>
-
-
-<h2>四： 个性化配置（个性化高级篇）</h2>
-
-<ol>
-<li>侧边栏</li>
-<li>最新文章</li>
-<li>GitHub Repos</li>
-<li>微博秀</li>
-<li>豆瓣展示</li>
-<li>访客地图</li>
-<li>酷站博客</li>
-<li>最热文章</li>
-<li>3D标签云与标签列表</li>
-<li>相关文章功能</li>
-<li>社会化评论与分享</li>
-<li>为博文添加原文链接及声明</li>
-<li>添加版权声明</li>
-<li>公益404</li>
-</ol>
-
-
-<h2>五： 其他</h2>
-
-<ol>
-<li>mackdown语法<br></li>
-</ol>
-
-
-<hr />
-
-<h1>一： 快速搭建</h1>
-
-<h3>安装Ruby</h3>
-
-<p>Octopress需要Ruby环境，RVM(Ruby Version Manager)负责安装和管理Ruby的环境。所以我们先在终端输入如下命令，来安装RVM：</p>
-
-<pre><code>curl -L https://get.rvm.io | bash -s stable --ruby  
-</code></pre>
-
-<p>接着是安装Ruby 1.9.3，在终端依次运行如下命令：</p>
-
-<pre><code>rvm install 1.9.3  
-rvm use 1.9.3  
-rvm rubygems latest  
-</code></pre>
-
-<p>完成上面的操作之后，运行ruby &ndash;version应该可以看到ruby 1.9.3环境已经安装好了。
-参考：Installing Ruby With RVM</p>
-
-<h3>安装Octopress</h3>
-
-<p>在安装Octopress之前，请确保你的电脑上已经安装有git了，在终端输入git &ndash;version，应该可以看到电脑中的git版本(我电脑上输出:git version 1.7.12.4 (Apple Git-37))，如果没有显示相关内容，请先安装git。
-git安装之后，利用git命令将octopress从github上clone到本机，如下命令：</p>
-
-<pre><code>git clone git://github.com/imathis/octopress.git octopress  
-cd octopress    # If you use RVM, You'll be asked if you trust  the .rvmrc file (say yes).  
-ruby --version  # Should report Ruby 1.9.3  
-</code></pre>
-
-<p>接着安装相关依赖项：</p>
-
-<pre><code>gem install bundler  
-rbenv rehash    # If you use rbenv, rehash to be able to run the    bundle command  
-bundle install  
-</code></pre>
-
-<p>最后安装默认的Octopress 主题。</p>
-
-<pre><code>rake install  
-</code></pre>
-
-<h3>配置Octopress</h3>
-
-<p>Octopress的作者已经尽量让配置简化了。大多数情况下只需要配置_config.yml和Rakefile文件即可。其中Rakefile是跟博客部署相关，一般情况下并不需要修改这个文件，除非使用了rsync。</p>
-
-<p>config.yml是博客重要的一个配置文件，在config.yml文件中有三大配置项：Main Configs、Jekyll &amp; Plugins和3rd Party Settings。</p>
-
-<p>一般，该文件中其中url是必须要填写的，这里的url是在github上创建的一个仓库地址，具体请看第四步中创建的地址。另外再修改一下title、subtitle和author，根据需求，在开启一些第三方组件服务。</p>
-
-<p>关于_config.yml文件中的更多内容，请看这里的内容：Configuring Octopress</p>
-
-<p>建议：最好把里面的twitter相关的信息全部删掉，否则由于GFW的原因，将会造成页面load很慢。同理，修改定制文件/source/_includes/custom/head.html 把google的自定义字体去掉。from唐巧的博文中—配置。</p>
-
-<h3>将博客部署到GitHub上</h3>
-
-<p>Github的Page service可以免费托管博客，并且还可以自定义域名。
-首先需要在GitHub上创建一个仓库，并将仓库名称按照这样的方式进行命名：username.github.com或organization.github.com。等后面配置完毕之后，我们就可以在浏览器中使用页面地址</p>
-
-<pre><code>http://username.github.com
-</code></pre>
-
-<p>来访问我们的博客。一般来说，我们希望在将博客的源码放到source分支下，并把生成的内容提交到master分支。</p>
-
-<p>创建好仓库之后，我们需要利用octopress的一个配置rake任务来自动配置上面创建的仓库：可以让我们方便的部署GitHub page。在终端输入如下命令：
-C代码  收藏代码</p>
-
-<pre><code>$ rake setup_github_pages  
-</code></pre>
-
-<p>上面的命令会做一些事情(详细介绍看下面给出的参考链接)。其中最主要的就是创建一个_deploy目录，目录用来存放部署到master分支的内容。期间会要求你输入仓库的url，根据提示，进行输入即可。</p>
-
-<p>完成上面的命令之后，我们就可以生成博客并真正的部署到仓库中了。执行如下命令：</p>
-
-<pre><code>rake generate  
-rake deploy  
-</code></pre>
-
-<p>上面的命令首先生成博客文件，并将生成的博客文件拷贝到_deploy/目录下，然后将这些内容添加到git中，并commit和push到仓库的master分支。</p>
-
-<p>现在可以访问</p>
-
-<pre><code>http://username.github.com
-</code></pre>
-
-<p>注意：有时候可能会有延时，要等几分钟才能打开。
-至此，我们的博客已经完成基本的部署，不过博客的source需要单独提交，执行如下命令就可以将source提交到仓库的source分支下。</p>
-
-<pre><code>$ git add .  
-$ git commit -m 'Initial source commit'  
-$ git push origin source  
-</code></pre>
-
-<p>如果在部署到仓库之前，需要先预览一下博客，可以在终端输入rake preview命令，然后就能在浏览器中进行本地预览访问了：</p>
-
-<pre><code>http://127.0.0.1:4000/
-</code></pre>
-
-<p>或</p>
-
-<pre><code>http://localhost:4000/
-</code></pre>
-
-<p>效果跟仓库中的一样。</p>
-
-<h3>开始写博客</h3>
-
-<p>Octopress为我们提供了一些task来创建博文和页面。博文必须存储在source/_posts目录下，并且需要按照Jekyll的命名规范对文章进行命名：YYYY-MM-DD-post-title.markdown。文章的名字会被当做url的一部分，而其中的日期用于对博文的区分和排序。</p>
-
-<p>通过Octopress提供的task可以正确的按照命名规范创建一个博文，并且在博文中会附带常用的一些yaml元数据。只需要在终端输入如下命令：</p>
-
-<pre><code>rake new_post["title"]  
-</code></pre>
-
-<p>其中title为博文的文件名，创建出来的文件默认是markdown格式。上面的命令会创建出这样一个文件：source/_posts/2013-08-03-title.markdown。打开这个文件，可以看到里面有如下一些内容了(告诉Jekyll博客引擎如何处理博文和页面)：</p>
-
-<pre><code>layout: post  
-title: "title"  
-date: 2013-08-03 16:36  
-comments: true  
-categories:   
-</code></pre>
-
-<p>接着我们就可以在这个文件中写我们的博文啦。完成之后，我们可以预览和部署博文。下面是创建并部署博文的一个完整过程：</p>
-
-<pre><code>$ rake new_post["New Post"]  
-$ rake generate  
-$ git add .  
-$ git commit -am "Some comment here."   
-$ git push origin source  
-$ rake deploy  
-</code></pre>
-
-<h6>本节介绍了如何利用Octopress搭建一个Github博客，下面讲介绍桌面去个性化你的博客。</h6>
-
-<hr />
-
-<h1>个性化配置（初级篇）</h1>
-
-<p>这几个部分是经常需要个性化定制的，在 source/<em>includes 中存在其对应的HTML文件，这是主题默认的文件，更换主题，更新octopress会被覆盖，所以应该编辑 source/</em>includes/custom 下的文件来实现修改。</p>
-
-<h2>Header，Navigation，footer</h2>
-
-<h3>Header（标题栏）</h3>
-
-<p>标题栏显示的内容为 /source/<em>includes/custom/header.html 所实现的，其中title和subtitle在 </em>config.yml 中定义，你可以进行适量的修改：</p>
-
-<pre><code>    &lt;hgroup&gt;
- &lt;h1&gt;&lt;a href="/"&gt;iOS梦工厂&lt;/a&gt;&lt;/h1&gt;
-
-&lt;h2&gt;不战胜自己，何以改变未来！&lt;/h2&gt;
-
-&lt;/hgroup&gt;
-</code></pre>
-
-<h3>Navigation（导航栏）</h3>
-
-<p>可以自行为导航栏添加项目，链接至不同的页面，在 /source/_includes/custom/navigation.html 中编辑即可。</p>
-
-<pre><code>&lt;ul class="main-navigation"&gt;
-&lt;li&gt;&lt;a href="/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
- &lt;li&gt;&lt;a href="/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</code></pre>
-
-<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如</p>
-
-<pre><code>&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt; 
-</code></pre>
-
-<h3>footer（尾栏）</h3>
-
-<p>在 source/_includes/custom/footer.html 中编辑尾栏：</p>
-
-<pre><code>&lt;p&gt;
-    Copyright © 2015 - iCocos -
-&lt;span class="credit"&gt;
-      Powered by
-      &lt;a href="http://octopress.org"&gt;Octopress&lt;/a&gt;
-&lt;/span&gt;
-&lt;/p&gt;
-</code></pre>
-
-<p>默认显示 Copyright@2013 - author - Powered by Octopress ，你可以添加自己想显示在尾栏的东西，第三方统计流量统计工具也可以添加到这，如CNZZ、Google analytics和百度统计等，使用这些工具可以更详细的分析网站流量，改善引流措施，完善网站，具体添加方法见统计工具与SEO。</p>
-
-<h3>添加背景图片</h3>
-
-<p>在 sass/custom/_styles.scss 中添加：</p>
-
-<pre><code>html {
-    background: #555555 url("/images/bg3.jpg");
-    //background: #555555;
-}
-
-body &gt; div {
-    background-image: none;
-    //background: #F5F5D5
-} //侧边栏
-
-body &gt; div &gt; div { //文章内容
-    background-image: none;
-    //background: #F5F5D5; 
-    //background: url("/images/bg.jpg");
-}
-</code></pre>
-
-<p>将背景图片放入 source/images/ 中，修改上述代码中的路径指向想要的图片，即可 更改博客、侧边栏或文章的背景图片。博客使用背景图片后，与Header区不太和谐， 所以我在 /sass/base/_theme.scss 中将 header-bg 设置成透明色了。</p>
-
-<h3>LOGO图片</h3>
-
-<p>我所说的logo图片有两种，一个是打开一个网页时，标签栏上显示的小图片。还有一个是标题栏主标题旁的图片。</p>
-
-<p>首先针对于第一种可以选择你喜欢的图片（大小适中），替换 source 目录下的 favicon.png 即可。</p>
-
-<p>或者将logo图片放入 source/images 中，然后修改 source/_includes/head.html ，找到 favicon.png ，修改其路径指向你的图片即可。</p>
-
-<p>对于主标题旁的图片需要在 sass/custom/_styles.scss 中填入如下语句：</p>
-
-<pre><code>//Blog logo pic
-@media only screen and (min-width: 550px) {
-
-    body &gt; header h1{
-            background: url("/images/logo1.png") no-repeat 0 1px;
-            padding-left: 65px;
-    }
-
-    body &gt; header h2 { padding-left: 65px; }
-}
-</code></pre>
-
-<p>根据自己情况进行修改即可。</p>
-
-<h3>导航栏倒圆角</h3>
-
-<p>我设置的header区背景色透明，所以导航栏的直角有些尖锐，在 sass/custom/_styles.scss 中添加如下语句，将其修改为圆角：</p>
-
-<pre><code>//倒圆角
-@media only screen and (min-width: 1040px) {
-    body &gt; nav {
-            @include border-top-radius(.4em);
-    }
-
-    body &gt; footer {
-            @include border-bottom-radius(.4em);
-    }
-}
-</code></pre>
-
-<h3>滑动返回顶部按钮</h3>
-
-<p>当文章较长，通常希望有一个返回顶部的按钮，如下方法实现了在页面右下方添加一个返回顶部的图片按钮，点击后可以滑动的返回顶部。</p>
-
-<p>首先创建 source/javascripts/top.js ，实现滑动返回顶部效果，添加如下代码：</p>
-
-<pre><code>function goTop(acceleration, time)
-{
-    acceleration = acceleration || 0.1;
-    time = time || 16;
-
-    var x1 = 0;
-    var y1 = 0;
-    var x2 = 0;
-    var y2 = 0;
-    var x3 = 0;
-    var y3 = 0;
-
-    if (document.documentElement)
-    {
-            x1 = document.documentElement.scrollLeft || 0;
-            y1 = document.documentElement.scrollTop || 0;
-    }
-    if (document.body)
-    {
-            x2 = document.body.scrollLeft || 0;
-            y2 = document.body.scrollTop || 0;
-    }
-    var x3 = window.scrollX || 0;
-    var y3 = window.scrollY || 0;
-
-    var x = Math.max(x1, Math.max(x2, x3));
-    var y = Math.max(y1, Math.max(y2, y3));
-
-    var speed = 1 + acceleration;
-    window.scrollTo(Math.floor(x / speed), Math.floor(y / speed));
-
-    if(x &gt; 0 || y &gt; 0)
-    {
-            var invokeFunction = "goTop(" + acceleration + ", " + time + ")";
-            window.setTimeout(invokeFunction, time);
-    }
-}
-</code></pre>
-
-<p>然后创建 source/_includes/custom/totop.html ，设置返回顶部按钮样式和位置，代码如下：</p>
-
-<pre><code>&lt;!--返回顶部开始--&gt;
-&lt;div id="full" style="width:0px; height:0px; position:fixed; right:180px; bottom:150px; z-index:100; text-align:center; background-color:transparent; cursor:pointer;"&gt;
-    &lt;a href="#" onclick="goTop();return false;"&gt;&lt;img src="/images/top.png" border=0 alt="返回顶部"&gt;&lt;/a&gt;
-&lt;/div&gt;
-&lt;script src="/javascripts/top.js" type="text/javascript"&gt;&lt;/script&gt;
-&lt;!--返回顶部结束--&gt;
-</code></pre>
-
-<p>最后，还需要将返回顶部的图片放入 source/images ，命名为 top.png （或修改totop.html中图片的路径）。</p>
-
-<h3>二维码展示</h3>
-
-<p>在关于页面或边栏可以展示你的个人博客的二维码，方便移动终端扫描访问你的博客，插件主页 点击这里 。</p>
-
-<p>在侧边栏显示，则将 qrcode.html 放入 source/<em>includes/custom/asides/ 中，在 </em>config.yml 中 default_asides 添加 custom/asides/qrcode.html 即可显示。</p>
-
-<p>或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。</p>
-
-<hr />
-
-<h1>个性化配置（中级篇）</h1>
-
-<h3>提高博客访问速度</h3>
-
-<p>因为“墙”的关系，所以Octopress建立以后会发现访问速度奇慢无比，竟然超过了40s。</p>
-
-<p>仔细分析后我们发现其中都是一些被墙的请求报了404Error，所以导致访问博客巨慢无比，下面我们就一次阉割掉这些被墙的请求。T_T</p>
-
-<h4>替换Google JS公共库</h4>
-
-<p>Octopress默认使用的是Google的JS公共库地址，加载的过程无比的缓慢。因此我们要把它改为 百度的JS公共库 ，需要把 /source/_includes/head.html 文件中的Google公共库地址改为：</p>
-
-<script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
-
-
-<h4>去掉Twitter</h4>
-
-<p>从上图可以看出加载失败的还有twitter，这个也得给去掉。</p>
-
-<p>把在根目录下的 _config.yml 文件中Twitter内容给注释掉。</p>
-
-<pre><code># Twitter
-#twitter_user:
-#twitter_tweet_button: true
-</code></pre>
-
-<p>把 \source_includes\after_footer.html 文件中的twitter内容给注释掉：</p>
-
-<pre><code>include twitter_sharing.html
-</code></pre>
-
-<h4>删除Google font</h4>
-
-<p>把在 \source_includes\custom\head.html 中的Google font样式给删除：</p>
-
-<pre><code>&lt;link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
-&lt;link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
-</code></pre>
-
-<h3>设置链接在新窗口打开</h3>
-
-<p>在博文中，如果点击链接直接在本窗口打开了，那么用户体验就不是很好。而markdown的标准语法是不支持链接在新窗口打开的，虽然可以通过在markdown中直接写html标签来解决这个问题，但是这与markdown的简洁书写特性不符。但是我们可以通过设置Octopress来达到这种效果，即在 \source_includes\custom\head.html 文件中添加如下一段代码：</p>
-
-<pre><code>&lt;script&gt;
-function addBlankTargetForLinks () {
-$('a[href^="http"]').each(function(){
-  $(this).attr('target', '_blank');
-});
-}
-$(document).bind('DOMNodeInserted', function(event) {
-addBlankTargetForLinks();
-});
-&lt;/script&gt;
-</code></pre>
-
-<h3>首页文章以摘要形式展示</h3>
-
-<p>2.在文章对应的markdown文件中，在需要显示在首页的文字后面添加 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/02/20/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">iCocos博客重整第一天</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
-
-<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
-
-<hr />
-
-<p>版权声明：欢迎转载，请贴上源地址</p>
-
-<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
-
-<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
-
-<p>更多精彩请关注</p>
-
-<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/01/27/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/posts/8">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -2709,7 +2969,7 @@ addBlankTargetForLinks();
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
-<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (6)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
@@ -2722,23 +2982,23 @@ addBlankTargetForLinks();
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
   </ul>

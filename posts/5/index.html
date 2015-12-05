@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="谈谈KVC与KVO精髓 ordinal Swift中使用KVC和KVO的类都必须必须继承自NSObject 由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、 &hellip;">
+  <meta name="description" content="UITableView性能优化与卡顿问题 ordinal 引言： 在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿） 最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,827 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：</p>
+
+<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+
+<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
+
+<p>1.最常用的就是cell的重用， 注册重用标识符</p>
+
+<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
+如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
+每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
+设置正确的reuseIdentifer以重用cell
+</code></pre>
+
+<p>2.避免cell的重新布局</p>
+
+<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
+如可以将cell单独放到一个自定义类，初始化时就布局好
+</code></pre>
+
+<p>3.提前计算并缓存cell的属性及内容</p>
+
+<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
+当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
+而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
+</code></pre>
+
+<p>4.减少cell中控件的数量</p>
+
+<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
+不适用的可以先隐藏
+</code></pre>
+
+<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
+
+<pre><code>渲染耗时比较长
+尽量将view设置为不透明，包括cell本身。
+</code></pre>
+
+<p>6.使用局部更新</p>
+
+<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
+</code></pre>
+
+<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
+
+<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
+</code></pre>
+
+<p>8.少使用addView 给cell动态添加view</p>
+
+<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
+
+<pre><code>注意正确使用懒加载
+</code></pre>
+
+<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
+
+<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
+</code></pre>
+
+<p>11.缓存行高：</p>
+
+<pre><code>如果row的高度不相同，那么将其缓存下来
+estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
+</code></pre>
+
+<p>12.避免渐变，图像缩放以及离屏绘制</p>
+
+<p>13.使用shadowPath来设置阴影。</p>
+
+<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
+
+<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
+
+<p>16.使用富文本标签代价是很昂贵的</p>
+
+<p>费尽周折用富文本标签，代价太昂贵了。尽可能地避免使用这个。问问你自己是否真的需要这个。如果是的话，尽可能的做缓存。</p>
+
+<hr />
+
+<p>参考：相关性能优化问题</p>
+
+<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>蓝牙简单介绍和4.0的基本使用</p>
+
+<p>背景：</p>
+
+<ul>
+<li>iOS的蓝牙不能用来传输文件。</li>
+<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
+<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
+</ul>
+
+
+<h3>iOS中蓝牙的实现方案</h3>
+
+<p>iOS中提供了4个框架用于实现蓝牙连接</p>
+
+<ol>
+<li><p>GameKit.framework（用法简单）</p>
+
+<p> <code>只能用于iOS设备之间的连接，多用于游戏（比如五子棋对战），从iOS7开始过期</code></p></li>
+<li><p>MultipeerConnectivity.framework</p>
+
+<p> <code>只能用于iOS设备之间的连接，从iOS7开始引入，主要用于文件共享（仅限于沙盒的文件）</code></p></li>
+<li><p>ExternalAccessory.framework</p>
+
+<p> <code>可用于第三方蓝牙设备交互，但是蓝牙设备必须经过苹果MFi认证（国内较少）</code></p></li>
+<li><h6>CoreBluetooth.framework（时下热门）</h6>
+
+<p> <code>可用于第三方蓝牙设备交互，必须要支持蓝牙4.0</code></p>
+
+<p> <code>硬件至少是4s，系统至少是iOS6</code></p>
+
+<p> <code>蓝牙4.0以低功耗著称，一般也叫BLE（BluetoothLowEnergy）</code></p>
+
+<p> <code>目前应用比较多的案例：运动手坏、嵌入式设备、智能家居</code></p></li>
+</ol>
+
+
+<p>下面具体介绍使用CoreBluetooth.framework的代码步骤：</p>
+
+<h5>蓝牙系统库</h5>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+</code></pre>
+
+<h5>必须要由UUID来唯一标示对应的service和characteristic</h5>
+
+<pre><code>#define kServiceUUID @"5C476471-1109-4EBE-A826-45B4F9D74FB9"
+
+#define kCharacteristicHeartRateUUID @"82C7AC0F-6113-4EC9-92D1-5EEF44571398"
+
+#define kCharacteristicBodyLocationUUID @"537B5FD6-1889-4041-9C35-F6949D1CA034"
+</code></pre>
+
+<hr />
+
+<pre><code>@interface ViewController ()&lt;CBCentralManagerDelegate,CBPeripheralDelegate&gt;
+
+
+
+@property (nonatomic,strong)CBCentralManager * centralManager;
+
+@property (nonatomic,strong)CBPeripheral     * peripheral;
+
+@end
+</code></pre>
+
+<h4>创建中心角色</h4>
+
+<pre><code>#import &lt;CoreBluetooth/CoreBluetooth.h&gt;
+
+- (void)viewDidLoad
+{
+
+    [super viewDidLoad];
+
+    //初始化蓝牙 central manager
+
+    _centralManager = [[CBCentralManager alloc]initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0) options:nil];    
+
+}
+</code></pre>
+
+<h4>扫描外设</h4>
+
+<pre><code>[manager scanForPeripheralsWithServices:nil options:@{CBCentralManagerRestoredStateScanOptionsKey:@(YES)}];
+</code></pre>
+
+<h4>连接外设</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+        if([peripheral.name  isEqualToString:BLE_SERVICE_NAME]){
+                [self connect:peripheral];
+        }
+}       
+
+-(BOOL)connect:(CBPeripheral *)peripheral{
+        self.manager.delegate = self;
+        [self.manager connectPeripheral:peripheral
+                                options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:CBConnectPeripheralOptionNotifyOnDisconnectionKey]];
+}
+</code></pre>
+
+<h4>扫描外设中的服务和特征</h4>
+
+<pre><code>- (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
+{
+
+   NSLog(@"Did connect to peripheral: %@", peripheral);       
+
+   _testPeripheral = peripheral;
+   [peripheral setDelegate:self];  &lt;br&gt;//查找服务
+   [peripheral discoverServices:nil];
+
+
+}
+</code></pre>
+
+<h4>发现服务：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+
+
+NSLog(@"didDiscoverServices");
+
+if (error)
+{
+    NSLog(@"Discovered services for %@ with error: %@", peripheral.name, [error localizedDescription]);
+
+    if ([self.delegate respondsToSelector:@selector(DidNotifyFailConnectService:withPeripheral:error:)])
+        [self.delegate DidNotifyFailConnectService:nil withPeripheral:nil error:nil];
+
+    return;
+}
+
+
+for (CBService *service in peripheral.services)
+{
+     //发现服务
+    if ([service.UUID isEqual:[CBUUID UUIDWithString:UUIDSTR_ISSC_PROPRIETARY_SERVICE]])
+    {
+        NSLog(@"Service found with UUID: %@", service.UUID);  &lt;br&gt;//查找特征
+        [peripheral discoverCharacteristics:nil forService:service];
+        break;
+    }
+
+
+}
+}
+</code></pre>
+
+<h4>发现服务中的特征：</h4>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+
+if (error)
+{
+    NSLog(@"Discovered characteristics for %@ with error: %@", service.UUID, [error localizedDescription]);
+
+    [self error];
+    return;
+}
+
+NSLog(@"服务：%@",service.UUID);
+for (CBCharacteristic *characteristic in service.characteristics)
+{
+   //发现特征
+        if ([characteristic.UUID isEqual:[CBUUID UUIDWithString:@"xxxxxxx"]]) {
+            NSLog(@"监听：%@",characteristic);&lt;br&gt;//监听特征
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+}
+}
+</code></pre>
+
+<h4>与外设进行数据交互</h4>
+
+<p>读取数据：</p>
+
+<pre><code>- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error)
+    {
+        NSLog(@"Error updating value for characteristic %@ error: %@", characteristic.UUID, [error localizedDescription]);
+        self.error_b = BluetoothError_System;
+        [self error];
+        return;
+}
+
+//    NSLog(@"收到的数据：%@",characteristic.value);
+[self decodeData:characteristic.value];
+}
+</code></pre>
+
+<h4>写数据：</h4>
+
+<pre><code>NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
+            [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
+
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
+
+<ul>
+<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
+<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
+<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
+这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
+</ul>
+
+
+<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
+
+<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
+
+<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
+
+<p>进入正题：</p>
+
+<p>需要的工具和环境：</p>
+
+<ol type="a">
+<li>iPhone or iPad越狱，安装AppSync</li>
+<li>Xcode安装 Command Line Tools</li>
+<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
+</ol>
+
+
+<p>1、修改SDKSettings.plist文件</p>
+
+<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
+
+<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
+</code></pre>
+
+<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
+
+<p>执行命令为：</p>
+
+<p>转到目录下</p>
+
+<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+</code></pre>
+
+<p>将原有文件备份</p>
+
+<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
+</code></pre>
+
+<p>对SDKSettings.plist文件进行编辑</p>
+
+<pre><code>sudo vim SDKSettings.plist
+</code></pre>
+
+<p>将下面对应的字段改为NO</p>
+
+<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
+&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
+</code></pre>
+
+<p>此操作参考的路径如下：</p>
+
+<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
+</code></pre>
+
+<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
+
+<p>新建一个plist文件，命名为entitlements.</p>
+
+<pre><code>![Alt text](/iamges/yueyu001.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu001.png" title="Caption" ></p>
+
+<p>创建一个plist</p>
+
+<pre><code>![Alt text](/iamges/yueyu002.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu002.png" title="Caption" ></p>
+
+<p>将plist文件改为：</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Install&lt;/string&gt;
+        &lt;string&gt;Browse&lt;/string&gt;
+        &lt;string&gt;Uninstall&lt;/string&gt;
+        &lt;string&gt;Archive&lt;/string&gt;
+        &lt;string&gt;RemoveArchive&lt;/string&gt;
+    &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+
+<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu003.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu003.png" title="Caption" ></p>
+
+<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
+
+<p>3、实现越狱安装的代码：</p>
+
+<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
+NSDictionary *IPAInstalledApps()
+{
+void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
+if (lib)
+{
+    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
+    if (pMobileInstallationLookup)
+    {
+        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
+        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
+        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
+#ifdef DEBUG
+        NSLog(@"%@", dict);
+#endif
+        return dict;
+    }
+}
+return nil;
+}
+</code></pre>
+
+<p>所有代码均在之前的github目录中，可以自行查看。</p>
+
+<p>4、编译生成App文件</p>
+
+<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
+
+<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
+
+<pre><code>![Alt text](/iamges/yueyu004.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu004.png" title="Caption" ></p>
+
+<p>5、制作ipa文件</p>
+
+<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
+
+<p>比如在 Download 目录下， sudo -i</p>
+
+<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
+
+<p>然后对之前生成的文件，进行ldid签名</p>
+
+<pre><code>![Alt text](/iamges/yueyu005.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
+<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
+</ul>
+
+
+<p>6、生成ipa文件，安装</p>
+
+<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
+
+<p>然后通过itools安装，测试刚刚生成的文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu006.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu006.png" title="Caption" ></p>
+
+<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
+
+<h1>检查iphone时候越狱</h1>
+
+<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
+
+<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
+
+<p>复制代码
+复制代码</p>
+
+<pre><code>/*方法名:
+ *        isJailbroken
+*介绍:
+*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
+*参数说明:
+*        无
+*        
+*
+*/
+
+#pragma mark utils api
+// 类方法，判断当前设备是否已经越狱
++ (BOOL)isJailbroken;
+// 类方法，判断你的App是否被破解
++ (BOOL)isPirated;
+</code></pre>
+
+<p>apt和Cydia的方式来进行判断的，没看见源码</p>
+
+<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
+
+<h3>apt</h3>
+
+<pre><code>- (BOOL) asAP
+{
+return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
+4 }`
+</code></pre>
+
+<h3>system</h3>
+
+<pre><code>`1 - (BOOL) successCallSystem
+2 {
+3 return (system("ls") == 0) ? YES : NO;
+4 }`
+</code></pre>
+
+<h3>示例代码</h3>
+
+<pre><code>static const char* jailbreak_apps[] =
+
+  {
+      "/Applications/Cydia.app",
+      "/Applications/limera1n.app",
+      "/Applications/greenpois0n.app",
+      "/Applications/blackra1n.app",
+      "/Applications/blacksn0w.app",
+      "/Applications/redsn0w.app",
+     "/Applications/Absinthe.app",
+     NULL,
+ };
+
+ - (BOOL) isJailBroken
+ {
+     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
+     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
+     {
+         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
+         {
+             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
+             return YES;
+         }
+     }
+
+               // TODO: Add more checks? This is an arms-race we're bound to lose.
+
+     return NO;
+ }
+</code></pre>
+
+<hr />
+
+<pre><code>@interface UIDevice (Helper)  
+ - (BOOL)isJailbroken;  
+ @end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation UIDevice (Helper)  
+- (BOOL)isJailbroken {  
+BOOL jailbroken = NO;  
+NSString *cydiaPath = @"/Applications/Cydia.app";  
+NSString *aptPath = @"/private/var/lib/apt/";  
+if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
+ jailbroken = YES;  
+}  
+if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
+ jailbroken = YES;  
+}  
+return jailbroken;  
+}  
+@end
+</code></pre>
+
+<hr />
+
+<p>参考资源链接：</p>
+
+<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
+<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -1893,1025 +2714,6 @@ grayCover.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2] C
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
-
-<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
-
-<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
-
-<h5>一.UDID(Unique Device Identifier)</h5>
-
-<pre><code> UDID的全称是Unique Device Identifier，顾名思义，它就是苹果IOS设备的唯一识别码，它由40个字符的字母和数字组成。
-</code></pre>
-
-<h5>二.UUID(Universally Unique Identifier)</h5>
-
-<pre><code>UUID是Universally Unique Identifier的缩写,中文意思是通用唯一识别码.
-</code></pre>
-
-<h5>三.MAC Address</h5>
-
-<h5>四.OPEN UDID</h5>
-
-<h5>五.广告标示符（IDFA-identifierForIdentifier）</h5>
-
-<h5>六.Vindor标示符 (IDFV-identifierForVendor)</h5>
-
-<p>Vendor是CFBundleIdentifier（反转DNS格式）的前两部分。来自同一个运营商的应用运行在同一个设备上，此属性的值是相同的；不同的运营商应用运行在同一个设备上值不同。</p>
-
-<p>经测试，只要设备上有一个tencent的app，重新安装后的identifierForVendor值不变，如果tencent的app全部删除，重新安装后的identifierForVendor值改变。</p>
-
-<p>但是很不幸，上面所有这些表示设备唯一号的标识，在IOS7中要么被禁止使用，要么重新安装程序后两次获取的标识符不一样。</p>
-
-<p>由于IOS系统存储的数据都是在sandBox里面，一旦删除App，sandBox也不复存在。好在有一个例外，那就是keychain（钥匙串）。</p>
-
-<p>通常情况下，IOS系统用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。</p>
-
-<p>keychain里保存的信息不会因App被删除而丢失。所以，可以利用这个keychain这个特点来保存设备唯一标识。</p>
-
-<p>那么，如何在应用里使用使用keyChain呢，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。</p>
-
-<p>直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，我们可以使用已经封装好了的工具类KeychainItemWrapper来对keychain进行操作。</p>
-
-<p>KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，</p>
-
-<p>只需要把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
-
-<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
-KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
-                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
-
-//保存数据
-[wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
-
-[wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
-
-//从keychain里取出帐号密码
-NSString *password = [wrapper objectForKey:(id)kSecValueData];      
-
-//清空设置
-[wrapper resetKeychainItem];
-</code></pre>
-
-<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会出错！</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/08/14/unio/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/25/netall/">网络开发总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>一、一个HTTP请求的基本要素</h3>
-
-<p>1.请求URL：客户端通过哪个路径找到服务器</p>
-
-<p>2.请求参数：客户端发送给服务器的数据</p>
-
-<ul>
-<li>比如登录时需要发送的用户名和密码</li>
-</ul>
-
-
-<p>3.返回结果：服务器返回给客户端的数据</p>
-
-<ul>
-<li>一般是JSON数据或者XML数据</li>
-</ul>
-
-
-<h3>二、基本的HTTP请求的步骤（移动客户端）</h3>
-
-<p>1.拼接"请求URL" + &ldquo;?&rdquo; + &ldquo;请求参数&rdquo;</p>
-
-<ul>
-<li>请求参数的格式：参数名=参数值</li>
-<li>多个请求参数之间用&amp;隔开：参数名1=参数值1&amp;参数名2=参数值2</li>
-<li>比如：<a href="http://localhost:8080/MJServer/login?username=123&amp;pwd=456">http://localhost:8080/MJServer/login?username=123&amp;pwd=456</a></li>
-</ul>
-
-
-<p>2.发送请求</p>
-
-<p>3.解析服务器返回的数据</p>
-
-<h3>三、JSON解析</h3>
-
-<p>1.利用NSJSONSerialization类解析</p>
-
-<ul>
-<li>JSON数据（NSData） &ndash;> Foundation-OC对象（NSDictionary、NSArray、NSString、NSNumber）</li>
-<li>(id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error;</li>
-</ul>
-
-
-<p>2.JSON解析规律</p>
-
-<ul>
-<li>{ } &ndash;> NSDictionary @{ }</li>
-<li>[ ] &ndash;> NSArray @[ ]</li>
-<li>&ldquo; &rdquo; &ndash;> NSString @&ldquo; &rdquo;</li>
-<li>10 &ndash;> NSNumber @10</li>
-</ul>
-
-
-<h3>四、NSURLConnection</h3>
-
-<p>1.发布异步请求01&ndash;block回调</p>
-
-<pre><code>+ (void)sendAsynchronousRequest:(NSURLRequest*) request
-    queue:(NSOperationQueue*) queue
-    completionHandler:(void (^)(NSURLResponse* response, NSData* data, NSError* connectionError)) handler
-</code></pre>
-
-<ul>
-<li>request : 需要发送的请求</li>
-<li>queue : 一般用主队列，存放handler这个任务</li>
-<li>handler : 当请求完毕后，会自动调用这个block</li>
-</ul>
-
-
-<p>2.利用NSURLConnection发送请求的基本步骤
-1> 创建URL</p>
-
-<pre><code>NSURL *url = [NSURL URLWithString:@"http://4234324/5345345"];
-</code></pre>
-
-<p>2> 创建request</p>
-
-<pre><code>NSURLRequest *request = [NSURLRequest requestWithURL:url];
-</code></pre>
-
-<p>3> 发送请求</p>
-
-<pre><code>[NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
- ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-4&gt; 处理服务器返回的数据
-
- }];
-</code></pre>
-
-<h3>五、XML</h3>
-
-<p>1.语法
-1> 文档声明</p>
-
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
-</code></pre>
-
-<p>2> 元素
-3> 属性</p>
-
-<pre><code>&lt;videos&gt;
-    &lt;video name="小黄人 第01部" length="10"/&gt;
-    &lt;video name="小黄人 第01部" length="10"/&gt;
-&lt;/videos&gt;
-</code></pre>
-
-<ul>
-<li>videos和video是元素（节点）</li>
-<li>name和length叫做元素的属性</li>
-<li>video元素是videos元素的子元素</li>
-</ul>
-
-
-<p>2.解析
-1> SAX解析：逐个元素往下解析，适合大文件</p>
-
-<ul>
-<li>NSXMLParser</li>
-</ul>
-
-
-<p>2> DOM解析：一口气将整个XML文档加载进内存，适合小文件，使用最简单</p>
-
-<ul>
-<li>GDataXML</li>
-</ul>
-
-
-<h3>六、HTTP的通信过程</h3>
-
-<p>1.请求
-1> 请求行 : 请求方法、请求路径、HTTP协议的版本</p>
-
-<pre><code>GET /MJServer/resources/images/1.jpg HTTP/1.1
-</code></pre>
-
-<p>2> 请求头 : 客户端的一些描述信息</p>
-
-<ul>
-<li>User-Agent : 客户端的环境（软件环境）</li>
-</ul>
-
-
-<p>3> 请求体 : POST请求才有这个东西</p>
-
-<ul>
-<li>请求参数，发给服务器的数据</li>
-</ul>
-
-
-<p>2.响应
-1> 状态行（响应行）: HTTP协议的版本、响应状态码、响应状态描述</p>
-
-<p>HTTP/1.1 200 OK</p>
-
-<p>2> 响应头：服务器的一些描述信息</p>
-
-<ul>
-<li>Content-Type : 服务器返回给客户端的内容类型</li>
-<li>Content-Length : 服务器返回给客户端的内容的长度（比如文件的大小）</li>
-</ul>
-
-
-<p>3> 实体内容（响应体）</p>
-
-<ul>
-<li>服务器返回给客户端具体的数据，比如文件数据</li>
-</ul>
-
-
-<p>七、HTTP的请求方法
-1.GET
-1> 特点</p>
-
-<ul>
-<li>所有请求参数都拼接在url后面</li>
-</ul>
-
-
-<p>2> 缺点</p>
-
-<ul>
-<li>在url中暴露了所有的请求数据，不太安全</li>
-<li>url的长度有限制，不能发送太多的参数</li>
-</ul>
-
-
-<p>3> 使用场合</p>
-
-<ul>
-<li>如果仅仅是向服务器索要数据，一般用GET请求</li>
-</ul>
-
-
-<p>4> 如何发送一个GET请求</p>
-
-<pre><code>* 默认就是GET请求
-// 1.URL
-
-NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
-// 2.请求
-
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-// 3.发送请求
-
-[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-}];
-</code></pre>
-
-<p>2.POST
-1> 特点</p>
-
-<ul>
-<li>把所有请求参数放在请求体（HTTPBody）中</li>
-<li>理论上讲，发给服务器的数据的大小是没有限制</li>
-</ul>
-
-
-<p>2> 使用场合</p>
-
-<ul>
-<li>除开向服务器索要数据以外的请求，都可以用POST请求</li>
-<li>如果发给服务器的数据是一些隐私、敏感的数据，绝对要用POST请求</li>
-</ul>
-
-
-<p>3> 如何发送一个POST请求
-    // 1.创建一个URL ： 请求路径</p>
-
-<pre><code>NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login"];
-
-// 2.创建一个请求
-
-NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-// 设置请求方法
-request.HTTPMethod = @"POST";
-// 设置请求体 : 请求参数
-NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
-// NSString --&gt; NSData
-request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
-</code></pre>
-
-<h3>八、NSMutableURLRequest的常用方法</h3>
-
-<p>1.设置超时
-    request.timeoutInterval = 5;
-    // NSURLRequest是不能设置超时的，因为这个对象是不可变的</p>
-
-<h3>九、URL转码</h3>
-
-<p>1.URL中不能包含中文，得对中文进行转码(加上一堆的%)</p>
-
-<pre><code>NSString *urlStr = [NSString stringWithFormat:@"http://localhost/login?username=喝喝&amp;pwd=123"];
-urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-// urlStr == @"http://localhost/login?username=%E5%96%9D%E5%96%9D&amp;pwd=123"
-</code></pre>
-
-<h3>十、数据安全</h3>
-
-<p>1.网络数据加密
-1> 加密对象：隐私数据，比如密码、银行信息
-2> 加密方案</p>
-
-<ul>
-<li>提交隐私数据，必须用POST请求</li>
-<li><p>使用加密算法对隐私数据进行加密，比如MD5
-3> 加密增强：为了加大破解的难度</p></li>
-<li><p>对明文进行2次MD5 ： MD5(MD5($pass))</p></li>
-<li>先对明文撒盐，再进行MD5 ： MD5($pass.$salt)</li>
-</ul>
-
-
-<p>2.本地存储加密</p>
-
-<p>1> 加密对象：重要的数据，比如游戏数据</p>
-
-<p>3.代码安全问题</p>
-
-<p>1> 现在已经有工具和技术能反编译出源代码：逆向工程</p>
-
-<ul>
-<li>反编译出来的都是纯C语言的，可读性不高</li>
-<li>最起码能知道源代码里面用的是哪些框架</li>
-</ul>
-
-
-<p>2> 参考书籍：《iOS逆向工程》</p>
-
-<p>3> 解决方案：发布之前对代码进行混淆</p>
-
-<p> 混淆之前</p>
-
-<pre><code>@interface iCocosPerson :NSObject
-- (void)run;
-- (void)eat;
-@end
-</code></pre>
-
-<p> 混淆之后</p>
-
-<pre><code>@interface A :NSObject
-- (void)a;
-- (void)b;
-@end
-</code></pre>
-
-<p>十一、监测网络状态</p>
-
-<p>1.主动监测监测网络状态</p>
-
-<pre><code>// 是否WIFI
-
-+ (BOOL)isEnableWIFI {
-    return ([[Reachability reachabilityForLocalWiFi] currentReachabilityStatus] != NotReachable);
-}
-
-
-// 是否3G
-
-+ (BOOL)isEnable3G {
-    return ([[Reachability reachabilityForInternetConnection] currentReachabilityStatus] != NotReachable);
-}
-</code></pre>
-
-<p>2.监控网络状态</p>
-
-<p>1> 监听通知</p>
-
-<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkStateChange) name:kReachabilityChangedNotification object:nil];
-</code></pre>
-
-<p>2> 开始监听网络状态</p>
-
-<pre><code>// 获得Reachability对象
-self.reachability = [Reachability reachabilityForInternetConnection];
-// 开始监控网络
-[self.reachability startNotifier];
-</code></pre>
-
-<p>3> 移除监听</p>
-
-<pre><code>[self.reachability stopNotifier];
-[[NSNotificationCenter defaultCenter] removeObserver:self];
-</code></pre>
-
-<p>————————————————————————————————————————————————————————————————————————————————————————</p>
-
-<h3>一、大文件下载</h3>
-
-<p>1.方案：利用NSURLConnection和它的代理方法
-1> 发送一个请求</p>
-
-<pre><code>// 1.URL
-
-NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/resources/videos.zip"];
-// 2.请求
-
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-// 3.下载(创建完conn对象后，会自动发起一个异步请求)
-
-[NSURLConnection connectionWithRequest:request delegate:self];
-</code></pre>
-
-<p>2> 在代理方法中处理服务器返回的数据</p>
-
-<pre><code>/**
- 在接收到服务器的响应时：
- 1.创建一个空的文件
- 2.用一个句柄对象关联这个空的文件，目的是：方便后面用句柄对象往文件后面写数据
- */
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-
-{
-
-    // 文件路径
-
-    NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-
-    NSString *filepath = [caches stringByAppendingPathComponent:@"videos.zip"];
-
-
-
-    // 创建一个空的文件 到 沙盒中
-
-    NSFileManager *mgr = [NSFileManager defaultManager];
-
-    [mgr createFileAtPath:filepath contents:nil attributes:nil];
-
-
-
-    // 创建一个用来写数据的文件句柄
-
-    self.writeHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
-
-}
-
-
-/**
- 在接收到服务器返回的文件数据时，利用句柄对象往文件的最后面追加数据
- */
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-
-{
-
-    // 移动到文件的最后面
-
-    [self.writeHandle seekToEndOfFile];
-
-
-
-    // 将数据写入沙盒
-
-    [self.writeHandle writeData:data];
-
-}
-
-
-/**
- 在所有数据接收完毕时，关闭句柄对象
- */
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-
-{
-
-    // 关闭文件
-
-    [self.writeHandle closeFile];
-
-    self.writeHandle = nil;
-
-}
-</code></pre>
-
-<p>2.注意点：千万不能用NSMutableData来拼接服务器返回的数据</p>
-
-<h3>二、NSURLConnection发送异步请求的方法</h3>
-
-<p>1.block形式 - 除开大文件下载以外的操作，都可以用这种形式</p>
-
-<pre><code>[NSURLConnection sendAsynchronousRequest:&lt;#(NSURLRequest *)#&gt; queue:&lt;#(NSOperationQueue *)#&gt; completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-}];
-</code></pre>
-
-<p>2.代理形式 - 一般用在大文件下载</p>
-
-<pre><code>// 1.URL
-
-NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login?username=123&amp;pwd=123"];
-// 2.请求
-
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-// 3.下载(创建完conn对象后，会自动发起一个异步请求)
-
-[NSURLConnection connectionWithRequest:request delegate:self];
-</code></pre>
-
-<h3>三、NSURLSession</h3>
-
-<p>1.使用步骤</p>
-
-<p>1> 获得NSURLSession对象
-2> 利用NSURLSession对象创建对应的任务（Task）
-3> 开始任务（[task resume]）</p>
-
-<p>2.获得NSURLSession对象</p>
-
-<p>1> [NSURLSession sharedSession]</p>
-
-<p>2></p>
-
-<pre><code>NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
-self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-</code></pre>
-
-<p>3.任务类型</p>
-
-<h6>1> NSURLSessionDataTask</h6>
-
-<p>用途：用于非文件下载的GET\POST请求</p>
-
-<pre><code>NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request];
-NSURLSessionDataTask *task = [self.session dataTaskWithURL:url];
-NSURLSessionDataTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-}];
-</code></pre>
-
-<h6>2> NSURLSessionDownloadTask</h6>
-
-<p>用途：用于文件下载（小文件、大文件）</p>
-
-<pre><code>NSURLSessionDownloadTask *task = [self.session downloadTaskWithRequest:request];
-NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url];
-NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {   
-}];
-</code></pre>
-
-<p> ————————————————————————————————————————————————————————————————</p>
-
-<h2>AFN与ASI的区别（面试用）</h2>
-
-<h3>一、底层实现</h3>
-
-<p>1> AFN的底层基于OC的NSURLConnection和NSURLSession
-2> ASI的底层基于纯C语言的CFNetwork框架
-3> ASI的运行性能 高于 AFN</p>
-
-<h3>二、对服务器返回的数据处理</h3>
-
-<p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string
-2> AFN提供了多种对服务器数据处理的方式</p>
-
-<ul>
-<li>JSON处理</li>
-<li>XML处理</li>
-<li>其他处理</li>
-</ul>
-
-
-<h3>三、监听请求的过程</h3>
-
-<p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
-
-<ul>
-<li>success : 请求成功后调用</li>
-<li>failure : 请求失败后调用</li>
-</ul>
-
-
-<p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程
-（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
-
-<ul>
-<li>成为代理，遵守协议，实现协议中的代理方法</li>
-<li>成为代理，不遵守协议，自定义代理方法</li>
-<li>设置block</li>
-</ul>
-
-
-<h3>四、在文件下载和文件上传的使用难易度</h3>
-
-<p>1> AFN</p>
-
-<ul>
-<li>不容易监听下载进度和上传进度</li>
-<li>不容易实现断点续传</li>
-<li>一般只用来下载不大的文件</li>
-</ul>
-
-
-<p>2> ASI</p>
-
-<ul>
-<li>非常容易实现下载和上传</li>
-<li>非常容易监听下载进度和上传进度</li>
-<li>非常容易实现断点续传</li>
-<li>下载或大或小的文件都行</li>
-</ul>
-
-
-<h3>五、ASI提供了更多的实用功能</h3>
-
-<p>1> 控制圈圈要不要在请求过程中转
-2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
-3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
-
-<ul>
-<li>暂停\恢复\取消所有的请求</li>
-<li>监听整个队列中所有请求的下载进度和上传进度</li>
-</ul>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/07/25/netall/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/23/netuse/">网络请求初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天来说说关于iOS开发过程中的网络请求。</p>
-
-<p>关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。</p>
-
-<p>一、同步GET</p>
-
-<pre><code>// 1.将网址初始化成一个OC字符串对象
-NSString *urlStr = [NSString stringWithFormat:@"%@?query=%@®ion=%@&amp;output=json&amp;ak=6E823f587c95f0148c19993539b99295", kBusinessInfoURL, @"银行", @"济南"];
-// 如果网址中存在中文,进行URLEncode
-NSString *newUrlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-// 2.构建网络URL对象, NSURL
-NSURL *url = [NSURL URLWithString:newUrlStr];
-// 3.创建网络请求
-NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-// 创建同步链接
-NSURLResponse *response = nil;
-NSError *error = nil;
-NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];
-</code></pre>
-
-<p>当创建好同步链接以后， 就可以采用相应的方法进行解析。下面创建异步连接也是一样的。</p>
-
-<p>二、同步POST</p>
-
-<pre><code>// 1.根据网址初始化OC字符串对象
-    NSString *urlStr = [NSString stringWithFormat:@"%@", kVideoURL];
-    // 2.创建NSURL对象
-    NSURL *url = [NSURL URLWithString:urlStr];
-    // 3.创建请求
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    // 4.创建参数字符串对象
-    NSString *parmStr = @"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10";
-    // 5.将字符串转为NSData对象
-    NSData *pramData = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
-    // 6.设置请求体
-    [request setHTTPBody:pramData];
-    // 7.设置请求方式
-    [request setHTTPMethod:@"POST"];
-
-    // 创建同步链接
-    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-三、异步GET
-
-    NSString *urlStr = [NSString stringWithFormat:@"http://image.zcool.com.cn/56/13/1308200901454.jpg"];
-    NSString *newStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSURL *url = [NSURL URLWithString:newStr];
-    NSURLRequest *requst = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    //异步链接(形式1,较少用)
-    [NSURLConnection sendAsynchronousRequest:requst queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        self.imageView.image = [UIImage imageWithData:data];
-        // 解析
-        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@", dic);
-    }];
-</code></pre>
-
-<p>四、异步POST</p>
-
-<pre><code>// POST请求
-    NSString *urlString = [NSString stringWithFormat:@"%@",kVideoURL];
-    //创建url对象
-    NSURL *url = [NSURL URLWithString:urlString];
-    //创建请求
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
-    //创建参数字符串对象
-    NSString *parmStr = [NSString stringWithFormat:@"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10"];
-    //将字符串转换为NSData对象
-    NSData *data = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
-    [request setHTTPBody:data];
-    [request setHTTPMethod:@"POST"];
-    //创建异步连接（形式二）
-    [NSURLConnection connectionWithRequest:request delegate:self];
-</code></pre>
-
-<p>一般的，当创建异步连接时， 很少用到第一种方式，经常使用的是代理方法。关于NSURLConnectionDataDelegate，我们经常使用的协议方法为一下几个：</p>
-
-<pre><code>// 服务器接收到请求时
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-}
-// 当收到服务器返回的数据时触发, 返回的可能是资源片段
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-}
-// 当服务器返回所有数据时触发, 数据返回完毕
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-}
-// 请求数据失败时触发
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    NSLog(@"%s", __FUNCTION__);
-}
-</code></pre>
-
-<p>最后，分析一下这几种呢网络请求的区别。</p>
-
-<h6>GET请求和POST请求的区别：</h6>
-
-<ol>
-<li><p>GET请求的接口会包含参数部分，参数会作为网址的一部分，服务器地址与参数之间通过 ? 来间隔。POST请求会将服务器地址与参数分开，请求接口中只有服务器地址，而参数会作为请求的一部分，提交后台服务器。</p></li>
-<li><p>GET请求参数会出现在接口中，不安全。而POST请求相对安全。</p></li>
-<li><p>虽然GET请求和POST请求都可以用来请求和提交数据，但是一般的GET多用于从后台请求数据，POST多用于向后台提交数据。</p></li>
-</ol>
-
-
-<h6>同步和异步的区别：</h6>
-
-<ul>
-<li><p>同步链接：主线程去请求数据，当数据请求完毕之前，其他线程一律不响应，会造成程序就假死现象。</p></li>
-<li><p>异步链接：会单独开一个线程去处理网络请求，主线程依然处于可交互状态,程序运行流畅。</p></li>
-</ul>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/07/23/netuse/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/">面试会问到的？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h4>1、UIScreen可以获取设备屏幕的大小。</h4>
-
-<pre><code>// 整个屏幕的大小
-CGRect bounds = [UIScreen mainScreen].bounds;
-NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
-</code></pre>
-
-<p><code>{0, 0, 320, 480}</code></p>
-
-<pre><code>// 应用程序窗口大小 
-CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
-NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));
-</code></pre>
-
-<p><code>{0, 20, 320, 460}</code></p>
-
-<h4>2、UIView对象定义了一个屏幕上的一个矩形区域，同时处理该区域的绘制和触屏事件。</h4>
-
-<p>可以在这个区域内绘制图形和文字，还可以接收用户的操作。一个UIView的实例可以包含和管理若干个子UIView。</p>
-
-<p>ViewController.m</p>
-
-<pre><code>-(void)viewDidAppear:(BOOL)animated
-
-{
-
-    [super
- viewDidAppear:animated];
-
-    UIView*
- myView = [[UIView alloc] initWithFrame:CGRectMake(10, 10, 100, 100)];
-
-    myView.backgroundColor=[UIColor
- redColor];
-
-    [self.view
- addSubview:myView];
-
-}
-</code></pre>
-
-<h4>3、UIWindow对象是所有UIView的根，管理和协调的应用程序的显示</h4>
-
-<p>UIWindow类是UIView的子类，可以看作是特殊的UIView。一般应用程序只有一个UIWindow对象，即使有多个UIWindow对象，也只有一个UIWindow可以接受到用户的触屏事件。</p>
-
-<p>AppDelegate.m</p>
-
-<pre><code>-
- (BOOL)application:(UIApplication
- *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-
-{
-
-    UIWindow
- *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
-    myWindow.backgroundColor=[UIColor
- whiteColor];
-
-    [myWindow
- makeKeyAndVisible];
-
-    _window
- = myWindow;
-
-    return
-
-YES;
-
-}
-</code></pre>
-
-<p> ####4、UIViewController对象负责管理所有UIView的层次结构，并响应设备的方向变化。</p>
-
-<p>AppDelegate.m</p>
-
-<pre><code>-
- (BOOL)application:(UIApplication
- *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-
-{
-
-    UIWindow
- *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
-    myWindow.backgroundColor=[UIColor
- whiteColor];
-
-    UIViewController
- *myViewController = [[UIViewController alloc] initWithNibName:nil bundle:nil];
-
-    myWindow.rootViewController
- = myViewController;
-
-    [myWindow
- makeKeyAndVisible];
-
-    _window
- = myWindow;
-
-    return
-
-YES;
-
-}
-</code></pre>
-
-<h4>CALayer是在/System/Library/Frameworks/QuartzCore.framework定义的。而且CALayer作为一个低级的，可以承载绘制内容的底层对象出现在该框架中。</h4>
-
-<p>现在比较一下uiview和calayer都可以显示图片文字等信息。难道apple提供了，两套绘图机制吗？不会。</p>
-
-<p> UIView相比CALayer最大区别是UIView可以响应用户事件，而CALayer不可以。UIView侧重于对显示内容的管理，CALayer侧重于对内容的绘制。</p>
-
-<p> 大家都知道QuartzCore是IOS中提供图像绘制的基础库。并且CALayer是定义该框架中。难道UIView的底层实现是CALayer？？</p>
-
-<p>官方做出了明确的解释：</p>
-
-<pre><code>Core Animation doesn't provide a means for actually displaying layers in a window, they must be hosted by a view. When paired with a view, the view must provide event-handling for the underlying layers, while the layers provide display of the content.
-
-The view system in iOS is built directly on top of Core Animation layers. Every instance of UIView automatically creates an instance of a CALayer class and sets it as the value of the view’s layer property. You can add sublayers to the view’s layer as needed.
-
-On Mac OS X you must configure an NSView instance in such a way that it can host a layer.
-</code></pre>
-
-<p>由此可见UIView是基于CALayer的高层封装。The view system in iOS is built directly on top of Core Animation layers.</p>
-
-<blockquote><p>结论：
- UIView来自CALayer，高于CALayer，是CALayer高层实现与封装。UIView的所有特性来源于CALayer支持。</p></blockquote>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -2934,7 +2736,7 @@ On Mac OS X you must configure an NSView instance in such a way that it can host
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
-<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (6)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
@@ -2947,23 +2749,23 @@ On Mac OS X you must configure an NSView instance in such a way that it can host
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
   </ul>

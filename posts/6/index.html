@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="你是怎么退出键盘的？ ordinal iOS开发中键盘的退出方法用很多中我们应该在合适的地方使用合适的方法才能更好的提高开发的效率和应用的性能 下面给大家介绍几种最常用的键盘退出方法，基本上iOS开发中的键盘退出方法都是这几种中的一种活着几种。 一：textView // &hellip;">
+  <meta name="description" content="独一无二 ordinal WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。 更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。 IOS系统中，获取设备唯一标识的方法有很多： 一.UDID( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,1025 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
+
+<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
+
+<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
+
+<h5>一.UDID(Unique Device Identifier)</h5>
+
+<pre><code> UDID的全称是Unique Device Identifier，顾名思义，它就是苹果IOS设备的唯一识别码，它由40个字符的字母和数字组成。
+</code></pre>
+
+<h5>二.UUID(Universally Unique Identifier)</h5>
+
+<pre><code>UUID是Universally Unique Identifier的缩写,中文意思是通用唯一识别码.
+</code></pre>
+
+<h5>三.MAC Address</h5>
+
+<h5>四.OPEN UDID</h5>
+
+<h5>五.广告标示符（IDFA-identifierForIdentifier）</h5>
+
+<h5>六.Vindor标示符 (IDFV-identifierForVendor)</h5>
+
+<p>Vendor是CFBundleIdentifier（反转DNS格式）的前两部分。来自同一个运营商的应用运行在同一个设备上，此属性的值是相同的；不同的运营商应用运行在同一个设备上值不同。</p>
+
+<p>经测试，只要设备上有一个tencent的app，重新安装后的identifierForVendor值不变，如果tencent的app全部删除，重新安装后的identifierForVendor值改变。</p>
+
+<p>但是很不幸，上面所有这些表示设备唯一号的标识，在IOS7中要么被禁止使用，要么重新安装程序后两次获取的标识符不一样。</p>
+
+<p>由于IOS系统存储的数据都是在sandBox里面，一旦删除App，sandBox也不复存在。好在有一个例外，那就是keychain（钥匙串）。</p>
+
+<p>通常情况下，IOS系统用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。</p>
+
+<p>keychain里保存的信息不会因App被删除而丢失。所以，可以利用这个keychain这个特点来保存设备唯一标识。</p>
+
+<p>那么，如何在应用里使用使用keyChain呢，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。</p>
+
+<p>直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，我们可以使用已经封装好了的工具类KeychainItemWrapper来对keychain进行操作。</p>
+
+<p>KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，</p>
+
+<p>只需要把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
+
+<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
+KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
+                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
+
+//保存数据
+[wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
+
+[wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
+
+//从keychain里取出帐号密码
+NSString *password = [wrapper objectForKey:(id)kSecValueData];      
+
+//清空设置
+[wrapper resetKeychainItem];
+</code></pre>
+
+<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会出错！</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/08/14/unio/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/25/netall/">网络开发总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一、一个HTTP请求的基本要素</h3>
+
+<p>1.请求URL：客户端通过哪个路径找到服务器</p>
+
+<p>2.请求参数：客户端发送给服务器的数据</p>
+
+<ul>
+<li>比如登录时需要发送的用户名和密码</li>
+</ul>
+
+
+<p>3.返回结果：服务器返回给客户端的数据</p>
+
+<ul>
+<li>一般是JSON数据或者XML数据</li>
+</ul>
+
+
+<h3>二、基本的HTTP请求的步骤（移动客户端）</h3>
+
+<p>1.拼接"请求URL" + &ldquo;?&rdquo; + &ldquo;请求参数&rdquo;</p>
+
+<ul>
+<li>请求参数的格式：参数名=参数值</li>
+<li>多个请求参数之间用&amp;隔开：参数名1=参数值1&amp;参数名2=参数值2</li>
+<li>比如：<a href="http://localhost:8080/MJServer/login?username=123&amp;pwd=456">http://localhost:8080/MJServer/login?username=123&amp;pwd=456</a></li>
+</ul>
+
+
+<p>2.发送请求</p>
+
+<p>3.解析服务器返回的数据</p>
+
+<h3>三、JSON解析</h3>
+
+<p>1.利用NSJSONSerialization类解析</p>
+
+<ul>
+<li>JSON数据（NSData） &ndash;> Foundation-OC对象（NSDictionary、NSArray、NSString、NSNumber）</li>
+<li>(id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error;</li>
+</ul>
+
+
+<p>2.JSON解析规律</p>
+
+<ul>
+<li>{ } &ndash;> NSDictionary @{ }</li>
+<li>[ ] &ndash;> NSArray @[ ]</li>
+<li>&ldquo; &rdquo; &ndash;> NSString @&ldquo; &rdquo;</li>
+<li>10 &ndash;> NSNumber @10</li>
+</ul>
+
+
+<h3>四、NSURLConnection</h3>
+
+<p>1.发布异步请求01&ndash;block回调</p>
+
+<pre><code>+ (void)sendAsynchronousRequest:(NSURLRequest*) request
+    queue:(NSOperationQueue*) queue
+    completionHandler:(void (^)(NSURLResponse* response, NSData* data, NSError* connectionError)) handler
+</code></pre>
+
+<ul>
+<li>request : 需要发送的请求</li>
+<li>queue : 一般用主队列，存放handler这个任务</li>
+<li>handler : 当请求完毕后，会自动调用这个block</li>
+</ul>
+
+
+<p>2.利用NSURLConnection发送请求的基本步骤
+1> 创建URL</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://4234324/5345345"];
+</code></pre>
+
+<p>2> 创建request</p>
+
+<pre><code>NSURLRequest *request = [NSURLRequest requestWithURL:url];
+</code></pre>
+
+<p>3> 发送请求</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
+ ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+4&gt; 处理服务器返回的数据
+
+ }];
+</code></pre>
+
+<h3>五、XML</h3>
+
+<p>1.语法
+1> 文档声明</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+</code></pre>
+
+<p>2> 元素
+3> 属性</p>
+
+<pre><code>&lt;videos&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+&lt;/videos&gt;
+</code></pre>
+
+<ul>
+<li>videos和video是元素（节点）</li>
+<li>name和length叫做元素的属性</li>
+<li>video元素是videos元素的子元素</li>
+</ul>
+
+
+<p>2.解析
+1> SAX解析：逐个元素往下解析，适合大文件</p>
+
+<ul>
+<li>NSXMLParser</li>
+</ul>
+
+
+<p>2> DOM解析：一口气将整个XML文档加载进内存，适合小文件，使用最简单</p>
+
+<ul>
+<li>GDataXML</li>
+</ul>
+
+
+<h3>六、HTTP的通信过程</h3>
+
+<p>1.请求
+1> 请求行 : 请求方法、请求路径、HTTP协议的版本</p>
+
+<pre><code>GET /MJServer/resources/images/1.jpg HTTP/1.1
+</code></pre>
+
+<p>2> 请求头 : 客户端的一些描述信息</p>
+
+<ul>
+<li>User-Agent : 客户端的环境（软件环境）</li>
+</ul>
+
+
+<p>3> 请求体 : POST请求才有这个东西</p>
+
+<ul>
+<li>请求参数，发给服务器的数据</li>
+</ul>
+
+
+<p>2.响应
+1> 状态行（响应行）: HTTP协议的版本、响应状态码、响应状态描述</p>
+
+<p>HTTP/1.1 200 OK</p>
+
+<p>2> 响应头：服务器的一些描述信息</p>
+
+<ul>
+<li>Content-Type : 服务器返回给客户端的内容类型</li>
+<li>Content-Length : 服务器返回给客户端的内容的长度（比如文件的大小）</li>
+</ul>
+
+
+<p>3> 实体内容（响应体）</p>
+
+<ul>
+<li>服务器返回给客户端具体的数据，比如文件数据</li>
+</ul>
+
+
+<p>七、HTTP的请求方法
+1.GET
+1> 特点</p>
+
+<ul>
+<li>所有请求参数都拼接在url后面</li>
+</ul>
+
+
+<p>2> 缺点</p>
+
+<ul>
+<li>在url中暴露了所有的请求数据，不太安全</li>
+<li>url的长度有限制，不能发送太多的参数</li>
+</ul>
+
+
+<p>3> 使用场合</p>
+
+<ul>
+<li>如果仅仅是向服务器索要数据，一般用GET请求</li>
+</ul>
+
+
+<p>4> 如何发送一个GET请求</p>
+
+<pre><code>* 默认就是GET请求
+// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.发送请求
+
+[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.POST
+1> 特点</p>
+
+<ul>
+<li>把所有请求参数放在请求体（HTTPBody）中</li>
+<li>理论上讲，发给服务器的数据的大小是没有限制</li>
+</ul>
+
+
+<p>2> 使用场合</p>
+
+<ul>
+<li>除开向服务器索要数据以外的请求，都可以用POST请求</li>
+<li>如果发给服务器的数据是一些隐私、敏感的数据，绝对要用POST请求</li>
+</ul>
+
+
+<p>3> 如何发送一个POST请求
+    // 1.创建一个URL ： 请求路径</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login"];
+
+// 2.创建一个请求
+
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+// 设置请求方法
+request.HTTPMethod = @"POST";
+// 设置请求体 : 请求参数
+NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
+// NSString --&gt; NSData
+request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
+</code></pre>
+
+<h3>八、NSMutableURLRequest的常用方法</h3>
+
+<p>1.设置超时
+    request.timeoutInterval = 5;
+    // NSURLRequest是不能设置超时的，因为这个对象是不可变的</p>
+
+<h3>九、URL转码</h3>
+
+<p>1.URL中不能包含中文，得对中文进行转码(加上一堆的%)</p>
+
+<pre><code>NSString *urlStr = [NSString stringWithFormat:@"http://localhost/login?username=喝喝&amp;pwd=123"];
+urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// urlStr == @"http://localhost/login?username=%E5%96%9D%E5%96%9D&amp;pwd=123"
+</code></pre>
+
+<h3>十、数据安全</h3>
+
+<p>1.网络数据加密
+1> 加密对象：隐私数据，比如密码、银行信息
+2> 加密方案</p>
+
+<ul>
+<li>提交隐私数据，必须用POST请求</li>
+<li><p>使用加密算法对隐私数据进行加密，比如MD5
+3> 加密增强：为了加大破解的难度</p></li>
+<li><p>对明文进行2次MD5 ： MD5(MD5($pass))</p></li>
+<li>先对明文撒盐，再进行MD5 ： MD5($pass.$salt)</li>
+</ul>
+
+
+<p>2.本地存储加密</p>
+
+<p>1> 加密对象：重要的数据，比如游戏数据</p>
+
+<p>3.代码安全问题</p>
+
+<p>1> 现在已经有工具和技术能反编译出源代码：逆向工程</p>
+
+<ul>
+<li>反编译出来的都是纯C语言的，可读性不高</li>
+<li>最起码能知道源代码里面用的是哪些框架</li>
+</ul>
+
+
+<p>2> 参考书籍：《iOS逆向工程》</p>
+
+<p>3> 解决方案：发布之前对代码进行混淆</p>
+
+<p> 混淆之前</p>
+
+<pre><code>@interface iCocosPerson :NSObject
+- (void)run;
+- (void)eat;
+@end
+</code></pre>
+
+<p> 混淆之后</p>
+
+<pre><code>@interface A :NSObject
+- (void)a;
+- (void)b;
+@end
+</code></pre>
+
+<p>十一、监测网络状态</p>
+
+<p>1.主动监测监测网络状态</p>
+
+<pre><code>// 是否WIFI
+
++ (BOOL)isEnableWIFI {
+    return ([[Reachability reachabilityForLocalWiFi] currentReachabilityStatus] != NotReachable);
+}
+
+
+// 是否3G
+
++ (BOOL)isEnable3G {
+    return ([[Reachability reachabilityForInternetConnection] currentReachabilityStatus] != NotReachable);
+}
+</code></pre>
+
+<p>2.监控网络状态</p>
+
+<p>1> 监听通知</p>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkStateChange) name:kReachabilityChangedNotification object:nil];
+</code></pre>
+
+<p>2> 开始监听网络状态</p>
+
+<pre><code>// 获得Reachability对象
+self.reachability = [Reachability reachabilityForInternetConnection];
+// 开始监控网络
+[self.reachability startNotifier];
+</code></pre>
+
+<p>3> 移除监听</p>
+
+<pre><code>[self.reachability stopNotifier];
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+</code></pre>
+
+<p>————————————————————————————————————————————————————————————————————————————————————————</p>
+
+<h3>一、大文件下载</h3>
+
+<p>1.方案：利用NSURLConnection和它的代理方法
+1> 发送一个请求</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/resources/videos.zip"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>2> 在代理方法中处理服务器返回的数据</p>
+
+<pre><code>/**
+ 在接收到服务器的响应时：
+ 1.创建一个空的文件
+ 2.用一个句柄对象关联这个空的文件，目的是：方便后面用句柄对象往文件后面写数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+
+{
+
+    // 文件路径
+
+    NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+
+    NSString *filepath = [caches stringByAppendingPathComponent:@"videos.zip"];
+
+
+
+    // 创建一个空的文件 到 沙盒中
+
+    NSFileManager *mgr = [NSFileManager defaultManager];
+
+    [mgr createFileAtPath:filepath contents:nil attributes:nil];
+
+
+
+    // 创建一个用来写数据的文件句柄
+
+    self.writeHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
+
+}
+
+
+/**
+ 在接收到服务器返回的文件数据时，利用句柄对象往文件的最后面追加数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+
+{
+
+    // 移动到文件的最后面
+
+    [self.writeHandle seekToEndOfFile];
+
+
+
+    // 将数据写入沙盒
+
+    [self.writeHandle writeData:data];
+
+}
+
+
+/**
+ 在所有数据接收完毕时，关闭句柄对象
+ */
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+
+{
+
+    // 关闭文件
+
+    [self.writeHandle closeFile];
+
+    self.writeHandle = nil;
+
+}
+</code></pre>
+
+<p>2.注意点：千万不能用NSMutableData来拼接服务器返回的数据</p>
+
+<h3>二、NSURLConnection发送异步请求的方法</h3>
+
+<p>1.block形式 - 除开大文件下载以外的操作，都可以用这种形式</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:&lt;#(NSURLRequest *)#&gt; queue:&lt;#(NSOperationQueue *)#&gt; completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.代理形式 - 一般用在大文件下载</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login?username=123&amp;pwd=123"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<h3>三、NSURLSession</h3>
+
+<p>1.使用步骤</p>
+
+<p>1> 获得NSURLSession对象
+2> 利用NSURLSession对象创建对应的任务（Task）
+3> 开始任务（[task resume]）</p>
+
+<p>2.获得NSURLSession对象</p>
+
+<p>1> [NSURLSession sharedSession]</p>
+
+<p>2></p>
+
+<pre><code>NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
+self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+</code></pre>
+
+<p>3.任务类型</p>
+
+<h6>1> NSURLSessionDataTask</h6>
+
+<p>用途：用于非文件下载的GET\POST请求</p>
+
+<pre><code>NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+}];
+</code></pre>
+
+<h6>2> NSURLSessionDownloadTask</h6>
+
+<p>用途：用于文件下载（小文件、大文件）</p>
+
+<pre><code>NSURLSessionDownloadTask *task = [self.session downloadTaskWithRequest:request];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {   
+}];
+</code></pre>
+
+<p> ————————————————————————————————————————————————————————————————</p>
+
+<h2>AFN与ASI的区别（面试用）</h2>
+
+<h3>一、底层实现</h3>
+
+<p>1> AFN的底层基于OC的NSURLConnection和NSURLSession
+2> ASI的底层基于纯C语言的CFNetwork框架
+3> ASI的运行性能 高于 AFN</p>
+
+<h3>二、对服务器返回的数据处理</h3>
+
+<p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string
+2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li>JSON处理</li>
+<li>XML处理</li>
+<li>其他处理</li>
+</ul>
+
+
+<h3>三、监听请求的过程</h3>
+
+<p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li>success : 请求成功后调用</li>
+<li>failure : 请求失败后调用</li>
+</ul>
+
+
+<p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程
+（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<ul>
+<li>成为代理，遵守协议，实现协议中的代理方法</li>
+<li>成为代理，不遵守协议，自定义代理方法</li>
+<li>设置block</li>
+</ul>
+
+
+<h3>四、在文件下载和文件上传的使用难易度</h3>
+
+<p>1> AFN</p>
+
+<ul>
+<li>不容易监听下载进度和上传进度</li>
+<li>不容易实现断点续传</li>
+<li>一般只用来下载不大的文件</li>
+</ul>
+
+
+<p>2> ASI</p>
+
+<ul>
+<li>非常容易实现下载和上传</li>
+<li>非常容易监听下载进度和上传进度</li>
+<li>非常容易实现断点续传</li>
+<li>下载或大或小的文件都行</li>
+</ul>
+
+
+<h3>五、ASI提供了更多的实用功能</h3>
+
+<p>1> 控制圈圈要不要在请求过程中转
+2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
+3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li>暂停\恢复\取消所有的请求</li>
+<li>监听整个队列中所有请求的下载进度和上传进度</li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/25/netall/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/23/netuse/">网络请求初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天来说说关于iOS开发过程中的网络请求。</p>
+
+<p>关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。</p>
+
+<p>一、同步GET</p>
+
+<pre><code>// 1.将网址初始化成一个OC字符串对象
+NSString *urlStr = [NSString stringWithFormat:@"%@?query=%@®ion=%@&amp;output=json&amp;ak=6E823f587c95f0148c19993539b99295", kBusinessInfoURL, @"银行", @"济南"];
+// 如果网址中存在中文,进行URLEncode
+NSString *newUrlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// 2.构建网络URL对象, NSURL
+NSURL *url = [NSURL URLWithString:newUrlStr];
+// 3.创建网络请求
+NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+// 创建同步链接
+NSURLResponse *response = nil;
+NSError *error = nil;
+NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&amp;response error:&amp;error];
+</code></pre>
+
+<p>当创建好同步链接以后， 就可以采用相应的方法进行解析。下面创建异步连接也是一样的。</p>
+
+<p>二、同步POST</p>
+
+<pre><code>// 1.根据网址初始化OC字符串对象
+    NSString *urlStr = [NSString stringWithFormat:@"%@", kVideoURL];
+    // 2.创建NSURL对象
+    NSURL *url = [NSURL URLWithString:urlStr];
+    // 3.创建请求
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    // 4.创建参数字符串对象
+    NSString *parmStr = @"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10";
+    // 5.将字符串转为NSData对象
+    NSData *pramData = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
+    // 6.设置请求体
+    [request setHTTPBody:pramData];
+    // 7.设置请求方式
+    [request setHTTPMethod:@"POST"];
+
+    // 创建同步链接
+    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+三、异步GET
+
+    NSString *urlStr = [NSString stringWithFormat:@"http://image.zcool.com.cn/56/13/1308200901454.jpg"];
+    NSString *newStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *url = [NSURL URLWithString:newStr];
+    NSURLRequest *requst = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+    //异步链接(形式1,较少用)
+    [NSURLConnection sendAsynchronousRequest:requst queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        self.imageView.image = [UIImage imageWithData:data];
+        // 解析
+        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+        NSLog(@"%@", dic);
+    }];
+</code></pre>
+
+<p>四、异步POST</p>
+
+<pre><code>// POST请求
+    NSString *urlString = [NSString stringWithFormat:@"%@",kVideoURL];
+    //创建url对象
+    NSURL *url = [NSURL URLWithString:urlString];
+    //创建请求
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10];
+    //创建参数字符串对象
+    NSString *parmStr = [NSString stringWithFormat:@"method=album.channel.get&amp;appKey=myKey&amp;format=json&amp;channel=t&amp;pageNo=1&amp;pageSize=10"];
+    //将字符串转换为NSData对象
+    NSData *data = [parmStr dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPBody:data];
+    [request setHTTPMethod:@"POST"];
+    //创建异步连接（形式二）
+    [NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>一般的，当创建异步连接时， 很少用到第一种方式，经常使用的是代理方法。关于NSURLConnectionDataDelegate，我们经常使用的协议方法为一下几个：</p>
+
+<pre><code>// 服务器接收到请求时
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+}
+// 当收到服务器返回的数据时触发, 返回的可能是资源片段
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+}
+// 当服务器返回所有数据时触发, 数据返回完毕
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+}
+// 请求数据失败时触发
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    NSLog(@"%s", __FUNCTION__);
+}
+</code></pre>
+
+<p>最后，分析一下这几种呢网络请求的区别。</p>
+
+<h6>GET请求和POST请求的区别：</h6>
+
+<ol>
+<li><p>GET请求的接口会包含参数部分，参数会作为网址的一部分，服务器地址与参数之间通过 ? 来间隔。POST请求会将服务器地址与参数分开，请求接口中只有服务器地址，而参数会作为请求的一部分，提交后台服务器。</p></li>
+<li><p>GET请求参数会出现在接口中，不安全。而POST请求相对安全。</p></li>
+<li><p>虽然GET请求和POST请求都可以用来请求和提交数据，但是一般的GET多用于从后台请求数据，POST多用于向后台提交数据。</p></li>
+</ol>
+
+
+<h6>同步和异步的区别：</h6>
+
+<ul>
+<li><p>同步链接：主线程去请求数据，当数据请求完毕之前，其他线程一律不响应，会造成程序就假死现象。</p></li>
+<li><p>异步链接：会单独开一个线程去处理网络请求，主线程依然处于可交互状态,程序运行流畅。</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/23/netuse/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/">面试会问到的？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>1、UIScreen可以获取设备屏幕的大小。</h4>
+
+<pre><code>// 整个屏幕的大小
+CGRect bounds = [UIScreen mainScreen].bounds;
+NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
+</code></pre>
+
+<p><code>{0, 0, 320, 480}</code></p>
+
+<pre><code>// 应用程序窗口大小 
+CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
+NSLog(@"UIScreen applicationFrame: %@", NSStringFromCGRect(applicationFrame));
+</code></pre>
+
+<p><code>{0, 20, 320, 460}</code></p>
+
+<h4>2、UIView对象定义了一个屏幕上的一个矩形区域，同时处理该区域的绘制和触屏事件。</h4>
+
+<p>可以在这个区域内绘制图形和文字，还可以接收用户的操作。一个UIView的实例可以包含和管理若干个子UIView。</p>
+
+<p>ViewController.m</p>
+
+<pre><code>-(void)viewDidAppear:(BOOL)animated
+
+{
+
+    [super
+ viewDidAppear:animated];
+
+    UIView*
+ myView = [[UIView alloc] initWithFrame:CGRectMake(10, 10, 100, 100)];
+
+    myView.backgroundColor=[UIColor
+ redColor];
+
+    [self.view
+ addSubview:myView];
+
+}
+</code></pre>
+
+<h4>3、UIWindow对象是所有UIView的根，管理和协调的应用程序的显示</h4>
+
+<p>UIWindow类是UIView的子类，可以看作是特殊的UIView。一般应用程序只有一个UIWindow对象，即使有多个UIWindow对象，也只有一个UIWindow可以接受到用户的触屏事件。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<p> ####4、UIViewController对象负责管理所有UIView的层次结构，并响应设备的方向变化。</p>
+
+<p>AppDelegate.m</p>
+
+<pre><code>-
+ (BOOL)application:(UIApplication
+ *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+
+{
+
+    UIWindow
+ *myWindow = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    myWindow.backgroundColor=[UIColor
+ whiteColor];
+
+    UIViewController
+ *myViewController = [[UIViewController alloc] initWithNibName:nil bundle:nil];
+
+    myWindow.rootViewController
+ = myViewController;
+
+    [myWindow
+ makeKeyAndVisible];
+
+    _window
+ = myWindow;
+
+    return
+
+YES;
+
+}
+</code></pre>
+
+<h4>CALayer是在/System/Library/Frameworks/QuartzCore.framework定义的。而且CALayer作为一个低级的，可以承载绘制内容的底层对象出现在该框架中。</h4>
+
+<p>现在比较一下uiview和calayer都可以显示图片文字等信息。难道apple提供了，两套绘图机制吗？不会。</p>
+
+<p> UIView相比CALayer最大区别是UIView可以响应用户事件，而CALayer不可以。UIView侧重于对显示内容的管理，CALayer侧重于对内容的绘制。</p>
+
+<p> 大家都知道QuartzCore是IOS中提供图像绘制的基础库。并且CALayer是定义该框架中。难道UIView的底层实现是CALayer？？</p>
+
+<p>官方做出了明确的解释：</p>
+
+<pre><code>Core Animation doesn't provide a means for actually displaying layers in a window, they must be hosted by a view. When paired with a view, the view must provide event-handling for the underlying layers, while the layers provide display of the content.
+
+The view system in iOS is built directly on top of Core Animation layers. Every instance of UIView automatically creates an instance of a CALayer class and sets it as the value of the view’s layer property. You can add sublayers to the view’s layer as needed.
+
+On Mac OS X you must configure an NSView instance in such a way that it can host a layer.
+</code></pre>
+
+<p>由此可见UIView是基于CALayer的高层封装。The view system in iOS is built directly on top of Core Animation layers.</p>
+
+<blockquote><p>结论：
+ UIView来自CALayer，高于CALayer，是CALayer高层实现与封装。UIView的所有特性来源于CALayer支持。</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2014/07/19/uiview-calayer-uiscreenuiwindow/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -2640,810 +3659,6 @@ while ([result next]) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/20/paixu/">排序算法精髓</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>1、序言</h2>
-
-<p>ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题，但是这不是本篇文章讨论的范围。</p>
-
-<p>后面的文章中，我将会给大家详细介绍八大算法。</p>
-
-<h2>2、冒泡排序</h2>
-
-<h5>2.1 引出</h5>
-
-<p>前面的两篇博客里讲的插入排序是基于“逐个记录插入”，选择排序是基于“选择”，那么冒泡排序其实是基于“交换”。每次从第一个记录开始，一、二两个记录比较，大的往后放，二三两个记录比较&hellip;依次类推，这就是一趟冒泡排序。每一趟冒泡排序后，无序序列中值最大的记录冒到序列末尾，所以称之为冒泡排序。</p>
-
-<h5>2.2 代码</h5>
-
-<pre><code>//冒泡排序
-void bubbleSort(int *a,int n)
-{
-    int i,j;
-    for(i=1;i&lt;n;i++)
-        for(j=1;j&lt;n-i+1;j++){
-            if(a[j+1]&lt;a[j]){
-                a[j]=a[j]+a[j+1];
-                a[j+1]=a[j]-a[j+1];
-                a[j]=a[j]-a[j+1];
-            }
-        }
-}
-</code></pre>
-
-<p> 冒泡排序算法：
-冒泡排序代码</p>
-
-<pre><code> static void Main(string[] args)
-        {
-            ////五次比较
-             for (int i = 1; i &lt;= 5; i++)
-            {
-                List&lt;int&gt; list = new List&lt;int&gt;();
-                //插入2k个随机数到数组中
-                for (int j = 0; j &lt; 2000; j++)
-                {
-                    Thread.Sleep(1);
-                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 100000));
-                }
-                Console.WriteLine("\n第" + i + "次比较：");
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
-                var result = list.OrderBy(single =&gt; single).ToList();
-                watch.Stop();
-                Console.WriteLine("\n快速排序耗费时间：" + watch.ElapsedMilliseconds);
-                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
-                watch.Start();
-                result = BubbleSort(list);
-                watch.Stop();
-                Console.WriteLine("\n冒泡排序耗费时间：" + watch.ElapsedMilliseconds);
-                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
-                Console.ReadKey();
-            }
-
-      }
-
- //冒泡排序算法
-        private static List&lt;int&gt; BubbleSort(List&lt;int&gt; list)
-        {
-            int temp;
-            //第一层循环： 表明要比较的次数，比如list.count个数，肯定要比较count-1次
-            for (int i = 0; i &lt; list.Count - 1;i++ ) 
-            {
-                //list.count-1：取数据最后一个数下标，47 
-                //j&gt;i: 从后往前的的下标一定大于从前往后的下标，否则就超越了。
-                for (var j = list.Count-1; j &gt; i;j-- )
-                {
-                    //如果前面一个数大于后面一个数则交换
-                    if (list[j - 1] &gt; list[j])
-                    {
-                        temp = list[j - 1];
-                        list[j - 1] = list[j];
-                        list[j] = temp;
-                    }
-                }
-
-            }
-            return list;
-        } 
-</code></pre>
-
-<h5>2.3 效率分析</h5>
-
-<p>相对于简单选择排序，冒泡排序交换次数明显更多。它是通过不断地交换把最大的数冒出来。冒泡排序平均时间和最坏情况下（逆序）时间为o（n<sup>2</sup>）。最佳情况下虽然不用交换，但比较的次数没有减少，时间复杂度仍为o（n<sup>2</sup>）。此外冒泡排序是稳定的。</p>
-
-<h2>3、快速排序</h2>
-
-<h5>3.1 引出</h5>
-
-<pre><code>快速排序是冒泡排序的一种改进，冒泡排序排完一趟是最大值冒出来了，那么可不可以先选定一个值，然后扫描待排序序列，把小于该值的记录和大于该值的记录分成两个单独的序列，然后分别对这两个序列进行上述操作。这就是快速排序，我们把选定的那个值称为枢纽值，如果枢纽值为序列中的最大值，那么一趟快速排序就变成了一趟冒泡排序。
-</code></pre>
-
-<h5>3.2 代码</h5>
-
-<pre><code>两种版本，第一种是参考《数据结构》，在网上这种写法很流行。第二种是参考《算法导论》，实现起来较复杂。
-
-//快速排序（两端交替着向中间扫描）
-void quickSort1(int *a,int low,int high)
-{
-    int pivotkey=a[low];//以a[low]为枢纽值
-    int i=low,j=high;
-    if(low&gt;=high)
-        return;
-    //一趟快速排序
-    while(i&lt;j){//双向扫描
-        while(i &lt; j &amp;&amp; a[j] &gt;= pivotkey)
-            j--;
-        a[i]=a[j];
-        while(i &lt; j &amp;&amp; a[i] &lt;= pivotkey)
-            i++;
-        a[j]=a[i];
-    }
-    a[i]=pivotkey;//放置枢纽值
-    //分别对左边、右边排序
-    quickSort1(a,low,i-1); 
-    quickSort1(a,i+1,high); 
-}
-
-//快速排序（以最后一个记录的值为枢纽值，单向扫描数组）
-void quickSort2(int *a,int low,int high)
-{
-    int pivotkey=a[high];//以a[high]为枢纽值
-    int i=low-1,temp,j;
-    if(low&gt;=high)
-        return;
-    //一趟快速排序
-    for(j=low;j&lt;high;j++){
-        if(a[j]&lt;=pivotkey){
-            i++;
-            temp=a[i];
-            a[i]=a[j];
-            a[j]=temp;
-        }
-    }
-    i++;
-    //放置枢纽值
-    temp=a[i];
-    a[i]=pivotkey;
-    a[high]=temp;
-    //分别对左边、右边排序
-    quickSort2(a,low,i-1); 
-    quickSort2(a,i+1,high); 
-}
-</code></pre>
-
-<p>快速排序算法：</p>
-
-<p>快速排序法</p>
-
-<pre><code> static void Main(string[] args)
-        {
-
-            //5次比较
-            for (int i = 1; i &lt;= 5; i++)
-            {
-                List&lt;int&gt; list = new List&lt;int&gt;();
-                //插入200个随机数到数组中 
-                for (int j = 0; j &lt; 200; j++)
-                {
-                    Thread.Sleep(1);
-                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 10000));
-                }
-                Console.WriteLine("\n第" + i + "次比较：");
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
-                var result = list.OrderBy(single =&gt; single).ToList();
-                watch.Stop();
-                Console.WriteLine("\n系统定义的快速排序耗费时间：" + watch.ElapsedMilliseconds);
-                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
-                watch.Start();
-                new QuickSortClass().QuickSort(list, 0, list.Count - 1);
-                watch.Stop();
-                Console.WriteLine("\n俺自己写的快速排序耗费时间：" + watch.ElapsedMilliseconds);
-                Console.WriteLine("输出前是十个数:" + string.Join(",", list.Take(10).ToList()));
-                Console.ReadKey();
-            }
-        }
-
- public class QuickSortClass
-    {
-
-        ///&lt;summary&gt; 
-        ////// 分割函数 
-        ///&lt;/summary&gt; 
-        //////&lt;param name="list"&gt;待排序的数组&lt;/param&gt; 
-        ///&lt;param name="left"&gt;数组的左下标&lt;/param&gt; 
-        //////&lt;param name="right"&gt;&lt;/param&gt; 
-        ///&lt;returns&gt;&lt;/returns&gt;
-         public int Division(List&lt;int&gt; list, int left, int right) 
-         { 
-             //首先挑选一个基准元素 
-             int baseNum = list[left]; 
-             while (left &lt; right) 
-             { 
-                 //从数组的右端开始向前找，一直找到比base小的数字为止(包括base同等数) 
-                 while (left &lt; right &amp;&amp; list[right] &gt;= baseNum) 
-                     right = right - 1; 
-                 //最终找到了比baseNum小的元素，要做的事情就是此元素放到base的位置 
-                 list[left] = list[right]; 
-                 //从数组的左端开始向后找，一直找到比base大的数字为止（包括base同等数）
-                 while (left &lt; right &amp;&amp; list[left] &lt;= baseNum) 
-                     left = left + 1; 
-                 //最终找到了比baseNum大的元素，要做的事情就是将此元素放到最后的位置 
-                 list[right] = list[left];
-             }
-             //最后就是把baseNum放到该left的位置 
-             list[left] = baseNum;
-             //最终，我们发现left位置的左侧数值部分比left小，left位置右侧数值比left大 
-             //至此，我们完成了第一篇排序 
-             return left;
-         }
-        public void QuickSort(List&lt;int&gt; list, int left, int right)
-        { 
-            //左下标一定小于右下标，否则就超越了 
-            if (left &lt; right) 
-            { 
-                //对数组进行分割，取出下次分割的基准标号 
-                int i = Division(list, left, right);
-                //对“基准标号“左侧的一组数值进行递归的切割，以至于将这些数值完整的排序 
-                QuickSort(list, left, i - 1); 
-                //对“基准标号“右侧的一组数值进行递归的切割，以至于将这些数值完整的排序
-                QuickSort(list, i + 1, right);
-            }
-        }
-    }
-</code></pre>
-
-<h5>3.3 效率分析</h5>
-
-<p> 快速排序时间与划分是否对称有关。快速排序的平均时间复杂度为o（n<em>logn），至于为什么是o（n</em>logn），请参考《算法导论》第7章，书中用递归树的方法阐述了快速排序平均时间。且常数因子很小，所以就平均时间而言，快速排序是很好的内部排序方法。最佳情况下（每次划分都对称）时间复杂度o（n*logn）。最坏情况下（每次划分都不对称，如输入的序列有序或者逆序时）时间复杂度为o(n<sup>2</sup>)，所以在待排序序列有序或逆序时不宜选用快速排序。此外，快速排序是不稳定的。</p>
-
-<p> 最佳情况下，每次划分都是对称的，由于枢纽值不再考虑，所以得到的两个子问题的大小不可能大于n/2，同时一趟快速排序时间为o（n），所以运行时间递归表达式：</p>
-
-<pre><code>T（n）&lt;=2T(n/2)+o(n)。
-</code></pre>
-
-<p>这个递归式的解法请参考下一篇博客中归并排序效率分析。其解为T（n）=o（n*logn）。</p>
-
-<p> 最坏情况下，每次划分都很不对称，T(n)=T(n-1)+o(n),可以用递归树来解，第i层的代价为n-i+1.总共有n层。把每一层代价加起来有n-1个n相加。所以这个递归式的解为T（n）=o（n<sup>2</sup>）,此时就是冒泡排序。</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/05/20/paixu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/05/keyoc/">常用关键字汇总</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在做iOS开发中，系统的各个关键字处处都是，但是未必每一个关键字都是那么的明白，所以罗列出一些关键字供大家互相学习，有不完善之处请指正，谢谢</p>
-
-<table>
-<thead>
-<tr>
-<th> 关键字 </th>
-<th style="text-align:center;"> 总结</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> atomic    </td>
-<td style="text-align:center;"> atomic是Objc使用的一种线程保护技术，基本上来讲，是防止在写未完成的时候被另外一个线程读取，造成数据错误。而这种机制是耗费系统资源的，所以在iPhone这种小型设备上，如果没有使用多线程间的通讯编程，那么nonatomic是一个非常好的选择。</td>
-</tr>
-<tr>
-<td> super </td>
-<td style="text-align:center;"> 调用父类的方法</td>
-</tr>
-<tr>
-<td> readonly  </td>
-<td style="text-align:center;"> 说明属性是只读的，默认的标记是读写</td>
-</tr>
-<tr>
-<td> readwrite </td>
-<td style="text-align:center;"> 说明属性会被当成读写的，这也是默认属性</td>
-</tr>
-<tr>
-<td> retain    </td>
-<td style="text-align:center;"> 释放旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1</td>
-</tr>
-<tr>
-<td> self</td>
-<td style="text-align:center;">     是隐藏参数，指向当前调用方法的类</td>
-</tr>
-<tr>
-<td> setter    </td>
-<td style="text-align:center;"> 设置指定的set方法</td>
-</tr>
-<tr>
-<td> getter    </td>
-<td style="text-align:center;"> 设置指定的get方法</td>
-</tr>
-<tr>
-<td> property</td>
-<td style="text-align:center;">     设置成员变量的属性（有读／写，赋值assign,retain,copy ,以及对多线程的支持 nonatomic）</td>
-</tr>
-<tr>
-<td> end   </td>
-<td style="text-align:center;"> 类的头文件或者实现文件的结束</td>
-</tr>
-<tr>
-<td> copy</td>
-<td style="text-align:center;">     建立一个索引计数为1的对象，然后释放旧对象 </td>
-</tr>
-<tr>
-<td> assign    </td>
-<td style="text-align:center;"> 简单赋值，不更改引用计数</td>
-</tr>
-<tr>
-<td> synthesize    </td>
-<td style="text-align:center;"> 根据@property设置，自动生成成员变量相应的存取方法，从而可以使用点操作符来方便的存取该成员变量</td>
-</tr>
-<tr>
-<td> import    </td>
-<td style="text-align:center;"> 告诉预处理器,将头文件的内容包含到本文件中</td>
-</tr>
-<tr>
-<td> dynamic   </td>
-<td style="text-align:center;"> 告诉编译器由我们自己来实现访问方法</td>
-</tr>
-<tr>
-<td> nonatomic </td>
-<td style="text-align:center;"> 非原子性访问，对属性赋值的时候不加锁，多线程并发访问会提高性能</td>
-</tr>
-<tr>
-<td> implementation</td>
-<td style="text-align:center;">   表明类的实现</td>
-</tr>
-<tr>
-<td> strong    </td>
-<td style="text-align:center;"> 强引用，只要最后一个strong型指针不再指向对象，那么对象就会被释放，同时所有的weak型指针都将会被清除</td>
-</tr>
-<tr>
-<td> weak  </td>
-<td style="text-align:center;"> 弱引用</td>
-</tr>
-<tr>
-<td> __strong  </td>
-<td style="text-align:center;"> 是缺省的关键词</td>
-</tr>
-<tr>
-<td> __weak    </td>
-<td style="text-align:center;"> 声明了一个可以自动nil化的弱引用</td>
-</tr>
-<tr>
-<td> __unsafe_unretained</td>
-<td style="text-align:center;">  声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了</td>
-</tr>
-<tr>
-<td> __autoreleasing   </td>
-<td style="text-align:center;"> 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放</td>
-</tr>
-<tr>
-<td> unsafe_unretained 弱引用，容易生成野指针，尽量少用unsafe_unretained关键字</td>
-<td></td>
-</tr>
-<tr>
-<td> synchronized  </td>
-<td style="text-align:center;"> 方法加锁</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/05/05/keyoc/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/14/nscache%20nsdictionary/">NSCache&NSDcitionary你了解多少？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>NSCache</p>
-
-<p>NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下：</p>
-
-<ol>
-<li><p>NSCache具有自动删除的功能，以减少系统占用的内存；</p></li>
-<li><p>NSCache是线程安全的，不需要加线程锁；</p></li>
-<li><p>键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。</p></li>
-</ol>
-
-
-<h5>NSCache的属性以及方法介绍：</h5>
-
-<pre><code>@property NSUInteger totalCostLimit;
-</code></pre>
-
-<p>设置缓存占用的内存大小，并不是一个严格的限制，当总数超过了totalCostLimit设定的值，系统会清除一部分缓存，直至总消耗低于totalCostLimit的值。</p>
-
-<pre><code>@property NSUInteger countLimit;
-</code></pre>
-
-<p>设置缓存对象的大小，这也不是一个严格的限制。</p>
-
-<pre><code>- (id)objectForKey:(id)key;
-</code></pre>
-
-<p>获取缓存对象，基于key-value对</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key; // 0 cost
-</code></pre>
-
-<p>存储缓存对象，考虑缓存的限制属性；</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;
-</code></pre>
-
-<p>存储缓存对象，cost是提前知道该缓存对象占用的字节数，也会考虑缓存的限制属性，建议直接使用  - (void)setObject:(id)obj forKey:(id)key;</p>
-
-<h5>NSCacheDelegate代理</h5>
-
-<p>代理属性声明如下：</p>
-
-<pre><code>@property (assign) id&lt;NSCacheDelegate&gt;delegate;
-</code></pre>
-
-<p>实现了NSCacheDelegate代理的对象，在缓存对象即将被清理的时候，系统回调代理方法如下：</p>
-
-<pre><code>- (void)cache:(NSCache *)cache willEvictObject:(id)obj;
-</code></pre>
-
-<p>第一个参数是当前缓存（NSCache），不要修改该对象；</p>
-
-<p>第二个参数是当前将要被清理的对象，如果需要存储该对象，可以在此操作（存入Sqlite or CoreData）;</p>
-
-<p>该代理方法的调用会在缓存对象即将被清理的时候调用，如下场景会调用：</p>
-
-<ol>
-<li><ul>
-<li>(void)removeObjectForKey:(id)key; 手动删除对象；</li>
-</ul>
-</li>
-<li><p>缓存对象超过了NSCache的属性限制；（countLimit 和 totalCostLimit ）</p></li>
-<li><p>App进入后台会调用；</p></li>
-<li><p>系统发出内存警告；</p></li>
-</ol>
-
-
-<h5>NSDiscardableContent协议</h5>
-
-<p>NSDiscardableContent是一个协议，实现这个协议的目的是为了让我们的对象在不被使用时，可以将其丢弃，以让程序占用更少的内存。</p>
-
-<p>一个NSDiscardableContent对象的生命周期依赖于一个“counter”变量。一个NSDiscardableContent对象实际是一个可清理内存块，这个内存记录了对象当前是否被其它对象使用。如果这块内存正在被读取，或者仍然被需要，则它的counter变量是大于或等于1的；当它不再被使用时，就可以丢弃，此时counter变量将等于0。当counter变量等于0时，如果当前时间点内存比较紧张的话，内存块就可能被丢弃。这点类似于MRC&amp;ARC，对象内存回收机制。</p>
-
-<pre><code>- (void)discardContentIfPossible
-</code></pre>
-
-<p>当counter等于0的时候，为了丢弃这些对象，会调用这个方法。</p>
-
-<p>默认情况下，NSDiscardableContent对象的counter变量初始值为1，以确保对象不会被内存管理系统立即释放。</p>
-
-<pre><code>- (BOOL)beginContentAccess    (counter++)
-</code></pre>
-
-<p>调用该方法，对象的counter会加1；</p>
-
-<p>与beginContentAccess相对应的是endContentAccess。如果可丢弃内存不再被访问时调用。其声明如下：</p>
-
-<pre><code>- (void)endContentAccess  （counter--）
-</code></pre>
-
-<p>该方法会减少对象的counter变量，通常是让对象的counter值变回为0，这样在对象的内容不再被需要时，就要以将其丢弃。</p>
-
-<p>NSCache类提供了一个属性，来标识缓存是否自动舍弃那些内存已经被丢弃的对象(默认该属性为YES)，其声明如下：</p>
-
-<pre><code>@property BOOL evictsObjectsWithDiscardedContent
-</code></pre>
-
-<p>如果设置为YES，则在对象的内存被丢弃时舍弃对象。</p>
-
-<p>个人建议：如果需要使用缓存，直接用系统的NSCache就OK了，不要做死。</p>
-
-<h4>区别：</h4>
-
-<p>NSCache</p>
-
-<ul>
-<li>(1)可以存储(当然是使用内存)</li>
-<li>(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary</li>
-<li>(3)有固定客户.</li>
-</ul>
-
-
-<hr />
-
-<pre><code>+---------------------------+------------------------------+
-| NSCache | NSMutableDictionary |
-+---------------------------+------------------------------+
-| NSDiscardableContent | NSObject |
-+---------------------------+------------------------------+
-</code></pre>
-
-<p>下面是 UIImageView+AFNetworking的使用:</p>
-
-<pre><code>@interface AFImageCache :NSCache
-- (UIImage *)cachedImageForRequest:(NSURLRequest *)request;
-- (void)cacheImage:(UIImage *)image
-forRequest:(NSURLRequest *)request;
-@end
-</code></pre>
-
-<p>NSURLCache</p>
-
-<p>iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
-这里有详细的说明:here
-这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.</p>
-
-<p>映射关系:</p>
-
-<pre><code>+---------------------------+---------------------------------+
-| NSURLRequest ----|----&gt; NSCachedURLResponse |
-+---------------------------+---------------------------------+
-</code></pre>
-
-<p>通过这样的映射关系实现缓存. 这里存的是NSCachedURLResponse. 也就是说这里的NSURLCache也是一个类似于NSCache的容器.
-只不过data是NSCachedURLResponse对象. 并不是类似于image这样的data.</p>
-
-<p>这篇文章可以的: NSURLCache使用心得here
-我测试了一下UIImage->NSData->URL,NSURLConnection, UIWebView不同时候调用</p>
-
-<pre><code>- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request;
--(void)storeCachedResponse:(NSCachedURLResponse *)cachedResponse forRequest:(NSURLRequest *)request;
-</code></pre>
-
-<p>的情况:</p>
-
-<pre><code>+-------------+---------------------+----------------------+------------------+
-| | UIImage-&gt;URL | NSURLConnection | UIWebView |
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|1’s time |---+---------------------+----------------------+------------------+
-| | s | first called | second called | second called | 
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|2’s time +---+---------------------+----------------------+------------------+
-| | s | first called | X | X | 
-+---------+---+---------------------+----------------------+------------------+
-</code></pre>
-
-<blockquote><p>注意</p></blockquote>
-
-<pre><code>* c 表示 cachedResponseForRequest
-* s 表示 storeCachedResponse
-* X 表示不被调用
-</code></pre>
-
-<p>结果显示: UIImage->URL 是同步的请求. 因为cachedResponseForRequest不能发起同步请求来请求网络.</p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/04/14/nscache%20nsdictionary/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/11/fu-wu-qi-da-jian/">服务器搭建</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>一、简单说明</h3>
-
-<p>说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。</p>
-
-<p>提示：提前准备好的软件</p>
-
-<ul>
-<li><p>apache-tomcat-6.0.41.tar</p></li>
-<li><p>eclipse-jee-kepler-SR2-macosx-cocoa-x86_64.tar.gz</p></li>
-<li><p>jdk-8u5-macosx-x64.dmg</p></li>
-</ul>
-
-
-<h3>二、安装和配置本地服务器环境（java）步骤：</h3>
-
-<ul>
-<li>(1)在文档路径下，新建一个文件夹（NetWord），解压eclipse压缩包文件</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi001.png" title="Caption" ></p>
-
-<ul>
-<li>(2)先安装jdk</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi002.png" title="Caption" ></p>
-
-<ul>
-<li>(3)点击安装eclipse，设置工作空间，点击确定。</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi003.png" title="Caption" ></p>
-
-<p>设置工作空间
-<img src="/images/fuwuqi004.png" title="Caption" ></p>
-
-<p><img src="/images/fuwuqi0004.png" title="Caption" ></p>
-
-<ul>
-<li>(4)把提前写好的服务器代码，拷贝到工作空间中。</li>
-</ul>
-
-
-<p> <img src="/images/fuwuqi005.png" title="Caption" ></p>
-
-<p> <img src="/images/fuwuqi006.png" title="Caption" ></p>
-
-<ul>
-<li><p>(5)导入项目，导入已经存在的项目到工作空间中。
-<img src="/images/fuwuqi007.png" title="Caption" ><br/>
-<img src="/images/fuwuqi008.png" title="Caption" ><br/>
-<img src="/images/fuwuqi009.png" title="Caption" ></p></li>
-<li><p>(6)导入项目之后，项目报错且格式乱码，下面进行调整。</p></li>
-</ul>
-
-
-<p><img src="/images/fuwuqi010.png" title="Caption" ><br/>
-<img src="/images/fuwuqi011.png" title="Caption" ><br/>
-<img src="/images/fuwuqi012.png" title="Caption" ></p>
-
-<ul>
-<li><p>(7)配置容器，apache-tomcat.</p>
-
-<p> <img src="/images/fuwuqi013.png" title="Caption" >    <br/>
-<img src="/images/fuwuqi014.png" title="Caption" ></p></li>
-</ul>
-
-
-<p> <img src="/images/fuwuqi015.png" title="Caption" ></p>
-
-<p>点击ok。创建一个新的容器</p>
-
-<p><img src="/images/fuwuqi016.png" title="Caption" ></p>
-
-<p>选择容器的路径</p>
-
-<p><img src="/images/fuwuqi017.png" title="Caption" ></p>
-
-<p>安装好后显示如下：</p>
-
-<p><img src="/images/fuwuqi018.png" title="Caption" ></p>
-
-<ul>
-<li>(8)启动服务器。以debug的方式启动，方便做一些调试</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi019.png" title="Caption" ></p>
-
-<p>测试：server已经成功启动。</p>
-
-<p><img src="/images/fuwuqi020.png" title="Caption" ></p>
-
-<ul>
-<li>(9)部署程序</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi021.png" title="Caption" ></p>
-
-<p><img src="/images/fuwuqi022.png" title="Caption" ></p>
-
-<p><img src="/images/fuwuqi023.png" title="Caption" ></p>
-
-<ul>
-<li>(10)在火狐浏览器中输入服务器的地址，访问项目</li>
-</ul>
-
-
-<p><img src="/images/fuwuqi024.png" title="Caption" ></p>
-
-<p>至此本地服务器环境搭建完成。</p>
-
-<h3>访问服务器的资源</h3>
-
-<p><img src="/images/fuwuqi025.png" title="Caption" ></p>
-
-<p><img src="/images/fuwuqi026.png" title="Caption" ></p>
-
-<p>使用模拟器上的浏览器也可以访问本地服务器。输入地址192.168.1.53：8080/MJServer</p>
-
-<p>补充：浏览器打开页面，文字乱码调整。</p>
-
-<p><img src="/images/fuwuqi027.png" title="Caption" ></p>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2014/04/11/fu-wu-qi-da-jian/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/7">&larr; Older</a>
@@ -3466,7 +3681,7 @@ forRequest:(NSURLRequest *)request;
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
-<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (3)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (6)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
@@ -3479,23 +3694,23 @@ forRequest:(NSURLRequest *)request;
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a>
       </li>
     
   </ul>
