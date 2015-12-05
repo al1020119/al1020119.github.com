@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 底层开发 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/di-ceng-kai-fa/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-05T23:26:07+08:00</updated>
+  <updated>2015-12-05T23:43:43+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -22,7 +22,7 @@
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#109;&#97;&#106;&#x69;&#97;&#x30;&#x33;&#x40;&#109;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#46;&#x63;&#111;&#109;">&#x6d;&#97;&#x6a;&#x69;&#97;&#x30;&#x33;&#64;&#x6d;&#101;&#105;&#116;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x6d;&#x61;&#106;&#105;&#97;&#48;&#x33;&#x40;&#109;&#x65;&#x69;&#116;&#x75;&#x61;&#110;&#46;&#x63;&#x6f;&#x6d;">&#x6d;&#x61;&#106;&#105;&#97;&#x30;&#x33;&#x40;&#x6d;&#101;&#105;&#x74;&#x75;&#x61;&#x6e;&#x2e;&#99;&#111;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -36,6 +36,9 @@
 <li>优化，永无止境</li>
 <li>从消息决议说起</li>
 </ul>
+
+
+<!--more-->
 
 
 <p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
@@ -295,6 +298,9 @@ IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
 
 
 <p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
+
+<!--more-->
+
 
 <h2>一： 研究UITableView底层实现</h2>
 
@@ -893,6 +899,9 @@ IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
 
 <p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
 
+<!--more-->
+
+
 <ul>
 <li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
 <li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
@@ -1194,6 +1203,9 @@ return jailbroken;
 <p>下面就来看看什么是运行时，我们要怎么在iOS开发中去使用它。</p>
 
 <p>官方介绍：</p>
+
+<!--more-->
+
 
 <p><img src="/images/runtime001.png" title="Caption" ></p>
 
