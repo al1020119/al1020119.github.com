@@ -9,7 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包 java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包，还能根据自己的喜好选择对应的方式！ 我们开始吧！ 前提 &hellip;">
+  <meta name="description" content="关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。 苹果安全机制
+ios开发安全处理 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +75,460 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。</p>
+
+<ul>
+<li>苹果安全机制</li>
+<li>ios开发安全处理</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/12/an-quan-ji-zhi/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/12/an-quan-ji-zhi/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。</p>
+
+<blockquote><p>“yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。</p></blockquote>
+
+<h3>一.基本知识</h3>
+
+<h6>1.方法</h6>
+
+<ul>
+<li>SecItemAdd 增</li>
+<li>SecItemUpdate 改</li>
+<li>SecItemDelete 删</li>
+<li>SecItemCopyMatching 查</li>
+</ul>
+
+
+<h6>2.权限</h6>
+
+<p>文档上说iOS的keyChain是一个相对独立的空间，当程序替换，删除时并不会删除keyChain的内容，这个要比Library/Cache好。刷机，恢复出厂应该就没有了。关于备份，只会备份数据，到那时不会备份设备的密钥，换句话说，即使拿到数据，也没有办法解密里面的内容。有人说似乎破解的手机就能破解keyChain,本人并不清楚，希望有大神能指教。但个人认为，keyChain只是沙盒的升级版，可以存放一些非私密的信息，即使破解也不影响其它用户，只影响那个破解了的设备。（比如针对该设备的一个密钥）。</p>
+
+<p>可访问性一般来说，自己的程序只能访问自己的keychain,相同bundle的程序通过设置group可以互相共享同组的keychain，从而实现程序间可以共同访问一些数据。详细后面介绍一些我测试下来的经验。</p>
+
+<h6>3.如何查询keyChain</h6>
+
+<pre><code>[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+genericPasswordQuery = [[NSMutableDictionary alloc] init];   
+[genericPasswordQuery setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];//1  
+[genericPasswordQuery setObject:identifier forKey:(id)kSecAttrGeneric];//2  
+if (accessGroup != nil){  
+    [genericPasswordQuery setObject:accessGroup forKey:(id)kSecAttrAccessGroup];//3  
+}  
+[genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];//4  
+[genericPasswordQuery setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];//5  
+NSDictionary *tempQuery = [NSDictionary dictionaryWithDictionary:genericPasswordQuery];  
+NSMutableDictionary *outDictionary = nil;      
+if (SecItemCopyMatching((CFDictionaryRef)tempQuery, (CFTypeRef *)&amp;outDictionary) == noErr){//6  
+//found and outDicitionary is not nil  
+}else{  
+//not found  
+}  
+</code></pre>
+
+<ul>
+<li>1.设置Class值，每个Class对应的都有不同的参数类型</li>
+<li>2.用户确定的参数，一般是程序中使用的类别，比如说是"Password"或"Account Info"，作为search的主力条件</li>
+<li>3.设置Group,如果不同程序都拥有这个组，那么不同程序间可以共享这个组的数据</li>
+<li>4.只返回第一个匹配数据，查询方法使用，还有值kSecMatchLimitAll</li>
+<li>5.返回数据为CFDicitionaryRef，查询方法使用</li>
+<li>6.执行查询方法，判断返回值</li>
+</ul>
+
+
+<blockquote><p>eg:这个是none-ARC的代码哦！ARC情况下会有bridge提示。</p></blockquote>
+
+<h6>4.类型转换</h6>
+
+<p>介绍增删改方法调用前，先介绍转换方法，如何将NSDictionary转换成KeyChain方法可以设置的Dicitionary，一般在写程序过程中，应该尽量避免直接访问KeyChain，一般会创建一个NSDictionary来同步对应的数据，所以两者需要做转换。</p>
+
+<pre><code>//data to secItem  
+- (NSMutableDictionary *)dictionaryToSecItemFormat:(NSDictionary *)dictionaryToConvert  
+{  
+    // Create a dictionary to return populated with the attributes and data.  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    //设置kSecClass  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+    //将Dictionary里的kSecValueData(一般就是这个keyChain里主要内容，比如说是password),NSString转换成NSData  
+    NSString *passwordString = [dictionaryToConvert objectForKey:(id)kSecValueData];  
+    [returnDictionary setObject:[passwordString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];  
+    return returnDictionary;  
+}  
+//secItem to data  
+- (NSMutableDictionary *)secItemFormatToDictionary:(NSDictionary *)dictionaryToConvert  
+{  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    // Add the proper search key and class attribute.  
+    [returnDictionary setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+
+    // Acquire the password data from the attributes.  
+    NSData *passwordData = NULL;  
+    if (SecItemCopyMatching((CFDictionaryRef)returnDictionary, (CFTypeRef *)&amp;passwordData) == noErr)  
+    {  
+        // 删除多余的kSecReturnData数据  
+        [returnDictionary removeObjectForKey:(id)kSecReturnData];  
+
+        // 对应前面的步骤，将数据从NSData转成NSString  
+        NSString *password = [[[NSString alloc] initWithBytes:[passwordData bytes] length:[passwordData length]  
+                                                     encoding:NSUTF8StringEncoding] autorelease];  
+        [returnDictionary setObject:password forKey:(id)kSecValueData];  
+    }  
+    else  
+    {  
+        NSAssert(NO, @"Serious error, no matching item found in the keychain.\n");  
+    }  
+    [passwordData release];   
+    return returnDictionary;  
+}  
+</code></pre>
+
+<h6>5.增删改</h6>
+
+<p>用代码来说明</p>
+
+<pre><code>- (void)writeToKeychain  
+{  
+    NSDictionary *attributes = NULL;  
+    NSMutableDictionary *updateItem = NULL;  
+    OSStatus result;  
+    //判断是增还是改  
+    if (SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery, (CFTypeRef *)&amp;attributes) == noErr)  
+    {  
+            // First we need the attributes from the Keychain.  
+            updateItem = [NSMutableDictionary dictionaryWithDictionary:attributes];  
+        // Second we need to add the appropriate search key/values.  
+            [updateItem setObject:[genericPasswordQuery objectForKey:(id)kSecClass] forKey:(id)kSecClass];  
+            // Lastly, we need to set up the updated attribute list being careful to remove the class.  
+            NSMutableDictionary *tempCheck = [self dictionaryToSecItemFormat:keychainItemData];  
+            //删除kSecClass update不能update该字段，否则会报错  
+            [tempCheck removeObjectForKey:(id)kSecClass];  
+        //参数1表示search的，参数2表示需要更新后的值  
+            result = SecItemUpdate((CFDictionaryRef)updateItem, (CFDictionaryRef)tempCheck);  
+    }else{  
+            //增加  
+            result = SecItemAdd((CFDictionaryRef)[self dictionaryToSecItemFormat:keychainItemData], NULL);  
+    }  
+}  
+</code></pre>
+
+<p>删除很简单，就不写注释了</p>
+
+<pre><code>- (void)resetKeychainItem  
+{  
+    OSStatus junk = noErr;  
+    if (!keychainItemData)  
+    {  
+        self.keychainItemData = [[NSMutableDictionary alloc] init];  
+    }  
+    else if (keychainItemData)  
+    {  
+        NSMutableDictionary *tempDictionary = [self dictionaryToSecItemFormat:keychainItemData];  
+        junk = SecItemDelete((CFDictionaryRef)tempDictionary);  
+        NSAssert( junk == noErr || junk == errSecItemNotFound, @"Problem deleting current dictionary." );  
+    }  
+
+    // Default attributes for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrAccount];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrLabel];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrDescription];  
+
+    // Default data for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecValueData];  
+}  
+</code></pre>
+
+<p>二.Group的配置
+配置Target的Code Signing Entitlements.</p>
+
+<p><img src="/images/keyChain001.png" title="Caption" ></p>
+
+<p>配置该文件</p>
+
+<p><img src="/images/keyChain002.png" title="Caption" ></p>
+
+<p><img src="/images/keyChain003.png" title="Caption" ></p>
+
+<p>可以配置一个Array列表，表示该程序可以支持多个group
+这样就可以在创建secItem时候添加kSecAttrAccessGroup了。
+经过测试有以下经验同大家分享：</p>
+
+<ul>
+<li><p>1.相同bundle下生成的程序都可以共享相同group的keyChain.
+相同bundle解释下就是：比如:2个程序分别使用的provision对应bundle是com.jv.key1和com.jv.key2，那你配置文件肯定是{Identifer}.com.jv.{name},其中identifer是苹果生成的随机串号，可以在申请证书时看到，复制过来即可，name可以自己取，程序中指定属于哪个Group即可。</p></li>
+<li><p>2.如果你在 addkey时，没有指定group,则会默认添加你keychain-access-groups里第一个group，如果你没有设置Entitlements,则默认使用对应的程序的bundle name,比如com.jv.key1,表示只能给自己程序使用。</p></li>
+<li><p>3.如果你程序添加的group并不存在你的配置文件中，程序会奔溃，表示无法添加。因此你只能添加你配置文件中支持的keychain。</p></li>
+</ul>
+
+
+<p>三、保存私密信息（工具）
+在应用里使用使用keyChain，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，为减轻咱们程序员的开发，我们可以使用一些已经封装好了的工具类，下面我会简单介绍下我用过的两个工具类：KeychainItemWrapper和SFHFKeychainUtils。</p>
+
+<p>（一）KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，只需要
+把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
+
+<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
+KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
+                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
+
+//保存帐号
+[
+wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
+
+//保存密码
+[
+wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
+
+//从keychain里取出帐号密码
+NSString *password = [wrapper objectForKey:(id)kSecValueData];      
+
+//清空设置
+[
+wrapper resetKeychainItem];
+</code></pre>
+
+<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会崩溃！</p>
+
+<p>（二）SFHFKeychainUtils 提供了在 iOS keychain中安全的存储密码的工具</p>
+
+<p>下载地址<a href="https://github.com/ldandersen/scifihifi-iphone/tree/master/security">https://github.com/ldandersen/scifihifi-iphone/tree/master/security</a></p>
+
+<ul>
+<li><p>1、引入Security.frameWork框架。</p></li>
+<li><p>2、引入头文件：SFHKeychainUtils.h.</p></li>
+<li><p>3、存密码：</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>[SFHFKeychainUtils storeUsername:@"dd" andPassword:@"aa"forServiceName:SERVICE_NAME updateExisting:1 error:nil];
+
+[SFHFKeychainUtils deleteItemForUsername:@"dd" andServiceName:SERVICE_NAME error:nil];
+</code></pre>
+
+<ul>
+<li>4、取密码：</li>
+</ul>
+
+
+<hr />
+
+<pre><code>NSString *passWord =  [SFHFKeychainUtils getPasswordForUsername:@"dd"andServiceName:SERVICE_NAME error:nil];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/12/keychainchu-tan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>A：add，新增</li>
+<li>C：conflict，冲突</li>
+<li>D：delete，删除</li>
+<li>M：modify，本地已经修改</li>
+<li>G：modify and merGed，本地文件修改并且和服务器的进行合并</li>
+<li>U：update，从服务器更新</li>
+<li>R：replace，从服务器替换</li>
+<li>I：ignored，忽略</li>
+</ul>
+
+
+<p>常见提示图标：</p>
+
+<h6>黄色感叹号(有冲突):</h6>
+
+<pre><code>--这是有冲突了，冲突就是说你对某个文件进行了修改，别人也对这个文件进行了修改，别人抢在你提交之前先提交了，这时你再提交就会被提示发生冲突，而不允许你提交，防止你的提交覆盖了别人的修改。要解决冲突，如果你确认你的修改是无效的，则用TSVN还原你的修改就行了；如果认为你的修改是正确的，别人的提交是无效的，那么用TSVN先标记为“解决冲突”，然后就可以提交了；如果你认为你的修改和别人的修改都有一部分是有效的，那么你就把别人的修改手动合并到你的修改中，然后使用TSVN标注为“解决冲突”，然后就可以提交了。进入文件夹，寻找有黄色感叹号的文件，这些文件就是发生冲突的地方，根据实际情况处理冲突
+</code></pre>
+
+<h6>米字号(有本地修改代码)：</h6>
+
+<pre><code>--这是说明你有未提交的本地代码。
+</code></pre>
+
+<h6>问好(新加入的资源):</h6>
+
+<pre><code>--这说明该文件是项目中新增文件资源，新增资源可以是文件、图片、代码等。
+</code></pre>
+
+<h6>红色感叹号(本地代码与库没有保持一致)：</h6>
+
+<pre><code>--这说明本地代码跟库上没有保持一致，如果用户想修复，可以将带红色感叹号图标文件删除，直接update即可。
+</code></pre>
+
+<h6>灰色向右箭头(本地修改过)</h6>
+
+<pre><code>--本地代码没有及时上库。
+</code></pre>
+
+<h6>蓝色向左箭头(SVN上修改过)</h6>
+
+<pre><code>--记得更新代码后修改，提交前跟svn对比习惯。
+</code></pre>
+
+<h6>灰色向右且中间有个加号的箭头(本地比SVN上多出的文件)</h6>
+
+<pre><code>--修改完记得跟svn保持一致
+</code></pre>
+
+<h6>蓝色向左且中间有个加号的箭头(SVN上比本地多出的文件)</h6>
+
+<pre><code>--删除该文件后，再次更新，将svn上文件全部更新下来。
+</code></pre>
+
+<h6>灰色向右且中间有个减号的箭头(本地删除了,而SVN上未删除的文件)</h6>
+
+<pre><code>--也就是说你删除确认后，一定要记得上库，跟svn保持一致
+</code></pre>
+
+<h6>蓝色向左且中间有个减号的箭头(SVN上删除了,而本地未删除的文件)</h6>
+
+<pre><code>--比对svn库上代码，确定需要删除后，更新svn(删除无用代码)。
+</code></pre>
+
+<h6>红色双向箭头(SVN上修改过,本地也修改过的文件 )</h6>
+
+<pre><code>--这个表示本地和svn上都修改过，最好就是把本地修改合并到svn，修改代码前最后先更新。
+</code></pre>
+
+<h4>版本回退</h4>
+
+<ul>
+<li><p>本地版本回退：</p>
+
+<ul>
+<li>右键选中对应的项目或者文件，弹出菜单中选中Revert</li>
+<li>提示你当前工程有一些修改，但是还没提交，"Discard XXX"-点击后当前修改的内容会被取消，“Copy XXX”-点击会会先复制一份代码到废纸篓</li>
+<li>点击 “Discard XXX”后，本地工程已更新至选择的版本，如果想将服务器上的也更新到选择的版本，可以再commit。</li>
+</ul>
+</li>
+<li><p>服务器版本回退：误将错误的文件上传到了svn服务器，回滚的办法是：</p>
+
+<ul>
+<li>1：svn merge -r100:99 .  （注意有个点，表示当前路径）</li>
+<li>2：svn ci -m &ldquo;revert version&rdquo; . （代码提交，实际上删除之前误传的文件）</li>
+</ul>
+</li>
+</ul>
+
+
+<h4>.a（库文件）</h4>
+
+<ul>
+<li>首先打开软件左上角 CornerStone-Preferences-SubVersion</li>
+<li>第一个地方把对号去掉，第二个地方把.a那个删除，然后save。</li>
+<li>然后把你的.a文件放到本地的相应文件夹下，</li>
+<li>但是 CornerStone（我的是v2.7.10 版本的） 里相应文件夹下看不到带问号的.a文件的话，点击上边 View-Show Ignored  Items</li>
+<li>到这里就ok了，选中你的静态库 点击底部Add 问号会变成A，然后就可以提交了。</li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -439,175 +894,6 @@ Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
-
-<ul>
-<li>iOS RunLoop都干了什么</li>
-<li>iOS 为什么必须在主线程中操作UI</li>
-<li>事件响应</li>
-<li>CALayer</li>
-<li>CADisplayLink 和 NSTimer</li>
-<li>iOS 渲染过程</li>
-<li>渲染时机</li>
-<li>CPU 和 GPU渲染</li>
-<li>Core Animation</li>
-<li>Facebook Pop介绍</li>
-<li>AsyncDisplay介绍</li>
-<li>参考文章</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
-在这个过程中,你会学到:</p></blockquote>
-
-<ul>
-<li>如何为iOS app添加watchOS 2的target</li>
-<li>如何在两个target之间共享数据</li>
-<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
-<li>如何创建WKInterfaceController的子类并连线</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/08/watch-os2-chu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/08/watch-os2-chu-tan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#109;&#x61;&#x6a;&#x69;&#97;&#x30;&#51;&#x40;&#x6d;&#x65;&#x69;&#116;&#x75;&#x61;&#x6e;&#x2e;&#99;&#x6f;&#109;">&#109;&#97;&#106;&#x69;&#97;&#x30;&#51;&#64;&#x6d;&#x65;&#x69;&#116;&#x75;&#97;&#x6e;&#46;&#x63;&#x6f;&#109;</a> ）。</p>
-
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
-
-<ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/08/fang-fa-huan-cun/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/08/fang-fa-huan-cun/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -624,7 +910,7 @@ Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性�
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -632,8 +918,8 @@ Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性�
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
-<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (17)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (25)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (26)</a></li>
 
     </ul>
 </section><section>
@@ -641,23 +927,23 @@ Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Phthon抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
   </ul>

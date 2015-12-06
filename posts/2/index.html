@@ -9,8 +9,16 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
-当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。 &hellip;">
+  <meta name="description" content="iOS 事件处理机制与图像渲染过程 iOS RunLoop都干了什么
+iOS 为什么必须在主线程中操作UI
+事件响应
+CALayer
+CADisplayLink 和 NSTimer
+iOS 渲染过程
+渲染时机
+CPU 和 GPU渲染
+Core Animation
+Facebook Pop介绍 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +83,175 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
+
+<ul>
+<li>iOS RunLoop都干了什么</li>
+<li>iOS 为什么必须在主线程中操作UI</li>
+<li>事件响应</li>
+<li>CALayer</li>
+<li>CADisplayLink 和 NSTimer</li>
+<li>iOS 渲染过程</li>
+<li>渲染时机</li>
+<li>CPU 和 GPU渲染</li>
+<li>Core Animation</li>
+<li>Facebook Pop介绍</li>
+<li>AsyncDisplay介绍</li>
+<li>参考文章</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/09/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/08/watch-os2-chu-tan/">Watch OS2 初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
+在这个过程中,你会学到:</p></blockquote>
+
+<ul>
+<li>如何为iOS app添加watchOS 2的target</li>
+<li>如何在两个target之间共享数据</li>
+<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
+<li>如何创建WKInterfaceController的子类并连线</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/08/watch-os2-chu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/08/watch-os2-chu-tan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/08/fang-fa-huan-cun/">方法缓存</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#x6d;&#x61;&#x6a;&#x69;&#97;&#48;&#51;&#64;&#109;&#101;&#x69;&#x74;&#x75;&#x61;&#110;&#46;&#99;&#111;&#109;">&#109;&#x61;&#x6a;&#105;&#97;&#48;&#51;&#64;&#x6d;&#x65;&#x69;&#116;&#117;&#97;&#x6e;&#x2e;&#99;&#x6f;&#x6d;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/08/fang-fa-huan-cun/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/08/fang-fa-huan-cun/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -469,153 +646,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
-
-<ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h6>一、底层实现</h6>
-
-<ul>
-<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
-<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
-<li><p>3> ASI的运行性能 高于 AFN</p></li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -634,7 +664,7 @@ $(document).bind('DOMNodeInserted', function(event) {
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -642,8 +672,8 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
-<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (17)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (25)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (26)</a></li>
 
     </ul>
 </section><section>
@@ -651,23 +681,23 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Phthon抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
   </ul>

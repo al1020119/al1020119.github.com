@@ -9,10 +9,13 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="够逼格的注释习惯总结 首先关于注意这里就不说什么VVDocument了，来点新鲜的！ 也许你使用过#warning 警告提示 也许你也使用过#pragma marks。 但是你见过或者使用过下面这个吗？ Comments containing:
-MARK:
-TODO:
-FIXME &hellip;">
+  <meta name="description" content="1. 网络图片显示大体步骤: 下载图片
+图片处理（裁剪，边框等)
+写入磁盘
+从磁盘读取数据到内核缓冲区
+从内核缓冲区复制到用户空间(内存级别拷贝)
+解压缩为位图（耗cpu较高）
+如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -77,6 +80,153 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>一、底层实现</h6>
+
+<ul>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/05/zhan-zai-afnshang-kan-asi/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">序列化&amp;反序列化深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>摘要
+序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -451,144 +601,6 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
-
-<p>关于XLNetworkApi</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
-
-<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
-
-<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
-
-<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
-
-<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/11/xcode-menu/">Xcode Menu</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
-
-<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/11/xcode-menu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/11/xcode-menu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -607,7 +619,7 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
         <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
-<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (6)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
@@ -615,8 +627,8 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
-<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (17)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (25)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (26)</a></li>
 
     </ul>
 </section><section>
@@ -624,23 +636,23 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
       <li class="post">
         <a href="/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Phthon抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/zhengze/">爬虫必备-正则表达式抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/10/h5ying-yong-shi-zhan/">H5应用实战</a>
       </li>
     
   </ul>
