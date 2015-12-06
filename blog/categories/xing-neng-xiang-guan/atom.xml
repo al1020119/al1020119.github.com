@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能相关 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xing-neng-xiang-guan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-06T22:48:58+08:00</updated>
+  <updated>2015-12-06T22:52:40+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -125,6 +125,147 @@
 <p>总结</p>
 
 <p>由于移动互联网的快速发展，人们的购物、理财等需求也在移动端出现，使得移动应用的安全性越来越重要。由于部署在用户终端上，移动应用比服务器应用更容易被攻击，大家也需要在移动应用的网络通信、本地文件和数据、源代码三方面做好防范，只有这样才能保证应用安全。</p>
+
+<h6>最后分享一份最近加密的demo，由于公司项目的需要，所以就整了一下这个！</h6>
+
+<pre><code>@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UITextField *username;
+@property (weak, nonatomic) IBOutlet UITextField *pwd;
+- (IBAction)login;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.view endEditing:YES];
+}
+
+- (IBAction)login {
+    // 1.用户名
+    NSString *usernameText = self.username.text;
+    if (usernameText.length == 0) {
+        [MBProgressHUD showError:@"请输入用户名"];
+        return;
+    }
+
+    // 2.密码
+    NSString *pwdText = self.pwd.text;
+    if (pwdText.length == 0) {
+        [MBProgressHUD showError:@"请输入密码"];
+        return;
+    }
+
+    // 增加蒙板
+    [MBProgressHUD showMessage:@"正在拼命登录中...."];
+
+    // 3.发送用户名和密码给服务器(走HTTP协议)
+    // 创建一个URL ： 请求路径
+    NSURL *url = [NSURL URLWithString:@"http://218.83.161.124:8080/job/login"];
+
+    // 创建一个请求
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+
+    // 5秒后算请求超时（默认60s超时）
+    request.timeoutInterval = 15;
+
+    request.HTTPMethod = @"POST";
+
+#warning 对pwdText进行加密
+    pwdText = [self MD5Reorder:pwdText];
+
+    // 设置请求体
+    NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
+
+    NSLog(@"%@", param);
+
+    // NSString --&gt; NSData
+    request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
+
+    // 设置请求头信息
+    [request setValue:@"iPhone 6" forHTTPHeaderField:@"User-Agent"];
+
+    // 发送一个同步请求(在主线程发送请求)
+    // queue ：存放completionHandler这个任务
+    NSOperationQueue *queue = [NSOperationQueue mainQueue];
+    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
+     ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+         // 隐藏蒙板
+         [MBProgressHUD hideHUD];
+
+        // 这个block会在请求完毕的时候自动调用
+        if (connectionError || data == nil) { // 一般请求超时就会来到这
+            [MBProgressHUD showError:@"请求失败"];
+            return;
+        }
+
+        // 解析服务器返回的JSON数据
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:nil];
+        NSString *error = dict[@"error"];
+        if (error) {
+            [MBProgressHUD showError:error];
+        } else {
+            NSString *success = dict[@"success"];
+            [MBProgressHUD showSuccess:success];
+        }
+     }];
+}
+
+/**
+ *  MD5($pass.$salt)
+ *
+ *  @param text 明文
+ *
+ *  @return 加密后的密文
+ */
+- (NSString *)MD5Salt:(NSString *)text
+{
+    // 撒盐：随机地往明文中插入任意字符串
+    NSString *salt = [text stringByAppendingString:@"aaa"];
+    return [salt md5String];
+}
+
+/**
+ *  MD5(MD5($pass))
+ *
+ *  @param text 明文
+ *
+ *  @return 加密后的密文
+ */
+- (NSString *)doubleMD5:(NSString *)text
+{
+    return [[text md5String] md5String];
+}
+
+/**
+ *  先加密，后乱序
+ *
+ *  @param text 明文
+ *
+ *  @return 加密后的密文
+ */
+- (NSString *)MD5Reorder:(NSString *)text
+{
+    NSString *pwd = [text md5String];
+
+    // 加密后pwd == 3f853778a951fd2cdf34dfd16504c5d8
+    NSString *prefix = [pwd substringFromIndex:2];
+    NSString *subfix = [pwd substringToIndex:2];
+
+    // 乱序后 result == 853778a951fd2cdf34dfd16504c5d83f
+    NSString *result = [prefix stringByAppendingString:subfix];
+
+    NSLog(@"\ntext=%@\npwd=%@\nresult=%@", text, pwd, result);
+
+    return result;
+}
+</code></pre>
 
 <p>资源分享：</p>
 
