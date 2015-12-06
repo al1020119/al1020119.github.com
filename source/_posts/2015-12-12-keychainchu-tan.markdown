@@ -12,6 +12,11 @@ iOS的keychain服务提供了一种安全的保存私密信息（密码，序列
  
 > “yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。
  
+<!--more-->
+
+
+
+
 ###一.基本知识
 ######1.方法
 
