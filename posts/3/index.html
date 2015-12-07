@@ -9,11 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="目录 什么是block？ block编译转换结构
-block实际结构 block的类型 NSConcreteGlobalBlock和NSConcreteStackBlock
-NSConcreteMallocBlock 捕捉变量对block结构的影响 局部变量
-全局变量
-局部静态变量 &hellip;">
+  <meta name="description" content="说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。 从闭包说起
+在Lisp这样的语言中， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,6 +75,51 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shi-zhan/">Block实战</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
+
+<p>从闭包说起
+在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/06/fen-lei-shi-zhan/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/06/fen-lei-shi-zhan/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -602,96 +644,6 @@ FIXME:
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/">常用关键字总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<thead>
-<tr>
-<th> Name  </th>
-<th style="text-align:center;"> Typedef</th>
-<th style="text-align:right;">  Header</th>
-<th>     True Value  </th>
-<th> False Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> BOOL</td>
-<td style="text-align:center;">     signed char objc.h</td>
-<td style="text-align:right;">     YES</td>
-<td>    NO</td>
-<td></td>
-</tr>
-<tr>
-<td> bool  </td>
-<td style="text-align:center;"> _Bool (int)   </td>
-<td style="text-align:right;"> stdbool.h true    </td>
-<td> false</td>
-<td></td>
-</tr>
-<tr>
-<td> Boolean</td>
-<td style="text-align:center;">  unsigned char</td>
-<td style="text-align:right;">  MacTypes.h  TRUE    </td>
-<td> FALSE</td>
-<td></td>
-</tr>
-<tr>
-<td> NSNumber</td>
-<td style="text-align:center;">     __NSCFBoolean</td>
-<td style="text-align:right;">  Foundation.h    </td>
-<td> @(YES)</td>
-<td>   @(NO)</td>
-</tr>
-<tr>
-<td> CFBooleanRef</td>
-<td style="text-align:center;">     struct</td>
-<td style="text-align:right;">     CoreFoundation.h    </td>
-<td> kCFBooleanTrue</td>
-<td>   kCFBooleanFalse</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -707,7 +659,8 @@ FIXME:
     <section>
     <h1>文章分类</h1>
     <ul id="categories">
-        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+        <li class='category'><a href='/blog/categories/ios9新特性/'>ios9新特性 (1)</a></li>
+<li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
 <li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
@@ -727,6 +680,10 @@ FIXME:
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/">移动端性能优化</a>
       </li>
     
@@ -740,10 +697,6 @@ FIXME:
     
       <li class="post">
         <a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a>
       </li>
     
   </ul>

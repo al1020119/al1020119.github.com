@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-07T18:27:31+08:00</updated>
+  <updated>2015-12-07T19:40:02+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,298 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9新特性-WKWebView]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview/"/>
+    <updated>2015-12-14T19:35:40+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview</id>
+    <content type="html"><![CDATA[<h2>一：WKWebView简单介绍</h2>
+
+<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<h5>第一、WKWebView增加的属性和方法</h5>
+
+<p>类比UIWebView，跟UIWebView的API对比，
+增加的属性：</p>
+
+<pre><code>* 1、estimatedProgress 加载进度条，在IOS8之前我们是通过一个假的进度条来实现
+* 2、backForwardList 表示historyList
+* 3、WKWebViewConfiguration *configuration; 初始化webview的配置
+</code></pre>
+
+<p>增加的方法：</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration 
+</code></pre>
+
+<p>初始化</p>
+
+<pre><code>    - (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item; 
+</code></pre>
+
+<p>跳到历史的某个页面</p>
+
+<h5>第二、相同的属性和方法</h5>
+
+<ul>
+<li>goBack、</li>
+<li>goForward、</li>
+<li>canGoBack、</li>
+<li>canGoForward、</li>
+<li>stopLoading、</li>
+<li>loadRequest、</li>
+<li>scrollView</li>
+</ul>
+
+
+<h5>第三、被删去的属性和方法：</h5>
+
+<pre><code>- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+</code></pre>
+
+<p>在跟js交互时，我们使用这个API，目前WKWebView完档没有给出实现类似功能的API</p>
+
+<ul>
+<li>无法设置缓存
+在UIWebView，使用NSURLCache缓存，通过setSharedURLCache可以设置成我们自己的缓存，但WKWebView不支持NSURLCache
+
+<h5>第四、delegate方法的不同</h5>
+
+<p>UIWebView支持的代理是UIWebViewDelegate，WKWebView支持的代理是WKNavigationDelegate和
+WKUIDelegate
+WKNavigationDelegate主要实现了涉及到导航跳转方面的回调方法
+WKUIDelegate主要实现了涉及到界面显示的回调方法：如WKWebView的改变和js相关内容
+具体来说WKNavigationDelegate除了有开始加载、加载成功、加载失败的API外，还具有额外的三个代理方法：</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation
+</code></pre>
+
+<p>这个代理是服务器redirect时调用</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
+</code></pre>
+
+<p>这个代理方法表示当客户端收到服务器的响应头，根据response相关信息，可以决定这次跳转是否可以继续进行。</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+</code></pre>
+
+<p>根据webView、navigationAction相关信息决定这次跳转是否可以继续进行,这些信息包含HTTP发送请求，如头部包含User-Agent,Accept</p></li>
+</ul>
+
+
+<hr />
+
+<h2>二、WKWebView新特性</h2>
+
+<ul>
+<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国* 网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
+<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
+<li>支持了更多的HTML5特性；</li>
+<li>高达60fps的滚动刷新率以及内置手势；</li>
+<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议（查看苹果官方文档）；</li>
+</ul>
+
+
+<hr />
+
+<h2>三：基本使用</h2>
+
+<p>WKWebView相对于UIWebView强大了很多，内存的消耗相对少了，所提供的接口也丰富了。
+现在谈一谈WKWebView的基本使用</p>
+
+<h4>1. navigationDelegate</h4>
+
+<pre><code>- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation { // 类似UIWebView的 -webViewDidStartLoad:  
+    NSLog(@"didStartProvisionalNavigation");  
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;  
+}  
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {  
+    NSLog(@"didCommitNavigation");  
+}  
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation { // 类似 UIWebView 的 －webViewDidFinishLoad:  
+    NSLog(@"didFinishNavigation");  
+    [self resetControl];  
+    if (webView.title.length &gt; 0) {  
+        self.title = webView.title;  
+    }  
+
+}  
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {  
+    // 类似 UIWebView 的- webView:didFailLoadWithError:  
+
+    NSLog(@"didFailProvisionalNavigation");  
+
+}  
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {  
+
+    decisionHandler(WKNavigationResponsePolicyAllow);  
+}  
+
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {  
+    // 类似 UIWebView 的 -webView: shouldStartLoadWithRequest: navigationType:  
+
+    NSLog(@"4.%@",navigationAction.request);  
+
+
+    NSString *url = [navigationAction.request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];  
+
+
+
+    decisionHandler(WKNavigationActionPolicyAllow);  
+
+}  
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler {  
+
+}  
+</code></pre>
+
+<h4>2 UIDelegate</h4>
+
+<pre><code>- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {  
+    // 接口的作用是打开新窗口委托  
+    [self createNewWebViewWithURL:webView.URL.absoluteString config:configuration];  
+
+    return currentSubView.webView;  
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)())completionHandler  
+{    // js 里面的alert实现，如果不实现，网页的alert函数无效  
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler();  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler {  
+    //  js 里面的alert实现，如果不实现，网页的alert函数无效  ,   
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleDefault  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler(YES);  
+                                                      }]];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"取消"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action){  
+                                                          completionHandler(NO);  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler {  
+
+    completionHandler(@"Client Not handler");  
+
+}  
+</code></pre>
+
+<h4>3. WKWebView 执行脚本方法</h4>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString completionHandler:(void (^)(id, NSError *))completionHandler;  
+
+completionHandler 拥有两个参数，一个是返回错误，一个可以返回执行脚本后的返回值  
+</code></pre>
+
+<h4>4. WKWebView 的Cookie问题</h4>
+
+<p>UIWebView 中会自动保存Cookie，如果登录了一次，下次再次进入的时候，会记住登录状态
+而在WKWebView中，并不会这样，WKWebView在初始化的时候有一个方法</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration  
+</code></pre>
+
+<p>通过这个方法，设置 configuration 让WKWebView知道登录状态，configuration 可以通过已有的Cookie进行设置，也可以通过保存上一次的configuration进行设置
+参考 stackoverflow上回答：<a href="http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303">http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303</a></p>
+
+<pre><code>WKWebView * webView = /*set up your webView*/  
+NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://example.com/index.html"]];  
+[request addValue:@"TeskCookieKey1=TeskCookieValue1;TeskCookieKey2=TeskCookieValue2;" forHTTPHeaderField:@"Cookie"];  
+// use stringWithFormat: in the above line to inject your values programmatically  
+[webView loadRequest:request];  
+
+[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+WKUserContentController* userContentController = WKUserContentController.new;  
+WKUserScript * cookieScript = [[WKUserScript alloc]   
+    initWithSource: @"document.cookie = 'TeskCookieKey1=TeskCookieValue1';document.cookie = 'TeskCookieKey2=TeskCookieValue2';"  
+    injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];  
+// again, use stringWithFormat: in the above line to inject your values programmatically  
+[userContentController addUserScript:cookieScript];  
+WKWebViewConfiguration* webViewConfig = WKWebViewConfiguration.new;  
+webViewConfig.userContentController = userContentController;  
+WKWebView * webView = [[WKWebView alloc] initWithFrame:CGRectMake(/*set your values*/) configuration:webViewConfig];  
+</code></pre>
+
+<hr />
+
+<h2>四：WKWebView与js通信</h2>
+
+<p>iOS 8 引入WKWebView, WKWebView 不支持JavaScriptCore的方式但提供message handler的方式为JavaScript 与Objective-C 通信.
+在Objective-C 中使用WKWebView的以下方法调用JavaScript:</p>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString
+         completionHandler:(void (^)(id, NSError *))completionHandler
+如果JavaScript 代码出错, 可以在completionHandler 进行处理.
+在Objective-C 中注册 message handler:
+// WKScriptMessageHandler protocol?
+
+- (void)userContentController:(WKUserContentController *)userContentController
+    didReceiveScriptMessage:(WKScriptMessage *)message
+{
+    NSLog(@"Message: %@", message.body);
+}
+
+[userContentController addScriptMessageHandler:handler name:@"myName"];
+在JavaScript 将信息发给Objective-C:
+// window.webkit.messageHandlers.&lt;name&gt;.postMessage();?
+
+function postMyMessage()? {?
+    var message = { 'message' : 'Hello, World!', 'numbers' : [ 1, 2, 3 ] };?
+    window.webkit.messageHandlers.myName.postMessage(message);?
+}
+</code></pre>
+
+<hr />
+
+<h2>五：常见问题：</h2>
+
+<p>32 位的app在使用WKWebView的时候，如果运行在64位的设备上，会出现一下问题：</p>
+
+<ul>
+<li>（1）iOS8.1 系统，部分网页加载白屏，例如 百度，iOS8.3 似乎没问题</li>
+<li>（2）web输入框输入汉字也会出现白屏</li>
+</ul>
+
+
+<p>通过搜索得到问题根源：</p>
+
+<blockquote><p>WKWebView&rsquo;s WebProcess runs out-of-process as a 64-bit process on hardware supporting 64bit. There is a 32bit/64bit marshalling IPC bug for 32 bit apps using the WKWebView client on such hardware. The bug causes the WebProcess to exit, leaving a blank screen.</p></blockquote>
+
+<ul>
+<li>也就是一个进程间通讯的bug引起的。</li>
+</ul>
+
+
+<h6>解决方案，可以使app支持arm64，便不会出现问题。</h6>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[移动端性能优化]]></title>
@@ -3266,7 +3558,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#x6d;&#97;&#106;&#x69;&#97;&#48;&#x33;&#x40;&#x6d;&#101;&#105;&#x74;&#x75;&#x61;&#110;&#46;&#99;&#111;&#109;">&#x6d;&#97;&#106;&#105;&#97;&#48;&#51;&#x40;&#x6d;&#x65;&#105;&#116;&#117;&#97;&#110;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#109;&#97;&#x6a;&#105;&#x61;&#48;&#51;&#64;&#x6d;&#101;&#x69;&#116;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;">&#x6d;&#x61;&#106;&#105;&#x61;&#48;&#x33;&#64;&#109;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -4941,171 +5233,6 @@ Cocos2d源码
 
 <!--more-->
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Block实战]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan/"/>
-    <updated>2015-12-06T19:42:57+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan</id>
-    <content type="html"><![CDATA[<p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
-
-<p>从闭包说起
-在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
-
-<!--more-->
-
-
-<p>所谓词法作用域，顾名思义，是指一个符号引用的是其词法环境中的变量，而无关程序在运行时的状态。这么说可能有点抽象，让我来看一段Common Lisp3代码：</p>
-
-<pre><code>(defvar printer (let ((x 42))
-          (lambda () (format t "~a" x))))
-</code></pre>
-
-<p>这里我们定义了一个变量printer，它的值是一个函数，这个函数会打印词法作用域中的变量x（其值为42）。
-现在我们来调用这个函数：</p>
-
-<pre><code>CL-USER&gt; (funcall printer)
-</code></pre>
-
-<p>42
-可以看到，我们调用了printer中存放的函数之后，打印出来的数字是42，跟我们的预期相符。</p>
-
-<p>接下来再让我们看一个可能会出乎意料的结果：</p>
-
-<pre><code>CL-USER&gt; (let ((x 1))
-       (funcall printer))
-</code></pre>
-
-<p>42
-我们在调用之前把x设置为了1，但是打印的结果仍然是42。</p>
-
-<p>为什么？因为printer中存放的函数在被调用时所引用的变量位于其词法作用域中， 即该函数被定义时所处的词法环境中，所以程序在运行时设置的变量x对函数不起作用。</p>
-
-<p>前面我们讲过，所谓闭包，就是函数及其词法作用域的合称，具体到上例，那么匿名函数和x就构成了一个闭包，它会为函数保存一种状态，有点类似于全局变量，不过除了那个匿名函数，其他函数无法访问到x。</p>
-
-<p>说了这么多，似乎跟block毫无关系？事实上，block为C带来了闭包。</p>
-
-<p>Block
-Apple从OS X 10.6和iOS 4以后开始支持block，让我们用C把上面的例子重写一下：</p>
-
-<pre><code>#include &lt;stdio.h&gt;
-
-int main ()
-{
-    int x = 42;
-    void (^block)() = ^() {
-        printf("%d\n", x);
-    };
-    block();
-    x = 1;
-    block();
-
-    return 0;
-}
-</code></pre>
-
-<p>编译运行后得到的输出同样是两个42。</p>
-
-<p>到了这里，相信读者对闭包已经有一个直观的认识了，但是它有什么用？有什么好处？
-设想如下场景，我们要请求一个URL，并以block的形式传入回调函数，并在回调函数中用到刚才这个URL：</p>
-
-<pre><code>NSURL *someURL = …;
-[SomeClass getURL:someURL finished:^(id responseObject) {
-    // process responseObject with someURL
-}];
-</code></pre>
-
-<p>这里网络请求是异步的，所以当block中代码执行时，getURL:finished:方法调用所在的栈很可能已经不存在了，但是因为回调block和someURL构成了closure，所以即使栈不存在，block仍然可以引用到someURL。</p>
-
-<p>可能你会说，“我在block中增加一个NSURL类型的参数，把someURL传回来不也可以实现同样的目的吗？”不妨设想如果我们在block中要引用的对象有10个之多，用参数列表传递明显不再现实，用容器类或者专门定义一个类来传递虽然可以，但是前者没有编译器为我们检查错误，后者则相当繁琐。而利用闭包，可以轻易达到灵活性和简洁性的平衡。事实上，美团客户端就大量利用了闭包，在UI层发出请求，在回调中更新某些UI组件。</p>
-
-<p>函数式编程4
-在Lisp中，函数是一等公民，可以随时创建、作为参数传递、作为返回值返回，Objective C在没有block之前，没有类似的机制，有了block，Objective C也就具备了函数式编程的能力，block是对象，有自己的ISA指针，可以随时创建，作为参数传递，作为返回值返回。</p>
-
-<p>先来看看block的经典用法：</p>
-
-<pre><code>[UIView animateWithDuration:0.25 animations:^{
-            self.view.alpha = 1.0f;
-        }];
-</code></pre>
-
-<p>UIView的animateWithDuration:animations:方法的第二个参数是一个block，它把跟动画相关的操作封装起来传递进去，以实现动画效果。</p>
-
-<p>现在让我们发掘一下类似的用法：</p>
-
-<pre><code>[SAKBaseModel comboRequest:^() {
- [dealModel fetchDealByID:123456
-               withFields:nil
-               completion:^(MTDeal *deal, NSError *error) {
-                   ...
-               }];
- [orderModel fetchOrderByID:654321
-             withDealFields:nil
-                 completion:^(MTOrder *order, NSError *error) {
-                ...
-             }];
-}];
-</code></pre>
-
-<p>这里我们为SAKBaseModel设计了一个类似于UIView的接口叫comboRequest，它会接受一个block作为参数，在这个block中发出的请求都会作为combo请求的一部分。如果dealModel或者orderModel的任何一个请求不是出现在block中，那么它就是一个普通的请求。这样做的好处是dealModel和orderModel的接口不需要关心自己是不是属于一个combo请求，调用者则可以灵活地调整代码。</p>
-
-<p>那么怎么实现这样的接口呢？还是从UIView上获取灵感。我们知道UIView有个方法setAnimationsEnabled:，实际上SAKBaseModel也可以有这么一个方法：setComboRequestEnabled:，而在comboRequest方法的实现中，在调用传进来的block之前先setComboRequestEnabled:YES，调用完后再恢复为原状态。相应的，在实际的model接口中，检查comboRequest是否为YES，如果是，则把自己作为一个combo请求的一部分，否则正常发出请求即可。</p>
-
-<p>Think Big
-Lisp最强大的特性之一是condition系统，它可以分离异常的检测、异常的解决和异常解决方式的决策，看一段示例代码：</p>
-
-<pre><code>(define-condition network-timeout-error (error)
-    ((url :initarg :url :accessor url)))
-
-(defun try-again (condition)
-    (let ((restart (find-restart ‘try-again)))
-      (when restart (invoke-restart restart))))
-
-(defun deal-requester (deal-id)
-    (handler-bind ((network-timeout-error #’try-again))
-      (request-from-url (format nil “http://api.mobile.meituan.com/deal/~a” deal-id)
-        (lambda (deal error)
-        (if error
-            (format t “error: ~a”, error)
-            (process-deal))))))
-(defun request-from-url (url finished)
-    (let ((callback (lambda (response error)
-              (if (network-timeout-error-p error)
-                (error ‘network-timeout-error :url url)
-                (funcall finished (parse-deal response) error)))))
-      (restart-bind
-        ((try-again (lambda () (http-request url callback))))
-        (http-request url callback))))
-</code></pre>
-
-<p>可以看到，condition系统对于代码的分层提供了良好的支持，请求超时的错误在底层代码被检测到，在发出请求前注册一个restart，而在业务层去决定要不要调用restart。</p>
-
-<p>一直以来，C语言要实现优雅的异常处理就是一件不简单的事情，而Objective-C虽然加入了try-catch支持，但是苹果并不鼓励使用，那么能否实现类似于condition系统这样的异常处理机制呢？</p>
-
-<p>答案是能。让我们来看看接口设计：</p>
-
-<pre><code>typedef void (^RESTART)(id userInfo);
-typedef void (^HANDLER)(id condition);
-
-void restart_bind(void (^body)(), NSString *restartName, RESTART restart, ...) NS_REQUIRES_NIL_TERMINATION;
-
-void handler_bind(void (^body)(), Class class, HANDLER handler, ...) NS_REQUIRES_NIL_TERMINATION;
-
-void notify(id condition);
-
-RESTART find_restart(NSString *restartName);
-</code></pre>
-
-<p>如下图所示，handler_bind首先在栈中注册好handler，而restart_bind则在handler有效的环境中注册restart，当有异常发生时，notify函数会在当前环境中寻找handler，找到后，控制会转移到上层的handler代码中，这时handler可以用find_restart在栈中搜索restart，找到之后可以调用，从而实现异常的恢复，做完这一切，控制回到notify发生的点继续向下执行。</p>
-
-<p>完整的代码敬请期待美团iOS的开源项目。</p>
-
-<p>有了SAKCondition，我们可以实现任意底层代码的逻辑穿透到上层代码，比如网络层和UI层，使得上层代码可以在不了解下层代码实现细节的情况下调用恢复机制。事实上，美团的iPhone客户端就是利用SAKCondition实现了美团账户的安全解锁功能。</p>
-
-<p>总结
-block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
 ]]></content>
   </entry>
   
