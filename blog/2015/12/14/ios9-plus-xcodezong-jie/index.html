@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS9+Xcode总结 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iOS9+Xcode总结 ordinal 刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。 1，默认使用HTTPS请求 如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误: App &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/14/ios9-plus-xcodezong-jie/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS9+Xcode总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+
+<h4>1，默认使用HTTPS请求</h4>
+
+<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
+
+<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+</code></pre>
+
+<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+
+<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
+
+<p>否则会提示类似如下错误:</p>
+
+<pre><code>    canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
+</code></pre>
+
+<p>修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：</p>
+
+<ul>
+<li>mqqopensdkapiV2</li>
+<li>mqqOpensdkSSoLogin</li>
+<li>mqq</li>
+<li>mqzoneopensdkapiV2</li>
+<li>mqzoneopensdkapi19</li>
+<li>mqzoneopensdkapi</li>
+<li>mqzoneopensdk</li>
+<li>mqzone</li>
+<li>weixin</li>
+<li>wechat
+更多其他适配点后续不断跟进。</li>
+</ul>
+
+
+<h4>3，bitcode</h4>
+
+<p>使用Xcode7编译提示：</p>
+
+<pre><code>XXX does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64
+</code></pre>
+
+<p>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。
+Xcode7 默认开启了bitcode，如果App使用的第三方类库不支持bitcode会提示错误，只需要在”Build Settings”->”Enable Bitcode”选项中看关闭bitcode即可。</p>
+
+<blockquote><p>开启Bitcode编译后，编译产生的文件体积会变大 (因为是中间代码，不是用户下载的包)，且dSYM文件不能用来崩溃日志的符号化 (用户下载的包是Apple服务重新编译产生的，有产生新的符号文件)。通过Archive方式上传AppStore的包，可以在 Xcode的Organizer工具中下载对应安装包的新的符号文件。
+转载请注明来自特酷吧,本文地址:www.tekuba.net/program/364/
+ 
+ </p>
+
+<h4>4，使用XCode7链接第三方库提示warning</h4>
+
+<pre><code>Lots of warnings when building with Xcode 7 with 3rd party libraries
+warning: Could not resolve external type c:objc(cs)NSString
+warning: Could not resolve external type c:objc(cs)NSDictionary
+warning: Could not resolve external type c:objc(cs)NSMutableString
+warning: Could not resolve external type c:objc(cs)NSError
+</code></pre>
+
+<p><a href="https://forums.developer.apple.com/thread/17921">https://forums.developer.apple.com/thread/17921</a>
+目前没发现好的解决办法，可以尝试如下:
+I had this problem too.  Here&rsquo;s how I fixed it.</p></blockquote>
+
+<ul>
+<li>1)  Go to Build Settings -> Build Options -> Debug Information Format</li>
+<li>2)  Change the Debug setting from &ldquo;DWARF with dSYM File&rdquo; to &ldquo;DWARF&rdquo;</li>
+<li>3)  Leave the Release setting at &ldquo;DWARF with dSYM File&rdquo;</li>
+</ul>
+
+
+<p>The problem appears to be that Xcode was trying to create dSYM files for Debug builds.  You don&rsquo;t need dSYM files for Debug builds &ndash; it&rsquo;s release builds where you need them. </p>
+
+<hr />
+
+<h6>既然提到了Xcode7，那么Xcode7中也有几个需要注意的地方（Xcode7是随着ios9一起出来的，其实也就是ios9的新特性，只是不是sdk），</h6>
+
+<p>升级到XCode7之后，编译和上传到itunes connect中遇到了一些问题（特酷吧XCode版本7.0.1），在这里总结下：</p>
+
+<h4>1，was built for newer iOS version (9.0) than being linked (7.0)</h4>
+
+<p>解决方法参考：<a href="http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/">http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/</a></p>
+
+<pre><code>the -w flag can be added to Build Settings -&gt; Other Linker Flags
+</code></pre>
+
+<h4>2，Could not resolve external type c:objc(cs)</h4>
+
+<p>解决方法参考：</p>
+
+<pre><code>https://community.pushwoosh.com/questions/2774/lot-of-warnings-with-xcode-70-and-pushwoosh-304
+</code></pre>
+
+<p>It looks like a bug of XCode 7. See the discussion here:</p>
+
+<pre><code>https://forums.developer.apple.com/thread/17921
+</code></pre>
+
+<hr />
+
+<pre><code>To get rid of this warning you need to change debug information from "DWARF + dSYM" to DWARF.
+DWARF seems to be the default setting for new projects created in Xcode 7, but existing projects that are migrating to Xcode 7 probably still have DWARF with dSYM File as the setting.
+</code></pre>
+
+<p>特酷吧亲测发现使用XCode7新建工程的时候，Debug模式默认选择了DWARF。</p>
+
+<h4>3，"The resulting API analysis file is too large. We were unable to validate your API usage prior to delivery</h4>
+
+<p><a href="https://forums.developer.apple.com/thread/18493">https://forums.developer.apple.com/thread/18493</a>
+建议处理</p>
+
+<ul>
+<li>1，export IPA file (after you select Archive from within xCode)</li>
+<li>2，Use Application Loader to upload</li>
+<li>3，de-select Bitcode and Symbols</li>
+</ul>
+
+
+<p>似乎目前对bitcode的支持还不是很好，建议关闭。再上传。</p>
+
+<h4>4.最后就是和swift相关的。</h4>
+
+<p>如果使用了混编技术，也就是说里面涉及到了swift代码，实现了桥接，那么系统会偶尔出现崩溃的现象，这个时候需要修改一个属性</p>
+
+<ul>
+<li>1：选中项目</li>
+<li>2：选中target，在build Setting中搜索swift</li>
+<li><p>3：在出现的embedded content contains swift code选中对应的值</p>
+
+<ul>
+<li>使用了swift就是YES</li>
+<li>没有swift就是NO</li>
+</ul>
+</li>
+</ul>
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xin-ji-zhu/'>新技术</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/" title="Previous Post: iOS9新特性-WKWebView+SFSafariViewController">&laquo; iOS9新特性-WKWebView+SFSafariViewController</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/ios9新特性/'>ios9新特性 (1)</a></li>
+<li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (2)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (27)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/">移动端性能优化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/14/ios9-plus-xcodezong-jie/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/14/ios9-plus-xcodezong-jie/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

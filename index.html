@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一：WKWebView简单介绍 webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。 第一、WKWebView增加的属性和方法 &hellip;">
+  <meta name="description" content="刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。 1，默认使用HTTPS请求 如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误: App Transport Security &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -80,7 +80,178 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+
+<h4>1，默认使用HTTPS请求</h4>
+
+<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
+
+<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+</code></pre>
+
+<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+
+<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
+
+<p>否则会提示类似如下错误:</p>
+
+<pre><code>    canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
+</code></pre>
+
+<p>修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：</p>
+
+<ul>
+<li>mqqopensdkapiV2</li>
+<li>mqqOpensdkSSoLogin</li>
+<li>mqq</li>
+<li>mqzoneopensdkapiV2</li>
+<li>mqzoneopensdkapi19</li>
+<li>mqzoneopensdkapi</li>
+<li>mqzoneopensdk</li>
+<li>mqzone</li>
+<li>weixin</li>
+<li>wechat
+更多其他适配点后续不断跟进。</li>
+</ul>
+
+
+<h4>3，bitcode</h4>
+
+<p>使用Xcode7编译提示：</p>
+
+<pre><code>XXX does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64
+</code></pre>
+
+<p>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。
+Xcode7 默认开启了bitcode，如果App使用的第三方类库不支持bitcode会提示错误，只需要在”Build Settings”->”Enable Bitcode”选项中看关闭bitcode即可。</p>
+
+<blockquote><p>开启Bitcode编译后，编译产生的文件体积会变大 (因为是中间代码，不是用户下载的包)，且dSYM文件不能用来崩溃日志的符号化 (用户下载的包是Apple服务重新编译产生的，有产生新的符号文件)。通过Archive方式上传AppStore的包，可以在 Xcode的Organizer工具中下载对应安装包的新的符号文件。
+转载请注明来自特酷吧,本文地址:www.tekuba.net/program/364/
+ 
+ </p>
+
+<h4>4，使用XCode7链接第三方库提示warning</h4>
+
+<pre><code>Lots of warnings when building with Xcode 7 with 3rd party libraries
+warning: Could not resolve external type c:objc(cs)NSString
+warning: Could not resolve external type c:objc(cs)NSDictionary
+warning: Could not resolve external type c:objc(cs)NSMutableString
+warning: Could not resolve external type c:objc(cs)NSError
+</code></pre>
+
+<p><a href="https://forums.developer.apple.com/thread/17921">https://forums.developer.apple.com/thread/17921</a>
+目前没发现好的解决办法，可以尝试如下:
+I had this problem too.  Here&rsquo;s how I fixed it.</p></blockquote>
+
+<ul>
+<li>1)  Go to Build Settings -> Build Options -> Debug Information Format</li>
+<li>2)  Change the Debug setting from &ldquo;DWARF with dSYM File&rdquo; to &ldquo;DWARF&rdquo;</li>
+<li>3)  Leave the Release setting at &ldquo;DWARF with dSYM File&rdquo;</li>
+</ul>
+
+
+<p>The problem appears to be that Xcode was trying to create dSYM files for Debug builds.  You don&rsquo;t need dSYM files for Debug builds &ndash; it&rsquo;s release builds where you need them. </p>
+
+<hr />
+
+<h6>既然提到了Xcode7，那么Xcode7中也有几个需要注意的地方（Xcode7是随着ios9一起出来的，其实也就是ios9的新特性，只是不是sdk），</h6>
+
+<p>升级到XCode7之后，编译和上传到itunes connect中遇到了一些问题（特酷吧XCode版本7.0.1），在这里总结下：</p>
+
+<h4>1，was built for newer iOS version (9.0) than being linked (7.0)</h4>
+
+<p>解决方法参考：<a href="http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/">http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/</a></p>
+
+<pre><code>the -w flag can be added to Build Settings -&gt; Other Linker Flags
+</code></pre>
+
+<h4>2，Could not resolve external type c:objc(cs)</h4>
+
+<p>解决方法参考：</p>
+
+<pre><code>https://community.pushwoosh.com/questions/2774/lot-of-warnings-with-xcode-70-and-pushwoosh-304
+</code></pre>
+
+<p>It looks like a bug of XCode 7. See the discussion here:</p>
+
+<pre><code>https://forums.developer.apple.com/thread/17921
+</code></pre>
+
+<hr />
+
+<pre><code>To get rid of this warning you need to change debug information from "DWARF + dSYM" to DWARF.
+DWARF seems to be the default setting for new projects created in Xcode 7, but existing projects that are migrating to Xcode 7 probably still have DWARF with dSYM File as the setting.
+</code></pre>
+
+<p>特酷吧亲测发现使用XCode7新建工程的时候，Debug模式默认选择了DWARF。</p>
+
+<h4>3，"The resulting API analysis file is too large. We were unable to validate your API usage prior to delivery</h4>
+
+<p><a href="https://forums.developer.apple.com/thread/18493">https://forums.developer.apple.com/thread/18493</a>
+建议处理</p>
+
+<ul>
+<li>1，export IPA file (after you select Archive from within xCode)</li>
+<li>2，Use Application Loader to upload</li>
+<li>3，de-select Bitcode and Symbols</li>
+</ul>
+
+
+<p>似乎目前对bitcode的支持还不是很好，建议关闭。再上传。</p>
+
+<h4>4.最后就是和swift相关的。</h4>
+
+<p>如果使用了混编技术，也就是说里面涉及到了swift代码，实现了桥接，那么系统会偶尔出现崩溃的现象，这个时候需要修改一个属性</p>
+
+<ul>
+<li>1：选中项目</li>
+<li>2：选中target，在build Setting中搜索swift</li>
+<li><p>3：在出现的embedded content contains swift code选中对应的值</p>
+
+<ul>
+<li>使用了swift就是YES</li>
+<li>没有swift就是NO</li>
+</ul>
+</li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView+SFSafariViewController</a></h1>
     
     
       <p class="meta">
@@ -103,6 +274,32 @@ $(document).bind('DOMNodeInserted', function(event) {
   <div class="entry-content"><h2>一：WKWebView简单介绍</h2>
 
 <p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<p>先来看看WKWebView和UIWebView有什么区别：</p>
+
+<h6>UIWebView：</h6>
+
+<ul>
+<li>始祖级别，支持的iOS版本比较多</li>
+<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
+<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
+<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
+<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
+<li>无法清除本地存储数据（Local Storage）</li>
+<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
+</ul>
+
+
+<h6>WKWebView：</h6>
+
+<ul>
+<li>iOS 8引入的，比较年轻</li>
+<li>在内存和执行效率上要比UIWebView高很多</li>
+<li>开放度较高但据说Bug成吨</li>
+<li>类似UIWebView，UI定制比较麻烦···</li>
+<li>没具体测试使用过，就不继续列举了 L~</li>
+</ul>
+
 
 <h5>第一、WKWebView增加的属性和方法</h5>
 
@@ -554,63 +751,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/11/qinghuaci/">爬虫必备-青花瓷抓包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在之前个人学习ios开发的时候听过抓包相关的技术，但是自己没有实现，所以也只是当听听。</p>
-
-<p>这段时间，由于公司新项目的原因，但是后台和UI都还没有，而又需要我先开始封装对应的工具或者一下大概的逻辑，我当时就蒙了，最后还是乖乖的来做。</p>
-
-<p>网上找了一些接口，也找了不少类似的网站，但是发现再美我用不了有什么用呢？最后我想到了之前听别人说的网络爬虫，找了不少资料研究了一番。发现效果还不错，就在这里记录下来，希望对你有用！</p>
-
-<p>关于网络数据抓取不仅仅在iOS开发中有，其他开发中也有，也叫网络爬虫，大致分为三种方式实现</p>
-
-<ul>
-<li>1: 青花瓷</li>
-<li>2: 正则表达</li>
-<li>3: 利用其他语言的工具包：java／Python</li>
-</ul>
-
-
-<p>写本文的契机主要是前段时间有次用青花瓷抓包有一步忘了，在网上查了半天也没找到写的完整的教程，于是待问题解决后抽时间截了图，自己写一遍封存在博客园中以便以后随时查阅。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/11/qinghuaci/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/11/qinghuaci/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -626,17 +766,17 @@ $(document).bind('DOMNodeInserted', function(event) {
     <ul id="categories">
         <li class='category'><a href='/blog/categories/ios9新特性/'>ios9新特性 (1)</a></li>
 <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
-<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
 <li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
 <li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
-<li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (2)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
-<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
 <li class='category'><a href='/blog/categories/高级开发/'>高级开发 (27)</a></li>
 
     </ul>
@@ -645,7 +785,11 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView</a>
+        <a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9新特性-WKWebView+SFSafariViewController</a>
       </li>
     
       <li class="post">
@@ -658,10 +802,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/12/keychainchu-tan/">KeyChain初探</a>
       </li>
     
   </ul>
