@@ -18,6 +18,10 @@ categories: 新技术
 ####2，iOS 9使用URL scheme必须将其加入白名单
 否则会提示类似如下错误:
 
+
+<!--more-->
+
+
 		canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
 修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：
 

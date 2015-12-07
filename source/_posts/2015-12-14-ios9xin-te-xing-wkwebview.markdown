@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS9新特性-WKWebView+SFSafariViewController"
+title: "iOS9-WKWebView+SFSafariViewController"
 date: 2015-12-14 19:35:40 +0800
 comments: true
 categories: iOS9新特性
@@ -31,6 +31,12 @@ webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitr
 * 开放度较高但据说Bug成吨
 * 类似UIWebView，UI定制比较麻烦···
 * 没具体测试使用过，就不继续列举了 L~
+
+
+
+<!--more-->
+
+
 
 #####第一、WKWebView增加的属性和方法
 类比UIWebView，跟UIWebView的API对比，
