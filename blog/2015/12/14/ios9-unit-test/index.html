@@ -1,0 +1,678 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS9-Unit Test - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iOS9-Unit Test ordinal XCode7(iOS9)中新增了跟多特性，包括： WKWebView+SFSafariViewController
+UI Test
+Multitasking
+watchOS 2
+Swift 2
+App Thinning
+人工智能和搜索 API &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/14/ios9-unit-test/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS9-Unit Test</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p> XCode7(iOS9)中新增了跟多特性，包括：</p>
+
+<ul>
+<li>WKWebView+SFSafariViewController</li>
+<li>UI Test</li>
+<li>Multitasking</li>
+<li>watchOS 2</li>
+<li>Swift 2</li>
+<li>App Thinning</li>
+<li>人工智能和搜索 API</li>
+<li>HomeKit，CloudKit，HealthKit 等等杂七杂八的框架</li>
+</ul>
+
+
+<p> 前面的文章中我们已经将WKWebView+SFSafariViewController完整的介绍了一遍，现在我们就开始着手探究一下单元测试（后面的文章中我将会集中介绍一下常用功能新特性），敬请关注：<a href="http://al1020119.github.io/">iOS梦工厂</a></p>
+
+<h3>UI Tests是什么？</h3>
+
+<p>UI Tests是一个自动测试UI与交互的Testing组件</p>
+
+<h3>UI Tests有什么用？</h3>
+
+<p>它可以通过编写代码、或者是记录开发者的操作过程并代码化，来实现自动点击某个按钮、视图，或者自动输入文字等功能。</p>
+
+<h3>UI Tests的重要性</h3>
+
+<p>在实际的开发过程中，随着项目越做越大，功能越来越多，仅仅靠人工操作的方式来覆盖所有测试用例是非常困难的，尤其是加入新功能以后，旧的功能也要重新测试一遍，这导致了测试需要花非常多的时间来进行回归测试，这里产生了大量重复的工作，而这些重复的工作有些是可以自动完成的，这时候UI Tests就可以帮助解决这个问题了</p>
+
+<h2>使用方法</h2>
+
+<h6>第一步：添加UI Tests</h6>
+
+<p>如果是新项目，则创建工程的时候可以直接勾选选项，如下图</p>
+
+<p><img src="/images/unittest001.png" title="Caption" ></p>
+
+<p>如果是已有的项目，可以通过添加target的方式添加一个UI Tests，点击xcode的菜单，找到target栏</p>
+
+<p><img src="/images/unittest002.png" title="Caption" ></p>
+
+<p>在Test选项中选择Cocoa Touch UI Testing Bundle</p>
+
+<p><img src="/images/unittest003.png" title="Caption" ></p>
+
+<p>这时候test组件添加成功，它在项目中的位置如下图所示</p>
+
+<p><img src="/images/unittest004.png" title="Caption" ></p>
+
+<h6>第二步：创建测试代码</h6>
+
+<p>手动创建测试代码
+打开测试文件，在testExample()方法中添加测试代码</p>
+
+<p><img src="/images/unittest005.png" title="Caption" ></p>
+
+<p>如果不知道如何写测试代码，则可以参考自动生成的代码样式</p>
+
+<h5>自动生成测试步骤</h5>
+
+<p>选择测试文件后，点击录制按钮</p>
+
+<p><img src="/images/unittest006.png" title="Caption" ></p>
+
+<p>这时候开始进行操作，它会记录你的操作步骤，并生成测试代码
+下图就是在一些操作后自动生成的测试代码</p>
+
+<p><img src="/images/unittest007.png" title="Caption" ></p>
+
+<p>这时候可以分析测试代码的语法，以便你自己手动修改或者手写测试代码</p>
+
+<h6>第三步：开始测试</h6>
+
+<p>点击testExample方法旁边的播放按钮，它就开始进行自动测试了，这时候你会看到app在自动操作</p>
+
+<p><img src="/images/unittest008.png" title="Caption" ></p>
+
+<h6>下面介绍一下测试元素的语法</h6>
+
+<p>XCUIApplication：
+继承XCUIElement，这个类掌管应用程序的生命周期，里面包含两个主要方法</p>
+
+<pre><code>launch():
+</code></pre>
+
+<p>启动程序</p>
+
+<pre><code>terminate():
+</code></pre>
+
+<p>终止程序</p>
+
+<h6>XCUIElement:</h6>
+
+<p>继承NSObject，实现协议XCUIElementAttributes, XCUIElementTypeQueryProvider
+可以表示系统的各种UI元素</p>
+
+<pre><code>exist:
+</code></pre>
+
+<p>可以让你判断当前的UI元素是否存在，如果对一个不存在的元素进行操作，会导致测试组件抛出异常并中断测试</p>
+
+<pre><code>descendantsMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素以及它的子类集合</p>
+
+<pre><code>childrenMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素集合，不包含它的子类</p>
+
+<p>这两个方法的区别在于，你仅使用系统的UIButton时，用childrenMatchingType就可以了，如果你还希望查询自己定义的子Button，就要用descendantsMatchingType</p>
+
+<p>另外UI元素还有一些交互方法</p>
+
+<pre><code>tap():
+</code></pre>
+
+<p>点击</p>
+
+<pre><code>doubleTap():
+</code></pre>
+
+<p>双击</p>
+
+<pre><code>pressForDuration(duration: NSTimeInterval):
+</code></pre>
+
+<p>长按一段时间，在你需要进行延时操作时，这个就派上用场了</p>
+
+<pre><code>swipeUp():
+</code></pre>
+
+<p>这个响应不了pan手势，暂时没发现能用在什么地方，也可能是beta版的bug，先不解释</p>
+
+<pre><code>typeText(text: String):
+</code></pre>
+
+<p>用于textField和textView输入文本时使用，使用前要确保文本框获得输入焦点，可以使用tap()函数使其获得焦点</p>
+
+<h6>XCUIElementAttributes协议</h6>
+
+<p>里面包含了UIAccessibility中的部分属性
+如下图</p>
+
+<p><img src="/images/unittest009.png" title="Caption" ></p>
+
+<p>可以方便你查看当前元素的特征，其中identifier属性可用于直接读取元素，不过该属性在UITextField中有bug，暂时不清楚原因</p>
+
+<p>XCUIElementTypeQueryProvider协议
+里面包含了系统中大部分UI控件的类型，可通过读属性的方式取得某种类型的UI集合
+部分属性截图如下</p>
+
+<p><img src="/images/unittest010.png" title="Caption" ></p>
+
+<h3>创建Demo</h3>
+
+<p>首先创建一个登录页面</p>
+
+<p><img src="/images/unittest011.png" title="Caption" ></p>
+
+<p>点击login按钮进行登录验证，点击clear按钮会清除文本
+登录成功后可以去到个人信息页面</p>
+
+<p>个人信息页面如下</p>
+
+<p><img src="/images/unittest012.png" title="Caption" ></p>
+
+<p>点击modify按钮可以修改个人信息，点击Message按钮可以查看个人消息</p>
+
+<p>最后是消息界面</p>
+
+<p><img src="/images/unittest013.png" title="Caption" ></p>
+
+<h4>登录页面的测试</h4>
+
+<ul>
+<li>输入一个错误的账号</li>
+<li>验证结果</li>
+<li>关闭警告窗</li>
+<li>清除输入记录</li>
+<li>输入一个正确的账号</li>
+<li>验证结果</li>
+<li>进入个人信息页面</li>
+</ul>
+
+
+<p>测试代码如下:</p>
+
+<pre><code>func testLoginView() {
+    let app = XCUIApplication()
+
+    // 由于UITextField的id有问题，所以只能通过label的方式遍历元素来读取
+    let nameField = self.getFieldWithLbl("nameField")
+    if self.canOperateElement(nameField) {
+        nameField!.tap()
+        nameField!.typeText("xiaoming")
+    }
+
+    let psdField = self.getFieldWithLbl("psdField")
+    if self.canOperateElement(psdField) {
+        psdField!.tap()
+        psdField!.typeText("1234321")
+    }
+
+    // 通过UIButton的预设id来读取对应的按钮
+    let loginBtn = app.buttons["Login"]
+    if self.canOperateElement(loginBtn) {
+        loginBtn.tap()
+    }
+
+    // 开始一段延时，由于真实的登录是联网请求，所以不能直接获得结果，demo通过延时的方式来模拟联网请求
+    let window = app.windows.elementAtIndex(0)
+    if self.canOperateElement(window) {
+        // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+        window.pressForDuration(3)
+    }
+
+    // alert的id和labe都用不了，估计还是bug，所以只能通过数量判断
+    if app.alerts.count &gt; 0 {
+        // 登录失败
+        app.alerts.collectionViews.buttons["确定"].tap()
+
+        let clear = app.buttons["Clear"]
+        if self.canOperateElement(clear) {
+            clear.tap()
+
+            if self.canOperateElement(nameField) {
+                nameField!.tap()
+                nameField!.typeText("sun")
+            }
+
+            if self.canOperateElement(psdField) {
+                psdField!.tap()
+                psdField!.typeText("111111")
+            }
+
+            if self.canOperateElement(loginBtn) {
+                loginBtn.tap()
+            }
+            if self.canOperateElement(window) {
+                // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+                window.pressForDuration(3)
+            }
+            self.loginSuccess()
+        }
+    } else {
+        // 登录成功
+        self.loginSuccess()
+    }
+}
+</code></pre>
+
+<blockquote><p>这里有几个需要特别注意的点：
+当你的元素不存在时，它仍然可能返回一个元素对象，但这时候不能对其进行操作
+当你要点击的元素被键盘或者UIAlertView遮挡时，执行tap方法会抛异常
+详细实现可参照demo:
+<a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p></blockquote>
+
+<h4>个人信息页测试</h4>
+
+<ul>
+<li>修改性别</li>
+<li>修改年龄</li>
+<li>修改心情</li>
+<li>保存修改</li>
+</ul>
+
+
+<p>测试代码如下：</p>
+
+<pre><code>    func testInfo() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let modifyBtn = app.buttons["modify"];
+        modifyBtn.tap()
+
+        let sexSwitch = app.switches["sex"]
+        sexSwitch.tap()
+
+        let incrementButton = app.buttons["Increment"]
+        incrementButton.tap()
+        incrementButton.tap()
+        incrementButton.tap()
+        app.buttons["Decrement"].tap()
+
+        let textView = app.textViews["feeling"]
+        textView.tap()
+        app.keys["Delete"].tap()
+        app.keys["Delete"].tap()
+        textView.typeText(" abc ")
+
+        // 点击空白区域
+        let clearBtn = app.buttons["clearBtn"]
+        clearBtn.tap()
+
+        // 保存数据
+        modifyBtn.tap()
+        window.pressForDuration(2)
+
+        let messageBtn = app.buttons["message"]
+        messageBtn.tap();
+
+        // 延时1秒, push view需要时间
+        window.pressForDuration(1)
+
+        self.testMessage()
+    }
+</code></pre>
+
+<blockquote><p>这里需要特别注意以下两点：
+textview获取焦点时无法选择焦点的位置
+tap事件的触发位置是view的中心，所以当view的中心被遮挡时，要考虑使用其他view来代替</p></blockquote>
+
+<h4>个人消息界面测试</h4>
+
+<p>单元格的点击
+测试代码如下：</p>
+
+<pre><code>    func testMessage() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let table = app.tables
+        table.childrenMatchingType(.Cell).elementAtIndex(8).tap()
+        table.childrenMatchingType(.Cell).elementAtIndex(1).tap()
+
+    }
+</code></pre>
+
+<blockquote><p>这里需要注意一点：
+暂时无法获取到tableView的元素指针</p></blockquote>
+
+<h3>总结</h3>
+
+<p>总的来说，UI Tests只能用于一些基础功能的测试，验证app的功能是否可以正常使用，是否存在崩溃问题。但它也有很多不足之处，编写测试用例的过程非常繁琐，自动生成的代码几乎无法运行，功能单一，很多用例无法覆盖，而且bug很多，大大地限制了UI Tests在实际开发中的应用。希望正式版出来的时候能够修复这些问题，并开放更多的功能。</p>
+
+<p>demo地址：</p>
+
+<p><a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p>
+
+<p>最后介绍几个常见的第三方测试框架：</p>
+
+<p>Frank， KIF， Subliminal， Apple 的 UIAutomation，我把他们都试了一遍。你要是希望了解更多可以访问我的故障特征测试框架。它不是开发者的失败，而是因为 Apple 对待测试只有有限的开放性。这使得这些框架有一系列的补丁，而在这些补丁之上，这些框架不外乎都成为了一堆破碎的工具。
+没有涉及到的更多细节：</p>
+
+<ul>
+<li>Frank 一直被遗弃。</li>
+<li>KIF 已经与主要的 iOS 修订版本决裂。</li>
+<li>Subliminal 不能在命令行中可靠地运行。</li>
+<li>UIAutomation 是用 JavaScript 和 clunky 写的。</li>
+</ul>
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xin-ji-zhu/'>新技术</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/" title="Previous Post: 移动端性能优化">&laquo; 移动端性能优化</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/" title="Next Post: iOS9-WKWebView+SFSafariViewController">iOS9-WKWebView+SFSafariViewController &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (4)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (27)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/">移动端性能优化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/14/ios9-unit-test/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/14/ios9-unit-test/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

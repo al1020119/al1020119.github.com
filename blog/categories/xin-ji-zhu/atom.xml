@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 新技术 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xin-ji-zhu/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T00:10:12+08:00</updated>
+  <updated>2015-12-08T01:03:25+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -154,6 +154,767 @@ DWARF seems to be the default setting for new projects created in Xcode 7, but e
 <li>没有swift就是NO</li>
 </ul>
 </li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-WKWebView+SFSafariViewController]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview/"/>
+    <updated>2015-12-14T19:35:40+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview</id>
+    <content type="html"><![CDATA[<h2>一：WKWebView简单介绍</h2>
+
+<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<p>先来看看WKWebView和UIWebView有什么区别：</p>
+
+<h6>UIWebView：</h6>
+
+<ul>
+<li>始祖级别，支持的iOS版本比较多</li>
+<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
+<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
+<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
+<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
+<li>无法清除本地存储数据（Local Storage）</li>
+<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
+</ul>
+
+
+<h6>WKWebView：</h6>
+
+<ul>
+<li>iOS 8引入的，比较年轻</li>
+<li>在内存和执行效率上要比UIWebView高很多</li>
+<li>开放度较高但据说Bug成吨</li>
+<li>类似UIWebView，UI定制比较麻烦···</li>
+<li>没具体测试使用过，就不继续列举了 L~</li>
+</ul>
+
+
+<!--more-->
+
+
+<h5>第一、WKWebView增加的属性和方法</h5>
+
+<p>类比UIWebView，跟UIWebView的API对比，
+增加的属性：</p>
+
+<pre><code>* 1、estimatedProgress 加载进度条，在IOS8之前我们是通过一个假的进度条来实现
+* 2、backForwardList 表示historyList
+* 3、WKWebViewConfiguration *configuration; 初始化webview的配置
+</code></pre>
+
+<p>增加的方法：</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration 
+</code></pre>
+
+<p>初始化</p>
+
+<pre><code>    - (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item; 
+</code></pre>
+
+<p>跳到历史的某个页面</p>
+
+<!--more-->
+
+
+<h5>第二、相同的属性和方法</h5>
+
+<ul>
+<li>goBack、</li>
+<li>goForward、</li>
+<li>canGoBack、</li>
+<li>canGoForward、</li>
+<li>stopLoading、</li>
+<li>loadRequest、</li>
+<li>scrollView</li>
+</ul>
+
+
+<h5>第三、被删去的属性和方法：</h5>
+
+<pre><code>- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+</code></pre>
+
+<p>在跟js交互时，我们使用这个API，目前WKWebView完档没有给出实现类似功能的API</p>
+
+<ul>
+<li>无法设置缓存
+在UIWebView，使用NSURLCache缓存，通过setSharedURLCache可以设置成我们自己的缓存，但WKWebView不支持NSURLCache
+
+<h5>第四、delegate方法的不同</h5>
+
+<p>UIWebView支持的代理是UIWebViewDelegate，WKWebView支持的代理是WKNavigationDelegate和
+WKUIDelegate
+WKNavigationDelegate主要实现了涉及到导航跳转方面的回调方法
+WKUIDelegate主要实现了涉及到界面显示的回调方法：如WKWebView的改变和js相关内容
+具体来说WKNavigationDelegate除了有开始加载、加载成功、加载失败的API外，还具有额外的三个代理方法：</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation
+</code></pre>
+
+<p>这个代理是服务器redirect时调用</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
+</code></pre>
+
+<p>这个代理方法表示当客户端收到服务器的响应头，根据response相关信息，可以决定这次跳转是否可以继续进行。</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+</code></pre>
+
+<p>根据webView、navigationAction相关信息决定这次跳转是否可以继续进行,这些信息包含HTTP发送请求，如头部包含User-Agent,Accept</p></li>
+</ul>
+
+
+<hr />
+
+<h2>二、WKWebView新特性</h2>
+
+<ul>
+<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国* 网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
+<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
+<li>支持了更多的HTML5特性；</li>
+<li>高达60fps的滚动刷新率以及内置手势；</li>
+<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议（查看苹果官方文档）；</li>
+</ul>
+
+
+<hr />
+
+<h2>三：基本使用</h2>
+
+<p>WKWebView相对于UIWebView强大了很多，内存的消耗相对少了，所提供的接口也丰富了。
+现在谈一谈WKWebView的基本使用</p>
+
+<h4>1. navigationDelegate</h4>
+
+<pre><code>- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation { // 类似UIWebView的 -webViewDidStartLoad:  
+    NSLog(@"didStartProvisionalNavigation");  
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;  
+}  
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {  
+    NSLog(@"didCommitNavigation");  
+}  
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation { // 类似 UIWebView 的 －webViewDidFinishLoad:  
+    NSLog(@"didFinishNavigation");  
+    [self resetControl];  
+    if (webView.title.length &gt; 0) {  
+        self.title = webView.title;  
+    }  
+
+}  
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {  
+    // 类似 UIWebView 的- webView:didFailLoadWithError:  
+
+    NSLog(@"didFailProvisionalNavigation");  
+
+}  
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {  
+
+    decisionHandler(WKNavigationResponsePolicyAllow);  
+}  
+
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {  
+    // 类似 UIWebView 的 -webView: shouldStartLoadWithRequest: navigationType:  
+
+    NSLog(@"4.%@",navigationAction.request);  
+
+
+    NSString *url = [navigationAction.request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];  
+
+
+
+    decisionHandler(WKNavigationActionPolicyAllow);  
+
+}  
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler {  
+
+}  
+</code></pre>
+
+<h4>2 UIDelegate</h4>
+
+<pre><code>- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {  
+    // 接口的作用是打开新窗口委托  
+    [self createNewWebViewWithURL:webView.URL.absoluteString config:configuration];  
+
+    return currentSubView.webView;  
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)())completionHandler  
+{    // js 里面的alert实现，如果不实现，网页的alert函数无效  
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler();  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler {  
+    //  js 里面的alert实现，如果不实现，网页的alert函数无效  ,   
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleDefault  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler(YES);  
+                                                      }]];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"取消"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action){  
+                                                          completionHandler(NO);  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler {  
+
+    completionHandler(@"Client Not handler");  
+
+}  
+</code></pre>
+
+<h4>3. WKWebView 执行脚本方法</h4>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString completionHandler:(void (^)(id, NSError *))completionHandler;  
+
+completionHandler 拥有两个参数，一个是返回错误，一个可以返回执行脚本后的返回值  
+</code></pre>
+
+<h4>4. WKWebView 的Cookie问题</h4>
+
+<p>UIWebView 中会自动保存Cookie，如果登录了一次，下次再次进入的时候，会记住登录状态
+而在WKWebView中，并不会这样，WKWebView在初始化的时候有一个方法</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration  
+</code></pre>
+
+<p>通过这个方法，设置 configuration 让WKWebView知道登录状态，configuration 可以通过已有的Cookie进行设置，也可以通过保存上一次的configuration进行设置</p>
+
+<p>参考 stackoverflow上回答：</p>
+
+<p><a href="http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303">http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303</a></p>
+
+<pre><code>WKWebView * webView = /*set up your webView*/  
+NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://example.com/index.html"]];  
+[request addValue:@"TeskCookieKey1=TeskCookieValue1;TeskCookieKey2=TeskCookieValue2;" forHTTPHeaderField:@"Cookie"];  
+// use stringWithFormat: in the above line to inject your values programmatically  
+[webView loadRequest:request];  
+
+[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+WKUserContentController* userContentController = WKUserContentController.new;  
+WKUserScript * cookieScript = [[WKUserScript alloc]   
+    initWithSource: @"document.cookie = 'TeskCookieKey1=TeskCookieValue1';document.cookie = 'TeskCookieKey2=TeskCookieValue2';"  
+    injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];  
+// again, use stringWithFormat: in the above line to inject your values programmatically  
+[userContentController addUserScript:cookieScript];  
+WKWebViewConfiguration* webViewConfig = WKWebViewConfiguration.new;  
+webViewConfig.userContentController = userContentController;  
+WKWebView * webView = [[WKWebView alloc] initWithFrame:CGRectMake(/*set your values*/) configuration:webViewConfig];  
+</code></pre>
+
+<hr />
+
+<h2>四：WKWebView与js通信</h2>
+
+<p>iOS 8 引入WKWebView, WKWebView 不支持JavaScriptCore的方式但提供message handler的方式为JavaScript 与Objective-C 通信.
+在Objective-C 中使用WKWebView的以下方法调用JavaScript:</p>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString
+         completionHandler:(void (^)(id, NSError *))completionHandler
+如果JavaScript 代码出错, 可以在completionHandler 进行处理.
+在Objective-C 中注册 message handler:
+// WKScriptMessageHandler protocol?
+
+- (void)userContentController:(WKUserContentController *)userContentController
+    didReceiveScriptMessage:(WKScriptMessage *)message
+{
+    NSLog(@"Message: %@", message.body);
+}
+
+[userContentController addScriptMessageHandler:handler name:@"myName"];
+在JavaScript 将信息发给Objective-C:
+// window.webkit.messageHandlers.&lt;name&gt;.postMessage();?
+
+function postMyMessage()? {?
+    var message = { 'message' : 'Hello, World!', 'numbers' : [ 1, 2, 3 ] };?
+    window.webkit.messageHandlers.myName.postMessage(message);?
+}
+</code></pre>
+
+<hr />
+
+<h2>五：常见问题：</h2>
+
+<p>32 位的app在使用WKWebView的时候，如果运行在64位的设备上，会出现一下问题：</p>
+
+<ul>
+<li>（1）iOS8.1 系统，部分网页加载白屏，例如 百度，iOS8.3 似乎没问题</li>
+<li>（2）web输入框输入汉字也会出现白屏</li>
+</ul>
+
+
+<p>通过搜索得到问题根源：</p>
+
+<blockquote><p>WKWebView&rsquo;s WebProcess runs out-of-process as a 64-bit process on hardware supporting 64bit. There is a 32bit/64bit marshalling IPC bug for 32 bit apps using the WKWebView client on such hardware. The bug causes the WebProcess to exit, leaving a blank screen.</p></blockquote>
+
+<ul>
+<li>也就是一个进程间通讯的bug引起的。</li>
+</ul>
+
+
+<h6>解决方案，可以使app支持arm64，便不会出现问题。</h6>
+
+<hr />
+
+<h2>六：SFSafariViewController：</h2>
+
+<ul>
+<li>iOS 9引入，更加年轻，意味着是Apple的新菜，总是有什么优势的</li>
+<li>也是用来显示网页内容的</li>
+<li>这是一个特殊的View Controller，而不是一个单独的 View，和前面两个的区别</li>
+<li>在当前App中使用Safari的UI框架展现Web内容，包括相同的地址栏，工具栏等，类似一个内置于App的小型Safari</li>
+<li>共享Safari的一些便利特性，包括：相似的用户体验，和Safari共享Cookie，iCloud Web表单数据，密码、证书自动填充，Safari阅读器（Safari Reader）</li>
+<li>可定制性比较差，甚至连地址栏都是不可编辑的，只能在init的时候，传入一个URL来指定网页的地址</li>
+<li>只能用来展示单个页面，并且有一个完成按钮用来退出</li>
+</ul>
+
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<p>如果你的App需要显示网页，但是又不想自己去定制浏览器界面的话，可以考虑用SFSafariViewController来试试。从好的方面看，SFSafariViewController也去掉了从App中跳转到Safari的撕裂感，不同App之间切换总是让人感觉麻烦和不舒服。</p>
+
+<p>代码例子:</p>
+
+<pre><code>- (IBAction)onButtonClick:(id)sender
+
+{
+
+    NSString *urlString = @"http://www.kdanmobile.com";
+
+    SFSafariViewController *sfViewControllr = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:urlString]];
+
+    sfViewControllr.delegate = self;
+
+    [self presentViewController:sfViewControllr animated:YES completion:^{
+
+       //...
+
+    }];
+
+}
+
+
+
+// Done 按钮
+
+- (void)safariViewControllerDidFinish:(nonnull SFSafariViewController *)controller
+
+{
+
+    [controller dismissViewControllerAnimated:YES completion:nil];
+
+}
+</code></pre>
+
+<p>SFSafariViewController 的接口比较少，就不再继续一一列举了。另外一个定制功能在于SFSafariViewControllerDelegate里面的一个方法：</p>
+
+<pre><code>-(NSArray&lt;UIActivity *&gt; *)safariViewController:(SFSafariViewController *)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title;
+</code></pre>
+
+<p>这个代理会在用户点击动作（Action）按钮（底部工具栏中间的按钮）的时候调用，可以传入UIActivity的数组，创建添加一些自定义的各类插件式的服务，比如分享到微信，微博什么的。</p>
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<blockquote><p>小细节：
+SFSafariViewController有保存Cookies的功能，但是貌似不能和Safari浏览器共享，也可能是Beta版的bug</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-Unit Test]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/14/ios9-unit-test/"/>
+    <updated>2015-12-14T00:59:07+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/14/ios9-unit-test</id>
+    <content type="html"><![CDATA[<p> XCode7(iOS9)中新增了跟多特性，包括：</p>
+
+<ul>
+<li>WKWebView+SFSafariViewController</li>
+<li>UI Test</li>
+<li>Multitasking</li>
+<li>watchOS 2</li>
+<li>Swift 2</li>
+<li>App Thinning</li>
+<li>人工智能和搜索 API</li>
+<li>HomeKit，CloudKit，HealthKit 等等杂七杂八的框架</li>
+</ul>
+
+
+<p> 前面的文章中我们已经将WKWebView+SFSafariViewController完整的介绍了一遍，现在我们就开始着手探究一下单元测试（后面的文章中我将会集中介绍一下常用功能新特性），敬请关注：<a href="http://al1020119.github.io/">iOS梦工厂</a></p>
+
+<h3>UI Tests是什么？</h3>
+
+<p>UI Tests是一个自动测试UI与交互的Testing组件</p>
+
+<h3>UI Tests有什么用？</h3>
+
+<p>它可以通过编写代码、或者是记录开发者的操作过程并代码化，来实现自动点击某个按钮、视图，或者自动输入文字等功能。</p>
+
+<h3>UI Tests的重要性</h3>
+
+<p>在实际的开发过程中，随着项目越做越大，功能越来越多，仅仅靠人工操作的方式来覆盖所有测试用例是非常困难的，尤其是加入新功能以后，旧的功能也要重新测试一遍，这导致了测试需要花非常多的时间来进行回归测试，这里产生了大量重复的工作，而这些重复的工作有些是可以自动完成的，这时候UI Tests就可以帮助解决这个问题了</p>
+
+<h2>使用方法</h2>
+
+<h6>第一步：添加UI Tests</h6>
+
+<p>如果是新项目，则创建工程的时候可以直接勾选选项，如下图</p>
+
+<p><img src="/images/unittest001.png" title="Caption" ></p>
+
+<p>如果是已有的项目，可以通过添加target的方式添加一个UI Tests，点击xcode的菜单，找到target栏</p>
+
+<p><img src="/images/unittest002.png" title="Caption" ></p>
+
+<p>在Test选项中选择Cocoa Touch UI Testing Bundle</p>
+
+<p><img src="/images/unittest003.png" title="Caption" ></p>
+
+<p>这时候test组件添加成功，它在项目中的位置如下图所示</p>
+
+<p><img src="/images/unittest004.png" title="Caption" ></p>
+
+<h6>第二步：创建测试代码</h6>
+
+<p>手动创建测试代码
+打开测试文件，在testExample()方法中添加测试代码</p>
+
+<p><img src="/images/unittest005.png" title="Caption" ></p>
+
+<p>如果不知道如何写测试代码，则可以参考自动生成的代码样式</p>
+
+<h5>自动生成测试步骤</h5>
+
+<p>选择测试文件后，点击录制按钮</p>
+
+<p><img src="/images/unittest006.png" title="Caption" ></p>
+
+<p>这时候开始进行操作，它会记录你的操作步骤，并生成测试代码
+下图就是在一些操作后自动生成的测试代码</p>
+
+<p><img src="/images/unittest007.png" title="Caption" ></p>
+
+<p>这时候可以分析测试代码的语法，以便你自己手动修改或者手写测试代码</p>
+
+<h6>第三步：开始测试</h6>
+
+<p>点击testExample方法旁边的播放按钮，它就开始进行自动测试了，这时候你会看到app在自动操作</p>
+
+<p><img src="/images/unittest008.png" title="Caption" ></p>
+
+<h6>下面介绍一下测试元素的语法</h6>
+
+<p>XCUIApplication：
+继承XCUIElement，这个类掌管应用程序的生命周期，里面包含两个主要方法</p>
+
+<pre><code>launch():
+</code></pre>
+
+<p>启动程序</p>
+
+<pre><code>terminate():
+</code></pre>
+
+<p>终止程序</p>
+
+<h6>XCUIElement:</h6>
+
+<p>继承NSObject，实现协议XCUIElementAttributes, XCUIElementTypeQueryProvider
+可以表示系统的各种UI元素</p>
+
+<pre><code>exist:
+</code></pre>
+
+<p>可以让你判断当前的UI元素是否存在，如果对一个不存在的元素进行操作，会导致测试组件抛出异常并中断测试</p>
+
+<pre><code>descendantsMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素以及它的子类集合</p>
+
+<pre><code>childrenMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素集合，不包含它的子类</p>
+
+<p>这两个方法的区别在于，你仅使用系统的UIButton时，用childrenMatchingType就可以了，如果你还希望查询自己定义的子Button，就要用descendantsMatchingType</p>
+
+<p>另外UI元素还有一些交互方法</p>
+
+<pre><code>tap():
+</code></pre>
+
+<p>点击</p>
+
+<pre><code>doubleTap():
+</code></pre>
+
+<p>双击</p>
+
+<pre><code>pressForDuration(duration: NSTimeInterval):
+</code></pre>
+
+<p>长按一段时间，在你需要进行延时操作时，这个就派上用场了</p>
+
+<pre><code>swipeUp():
+</code></pre>
+
+<p>这个响应不了pan手势，暂时没发现能用在什么地方，也可能是beta版的bug，先不解释</p>
+
+<pre><code>typeText(text: String):
+</code></pre>
+
+<p>用于textField和textView输入文本时使用，使用前要确保文本框获得输入焦点，可以使用tap()函数使其获得焦点</p>
+
+<h6>XCUIElementAttributes协议</h6>
+
+<p>里面包含了UIAccessibility中的部分属性
+如下图</p>
+
+<p><img src="/images/unittest009.png" title="Caption" ></p>
+
+<p>可以方便你查看当前元素的特征，其中identifier属性可用于直接读取元素，不过该属性在UITextField中有bug，暂时不清楚原因</p>
+
+<p>XCUIElementTypeQueryProvider协议
+里面包含了系统中大部分UI控件的类型，可通过读属性的方式取得某种类型的UI集合
+部分属性截图如下</p>
+
+<p><img src="/images/unittest010.png" title="Caption" ></p>
+
+<h3>创建Demo</h3>
+
+<p>首先创建一个登录页面</p>
+
+<p><img src="/images/unittest011.png" title="Caption" ></p>
+
+<p>点击login按钮进行登录验证，点击clear按钮会清除文本
+登录成功后可以去到个人信息页面</p>
+
+<p>个人信息页面如下</p>
+
+<p><img src="/images/unittest012.png" title="Caption" ></p>
+
+<p>点击modify按钮可以修改个人信息，点击Message按钮可以查看个人消息</p>
+
+<p>最后是消息界面</p>
+
+<p><img src="/images/unittest013.png" title="Caption" ></p>
+
+<h4>登录页面的测试</h4>
+
+<ul>
+<li>输入一个错误的账号</li>
+<li>验证结果</li>
+<li>关闭警告窗</li>
+<li>清除输入记录</li>
+<li>输入一个正确的账号</li>
+<li>验证结果</li>
+<li>进入个人信息页面</li>
+</ul>
+
+
+<p>测试代码如下:</p>
+
+<pre><code>func testLoginView() {
+    let app = XCUIApplication()
+
+    // 由于UITextField的id有问题，所以只能通过label的方式遍历元素来读取
+    let nameField = self.getFieldWithLbl("nameField")
+    if self.canOperateElement(nameField) {
+        nameField!.tap()
+        nameField!.typeText("xiaoming")
+    }
+
+    let psdField = self.getFieldWithLbl("psdField")
+    if self.canOperateElement(psdField) {
+        psdField!.tap()
+        psdField!.typeText("1234321")
+    }
+
+    // 通过UIButton的预设id来读取对应的按钮
+    let loginBtn = app.buttons["Login"]
+    if self.canOperateElement(loginBtn) {
+        loginBtn.tap()
+    }
+
+    // 开始一段延时，由于真实的登录是联网请求，所以不能直接获得结果，demo通过延时的方式来模拟联网请求
+    let window = app.windows.elementAtIndex(0)
+    if self.canOperateElement(window) {
+        // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+        window.pressForDuration(3)
+    }
+
+    // alert的id和labe都用不了，估计还是bug，所以只能通过数量判断
+    if app.alerts.count &gt; 0 {
+        // 登录失败
+        app.alerts.collectionViews.buttons["确定"].tap()
+
+        let clear = app.buttons["Clear"]
+        if self.canOperateElement(clear) {
+            clear.tap()
+
+            if self.canOperateElement(nameField) {
+                nameField!.tap()
+                nameField!.typeText("sun")
+            }
+
+            if self.canOperateElement(psdField) {
+                psdField!.tap()
+                psdField!.typeText("111111")
+            }
+
+            if self.canOperateElement(loginBtn) {
+                loginBtn.tap()
+            }
+            if self.canOperateElement(window) {
+                // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+                window.pressForDuration(3)
+            }
+            self.loginSuccess()
+        }
+    } else {
+        // 登录成功
+        self.loginSuccess()
+    }
+}
+</code></pre>
+
+<blockquote><p>这里有几个需要特别注意的点：
+当你的元素不存在时，它仍然可能返回一个元素对象，但这时候不能对其进行操作
+当你要点击的元素被键盘或者UIAlertView遮挡时，执行tap方法会抛异常
+详细实现可参照demo:
+<a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p></blockquote>
+
+<h4>个人信息页测试</h4>
+
+<ul>
+<li>修改性别</li>
+<li>修改年龄</li>
+<li>修改心情</li>
+<li>保存修改</li>
+</ul>
+
+
+<p>测试代码如下：</p>
+
+<pre><code>    func testInfo() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let modifyBtn = app.buttons["modify"];
+        modifyBtn.tap()
+
+        let sexSwitch = app.switches["sex"]
+        sexSwitch.tap()
+
+        let incrementButton = app.buttons["Increment"]
+        incrementButton.tap()
+        incrementButton.tap()
+        incrementButton.tap()
+        app.buttons["Decrement"].tap()
+
+        let textView = app.textViews["feeling"]
+        textView.tap()
+        app.keys["Delete"].tap()
+        app.keys["Delete"].tap()
+        textView.typeText(" abc ")
+
+        // 点击空白区域
+        let clearBtn = app.buttons["clearBtn"]
+        clearBtn.tap()
+
+        // 保存数据
+        modifyBtn.tap()
+        window.pressForDuration(2)
+
+        let messageBtn = app.buttons["message"]
+        messageBtn.tap();
+
+        // 延时1秒, push view需要时间
+        window.pressForDuration(1)
+
+        self.testMessage()
+    }
+</code></pre>
+
+<blockquote><p>这里需要特别注意以下两点：
+textview获取焦点时无法选择焦点的位置
+tap事件的触发位置是view的中心，所以当view的中心被遮挡时，要考虑使用其他view来代替</p></blockquote>
+
+<h4>个人消息界面测试</h4>
+
+<p>单元格的点击
+测试代码如下：</p>
+
+<pre><code>    func testMessage() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let table = app.tables
+        table.childrenMatchingType(.Cell).elementAtIndex(8).tap()
+        table.childrenMatchingType(.Cell).elementAtIndex(1).tap()
+
+    }
+</code></pre>
+
+<blockquote><p>这里需要注意一点：
+暂时无法获取到tableView的元素指针</p></blockquote>
+
+<h3>总结</h3>
+
+<p>总的来说，UI Tests只能用于一些基础功能的测试，验证app的功能是否可以正常使用，是否存在崩溃问题。但它也有很多不足之处，编写测试用例的过程非常繁琐，自动生成的代码几乎无法运行，功能单一，很多用例无法覆盖，而且bug很多，大大地限制了UI Tests在实际开发中的应用。希望正式版出来的时候能够修复这些问题，并开放更多的功能。</p>
+
+<p>demo地址：</p>
+
+<p><a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p>
+
+<p>最后介绍几个常见的第三方测试框架：</p>
+
+<p>Frank， KIF， Subliminal， Apple 的 UIAutomation，我把他们都试了一遍。你要是希望了解更多可以访问我的故障特征测试框架。它不是开发者的失败，而是因为 Apple 对待测试只有有限的开放性。这使得这些框架有一系列的补丁，而在这些补丁之上，这些框架不外乎都成为了一堆破碎的工具。
+没有涉及到的更多细节：</p>
+
+<ul>
+<li>Frank 一直被遗弃。</li>
+<li>KIF 已经与主要的 iOS 修订版本决裂。</li>
+<li>Subliminal 不能在命令行中可靠地运行。</li>
+<li>UIAutomation 是用 JavaScript 和 clunky 写的。</li>
 </ul>
 
 ]]></content>
