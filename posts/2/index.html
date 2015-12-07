@@ -9,7 +9,11 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。 &hellip;">
+  <meta name="description" content="前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。 用途 在照片、视频处理，把滤镜作为最后一步，添加水印
+给照相机提供实时效果
+面部检测，自动滤镜增益,图片分析算法
+更多 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +78,62 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/10/core-image-chu-tan/">Core Image 初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。</p>
+
+<ul>
+<li>用途
+
+<ul>
+<li>在照片、视频处理，把滤镜作为最后一步，添加水印</li>
+<li>给照相机提供实时效果</li>
+<li>面部检测，自动滤镜增益,图片分析算法</li>
+<li>更多</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/10/core-image-chu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/10/core-image-chu-tan/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -259,7 +319,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#58;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#109;&#101;&#105;&#x74;&#x75;&#97;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#x33;&#x40;&#x6d;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#x6d;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;">&#x6d;&#97;&#x6a;&#105;&#97;&#48;&#x33;&#64;&#x6d;&#x65;&#x69;&#116;&#x75;&#97;&#110;&#46;&#99;&#111;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -531,100 +591,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/06/blockshen-jiu/">Block深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>目录</h2>
-
-<ul>
-<li><h5>什么是block？</h5>
-
-<ul>
-<li>block编译转换结构</li>
-<li>block实际结构</li>
-</ul>
-</li>
-<li><h5>block的类型</h5>
-
-<ul>
-<li>NSConcreteGlobalBlock和NSConcreteStackBlock</li>
-<li>NSConcreteMallocBlock</li>
-</ul>
-</li>
-<li><h5>捕捉变量对block结构的影响</h5>
-
-<ul>
-<li>局部变量</li>
-<li>全局变量</li>
-<li>局部静态变量</li>
-<li>__block修饰的变量</li>
-<li>self隐式循环引用</li>
-</ul>
-</li>
-<li><h5>不同类型block的复制</h5>
-
-<ul>
-<li>栈block</li>
-<li>堆block</li>
-<li>全局block</li>
-</ul>
-</li>
-<li><h5>block辅助函数</h5>
-
-<ul>
-<li>__block修饰的基本类型的辅助函数</li>
-<li>对象的辅助函数</li>
-</ul>
-</li>
-<li><h5>ARC中block的工作</h5>
-
-<ul>
-<li>block试验</li>
-<li>block作为参数传递</li>
-<li>block作为返回值</li>
-<li>block属性</li>
-</ul>
-</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/06/blockshen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/06/blockshen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -644,7 +610,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/底层开发/'>底层开发 (4)</a></li>
 <li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
 <li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
-<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (4)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
@@ -660,6 +626,10 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/">移动端性能优化</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a>
       </li>
     
@@ -673,10 +643,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/12/svnshi-zhan-zong-jie/">SVN实战总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
       </li>
     
   </ul>

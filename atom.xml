@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-07T13:25:02+08:00</updated>
+  <updated>2015-12-07T14:19:27+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,308 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[移动端性能优化]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua/"/>
+    <updated>2015-12-13T14:16:31+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/13/yi-dong-duan-xing-neng-you-hua</id>
+    <content type="html"><![CDATA[<p>之前写过一篇</p>
+
+<p><a href="http://al1020119.github.io/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UItableView性能优化和卡顿问题</a></p>
+
+<p>还有一篇</p>
+
+<p><a href="http://al1020119.github.io/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办</a></p>
+
+<p>今天看到一篇总结的非常好的文章（<a href="http://tgideas.qq.com/webplat/info/news_version3/804/808/811/m579/201412/293834.shtml">移动端性能优化</a>），就移过来，后期我也会根据自己所做的项目做一个开发中性能优化的总结，希望你们喜欢！</p>
+
+<p>随着移动互联网的发展，我们越发要关注移动页面的性能优化，今天跟大家谈谈这方面的事情。</p>
+
+<h3>首先，为什么要最移动页面进行优化？</h3>
+
+<p>纵观目前移动网络的现状，</p>
+
+<p><img src="http://al1020119.github.io/images/xn001.png" title="Caption" ></p>
+
+<p>   移动页面布局越来越复杂，效果越来越炫，直接导致了文件越来越大，下载和运行速度越来越低，而速度低会造成不良影响，据统计：</p>
+
+<p><img src="http://al1020119.github.io/images/xn002.png" title="Caption" ></p>
+
+<p> 71%的用户期望移动页面跟pc页面一样快，74%的用户能容忍的响应时间为5秒，所以我们必须保证移动端页面有足够的速度。</p>
+
+<p> 移动页面的速度跟三个因素有关，分别是：移动网络带宽速度，设备性能（CPU，GPU，浏览器），页面本身。</p>
+
+<ul>
+<li>目前主流的移动网络制式为3g</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/xn003.png" title="Caption" ></p>
+
+<p> 今年，我们还看到了4g网络制式在快速发展，这再一次提升了移动页面的加载速度；</p>
+
+<p> 而移动设备本身，截止到目前，以iphong6三星Note4等设备为首，智能设备已经变得比以往屏幕更大，CPU、GPU、内存更靠谱</p>
+
+<p><img src="http://al1020119.github.io/images/xn004.png" title="Caption" ></p>
+
+<p> 而与其同时，浏览器产商也为提升页面的速度做出了不可磨灭的努力，这里大家可以看一个视频<a href="http://www.iqiyi.com/w_19rsgfld99.html">http://www.iqiyi.com/w_19rsgfld99.html</a></p>
+
+<p> 网络制式供应商，手机制造商，浏览器产商如此给力，我们呢？我们能做什么。</p>
+
+<p> 我们能做得是对移动端页面本身优化，这也是我们专业价值的体现，所以我们必须做移动端页面性能优化。</p>
+
+<h3>那怎么做移动端页面优化呢？</h3>
+
+<p> 在说这个前，要提一下pc常用的优化手段：</p>
+
+<ul>
+<li>代码优化（css、html、js优化）</li>
+<li>减少HTTP请求（雪碧图，文件合并&hellip;）</li>
+<li>减少DOM节点</li>
+<li>无阻塞（内联CSS，JS置后&hellip;）</li>
+<li>缓存</li>
+<li>&hellip;</li>
+</ul>
+
+
+<p> 这些手段大部分适用于移动端，这都是一些耳熟能详的手段，今天这里就讲了，有兴趣可以参考PDI课程《网站性能优化》。</p>
+
+<p> 今天要讲的主要是一些适用于移动端的优化手段，现在进入正题。</p>
+
+<p> 首先我们得关注一下一个页面从开始到呈现完毕需要经历什么阶段，主要有四个阶段：</p>
+
+<p><img src="http://al1020119.github.io/images/xn005.png" title="Caption" ></p>
+
+<p> 每个阶段的主要工作如上图所示，而我们的优化目标是：</p>
+
+<p><img src="http://al1020119.github.io/images/xn006.png" title="Caption" ></p>
+
+<p> 下面我们来针对上面的几个阶段细说一下都有哪些优化手段。</p>
+
+<p> 首先，来看看加载中有哪些优化手段：</p>
+
+<h5>1. 预加载</h5>
+
+<p> 预加载方式有两种：</p>
+
+<ul>
+<li>A.显性加载</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/xn007.png" title="Caption" ></p>
+
+<p> 类似这种用户能明显感知的，我把它称为&ldquo;显性加载&rdquo;，互动页面都建议加上这种加载方式，它一方面能增加页面的趣味性，另一方面能让后续页面体验更流畅</p>
+
+<ul>
+<li>B.隐性加载</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/xn008.png" title="Caption" ></p>
+
+<p>这种在加载第一张图片的时候已经预先加载了第二张图片，从而使得页面体验更流畅的方式，我把它称为隐性加载，这种方式的好处是节省流量之余又能使得体验增强。</p>
+
+<h5>2.    按需加载</h5>
+
+<p>按需加载是不可或缺的优化手段，主要有以下两种方式：</p>
+
+<p><img src="http://al1020119.github.io/images/xn009.png" title="Caption" ></p>
+
+<p> 对于这种方式，在首屏加载的时候把首屏的内容加载尽量，而位于首屏之外的元素都只在出现在首屏时才加载，很大程度地节省了流量，提升了首次加载时间。</p>
+
+<p><img src="http://al1020119.github.io/images/xn010.jpg" title="Caption" ></p>
+
+<p> 这种叫响应式加载方式，意思是利用js或者css判断分辨率，从而选择不同尺寸的图片进行引入，这种的好处显而易见，同样可以加快加载速度和节省流量。</p>
+
+<h5>3.    压缩图片</h5>
+
+<p> 对于压缩图片，首先要提的是jpg文件：</p>
+
+<p><img src="http://al1020119.github.io/images/xn011.png" title="Caption" ></p>
+
+<p> 对于移动端的Jpg文件，有这样的结论：</p>
+
+<pre><code>  a.使用大尺寸大有损压缩比的jpg
+
+  b.使用jpegtran进行无损压缩
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/xn012.png" title="Caption" ></p>
+
+<p> 而对于png有以下结论：</p>
+
+<pre><code>  a.多彩图片使用png24
+
+  b.低彩图片使用png8
+
+  c.推荐使用pngquant
+</code></pre>
+
+<h5>4.尽量避免重定向</h5>
+
+<p> 为什么要尽量避免重定向呢？因为如图：</p>
+
+<p><img src="http://al1020119.github.io/images/xn013.png" title="Caption" ></p>
+
+<p> 这是一个同一网速下的测试结果，重定向之所以会比较慢，是因为它重复了域名查找，tcp链接，发送请求。</p>
+
+<h5>5. 使用其他方式代替图片</h5>
+
+<p> 有两种方式，第一种是：依靠css3绘制图片</p>
+
+<p><img src="http://al1020119.github.io/images/xn014.png" title="Caption" ></p>
+
+<p> 第二种：使用iconfont代替图片</p>
+
+<p><img src="http://al1020119.github.io/images/xn015.png" title="Caption" ></p>
+
+<p> 但iconfont不一定比图片好，这里做了个实验：</p>
+
+<p><img src="http://al1020119.github.io/images/xn016.png" title="Caption" ></p>
+
+<p> 对于大图片，iconfont并不比雪碧图好，建议单侧小尺寸图标才使用iconfont.</p>
+
+<p> 然后，针对脚本执行中有哪些优化手段，这里只提两点：</p>
+
+<h5>1.尽量避免DataURI</h5>
+
+<p> DataUri在移动端并不如它在pc端吃香，因为：</p>
+
+<p><img src="http://al1020119.github.io/images/xn017.png" title="Caption" ></p>
+
+<p> 经测试，DataURI要比简单的外链资源慢6倍，生成的代码文件相对图片文件体积没有减少反而增大，而且浏览器在对这种base64解码过程中需要消耗内存和cpu，这个在移动端坏处特别明显。</p>
+
+<h5>2.点击事件优化</h5>
+
+<p> 在移动端请适当使用touchstart，touchend，touch等事件代替延迟比较大的click事件。Click之所以慢是因为mousedown导致的：</p>
+
+<p><img src="http://al1020119.github.io/images/xn018.png" title="Caption" ></p>
+
+<p> 然后，针对渲染阶段中有哪些优化手段，这里也只提两点：</p>
+
+<h5>1. 动画优化</h5>
+
+<p>   a) 尽量使用css3动画</p>
+
+<ul>
+<li><p>优点：</p>
+
+<ul>
+<li><p>不占用js主线程</p></li>
+<li><p>可利用硬件加速</p></li>
+<li><p>浏览器可对动画做优化</p></li>
+</ul>
+</li>
+<li><p>缺点：</p>
+
+<ul>
+<li>不支持中间状态监听</li>
+</ul>
+
+
+<p> b) 适当使用canvas动画</p></li>
+<li><p>优点：</p>
+
+<ul>
+<li>可规避渲染树的计算渲染更快</li>
+</ul>
+</li>
+<li><p>缺点：</p>
+
+<ul>
+<li><p>开发成本高</p></li>
+<li><p>维护较麻烦</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p> 通过对css3动画和canvas动画对比：</p>
+
+<p><img src="http://al1020119.github.io/images/xn019.png" title="Caption" ></p>
+
+<p> 得到结论：5个元素以内使用css3动画，5个以上使用canvas动画。</p>
+
+<p>   c) 合理使用RAF(requestAnimationFrame)</p>
+
+<ul>
+<li><p> 优点：</p>
+
+<ul>
+<li><p>能解决脚本问题引起的丢帧，卡顿问题</p></li>
+<li><p>支持中间状态监听</p></li>
+</ul>
+</li>
+<li><p> 缺点：</p>
+
+<ul>
+<li>兼容问题</li>
+</ul>
+</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/xn020.png" title="Caption" ></p>
+
+<p> 通过RAF动画与settimeout动画对比：</p>
+
+<p><img src="http://al1020119.github.io/images/xn021.png" title="Caption" ></p>
+
+<p> 得到结论：不需要兼容android 4.3浏览器的情况下，请使用RAF制作脚本动画</p>
+
+<ol>
+<li>高频事件优化</li>
+</ol>
+
+
+<p><img src="http://al1020119.github.io/images/xn022.png" title="Caption" ></p>
+
+<p> 类似touchmove，scroll这类的事件可导致多次渲染，对于这种事件可以通过以下手段进行优化：</p>
+
+<ul>
+<li><p>1.使用requestAnimationFrame监听帧变化，使得在正确的时间进行渲染</p></li>
+<li><p>2.增加响应变化的时间间隔，减少重绘次数。</p></li>
+</ul>
+
+
+<p> 最后，针对合成/绘制只提一个优化手段：</p>
+
+<p>   GPU加速</p>
+
+<p> 触发GPU加速的方式有：</p>
+
+<ul>
+<li><p>CSS3 transitions</p></li>
+<li><p>CSS3 3D transforms</p></li>
+<li><p>WebGL 3D 绘制</p></li>
+<li><p>Video</p></li>
+<li><p>&hellip;</p></li>
+</ul>
+
+
+<p> 使用GPU加速前有对比实验：</p>
+
+<p><img src="http://al1020119.github.io/images/xn023.png" title="Caption" ></p>
+
+<p> GPU加速实际上是大幅减少了合成/绘制时间，从而大大地提高了页面速度，但GPU加速有自己的缺点：</p>
+
+<p> 过多的GPU层会带来性能开销，主要原因是使用GPU加速其实是利用了GPU层的缓存，让渲染资源可以重复使用，所以一旦层多了，缓存增大，就会引起别的性能问题。</p>
+
+<p>总结</p>
+
+<p><img src="http://al1020119.github.io/images/xn024.png" title="Caption" ></p>
+
+<blockquote><p>本文针对页面呈现的四个阶段提出了比较典型的优化手段，到最后，再提醒读者一下：其实优化是双刃剑。
+  按需加载提升速度，但可能导致大量重绘；
+  Touch响应快，但很多场景不适合；
+  GPU加速效率高，但内存开销大等等
+  Loading会让整体体验流畅，但容易造成用户流失
+  图片压缩让带宽成本降低，但可能会导致视觉效果变差
+ 类似这样的矛盾点还有很多，请结合业务按照实际情况进行优化。</p></blockquote>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[NSProxy&amp;NSObject初探]]></title>
@@ -2954,7 +3256,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#58;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#109;&#101;&#105;&#x74;&#x75;&#97;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#x33;&#x40;&#x6d;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#x6d;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;">&#x6d;&#97;&#x6a;&#105;&#97;&#48;&#x33;&#64;&#x6d;&#x65;&#x69;&#116;&#x75;&#97;&#110;&#46;&#99;&#111;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -4794,1082 +5096,6 @@ RESTART find_restart(NSString *restartName);
 
 <p>总结
 block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Block深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/06/blockshen-jiu/"/>
-    <updated>2015-12-06T17:43:24+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/06/blockshen-jiu</id>
-    <content type="html"><![CDATA[<h2>目录</h2>
-
-<ul>
-<li><h5>什么是block？</h5>
-
-<ul>
-<li>block编译转换结构</li>
-<li>block实际结构</li>
-</ul>
-</li>
-<li><h5>block的类型</h5>
-
-<ul>
-<li>NSConcreteGlobalBlock和NSConcreteStackBlock</li>
-<li>NSConcreteMallocBlock</li>
-</ul>
-</li>
-<li><h5>捕捉变量对block结构的影响</h5>
-
-<ul>
-<li>局部变量</li>
-<li>全局变量</li>
-<li>局部静态变量</li>
-<li>__block修饰的变量</li>
-<li>self隐式循环引用</li>
-</ul>
-</li>
-<li><h5>不同类型block的复制</h5>
-
-<ul>
-<li>栈block</li>
-<li>堆block</li>
-<li>全局block</li>
-</ul>
-</li>
-<li><h5>block辅助函数</h5>
-
-<ul>
-<li>__block修饰的基本类型的辅助函数</li>
-<li>对象的辅助函数</li>
-</ul>
-</li>
-<li><h5>ARC中block的工作</h5>
-
-<ul>
-<li>block试验</li>
-<li>block作为参数传递</li>
-<li>block作为返回值</li>
-<li>block属性</li>
-</ul>
-</li>
-</ul>
-
-
-<!--more-->
-
-
-<h3>参考博文</h3>
-
-<p>最近看了一些block的资料，并动手做了一些实践，摘录并添加了一些结论。</p>
-
-<h3>什么是block？</h3>
-
-<p>首先，看一个极简的block：</p>
-
-<pre><code>    int main(int argc, const char * argv[]) {
-        @autoreleasepool {
-
-            ^{ };
-        }
-        return 0;
-    }
-</code></pre>
-
-<h5>block编译转换结构</h5>
-
-<p>对其执行clang -rewrite-objc编译转换成C++实现，得到以下代码：</p>
-
-<pre><code>    struct __block_impl {
-        void *isa;
-        int Flags;
-        int Reserved;
-        void *FuncPtr;
-    };
-
-    struct __main_block_impl_0 {
-      struct __block_impl impl;
-      struct __main_block_desc_0* Desc;
-      __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-        impl.isa = &amp;_NSConcreteStackBlock;
-        impl.Flags = flags;
-        impl.FuncPtr = fp;
-        Desc = desc;
-      }
-    };
-    static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-    }
-
-    static struct __main_block_desc_0 {
-      size_t reserved;
-      size_t Block_size;
-    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
-    int main(int argc, const char * argv[]) {
-        /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-            (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
-        }
-        return 0;
-    }
-</code></pre>
-
-<p>不难看出其中的<strong>main_block_impl_0就是block的一个C++的实现(最后面的_0代表是main中的第几个block)，也就是说也是一个结构体。
-其中</strong>block_impl的定义如下：</p>
-
-<pre><code>struct __block_impl {
-  void *isa;
-  int Flags;
-  int Reserved;
-  void *FuncPtr;
-};
-</code></pre>
-
-<p>其结构体成员如下：</p>
-
-<ul>
-<li>isa，指向所属类的指针，也就是block的类型</li>
-<li>flags，标志变量，在实现block的内部操作时会用到</li>
-<li>Reserved，保留变量</li>
-<li>FuncPtr，block执行时调用的函数指针</li>
-<li>可以看出，它包含了isa指针（包含isa指针的皆为对象），也就是说block也是一个对象* (runtime里面，对象和类都是用结构体表示)。</li>
-</ul>
-
-
-<p>__main_block_desc_0的定义如下：</p>
-
-<pre><code>    static struct __main_block_desc_0 {
-      size_t reserved;
-      size_t Block_size;
-    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
-</code></pre>
-
-<p>其结构成员含义如下：</p>
-
-<ul>
-<li>reserved：保留字段</li>
-<li>Block_size：block大小(sizeof(struct __main_block_impl_0))</li>
-<li>以上代码在定义<strong>main_block_desc_0结构体时，同时创建了</strong>main_block_desc_0_DATA，并给它赋值，以供在main函数中对__main_block_impl_0进行初始化。</li>
-</ul>
-
-
-<p>__main_block_impl_0定义了显式的构造函数，其函数体如下：</p>
-
-<pre><code>  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-</code></pre>
-
-<p>可以看出，</p>
-
-<ul>
-<li><em>_main_block_impl_0的isa指针指向了</em>NSConcreteStackBlock，</li>
-<li>从main函数中看， <strong>main_block_impl_0的FuncPtr指向了函数</strong>main_block_func_0</li>
-<li><strong>main_block_impl_0的Desc也指向了定义</strong>main_block_desc_0时就创建的__main_block_desc_0_DATA，其中纪录了block结构体大小等信息。</li>
-<li>以上就是根据编译转换的结果，对一个简单block的解析，后面会将block操作不同类型的外部变量，对block结构的影响进行相应的说明。</li>
-</ul>
-
-
-<h5>block实际结构</h5>
-
-<p>接下来观察下Block_private.h文件中对block的相关结构体的真实定义：</p>
-
-<pre><code>/* Revised new layout. */
-struct Block_descriptor {
-    unsigned long int reserved;
-    unsigned long int size;
-    void (*copy)(void *dst, void *src);
-    void (*dispose)(void *);
-};
-
-
-struct Block_layout {
-    void *isa;
-    int flags;
-    int reserved;
-    void (*invoke)(void *, ...);
-    struct Block_descriptor *descriptor;
-    /* Imported variables. */
-};
-</code></pre>
-
-<p>有了上文对编译转换的分析，这里只针对略微不同的成员进行分析：</p>
-
-<p>invoke，同上文的FuncPtr，block执行时调用的函数指针，block定义时内部的执行代码都在这个函数中
-Block_descriptor，block的详细描述</p>
-
-<ul>
-<li>copy/dispose，辅助拷贝/销毁函数，处理block范围外的变量时使用</li>
-<li>总体来说，block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。</li>
-</ul>
-
-
-<h3>block的类型</h3>
-
-<p>block的常见类型有3种：</p>
-
-<ul>
-<li>_NSConcreteGlobalBlock（全局）</li>
-<li>_NSConcreteStackBlock（栈）</li>
-<li>_NSConcreteMallocBlock（堆）</li>
-</ul>
-
-
-<p>附上APUE的进程虚拟内存段分布图：</p>
-
-<p><img src="http://al1020119.github.io/images/block001.png" title="Caption" ></p>
-
-<p>进程虚拟内存空间分布</p>
-
-<ul>
-<li>其中前2种在Block.h种声明，后1种在Block_private.h中声明，所以最后1种基本不会在源码中出现。</li>
-<li>由于无法直接创建_NSConcreteMallocBlock类型的block，所以这里只对前面2种进行手动创建分析，最后1种通过源代码分析。</li>
-</ul>
-
-
-<h5>NSConcreteGlobalBlock和NSConcreteStackBlock</h5>
-
-<p>首先，根据前面两种类型，编写以下代码：</p>
-
-<pre><code>void (^globalBlock)() = ^{
-
-};
-
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        void (^stackBlock1)() = ^{
-
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>对其进行编译转换后得到以下缩略代码：</p>
-
-<pre><code>// globalBlock
-struct __globalBlock_block_impl_0 {
-  struct __block_impl impl;
-  struct __globalBlock_block_desc_0* Desc;
-  __globalBlock_block_impl_0(void *fp, struct __globalBlock_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteGlobalBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-...
-
-// stackBlock
-struct __main_block_impl_0 {
-  struct __block_impl impl;
-  struct __main_block_desc_0* Desc;
-  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-...
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-        void (*stackBlock)() = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
-    }
-    return 0;
-}
-</code></pre>
-
-<p>可以看出globalBlock的isa指向了<em>NSConcreteGlobalBlock，即在全局区域创建，编译时具体的代码就已经确定在上图中的代码段中了，block变量存储在全局数据存储区；stackBlock的isa指向了</em>NSConcreteStackBlock，即在栈区创建。</p>
-
-<h5>NSConcreteMallocBlock</h5>
-
-<ul>
-<li><p>接下来是在堆中的block，堆中的block无法直接创建，其需要由<em>NSConcreteStackBlock类型的block拷贝而来(也就是说block需要执行copy之后才能存放到堆中)。由于block的拷贝最终都会调用</em>Block_copy_internal函数，所以观察这个函数就可以知道堆中block是如何被创建的了：</p>
-
-<pre><code>  static void *_Block_copy_internal(const void *arg, const int flags) {
-      struct Block_layout *aBlock;
-      ...
-      aBlock = (struct Block_layout *)arg;
-      ...
-      // Its a stack block.  Make a copy.
-      if (!isGC) {
-          // 申请block的堆内存
-          struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
-          if (!result) return (void *)0;
-          // 拷贝栈中block到刚申请的堆内存中
-          memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
-          // reset refcount
-          result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
-          result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
-          // 改变isa指向_NSConcreteMallocBlock，即堆block类型
-          result-&gt;isa = _NSConcreteMallocBlock;
-          if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-              //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
-              (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
-          }
-          return result;
-      }
-      else {
-          ...
-      }
-  }
-</code></pre>
-
-<p>从以上代码以及注释可以很清楚的看出，函数通过memmove将栈中的block的内容拷贝到了堆中，并使isa指向了_NSConcreteMallocBlock。
-block主要的一些学问就出在栈中block向堆中block的转移过程中了。</p></li>
-</ul>
-
-
-<p>捕捉变量对block结构的影响
-接下来会编译转换捕捉不同变量类型的block，以对比它们的区别。</p>
-
-<h5>局部变量</h5>
-
-<p>前：</p>
-
-<pre><code>- (void)test
-{
-    int a;
-    ^{a;};
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  int a;
-  // a(_a)是构造函数的参数列表初始化形式，相当于a = _a。从_I_Person_test看，传入的就是a
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int _a, int flags=0) : a(_a) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  int a = __cself-&gt;a; // bound by copy
-a;}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    int a;
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, a);
-}
-</code></pre>
-
-<p>可以看到，block相对于文章开头增加了一个int类型的成员变量，他就是用来存储外部变量a的。可以看出，这次拷贝只是一次值传递。并且当我们想在block中进行以下操作时，将会发生错误</p>
-
-<pre><code>^{a = 10;};
-</code></pre>
-
-<p>编译器会提示</p>
-
-<p><img src="http://al1020119.github.io/images/block002.png" title="Caption" ></p>
-
-<p>错误提示
-。因为_I_Person_test函数中的a和Persontest_block_func_0函数中的a并没有在同一个作用域，所以在block对a进行赋值是没有意义的，所以编译器给出了错误。我们可以通过地址传递来消除以上错误：</p>
-
-<pre><code>- (void)test
-{
-    int a = 0;
-    // 利用指针p存储a的地址
-    int *p = &amp;a;
-
-    ^{
-        // 通过a的地址设置a的值
-        *p = 10;
-    };
-}
-</code></pre>
-
-<p>但是变量a的生命周期是和方法test的栈相关联的，当test运行结束，栈随之销毁，那么变量a就会被销毁，p也就成为了野指针。如果block是作为参数或者返回值，这些类型都是跨栈的，也就是说再次调用会造成野指针错误。</p>
-
-<h5>全局变量</h5>
-
-<p>前：</p>
-
-<pre><code>// 全局静态
-static int a;
-// 全局
-int b;
-- (void)test
-{
-
-    ^{
-        a = 10;
-        b = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>static int a;
-int b;
-
-struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int flags=0) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-
-        a = 10;
-        b = 10;
-    }
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA);
-}
-</code></pre>
-
-<p>可以看出，因为全局变量都是在静态数据存储区，在程序结束前不会被销毁，所以block直接访问了对应的变量，而没有在Persontest_block_impl_0结构体中给变量预留位置。</p>
-
-<h5>局部静态变量</h5>
-
-<p>前</p>
-
-<pre><code>- (void)test
-{
-    static int a;
-    ^{
-        a = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  int *a;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int *_a, int flags=0) : a(_a) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  int *a = __cself-&gt;a; // bound by copy
-        // 这里通过局部静态变量a的地址来对其进行修改
-        (*a) = 10;
-    }
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    static int a;
-    // 传入a的地址
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, &amp;a);
-}
-</code></pre>
-
-<p>需要注意一点的是静态局部变量是存储在静态数据存储区域的，也就是和程序拥有一样的生命周期，也就是说在程序运行时，都能够保证block访问到一个有效的变量。但是其作用范围还是局限于定义它的函数中，所以只能在block通过静态局部变量的地址来进行访问。
-关于变量的存储我原来的这篇博客有提及：c语言臆想&ndash;全局&mdash;局部变量</p>
-
-<h5>__block修饰的变量</h5>
-
-<p>前：</p>
-
-<pre><code>- (void)test
-{
-   __block int a;
-    ^{
-        a = 10;
-    };
-}
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  __Block_byref_a_0 *a; // by ref
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
-        // 注意，这里的_forwarding用来保证操作的始终是堆中的拷贝a，而不是栈中的a
-        (a-&gt;__forwarding-&gt;a) = 10;
-    }
-static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
-  void (*dispose)(struct __Person__test_block_impl_0*);
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-    // __block将a包装成了一个对象
-   __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
-;
-    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-}
-</code></pre>
-
-<p>可以看到，对比上面的结果，明显多了<strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，</strong>Person<strong>test_block_impl_0的拷贝辅助函数</strong>Person<strong>test_block_copy_0会将</strong>Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作。其中<strong>Block_byref_a_0成员指针</strong>forwarding用来指向它在堆中的拷贝，其依据源码如下：</p>
-
-<pre><code>static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
-    struct Block_byref **destp = (struct Block_byref **)dest;
-    struct Block_byref *src = (struct Block_byref *)arg;
-
-    ...
-    // 堆中拷贝的forwarding指向它自己
-    copy-&gt;forwarding = copy; // patch heap copy to point to itself (skip write-barrier)
-    // 栈中的forwarding指向堆中的拷贝
-    src-&gt;forwarding = copy;  // patch stack to point to heap copy
-    ...
-}
-</code></pre>
-
-<p>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
-至于block如何实现对局部变量的拷贝，下面会详细说明。</p>
-
-<h5>self隐式循环引用</h5>
-
-<p>前：</p>
-
-<pre><code>@implementation Person
-{
-    int _a;
-    void (^_block)();
-}
-- (void)test
-{
-  void (^_block)() = ^{
-        _a = 10;
-    };
-}
-
-@end
-</code></pre>
-
-<p>后：</p>
-
-<pre><code>struct __Person__test_block_impl_0 {
-  struct __block_impl impl;
-  struct __Person__test_block_desc_0* Desc;
-  // 可以看到，block强引用了self
-  Person *self;
-  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, Person *_self, int flags=0) : self(_self) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  Person *self = __cself-&gt;self; // bound by copy
-
-        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
-    }
-static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;self, (void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static struct __Person__test_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
-  void (*dispose)(struct __Person__test_block_impl_0*);
-} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
-
-static void _I_Person_test(Person * self, SEL _cmd) {
-  void (*_block)() = (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, self, 570425344);
-}
-</code></pre>
-
-<p>如果在编译转换前，将<em>a改成self.a，能很明显地看出是产生了循环引用(self强引用block，block强引用self)。那么使用</em>a呢？经过编译转换后，依然可以在<strong>Person</strong>test_block_impl_0看见self的身影。且在函数<em>I_Person_test中，传入的参数也是self。通过以下语句，可以看出，不管是用什么形式访问实例变量，最终都会转换成self+变量内存偏移的形式。所以在上面例子中使用</em>a也会造成循环引用。</p>
-
-<pre><code>static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
-  Person *self = __cself-&gt;self; // bound by copy
-        // self＋实例变量a的偏移值
-        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
-    }
-</code></pre>
-
-<h3>不同类型block的复制</h3>
-
-<p>block的复制代码在_Block_copy_internal函数中。</p>
-
-<h5>栈block</h5>
-
-<p>从以下代码可以看出，栈block的复制不仅仅复制了其内容，还添加了一些额外的东西</p>
-
-<pre><code>* 1、往flags中并入了BLOCK_NEEDS_FREE（这个标志表明block需要释放，在release以及再次拷贝时会用到）
-
-* 2、如果有辅助copy函数（BLOCK_HAS_COPY_DISPOSE），那么就调用（这个辅助copy函数是用来拷贝block捕获的变量的）
-
-struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
-if (!result) return (void *)0;
-  memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
-// reset refcount
-result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
-result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
-result-&gt;isa = _NSConcreteMallocBlock;
-if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-      //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
-      (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
-  }
-  return result;
-</code></pre>
-
-<h5>堆block</h5>
-
-<p>从以下代码看出，如果block的flags中有BLOCK_NEEDS_FREE标志（block从栈中拷贝到堆时添加的标志），就执行latching_incr_int操作，其功能就是让block的引用计数加1。所以堆中block的拷贝只是单纯地改变了引用计数</p>
-
-<pre><code>  ...
-  if (aBlock-&gt;flags &amp; BLOCK_NEEDS_FREE) {
-        // latches on high
-        latching_incr_int(&amp;aBlock-&gt;flags);
-        return aBlock;
-    }
-  ...
-</code></pre>
-
-<h5>全局block</h5>
-
-<p>从以下代码看出，对于全局block，函数没有做任何操作，直接返回了传入的block</p>
-
-<pre><code>else if (aBlock-&gt;flags &amp; BLOCK_IS_GLOBAL) {
-      return aBlock;
-}
-</code></pre>
-
-<h3>block辅助函数</h3>
-
-<ul>
-<li>上文提及到了block辅助copy与dispose处理函数，这里分析下这两个函数的内部实现。在捕* 获变量为__block修饰的基本类型，或者为对象时，block才会有这两个辅助函数。</li>
-<li>block捕捉变量拷贝函数为<em>Block_object_assign。在调用复制block的函数</em>Block_copy_internal时，会根据block有无辅助函数来对捕捉变量拷贝函数<em>Block_object_assign进行调用。而在</em>Block_object_assign函数中，也会判断捕捉变量包装而成的对象(Block_byref结构体)是否有辅助函数，来进行调用。</li>
-</ul>
-
-
-<h5>__block修饰的基本类型的辅助函数</h5>
-
-<p>编写以下代码：</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        __block int a;
-        Block block = ^ {
-            a;
-        };
-}
-</code></pre>
-
-<p>转换成C++代码后：</p>
-
-<pre><code>typedef void(*Block)();
-// __block int a
-struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-// block
-struct __main_block_impl_0 {
-  struct __block_impl impl;
-  struct __main_block_desc_0* Desc;
-  __Block_byref_a_0 *a; // by ref
-  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
-    impl.isa = &amp;_NSConcreteStackBlock;
-    impl.Flags = flags;
-    impl.FuncPtr = fp;
-    Desc = desc;
-  }
-};
-
-// block函数体
-static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
-
-            (a-&gt;__forwarding-&gt;a);
-        }
-// 辅助copy函数
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-// 辅助dispose函数
-static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-static struct __main_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
-  void (*dispose)(struct __main_block_impl_0*);
-} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0};
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-        // 这里创建了，并将a的flags设置为0
-        __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
-;
-        Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-    }
-    return 0;
-}
-</code></pre>
-
-<p>从上面代码中，被<strong>block修饰的a变量变为了</strong>Block_byref_a_0类型，根据这个格式，从源码中查看得到相似的定义：</p>
-
-<pre><code>struct Block_byref {
-    void *isa;
-    struct Block_byref *forwarding;
-    int flags; /* refcount; */
-    int size;
-    void (*byref_keep)(struct Block_byref *dst, struct Block_byref *src);
-    void (*byref_destroy)(struct Block_byref *);
-    /* long shared[0]; */
-};
-
-// 做下对比
-struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- int a;
-};
-
-// flags/_flags类型
-enum {
-        /* See function implementation for a more complete description of these fields and combinations */
-        // 是一个对象
-        BLOCK_FIELD_IS_OBJECT   =  3,  /* id, NSObject, __attribute__((NSObject)), block, ... */
-        // 是一个block
-        BLOCK_FIELD_IS_BLOCK    =  7,  /* a block variable */
-        // 被__block修饰的变量
-        BLOCK_FIELD_IS_BYREF    =  8,  /* the on stack structure holding the __block variable */
-        // 被__weak修饰的变量，只能被辅助copy函数使用
-        BLOCK_FIELD_IS_WEAK     = 16,  /* declared __weak, only used in byref copy helpers */
-        // block辅助函数调用（告诉内部实现不要进行retain或者copy）
-        BLOCK_BYREF_CALLER      = 128  /* called from __block (byref) copy/dispose support routines. */
-    };
-</code></pre>
-
-<p>可以看出，__block将原来的基本类型包装成了对象。因为以上两个结构体的前4个成员的类型都是一样的，内存空间排列一致，所以可以进行以下操作：</p>
-
-<pre><code>// 转换成C++代码
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
-
-// _Block_object_assign源码
-void _Block_object_assign(void *destAddr, const void *object, const int flags) {
-...
-    else if ((flags &amp; BLOCK_FIELD_IS_BYREF) == BLOCK_FIELD_IS_BYREF)  {
-        // copying a __block reference from the stack Block to the heap
-        // flags will indicate if it holds a __weak reference and needs a special isa
-        _Block_byref_assign_copy(destAddr, object, flags);
-    }
-...
-}
-
-// _Block_byref_assign_copy源码
-static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
-    // 这里因为前面4个成员的内存分布一样，所以直接转换后，使用Block_byref的成员变量名，能访问到__Block_byref_a_0的前面4个成员
-    struct Block_byref **destp = (struct Block_byref **)dest;
-    struct Block_byref *src = (struct Block_byref *)arg;
-...
-    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_REFCOUNT_MASK) == 0) {
-        // 从main函数对__Block_byref_a_0的初始化，可以看到初始化时将flags赋值为0
-        // 这里表示第一次拷贝，会进行复制操作，并修改原来flags的值
-        // static int _Byref_flag_initial_value = BLOCK_NEEDS_FREE | 2;
-        // 可以看出，复制后，会并入BLOCK_NEEDS_FREE，后面的2是block的初始引用计数
-        ...
-        copy-&gt;flags = src-&gt;flags | _Byref_flag_initial_value;
-        ...
-    }
-    // 已经拷贝到堆了，只增加引用计数
-    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_NEEDS_FREE) == BLOCK_NEEDS_FREE) {
-        latching_incr_int(&amp;src-&gt;forwarding-&gt;flags);
-    }
-    // 普通的赋值，里面最底层就*destptr = value;这句表达式
-    _Block_assign(src-&gt;forwarding, (void **)destp);
-}
-</code></pre>
-
-<p>主要操作都在代码注释中了，总体来说，__block修饰的基本类型会被包装为对象，并且只在最初block拷贝时复制一次，后面的拷贝只会增加这个捕获变量的引用计数。</p>
-
-<h5>对象的辅助函数</h5>
-
-<p>没有__block修饰</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        NSObject *a = [[NSObject alloc] init];
-        Block block = ^ {
-            a;
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>首先，在没有__block修饰时，对象编译转换的结果如下，删除了一些变化不大的代码：</p>
-
-<pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
-  NSObject *a = __cself-&gt;a; // bound by copy
-            a;
-        }
-static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
-
-static struct __main_block_desc_0 {
-  size_t reserved;
-  size_t Block_size;
-  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
-  void (*dispose)(struct __main_block_impl_0*);
-} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0),
-</code></pre>
-
-<p>对象在没有<strong>block修饰时，并没有产生</strong>Block_byref_a_0结构体，只是将标志位修改为BLOCK_FIELD_IS_OBJECT。而在_Block_object_assign中对应的判断分支代码如下：</p>
-
-<pre><code>else if ((flags &amp; BLOCK_FIELD_IS_OBJECT) == BLOCK_FIELD_IS_OBJECT) {
-    _Block_retain_object(object);
-    _Block_assign((void *)object, destAddr);
-}
-</code></pre>
-
-<p>可以看到，block复制时，会retain捕捉对象，以增加其引用计数。</p>
-
-<p>有__block修饰</p>
-
-<pre><code>typedef void(^Block)();
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        __block NSObject *a = [[NSObject alloc] init];
-        Block block = ^ {
-            a;
-        };
-    }
-    return 0;
-}
-</code></pre>
-
-<p>在这种情况下，编译转换的部分结果如下：</p>
-
-<pre><code>struct __Block_byref_a_0 {
-  void *__isa;
-__Block_byref_a_0 *__forwarding;
- int __flags;
- int __size;
- void (*__Block_byref_id_object_copy)(void*, void*);
- void (*__Block_byref_id_object_dispose)(void*);
- NSObject *a;
-};
-int main(int argc, const char * argv[]) {
-    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
-attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 33554432, sizeof(__Block_byref_a_0), __Block_byref_id_object_copy_131, __Block_byref_id_object_dispose_131,....};
-Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
-}
-
-// 以下的40表示__Block_byref_a_0对象a的位移（4个指针(32字节)＋2个int变量(8字节)＝40字节）
-    static void __Block_byref_id_object_copy_131(void *dst, void *src) {
-     _Block_object_assign((char*)dst + 40, *(void * *) ((char*)src + 40), 131);
-    }
-    static void __Block_byref_id_object_dispose_131(void *src) {
-     _Block_object_dispose(*(void * *) ((char*)src + 40), 131);
-    }
-</code></pre>
-
-<ol>
-<li><p>可以看到，对于对象，<strong>Block_byref_a_0另外增加了两个辅助函数</strong>Block_byref_id_object_copy、__Block_byref_id_object_dispose,以实现对对象</p></li>
-<li><p>内存的管理。其中两者的最后一个参数131表示BLOCK_BYREF_CALLER|BLOCK_FIELD_IS_OBJECT，BLOCK_BYREF_CALLER表示在内部实现中不对a对象进行retain或copy；以下为相关源码</p></li>
-</ol>
-
-
-<hr />
-
-<pre><code>if ((flags &amp; BLOCK_BYREF_CALLER) == BLOCK_BYREF_CALLER) {
-    ...
-    else {
-        // do *not* retain or *copy* __block variables whatever they are
-        _Block_assign((void *)object, destAddr);
-    }
-}
-</code></pre>
-
-<p>_Block_byref_assign_copy函数的以下代码会对上面的辅助函数（__Block_byref_id_object_copy_131）进行调用；570425344表示BLOCK_HAS_COPY_DISPOSE|BLOCK_HAS_DESCRIPTOR，所以会执行以下相关源码：</p>
-
-<pre><code>if (src-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
-    // Trust copy helper to copy everything of interest
-    // If more than one field shows up in a byref block this is wrong XXX
-    copy-&gt;byref_keep = src-&gt;byref_keep;
-    copy-&gt;byref_destroy = src-&gt;byref_destroy;
-    (*src-&gt;byref_keep)(copy, src);
-}
-</code></pre>
-
-<h3>ARC中block的工作</h3>
-
-<p><img src="http://al1020119.github.io/images/block003.png" title="Caption" ></p>
-
-<p>苹果说明</p>
-
-<p>苹果文档提及，在ARC模式下，在栈间传递block时，不需要手动copy栈中的block，即可让block正常工作。主要原因是ARC对栈中的block自动执行了copy，将<em>NSConcreteStackBlock类型的block转换成了</em>NSConcreteMallocBlock的block。</p>
-
-<h5>block试验</h5>
-
-<p>下面对block做点实验：</p>
-
-<p>int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        int i = 10;
-        void (^block)() = ^{i;};</p>
-
-<pre><code>    __weak void (^weakBlock)() = ^{i;};
-
-    void (^stackBlock)() = ^{};
-
-    // ARC情况下
-
-    // 创建时，都会在栈中
-    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
-    NSLog(@"%@", ^{i;});
-
-    // 因为stackBlock为strong类型，且捕获了外部变量，所以赋值时，自动进行了copy
-    // &lt;__NSMallocBlock__: 0x100206920&gt;
-    NSLog(@"%@", block);
-
-    // 如果是weak类型的block，依然不会自动进行copy
-    // &lt;__NSStackBlock__: 0x7fff5fbff728&gt;
-    NSLog(@"%@", weakBlock);
-
-    // 如果block是strong类型，并且没有捕获外部变量，那么就会转换成__NSGlobalBlock__
-    // &lt;__NSGlobalBlock__: 0x100001110&gt;
-    NSLog(@"%@", stackBlock);
-
-    // 在非ARC情况下，产生以下输出
-    // &lt;__NSStackBlock__: 0x7fff5fbff6d0&gt;
-    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
-    // &lt;__NSStackBlock__: 0x7fff5fbff700&gt;
-    // &lt;__NSGlobalBlock__: 0x1000010d0&gt;
-}
-return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>可以看出，ARC对类型为strong且捕获了外部变量的block进行了copy。并且当block类型为strong，但是创建时没有捕获外部变量，block最终会变成<strong>NSGlobalBlock</strong>类型（这里可能因为block中的代码没有捕获外部变量，所以不需要在栈中开辟变量，也就是说，在编译时，这个block的所有内容已经在代码段中生成了，所以就把block的类型转换为全局类型）</p>
-
-<h5>block作为参数传递</h5>
-
-<p>再来看下使用在栈中的block需要注意的情况：</p>
-
-<pre><code>NSMutableArray *arrayM;
-void myBlock()
-{
-    int a = 5;
-    Block block = ^ {
-        NSLog(@"%d", a);
-    };
-
-    [arrayM addObject:block];
-    NSLog(@"%@", block);
-}
-
-int main(int argc, const char * argv[]) {
-    @autoreleasepool {
-        arrayM = @[].mutableCopy;
-
-        myBlock();
-
-        Block block = [arrayM firstObject];
-        // 非ARC这里崩溃
-        block();
- }
-
-// ARC情况下输出
-// &lt;__NSMallocBlock__: 0x100214480&gt;
-
-// 非ARC情况下输出
-// &lt;__NSStackBlock__: 0x7fff5fbff738&gt;
-// 崩溃，野指针错误
-</code></pre>
-
-<p>可以看到，ARC情况下因为自动执行了copy，所以返回类型为<strong>NSMallocBlock</strong>，在函数结束后依然可以访问；而非ARC情况下，需要我们手动调用[block copy]来将block拷贝到堆中，否则因为栈中的block生命周期和函数中的栈生命周期关联，当函数退出后，相应的堆被销毁，block也就不存在了。
-如果把block的以下代码删除：</p>
-
-<pre><code>NSLog(@"%d", a);
-那么block就会变成全局类型，在main中访问也不会出崩溃。
-</code></pre>
-
-<h5>block作为返回值</h5>
-
-<pre><code>在非ARC情况下，如果返回值是block，则一般这样操作：
-
-return [[block copy] autorelease];
-</code></pre>
-
-<p>对于外部要使用的block，更趋向于把它拷贝到堆中，使其脱离栈生命周期的约束。</p>
-
-<h5>block属性</h5>
-
-<p>这里还有一点关于block类型的ARC属性。上文也说明了，ARC会自动帮strong类型且捕获外部变量的block进行copy，所以在定义block类型的属性时也可以使用strong，不一定使用copy。也就是以下代码：</p>
-
-<pre><code>/** 假如有栈block赋给以下两个属性 **/
-
-// 这里因为ARC，当栈block中会捕获外部变量时，这个block会被copy进堆中
-// 如果没有捕获外部变量，这个block会变为全局类型
-// 不管怎么样，它都脱离了栈生命周期的约束
-
-@property (strong, nonatomic) Block *strongBlock;
-
-// 这里都会被copy进堆中
-@property (copy, nonatomic) Block *copyBlock;
-</code></pre>
-
-<p>参考博文
-谈Objective-C Block的实现(<a href="http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/">http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/</a>)
-iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/details/7756763">http://blog.csdn.net/jasonblog/article/details/7756763</a>)
-A look inside blocks: Episode 3
-runtime.c
-Block_private.h</p>
 ]]></content>
   </entry>
   
