@@ -2,7 +2,7 @@
 
 layout: post
 title: "iOS生命周期"
-date: 2015-11-30 21:52:15 +0800
+date: 2015-10-30 21:52:15 +0800
 comments: true
 categories: 面试总结＋技术
 
