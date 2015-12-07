@@ -23,6 +23,13 @@ categories: 性能问题
 
 ###首先，为什么要最移动页面进行优化？
 
+先来一篇前端优化的文章：腾讯一个大神的分享：
+
+[http://www.cocoachina.com/webapp/20150126/11020.html](http://www.cocoachina.com/webapp/20150126/11020.html)
+
+
+
+
 纵观目前移动网络的现状，
 
 
