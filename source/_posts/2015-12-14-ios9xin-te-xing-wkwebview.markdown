@@ -3,7 +3,7 @@ layout: post
 title: "iOS9-WKWebView+SFSafariViewController"
 date: 2015-12-14 19:35:40 +0800
 comments: true
-categories: iOS9新特性
+categories: 新技术
 ---
 
 ##一：WKWebView简单介绍##
