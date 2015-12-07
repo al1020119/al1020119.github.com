@@ -9,16 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iOS 事件处理机制与图像渲染过程 iOS RunLoop都干了什么
-iOS 为什么必须在主线程中操作UI
-事件响应
-CALayer
-CADisplayLink 和 NSTimer
-iOS 渲染过程
-渲染时机
-CPU 和 GPU渲染
-Core Animation
-Facebook Pop介绍 &hellip;">
+  <meta name="description" content="在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -83,6 +74,52 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">玩转定时器</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p> <img src="/images/dingshiqi.png" title="Caption" ></p>
+
+<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/09/wan-zheng-ding-shi-qi/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/12/09/wan-zheng-ding-shi-qi/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -222,7 +259,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x6d;&#x61;&#x6a;&#105;&#x61;&#48;&#x33;&#64;&#x6d;&#x65;&#105;&#116;&#117;&#x61;&#110;&#46;&#x63;&#111;&#109;">&#109;&#x61;&#106;&#105;&#x61;&#48;&#x33;&#64;&#109;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#58;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#109;&#101;&#105;&#x74;&#x75;&#97;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#x33;&#x40;&#x6d;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -588,64 +625,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/06/fen-lei-shen-jiu/">分类深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱majia03@meituan.com）。
-本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
-
-<ul>
-<li>初入宝地-category简介</li>
-<li>连类比事-category和extension</li>
-<li>挑灯细览-category真面目</li>
-<li>追本溯源-category如何加载</li>
-<li>旁枝末叶-category和+load方法</li>
-<li>触类旁通-category和方法覆盖</li>
-<li>更上一层-category和关联对象</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/06/fen-lei-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/06/fen-lei-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -673,12 +652,16 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
 <li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (26)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (27)</a></li>
 
     </ul>
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
@@ -694,10 +677,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Phthon抓包</a>
       </li>
     
   </ul>

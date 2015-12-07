@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-07T13:16:05+08:00</updated>
+  <updated>2015-12-07T13:25:02+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,162 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[NSProxy&amp;NSObject初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/"/>
+    <updated>2015-12-13T13:20:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/13/nsproxy-and-nsobjectchu-tan</id>
+    <content type="html"><![CDATA[<p>NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此，</p>
+
+<p>Java代码可以依据任何对象来实现它的基本方法。Cocoa有多个根类，除了NSObject还有NSProxy等其他等级的根类。这只是部分原因，NSObject协议定义了一套所有的根类都可以实现的基础方法，这样在编码时就容易找到了。</p>
+
+<p>NSObject类遵循NSObject协议，这就是说，NSObject类实现了下面这些基础方法：</p>
+
+<pre><code>@interface NSObject  
+</code></pre>
+
+<p>NSProxy同样遵循NSObject协议：</p>
+
+<pre><code>@interface NSProxy  
+</code></pre>
+
+<p>NSObject协议包含了hash，isEqual:，description等方法。事实上，NSProxy遵循NSObject协议意味着你可以依靠实现NSProxy来实现NSObject方法。</p>
+
+<h3>NSObjetc：</h3>
+
+<p>NSObject协议组对所有的Object－C下的objects都生效。
+如果objects遵从该协议，就会被看作是first－class objects（一级类）。
+另外，遵从该协议的objects的retain，release，autorelease等方法也服从objects的管理和在Foundation中定义的释放方法。一些容器中的对象也可以管理这些objects，比如
+说NSArray 和NSDictionary定义的对象。
+Cocoa的根类也遵循该协议，所以所有继承NSObjects的objects都有遵循该协议的特性。</p>
+
+<h3>NSProXY：</h3>
+
+<p>NSProxy 是一个虚基类，它为一些表现的像是其它对象替身或者并不存在的对象定义一套API。一般的，发送给代理的消息被转发给一个真实的对象或者代理本身load(或者将本身转换成)一个真实的对象。NSProxy的基类可以被用来透明的转发消息或者耗费巨大的对象的lazy 初始化。</p>
+
+<p>NSProxy实现了包括NSObject协议在内基类所需的基础方法，但是作为一个虚拟的基类并没有提供初始化的方法。它接收到任何自己没有定义的方法他都会产生一个异常，所以一个实际的子类必须提供一个初始化方法或者创建方法，并且重载forwardInvocation:方法和methodSignatureForSelector:方法来处理自己没有实现的消息。一个子类的forwardInvocation:实现应该采取所有措施来处理invocation,比如转发网络消息，或者加载一个真实的对象，并把invocation转发给他。methodSignatureForSelector:需要为给定消息提供参数类型信息，子类的实现应该有能力决定他应该转发消息的参数类型，并构造相对应的NSMethodSignature对象。详细信息可以查看NSDistantObject, NSInvocation, and NSMethodSignature的类型说明。</p>
+
+<h4>简单使用</h4>
+
+<h6>NSProxy</h6>
+
+<pre><code>// MyProxy.h
+#import&lt;Foundation/Foundation.h&gt;
+
+@interface MyProxy :NSProxy {
+    NSObject *object;
+}
+
+- (id)transformToObject:(NSObject *)anObject;
+
+@end
+
+// MyProxy.m
+#import"MyProxy.h"
+
+@implementation MyProxy
+
+- (void)dealloc
+{
+    [objectrelease];
+    object = nil;
+    [superdealloc];
+}
+
+- (void)fun
+{
+   // Do someting virtual
+    //先做一些代理工作，然后创建一个后台线程，在后台线程中再调用真正的[object fun];
+}
+
+// Stupid transform implementation just by assigning a passed in object as transformation target. You can write your factory here and use passed in object as id for object that need ot be created.
+- (id)transformToObject:(NSObject *)anObject 
+{
+    if(object != anObject) {
+        [objectrelease];
+    }
+    object = [anObject retain];
+    return object;
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation 
+{
+    if (object != nil) {
+        [invocation setTarget:object];    
+
+        [invocation invoke];
+    }
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel 
+{
+   NSMethodSignature *result;
+    if (object != nil) {
+        result = [objectmethodSignatureForSelector:sel];
+    } else {
+       // Will throw an exception as default implementation
+        result = [supermethodSignatureForSelector:sel];
+    }
+    return result;
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<h6>NSObject</h6>
+
+<pre><code>// RealSubject.h
+#import&lt;Foundation/Foundation.h&gt;
+@implementation RealSubject : NSObject
+
+- (void)fun;
+
+@end
+
+// RealSubject.m
+#import"RealSubject.h"
+
+@implementation RealSubject
+
+- (void)fun
+{
+    //这个方法需要代理进行惰性调用
+   // Do something real
+}
+
+- (void)otherFun
+{
+    //这个方法不需要代理做任何处理，可直接被调用
+   // Do something real
+}
+
+@end
+
+// main.m
+int main(int argc,char *argv[]) 
+{
+   NSAutoreleasePool * pool = [[NSAutoreleasePoolalloc] init];
+
+    MyProxy *myProxy = [MyProxy alloc];
+    RealSubject *realSub = [[RealSubject alloc] init];
+    [myProxytransformToObject:realSub];
+    [myProxyfun]; // 直接调用myProxy的fun，执行代理工作
+    [myProxyotherFun]; // 依次调用myProxy的methodSignatureForSelector和forwardInvocation转发给realSub，realSub调用otherFun
+
+    [realSubject release];
+    [myProxyrelease];
+
+    [pool release];
+    return 0;
+}
+</code></pre>
+
+<blockquote><p>注意，调用MyProxy中未定义的方法otherFun会出现'MyProxy' may not respond to &lsquo;fun'的警告，可通过使用私有范畴或通过performSelector:withObject:来避免，如果有更好的方法，请告知。</p></blockquote>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[安全机制]]></title>
@@ -2798,7 +2954,7 @@ statusLabel: On time
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x6d;&#x61;&#x6a;&#105;&#x61;&#48;&#x33;&#64;&#x6d;&#x65;&#105;&#116;&#117;&#x61;&#110;&#46;&#x63;&#111;&#109;">&#109;&#x61;&#106;&#105;&#x61;&#48;&#x33;&#64;&#109;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#58;&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#x40;&#109;&#101;&#105;&#x74;&#x75;&#97;&#110;&#46;&#x63;&#x6f;&#109;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#x33;&#x40;&#x6d;&#x65;&#x69;&#x74;&#117;&#x61;&#x6e;&#x2e;&#x63;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -5714,653 +5870,6 @@ iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/detai
 A look inside blocks: Episode 3
 runtime.c
 Block_private.h</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[分类深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/06/fen-lei-shen-jiu/"/>
-    <updated>2015-12-06T17:42:51+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/06/fen-lei-shen-jiu</id>
-    <content type="html"><![CDATA[<blockquote><p>摘要
-无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱majia03@meituan.com）。
-本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
-
-<ul>
-<li>初入宝地-category简介</li>
-<li>连类比事-category和extension</li>
-<li>挑灯细览-category真面目</li>
-<li>追本溯源-category如何加载</li>
-<li>旁枝末叶-category和+load方法</li>
-<li>触类旁通-category和方法覆盖</li>
-<li>更上一层-category和关联对象</li>
-</ul>
-
-
-<!--more-->
-
-
-<h3>1、初入宝地-category简介</h3>
-
-<p>category是Objective-C 2.0之后添加的语言特性，category的主要作用是为已经存在的类添加方法。除此之外，apple还推荐了category的另外两个使用场景1</p>
-
-<p>可以把类的实现分开在几个不同的文件里面。这样做有几个显而易见的好处，a)可以减少单个文件的体积 b)可以把不同的功能组织到不同的category里 c)可以由多个开发者共同完成一个类 d)可以按需加载想要的category 等等。
-声明私有方法
-不过除了apple推荐的使用场景，广大开发者脑洞大开，还衍生出了category的其他几个使用场景：</p>
-
-<p>模拟多继承
-把framework的私有方法公开
-Objective-C的这个语言特性对于纯动态语言来说可能不算什么，比如javascript，你可以随时为一个“类”或者对象添加任意方法和实例变量。但是对于不是那么“动态”的语言而言，这确实是一个了不起的特性。</p>
-
-<h3>2、连类比事-category和extension</h3>
-
-<p>extension看起来很像一个匿名的category，但是extension和有名字的category几乎完全是两个东西。 extension在编译期决议，它就是类的一部分，在编译期和头文件里的@interface以及实现文件里的@implement一起形成一个完整的类，它伴随类的产生而产生，亦随之一起消亡。extension一般用来隐藏类的私有信息，你必须有一个类的源码才能为一个类添加extension，所以你无法为系统的类比如NSString添加extension。（详见2）</p>
-
-<p>但是category则完全不一样，它是在运行期决议的。
-就category和extension的区别来看，我们可以推导出一个明显的事实，extension可以添加实例变量，而category是无法添加实例变量的（因为在运行期，对象的内存布局已经确定，如果添加实例变量就会破坏类的内部布局，这对编译型语言来说是灾难性的）。</p>
-
-<h3>3、挑灯细览-category真面目</h3>
-
-<p>我们知道，所有的OC类和对象，在runtime层都是用struct表示的，category也不例外，在runtime层，category用结构体category_t（在objc-runtime-new.h中可以找到此定义），它包含了
-1)、类的名字（name）
-2)、类（cls）
-3)、category中所有给类添加的实例方法的列表（instanceMethods）
-4)、category中所有添加的类方法的列表（classMethods）
-5)、category实现的所有协议的列表（protocols）
-6)、category中添加的所有属性（instanceProperties）</p>
-
-<pre><code>typedef struct category_t {
-    const char *name;
-    classref_t cls;
-    struct method_list_t *instanceMethods;
-    struct method_list_t *classMethods;
-    struct protocol_list_t *protocols;
-    struct property_list_t *instanceProperties;
-} category_t;
-</code></pre>
-
-<p>从category的定义也可以看出category的可为（可以添加实例方法，类方法，甚至可以实现协议，添加属性）和不可为（无法添加实例变量）。
-ok，我们先去写一个category看一下category到底为何物：</p>
-
-<p>MyClass.h：</p>
-
-<pre><code>#import &lt;Foundation/Foundation.h&gt;
-
-@interface MyClass : NSObject
-
-- (void)printName;
-
-@end
-</code></pre>
-
-<hr />
-
-<pre><code>@interface MyClass(MyAddition)
-
-@property(nonatomic, copy) NSString *name;
-
-- (void)printName;
-
-@end
-</code></pre>
-
-<p>MyClass.m：</p>
-
-<pre><code>#import "MyClass.h"
-
-@implementation MyClass
-
-- (void)printName
-{
-    NSLog(@"%@",@"MyClass");
-}
-
-@end
-</code></pre>
-
-<hr />
-
-<pre><code>@implementation MyClass(MyAddition)
-
-- (void)printName
-{
-    NSLog(@"%@",@"MyAddition");
-}
-
-@end
-</code></pre>
-
-<p>我们使用clang的命令去看看category到底会变成什么：</p>
-
-<p>clang -rewrite-objc MyClass.m
-好吧，我们得到了一个3M大小，10w多行的.cpp文件（这绝对是Apple值得吐槽的一点），我们忽略掉所有和我们无关的东西，在文件的最后，我们找到了如下代码片段：</p>
-
-<pre><code>static struct /*_method_list_t*/ {
-unsigned int entsize;  // sizeof(struct _objc_method)
-unsigned int method_count;
-struct _objc_method method_list[1];
-} _OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
-sizeof(_objc_method),
-1,
-
-};
-
-static struct /*_prop_list_t*/ {
-unsigned int entsize;  // sizeof(struct _prop_t)
-unsigned int count_of_properties;
-struct _prop_t prop_list[1];
-} _OBJC_$_PROP_LIST_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) = {
-sizeof(_prop_t),
-1,
-name
-};
-
-extern "C" __declspec(dllexport) struct _class_t OBJC_CLASS_$_MyClass;
-
-static struct _category_t _OBJC_$_CATEGORY_MyClass_$_MyAddition __attribute__ ((used, section ("__DATA,__objc_const"))) =
-{
-"MyClass",
-0, // &amp;OBJC_CLASS_$_MyClass,
-(const struct _method_list_t *)&amp;_OBJC_$_CATEGORY_INSTANCE_METHODS_MyClass_$_MyAddition,
-0,
-0,
-(const struct _prop_list_t *)&amp;_OBJC_$_PROP_LIST_MyClass_$_MyAddition,
-};
-static void OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition(void ) {
-_OBJC_$_CATEGORY_MyClass_$_MyAddition.cls = &amp;OBJC_CLASS_$_MyClass;
-}
-#pragma section(".objc_inithooks$B", long, read, write)
-__declspec(allocate(".objc_inithooks$B")) static void *OBJC_CATEGORY_SETUP[] = {
-(void *)&amp;OBJC_CATEGORY_SETUP_$_MyClass_$_MyAddition,
-};
-static struct _class_t *L_OBJC_LABEL_CLASS_$ [1] __attribute__((used, section ("__DATA, __objc_classlist,regular,no_dead_strip")))= {
-&amp;OBJC_CLASS_$_MyClass,
-};
-static struct _class_t *_OBJC_LABEL_NONLAZY_CLASS_$[] = {
-&amp;OBJC_CLASS_$_MyClass,
-};
-static struct _category_t *L_OBJC_LABEL_CATEGORY_$ [1] __attribute__((used, section ("__DATA, __objc_catlist,regular,no_dead_strip")))= {
-&amp;_OBJC_$_CATEGORY_MyClass_$_MyAddition,
-};
-</code></pre>
-
-<p>我们可以看到，</p>
-
-<ul>
-<li><p>1)、首先编译器生成了实例方法列表OBJC$CATEGORY_INSTANCE_METHODS_MyClass$MyAddition和属性列表_OBJC$PROP_LIST_MyClass$MyAddition，两者的命名都遵循了公共前缀+类名+category名字的命名方式，而且实例方法列表里面填充的正是我们在MyAddition这个category里面写的方法printName，而属性列表里面填充的也正是我们在MyAddition里添加的name属性。</p>
-
-<ul>
-<li>还有一个需要注意到的事实就是category的名字用来给各种列表以及后面的category结构体本身命名，而且有static来修饰，所以在同一个编译单元里我们的category名不能重复，否则会出现编译错误。</li>
-</ul>
-</li>
-<li><p>2)、其次，编译器生成了category本身_OBJC$CATEGORY_MyClass$MyAddition，并用前面生成的列表来初始化category本身。</p></li>
-<li>3)、最后，编译器在DATA段下的objc_catlist section里保存了一个大小为1的category_t的数组L_OBJC_LABEL_CATEGORY$（当然，如果有多个category，会生成对应长度的数组^_^），用于运行期category的加载。
-到这里，编译器的工作就接近尾声了，对于category在运行期怎么加载，我们下节揭晓。</li>
-</ul>
-
-
-<h3>4、追本溯源-category如何加载</h3>
-
-<p>我们知道，Objective-C的运行是依赖OC的runtime的，而OC的runtime和其他系统库一样，是OS X和iOS通过dyld动态加载的。
-想了解更多dyld地同学可以移步这里（3）。</p>
-
-<p>对于OC运行时，入口方法如下（在objc-os.mm文件中）：</p>
-
-<pre><code>void _objc_init(void)
-{
-    static bool initialized = false;
-    if (initialized) return;
-    initialized = true;
-
-    // fixme defer initialization until an objc-using image is found?
-    environ_init();
-    tls_init();
-    lock_init();
-    exception_init();
-
-    // Register for unmap first, in case some +load unmaps something
-    _dyld_register_func_for_remove_image(&amp;unmap_image);
-    dyld_register_image_state_change_handler(dyld_image_state_bound,
-                                             1/*batch*/, &amp;map_images);
-    dyld_register_image_state_change_handler(dyld_image_state_dependents_initialized, 0/*not batch*/, &amp;load_images);
-}
-</code></pre>
-
-<p>category被附加到类上面是在map_images的时候发生的，在new-ABI的标准下，<em>objc_init里面的调用的map_images最终会调用objc-runtime-new.mm里面的</em>read_images方法，而在_read_images方法的结尾，有以下的代码片段：</p>
-
-<pre><code>// Discover categories. 
-    for (EACH_HEADER) {
-        category_t **catlist =
-            _getObjc2CategoryList(hi, &amp;count);
-        for (i = 0; i &lt; count; i++) {
-            category_t *cat = catlist[i];
-            class_t *cls = remapClass(cat-&gt;cls);
-
-            if (!cls) {
-                // Category's target class is missing (probably weak-linked).
-                // Disavow any knowledge of this category.
-                catlist[i] = NULL;
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: IGNORING category \?\?\?(%s) %p with "
-                                 "missing weak-linked target class",
-                                 cat-&gt;name, cat);
-                }
-                continue;
-            }
-
-            // Process this category. 
-            // First, register the category with its target class. 
-            // Then, rebuild the class's method lists (etc) if 
-            // the class is realized. 
-            BOOL classExists = NO;
-            if (cat-&gt;instanceMethods ||  cat-&gt;protocols 
-                ||  cat-&gt;instanceProperties)
-            {
-                addUnattachedCategoryForClass(cat, cls, hi);
-                if (isRealized(cls)) {
-                    remethodizeClass(cls);
-                    classExists = YES;
-                }
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: found category -%s(%s) %s",
-                                 getName(cls), cat-&gt;name,
-                                 classExists ? "on existing class" : "");
-                }
-            }
-
-            if (cat-&gt;classMethods  ||  cat-&gt;protocols 
-                /* ||  cat-&gt;classProperties */)
-            {
-                addUnattachedCategoryForClass(cat, cls-&gt;isa, hi);
-                if (isRealized(cls-&gt;isa)) {
-                    remethodizeClass(cls-&gt;isa);
-                }
-                if (PrintConnecting) {
-                    _objc_inform("CLASS: found category +%s(%s)",
-                                 getName(cls), cat-&gt;name);
-                }
-            }
-        }
-    }
-</code></pre>
-
-<p>首先，我们拿到的catlist就是上节中讲到的编译器为我们准备的category_t数组，关于是如何加载catlist本身的，我们暂且不表，这和category本身的关系也不大，有兴趣的同学可以去研究以下Apple的二进制格式和load机制。
-略去PrintConnecting这个用于log的东西，这段代码很容易理解：</p>
-
-<ul>
-<li>1)、把category的实例方法、协议以及属性添加到类上</li>
-<li>2)、把category的类方法和协议添加到类的metaclass上</li>
-</ul>
-
-
-<p>值得注意的是，在代码中有一小段注释 / || cat->classProperties /，看来苹果有过给类添加属性的计划啊。
-ok，我们接着往里看，category的各种列表是怎么最终添加到类上的，就拿实例方法列表来说吧：
-在上述的代码片段里，addUnattachedCategoryForClass只是把类和category做一个关联映射，而remethodizeClass才是真正去处理添加事宜的功臣。</p>
-
-<pre><code>static void remethodizeClass(class_t *cls)
-{
-    category_list *cats;
-    BOOL isMeta;
-
-    rwlock_assert_writing(&amp;runtimeLock);
-
-    isMeta = isMetaClass(cls);
-
-    // Re-methodizing: check for more categories
-    if ((cats = unattachedCategoriesForClass(cls))) {
-        chained_property_list *newproperties;
-        const protocol_list_t **newprotos;
-
-        if (PrintConnecting) {
-            _objc_inform("CLASS: attaching categories to class '%s' %s",
-                         getName(cls), isMeta ? "(meta)" : "");
-        }
-
-        // Update methods, properties, protocols
-
-        BOOL vtableAffected = NO;
-        attachCategoryMethods(cls, cats, &amp;vtableAffected);
-
-        newproperties = buildPropertyList(NULL, cats, isMeta);
-        if (newproperties) {
-            newproperties-&gt;next = cls-&gt;data()-&gt;properties;
-            cls-&gt;data()-&gt;properties = newproperties;
-        }
-
-        newprotos = buildProtocolList(cats, NULL, cls-&gt;data()-&gt;protocols);
-        if (cls-&gt;data()-&gt;protocols  &amp;&amp;  cls-&gt;data()-&gt;protocols != newprotos) {
-            _free_internal(cls-&gt;data()-&gt;protocols);
-        }
-        cls-&gt;data()-&gt;protocols = newprotos;
-
-        _free_internal(cats);
-
-        // Update method caches and vtables
-        flushCaches(cls);
-        if (vtableAffected) flushVtables(cls);
-    }
-}
-</code></pre>
-
-<p>而对于添加类的实例方法而言，又会去调用attachCategoryMethods这个方法，我们去看下attachCategoryMethods：</p>
-
-<pre><code>static void 
-attachCategoryMethods(class_t *cls, category_list *cats,
-                      BOOL *inoutVtablesAffected)
-{
-    if (!cats) return;
-    if (PrintReplacedMethods) printReplacements(cls, cats);
-
-    BOOL isMeta = isMetaClass(cls);
-    method_list_t **mlists = (method_list_t **)
-        _malloc_internal(cats-&gt;count * sizeof(*mlists));
-
-    // Count backwards through cats to get newest categories first
-    int mcount = 0;
-    int i = cats-&gt;count;
-    BOOL fromBundle = NO;
-    while (i--) {
-        method_list_t *mlist = cat_method_list(cats-&gt;list[i].cat, isMeta);
-        if (mlist) {
-            mlists[mcount++] = mlist;
-            fromBundle |= cats-&gt;list[i].fromBundle;
-        }
-    }
-
-    attachMethodLists(cls, mlists, mcount, NO, fromBundle, inoutVtablesAffected);
-
-    _free_internal(mlists);
-
-}
-</code></pre>
-
-<p>attachCategoryMethods做的工作相对比较简单，它只是把所有category的实例方法列表拼成了一个大的实例方法列表，然后转交给了attachMethodLists方法（我发誓，这是本节我们看的最后一段代码了^_^），这个方法有点长，我们只看一小段：</p>
-
-<pre><code>for (uint32_t m = 0;
-             (scanForCustomRR || scanForCustomAWZ)  &amp;&amp;  m &lt; mlist-&gt;count;
-             m++)
-        {
-            SEL sel = method_list_nth(mlist, m)-&gt;name;
-            if (scanForCustomRR  &amp;&amp;  isRRSelector(sel)) {
-                cls-&gt;setHasCustomRR();
-                scanForCustomRR = false;
-            } else if (scanForCustomAWZ  &amp;&amp;  isAWZSelector(sel)) {
-                cls-&gt;setHasCustomAWZ();
-                scanForCustomAWZ = false;
-            }
-        }
-
-        // Fill method list array
-        newLists[newCount++] = mlist;
-    .
-    .
-    .
-
-    // Copy old methods to the method list array
-    for (i = 0; i &lt; oldCount; i++) {
-        newLists[newCount++] = oldLists[i];
-    }
-</code></pre>
-
-<p>需要注意的有两点：</p>
-
-<ul>
-<li>1)、category的方法没有“完全替换掉”原来类已经有的方法，也就是说如果category和原来类都有methodA，那么category附加完成之后，类的方法列表里会有两个methodA</li>
-<li>2)、category的方法被放到了新方法列表的前面，而原来类的方法被放到了新方法列表的后面，这也就是我们平常所说的category的方法会“覆盖”掉原来类的同名方法，这是因为运行时在查找方法的时候是顺着方法列表的顺序查找的，它只要一找到对应名字的方法，就会罢休^_^，殊不知后面可能还有一样名字的方法。</li>
-</ul>
-
-
-<h3>5、旁枝末叶-category和+load方法</h3>
-
-<p>我们知道，在类和category中都可以有+load方法，那么有两个问题：</p>
-
-<ul>
-<li>1)、在类的+load方法调用的时候，我们可以调用category中声明的方法么？</li>
-<li>2)、这么些个+load方法，调用顺序是咋样的呢？
-鉴于上述几节我们看的代码太多了，对于这两个问题我们先来看一点直观的：</li>
-</ul>
-
-
-<p>项目结构</p>
-
-<p>我们的代码里有MyClass和MyClass的两个category （Category1和Category2），MyClass和两个category都添加了+load方法，并且Category1和Category2都写了MyClass的printName方法。
-在Xcode中点击Edit Scheme，添加如下两个环境变量（可以在执行load方法以及加载category的时候打印log信息，更多的环境变量选项可参见objc-private.h）:</p>
-
-<p>环境变量</p>
-
-<p>运行项目，我们会看到控制台打印很多东西出来，我们只找到我们想要的信息，顺序如下：</p>
-
-<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category1
-objc[1187]: REPLACED: -[MyClass printName] by category Category2
-.
-.
-.
-objc[1187]: LOAD: class 'MyClass' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
-objc[1187]: LOAD: +[MyClass load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category1) load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category2) load]
-</code></pre>
-
-<p>所以，对于上面两个问题，答案是很明显的：</p>
-
-<ul>
-<li>1)、可以调用，因为附加category到类的工作会先于+load方法的执行</li>
-<li>2)、+load的执行顺序是先类，后category，而category的+load执行顺序是根据编译顺序决定的。
-目前的编译顺序是这样的：</li>
-</ul>
-
-
-<p>编译顺序1</p>
-
-<p>我们调整一个Category1和Category2的编译顺序，run。ok，我们可以看到控制台的输出顺序变了：</p>
-
-<p>编译顺序2</p>
-
-<pre><code>objc[1187]: REPLACED: -[MyClass printName] by category Category2
-objc[1187]: REPLACED: -[MyClass printName] by category Category1
-.
-.
-.
-objc[1187]: LOAD: class 'MyClass' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category2)' scheduled for +load
-objc[1187]: LOAD: category 'MyClass(Category1)' scheduled for +load
-objc[1187]: LOAD: +[MyClass load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category2) load]
-.
-.
-.
-objc[1187]: LOAD: +[MyClass(Category1) load]
-</code></pre>
-
-<p>虽然对于+load的执行顺序是这样，但是对于“覆盖”掉的方法，则会先找到最后一个编译的category里的对应方法。
-这一节我们只是用很直观的方式得到了问题的答案，有兴趣的同学可以继续去研究一下OC的运行时代码。</p>
-
-<h3>6、触类旁通-category和方法覆盖</h3>
-
-<p>鉴于上面几节我们已经把原理都讲了，这一节只有一个问题:
-怎么调用到原来类中被category覆盖掉的方法？
-对于这个问题，我们已经知道category其实并不是完全替换掉原来类的同名方法，只是category在方法列表的前面而已，所以我们只要顺着方法列表找到最后一个对应名字的方法，就可以调用原来类的方法：</p>
-
-<pre><code>Class currentClass = [MyClass class];
-MyClass *my = [[MyClass alloc] init];
-
-if (currentClass) {
-    unsigned int methodCount;
-    Method *methodList = class_copyMethodList(currentClass, &amp;methodCount);
-    IMP lastImp = NULL;
-    SEL lastSel = NULL;
-    for (NSInteger i = 0; i &lt; methodCount; i++) {
-        Method method = methodList[i];
-        NSString *methodName = [NSString stringWithCString:sel_getName(method_getName(method)) 
-                                        encoding:NSUTF8StringEncoding];
-        if ([@"printName" isEqualToString:methodName]) {
-            lastImp = method_getImplementation(method);
-            lastSel = method_getName(method);
-        }
-    }
-    typedef void (*fn)(id,SEL);
-
-    if (lastImp != NULL) {
-        fn f = (fn)lastImp;
-        f(my,lastSel);
-    }
-    free(methodList);
-}
-</code></pre>
-
-<h3>7、更上一层-category和关联对象</h3>
-
-<p>如上所见，我们知道在category里面是无法为category添加实例变量的。但是我们很多时候需要在category中添加和对象关联的值，这个时候可以求助关联对象来实现。</p>
-
-<p>MyClass+Category1.h:</p>
-
-<pre><code>#import "MyClass.h"
-
-@interface MyClass (Category1)
-
-@property(nonatomic,copy) NSString *name;
-
-@end
-</code></pre>
-
-<p>MyClass+Category1.m:</p>
-
-<pre><code>#import "MyClass+Category1.h"
-#import &lt;objc/runtime.h&gt;
-
-@implementation MyClass (Category1)
-
-+ (void)load
-{
-    NSLog(@"%@",@"load in Category1");
-}
-
-- (void)setName:(NSString *)name
-{
-    objc_setAssociatedObject(self,
-                             "name",
-                             name,
-                             OBJC_ASSOCIATION_COPY);
-}
-
-- (NSString*)name
-{
-    NSString *nameObject = objc_getAssociatedObject(self, "name");
-    return nameObject;
-}
-
-@end
-</code></pre>
-
-<p>但是关联对象又是存在什么地方呢？ 如何存储？ 对象销毁时候如何处理关联对象呢？
-我们去翻一下runtime的源码，在objc-references.mm文件中有个方法_object_set_associative_reference：</p>
-
-<pre><code>void _object_set_associative_reference(id object, void *key, id value, uintptr_t policy) {
-    // retain the new value (if any) outside the lock.
-    ObjcAssociation old_association(0, nil);
-    id new_value = value ? acquireValue(value, policy) : nil;
-    {
-        AssociationsManager manager;
-        AssociationsHashMap &amp;associations(manager.associations());
-        disguised_ptr_t disguised_object = DISGUISE(object);
-        if (new_value) {
-            // break any existing association.
-            AssociationsHashMap::iterator i = associations.find(disguised_object);
-            if (i != associations.end()) {
-                // secondary table exists
-                ObjectAssociationMap *refs = i-&gt;second;
-                ObjectAssociationMap::iterator j = refs-&gt;find(key);
-                if (j != refs-&gt;end()) {
-                    old_association = j-&gt;second;
-                    j-&gt;second = ObjcAssociation(policy, new_value);
-                } else {
-                    (*refs)[key] = ObjcAssociation(policy, new_value);
-                }
-            } else {
-                // create the new association (first time).
-                ObjectAssociationMap *refs = new ObjectAssociationMap;
-                associations[disguised_object] = refs;
-                (*refs)[key] = ObjcAssociation(policy, new_value);
-                _class_setInstancesHaveAssociatedObjects(_object_getClass(object));
-            }
-        } else {
-            // setting the association to nil breaks the association.
-            AssociationsHashMap::iterator i = associations.find(disguised_object);
-            if (i !=  associations.end()) {
-                ObjectAssociationMap *refs = i-&gt;second;
-                ObjectAssociationMap::iterator j = refs-&gt;find(key);
-                if (j != refs-&gt;end()) {
-                    old_association = j-&gt;second;
-                    refs-&gt;erase(j);
-                }
-            }
-        }
-    }
-    // release the old value (outside of the lock).
-    if (old_association.hasValue()) ReleaseValue()(old_association);
-}
-</code></pre>
-
-<p>我们可以看到所有的关联对象都由AssociationsManager管理，而AssociationsManager定义如下：</p>
-
-<pre><code>class AssociationsManager {
-    static OSSpinLock _lock;
-    static AssociationsHashMap *_map;               // associative references:  object pointer -&gt; PtrPtrHashMap.
-public:
-    AssociationsManager()   { OSSpinLockLock(&amp;_lock); }
-    ~AssociationsManager()  { OSSpinLockUnlock(&amp;_lock); }
-
-    AssociationsHashMap &amp;associations() {
-        if (_map == NULL)
-            _map = new AssociationsHashMap();
-        return *_map;
-    }
-};
-</code></pre>
-
-<p>AssociationsManager里面是由一个静态AssociationsHashMap来存储所有的关联对象的。这相当于把所有对象的关联对象都存在一个全局map里面。而map的的key是这个对象的指针地址（任意两个不同对象的指针地址一定是不同的），而这个map的value又是另外一个AssociationsHashMap，里面保存了关联对象的kv对。
-而在对象的销毁逻辑里面，见objc-runtime-new.mm:</p>
-
-<pre><code>void *objc_destructInstance(id obj) 
-{
-    if (obj) {
-        Class isa_gen = _object_getClass(obj);
-        class_t *isa = newcls(isa_gen);
-
-        // Read all of the flags at once for performance.
-        bool cxx = hasCxxStructors(isa);
-        bool assoc = !UseGC &amp;&amp; _class_instancesHaveAssociatedObjects(isa_gen);
-
-        // This order is important.
-        if (cxx) object_cxxDestruct(obj);
-        if (assoc) _object_remove_assocations(obj);
-
-        if (!UseGC) objc_clear_deallocating(obj);
-    }
-
-    return obj;
-}
-</code></pre>
-
-<p>嗯，runtime的销毁对象函数objc_destructInstance里面会判断这个对象有没有关联对象，如果有，会调用_object_remove_assocations做关联对象的清理工作。</p>
-
-<blockquote><p>后记
-正如侯捷先生所讲-“源码面前，了无秘密”，Apple的Cocoa Touch框架虽然并不开源，但是Objective-C的runtime和Core Foundation却是完全开放源码的(在<a href="http://www.opensource.apple.com/tarballs/">DEMO</a>可以下载到全部的开源代码)。
-本系列runtime源码学习将会持续更新，意犹未尽的同学可以自行到上述网站下载源码学习。行笔简陋，如有错误，望指正。</p></blockquote>
 ]]></content>
   </entry>
   

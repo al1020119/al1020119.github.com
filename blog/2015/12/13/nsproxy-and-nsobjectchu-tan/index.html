@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>够逼格的注释习惯 - iOS梦工厂</title>
+  <title>NSProxy&amp;NSObject初探 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="够逼格的注释习惯 ordinal 够逼格的注释习惯总结 首先关于注意这里就不说什么VVDocument了，来点新鲜的！ 也许你使用过#warning 警告提示 也许你也使用过#pragma marks。 但是你见过或者使用过下面这个吗？ Comments containing:
-MARK: &hellip;">
+  <meta name="description" content="NSProxy&amp;NSObject初探 ordinal NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +18,7 @@ MARK: &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -78,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">够逼格的注释习惯</h1>
+      <h1 class="entry-title">NSProxy&amp;NSObject初探</h1>
     
     
       <p class="meta">
@@ -98,86 +97,154 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>够逼格的注释习惯总结</p>
+<div class="entry-content"><p>NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此，</p>
 
-<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+<p>Java代码可以依据任何对象来实现它的基本方法。Cocoa有多个根类，除了NSObject还有NSProxy等其他等级的根类。这只是部分原因，NSObject协议定义了一套所有的根类都可以实现的基础方法，这样在编码时就容易找到了。</p>
 
-<h6>也许你使用过#warning 警告提示</h6>
+<p>NSObject类遵循NSObject协议，这就是说，NSObject类实现了下面这些基础方法：</p>
 
-<h6>也许你也使用过#pragma marks。</h6>
-
-<p>但是你见过或者使用过下面这个吗？</p>
-
-<pre><code>Comments containing:
-MARK:
-TODO:
-FIXME:
-!!!:
-???:
+<pre><code>@interface NSObject  
 </code></pre>
 
-<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+<p>NSProxy同样遵循NSObject协议：</p>
 
-<!--more-->
-
-
-<p> 首先说一下三个最常用的：</p>
-
-<ul>
-<li>1、TODO</li>
-</ul>
-
-
-<p> 等待实现的功能</p>
-
-<ul>
-<li>2、FIXME</li>
-</ul>
-
-
-<p> 需要修正的功能</p>
-
-<ul>
-<li>3、！！！</li>
-</ul>
-
-
-<p> 需要改进的功能</p>
-
-<p>具体使用</p>
-
-<pre><code>// FIXME:sss
-/* FIXME: sss */
-
-
-// MARK:sss
-/* MARK:sss */
-
-
-// !!!:sss
-/* !!!: sss */
-
-
-// ???:sss
-/* ???: sss */
-
-
-// TODO:sss
-/* TODO: sss */
-
-
-// Comments containing: sss
-/* Comments containing: sss */
+<pre><code>@interface NSProxy  
 </code></pre>
 
-<p>注意空格.</p>
+<p>NSObject协议包含了hash，isEqual:，description等方法。事实上，NSProxy遵循NSObject协议意味着你可以依靠实现NSProxy来实现NSObject方法。</p>
 
-<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+<h3>NSObjetc：</h3>
 
-<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+<p>NSObject协议组对所有的Object－C下的objects都生效。
+如果objects遵从该协议，就会被看作是first－class objects（一级类）。
+另外，遵从该协议的objects的retain，release，autorelease等方法也服从objects的管理和在Foundation中定义的释放方法。一些容器中的对象也可以管理这些objects，比如
+说NSArray 和NSDictionary定义的对象。
+Cocoa的根类也遵循该协议，所以所有继承NSObjects的objects都有遵循该协议的特性。</p>
 
-<!--more-->
+<h3>NSProXY：</h3>
 
+<p>NSProxy 是一个虚基类，它为一些表现的像是其它对象替身或者并不存在的对象定义一套API。一般的，发送给代理的消息被转发给一个真实的对象或者代理本身load(或者将本身转换成)一个真实的对象。NSProxy的基类可以被用来透明的转发消息或者耗费巨大的对象的lazy 初始化。</p>
+
+<p>NSProxy实现了包括NSObject协议在内基类所需的基础方法，但是作为一个虚拟的基类并没有提供初始化的方法。它接收到任何自己没有定义的方法他都会产生一个异常，所以一个实际的子类必须提供一个初始化方法或者创建方法，并且重载forwardInvocation:方法和methodSignatureForSelector:方法来处理自己没有实现的消息。一个子类的forwardInvocation:实现应该采取所有措施来处理invocation,比如转发网络消息，或者加载一个真实的对象，并把invocation转发给他。methodSignatureForSelector:需要为给定消息提供参数类型信息，子类的实现应该有能力决定他应该转发消息的参数类型，并构造相对应的NSMethodSignature对象。详细信息可以查看NSDistantObject, NSInvocation, and NSMethodSignature的类型说明。</p>
+
+<h4>简单使用</h4>
+
+<h6>NSProxy</h6>
+
+<pre><code>// MyProxy.h
+#import&lt;Foundation/Foundation.h&gt;
+
+@interface MyProxy :NSProxy {
+    NSObject *object;
+}
+
+- (id)transformToObject:(NSObject *)anObject;
+
+@end
+
+// MyProxy.m
+#import"MyProxy.h"
+
+@implementation MyProxy
+
+- (void)dealloc
+{
+    [objectrelease];
+    object = nil;
+    [superdealloc];
+}
+
+- (void)fun
+{
+   // Do someting virtual
+    //先做一些代理工作，然后创建一个后台线程，在后台线程中再调用真正的[object fun];
+}
+
+// Stupid transform implementation just by assigning a passed in object as transformation target. You can write your factory here and use passed in object as id for object that need ot be created.
+- (id)transformToObject:(NSObject *)anObject 
+{
+    if(object != anObject) {
+        [objectrelease];
+    }
+    object = [anObject retain];
+    return object;
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation 
+{
+    if (object != nil) {
+        [invocation setTarget:object];    
+
+        [invocation invoke];
+    }
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel 
+{
+   NSMethodSignature *result;
+    if (object != nil) {
+        result = [objectmethodSignatureForSelector:sel];
+    } else {
+       // Will throw an exception as default implementation
+        result = [supermethodSignatureForSelector:sel];
+    }
+    return result;
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<h6>NSObject</h6>
+
+<pre><code>// RealSubject.h
+#import&lt;Foundation/Foundation.h&gt;
+@implementation RealSubject : NSObject
+
+- (void)fun;
+
+@end
+
+// RealSubject.m
+#import"RealSubject.h"
+
+@implementation RealSubject
+
+- (void)fun
+{
+    //这个方法需要代理进行惰性调用
+   // Do something real
+}
+
+- (void)otherFun
+{
+    //这个方法不需要代理做任何处理，可直接被调用
+   // Do something real
+}
+
+@end
+
+// main.m
+int main(int argc,char *argv[]) 
+{
+   NSAutoreleasePool * pool = [[NSAutoreleasePoolalloc] init];
+
+    MyProxy *myProxy = [MyProxy alloc];
+    RealSubject *realSub = [[RealSubject alloc] init];
+    [myProxytransformToObject:realSub];
+    [myProxyfun]; // 直接调用myProxy的fun，执行代理工作
+    [myProxyotherFun]; // 依次调用myProxy的methodSignatureForSelector和forwardInvocation转发给realSub，realSub调用otherFun
+
+    [realSubject release];
+    [myProxyrelease];
+
+    [pool release];
+    return 0;
+}
+</code></pre>
+
+<blockquote><p>注意，调用MyProxy中未定义的方法otherFun会出现'MyProxy' may not respond to &lsquo;fun'的警告，可通过使用私有范畴或通过performSelector:withObject:来避免，如果有更好的方法，请告知。</p></blockquote>
 </div>
 
 
@@ -206,7 +273,7 @@ FIXME:
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/xing-neng-xiang-guan/'>性能相关</a>
+    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
   
 </span>
 
@@ -235,10 +302,8 @@ FIXME:
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/02/xiao-chu-jing-gao/" title="Previous Post: 消除警告">&laquo; 消除警告</a>
+        <a class="basic-alignment left" href="/blog/2015/12/12/an-quan-ji-zhi/" title="Previous Post: 安全机制">&laquo; 安全机制</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/12/04/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/" title="Next Post: 序列化&amp;反序列化深究">序列化&amp;反序列化深究 &raquo;</a>
       
     </p>
   </footer>
@@ -327,7 +392,7 @@ FIXME:
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/03/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

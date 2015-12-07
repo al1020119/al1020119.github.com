@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="这两天认真研究了一下MVC设计模式，在iOS开发中这个算是重点中的重点了，如果对MVC模式不理解或者说不会用，那么你iOS肯定学不好，或者写不出好的东西，当然本人目前也在学习中，不过既然能看到这篇文档，说明你已经开始着手学习并且想深入研究它了，个人也是研究很久才搞懂，就写下来希望对各位有用， &hellip;">
+  <meta name="description" content="首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。 layoutSubviews在以下情况下会被调用： 1、init初始化不会触发layoutSubviews。
+2、addSubview会触发layoutSubviews。
+3、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +76,61 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/03/23/layoutsubviews%20drawrects/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -350,12 +407,16 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
 <li class='category'><a href='/blog/categories/项目实战/'>项目实战 (18)</a></li>
-<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (26)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (27)</a></li>
 
     </ul>
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/13/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/12/an-quan-ji-zhi/">安全机制</a>
@@ -371,10 +432,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/11/java/">爬虫必备-java抓包</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/11/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Phthon抓包</a>
       </li>
     
   </ul>
