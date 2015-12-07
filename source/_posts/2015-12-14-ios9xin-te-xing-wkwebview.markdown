@@ -23,6 +23,12 @@ webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitr
 
 		- (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item; 
 跳到历史的某个页面
+
+
+
+<!--more-->
+
+
 #####第二、相同的属性和方法
 
 - goBack、
@@ -184,7 +190,11 @@ UIWebView 中会自动保存Cookie，如果登录了一次，下次再次进入�
 
 	- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration  
 通过这个方法，设置 configuration 让WKWebView知道登录状态，configuration 可以通过已有的Cookie进行设置，也可以通过保存上一次的configuration进行设置
-参考 stackoverflow上回答：http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303 
+
+
+参考 stackoverflow上回答：
+
+[http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303](http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303) 
 
 	WKWebView * webView = /*set up your webView*/  
 	NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://example.com/index.html"]];  
