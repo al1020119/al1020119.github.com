@@ -9,8 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="在这里（http://www.cnblogs.com/iCocos/p/4705585.html）我们提到了。 简单的实现了获取系统相册图片并且保存图片到系统相册
-定义自定义的相册，并且保存到自定义相册 这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现 &hellip;">
+  <meta name="description" content="控制器（View）生命周期 当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序 1、 alloc 创建对象，分配空间
+2、init (initWithNibName) 初始化对象，初始化数据
+3、loadView 从nib载入视图 ，通常这一步不需要去干涉。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,7 +82,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/10/30/iossheng-ming-zhou-qi/">iOS生命周期</a></h1>
     
     
       <p class="meta">
@@ -101,358 +102,30 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-  <div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+  <div class="entry-content"><h3>控制器（View）生命周期</h3>
 
-<ul>
-<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
-<li>定义自定义的相册，并且保存到自定义相册</li>
-</ul>
+<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
 
-
-<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
-App中自定义的相册呗删除之后再次保存相片无法成功</p>
-
-<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+<pre><code>1、 alloc                                   创建对象，分配空间
+2、init (initWithNibName) 初始化对象，初始化数据
+3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
+4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
+5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
+6、viewDidAppear               视图已在屏幕上渲染完成
+</code></pre>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/10/30/iossheng-ming-zhou-qi/">阅读全文😘</a>
     </footer>
   
 
 
 
 
-| <a href="/blog/2015/11/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">取消TableView的Header与Footer的黏性效果</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
-
-<h6>那么是什么问题呢？</h6>
-
-<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/28/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
-
-<p>关于XLNetworkApi</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/25/wang-shang-qing-qiu-feng-(feng-)zhuang/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
-
-<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
-
-<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
-
-<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
-
-<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/11/xcode-menu/">Xcode Menu</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
-
-<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/11/xcode-menu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/11/xcode-menu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/08/nian-tie-shen-jiu/">粘贴深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
-
-<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
-
-<ul>
-<li>1、UITextView</li>
-<li>2、UITextField</li>
-<li>3、UIWebView</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/08/nian-tie-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/08/nian-tie-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/">常用关键字总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<thead>
-<tr>
-<th> Name  </th>
-<th style="text-align:center;"> Typedef</th>
-<th style="text-align:right;">  Header</th>
-<th>     True Value  </th>
-<th> False Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> BOOL</td>
-<td style="text-align:center;">     signed char objc.h</td>
-<td style="text-align:right;">     YES</td>
-<td>    NO</td>
-<td></td>
-</tr>
-<tr>
-<td> bool  </td>
-<td style="text-align:center;"> _Bool (int)   </td>
-<td style="text-align:right;"> stdbool.h true    </td>
-<td> false</td>
-<td></td>
-</tr>
-<tr>
-<td> Boolean</td>
-<td style="text-align:center;">  unsigned char</td>
-<td style="text-align:right;">  MacTypes.h  TRUE    </td>
-<td> FALSE</td>
-<td></td>
-</tr>
-<tr>
-<td> NSNumber</td>
-<td style="text-align:center;">     __NSCFBoolean</td>
-<td style="text-align:right;">  Foundation.h    </td>
-<td> @(YES)</td>
-<td>   @(NO)</td>
-</tr>
-<tr>
-<td> CFBooleanRef</td>
-<td style="text-align:center;">     struct</td>
-<td style="text-align:right;">     CoreFoundation.h    </td>
-<td> kCFBooleanTrue</td>
-<td>   kCFBooleanFalse</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/11/03/chang-yong-guan-jian-zi-zong-jie/#comments">更多评论</a>
+| <a href="/blog/2015/10/30/iossheng-ming-zhou-qi/#comments">更多评论</a>
 
     </article>
   
@@ -553,6 +226,50 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2015/09/29/h5chu-tan/">H5初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>H5精华</h2>
+
+<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/09/29/h5chu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/09/29/h5chu-tan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2015/09/22/qie-huan-kong-zhi-qi/">切换控制器</a></h1>
     
     
@@ -587,6 +304,261 @@ App中自定义的相册呗删除之后再次保存相片无法成功</p>
 
 
 | <a href="/blog/2015/09/22/qie-huan-kong-zhi-qi/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">网络请求疯（封）装</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
+
+<p>关于XLNetworkApi</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/">ScrollView回到顶部复原</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
+
+<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
+
+<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
+
+<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/01/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>简单总结
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+<hr />
+
+<ul>
+<li>简单实用
+
+<ul>
+<li>代理</li>
+<li>Block</li>
+<li>通知</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/01/chuan-zhi-fang-shi-zong-jie/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/07/01/chuan-zhi-fang-shi-zong-jie/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
+
+
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
+
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/#comments">更多评论</a>
 
     </article>
   
