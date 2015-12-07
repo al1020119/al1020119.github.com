@@ -19,7 +19,12 @@ NSObject类遵循NSObject协议，这就是说，NSObject类实现了下面这�
  
 NSProxy同样遵循NSObject协议：
  
-	@interface NSProxy  
+	@interface NSProxy  	
+	
+<!--more-->
+
+
+
 NSObject协议包含了hash，isEqual:，description等方法。事实上，NSProxy遵循NSObject协议意味着你可以依靠实现NSProxy来实现NSObject方法。
 
 ###NSObjetc：
