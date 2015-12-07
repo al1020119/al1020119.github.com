@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 底层开发 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/di-ceng-kai-fa/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-06T23:13:35+08:00</updated>
+  <updated>2015-12-07T13:16:05+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -22,7 +22,7 @@
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#108;&#116;&#x6f;&#58;&#109;&#x61;&#x6a;&#x69;&#97;&#48;&#x33;&#64;&#109;&#x65;&#x69;&#x74;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#109;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#x33;&#64;&#109;&#x65;&#x69;&#x74;&#x75;&#97;&#110;&#x2e;&#x63;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#105;&#x6c;&#116;&#x6f;&#x3a;&#x6d;&#x61;&#x6a;&#105;&#x61;&#x30;&#x33;&#x40;&#109;&#101;&#105;&#116;&#117;&#97;&#110;&#x2e;&#99;&#x6f;&#109;">&#x6d;&#x61;&#106;&#105;&#97;&#48;&#51;&#64;&#109;&#101;&#x69;&#x74;&#x75;&#97;&#110;&#46;&#x63;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -1196,7 +1196,7 @@ return jailbroken;
     <link href="http://al1020119.github.io/blog/2014/06/16/runtime/"/>
     <updated>2014-06-16T13:53:19+08:00</updated>
     <id>http://al1020119.github.io/blog/2014/06/16/runtime</id>
-    <content type="html"><![CDATA[<p>运行时（Runtime）机制</p>
+    <content type="html"><![CDATA[<h2>运行时（Runtime）机制</h2>
 
 <p>本文将会以笔者个人的小小研究为例总结一下关于iOS开发中运行时的使用和常用方法的介绍，关于跟多运行时相关技术请查看笔者之前写的运行时高级用法及相关语法或者查看响应官方文档。</p>
 
@@ -1216,6 +1216,577 @@ return jailbroken;
 <p>下面来看看Runtime的相关总结</p>
 
 <p><img src="/images/runtime003.png" title="Caption" ></p>
+
+<h2>术语解释</h2>
+
+<h3>Messages</h3>
+
+<p>如果你是从动态语言如Ruby或Python转过来的，可能知道什么是消息，可以直接跳过进入下一节。那些从其他语言转过来的，继续看。</p>
+
+<p>执行一个方法，有些语言，编译器会执行一些额外的优化和错误检查，因为调用关系很直接也很明显。但对于消息分发来说，就不那么明显了。在发消息前不必知道某个对象是否能够处理消息。你把消息发给它，它可能会处理，也可能转给其他的Object来处理。一个消息不必对应一个方法，一个对象可能实现一个方法来处理多条消息。</p>
+
+<p>在Objective-C中，消息是通过objc_msgSend()这个runtime方法及相近的方法来实现的。这个方法需要一个target，selector，还有一些参数。理论上来说，编译器只是把消息分发变成objc_msgSend来执行。比如下面这两行代码是等价的。</p>
+
+<pre><code>[array insertObject:foo atIndex:5];
+objc_msgSend(array, @selector(insertObject:atIndex:), foo, 5);
+</code></pre>
+
+<hr />
+
+<p>现在我们知道了objects,classes,selectors,IMPs以及消息分发，那么运行时到底能做什么呢？主要有两个作用：</p>
+
+<ul>
+<li>创建、修改、自省classes和objects</li>
+<li>消息分发</li>
+</ul>
+
+
+<p>之前已经提过消息分发，不过这只是一小部分功能。所有的运行时方法都有特定的前缀。下面是一些有意思的方法：</p>
+
+<h3>class</h3>
+
+<p>class开头的方法是用来修改和自省classes。</p>
+
+<ul>
+<li>class_addIvar, class_addMethod, *class_addProperty和class_addProtocol允许重建classes。</li>
+<li>class_copyIvarList, class_copyMethodList, class_copyProtocolList和class_copyPropertyList能拿到一个class的所有内容。</li>
+<li>class_getClassMethod, class_getClassVariable, class_getInstanceMethod, class_getInstanceVariable, class_getMethodImplementation和class_getProperty返回单个内容。</li>
+</ul>
+
+
+<p>也有一些通用的自省方法，如class_conformsToProtocol, class_respondsToSelector, class_getSuperclass。最后，你可以使用class_createInstance来创建一个object。</p>
+
+<h3>ivar</h3>
+
+<p>这些方法能让你得到名字，内存地址和Objective-C type encoding。</p>
+
+<h3>method</h3>
+
+<p>这些方法主要用来自省，比如method_getName, method_getImplementation,  method_getReturnType等等。也有一些修改的方法，包括method_setImplementation和method_exchangeImplementations，这些我们后面会讲到。</p>
+
+<h3>objc</h3>
+
+<p>一旦拿到了object，你就可以对它做一些自省和修改。你可以get/set ivar, 使用object_copy和object_dispose来copy和free object的内存。最NB的不仅是拿到一个class，而是可以使用object_setClass来改变一个object的class。待会就能看到使用场景。</p>
+
+<h3>property</h3>
+
+<p>属性保存了很大一部分信息。除了拿到名字，你还可以使用property_getAttributes来发现property的更多信息，如返回值、是否为atomic、getter/setter名字、是否为dynamic、背后使用的ivar名字、是否为弱引用。</p>
+
+<h3>protocol</h3>
+
+<p>Protocols有点像classes，但是精简版的，运行时的方法是一样的。你可以获取method, property, protocol列表, 检查是否实现了其他的protocol。</p>
+
+<h3>Cache</h3>
+
+<p>在runtime.h中Cache的定义如下：</p>
+
+<pre><code>   typedef struct objc_cache *Cache 
+</code></pre>
+
+<p> Cache为方法调用的性能进行优化，通俗地讲，每当实例对象接收到一个消息时，它不会直接在isa指向的类的方法列表中遍历查找能够响应消息的方法，因为这样效率太低了，而是优先在Cache中查找。Runtime 系统会把被调用的方法存到Cache中（理论上讲一个方法如果被调用，那么它有可能今后还会被调用），下次查找的时候效率更高。这根计算机组成原理中学过的 CPU 绕过主存先访问Cache的道理挺像，而我猜苹果为提高Cache命中率应该也做了努力吧。</p>
+
+<h2>sel</h2>
+
+<p>最后我们有一些方法可以处理 selectors，比如获取名字，注册一个selector等等。</p>
+
+<h3>Methods, Selectors and IMPs</h3>
+
+<p>我们知道了运行时会发消息给对象。我们也知道一个对象的class保存了方法列表。那么这些消息是如何映射到方法的，这些方法又是如何被执行的呢？</p>
+
+<p>第一个问题的答案很简单。class的方法列表其实是一个字典，key为selectors，IMPs为value。一个IMP是指向方法在内存中的实现。很重要的一点是，selector和IMP之间的关系是在运行时才决定的，而不是编译时。这样我们就能玩出些花样。</p>
+
+<p>IMP通常是指向方法的指针，第一个参数是self，类型为id，第二个参数是<em>cmd，类型为SEL，余下的是方法的参数。这也是self和</em>cmd被定义的地方。下面演示了Method和IMP</p>
+
+<blockquote><p>Objective-C是一门简单的语言，95%是C。只是在语言层面上加了些关键字和语法。真正让Objective-C如此强大的是它的运行时。它很小但却很强大。它的核心是消息分发。</p></blockquote>
+
+<h3>Objects, Classes, MetaClasses</h3>
+
+<p>大多数面向对象的语言里有 classes 和 objects 的概念。Objects通过Classes生成。但是在Objective-C中，classes本身也是objects(译者注：这点跟python很像)，也可以处理消息，这也是为什么会有类方法和实例方法。具体来说，Objective-C中的Object是一个结构体(struct)，第一个成员是isa，指向自己的class。这是在objc/objc.h中定义的。</p>
+
+<pre><code>typedef s   truct objc_object {
+    Class isa;
+} *id;
+</code></pre>
+
+<p>object的class保存了方法列表，还有指向父类的指针。但classes也是objects，也会有isa变量，那么它又指向哪儿呢？这里就引出了第三个类型: metaclasses。一个 metaclass被指向class，class被指向object。它保存了所有实现的方法列表，以及父类的metaclass。如果想更清楚地了解objects,classes以及metaclasses是如何一起工作地，可以阅读这篇文章。</p>
+
+<h2>使用方式：</h2>
+
+<h3>pragma mark 获取属性成员</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+unsigned int count = 0;
+
+Ivar *ivars = class_copyIvarList([iCocosObject class], &amp;count);
+
+//    Ivar *ivars = class_copyMethodList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;)
+
+//    Ivar *ivars = class_copyPropertyList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;);
+
+//    Ivar *ivars = class_copyProtocolList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;)
+
+
+
+for (int i = 0; i &lt; count; i++) {
+
+    Ivar ivar = ivars[i];
+
+
+
+    NSString *name = @(ivar_getName(ivar));
+
+    NSLog(@"%@", name);
+
+
+
+    NSLog(@"*****************");
+
+    const char *iv = ivar_getName(ivar);
+
+
+
+
+
+    NSLog(@"%s", iv);
+
+
+
+    NSLog(@"*****************");
+
+    const char *ivs =  ivar_getTypeEncoding(ivar);
+
+
+
+    NSLog(@"%s", ivs);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取方法</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int meth = 0;
+
+Method *met = class_copyMethodList([iCocosObject class], &amp;meth);
+
+for (int i = 0; i &lt; meth; i++) {
+
+    Method m = met[i];
+
+
+
+    SEL sel = method_getName(m);
+
+    NSString *str = NSStringFromSelector(sel);
+
+
+
+    NSLog(@"%@",str);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取协议</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int pro = 0;
+
+Protocol * __unsafe_unretained *proto =  class_copyProtocolList([iCocosObject class], &amp;pro);
+
+for (int i = 0; i &lt; pro; i++) {
+
+    Method p = (__bridge Method)(proto[i]);
+
+
+
+    const char *pr = protocol_getName((__bridge Protocol *)(p));
+
+//        NSString *str = NSStringFromSelector(pr);
+
+
+
+    NSLog(@"%s",pr);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取属性</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int xs = 0;
+
+objc_property_t *xsL = class_copyPropertyList([iCocosObject class], &amp;xs);
+
+for (int i = 0; i &lt; xs; i++) {
+
+    objc_property_t xslist = xsL[i];
+
+
+
+    const char *x = property_getName(xslist);
+
+//        NSString *str = NSStringFromSelector(x);
+
+
+
+    NSLog(@"%s",x);
+
+}
+
+
+
+
+
+//    objc_msgSend()
+
+//    objc_getClass(&lt;#const char *name#&gt;);
+
+//    sel_registerName(&lt;#const char *str#&gt;);
+
+
+
+//     iCocosView *view = objc_msgSend(objc_msgSend(objc_getClass("iCocosView"), sel_registerName("alloc")), sel_registerName("init"));
+
+Method one =  class_getClassMethod([iCocosObject class], @selector(iCocosMethos));
+
+Method two =  class_getClassMethod([iCocosObject class], @selector(iCocosMetho));
+
+method_exchangeImplementations(one, two);
+
+
+
+Method o =  class_getInstanceMethod([iCocosObject class], @selector(iCocosMethos));
+
+Method t =  class_getInstanceMethod([iCocosObject class], @selector(iCocosMetho));
+
+method_exchangeImplementations(o, t);
+
+
+
+//    class_getInstanceSize(&lt;#__unsafe_unretained Class cls#&gt;);
+
+//    class_getInstanceVariable(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getMethodImplementation_stret(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;);
+
+
+
+//    class_getClassVariable(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getSuperclass(&lt;#__unsafe_unretained Class cls#&gt;);
+
+
+
+//    class_getProperty(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getName(&lt;#__unsafe_unretained Class cls#&gt;);
+
+
+
+
+
+
+
+//    class_replaceMethod(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;, &lt;#IMP imp#&gt;, &lt;#const char *types#&gt;);
+</code></pre>
+
+<h3>pragma mark 增加</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+ //    class_addIvar(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;, &lt;#size_t size#&gt;, &lt;#uint8_t alignment#&gt;, &lt;#const char *types#&gt;);
+
+//    class_addMethod(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;, &lt;#IMP imp#&gt;, &lt;#const char *types#&gt;);
+
+//    class_addProperty(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;, &lt;#const objc_property_attribute_t *attributes#&gt;, &lt;#unsigned int attributeCount#&gt;);
+
+//    class_addProtocol(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#Protocol *protocol#&gt;);
+</code></pre>
+
+<h3>pragma mark 替换系统的addObject：（给数组或者其他类型做分类）</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+ //在load中实现下面的代码
+
+Method ic =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(iCocosobject:));
+
+Method add =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(addObject:));
+
+method_exchangeImplementations(ic, add);
+
+
+
+
+
+//实现iCocosobject方法:(实现相应的功能，这里只是去掉非空)
+
+//    if (object != nil) {
+
+//        [self iCocosobject:object];
+
+//    }
+</code></pre>
+
+<h2>实战</h2>
+
+<h3>一：关联对象：给某一个类在运行的时候动态的增加一个成员变量</h3>
+
+<pre><code>@interface NSObject(iCocos)
+
+
+
+//头文件中声明一个属性
+
+@property (nonatomic, assign) double height;
+
+
+
+@end
+
+
+
+
+
+@implementation NSObject(iCocos)
+
+
+
+static double heightKey;//用来参考
+
+
+
+-(void)setHeight:(double)height
+
+{
+
+    objc_setAssociatedObject(self, &amp;heightKey, @(height), OBJC_ASSOCIATION_ASSIGN);
+
+}
+
+
+
+-(double)height
+
+{
+
+    return [objc_getAssociatedObject(self, &amp;heightKey) doubleValue];
+
+}
+</code></pre>
+
+<p>@end</p>
+
+<h3>二：归档</h3>
+
+<p><img src="/images/runtimedemo001.png" title="Caption" ></p>
+
+<h3>三：字典转模型：</h3>
+
+<p>之前使用的方法；</p>
+
+<p><img src="/images/runtimedemo002.png" title="Caption" ></p>
+
+<p>使用运行时</p>
+
+<p>注意必须保证字典中的属性名和模型中的属性名一模一样</p>
+
+<p><img src="/images/runtimedemo003.png" title="Caption" ></p>
+
+<p>完善代码：</p>
+
+<pre><code> @implementation NSObject (Model)
+
+
+
++ (instancetype)objcWithDict:(NSDictionary *)dict mapDict:(NSDictionary *)mapDict
+
+{
+
+
+
+
+
+    id objc = [[self alloc] init];
+
+
+
+    unsigned int count = 0;
+
+    Ivar *ivars = class_copyIvarList(self, &amp;count);
+
+
+
+    for (int i = 0; i &lt; count; i++) {
+
+        Ivar ivar = ivars[i];
+
+
+
+        NSString *name = @(ivar_getName(ivar));
+
+
+
+        name = [name substringFromIndex:1];
+
+
+
+        id value = dict[name];
+
+
+
+        if (value == nil) {
+
+
+
+            if (mapDict) {
+
+                NSString *mapName = mapDict[name];
+
+
+
+                value = dict[mapName];
+
+            }
+
+
+
+        }
+
+
+
+        [objc setValue:value forKeyPath:name];
+
+    }
+
+
+
+
+
+    return objc;
+
+}
+
+
+
+@end
+</code></pre>
+
+<h3>全屏返回</h3>
+
+<pre><code>- (void)viewDidLoad {
+
+    [super viewDidLoad];
+    // 获取系统自带滑动手势的target对象
+    id target = self.interactivePopGestureRecognizer.delegate;
+    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)];
+    // 设置手势代理，拦截手势触发
+    pan.delegate = self;
+    // 给导航控制器的view添加全屏滑动手势
+    [self.view addGestureRecognizer:pan];
+    // 禁止使用系统自带的滑动手势
+    self.interactivePopGestureRecognizer.enabled = NO;
+    }
+    // 什么时候调用：每次触发手势之前都会询问下代理，是否触发。
+    // 作用：拦截手势触发
+    - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+    {
+        // 注意：只有非根控制器才有滑动返回功能，根控制器没有。
+        // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器
+        if (self.childViewControllers.count == 1) {
+        // 表示用户在根控制器界面，就不需要触发滑动手势，
+        return NO;
+    }
+    return YES;
+}
+</code></pre>
+
+<hr />
+
+<p>参考文章：</p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4782532.html">http://www.cnblogs.com/iCocos/p/4782532.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4676679.html">http://www.cnblogs.com/iCocos/p/4676679.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4734687.html">http://www.cnblogs.com/iCocos/p/4734687.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4761600.html">http://www.cnblogs.com/iCocos/p/4761600.html</a></p>
 ]]></content>
   </entry>
   
