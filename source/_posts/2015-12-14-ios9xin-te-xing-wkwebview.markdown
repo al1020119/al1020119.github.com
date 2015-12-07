@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS9新特性-WKWebView"
+title: "iOS9新特性-WKWebView+SFSafariViewController"
 date: 2015-12-14 19:35:40 +0800
 comments: true
 categories: iOS9新特性
@@ -9,6 +9,29 @@ categories: iOS9新特性
 ##一：WKWebView简单介绍##
 
 webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。
+
+
+先来看看WKWebView和UIWebView有什么区别：
+
+######UIWebView：
+
+* 始祖级别，支持的iOS版本比较多
+* 可支持打开URL，包括各种URL模式，例如 Https，FTP等
+* 可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~
+* 占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）
+* 效率低，不灵活，尤其是和 JavaScript交互时
+* 无法清除本地存储数据（Local Storage）
+* 代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~
+ 
+
+######WKWebView：
+
+* iOS 8引入的，比较年轻
+* 在内存和执行效率上要比UIWebView高很多
+* 开放度较高但据说Bug成吨
+* 类似UIWebView，UI定制比较麻烦···
+* 没具体测试使用过，就不继续列举了 L~
+
 #####第一、WKWebView增加的属性和方法
 类比UIWebView，跟UIWebView的API对比，
 增加的属性：
@@ -263,3 +286,82 @@ iOS 8 引入WKWebView, WKWebView 不支持JavaScriptCore的方式但提供messag
 * 也就是一个进程间通讯的bug引起的。
 
 ######解决方案，可以使app支持arm64，便不会出现问题。
+
+
+***
+
+
+
+##六：SFSafariViewController：
+
+* iOS 9引入，更加年轻，意味着是Apple的新菜，总是有什么优势的
+* 也是用来显示网页内容的
+* 这是一个特殊的View Controller，而不是一个单独的 View，和前面两个的区别
+* 在当前App中使用Safari的UI框架展现Web内容，包括相同的地址栏，工具栏等，类似一个内置于App的小型Safari
+* 共享Safari的一些便利特性，包括：相似的用户体验，和Safari共享Cookie，iCloud Web表单数据，密码、证书自动填充，Safari阅读器（Safari Reader）
+* 可定制性比较差，甚至连地址栏都是不可编辑的，只能在init的时候，传入一个URL来指定网页的地址
+* 只能用来展示单个页面，并且有一个完成按钮用来退出
+
+
+
+
+{% img /images/safari001.png Caption %}  
+
+ 
+
+如果你的App需要显示网页，但是又不想自己去定制浏览器界面的话，可以考虑用SFSafariViewController来试试。从好的方面看，SFSafariViewController也去掉了从App中跳转到Safari的撕裂感，不同App之间切换总是让人感觉麻烦和不舒服。
+
+代码例子:
+
+	- (IBAction)onButtonClick:(id)sender
+	
+	{
+	
+	    NSString *urlString = @"http://www.kdanmobile.com";
+	
+	    SFSafariViewController *sfViewControllr = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:urlString]];
+	
+	    sfViewControllr.delegate = self;
+	
+	    [self presentViewController:sfViewControllr animated:YES completion:^{
+	
+	       //...
+	
+	    }];
+	
+	}
+	
+	 
+	
+	// Done 按钮
+	
+	- (void)safariViewControllerDidFinish:(nonnull SFSafariViewController *)controller
+	
+	{
+	
+	    [controller dismissViewControllerAnimated:YES completion:nil];
+	
+	}
+
+ 
+
+SFSafariViewController 的接口比较少，就不再继续一一列举了。另外一个定制功能在于SFSafariViewControllerDelegate里面的一个方法：
+
+ 
+
+	-(NSArray<UIActivity *> *)safariViewController:(SFSafariViewController *)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title;
+
+ 
+
+这个代理会在用户点击动作（Action）按钮（底部工具栏中间的按钮）的时候调用，可以传入UIActivity的数组，创建添加一些自定义的各类插件式的服务，比如分享到微信，微博什么的。
+
+
+
+{% img /images/safari001.png Caption %}  
+
+ 
+
+> 小细节：
+SFSafariViewController有保存Cookies的功能，但是貌似不能和Safari浏览器共享，也可能是Beta版的bug
+ 
+
