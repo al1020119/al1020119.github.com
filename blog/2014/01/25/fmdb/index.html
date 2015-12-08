@@ -1,0 +1,524 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FMDB你了解多少？ - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="FMDB你了解多少？ ordinal FMDB详解 前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。 于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2014/01/25/fmdb/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">FMDB你了解多少？</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>FMDB详解</p>
+
+<p>前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。</p>
+
+<p>于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、sqlitepersistentobjects等，FMDB (<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a>) 是一款简洁、易用的封装库，这一篇文章简单介绍下FMDB的使用。</p>
+
+<!--more-->
+
+
+<p>在FMDB下载文件后，工程中必须导入，并使用 libsqlite3.dylib 依赖包。</p>
+
+<p>FMDB同时兼容ARC和非ARC工程，会自动根据工程配置来调整相关的内存管理代码。</p>
+
+<p>FMDB常用类：</p>
+
+<ul>
+<li>FMDatabase ： 一个单一的SQLite数据库，用于执行SQL语句。</li>
+<li>FMResultSet ：执行查询一个FMDatabase结果集，这个和Android的Cursor类似。</li>
+<li>FMDatabaseQueue ：在多个线程来执行查询和更新时会使用这个类。</li>
+</ul>
+
+
+<h3>创建数据库：</h3>
+
+<pre><code>db = [FMDatabase databaseWithPath:database_path];
+</code></pre>
+
+<p>1、当数据库文件不存在时，fmdb会自己创建一个。
+2、 如果你传入的参数是空串：@&ldquo;&rdquo; ，则fmdb会在临时文件目录下创建这个数据库，数据库断开连接时，数据库文件被删除。
+3、如果你传入的参数是 NULL，则它会建立一个在内存中的数据库，数据库断开连接时，数据库文件被删除。</p>
+
+<h3>打开数据库：</h3>
+
+<pre><code>[db open]
+</code></pre>
+
+<p>返回BOOL型。</p>
+
+<h3>关闭数据库：</h3>
+
+<pre><code>[db close]
+</code></pre>
+
+<h3>数据库增删改等操作：</h3>
+
+<p>除了查询操作，FMDB数据库操作都执行executeUpdate方法，这个方法返回BOOL型。</p>
+
+<p>数据库操作(使用FMDB)</p>
+
+<p>看一下例子：</p>
+
+<h5>创建表：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *sqlCreateTable =  [NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS '%@' ('%@' INTEGER PRIMARY KEY AUTOINCREMENT, '%@' TEXT, '%@' INTEGER, '%@' TEXT)",TABLENAME,ID,NAME,AGE,ADDRESS];
+        BOOL res = [db executeUpdate:sqlCreateTable];
+        if (!res) {
+            NSLog(@"error when creating db table");
+        } else {
+            NSLog(@"success to creating db table");
+        }
+        [db close];
+
+    }
+</code></pre>
+
+<h5>添加数据：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *insertSql1= [NSString stringWithFormat:
+                              @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
+                              TABLENAME, NAME, AGE, ADDRESS, @"张三", @"13", @"济南"];
+        BOOL res = [db executeUpdate:insertSql1];
+        NSString *insertSql2 = [NSString stringWithFormat:
+                                @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES ('%@', '%@', '%@')",
+                                TABLENAME, NAME, AGE, ADDRESS, @"李四", @"12", @"济南"];
+        BOOL res2 = [db executeUpdate:insertSql2];
+
+    if (!res) {
+        NSLog(@"error when insert db table");
+    } else {
+        NSLog(@"success to insert db table");
+    }
+    [db close];
+
+}
+</code></pre>
+
+<h5>修改数据：</h5>
+
+<pre><code>if ([db open]) {
+        NSString *updateSql = [NSString stringWithFormat:
+                              @"UPDATE '%@' SET '%@' = '%@' WHERE '%@' = '%@'",
+                              TABLENAME,  AGE,  @"15" ,AGE,  @"13"];
+        BOOL res = [db executeUpdate:updateSql];
+        if (!res) {
+            NSLog(@"error when update db table");
+        } else {
+            NSLog(@"success to update db table");
+        }
+        [db close];
+
+    }
+</code></pre>
+
+<h5>删除数据：</h5>
+
+<pre><code>if ([db open]) {
+
+    NSString *deleteSql = [NSString stringWithFormat:
+                          @"delete from %@ where %@ = '%@'",
+                          TABLENAME, NAME, @"张三"];
+    BOOL res = [db executeUpdate:deleteSql];
+
+    if (!res) {
+        NSLog(@"error when delete db table");
+    } else {
+        NSLog(@"success to delete db table");
+    }
+    [db close];
+
+}
+</code></pre>
+
+<h5>数据库查询操作：</h5>
+
+<p>查询操作使用了executeQuery，并涉及到FMResultSet。</p>
+
+<pre><code>if ([db open]) {
+        NSString * sql = [NSString stringWithFormat:
+                          @"SELECT * FROM %@",TABLENAME];
+        FMResultSet * rs = [db executeQuery:sql];
+        while ([rs next]) {
+            int Id = [rs intForColumn:ID];
+            NSString * name = [rs stringForColumn:NAME];
+            NSString * age = [rs stringForColumn:AGE];
+            NSString * address = [rs stringForColumn:ADDRESS];
+            NSLog(@"id = %d, name = %@, age = %@  address = %@", Id, name, age, address);
+        }
+        [db close];
+    }
+</code></pre>
+
+<p>FMDB的FMResultSet提供了多个方法来获取不同类型的数据：</p>
+
+<h3>数据库操作(使用FMDB)</h3>
+
+<h5>数据库多线程操作：</h5>
+
+<p>如果应用中使用了多线程操作数据库，那么就需要使用FMDatabaseQueue来保证线程安全了。 应用中不可在多个线程中共同使用一个FMDatabase对象操作数据库，这样会引起数据库数据混乱。 为了多线程操作数据库安全，FMDB使用了FMDatabaseQueue，使用FMDatabaseQueue很简单，首先用一个数据库文件地址来初使 化FMDatabaseQueue，然后就可以将一个闭包(block)传入inDatabase方法中。 在闭包中操作数据库，而不直接参与FMDatabase的管理。</p>
+
+<pre><code>FMDatabaseQueue * queue = [FMDatabaseQueue databaseQueueWithPath:database_path];
+    dispatch_queue_t q1 = dispatch_queue_create("queue1", NULL);
+    dispatch_queue_t q2 = dispatch_queue_create("queue2", NULL);
+
+dispatch_async(q1, ^{
+    for (int i = 0; i &lt; 50; ++i) {
+        [queue inDatabase:^(FMDatabase *db2) {
+
+            NSString *insertSql1= [NSString stringWithFormat:
+                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
+                                  TABLENAME, NAME, AGE, ADDRESS];
+
+            NSString * name = [NSString stringWithFormat:@"jack %d", i];
+            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
+
+
+            BOOL res = [db2 executeUpdate:insertSql1, name, age,@"济南"];
+            if (!res) {
+                NSLog(@"error to inster data: %@", name);
+            } else {
+                NSLog(@"succ to inster data: %@", name);
+            }
+        }];
+    }
+});
+
+dispatch_async(q2, ^{
+    for (int i = 0; i &lt; 50; ++i) {
+        [queue inDatabase:^(FMDatabase *db2) {
+            NSString *insertSql2= [NSString stringWithFormat:
+                                  @"INSERT INTO '%@' ('%@', '%@', '%@') VALUES (?, ?, ?)",
+                                  TABLENAME, NAME, AGE, ADDRESS];
+
+            NSString * name = [NSString stringWithFormat:@"lilei %d", i];
+            NSString * age = [NSString stringWithFormat:@"%d", 10+i];
+
+            BOOL res = [db2 executeUpdate:insertSql2, name, age,@"北京"];
+            if (!res) {
+                NSLog(@"error to inster data: %@", name);
+            } else {
+                NSLog(@"succ to inster data: %@", name);
+            }
+        }];
+    }
+});
+</code></pre>
+
+<blockquote><p>注：FMDB最重要的就是下面两个方法的使用，</p></blockquote>
+
+<ul>
+<li>executeUpdate ：创建。修改，删除</li>
+<li>executeQuery ：查询</li>
+</ul>
+
+
+<p>关键是SQL语句的使用</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/gao-ji-kai-fa/'>高级开发</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/01/11/mknetworking/" title="Previous Post: MKNetWorking是撒？">&laquo; MKNetWorking是撒？</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/21/fu-wu-qi-da-jian/" title="Next Post: 服务器搭建">服务器搭建 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2014/01/25/fmdb/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/01/25/fmdb/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

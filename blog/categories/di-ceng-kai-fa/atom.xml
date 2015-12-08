@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 底层开发 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/di-ceng-kai-fa/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T14:04:10+08:00</updated>
+  <updated>2015-12-08T14:49:48+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,883 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[方法缓存]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/08/fang-fa-huan-cun/"/>
-    <updated>2015-12-08T17:42:41+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/08/fang-fa-huan-cun</id>
-    <content type="html"><![CDATA[<blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#111;&#58;&#x6d;&#97;&#106;&#105;&#97;&#x30;&#51;&#x40;&#x6d;&#x65;&#x69;&#116;&#x75;&#x61;&#110;&#x2e;&#99;&#111;&#x6d;">&#x6d;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#64;&#109;&#101;&#105;&#116;&#x75;&#97;&#x6e;&#x2e;&#99;&#111;&#109;</a> ）。</p>
-
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
-
-<ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
-</ul>
-
-
-<!--more-->
-
-
-<p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
-
-<pre><code>[object methodA];
-</code></pre>
-
-<p>这表示我们想去调用object的methodA。
-但是在Objective-C里面调用一个方法到底意味着什么呢，是否和C++一样，任何一个非虚方法都会被编译成一个唯一的符号，在调用的时候去查找符号表，找到这个方法然后调用呢？
-答案是否定的。在Objective-C里面调用一个方法的时候，runtime层会将这个调用翻译成</p>
-
-<pre><code>objc_msgSend(id self, SEL op, ...)
-</code></pre>
-
-<p>而objc_msgSend具体又是如何分发的呢？ 我们来看下runtime层objc_msgSend的源码。
-在objc-msg-arm.s中，objc_msgSend的代码如下：
-（ps：Apple为了高度优化objc_msgSend的性能，这个文件是汇编写成的，不过即使我们不懂汇编，详尽的注释也可以让我们一窥其真面目）</p>
-
-<pre><code>ENTRY objc_msgSend
-# check whether receiver is nil
-teq     a1, #0
-    beq     LMsgSendNilReceiver
-
-# save registers and load receiver's class for CacheLookup
-stmfd   sp!, {a4,v1}
-ldr     v1, [a1, #ISA]
-
-# receiver is non-nil: search the cache
-CacheLookup a2, v1, LMsgSendCacheMiss
-
-# cache hit (imp in ip) and CacheLookup returns with nonstret (eq) set, restore registers and call
-ldmfd   sp!, {a4,v1}
-bx      ip
-
-# cache miss: go search the method lists
-LMsgSendCacheMiss:
-ldmfd sp!, {a4,v1}
-b _objc_msgSend_uncached
-
-LMsgSendNilReceiver:
-    mov     a2, #0
-    bx      lr
-
-LMsgSendExit:
-END_ENTRY objc_msgSend
-
-
-STATIC_ENTRY objc_msgSend_uncached
-
-# Push stack frame
-stmfd sp!, {a1-a4,r7,lr}
-add     r7, sp, #16
-
-# Load class and selector
-ldr a3, [a1, #ISA] /* class = receiver-&gt;isa  */
-/* selector already in a2 */
-/* receiver already in a1 */
-
-# Do the lookup
-MI_CALL_EXTERNAL(__class_lookupMethodAndLoadCache3)
-MOVE    ip, a1
-
-# Prep for forwarding, Pop stack frame and call imp
-teq v1, v1 /* set nonstret (eq) */
-ldmfd sp!, {a1-a4,r7,lr}
-bx ip
-</code></pre>
-
-<p>从上述代码中可以看到，objc_msgSend（就arm平台而言）的消息分发分为以下几个步骤：</p>
-
-<p>判断receiver是否为nil，也就是objc_msgSend的第一个参数self，也就是要调用的那个方法所属对象
-从缓存里寻找，找到了则分发，否则
-利用objc-class.mm中_class_lookupMethodAndLoadCache3（为什么有个这么奇怪的方法。本文末尾会解释）方法去寻找selector</p>
-
-<p>如果支持GC，忽略掉非GC环境的方法（retain等）
-从本class的method list寻找selector，如果找到，填充到缓存中，并返回selector，否则
-寻找父类的method list，并依次往上寻找，直到找到selector，填充到缓存中，并返回selector，否则
-调用_class_resolveMethod，如果可以动态resolve为一个selector，不缓存，方法返回，否则
-转发这个selector，否则
-报错，抛出异常
-缓存为谁而生
-从上面的分析中我们可以看到，当一个方法在比较“上层”的类中，用比较“下层”（继承关系上的上下层）对象去调用的时候，如果没有缓存，那么整个查找链是相当长的。就算方法是在这个类里面，当方法比较多的时候，每次都查找也是费事费力的一件事情。
-考虑下面的一个调用过程：</p>
-
-<pre><code>for ( int i = 0; i &lt; 100000; ++i) {
-    MyClass *myObject = myObjects[i];
-    [myObject methodA];
-}
-</code></pre>
-
-<p>当我们需要去调用一个方法数十万次甚至更多地时候，查找方法的消耗会变的非常显著。
-就算我们平常的非大规模调用，除非一个方法只会调用一次，否则缓存都是有用的。在运行时，那么多对象，那么多方法调用，节省下来的时间也是非常可观的。</p>
-
-<p>追本溯源，何为方法缓存
-本着源码面前，了无秘密的原则，我们看下源码中的方法缓存到底是什么，在objc-cache.mm中，objc_cache的定义如下：</p>
-
-<pre><code>struct objc_cache {
-    uintptr_t mask;            /* total = mask + 1 */
-    uintptr_t occupied;       
-    cache_entry *buckets[1];
-};
-</code></pre>
-
-<p>嗯，objc_cache的定义看起来很简单，它包含了下面三个变量：</p>
-
-<ul>
-<li>1)、mask：可以认为是当前能达到的最大index（从0开始的），所以缓存的size（total）是mask+1</li>
-<li>2)、occupied：被占用的槽位，因为缓存是以散列表的形式存在的，所以会有空槽，而occupied表示当前被占用的数目</li>
-<li>3)、buckets：用数组表示的hash表，cache_entry类型，每一个cache_entry代表一个方法缓存
-(buckets定义在objc_cache的最后，说明这是一个可变长度的数组)</li>
-</ul>
-
-
-<p>而cache_entry的定义如下：</p>
-
-<pre><code>typedef struct {
-    SEL name;     // same layout as struct old_method
-    void *unused;
-    IMP imp;  // same layout as struct old_method
-} cache_entry;
-</code></pre>
-
-<p>cache_entry定义也包含了三个字段，分别是：</p>
-
-<ul>
-<li>1)、name，被缓存的方法名字</li>
-<li>2)、unused，保留字段，还没被使用。</li>
-<li>3)、imp，方法实现</li>
-</ul>
-
-
-<p>缓存和散列
-缓存的存储使用了散列表。
-为什么要用散列表呢？因为散列表检索起来更快，我们来看下是方法缓存如何散列和检索的：</p>
-
-<pre><code>// Scan for the first unused slot and insert there.
-// There is guaranteed to be an empty slot because the 
-// minimum size is 4 and we resized at 3/4 full.
-buckets = (cache_entry **)cache-&gt;buckets;
-for (index = CACHE_HASH(sel, cache-&gt;mask); 
-     buckets[index] != NULL; 
-     index = (index+1) &amp; cache-&gt;mask)
-{
-    // empty
-}
-buckets[index] = entry;
-</code></pre>
-
-<p>这是往方法缓存里存放一个方法的代码片段，我们可以看到sel被散列后找到一个空槽放在buckets中，而CACHE_HASH的定义如下：</p>
-
-<pre><code>#define CACHE_HASH(sel, mask) (((uintptr_t)(sel)&gt;&gt;2) &amp; (mask))
-</code></pre>
-
-<p>这段代码就是利用了sel的指针地址和mask做了一下简单计算得出的。
-而从散列表取缓存则是利用汇编语言写成的（是为了高度优化objc_msgSend而使用汇编的）。我们看objc-msg-arm.mm 里面的CacheLookup方法：</p>
-
-<pre><code>.macro CacheLookup /* selReg, classReg, missLabel */
-
- MOVE r9, $0, LSR #2          /* index = (sel &gt;&gt; 2) */
- ldr     a4, [$1, #CACHE]        /* cache = class-&gt;cache */
- add     a4, a4, #BUCKETS        /* buckets = &amp;cache-&gt;buckets */
-
-/* search the cache */
-/* a1=receiver, a2 or a3=sel, r9=index, a4=buckets, $1=method */
-1:
- ldr     ip, [a4, #NEGMASK]      /* mask = cache-&gt;mask */
- and     r9, r9, ip              /* index &amp;= mask           */
- ldr     $1, [a4, r9, LSL #2]    /* method = buckets[index] */
- teq     $1, #0                  /* if (method == NULL)     */
- add     r9, r9, #1              /* index++                 */
- beq     $2                      /*     goto cacheMissLabel */
-
- ldr     ip, [$1, #METHOD_NAME]  /* load method-&gt;method_name        */
- teq     $0, ip                  /* if (method-&gt;method_name != sel) */
- bne     1b                      /*     retry                       */
-
-/* cache hit, $1 == method triplet address */
-/* Return triplet in $1 and imp in ip      */
- ldr     ip, [$1, #METHOD_IMP]   /* imp = method-&gt;method_imp */
-
-.endmacro
-</code></pre>
-
-<p>虽然是汇编，但是注释太详尽了，理解起来并不难，还是求hash，去buckets里找，找不到按照hash冲突的规则继续向下，直到最后。</p>
-
-<p>十万个为什么
-了解了方法缓存的定义之后，我们提出几个问题并一一解答</p>
-
-<p>方法缓存存在什么地方？
-让我们去翻看类的定义，在Objective-C 2.0中，Class的定义大致是这样的（见objc-runtime.mm）</p>
-
-<pre><code>  struct _class_t {
-  struct _class_t *isa;
-  struct _class_t *superclass;
-  void *cache;
-  void *vtable;
-  struct _class_ro_t *ro;
-  };
-</code></pre>
-
-<p>我们看到在类的定义里就有cache字段，没错，类的所有缓存都存在metaclass上，所以每个类都只有一份方法缓存，而不是每一个类的object都保存一份。
-父类方法的缓存只存在父类么，还是子类也会缓存父类的方法？
-在第一节对objc_msgSend的追溯中我们可以看到，即便是从父类取到的方法，也会存在类本身的方法缓存里。而当用一个父类对象去调用那个方法的时候，也会在父类的metaclass里缓存一份。
-类的方法缓存大小有没有限制？
-要回答这个问题，我们需要再看一下源码，在objc-cache.mm有一个变量定义如下：</p>
-
-<pre><code>  /* When _class_slow_grow is non-zero, any given cache is actually grown
-   * only on the odd-numbered times it becomes full; on the even-numbered
-   * times, it is simply emptied and re-used.  When this flag is zero,
-   * caches are grown every time. */
-  static const int _class_slow_grow = 1;
-</code></pre>
-
-<p>其实不用再看进一步的代码片段，仅从注释我们就可以看到问题的答案。注释中说明，当<em>class_slow_grow是非0值的时候，只有当方法缓存第奇数次满（使用的槽位超过3/4）的时候，方法缓存的大小才会增长（会清空缓存，否则hash值就不对了）；当第偶数次满的时候，方法缓存会被清空并重新利用。 如果</em>class_slow_grow值为0，那么每一次方法缓存满的时候，其大小都会增长。
-所以单就问题而言，答案是没有限制，虽然这个值被设置为1，方法缓存的大小增速会慢一点，但是确实是没有上限的。
-为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？
-这个问题么，我觉得有以下三个原因：</p>
-
-<p>散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
-list的方法还保存了除了selector和imp之外其他很多属性
-散列表是有空槽的，会浪费空间
-缓存 - 性能优化的万金油？
-非也，就算有了有了Objective-C本身的方法缓存，我们还是有很多调用方法的优化空间，对于这件事情，这篇文章讲的非常详细，大家可以自行移步观摩<a href="http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html">http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html</a> （强烈推荐，虽然我们一般不会遇到需要这么强度优化的地方，但是这种精神和思想是值得我们学习的）</p>
-
-<p>优化，永无止境
-在文章末尾，我们再来回答一下第一节提出的问题：“为什么会有_class_lookupMethodAndLoadCache3这个方法？”
-这个方法的实现如下所示：</p>
-
-<pre><code>/***********************************************************************
-* _class_lookupMethodAndLoadCache.
-* Method lookup for dispatchers ONLY. OTHER CODE SHOULD USE lookUpImp().
-* This lookup avoids optimistic cache scan because the dispatcher
-* already tried that.
-**********************************************************************/
-IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
-{
-    return lookUpImpOrForward(cls, sel, obj, 
-                              YES/*initialize*/, NO/*cache*/, YES/*resolver*/);
-}
-</code></pre>
-
-<p>如果单纯看方法名，这个方法应该会从缓存和方法列表中查找一个方法，但是如第一节所讲，在调用这个方法之前，我们已经是从缓存无法找到这个方法了，所以这个方法避免了再去扫描缓存查找方法的过程，而是直接从方法列表找起。从Apple代码的注释，我们也完全可以了解这一点。不顾一切地追求完美和性能，是一种品质。</p>
-
-<p>后记
-本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 <a href="http://www.opensource.apple.com/tarballs/">http://www.opensource.apple.com/tarballs/</a> 下载。如有错误，敬请指正。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[自己写套缓存机制]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu/"/>
-    <updated>2015-12-07T02:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/07/huan-cun-ji-zhi-shen-jiu</id>
-    <content type="html"><![CDATA[<ul>
-<li>前言</li>
-</ul>
-
-
-<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
-
-<!--more-->
-
-
-<h2>一： 研究UITableView底层实现</h2>
-
-<h5>1.系统UITabelView的简单使用，这里就不考虑分组了，默认为1组。</h5>
-
-<pre><code> 1 // 返回第section组有多少行
- 2 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
- 3 {
- 4     NSLog(@"%s",__func__);
- 5     return 10;
- 6 }
- 7  
- 8 // 返回每一行cell的样子
- 9 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-10 {
-11     NSLog(@"%s",__func__);
-12     static NSString *ID = @"cell";
-13     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
-14      
-15     if (cell == nil) {
-16          
-17         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
-18     }
-19      
-20     cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
-21      
-22     return cell;
-23 }
-24 // 返回每行cell的高度
-25 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-26 {
-27     NSLog(@"%s--%@",__func__,indexPath);
-28     return 100;
-29 } 
-</code></pre>
-
-<h5>2.验证UITabelView的实现机制。</h5>
-
-<p>如图打印结果:</p>
-
-<p><img src="/images/huancun001.png" title="Caption" ></p>
-
-<ul>
-<li><p>分析：底层先获取有多少cell（10个），在获取每个cell的高度，返回高度的方法一开始调用10次。</p>
-
-<ul>
-<li>目的：确定tableView的滚动范围，一开始计算所有cell的frame,就能计算下tableView的滚动范围。</li>
-</ul>
-</li>
-<li><p>分析：tableView:cellForRowAtIndexPath:方法什么时候调用。</p></li>
-</ul>
-
-
-<p>打印验证，如图：</p>
-
-<p><img src="/images/huancun002.png" title="Caption" ></p>
-
-<p>一开始调用了7次，因为一开始屏幕最多显示7个cell</p>
-
-<pre><code>- 目的：一开始只加载显示出来的cell，等有新的cell出现的时候会继续调用这个方法加载cell。
-</code></pre>
-
-<h5>3.UITableView循环利用思想</h5>
-
-<p>当新的cell出现的时候，首先从缓存池中获取，如果没有获取到，就自己创建cell。</p>
-
-<p>当有cell移除屏幕的时候，把cell放到缓存池中去。</p>
-
-<h2>二、自定义UIScroolView，模仿UITableView循环利用</h2>
-
-<h5>1.提供数据源和代理方法，命名和UITableView一致。</h5>
-
-<pre><code> 1 @class YZTableView;
- 2 @protocol YZTableViewDataSource
- 3  
- 4 @required
- 5  
- 6 // 返回有多少行cell
- 7 - (NSInteger)tableView:(YZTableView *)tableView numberOfRowsInSection:(NSInteger)section;
- 8  
- 9  
-10 // 返回每行cell长什么样子
-11 - (UITableViewCell *)tableView:(YZTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
-12  
-13 @end
-14  
-15 @protocol YZTableViewDelegate
-16  
-17 // 返回每行cell有多高
-18 - (CGFloat)tableView:(YZTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
-19  
-20 @end 
-</code></pre>
-
-<h5>2.提供代理和数据源属性</h5>
-
-<pre><code>1 @interface YZTableView : UIScrollView
-2  
-3 @property (nonatomic, weak) id dataSource;
-4  
-5 @property (nonatomic, weak) id delegate;
-6  
-7 @end 
-</code></pre>
-
-<p>警告:</p>
-
-<p><img src="/images/huancun003.png" title="Caption" ></p>
-
-<p>解决，在YZTableView.m的实现中声明。</p>
-
-<p><img src="/images/huancun004.png" title="Caption" ></p>
-
-<ul>
-<li><p>原因：有人会问为什么我要定义同名的delegate属性，我主要想模仿系统的tableView，系统tableView也有同名的属性。</p>
-
-<ul>
-<li>思路：这样做，外界在使用设置我的tableView的delegate，就必须遵守的我的代理协议，而不是UIScrollView的代理协议。</li>
-</ul>
-</li>
-</ul>
-
-
-<h5>3.提供刷新方法reloadData，因为tableView通过这个刷新tableView。</h5>
-
-<pre><code> 1 @interface YZTableView : UIScrollView
- 2  
- 3 @property (nonatomic, weak) id dataSource;
- 4  
- 5 @property (nonatomic, weak) id delegate;
- 6  
- 7 // 刷新tableView
- 8 - (void)reloadData;
- 9  
-10 @end 
-</code></pre>
-
-<h5>4.实现reloadData方法，刷新表格</h5>
-
-<p>回顾系统如何刷新tableView</p>
-
-<ul>
-<li><p>1).先获取有多少cell,在获取每个cell的高度。因此应该是先计算出每个cell的frame.</p></li>
-<li><p>2).然后再判断当前有多少cell显示在屏幕上，就加载多少</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code> 1 // 刷新tableView
- 2 - (void)reloadData
- 3 {
- 4     // 这里不考虑多组，假设tableView默认只有一组。
- 5      
- 6     // 先获取总共有多少cell
- 7     NSInteger rows = [self.dataSource tableView:self numberOfRowsInSection:0];
- 8      
- 9     // 遍历所有cell的高度，计算每行cell的frame
-10     CGRect cellF;
-11     CGFloat cellX = 0;
-12     CGFloat cellY = 0;
-13     CGFloat cellW = self.bounds.size.width;
-14     CGFloat cellH = 0;
-15     CGFloat totalH = 0;
-16      
-17     for (int i = 0; i &lt; rows; i++) {
-18         
-19         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-20         // 注意：这里获取的delegate，是UIScrollView中声明的属性
-21         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-22             cellH = [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
-23         }else{
-24             cellH = 44;
-25         }
-26         cellY = i * cellH;
-27          
-28         cellF = CGRectMake(cellX, cellY, cellW, cellH);
-29          
-30         // 记录每个cell的y值对应的indexPath
-31         self.indexPathDict[@(cellY)] = indexPath;
-32          
-33         // 判断有多少cell显示在屏幕上,只加载显示在屏幕上的cell
-34         if ([self isInScreen:cellF]) { // 当前cell的frame在屏幕上
-35             // 通过数据源获取cell
-36             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
-37              
-38             cell.frame = cellF;
-39              
-40             [self addSubview:cell];
-41              
-42         }
-43          
-44         // 添加分割线
-45         UIView *divideV = [[UIView alloc] initWithFrame:CGRectMake(0, cellY + cellH - 1, cellW, 1)];
-46         divideV.backgroundColor = [UIColor lightGrayColor];
-47         divideV.alpha = 0.3;
-48         [self addSubview:divideV];
-49          
-50         // 添加到cell可见数组中
-51             [self.visibleCells addObject:cell];
-52          
-53         // 计算tableView内容总高度
-54         totalH += cellY + cellH;
-55      
-56     }
-57      
-58     // 设置tableView的滚动范围
-59     self.contentSize = CGSizeMake(self.bounds.size.width, totalH);
-60      
-61 } 
-</code></pre>
-
-<h5>5.如何判断cell显示在屏幕上</h5>
-
-<p>当tableView内容往下走</p>
-
-<p><img src="/images/huancun005.gif" title="Caption" ></p>
-
-<p>当tableView内容往上走</p>
-
-<p><img src="/images/huancun006.gif" title="Caption" ></p>
-
-<pre><code> 1 // 根据cell尺寸判断cell在不在屏幕上
- 2 - (BOOL)isInScreen:(CGRect)cellF
- 3 {
- 4     // tableView能滚动，因此需要加上偏移量判断
- 5      
- 6     // 当tableView内容往下走，offsetY会一直增加 ,cell的最大y值 &lt; offsetY偏移量   ,cell移除屏幕
- 7     // tableView内容往上走 , offsetY会一直减少，屏幕的最大Y值 &lt;  cell的y值 ，Cell移除屏幕
- 8     // 屏幕最大y值 = 屏幕的高度 + offsetY
- 9      
-10     // 这里拿屏幕来比较，其实是因为tableView的尺寸我默认等于屏幕的高度，正常应该是tableView的高度。
-11     // cell在屏幕上， cell的最大y值 &gt; offsetY &amp;&amp; cell的y值 &lt; 屏幕的最大Y值(屏幕的高度 + offsetY)
-12      
-13     CGFloat offsetY = self.contentOffset.y;
-14      
-15     return CGRectGetMaxY(cellF) &gt; offsetY &amp;&amp; cellF.origin.y &lt; self.bounds.size.height + offsetY;
-16  
-17     } 
-</code></pre>
-
-<h5>6.在滚动的时候，如果有新的cell出现在屏幕上，先从缓存池中取，没有取到，在创建新的cell.</h5>
-
-<ul>
-<li>分析：</li>
-</ul>
-
-
-<p>需要及时监听tableView的滚动，判断下有没有新的cell出现。</p>
-
-<p>大家都会想到scrollViewDidScroll方法，这个方法只要一滚动scrollView就会调用，但是这个方法有个弊端，就是tableView内部需要作为自身的代理，才能监听，这样不好，有时候外界也需要监听滚动，因此自身类最好不要成为自己的代理。（设计思想）</p>
-
-<ul>
-<li>解决：</li>
-</ul>
-
-
-<p>重写layoutSubviews，判断当前哪些cell显示在屏幕上。</p>
-
-<p>因为只要一滚动，就会修改contentOffset,就会调用layoutSubviews，其实修改contentOffset，内部其实是修改tableView的bounds,而layoutSubviews刚好是父控件尺寸一改就会调用.具体需要了解scrollView底层实现。</p>
-
-<ul>
-<li>思路：</li>
-</ul>
-
-
-<p>判断下，当前tableView内容往上移动，还是往下移动，如何判断，取出显示在屏幕上的第一次cell，当前偏移量 > 第一个cell的y值，往下走。</p>
-
-<p>需要搞个数组记录下，当前有多少cell显示在屏幕上，在一开始的时候记录.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 4  
- 5 @end
- 6  
- 7 @implementation YZTableView
- 8  
- 9 @dynamic delegate;
-10  
-11 - (NSMutableArray *)visibleCells
-12 {
-13  
-14     if (_visibleCells == nil) {
-15         _visibleCells = [NSMutableArray array];
-16     }
-17     return _visibleCells;
-18      
-19 }
-20 @end 
-</code></pre>
-
-<h3>往下移动</h3>
-
-<ul>
-<li><p>1.如果已经滚动到tableView内容最底部，就不需要判断新的cell，直接返回.</p></li>
-<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
-<li><p>3.只需要判断下当前可见cell数组中第一个cell有没有离开屏幕</p></li>
-<li><p>4.只需要判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上即可。</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code> 1 // 判断有没有滚动到最底部
- 2         if (offsetY + self.bounds.size.height &gt; self.contentSize.height) {
- 3             return;
- 4         }
- 5          
- 6         // 判断下当前可见cell数组中第一个cell有没有离开屏幕
- 7         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
- 8             // 从可见cell数组移除
- 9             [self.visibleCells removeObject:firstCell];
-10              
-11             // 删除第0个从可见的indexPath
-12             [self.visibleIndexPaths removeObjectAtIndex:0];
-13              
-14             // 添加到缓存池中
-15             [self.reuserCells addObject:firstCell];
-16              
-17             // 移除父控件
-18             [firstCell removeFromSuperview];
-19              
-20         }
-21         // 判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上
-22         // 这里需要计算下一个cell的y值，需要获取对应的cell的高度
-23         // 而高度需要根据indexPath，从数据源获取
-24         // 可以数组记录每个可见cell的indexPath的顺序,然后获取对应可见的indexPath的角标，就能获取下一个indexPath.
-25          
-26         // 获取最后一个cell的indexPath
-27         NSIndexPath *indexPath = [self.visibleIndexPaths lastObject];
-28          
-29         // 获取下一个cell的indexPath
-30         NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:indexPath.row + 1 inSection:0];
-31          
-32         // 获取cell的高度
-33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:nextIndexPath];
-35         }else{
-36             cellH = 44;
-37         }
-38          
-39         // 计算下一个cell的y值
-40         cellY = lastCellY + cellH;
-41          
-42         // 计算下下一个cell的frame
-43         CGRect nextCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-44          
-45         if ([self isInScreen:nextCellFrame]) { // 如果在屏幕上，就加载
-46              
-47             // 通过数据源获取cell
-48             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:nextIndexPath];
-49              
-50             cell.frame = nextCellFrame;
-51              
-52             [self insertSubview:cell atIndex:0];
-53              
-54             // 添加到cell可见数组中
-55             [self.visibleCells addObject:cell];
-56              
-57             // 添加到可见的indexPaths数组
-58             [self.visibleIndexPaths addObject:nextIndexPath];
-59              
-60              
-61         } 
-</code></pre>
-
-<h3>往上移动</h3>
-
-<ul>
-<li><p>1.如果已经滚动到tableView最顶部，就不需要判断了有没有心的cell，直接返回.</p></li>
-<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
-<li><p>3.只需要判断下当前可见cell数组中最后一个cell有没有离开屏幕</p></li>
-<li><p>4.只需要判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上即可</p></li>
-</ul>
-
-
-<p>注意点：如果可见cell数组中第一个cell的上一个cell显示到屏幕上，一定要记得是插入到可见数组第0个的位置。</p>
-
-<pre><code> 1 // 判断有没有滚动到最顶部
- 2         if (offsetY &lt; 0) {
- 3             return;
- 4         }
- 5          
- 6          
- 7          
- 8         // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
- 9         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
-10             // 从可见cell数组移除
-11             [self.visibleCells removeObject:lastCell];
-12              
-13             // 删除最后一个可见的indexPath
-14             [self.visibleIndexPaths removeLastObject];
-15              
-16             // 添加到缓存池中
-17             [self.reuserCells addObject:lastCell];
-18              
-19             // 移除父控件
-20             [lastCell removeFromSuperview];
-21              
-22         }
-23          
-24         // 判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上
-25         // 获取第一个cell的indexPath
-26         NSIndexPath *indexPath = self.visibleIndexPaths[0];
-27          
-28          
-29         // 获取下一个cell的indexPath
-30         NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:indexPath.row - 1 inSection:0];
-31          
-32         // 获取cell的高度
-33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:preIndexPath];
-35         }else{
-36             cellH = 44;
-37         }
-38          
-39         // 计算上一个cell的y值
-40         cellY = firstCellY - cellH;
-41          
-42          
-43         // 计算上一个cell的frame
-44         CGRect preCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-45          
-46         if ([self isInScreen:preCellFrame]) { // 如果在屏幕上，就加载
-47              
-48             // 通过数据源获取cell
-49             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:preIndexPath];
-50              
-51             cell.frame = preCellFrame;
-52              
-53             [self insertSubview:cell atIndex:0];
-54              
-55             // 添加到cell可见数组中,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
-56             [self.visibleCells insertObject:cell atIndex:0];
-57              
-58             // 添加到可见的indexPaths数组,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
-59             [self.visibleIndexPaths insertObject:preIndexPath atIndex:0];
-60              
-61         }
-62          
-63     } 
-</code></pre>
-
-<ul>
-<li>问题1：</li>
-</ul>
-
-
-<p>判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上</p>
-
-<p>这里需要计算下一个cell的frame,frame就需要计算下一个cell的y值，需要获取对应的cell的高度 cellY = lastCellY + cellH</p>
-
-<p>而高度需要根据indexPath，从数据源获取</p>
-
-<ul>
-<li>解决：</li>
-</ul>
-
-
-<p>可以搞个字典记录每个可见cell的indexPath,然后获取对应可见的indexPath，就能获取下一个indexPath.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 // 屏幕可见数组
- 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 5  
- 6 // 缓存池
- 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
- 8  
- 9  
-10 // 记录每个可见cell的indexPaths的顺序
-11 @property (nonatomic, strong) NSMutableDictionary *visibleIndexPaths;
-12  
-13 @end
-14  
-15 - (NSMutableDictionary *)visibleIndexPaths
-16 {
-17     if (_visibleIndexPaths == nil) {
-18         _visibleIndexPaths = [NSMutableDictionary dictionary];
-19     }
-20      
-21     return _visibleIndexPaths;
-22 } 
-</code></pre>
-
-<h5>注意：</h5>
-
-<p>当cell从缓存池中移除，一定要记得从可见数组cell中移除，还有可见cell的indexPath也要移除.</p>
-
-<pre><code> 1 // 判断下当前可见cell数组中第一个cell有没有离开屏幕
- 2         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
- 3             // 从可见cell数组移除
- 4             [self.visibleCells removeObject:firstCell];
- 5              
- 6             // 删除第0个从可见的indexPath
- 7             [self.visibleIndexPaths removeObjectAtIndex:0];
- 8              
- 9             // 添加到缓存池中
-10             [self.reuserCells addObject:firstCell];
-11              
-12         }
-13          
-14  // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
-15         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
-16             // 从可见cell数组移除
-17             [self.visibleCells removeObject:lastCell];
-18              
-19             // 删除最后一个可见的indexPath
-20             [self.visibleIndexPaths removeLastObject];
-21              
-22             // 添加到缓存池中
-23             [self.reuserCells addObject:lastCell];
-24              
-25         } 
-</code></pre>
-
-<h5>7.缓存池搭建，缓存池其实就是一个NSSet集合。</h5>
-
-<p>搞一个NSSet集合充当缓存池.</p>
-
-<p>cell离开屏幕，放进缓存池</p>
-
-<p>提供从缓存池获取方法，从缓存池中获取cell,记住要从NSSet集合移除cell.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 // 屏幕可见数组
- 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 5  
- 6 // 缓存池
- 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
- 8  
- 9 // 记录每个cell的y值都对应一个indexPath
-10 @property (nonatomic, strong) NSMutableDictionary *indexPathDict;
-11  
-12 @end
-13 @implementation YZTableView
-14 - (NSMutableSet *)reuserCells
-15 {
-16     if (_reuserCells == nil) {
-17         _reuserCells = [NSMutableSet set];
-18     }
-19     return _reuserCells;
-20 }
-21  
-22 // 从缓存池中获取cell
-23 - (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
-24 {
-25     UITableViewCell *cell = [self.reuserCells anyObject];
-26      
-27     // 能取出cell,并且cell的标示符正确
-28     if (cell &amp;&amp; [cell.reuseIdentifier isEqualToString:identifier]) {     
-29         // 从缓存池中获取
-30         [self.reuserCells removeObject:cell];
-31          
-32         return cell;
-33     }
-34     return nil;
-35 }
-36  
-37 @end 
-</code></pre>
-
-<h5>8.tableView细节处理</h5>
-
-<p>原因：刷新方法经常要调用</p>
-
-<p>解决：每次刷新的时候，先把之前记录的全部清空</p>
-
-<pre><code> 1 // 刷新tableView
- 2 - (void)reloadData
- 3 {
- 4      
- 5     // 刷新方法经常要调用
- 6     // 每次刷新的时候，先把之前记录的全部清空
- 7     // 清空indexPath字典
- 8     [self.indexPathDict removeAllObjects];
- 9     // 清空屏幕可见数组
-10     [self.visibleCells removeAllObjects];
-11     ...
-12 } 
-</code></pre>
-
-<!--more-->
-
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[函数&amp;方法的奥秘]]></title>
@@ -1332,6 +455,280 @@ return jailbroken;
 
 <p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
 <a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[方法缓存]]></title>
+    <link href="http://al1020119.github.io/blog/2014/11/14/fang-fa-huan-cun/"/>
+    <updated>2014-11-14T17:42:41+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/11/14/fang-fa-huan-cun</id>
+    <content type="html"><![CDATA[<blockquote><p>摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#x6d;&#97;&#106;&#105;&#x61;&#48;&#51;&#x40;&#109;&#x65;&#105;&#116;&#117;&#97;&#x6e;&#46;&#99;&#111;&#x6d;">&#x6d;&#97;&#x6a;&#x69;&#x61;&#48;&#51;&#64;&#x6d;&#101;&#x69;&#x74;&#x75;&#x61;&#x6e;&#x2e;&#99;&#x6f;&#109;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
+
+<pre><code>[object methodA];
+</code></pre>
+
+<p>这表示我们想去调用object的methodA。
+但是在Objective-C里面调用一个方法到底意味着什么呢，是否和C++一样，任何一个非虚方法都会被编译成一个唯一的符号，在调用的时候去查找符号表，找到这个方法然后调用呢？
+答案是否定的。在Objective-C里面调用一个方法的时候，runtime层会将这个调用翻译成</p>
+
+<pre><code>objc_msgSend(id self, SEL op, ...)
+</code></pre>
+
+<p>而objc_msgSend具体又是如何分发的呢？ 我们来看下runtime层objc_msgSend的源码。
+在objc-msg-arm.s中，objc_msgSend的代码如下：
+（ps：Apple为了高度优化objc_msgSend的性能，这个文件是汇编写成的，不过即使我们不懂汇编，详尽的注释也可以让我们一窥其真面目）</p>
+
+<pre><code>ENTRY objc_msgSend
+# check whether receiver is nil
+teq     a1, #0
+    beq     LMsgSendNilReceiver
+
+# save registers and load receiver's class for CacheLookup
+stmfd   sp!, {a4,v1}
+ldr     v1, [a1, #ISA]
+
+# receiver is non-nil: search the cache
+CacheLookup a2, v1, LMsgSendCacheMiss
+
+# cache hit (imp in ip) and CacheLookup returns with nonstret (eq) set, restore registers and call
+ldmfd   sp!, {a4,v1}
+bx      ip
+
+# cache miss: go search the method lists
+LMsgSendCacheMiss:
+ldmfd sp!, {a4,v1}
+b _objc_msgSend_uncached
+
+LMsgSendNilReceiver:
+    mov     a2, #0
+    bx      lr
+
+LMsgSendExit:
+END_ENTRY objc_msgSend
+
+
+STATIC_ENTRY objc_msgSend_uncached
+
+# Push stack frame
+stmfd sp!, {a1-a4,r7,lr}
+add     r7, sp, #16
+
+# Load class and selector
+ldr a3, [a1, #ISA] /* class = receiver-&gt;isa  */
+/* selector already in a2 */
+/* receiver already in a1 */
+
+# Do the lookup
+MI_CALL_EXTERNAL(__class_lookupMethodAndLoadCache3)
+MOVE    ip, a1
+
+# Prep for forwarding, Pop stack frame and call imp
+teq v1, v1 /* set nonstret (eq) */
+ldmfd sp!, {a1-a4,r7,lr}
+bx ip
+</code></pre>
+
+<p>从上述代码中可以看到，objc_msgSend（就arm平台而言）的消息分发分为以下几个步骤：</p>
+
+<p>判断receiver是否为nil，也就是objc_msgSend的第一个参数self，也就是要调用的那个方法所属对象
+从缓存里寻找，找到了则分发，否则
+利用objc-class.mm中_class_lookupMethodAndLoadCache3（为什么有个这么奇怪的方法。本文末尾会解释）方法去寻找selector</p>
+
+<p>如果支持GC，忽略掉非GC环境的方法（retain等）
+从本class的method list寻找selector，如果找到，填充到缓存中，并返回selector，否则
+寻找父类的method list，并依次往上寻找，直到找到selector，填充到缓存中，并返回selector，否则
+调用_class_resolveMethod，如果可以动态resolve为一个selector，不缓存，方法返回，否则
+转发这个selector，否则
+报错，抛出异常
+缓存为谁而生
+从上面的分析中我们可以看到，当一个方法在比较“上层”的类中，用比较“下层”（继承关系上的上下层）对象去调用的时候，如果没有缓存，那么整个查找链是相当长的。就算方法是在这个类里面，当方法比较多的时候，每次都查找也是费事费力的一件事情。
+考虑下面的一个调用过程：</p>
+
+<pre><code>for ( int i = 0; i &lt; 100000; ++i) {
+    MyClass *myObject = myObjects[i];
+    [myObject methodA];
+}
+</code></pre>
+
+<p>当我们需要去调用一个方法数十万次甚至更多地时候，查找方法的消耗会变的非常显著。
+就算我们平常的非大规模调用，除非一个方法只会调用一次，否则缓存都是有用的。在运行时，那么多对象，那么多方法调用，节省下来的时间也是非常可观的。</p>
+
+<p>追本溯源，何为方法缓存
+本着源码面前，了无秘密的原则，我们看下源码中的方法缓存到底是什么，在objc-cache.mm中，objc_cache的定义如下：</p>
+
+<pre><code>struct objc_cache {
+    uintptr_t mask;            /* total = mask + 1 */
+    uintptr_t occupied;       
+    cache_entry *buckets[1];
+};
+</code></pre>
+
+<p>嗯，objc_cache的定义看起来很简单，它包含了下面三个变量：</p>
+
+<ul>
+<li>1)、mask：可以认为是当前能达到的最大index（从0开始的），所以缓存的size（total）是mask+1</li>
+<li>2)、occupied：被占用的槽位，因为缓存是以散列表的形式存在的，所以会有空槽，而occupied表示当前被占用的数目</li>
+<li>3)、buckets：用数组表示的hash表，cache_entry类型，每一个cache_entry代表一个方法缓存
+(buckets定义在objc_cache的最后，说明这是一个可变长度的数组)</li>
+</ul>
+
+
+<p>而cache_entry的定义如下：</p>
+
+<pre><code>typedef struct {
+    SEL name;     // same layout as struct old_method
+    void *unused;
+    IMP imp;  // same layout as struct old_method
+} cache_entry;
+</code></pre>
+
+<p>cache_entry定义也包含了三个字段，分别是：</p>
+
+<ul>
+<li>1)、name，被缓存的方法名字</li>
+<li>2)、unused，保留字段，还没被使用。</li>
+<li>3)、imp，方法实现</li>
+</ul>
+
+
+<p>缓存和散列
+缓存的存储使用了散列表。
+为什么要用散列表呢？因为散列表检索起来更快，我们来看下是方法缓存如何散列和检索的：</p>
+
+<pre><code>// Scan for the first unused slot and insert there.
+// There is guaranteed to be an empty slot because the 
+// minimum size is 4 and we resized at 3/4 full.
+buckets = (cache_entry **)cache-&gt;buckets;
+for (index = CACHE_HASH(sel, cache-&gt;mask); 
+     buckets[index] != NULL; 
+     index = (index+1) &amp; cache-&gt;mask)
+{
+    // empty
+}
+buckets[index] = entry;
+</code></pre>
+
+<p>这是往方法缓存里存放一个方法的代码片段，我们可以看到sel被散列后找到一个空槽放在buckets中，而CACHE_HASH的定义如下：</p>
+
+<pre><code>#define CACHE_HASH(sel, mask) (((uintptr_t)(sel)&gt;&gt;2) &amp; (mask))
+</code></pre>
+
+<p>这段代码就是利用了sel的指针地址和mask做了一下简单计算得出的。
+而从散列表取缓存则是利用汇编语言写成的（是为了高度优化objc_msgSend而使用汇编的）。我们看objc-msg-arm.mm 里面的CacheLookup方法：</p>
+
+<pre><code>.macro CacheLookup /* selReg, classReg, missLabel */
+
+ MOVE r9, $0, LSR #2          /* index = (sel &gt;&gt; 2) */
+ ldr     a4, [$1, #CACHE]        /* cache = class-&gt;cache */
+ add     a4, a4, #BUCKETS        /* buckets = &amp;cache-&gt;buckets */
+
+/* search the cache */
+/* a1=receiver, a2 or a3=sel, r9=index, a4=buckets, $1=method */
+1:
+ ldr     ip, [a4, #NEGMASK]      /* mask = cache-&gt;mask */
+ and     r9, r9, ip              /* index &amp;= mask           */
+ ldr     $1, [a4, r9, LSL #2]    /* method = buckets[index] */
+ teq     $1, #0                  /* if (method == NULL)     */
+ add     r9, r9, #1              /* index++                 */
+ beq     $2                      /*     goto cacheMissLabel */
+
+ ldr     ip, [$1, #METHOD_NAME]  /* load method-&gt;method_name        */
+ teq     $0, ip                  /* if (method-&gt;method_name != sel) */
+ bne     1b                      /*     retry                       */
+
+/* cache hit, $1 == method triplet address */
+/* Return triplet in $1 and imp in ip      */
+ ldr     ip, [$1, #METHOD_IMP]   /* imp = method-&gt;method_imp */
+
+.endmacro
+</code></pre>
+
+<p>虽然是汇编，但是注释太详尽了，理解起来并不难，还是求hash，去buckets里找，找不到按照hash冲突的规则继续向下，直到最后。</p>
+
+<p>十万个为什么
+了解了方法缓存的定义之后，我们提出几个问题并一一解答</p>
+
+<p>方法缓存存在什么地方？
+让我们去翻看类的定义，在Objective-C 2.0中，Class的定义大致是这样的（见objc-runtime.mm）</p>
+
+<pre><code>  struct _class_t {
+  struct _class_t *isa;
+  struct _class_t *superclass;
+  void *cache;
+  void *vtable;
+  struct _class_ro_t *ro;
+  };
+</code></pre>
+
+<p>我们看到在类的定义里就有cache字段，没错，类的所有缓存都存在metaclass上，所以每个类都只有一份方法缓存，而不是每一个类的object都保存一份。
+父类方法的缓存只存在父类么，还是子类也会缓存父类的方法？
+在第一节对objc_msgSend的追溯中我们可以看到，即便是从父类取到的方法，也会存在类本身的方法缓存里。而当用一个父类对象去调用那个方法的时候，也会在父类的metaclass里缓存一份。
+类的方法缓存大小有没有限制？
+要回答这个问题，我们需要再看一下源码，在objc-cache.mm有一个变量定义如下：</p>
+
+<pre><code>  /* When _class_slow_grow is non-zero, any given cache is actually grown
+   * only on the odd-numbered times it becomes full; on the even-numbered
+   * times, it is simply emptied and re-used.  When this flag is zero,
+   * caches are grown every time. */
+  static const int _class_slow_grow = 1;
+</code></pre>
+
+<p>其实不用再看进一步的代码片段，仅从注释我们就可以看到问题的答案。注释中说明，当<em>class_slow_grow是非0值的时候，只有当方法缓存第奇数次满（使用的槽位超过3/4）的时候，方法缓存的大小才会增长（会清空缓存，否则hash值就不对了）；当第偶数次满的时候，方法缓存会被清空并重新利用。 如果</em>class_slow_grow值为0，那么每一次方法缓存满的时候，其大小都会增长。
+所以单就问题而言，答案是没有限制，虽然这个值被设置为1，方法缓存的大小增速会慢一点，但是确实是没有上限的。
+为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？
+这个问题么，我觉得有以下三个原因：</p>
+
+<p>散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
+list的方法还保存了除了selector和imp之外其他很多属性
+散列表是有空槽的，会浪费空间
+缓存 - 性能优化的万金油？
+非也，就算有了有了Objective-C本身的方法缓存，我们还是有很多调用方法的优化空间，对于这件事情，这篇文章讲的非常详细，大家可以自行移步观摩<a href="http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html">http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html</a> （强烈推荐，虽然我们一般不会遇到需要这么强度优化的地方，但是这种精神和思想是值得我们学习的）</p>
+
+<p>优化，永无止境
+在文章末尾，我们再来回答一下第一节提出的问题：“为什么会有_class_lookupMethodAndLoadCache3这个方法？”
+这个方法的实现如下所示：</p>
+
+<pre><code>/***********************************************************************
+* _class_lookupMethodAndLoadCache.
+* Method lookup for dispatchers ONLY. OTHER CODE SHOULD USE lookUpImp().
+* This lookup avoids optimistic cache scan because the dispatcher
+* already tried that.
+**********************************************************************/
+IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
+{
+    return lookUpImpOrForward(cls, sel, obj, 
+                              YES/*initialize*/, NO/*cache*/, YES/*resolver*/);
+}
+</code></pre>
+
+<p>如果单纯看方法名，这个方法应该会从缓存和方法列表中查找一个方法，但是如第一节所讲，在调用这个方法之前，我们已经是从缓存无法找到这个方法了，所以这个方法避免了再去扫描缓存查找方法的过程，而是直接从方法列表找起。从Apple代码的注释，我们也完全可以了解这一点。不顾一切地追求完美和性能，是一种品质。</p>
+
+<p>后记
+本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 <a href="http://www.opensource.apple.com/tarballs/">http://www.opensource.apple.com/tarballs/</a> 下载。如有错误，敬请指正。</p>
 ]]></content>
   </entry>
   
@@ -1931,6 +1328,609 @@ static double heightKey;//用来参考
 <p><a href="http://www.cnblogs.com/iCocos/p/4734687.html">http://www.cnblogs.com/iCocos/p/4734687.html</a></p>
 
 <p><a href="http://www.cnblogs.com/iCocos/p/4761600.html">http://www.cnblogs.com/iCocos/p/4761600.html</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[自己写套缓存机制]]></title>
+    <link href="http://al1020119.github.io/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu/"/>
+    <updated>2013-12-07T02:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu</id>
+    <content type="html"><![CDATA[<ul>
+<li>前言</li>
+</ul>
+
+
+<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
+
+<!--more-->
+
+
+<h2>一： 研究UITableView底层实现</h2>
+
+<h5>1.系统UITabelView的简单使用，这里就不考虑分组了，默认为1组。</h5>
+
+<pre><code> 1 // 返回第section组有多少行
+ 2 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+ 3 {
+ 4     NSLog(@"%s",__func__);
+ 5     return 10;
+ 6 }
+ 7  
+ 8 // 返回每一行cell的样子
+ 9 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+10 {
+11     NSLog(@"%s",__func__);
+12     static NSString *ID = @"cell";
+13     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+14      
+15     if (cell == nil) {
+16          
+17         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+18     }
+19      
+20     cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
+21      
+22     return cell;
+23 }
+24 // 返回每行cell的高度
+25 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+26 {
+27     NSLog(@"%s--%@",__func__,indexPath);
+28     return 100;
+29 } 
+</code></pre>
+
+<h5>2.验证UITabelView的实现机制。</h5>
+
+<p>如图打印结果:</p>
+
+<p><img src="/images/huancun001.png" title="Caption" ></p>
+
+<ul>
+<li><p>分析：底层先获取有多少cell（10个），在获取每个cell的高度，返回高度的方法一开始调用10次。</p>
+
+<ul>
+<li>目的：确定tableView的滚动范围，一开始计算所有cell的frame,就能计算下tableView的滚动范围。</li>
+</ul>
+</li>
+<li><p>分析：tableView:cellForRowAtIndexPath:方法什么时候调用。</p></li>
+</ul>
+
+
+<p>打印验证，如图：</p>
+
+<p><img src="/images/huancun002.png" title="Caption" ></p>
+
+<p>一开始调用了7次，因为一开始屏幕最多显示7个cell</p>
+
+<pre><code>- 目的：一开始只加载显示出来的cell，等有新的cell出现的时候会继续调用这个方法加载cell。
+</code></pre>
+
+<h5>3.UITableView循环利用思想</h5>
+
+<p>当新的cell出现的时候，首先从缓存池中获取，如果没有获取到，就自己创建cell。</p>
+
+<p>当有cell移除屏幕的时候，把cell放到缓存池中去。</p>
+
+<h2>二、自定义UIScroolView，模仿UITableView循环利用</h2>
+
+<h5>1.提供数据源和代理方法，命名和UITableView一致。</h5>
+
+<pre><code> 1 @class YZTableView;
+ 2 @protocol YZTableViewDataSource
+ 3  
+ 4 @required
+ 5  
+ 6 // 返回有多少行cell
+ 7 - (NSInteger)tableView:(YZTableView *)tableView numberOfRowsInSection:(NSInteger)section;
+ 8  
+ 9  
+10 // 返回每行cell长什么样子
+11 - (UITableViewCell *)tableView:(YZTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+12  
+13 @end
+14  
+15 @protocol YZTableViewDelegate
+16  
+17 // 返回每行cell有多高
+18 - (CGFloat)tableView:(YZTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
+19  
+20 @end 
+</code></pre>
+
+<h5>2.提供代理和数据源属性</h5>
+
+<pre><code>1 @interface YZTableView : UIScrollView
+2  
+3 @property (nonatomic, weak) id dataSource;
+4  
+5 @property (nonatomic, weak) id delegate;
+6  
+7 @end 
+</code></pre>
+
+<p>警告:</p>
+
+<p><img src="/images/huancun003.png" title="Caption" ></p>
+
+<p>解决，在YZTableView.m的实现中声明。</p>
+
+<p><img src="/images/huancun004.png" title="Caption" ></p>
+
+<ul>
+<li><p>原因：有人会问为什么我要定义同名的delegate属性，我主要想模仿系统的tableView，系统tableView也有同名的属性。</p>
+
+<ul>
+<li>思路：这样做，外界在使用设置我的tableView的delegate，就必须遵守的我的代理协议，而不是UIScrollView的代理协议。</li>
+</ul>
+</li>
+</ul>
+
+
+<h5>3.提供刷新方法reloadData，因为tableView通过这个刷新tableView。</h5>
+
+<pre><code> 1 @interface YZTableView : UIScrollView
+ 2  
+ 3 @property (nonatomic, weak) id dataSource;
+ 4  
+ 5 @property (nonatomic, weak) id delegate;
+ 6  
+ 7 // 刷新tableView
+ 8 - (void)reloadData;
+ 9  
+10 @end 
+</code></pre>
+
+<h5>4.实现reloadData方法，刷新表格</h5>
+
+<p>回顾系统如何刷新tableView</p>
+
+<ul>
+<li><p>1).先获取有多少cell,在获取每个cell的高度。因此应该是先计算出每个cell的frame.</p></li>
+<li><p>2).然后再判断当前有多少cell显示在屏幕上，就加载多少</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code> 1 // 刷新tableView
+ 2 - (void)reloadData
+ 3 {
+ 4     // 这里不考虑多组，假设tableView默认只有一组。
+ 5      
+ 6     // 先获取总共有多少cell
+ 7     NSInteger rows = [self.dataSource tableView:self numberOfRowsInSection:0];
+ 8      
+ 9     // 遍历所有cell的高度，计算每行cell的frame
+10     CGRect cellF;
+11     CGFloat cellX = 0;
+12     CGFloat cellY = 0;
+13     CGFloat cellW = self.bounds.size.width;
+14     CGFloat cellH = 0;
+15     CGFloat totalH = 0;
+16      
+17     for (int i = 0; i &lt; rows; i++) {
+18         
+19         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+20         // 注意：这里获取的delegate，是UIScrollView中声明的属性
+21         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+22             cellH = [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
+23         }else{
+24             cellH = 44;
+25         }
+26         cellY = i * cellH;
+27          
+28         cellF = CGRectMake(cellX, cellY, cellW, cellH);
+29          
+30         // 记录每个cell的y值对应的indexPath
+31         self.indexPathDict[@(cellY)] = indexPath;
+32          
+33         // 判断有多少cell显示在屏幕上,只加载显示在屏幕上的cell
+34         if ([self isInScreen:cellF]) { // 当前cell的frame在屏幕上
+35             // 通过数据源获取cell
+36             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
+37              
+38             cell.frame = cellF;
+39              
+40             [self addSubview:cell];
+41              
+42         }
+43          
+44         // 添加分割线
+45         UIView *divideV = [[UIView alloc] initWithFrame:CGRectMake(0, cellY + cellH - 1, cellW, 1)];
+46         divideV.backgroundColor = [UIColor lightGrayColor];
+47         divideV.alpha = 0.3;
+48         [self addSubview:divideV];
+49          
+50         // 添加到cell可见数组中
+51             [self.visibleCells addObject:cell];
+52          
+53         // 计算tableView内容总高度
+54         totalH += cellY + cellH;
+55      
+56     }
+57      
+58     // 设置tableView的滚动范围
+59     self.contentSize = CGSizeMake(self.bounds.size.width, totalH);
+60      
+61 } 
+</code></pre>
+
+<h5>5.如何判断cell显示在屏幕上</h5>
+
+<p>当tableView内容往下走</p>
+
+<p><img src="/images/huancun005.gif" title="Caption" ></p>
+
+<p>当tableView内容往上走</p>
+
+<p><img src="/images/huancun006.gif" title="Caption" ></p>
+
+<pre><code> 1 // 根据cell尺寸判断cell在不在屏幕上
+ 2 - (BOOL)isInScreen:(CGRect)cellF
+ 3 {
+ 4     // tableView能滚动，因此需要加上偏移量判断
+ 5      
+ 6     // 当tableView内容往下走，offsetY会一直增加 ,cell的最大y值 &lt; offsetY偏移量   ,cell移除屏幕
+ 7     // tableView内容往上走 , offsetY会一直减少，屏幕的最大Y值 &lt;  cell的y值 ，Cell移除屏幕
+ 8     // 屏幕最大y值 = 屏幕的高度 + offsetY
+ 9      
+10     // 这里拿屏幕来比较，其实是因为tableView的尺寸我默认等于屏幕的高度，正常应该是tableView的高度。
+11     // cell在屏幕上， cell的最大y值 &gt; offsetY &amp;&amp; cell的y值 &lt; 屏幕的最大Y值(屏幕的高度 + offsetY)
+12      
+13     CGFloat offsetY = self.contentOffset.y;
+14      
+15     return CGRectGetMaxY(cellF) &gt; offsetY &amp;&amp; cellF.origin.y &lt; self.bounds.size.height + offsetY;
+16  
+17     } 
+</code></pre>
+
+<h5>6.在滚动的时候，如果有新的cell出现在屏幕上，先从缓存池中取，没有取到，在创建新的cell.</h5>
+
+<ul>
+<li>分析：</li>
+</ul>
+
+
+<p>需要及时监听tableView的滚动，判断下有没有新的cell出现。</p>
+
+<p>大家都会想到scrollViewDidScroll方法，这个方法只要一滚动scrollView就会调用，但是这个方法有个弊端，就是tableView内部需要作为自身的代理，才能监听，这样不好，有时候外界也需要监听滚动，因此自身类最好不要成为自己的代理。（设计思想）</p>
+
+<ul>
+<li>解决：</li>
+</ul>
+
+
+<p>重写layoutSubviews，判断当前哪些cell显示在屏幕上。</p>
+
+<p>因为只要一滚动，就会修改contentOffset,就会调用layoutSubviews，其实修改contentOffset，内部其实是修改tableView的bounds,而layoutSubviews刚好是父控件尺寸一改就会调用.具体需要了解scrollView底层实现。</p>
+
+<ul>
+<li>思路：</li>
+</ul>
+
+
+<p>判断下，当前tableView内容往上移动，还是往下移动，如何判断，取出显示在屏幕上的第一次cell，当前偏移量 > 第一个cell的y值，往下走。</p>
+
+<p>需要搞个数组记录下，当前有多少cell显示在屏幕上，在一开始的时候记录.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 4  
+ 5 @end
+ 6  
+ 7 @implementation YZTableView
+ 8  
+ 9 @dynamic delegate;
+10  
+11 - (NSMutableArray *)visibleCells
+12 {
+13  
+14     if (_visibleCells == nil) {
+15         _visibleCells = [NSMutableArray array];
+16     }
+17     return _visibleCells;
+18      
+19 }
+20 @end 
+</code></pre>
+
+<h3>往下移动</h3>
+
+<ul>
+<li><p>1.如果已经滚动到tableView内容最底部，就不需要判断新的cell，直接返回.</p></li>
+<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
+<li><p>3.只需要判断下当前可见cell数组中第一个cell有没有离开屏幕</p></li>
+<li><p>4.只需要判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上即可。</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code> 1 // 判断有没有滚动到最底部
+ 2         if (offsetY + self.bounds.size.height &gt; self.contentSize.height) {
+ 3             return;
+ 4         }
+ 5          
+ 6         // 判断下当前可见cell数组中第一个cell有没有离开屏幕
+ 7         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
+ 8             // 从可见cell数组移除
+ 9             [self.visibleCells removeObject:firstCell];
+10              
+11             // 删除第0个从可见的indexPath
+12             [self.visibleIndexPaths removeObjectAtIndex:0];
+13              
+14             // 添加到缓存池中
+15             [self.reuserCells addObject:firstCell];
+16              
+17             // 移除父控件
+18             [firstCell removeFromSuperview];
+19              
+20         }
+21         // 判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上
+22         // 这里需要计算下一个cell的y值，需要获取对应的cell的高度
+23         // 而高度需要根据indexPath，从数据源获取
+24         // 可以数组记录每个可见cell的indexPath的顺序,然后获取对应可见的indexPath的角标，就能获取下一个indexPath.
+25          
+26         // 获取最后一个cell的indexPath
+27         NSIndexPath *indexPath = [self.visibleIndexPaths lastObject];
+28          
+29         // 获取下一个cell的indexPath
+30         NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:indexPath.row + 1 inSection:0];
+31          
+32         // 获取cell的高度
+33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:nextIndexPath];
+35         }else{
+36             cellH = 44;
+37         }
+38          
+39         // 计算下一个cell的y值
+40         cellY = lastCellY + cellH;
+41          
+42         // 计算下下一个cell的frame
+43         CGRect nextCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+44          
+45         if ([self isInScreen:nextCellFrame]) { // 如果在屏幕上，就加载
+46              
+47             // 通过数据源获取cell
+48             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:nextIndexPath];
+49              
+50             cell.frame = nextCellFrame;
+51              
+52             [self insertSubview:cell atIndex:0];
+53              
+54             // 添加到cell可见数组中
+55             [self.visibleCells addObject:cell];
+56              
+57             // 添加到可见的indexPaths数组
+58             [self.visibleIndexPaths addObject:nextIndexPath];
+59              
+60              
+61         } 
+</code></pre>
+
+<h3>往上移动</h3>
+
+<ul>
+<li><p>1.如果已经滚动到tableView最顶部，就不需要判断了有没有心的cell，直接返回.</p></li>
+<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
+<li><p>3.只需要判断下当前可见cell数组中最后一个cell有没有离开屏幕</p></li>
+<li><p>4.只需要判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上即可</p></li>
+</ul>
+
+
+<p>注意点：如果可见cell数组中第一个cell的上一个cell显示到屏幕上，一定要记得是插入到可见数组第0个的位置。</p>
+
+<pre><code> 1 // 判断有没有滚动到最顶部
+ 2         if (offsetY &lt; 0) {
+ 3             return;
+ 4         }
+ 5          
+ 6          
+ 7          
+ 8         // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
+ 9         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
+10             // 从可见cell数组移除
+11             [self.visibleCells removeObject:lastCell];
+12              
+13             // 删除最后一个可见的indexPath
+14             [self.visibleIndexPaths removeLastObject];
+15              
+16             // 添加到缓存池中
+17             [self.reuserCells addObject:lastCell];
+18              
+19             // 移除父控件
+20             [lastCell removeFromSuperview];
+21              
+22         }
+23          
+24         // 判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上
+25         // 获取第一个cell的indexPath
+26         NSIndexPath *indexPath = self.visibleIndexPaths[0];
+27          
+28          
+29         // 获取下一个cell的indexPath
+30         NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:indexPath.row - 1 inSection:0];
+31          
+32         // 获取cell的高度
+33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:preIndexPath];
+35         }else{
+36             cellH = 44;
+37         }
+38          
+39         // 计算上一个cell的y值
+40         cellY = firstCellY - cellH;
+41          
+42          
+43         // 计算上一个cell的frame
+44         CGRect preCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+45          
+46         if ([self isInScreen:preCellFrame]) { // 如果在屏幕上，就加载
+47              
+48             // 通过数据源获取cell
+49             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:preIndexPath];
+50              
+51             cell.frame = preCellFrame;
+52              
+53             [self insertSubview:cell atIndex:0];
+54              
+55             // 添加到cell可见数组中,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
+56             [self.visibleCells insertObject:cell atIndex:0];
+57              
+58             // 添加到可见的indexPaths数组,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
+59             [self.visibleIndexPaths insertObject:preIndexPath atIndex:0];
+60              
+61         }
+62          
+63     } 
+</code></pre>
+
+<ul>
+<li>问题1：</li>
+</ul>
+
+
+<p>判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上</p>
+
+<p>这里需要计算下一个cell的frame,frame就需要计算下一个cell的y值，需要获取对应的cell的高度 cellY = lastCellY + cellH</p>
+
+<p>而高度需要根据indexPath，从数据源获取</p>
+
+<ul>
+<li>解决：</li>
+</ul>
+
+
+<p>可以搞个字典记录每个可见cell的indexPath,然后获取对应可见的indexPath，就能获取下一个indexPath.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 // 屏幕可见数组
+ 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 5  
+ 6 // 缓存池
+ 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
+ 8  
+ 9  
+10 // 记录每个可见cell的indexPaths的顺序
+11 @property (nonatomic, strong) NSMutableDictionary *visibleIndexPaths;
+12  
+13 @end
+14  
+15 - (NSMutableDictionary *)visibleIndexPaths
+16 {
+17     if (_visibleIndexPaths == nil) {
+18         _visibleIndexPaths = [NSMutableDictionary dictionary];
+19     }
+20      
+21     return _visibleIndexPaths;
+22 } 
+</code></pre>
+
+<h5>注意：</h5>
+
+<p>当cell从缓存池中移除，一定要记得从可见数组cell中移除，还有可见cell的indexPath也要移除.</p>
+
+<pre><code> 1 // 判断下当前可见cell数组中第一个cell有没有离开屏幕
+ 2         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
+ 3             // 从可见cell数组移除
+ 4             [self.visibleCells removeObject:firstCell];
+ 5              
+ 6             // 删除第0个从可见的indexPath
+ 7             [self.visibleIndexPaths removeObjectAtIndex:0];
+ 8              
+ 9             // 添加到缓存池中
+10             [self.reuserCells addObject:firstCell];
+11              
+12         }
+13          
+14  // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
+15         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
+16             // 从可见cell数组移除
+17             [self.visibleCells removeObject:lastCell];
+18              
+19             // 删除最后一个可见的indexPath
+20             [self.visibleIndexPaths removeLastObject];
+21              
+22             // 添加到缓存池中
+23             [self.reuserCells addObject:lastCell];
+24              
+25         } 
+</code></pre>
+
+<h5>7.缓存池搭建，缓存池其实就是一个NSSet集合。</h5>
+
+<p>搞一个NSSet集合充当缓存池.</p>
+
+<p>cell离开屏幕，放进缓存池</p>
+
+<p>提供从缓存池获取方法，从缓存池中获取cell,记住要从NSSet集合移除cell.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 // 屏幕可见数组
+ 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 5  
+ 6 // 缓存池
+ 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
+ 8  
+ 9 // 记录每个cell的y值都对应一个indexPath
+10 @property (nonatomic, strong) NSMutableDictionary *indexPathDict;
+11  
+12 @end
+13 @implementation YZTableView
+14 - (NSMutableSet *)reuserCells
+15 {
+16     if (_reuserCells == nil) {
+17         _reuserCells = [NSMutableSet set];
+18     }
+19     return _reuserCells;
+20 }
+21  
+22 // 从缓存池中获取cell
+23 - (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
+24 {
+25     UITableViewCell *cell = [self.reuserCells anyObject];
+26      
+27     // 能取出cell,并且cell的标示符正确
+28     if (cell &amp;&amp; [cell.reuseIdentifier isEqualToString:identifier]) {     
+29         // 从缓存池中获取
+30         [self.reuserCells removeObject:cell];
+31          
+32         return cell;
+33     }
+34     return nil;
+35 }
+36  
+37 @end 
+</code></pre>
+
+<h5>8.tableView细节处理</h5>
+
+<p>原因：刷新方法经常要调用</p>
+
+<p>解决：每次刷新的时候，先把之前记录的全部清空</p>
+
+<pre><code> 1 // 刷新tableView
+ 2 - (void)reloadData
+ 3 {
+ 4      
+ 5     // 刷新方法经常要调用
+ 6     // 每次刷新的时候，先把之前记录的全部清空
+ 7     // 清空indexPath字典
+ 8     [self.indexPathDict removeAllObjects];
+ 9     // 清空屏幕可见数组
+10     [self.visibleCells removeAllObjects];
+11     ...
+12 } 
+</code></pre>
+
+<!--more-->
+
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 新技术 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xin-ji-zhu/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T14:04:10+08:00</updated>
+  <updated>2015-12-08T14:49:48+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[iOS9-CoreSpotlight]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight/"/>
-    <updated>2015-12-15T13:35:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight</id>
+    <link href="http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight/"/>
+    <updated>2015-12-25T13:35:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight</id>
     <content type="html"><![CDATA[<p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
 
 <p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
@@ -173,156 +173,10 @@ class ViewController: UIViewController {
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[iOS9+Xcode总结]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/14/ios9-plus-xcodezong-jie/"/>
-    <updated>2015-12-14T23:56:09+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/14/ios9-plus-xcodezong-jie</id>
-    <content type="html"><![CDATA[<p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
-
-<h4>1，默认使用HTTPS请求</h4>
-
-<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
-
-<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
-</code></pre>
-
-<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
-
-<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
-
-<p>否则会提示类似如下错误:</p>
-
-<!--more-->
-
-
-<pre><code>    canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
-</code></pre>
-
-<p>修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：</p>
-
-<ul>
-<li>mqqopensdkapiV2</li>
-<li>mqqOpensdkSSoLogin</li>
-<li>mqq</li>
-<li>mqzoneopensdkapiV2</li>
-<li>mqzoneopensdkapi19</li>
-<li>mqzoneopensdkapi</li>
-<li>mqzoneopensdk</li>
-<li>mqzone</li>
-<li>weixin</li>
-<li>wechat
-更多其他适配点后续不断跟进。</li>
-</ul>
-
-
-<h4>3，bitcode</h4>
-
-<p>使用Xcode7编译提示：</p>
-
-<pre><code>XXX does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64
-</code></pre>
-
-<p>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。
-Xcode7 默认开启了bitcode，如果App使用的第三方类库不支持bitcode会提示错误，只需要在”Build Settings”->”Enable Bitcode”选项中看关闭bitcode即可。</p>
-
-<blockquote><p>开启Bitcode编译后，编译产生的文件体积会变大 (因为是中间代码，不是用户下载的包)，且dSYM文件不能用来崩溃日志的符号化 (用户下载的包是Apple服务重新编译产生的，有产生新的符号文件)。通过Archive方式上传AppStore的包，可以在 Xcode的Organizer工具中下载对应安装包的新的符号文件。
-转载请注明来自特酷吧,本文地址:www.tekuba.net/program/364/
- 
- </p>
-
-<h4>4，使用XCode7链接第三方库提示warning</h4>
-
-<pre><code>Lots of warnings when building with Xcode 7 with 3rd party libraries
-warning: Could not resolve external type c:objc(cs)NSString
-warning: Could not resolve external type c:objc(cs)NSDictionary
-warning: Could not resolve external type c:objc(cs)NSMutableString
-warning: Could not resolve external type c:objc(cs)NSError
-</code></pre>
-
-<p><a href="https://forums.developer.apple.com/thread/17921">https://forums.developer.apple.com/thread/17921</a>
-目前没发现好的解决办法，可以尝试如下:
-I had this problem too.  Here&rsquo;s how I fixed it.</p></blockquote>
-
-<ul>
-<li>1)  Go to Build Settings -> Build Options -> Debug Information Format</li>
-<li>2)  Change the Debug setting from &ldquo;DWARF with dSYM File&rdquo; to &ldquo;DWARF&rdquo;</li>
-<li>3)  Leave the Release setting at &ldquo;DWARF with dSYM File&rdquo;</li>
-</ul>
-
-
-<p>The problem appears to be that Xcode was trying to create dSYM files for Debug builds.  You don&rsquo;t need dSYM files for Debug builds &ndash; it&rsquo;s release builds where you need them. </p>
-
-<hr />
-
-<h6>既然提到了Xcode7，那么Xcode7中也有几个需要注意的地方（Xcode7是随着ios9一起出来的，其实也就是ios9的新特性，只是不是sdk），</h6>
-
-<p>升级到XCode7之后，编译和上传到itunes connect中遇到了一些问题（特酷吧XCode版本7.0.1），在这里总结下：</p>
-
-<h4>1，was built for newer iOS version (9.0) than being linked (7.0)</h4>
-
-<p>解决方法参考：<a href="http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/">http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/</a></p>
-
-<pre><code>the -w flag can be added to Build Settings -&gt; Other Linker Flags
-</code></pre>
-
-<h4>2，Could not resolve external type c:objc(cs)</h4>
-
-<p>解决方法参考：</p>
-
-<pre><code>https://community.pushwoosh.com/questions/2774/lot-of-warnings-with-xcode-70-and-pushwoosh-304
-</code></pre>
-
-<p>It looks like a bug of XCode 7. See the discussion here:</p>
-
-<pre><code>https://forums.developer.apple.com/thread/17921
-</code></pre>
-
-<hr />
-
-<pre><code>To get rid of this warning you need to change debug information from "DWARF + dSYM" to DWARF.
-DWARF seems to be the default setting for new projects created in Xcode 7, but existing projects that are migrating to Xcode 7 probably still have DWARF with dSYM File as the setting.
-</code></pre>
-
-<p>特酷吧亲测发现使用XCode7新建工程的时候，Debug模式默认选择了DWARF。</p>
-
-<h4>3，"The resulting API analysis file is too large. We were unable to validate your API usage prior to delivery</h4>
-
-<p><a href="https://forums.developer.apple.com/thread/18493">https://forums.developer.apple.com/thread/18493</a>
-建议处理</p>
-
-<ul>
-<li>1，export IPA file (after you select Archive from within xCode)</li>
-<li>2，Use Application Loader to upload</li>
-<li>3，de-select Bitcode and Symbols</li>
-</ul>
-
-
-<p>似乎目前对bitcode的支持还不是很好，建议关闭。再上传。</p>
-
-<h4>4.最后就是和swift相关的。</h4>
-
-<p>如果使用了混编技术，也就是说里面涉及到了swift代码，实现了桥接，那么系统会偶尔出现崩溃的现象，这个时候需要修改一个属性</p>
-
-<ul>
-<li>1：选中项目</li>
-<li>2：选中target，在build Setting中搜索swift</li>
-<li><p>3：在出现的embedded content contains swift code选中对应的值</p>
-
-<ul>
-<li>使用了swift就是YES</li>
-<li>没有swift就是NO</li>
-</ul>
-</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[iOS9-WKWebView+SFSafariViewController]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview/"/>
-    <updated>2015-12-14T19:35:40+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/14/ios9xin-te-xing-wkwebview</id>
+    <link href="http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview/"/>
+    <updated>2015-12-24T19:35:40+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview</id>
     <content type="html"><![CDATA[<h2>一：WKWebView简单介绍</h2>
 
 <p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
@@ -711,9 +565,9 @@ SFSafariViewController有保存Cookies的功能，但是貌似不能和Safari浏
   
   <entry>
     <title type="html"><![CDATA[iOS9-Unit Test]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/14/ios9-unit-test/"/>
-    <updated>2015-12-14T00:59:07+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/14/ios9-unit-test</id>
+    <link href="http://al1020119.github.io/blog/2015/12/22/ios9-unit-test/"/>
+    <updated>2015-12-22T00:59:07+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/22/ios9-unit-test</id>
     <content type="html"><![CDATA[<p> XCode7(iOS9)中新增了跟多特性，包括：</p>
 
 <ul>
@@ -1083,10 +937,156 @@ tap事件的触发位置是view的中心，所以当view的中心被遮挡时，
   </entry>
   
   <entry>
+    <title type="html"><![CDATA[iOS9+Xcode总结]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/20/ios9-plus-xcodezong-jie/"/>
+    <updated>2015-12-20T23:56:09+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/20/ios9-plus-xcodezong-jie</id>
+    <content type="html"><![CDATA[<p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+
+<h4>1，默认使用HTTPS请求</h4>
+
+<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
+
+<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+</code></pre>
+
+<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+
+<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
+
+<p>否则会提示类似如下错误:</p>
+
+<!--more-->
+
+
+<pre><code>    canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
+</code></pre>
+
+<p>修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：</p>
+
+<ul>
+<li>mqqopensdkapiV2</li>
+<li>mqqOpensdkSSoLogin</li>
+<li>mqq</li>
+<li>mqzoneopensdkapiV2</li>
+<li>mqzoneopensdkapi19</li>
+<li>mqzoneopensdkapi</li>
+<li>mqzoneopensdk</li>
+<li>mqzone</li>
+<li>weixin</li>
+<li>wechat
+更多其他适配点后续不断跟进。</li>
+</ul>
+
+
+<h4>3，bitcode</h4>
+
+<p>使用Xcode7编译提示：</p>
+
+<pre><code>XXX does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64
+</code></pre>
+
+<p>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。
+Xcode7 默认开启了bitcode，如果App使用的第三方类库不支持bitcode会提示错误，只需要在”Build Settings”->”Enable Bitcode”选项中看关闭bitcode即可。</p>
+
+<blockquote><p>开启Bitcode编译后，编译产生的文件体积会变大 (因为是中间代码，不是用户下载的包)，且dSYM文件不能用来崩溃日志的符号化 (用户下载的包是Apple服务重新编译产生的，有产生新的符号文件)。通过Archive方式上传AppStore的包，可以在 Xcode的Organizer工具中下载对应安装包的新的符号文件。
+转载请注明来自特酷吧,本文地址:www.tekuba.net/program/364/
+ 
+ </p>
+
+<h4>4，使用XCode7链接第三方库提示warning</h4>
+
+<pre><code>Lots of warnings when building with Xcode 7 with 3rd party libraries
+warning: Could not resolve external type c:objc(cs)NSString
+warning: Could not resolve external type c:objc(cs)NSDictionary
+warning: Could not resolve external type c:objc(cs)NSMutableString
+warning: Could not resolve external type c:objc(cs)NSError
+</code></pre>
+
+<p><a href="https://forums.developer.apple.com/thread/17921">https://forums.developer.apple.com/thread/17921</a>
+目前没发现好的解决办法，可以尝试如下:
+I had this problem too.  Here&rsquo;s how I fixed it.</p></blockquote>
+
+<ul>
+<li>1)  Go to Build Settings -> Build Options -> Debug Information Format</li>
+<li>2)  Change the Debug setting from &ldquo;DWARF with dSYM File&rdquo; to &ldquo;DWARF&rdquo;</li>
+<li>3)  Leave the Release setting at &ldquo;DWARF with dSYM File&rdquo;</li>
+</ul>
+
+
+<p>The problem appears to be that Xcode was trying to create dSYM files for Debug builds.  You don&rsquo;t need dSYM files for Debug builds &ndash; it&rsquo;s release builds where you need them. </p>
+
+<hr />
+
+<h6>既然提到了Xcode7，那么Xcode7中也有几个需要注意的地方（Xcode7是随着ios9一起出来的，其实也就是ios9的新特性，只是不是sdk），</h6>
+
+<p>升级到XCode7之后，编译和上传到itunes connect中遇到了一些问题（特酷吧XCode版本7.0.1），在这里总结下：</p>
+
+<h4>1，was built for newer iOS version (9.0) than being linked (7.0)</h4>
+
+<p>解决方法参考：<a href="http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/">http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/</a></p>
+
+<pre><code>the -w flag can be added to Build Settings -&gt; Other Linker Flags
+</code></pre>
+
+<h4>2，Could not resolve external type c:objc(cs)</h4>
+
+<p>解决方法参考：</p>
+
+<pre><code>https://community.pushwoosh.com/questions/2774/lot-of-warnings-with-xcode-70-and-pushwoosh-304
+</code></pre>
+
+<p>It looks like a bug of XCode 7. See the discussion here:</p>
+
+<pre><code>https://forums.developer.apple.com/thread/17921
+</code></pre>
+
+<hr />
+
+<pre><code>To get rid of this warning you need to change debug information from "DWARF + dSYM" to DWARF.
+DWARF seems to be the default setting for new projects created in Xcode 7, but existing projects that are migrating to Xcode 7 probably still have DWARF with dSYM File as the setting.
+</code></pre>
+
+<p>特酷吧亲测发现使用XCode7新建工程的时候，Debug模式默认选择了DWARF。</p>
+
+<h4>3，"The resulting API analysis file is too large. We were unable to validate your API usage prior to delivery</h4>
+
+<p><a href="https://forums.developer.apple.com/thread/18493">https://forums.developer.apple.com/thread/18493</a>
+建议处理</p>
+
+<ul>
+<li>1，export IPA file (after you select Archive from within xCode)</li>
+<li>2，Use Application Loader to upload</li>
+<li>3，de-select Bitcode and Symbols</li>
+</ul>
+
+
+<p>似乎目前对bitcode的支持还不是很好，建议关闭。再上传。</p>
+
+<h4>4.最后就是和swift相关的。</h4>
+
+<p>如果使用了混编技术，也就是说里面涉及到了swift代码，实现了桥接，那么系统会偶尔出现崩溃的现象，这个时候需要修改一个属性</p>
+
+<ul>
+<li>1：选中项目</li>
+<li>2：选中target，在build Setting中搜索swift</li>
+<li><p>3：在出现的embedded content contains swift code选中对应的值</p>
+
+<ul>
+<li>使用了swift就是YES</li>
+<li>没有swift就是NO</li>
+</ul>
+</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Watch OS2 初探]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/08/watch-os2-chu-tan/"/>
-    <updated>2015-12-08T17:44:31+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/08/watch-os2-chu-tan</id>
+    <link href="http://al1020119.github.io/blog/2015/11/14/watch-os2-chu-tan/"/>
+    <updated>2015-11-14T17:44:31+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/14/watch-os2-chu-tan</id>
     <content type="html"><![CDATA[<blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
 在这个过程中,你会学到:</p></blockquote>
 

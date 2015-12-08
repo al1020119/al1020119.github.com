@@ -1,0 +1,730 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>爬虫必备-java抓包 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="爬虫必备-java抓包 ordinal 前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包 java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/10/20/java/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">爬虫必备-java抓包</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包</p>
+
+<p>java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包，还能根据自己的喜好选择对应的方式！</p>
+
+<p>我们开始吧！</p>
+
+<p>前提：熟悉java语法（能看懂就行）</p>
+
+<ul>
+<li>准备阶段：从网页中获取html代码</li>
+<li>实战阶段：将对应的html代码使用java语言解析出来，最后保存到plist文件</li>
+</ul>
+
+
+<!--more-->
+
+
+<h2>一:准备阶段－－》获取html代码</h2>
+
+<h6>1:打开你对应想要获取数据的网页，使用firefox打开（因为他有一个自带的神器叫：firebug，关于firebug这里就多说了，反正对于网页开发来说她就是神器），这里我们使用的是dota首页英雄的介绍。</h6>
+
+<p>首先来看看我们需要的数据</p>
+
+<p><img src="/images/ava001.png" title="Caption" ></p>
+
+<h6>2:由于在网页开发中也是分模块开发的，所以一定的区域在html中对应对应的html代码模块，所以我们选取界面中一个小的模块作为练习。</h6>
+
+<p>找到对应的模块，点击右键在firebug中查看元素</p>
+
+<p><img src="/images/ava002.png" title="Caption" ></p>
+
+<p>（确保已安装firebug，没有安装的去火狐工具栏中工具标签里面的一个附加组件搜索并下载安装就可以）</p>
+
+<p>这个时候网页的下面就会显示对应模块的html代码，我们需要找到我们想要获取的数据对应的html模块代码，点击右键拷贝我们需要的html。</p>
+
+<p> <img src="/images/ava003.png" title="Caption" ></p>
+
+<h6>3:在界面简一个html文件将拷贝好的html代码粘贴到文件中，然后就需要哪么一丢丢的html相关知识了，就是补充html中的数据，使他成为完整的html文件</h6>
+
+<p><img src="/images/ava004.png" title="Caption" ></p>
+
+<p>这里注意一下编码方式：开发中常用的都是utf－8的格式</p>
+
+<h2>二:实战阶段－－》抓取html（网页数据）</h2>
+
+<p>然后我们就要正式开工了，后面才是重点，前面那都是傻瓜是的操作（后面的才做中需要有那么一丢丢的java或者android开发的基础，当然不会耶没有关系，笔者会完整的介绍流程）</p>
+
+<h6>1:代开Eclipse</h6>
+
+<p><img src="/images/ava005.png" title="Caption" ></p>
+
+<p>新建一个java项目，并且点击项目中的src新建一个class专门用来实现数据的解析</p>
+
+<p><img src="/images/ava006.png" title="Caption" ></p>
+
+<h6>2:新建好项目之后就要用到我们的一个java的jar包，专门用来抓取网络数据的包：关于包的下载后面笔者会给出下载链接</h6>
+
+<p><img src="/images/ava007.png" title="Caption" ></p>
+
+<p>将下载好的jar包导入到java工程项目中。</p>
+
+<p>然后我们需要将他添加到build路径（这里是一个常识，java中的jar包没有添加到build路径是不能使用的，添加之后对应的咖啡图标会变成奶瓶）</p>
+
+<p><img src="/images/ava008.png" title="Caption" ></p>
+
+<p>成功之后的显示</p>
+
+<p><img src="/images/ava009.png" title="Caption" ></p>
+
+<p>下面开始使用java正式抓取并解析html（网页）数据</p>
+
+<p>根据下面的图片在java工程项目中书写html数据解析的代码：（注意里面的步骤）</p>
+
+<p><img src="/images/ava0010.png" title="Caption" ></p>
+
+<p>java核心代码：</p>
+
+<pre><code>try {
+
+　　　　　　//文件路径
+
+　　　　　　　　String path = " /Users/icocos/Desktop/iCocos.html";
+
+
+
+　　　　　　　　//加载网页
+
+　　　　　　　　Document doc = Jsoup.parse(new File(path), "UTF-8");
+
+
+
+　　　　　　　　//解析网页
+
+　　　　　　　　Elements lis = doc.select("li");
+
+
+
+　　　　　　　 //遍历数组
+
+　　　　　　　　for(int i = 0; i &lt; eles.size(); i++) {
+
+　　　　　　　　//根据i获取对应的元素
+
+　　　　　　　　Element li = lis.get(i);
+
+
+
+　　　　　　　　//取图片
+
+　　　　　　　　Element img = li.select("img").get(0);
+
+　　　　　　　　// System.out.println(img.attr("src"));
+
+
+
+　　　　　　　　//获取图片名
+
+　　　　　　　　String imgName = img.attr("src");
+
+
+
+　　　　　　　 Element p = li.select("p").get(0);
+
+　　　　　　　　String personName = p.text();
+
+
+
+　　　　　　　　//打印数据
+
+　　　　　　　　System.out.println(imgName + "," + personName);
+
+
+
+　　　　　　}
+
+　　　　　} catch {
+
+　　　　//错误（异常）处理
+
+　　　　e.printStackTrace();
+
+}
+</code></pre>
+
+<p>此时点击Run运行之后，Eclipse就会根据你的代码输出对应的信息</p>
+
+<p><img src="/images/ava011.png" title="Caption" ></p>
+
+<p>但是这个时候我并不能直接使用数据所以需要在java代码中做一些相应的修改，使得输出的数据可以直接拷贝并且读到plist中，其实就是数组或者字典数据</p>
+
+<p>我们知道在ios开发中从plist文件中读取数据时最常见的，当然你也可以使用其他方式，但是没有比这更简单了。</p>
+
+<p>下面我给java代码做一些调整</p>
+
+<p>1:在for循环之前输入这一行代码，实现数据拼接并且数据</p>
+
+<pre><code>System.out.println("NSArray *apps = @[");
+</code></pre>
+
+<p>2:接着就需要在for循环结束之后输入预知对应的拼接数组结尾标志</p>
+
+<pre><code>System.out.println("]");
+</code></pre>
+
+<p>3:在for循环内部的最后面我们需要在每次循环的时候都要使用上面的代码进行拼接并且使用逗号做相应的分割</p>
+
+<pre><code>System.out.println("@{@\"name\":@\"" + personName + "\", @\"icon\":@\""+ imgName + "\"},");
+</code></pre>
+
+<p>最后完整的java获取并且解析html数据如下；</p>
+
+<pre><code>public class iCocos {
+
+public static void main (String[] args) {
+
+　　　 try {
+
+　　　　　　//文件路径
+
+　　　　　　String path = " /Users/icocos/Desktop/iCocos.html";
+
+　　　　　　//加载网页
+　　　　　　Document doc = Jsoup.parse(new File(path), "UTF-8");
+
+　　　　　　//解析网页
+　　　　　　Elements lis = doc.select("li");
+
+　　　　　　System.out.println("NSArray *apps = @[");
+
+
+　　　　　　//遍历数组
+
+　　　　　　for(int i = 0; i &lt; eles.size(); i++) {
+
+　　　　　　//根据i获取对应的元素
+
+　　　　　　Element li = lis.get(i);
+
+
+　　　　　　//取图片
+
+　　　　　　Element img = li.select("img").get(0);
+
+　　　　　　// System.out.println(img.attr("src"));
+
+　　　　　　//获取图片名
+
+　　　　　　String imgName = img.attr("src");
+
+　　　　　　Element p = li.select("p").get(0);
+
+　　　　　　String personName = p.text();
+
+　　　　　　//打印数据
+　　　　　　// System.out.println(imgName + "," + personName);
+
+　　　　　　System.out.println("@{@\"name\":@\"" + personName + "\", @\"icon\":@\""+ imgName + "\"},");
+　　　　　　}
+　　　　　　System.out.println("]");
+
+　　　　} catch {
+
+　　　　　　//错误（异常）处理
+　　　　　　e.printStackTrace();
+
+　　　　}
+
+　　}
+
+}
+</code></pre>
+
+<p>这个时候回打印输出下面的代码，</p>
+
+<p><img src="/images/ava012.png" title="Caption" ></p>
+
+<p>下面我们就需要在xcode中做事情了，做什么事呢，就是将输出的以NSArray开头的所有数据在Xcode中转换为plist的数据，当然你也可以不转换，做少部分的修改之后直接使用JSON解析技术去解析，但是那样不是最好的办法。</p>
+
+<p>在Xcode中新建一个项目工程，在ViewDidLoad中粘贴拷贝过来的代码，这个时候是不是看起来非常熟悉，对了，她就是我吗开发中常用到的数组数据。</p>
+
+<p>下面我就使用循环遍历去讲NSArray数组数据写到plist文件中。</p>
+
+<pre><code>- (void)viewDidLoad
+
+{
+
+    [super viewDidLoad];
+
+
+
+    NSArray *apps = @[
+
+  @{@"name":@"敌法师", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/dfss.jpg"},
+
+  @{@"name":@"火枪", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/arjj.jpg"},
+
+  @{@"name":@"德鲁伊", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/dlyy.jpg"},
+
+  @{@"name":@"月骑", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yzqs.jpg"},
+
+  @{@"name":@"变体精灵", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/btjl.jpg"},
+
+  @{@"name":@"娜迦海妖", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/njhy.gif"},
+
+  @{@"name":@"猴子", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/hycm.jpg"},
+
+  @{@"name":@"白虎", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yzjs.jpg"},
+
+  @{@"name":@"隐形刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yxck.jpg"},
+
+  @{@"name":@"巨魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/jmzj.jpg"},
+
+  @{@"name":@"直升机", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/arzs.jpg"},
+
+  @{@"name":@"赏金猎人", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Naka.gif"},
+
+  @{@"name":@"骷髅射手", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/KLSS.gif"},
+
+  @{@"name":@"育母蜘蛛", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YMZZ.gif"},
+
+  @{@"name":@"血魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/XM.gif"},
+
+  @{@"name":@"黑暗游侠", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Nbrn.gif"},
+
+  @{@"name":@"虚空假面", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/EC45.gif"},
+
+  @{@"name":@"蛇发女妖", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/H00V.gif"},
+
+  @{@"name":@"地卜师", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/H00I.gif"},
+
+  @{@"name":@"地穴刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/DXCK.gif"},
+
+  @{@"name":@"蚂蚁", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/DXBZ.gif"},
+
+  @{@"name":@"幻影刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/HYCK.gif"},
+
+  @{@"name":@"闪电幽魂", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/E002.gif"},
+
+  @{@"name":@"影魔", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YM01.gif"},
+
+  @{@"name":@"小鱼人", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/yryx.gif"},
+
+  @{@"name":@"幽鬼", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/YG1.gif"},
+
+  @{@"name":@"圣堂刺客", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/E01Y.gif"},
+
+  @{@"name":@"灵魂守卫", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/LHSW.gif"},
+
+  @{@"name":@"熊战士", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Huth.gif"},
+
+  @{@"name":@"剧毒术士", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/JDSS.gif"},
+
+  @{@"name":@"冥界亚龙", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/MJYL.gif"},
+
+  @{@"name":@"复仇之魂", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/Hvwd.jpg"},
+
+  @{@"name":@"剑圣", @"icon":@"http://dotadb.uuu9.com/UploadFiles/Dota/Hero/jsjs.jpg"}
+
+  ];
+
+
+
+    [newApps writeToFile:@"/Users/icocos/Desktop/apps.plist" atomically:YES];
+</code></pre>
+
+<p>这个时候我吗的左面就有了这个plist文件，打开之后你会看到</p>
+
+<p><img src="/images/ava013.png" title="Caption" ></p>
+
+<p>最后的步骤就是图片的下载，</p>
+
+<pre><code>//简单写入
+
+//    for (NSDictionary *dict in apps) {
+
+//        NSString *icon = dict[@"icon"];
+
+//        
+
+//        // 新建网络图片的URL路径
+
+//        NSURL *url = [NSURL URLWithString:icon];
+
+//        
+
+//        // 下载图片的二进制数据
+
+//        NSData *data = [NSData dataWithContentsOfURL:url];
+
+//        
+
+//        // 截取文件名
+
+//        NSString *filename = [icon lastPathComponent];
+
+//        
+
+//        // 文件路径
+
+//        NSString *iconPath = [NSString stringWithFormat:@"/Users/icocos/Desktop/Icons/%@", filename];
+
+//        
+
+//        [data writeToFile:iconPath atomically:YES];
+
+//    }
+</code></pre>
+
+<p>由于plist中图片名使用的都是对应链接的最后一个名字，所以我们不能使用上面的方法，还需要做一些处理，才能真正使用</p>
+
+<pre><code>NSMutableArray *newApps = [NSMutableArray array];
+
+    for (NSDictionary *dict in apps) {
+
+        NSMutableDictionary *newDict = [NSMutableDictionary dictionary];
+
+        newDict[@"name"] = dict[@"name"];
+
+        newDict[@"icon"] = [dict[@"icon"] lastPathComponent];
+
+        [newApps addObject:newDict];
+
+    }
+
+
+
+    [newApps writeToFile:@"/Users/icocos/Desktop/apps.plist" atomically:YES];
+
+
+
+}
+</code></pre>
+
+<p><img src="/images/ava014.png" title="Caption" ></p>
+
+<p>图片下载完成之后你会回看到对应的文件夹中快速的出现了好多的图片</p>
+
+<p><img src="/images/ava015.png" title="Caption" ></p>
+
+<p>此时我们就得到了一份和网页想相对应比较完整的plist数据，后面我们要做的就是将我们的plist数据显示到界面，后面我就不介绍了，详细请看：plist文件读取</p>
+
+<blockquote><p>最后总结一下，如果以后遇到了关于需要抓取网络数据实现网络爬虫的功能的时候，我们基本上想到的第一种方法就是使用java语言，当然公司一般不会有这样的要求，公司一般都是使用自己服务器的api来实现，特殊情况除外。</p></blockquote>
+
+<p>当然你也可以使用正则表达式或者Python，关于正则表达式相对来说还是比较难的，主要是细节比较多。而Python本人还没有研究过，有机会尝试一下，如果您还有什么好的方法欢迎笔者联系，相互学习与讨论。</p>
+
+<p>我们基本上可以按照上面的思路去实现，只需要做少部分的修改，这里大致说一下</p>
+
+<ul>
+<li>1:准备阶段根据你需要的数据会有不同的html产生</li>
+<li>2:产生不同的html之后你html内部的结构就会做响应的变化，这个时候你就要去把java那段核心代码搞懂来就没问题了，最重要的还是这里。</li>
+<li>3:根据对应的NSArray数据写入到plist文件中，这里是iOS开发中常用的技术我就不多说。</li>
+</ul>
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/cheng-xu-yuan-bi-bei/'>程序员必备</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/10/15/pa-chong-bi-bei-phthonzhua-bao/" title="Previous Post: 爬虫必备-Phthon抓包">&laquo; 爬虫必备-Phthon抓包</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/11/06/quan-ping-fan-hui-(runtime)/" title="Next Post: 全屏返回（Runtime）">全屏返回（Runtime） &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/10/20/java/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/10/20/java/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

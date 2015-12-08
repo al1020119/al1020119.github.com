@@ -1,0 +1,489 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>玩转定时器 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="玩转定时器 ordinal 在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。 然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/03/09/wan-zheng-ding-shi-qi/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">玩转定时器</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p> <img src="/images/dingshiqi.png" title="Caption" ></p>
+
+<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+<!--more-->
+
+
+<h2>一、NSTimer</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>1     // 设置定时器
+2     [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(timeChange) userInfo:nil repeats:YES];
+3     
+4     // 0.1 setNeedsDisplay 绑定一个标识,等待下次刷新的时候才会调用drawRect方法
+5     // 0.15 屏幕的刷新时间
+</code></pre>
+
+<ul>
+<li><p>TimerInterval : 执行之前等待的时间。比如设置成1.0，就代表1秒后执行方法</p></li>
+<li><p>target : 需要执行方法的对象。</p></li>
+<li><p>selector : 需要执行的方法</p></li>
+<li><p>repeats : 是否需要循环</p></li>
+</ul>
+
+
+<h5>2. 释放方法</h5>
+
+<pre><code> [timer invalidate]; 
+</code></pre>
+
+<blockquote><p>注意 :
+调用创建方法后，target对象的计数器会加1，直到执行完毕，自动减1。如果是循环执行的话，就必须手动关闭，否则可以不执行释放方法。</p></blockquote>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>存在延迟</li>
+</ul>
+
+
+<p>不管是一次性的还是周期性的timer的实际触发事件的时间，都会与所加入的RunLoop和RunLoop Mode有关，如果此RunLoop正在执行一个连续性的运算，timer就会被延时出发。重复性的timer遇到这种情况，如果延迟超过了一个周期，则会在延时结束后立刻执行，并按照之前指定的周期继续执行。</p>
+
+<ul>
+<li>必须加入Runloop</li>
+</ul>
+
+
+<p>使用上面的创建方式，会自动把timer加入MainRunloop的NSDefaultRunLoopMode中。如果使用以下方式创建定时器，就必须手动加入Runloop:</p>
+
+<pre><code>NSTimer *timer = [NSTimer timerWithTimeInterval:5 target:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(timerAction) userInfo:nil repeats:YES];&lt;br&gt;&lt;br&gt;
+[[NSRunLoop mainRunLoop] &lt;span style="color: #3366ff;"&gt;addTimer&lt;/span&gt;:timer forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<p> 注意NSTimer还有一个方法，因为每次用的时候都是使用带target的这个方法，突然有一天很好奇就研究了一下，他的使用也很简单，只是相对上面那个有点繁琐，</p>
+
+<h5>1:创建一个签名：</h5>
+
+<pre><code> NSMethodSignature *singature = [NSMethodSignature signatureWithObjCTypes:"v@:"]; 2  
+</code></pre>
+
+<p>这里我想如果你仔细的话肯定注意到了：后面的“v@：”，这里是运行时的语法</p>
+
+<p>在这里是指一个方法</p>
+
+<pre><code>v放回viod类型
+@一个id类型的对象
+：对应SEL
+</code></pre>
+
+<p>关于运行时这里不多介绍请查看笔者之前的文章，或者查看官方文档，这是一个iOS开发者必须会的知识点</p>
+
+<h5>2:通过前面创建一个请求，并且设置对应的target和SEL</h5>
+
+<pre><code>&lt;span style="color: #3366ff;"&gt;    NSInvocation&lt;/span&gt; *vocation = [NSInvocation invocationWithMethodSignature:singature];
+    vocation.target = self;
+    vocation.selector = @selector(timeChange);
+</code></pre>
+
+<h5>3:在讲请求传到NSTimer中去实现定时</h5>
+
+<pre><code>[NSTimer scheduledTimerWithTimeInterval:1 invocation:vocation repeats:YES]; 
+</code></pre>
+
+<h2>二、CADisplayLink</h2>
+
+<h5>1. 创建方法</h5>
+
+<pre><code>self.displayLink = [CADisplayLink displayLinkWithTarget:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(handleDisplayLink:)];   
+[self.displayLink &lt;span style="color: #3366ff;"&gt;addToRunLoop&lt;/span&gt;:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+</code></pre>
+
+<h5>2. 停止方法</h5>
+
+<pre><code>self.displayLink &lt;span style="color: #3366ff;"&gt;invalidate&lt;/span&gt;]; 
+self.displayLink = nil;
+</code></pre>
+
+<p> 当把CADisplayLink对象add到runloop中后，selector就能被周期性调用，类似于重复的NSTimer被启动了；执行invalidate操作时，CADisplayLink对象就会从runloop中移除，selector调用也随即停止，类似于NSTimer的invalidate方法。</p>
+
+<h5>3. 特性</h5>
+
+<ul>
+<li>屏幕刷新时调用</li>
+</ul>
+
+
+<p>CADisplayLink是一个能让我们以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类。CADisplayLink以特定模式注册到runloop后，每当屏幕显示内容刷新结束的时候，runloop就会向CADisplayLink指定的target发送一次指定的selector消息， CADisplayLink类对应的selector就会被调用一次。所以通常情况下，按照iOS设备屏幕的刷新率60次/秒</p>
+
+<ul>
+<li>延迟</li>
+</ul>
+
+
+<p>iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。但如果调用的方法比较耗时，超过了屏幕刷新周期，就会导致跳过若干次回调调用机会。</p>
+
+<p>如果CPU过于繁忙，无法保证屏幕60次/秒的刷新率，就会导致跳过若干次调用回调方法的机会，跳过次数取决CPU的忙碌程度。</p>
+
+<ul>
+<li>使用场景</li>
+</ul>
+
+
+<p>从原理上可以看出，CADisplayLink适合做界面的不停重绘，比如视频播放的时候需要不停地获取下一帧用于界面渲染。</p>
+
+<h5>4. 重要属性</h5>
+
+<ul>
+<li>frameInterval</li>
+</ul>
+
+
+<p>NSInteger类型的值，用来设置间隔多少帧调用一次selector方法，默认值是1，即每帧都调用一次。</p>
+
+<ul>
+<li>duration</li>
+</ul>
+
+
+<p>readOnly的CFTimeInterval值，表示两次屏幕刷新之间的时间间隔。需要注意的是，该属性在target的selector被首次调用以后才会被赋值。selector的调用间隔时间计算方式是：调用间隔时间 = duration × frameInterval。</p>
+
+<h5>CADisplayLink底层实现：</h5>
+
+<pre><code> setNeedsDisplay:底层并不会马上调用drawRect,只会给当前的控件绑定一个刷新的标识,每次屏幕刷新的时候,就会把绑定了刷新(重绘)标识的控件重新刷新(绘制)一次,就会调用drawRect去重绘
+</code></pre>
+
+<blockquote><p> 注意：如果以后每隔一段时间需要重绘,一般不使用NSTimer,使用CADisplayLink,不会刷新的时候有延迟</p></blockquote>
+
+<h2>三、GCD方式</h2>
+
+<h5>执行一次</h5>
+
+<pre><code>1 double delayInSeconds = 2.0;
+2 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC); 
+3 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
+4     //执行事件
+5 });
+</code></pre>
+
+<h5>重复执行</h5>
+
+<pre><code>1 NSTimeInterval period = 1.0; //设置时间间隔
+2 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+3 dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+4 dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0); //每秒执行
+5 dispatch_source_set_event_handler(_timer, ^{
+6     //在这里执行事件
+7 });
+8 dispatch_resume(_timer);
+</code></pre>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/" title="Previous Post: UITableView性能优化与卡顿问题">&laquo; UITableView性能优化与卡顿问题</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/" title="Next Post: 事件处理与图像渲染深究">事件处理与图像渲染深究 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/03/09/wan-zheng-ding-shi-qi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/03/09/wan-zheng-ding-shi-qi/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

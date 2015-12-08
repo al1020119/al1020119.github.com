@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 项目实战 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/xiang-mu-shi-zhan/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T14:04:10+08:00</updated>
+  <updated>2015-12-08T14:49:48+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -14,10 +14,354 @@
 
   
   <entry>
+    <title type="html"><![CDATA[全屏返回（Runtime）]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/06/quan-ping-fan-hui-(runtime)/"/>
+    <updated>2015-11-06T02:51:33+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/06/quan-ping-fan-hui-(runtime)</id>
+    <content type="html"><![CDATA[<blockquote><p>前言</p>
+
+<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
+
+<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
+
+<!--more-->
+
+
+<h5>一、自定义导航控制器</h5>
+
+<p>目的：以后需要使用全屏滑动返回功能，就使用自己定义的导航控制器。</p>
+
+<h5>二、分析导航控制器侧滑功能</h5>
+
+<p>效果：导航控制器默认自带了侧滑功能，当用户在界面的左边滑动的时候，就会有侧滑功能。</p>
+
+<p>系统自带的侧滑效果：</p>
+
+<p>分析：</p>
+
+<ul>
+<li><p>1.导航控制器的view自带了滑动手势，只不过手势的触发范围只能在左边。</p></li>
+<li><p>2.当用户在界面左边拖动，就会触发滑动手势方法，并且有滑动返回功能，说明系统手势触发的方法已经实现了滑动返回功能。</p></li>
+<li><p>3.为什么说系统手势触发的方法已经实现了滑动返回功能？</p></li>
+</ul>
+
+
+<h3>原因：</h3>
+
+<p>创建滑动手势对象的时候，需要绑定监听者，当触发手势的时候会调用target的action。</p>
+
+<p>UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:action];
+当用户在界面左边滑动，有滑动返回功能，这是因为触发手势了，调用target的action方法，说明action方法内部实现滑动返回功能，否则就不会有滑动返回效果。</p>
+
+<h5>三、实现全屏滑动功能分析</h5>
+
+<p>打印导航控制器自带的滑动手势，看下它的真实面目。</p>
+
+<p>系统自带的滑动手势interactivePopGestureRecognizer</p>
+
+<pre><code>//  self指向的导航控制器，在导航控制器的viewDidLoad方法打印 
+- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    NSLog(@"%@",self.interactivePopGestureRecognizer); 
+} 
+</code></pre>
+
+<p>由图中可知：</p>
+
+<ul>
+<li><p>1.系统自带的手势是UIScreenEdgePanGestureRecognizer类型对象,屏幕边缘滑动手势</p></li>
+<li><p>2.系统自带手势target是_UINavigationInteractiveTransition类型的对象</p></li>
+<li><p>3.target调用的action方法名叫handleNavigationTransition:</p></li>
+</ul>
+
+
+<p>分析：</p>
+
+<p>UIScreenEdgePanGestureRecognizer，看名称就知道，这个手势的范围只能在屏幕的周边，就是因为这个手势，系统自带的滑动效果，只能实现侧边滑动。</p>
+
+<h5>四、如何实现全屏滑动功能</h5>
+
+<p>给自己的导航控制器，添加一个全屏的滑动手势，调用系统自带滑动手势的target的action方法，利用系统实现的滑动返回功能，加上自己全屏滑动手势，就有全屏滑动功能了。</p>
+
+<p>问题：如何拿到系统自带的target对象?，action方法名已经知道，而且系统肯定在target对象实现了，只要拿到target对象，调用这个方法就行。</p>
+
+<p>通过打印系统自带的滑动手势的代理，发现正好是_UINavigationInteractiveTransition对象，因此我猜测这个代理对象就是target对象,只要拿到它，就拿到系统自带滑动手势的target对象。</p>
+
+<pre><code>// 打印系统自带滑动手势的代理对象 
+SLog(@"%@",self.interactivePopGestureRecognizer.delegate); 
+</code></pre>
+
+<p>导航控制器全屏滑动注意点:</p>
+
+<ul>
+<li><p>1.禁止系统自带滑动手势使用。</p></li>
+<li><p>2.只有导航控制器的非根控制器才需要触发手势，使用手势代理，控制手势触发。</p></li>
+</ul>
+
+
+<p>全屏滑动代码实现</p>
+
+<pre><code>- (void)viewDidLoad { 
+    [super viewDidLoad]; 
+    // 获取系统自带滑动手势的target对象 
+    id target = self.interactivePopGestureRecognizer.delegate; 
+    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法 
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)]; 
+    // 设置手势代理，拦截手势触发 
+    pan.delegate = self; 
+    // 给导航控制器的view添加全屏滑动手势 
+    [self.view addGestureRecognizer:pan]; 
+    // 禁止使用系统自带的滑动手势 
+    self.interactivePopGestureRecognizer.enabled = NO; 
+} 
+// 什么时候调用：每次触发手势之前都会询问下代理，是否触发。 
+// 作用：拦截手势触发 
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer 
+{ 
+    // 注意：只有非根控制器才有滑动返回功能，根控制器没有。 
+    // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器 
+    if (self.childViewControllers.count == 1) { 
+        // 表示用户在根控制器界面，就不需要触发滑动手势， 
+        return NO; 
+    } 
+    return YES; 
+} 
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[切换控制器]]></title>
+    <link href="http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi/"/>
+    <updated>2015-09-22T02:51:10+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi</id>
+    <content type="html"><![CDATA[<p>从一个视图控制器切换到另一个视图控制器的几种方式</p>
+
+<!--more-->
+
+
+<h4>1,模态(modal)画面的显示方法：</h4>
+
+<p>例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
+例：点击一个按钮，进入另一个界面
+    - (IBAction)pressAbout:(id)sender {</p>
+
+<pre><code>iCocosViewController *iCocos=[[[iCocosViewController alloc] initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
+
+[self presentModalViewController:aboutanimated:YES];//显示模态画面
+
+关闭模态画面的方法：
+
+[self dissmissModalViewControllerAnimationed:YES];
+</code></pre>
+
+<h4>2,SwitchViewController中有2个控制器的属性：BviewController,CViewController</h4>
+
+<ul>
+<li>使用方法：insertSubview: atIndex:
+这种画面跳转方法并非最佳的跳转方法：</li>
+<li>实际上并非真的实现了两个画面间的跳转，而是同时启动了2个画面，控制其中哪一个画面显示在前台，哪一个画面显示在后台而已。</li>
+<li>这种画面跳转方式有一个很大的缺点，即当画面数量增加时，画面跳转的实现代码将月来越复杂，而且各个画面间不可避免的有相互依赖关系。</li>
+</ul>
+
+
+<h4>3,UITabBarController实现并列画面跳转（这里其实就是window的切花）</h4>
+
+<pre><code>//将5个viewController实例放入TabBar的viewcontrollers属性中    
+
+self.tabBarController.viewControllers = @[navFrist, navSecond,navThird,navFourth,navFifth];   
+
+self.window.rootViewController = self.tabBarController;
+
+[self.window addSubview:self.tabBarController.view];//将根控制器的视图加到应用程序主窗口
+</code></pre>
+
+<h4>4,UINavigationController实现多层画面跳转，在导航控制器中，载入有层级关系的界面</h4>
+
+<pre><code>- (IBAction)addRightAction:(id)sender
+{
+    iCocosViewController *iCocos=[[[iCocosViewController alloc]initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
+
+[self.navigationController pushViewController:aiCocos animated:YES];
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[ScrollView回到顶部复原]]></title>
+    <link href="http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/"/>
+    <updated>2015-08-21T02:33:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan</id>
+    <content type="html"><![CDATA[<p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
+
+<!--more-->
+
+
+<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
+
+<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
+
+<ul>
+<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
+</ul>
+
+
+<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
+
+<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
+
+<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
+
+<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
+
+<ul>
+<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
+<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
+<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
+<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
+</ul>
+
+
+<h4>Swift的代码</h4>
+
+<pre><code>import UIKit
+class TopWindow: UIWindow {
+    private static let window_: UIWindow = UIWindow()
+    ///  类初始化方法,保证window_只被创建一次
+    override class func initialize() {
+        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
+        window_.windowLevel = UIWindowLevelAlert
+        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
+    }
+    class func topWindowClick() {
+        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
+        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
+    }
+    private class func searchAllowScrollViewInView(superView: UIView) {
+        for subview: UIView in superView.subviews as! [UIView] {
+            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
+                // 拿到scrollView的contentOffset
+                var offest = (subview as! UIScrollView).contentOffset
+                // 将offest的y轴还原成最开始的值
+                offest.y = -(subview as! UIScrollView).contentInset.top
+                // 重新设置scrollView的内容
+                (subview as! UIScrollView).setContentOffset(offest, animated: true)
+            }
+            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
+            searchAllowScrollViewInView(subview)
+        }
+    }
+    ///  添加topWindow,使手势生效
+    class func showTopWindow() {
+        window_.hidden = false
+    }
+    ///  隐藏topWindow,移除手势
+    class func hiddenTopWindow() {
+        window_.hidden = true
+    }
+}
+///  对UIView的一个扩展
+extension UIView {
+    ///  判断调用方法的view是否在keyWindow中
+    func viewIsInKeyWindow() -&gt; Bool {
+        let keyWindow = UIApplication.sharedApplication().keyWindow!
+        // 将当前view的坐标系转换到window.bounds
+        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
+        let keyWindowBounds = keyWindow.bounds
+        // 判断当前view是否在keyWindow的范围内
+        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
+        // 判断是否满足所有条件
+        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
+    }   
+}
+</code></pre>
+
+<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
+
+<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
+      // 添加顶部的window
+      TopWindow.showTopWindow()
+      return true
+  }
+</code></pre>
+
+<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
+
+<h4>Objective-C代码</h4>
+
+<p>.h文件只暴露显示和隐藏方法</p>
+
+<pre><code>#import @interface WNXTopWindow : NSObject
++ (void)show;
++ (void)hide;
+@end
+</code></pre>
+
+<p>.m文件</p>
+
+<pre><code>#import "WNXTopWindow.h"
+@implementation WNXTopWindow
+static UIWindow *window_;
+//初始化window
++ (void)initialize {
+  window_ = [[UIWindow alloc] init];
+  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
+  window_.windowLevel = UIWindowLevelAlert;
+  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
+}  
++ (void)show {
+  window_.hidden = NO;
+}
++ (void)hide {
+  window_.hidden = YES;
+}
+// 监听窗口点击
++ (void)windowClick {
+  UIWindow *window = [UIApplication sharedApplication].keyWindow;
+  [self searchScrollViewInView:window];
+}
++ (void)searchScrollViewInView:(UIView *)superview {
+  for (UIScrollView *subview in superview.subviews) {
+      // 如果是scrollview, 滚动最顶部
+      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
+          CGPoint offset = subview.contentOffset;
+          offset.y = - subview.contentInset.top;
+          [subview setContentOffset:offset animated:YES];
+      }
+      // 递归继续查找子控件
+      [self searchScrollViewInView:subview];
+  }
+}
++ (BOOL)isShowingOnKeyWindow:(UIView *)view {
+  // 主窗口
+  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+  // 以主窗口左上角为坐标原点, 计算self的矩形框
+  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
+  CGRect winBounds = keyWindow.bounds;
+  // 主窗口的bounds 和 self的矩形框 是否有重叠
+  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
+  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
+}
+@end
+</code></pre>
+
+<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
+  [WNXTopWindow show];
+  return YES;
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[SVN实战总结]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/12/svnshi-zhan-zong-jie/"/>
-    <updated>2015-12-12T22:44:29+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/12/svnshi-zhan-zong-jie</id>
+    <link href="http://al1020119.github.io/blog/2015/07/02/svnshi-zhan-zong-jie/"/>
+    <updated>2015-07-02T22:44:29+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/07/02/svnshi-zhan-zong-jie</id>
     <content type="html"><![CDATA[<ul>
 <li>A：add，新增</li>
 <li>C：conflict，冲突</li>
@@ -125,1126 +469,723 @@
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[H5应用实战]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/10/h5ying-yong-shi-zhan/"/>
-    <updated>2015-12-10T11:03:23+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/10/h5ying-yong-shi-zhan</id>
-    <content type="html"><![CDATA[<blockquote><p>前言:
-ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
+    <title type="html"><![CDATA[字典转模型深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/"/>
+    <updated>2015-05-01T02:33:18+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu</id>
+    <content type="html"><![CDATA[<blockquote><p>引言：
+在文字开始之前先介绍两个软件：</p></blockquote>
 
-<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
+<h5>JSONExport</h5>
 
-<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
+<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
 
-<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
+<h5>JSON Accelerator</h5>
+
+<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
+
+<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+
+<ul>
+<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
+<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+</ul>
+
+
+<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
+
+<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
 
 <!--more-->
 
 
-<h3>OC——调用——HTML</h3>
+<h2>一：直接加载Plist数据</h2>
 
-<p>这里有两种方式
-直接使用网络链接（接口）
-使用本地的html</p>
+<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
 
-<p>由于没有完成一个完整的html项目，这里就以链接演示。</p>
-
-<p>先来看看官方链接显示情况
-<img src="/images/html&amp;oc001.png" title="Caption" ></p>
-
-<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节），并且增加一个指示器</p>
-
-<pre><code>// 加载网页
-NSURL *url = [NSURL URLWithString:@"http://www.xianhua.cn/m/"];
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-[self.webView loadRequest:request];
-
-self.webView.scrollView.hidden = YES;
-self.webView.backgroundColor = [UIColor grayColor];
-
-UIActivityIndicatorView *displayView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-[displayView startAnimating];
-self.displayView = displayView;
-displayView.center = self.view.center;
-[self.webView addSubview:displayView];
+<pre><code>定义一个数组属性 
+@property (nonatomic, assign) NSArray *apps; 
 </code></pre>
 
-<p>2.在WebView加载完成的方法中实现我们想要的功能需求</p>
+<h6>获取Plist文件</h6>
 
-<pre><code>#pragma mark -&lt;UIWebViewDelegate&gt;
-- (void)webViewDidFinishLoad:(UIWebView *)webView{
-
-    // 改变标题
-    NSString *str = @"document.getElementsByTagName('h1')[0].innerText = 'iCocos鲜花网';";
-    [webView stringByEvaluatingJavaScriptFromString:str];
-
-    // 删除广告
-    NSString *str2 =@"document.getElementsByClassName('detail_btns2')[0].remove();";
-    [webView stringByEvaluatingJavaScriptFromString:str2];
-
-    // 改变尾部
-    NSString *str3 = @"document.getElementById('xiazaiapp').getElementsByTagName('a')[0].innerText='iCocos鲜花网App';";
-    [webView stringByEvaluatingJavaScriptFromString:str3];
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        self.webView.scrollView.hidden = NO;
-        [self.displayView stopAnimating];
-    });
-}
-</code></pre>
-
-<p>修改后子在手机就是这样的效果</p>
-
-<p><img src="/images/html&amp;oc002.png" title="Caption" ></p>
-
-<h3>HTML——调用——OC</h3>
-
-<p>这里的例子是通过在html中点击一个按钮去调用OC代码，访问系统系相册</p>
-
-<h6>先来看看OC中需要怎么写：</h6>
-
-<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节）</p>
-
-<pre><code>// 加载网页
-NSURL *url = [[NSBundle mainBundle] URLForResource:@"test" withExtension:@"html"];
-NSURLRequest *request = [NSURLRequest requestWithURL:url];
-[self.webView loadRequest:request];
-</code></pre>
-
-<p>2.在Web开始加载请求的代理方法中拼接方法（包装）</p>
-
-<pre><code>#pragma mark - &lt;UIWebViewDelegate&gt;
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
-//    NSLog(@"------%@", request.URL.absoluteString);
-    NSString *requestUrl = request.URL.absoluteString;
-    NSRange range = [requestUrl rangeOfString:@"ds3q:///"];
-    NSUInteger location = range.location;
-    if (location != NSNotFound) {
-        NSString *str = [requestUrl substringFromIndex:location + range.length];
-        NSLog(@"%@", str);
-        // 包装SEL
-        SEL method = NSSelectorFromString(str);
-        [self performSelector:method];
-    }
-
-    return YES;
-}
-</code></pre>
-
-<p>3.实现打开相册的OC方法</p>
-
-<pre><code>// 打开相册
-- (void)openCamera{
-    UIImagePickerController *vc = [[UIImagePickerController alloc] init];
-    vc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    [self presentViewController:vc animated:YES completion:nil];
-}
-</code></pre>
-
-<p>4.再来看看html中简单的写法</p>
-
-<pre><code>&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head lang="en"&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;title&gt;&lt;/title&gt;
-    &lt;style&gt;
-        body{
-            margin-top: 50px;
-        }
-    &lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;button onclick="openCamera();"&gt;访问相册&lt;/button&gt;
-    &lt;script type="text/javascript"&gt;
-        function openCamera(){
-            window.location.href = 'ds3q:///openCamera';
-        }
-    &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-
-<p> 显示效果</p>
-
-<p> <img src="/images/html&amp;oc003.png" title="Caption" ></p>
-
-<hr />
-
-<p>  <img src="/images/html&amp;oc004.png" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[玩转定时器]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi/"/>
-    <updated>2015-12-09T18:17:51+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/09/wan-zheng-ding-shi-qi</id>
-    <content type="html"><![CDATA[<p> <img src="/images/dingshiqi.png" title="Caption" ></p>
-
-<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
-
-<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
-
-<!--more-->
-
-
-<h2>一、NSTimer</h2>
-
-<h5>1. 创建方法</h5>
-
-<pre><code>1     // 设置定时器
-2     [NSTimer scheduledTimerWithTimeInterval:.1 target:self selector:@selector(timeChange) userInfo:nil repeats:YES];
-3     
-4     // 0.1 setNeedsDisplay 绑定一个标识,等待下次刷新的时候才会调用drawRect方法
-5     // 0.15 屏幕的刷新时间
-</code></pre>
-
-<ul>
-<li><p>TimerInterval : 执行之前等待的时间。比如设置成1.0，就代表1秒后执行方法</p></li>
-<li><p>target : 需要执行方法的对象。</p></li>
-<li><p>selector : 需要执行的方法</p></li>
-<li><p>repeats : 是否需要循环</p></li>
-</ul>
-
-
-<h5>2. 释放方法</h5>
-
-<pre><code> [timer invalidate]; 
-</code></pre>
-
-<blockquote><p>注意 :
-调用创建方法后，target对象的计数器会加1，直到执行完毕，自动减1。如果是循环执行的话，就必须手动关闭，否则可以不执行释放方法。</p></blockquote>
-
-<h5>3. 特性</h5>
-
-<ul>
-<li>存在延迟</li>
-</ul>
-
-
-<p>不管是一次性的还是周期性的timer的实际触发事件的时间，都会与所加入的RunLoop和RunLoop Mode有关，如果此RunLoop正在执行一个连续性的运算，timer就会被延时出发。重复性的timer遇到这种情况，如果延迟超过了一个周期，则会在延时结束后立刻执行，并按照之前指定的周期继续执行。</p>
-
-<ul>
-<li>必须加入Runloop</li>
-</ul>
-
-
-<p>使用上面的创建方式，会自动把timer加入MainRunloop的NSDefaultRunLoopMode中。如果使用以下方式创建定时器，就必须手动加入Runloop:</p>
-
-<pre><code>NSTimer *timer = [NSTimer timerWithTimeInterval:5 target:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(timerAction) userInfo:nil repeats:YES];&lt;br&gt;&lt;br&gt;
-[[NSRunLoop mainRunLoop] &lt;span style="color: #3366ff;"&gt;addTimer&lt;/span&gt;:timer forMode:NSDefaultRunLoopMode];
-</code></pre>
-
-<p> 注意NSTimer还有一个方法，因为每次用的时候都是使用带target的这个方法，突然有一天很好奇就研究了一下，他的使用也很简单，只是相对上面那个有点繁琐，</p>
-
-<h5>1:创建一个签名：</h5>
-
-<pre><code> NSMethodSignature *singature = [NSMethodSignature signatureWithObjCTypes:"v@:"]; 2  
-</code></pre>
-
-<p>这里我想如果你仔细的话肯定注意到了：后面的“v@：”，这里是运行时的语法</p>
-
-<p>在这里是指一个方法</p>
-
-<pre><code>v放回viod类型
-@一个id类型的对象
-：对应SEL
-</code></pre>
-
-<p>关于运行时这里不多介绍请查看笔者之前的文章，或者查看官方文档，这是一个iOS开发者必须会的知识点</p>
-
-<h5>2:通过前面创建一个请求，并且设置对应的target和SEL</h5>
-
-<pre><code>&lt;span style="color: #3366ff;"&gt;    NSInvocation&lt;/span&gt; *vocation = [NSInvocation invocationWithMethodSignature:singature];
-    vocation.target = self;
-    vocation.selector = @selector(timeChange);
-</code></pre>
-
-<h5>3:在讲请求传到NSTimer中去实现定时</h5>
-
-<pre><code>[NSTimer scheduledTimerWithTimeInterval:1 invocation:vocation repeats:YES]; 
-</code></pre>
-
-<h2>二、CADisplayLink</h2>
-
-<h5>1. 创建方法</h5>
-
-<pre><code>self.displayLink = [CADisplayLink displayLinkWithTarget:self &lt;span style="color: #3366ff;"&gt;selector&lt;/span&gt;:@selector(handleDisplayLink:)];   
-[self.displayLink &lt;span style="color: #3366ff;"&gt;addToRunLoop&lt;/span&gt;:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-</code></pre>
-
-<h5>2. 停止方法</h5>
-
-<pre><code>self.displayLink &lt;span style="color: #3366ff;"&gt;invalidate&lt;/span&gt;]; 
-self.displayLink = nil;
-</code></pre>
-
-<p> 当把CADisplayLink对象add到runloop中后，selector就能被周期性调用，类似于重复的NSTimer被启动了；执行invalidate操作时，CADisplayLink对象就会从runloop中移除，selector调用也随即停止，类似于NSTimer的invalidate方法。</p>
-
-<h5>3. 特性</h5>
-
-<ul>
-<li>屏幕刷新时调用</li>
-</ul>
-
-
-<p>CADisplayLink是一个能让我们以和屏幕刷新率同步的频率将特定的内容画到屏幕上的定时器类。CADisplayLink以特定模式注册到runloop后，每当屏幕显示内容刷新结束的时候，runloop就会向CADisplayLink指定的target发送一次指定的selector消息， CADisplayLink类对应的selector就会被调用一次。所以通常情况下，按照iOS设备屏幕的刷新率60次/秒</p>
-
-<ul>
-<li>延迟</li>
-</ul>
-
-
-<p>iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。但如果调用的方法比较耗时，超过了屏幕刷新周期，就会导致跳过若干次回调调用机会。</p>
-
-<p>如果CPU过于繁忙，无法保证屏幕60次/秒的刷新率，就会导致跳过若干次调用回调方法的机会，跳过次数取决CPU的忙碌程度。</p>
-
-<ul>
-<li>使用场景</li>
-</ul>
-
-
-<p>从原理上可以看出，CADisplayLink适合做界面的不停重绘，比如视频播放的时候需要不停地获取下一帧用于界面渲染。</p>
-
-<h5>4. 重要属性</h5>
-
-<ul>
-<li>frameInterval</li>
-</ul>
-
-
-<p>NSInteger类型的值，用来设置间隔多少帧调用一次selector方法，默认值是1，即每帧都调用一次。</p>
-
-<ul>
-<li>duration</li>
-</ul>
-
-
-<p>readOnly的CFTimeInterval值，表示两次屏幕刷新之间的时间间隔。需要注意的是，该属性在target的selector被首次调用以后才会被赋值。selector的调用间隔时间计算方式是：调用间隔时间 = duration × frameInterval。</p>
-
-<h5>CADisplayLink底层实现：</h5>
-
-<pre><code> setNeedsDisplay:底层并不会马上调用drawRect,只会给当前的控件绑定一个刷新的标识,每次屏幕刷新的时候,就会把绑定了刷新(重绘)标识的控件重新刷新(绘制)一次,就会调用drawRect去重绘
-</code></pre>
-
-<blockquote><p> 注意：如果以后每隔一段时间需要重绘,一般不使用NSTimer,使用CADisplayLink,不会刷新的时候有延迟</p></blockquote>
-
-<h2>三、GCD方式</h2>
-
-<h5>执行一次</h5>
-
-<pre><code>1 double delayInSeconds = 2.0;
-2 dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC); 
-3 dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
-4     //执行事件
-5 });
-</code></pre>
-
-<h5>重复执行</h5>
-
-<pre><code>1 NSTimeInterval period = 1.0; //设置时间间隔
-2 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-3 dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
-4 dispatch_source_set_timer(_timer, dispatch_walltime(NULL, 0), period * NSEC_PER_SEC, 0); //每秒执行
-5 dispatch_source_set_event_handler(_timer, ^{
-6     //在这里执行事件
-7 });
-8 dispatch_resume(_timer);
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[怎么封装一个控件]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/"/>
-    <updated>2015-12-07T17:44:16+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/07/zen-yao-feng-zhuang-[?]-ge-kong-jian</id>
-    <content type="html"><![CDATA[<p>一个控件从外在特征来说，主要是封装这几点：</p>
-
-<ul>
-<li>交互方式</li>
-<li>显示样式</li>
-<li>数据使用</li>
-</ul>
-
-
-<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
-
-<ul>
-<li>灵活性</li>
-<li>低耦合</li>
-<li>易拓展</li>
-<li>易维护</li>
-</ul>
-
-
-<!--more-->
-
-
-<p>通常特征之间需要做一些取舍，比如灵活性与耦合度，有时候接口越多越能适应各种环境，但是接口越少对外产生的依赖就越少，维护起来也更容易。通常一些前期看起来还不错的代码，往往也会随着时间加深慢慢“成长”，功能的增加也会带来新的接口，很不自觉地就加深了耦合度，在开发中时不时地进行一些重构工作很有必要。总之，尽量减少接口的数量，但有足够的定制空间，可以在一开始把接口全部隐藏起来，再根据实际需要慢慢放开。</p>
-
-<p>自定义控件在 iOS 项目里很常见，通常页面之间入口很多，而且使用场景极有可能大不相同，比如一个 UIView 既可以以代码初始化，也可以以 xib 的形式初始化，而我们是需要保证这两种操作都能产生同样的行为。本文将会讨论到以下几点：</p>
-
-<ul>
-<li>选择正确的初始化方式</li>
-<li>调整布局的时机</li>
-<li>正确的处理 touches 方法</li>
-<li>drawRectCALayer 与动画</li>
-<li>UIControl 与 UIButton</li>
-<li>更友好的支持 xib</li>
-<li>不规则图形和事件触发范围（事件链的简单介绍以及处理）</li>
-<li>合理使用 KVO</li>
-</ul>
-
-
-<p>如果这些问题你一看就懂的话就不用继续往下看了。</p>
-
-<p>设计方针</p>
-
-<p>选择正确的初始化方式</p>
-
-<p>UIView 的首要问题就是既能从代码中初始化，也能从 xib 中初始化，两者有何不同? UIView 是支持 NSCoding 协议的，当在 xib 或 storyboard 里存在一个 UIView 的时候，其实是将 UIView 序列化到文件里（xib 和 storyboard 都是以 XML 格式来保存的），加载的时候反序列化出来，所以：</p>
-
-<ul>
-<li>当从代码实例化 UIView 的时候，initWithFrame 会执行；</li>
-<li>当从文件加载 UIView 的时候，initWithCoder 会执行。</li>
-</ul>
-
-
-<p>从代码中加载</p>
-
-<p>虽然 initWithFrame 是 UIView 的Designated Initializer，理论上来讲你继承自 UIView 的任何子类，该方法最终都会被调用，但是有一些类在初始化的时候没有遵守这个约定，如 UIImageView 的 initWithImage 和 UITableViewCell 的 initWithStyle:reuseIdentifier: 的构造器等，所以我们在写自定义控件的时候，最好只假设父视图的 Designated Initializer 被调用。</p>
-
-<p>如果控件在初始化或者在使用之前必须有一些参数要设置，那我们可以写自己的 Designated Initializer 构造器，如：</p>
-
-<pre><code>- (instancetype)initWithName:(NSString *)name;
-</code></pre>
-
-<p>在实现中一定要调用父类的 Designated Initializer，而且如果你有多个自定义的 Designated Initializer，最终都应该指向一个全能的初始化构造器：</p>
-
-<pre><code>- (instancetype)initWithName:(NSString *)name {
-    self = [self initWithName:name frame:CGRectZero];
-    return self;
-}
-- (instancetype)initWithName:(NSString *)name frame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.name = name;
-    }
-    return self;
-}
-</code></pre>
-
-<p>并且你要考虑到，因为你的控件是继承自 UIView 或 UIControl 的，那么用户完全可以不使用你提供的构造器，而直接调用基类的构造器，所以最好重写父类的 Designated Initializer，使它调用你提供的 Designated Initializer ，比如父类是个 UIView：</p>
-
-<pre><code>- (instancetype)initWithFrame:(CGRect)frame {
-    self = [self initWithName:nil frame:frame];
-    return self;
-}
-</code></pre>
-
-<p>这样当用户从代码里初始化你的控件的时候，就总是逃脱不了你需要执行的初始化代码了，哪怕用户直接调用 init 方法，最终还是会回到父类的 Designated Initializer 上。</p>
-
-<p>从 xib 或 storyboard 中加载</p>
-
-<p>当控件从 xib 或 storyboard 中加载的时候，情况就变得复杂了，首先我们知道有 initWithCoder 方法，该方法会在对象被反序列化的时候调用，比如从文件加载一个 UIView 的时候：</p>
-
-<pre><code>UIView *view = [[UIView alloc] init];
-NSData *data = [NSKeyedArchiver archivedDataWithRootObject:view];
-[[NSUserDefaults standardUserDefaults] setObject:data forKey:@"KeyView"];
-[[NSUserDefaults standardUserDefaults] synchronize];
-data = [[NSUserDefaults standardUserDefaults] objectForKey:@"KeyView"];
-view = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-NSLog(@"%@", view);
-</code></pre>
-
-<p>执行 unarchiveObjectWithData 的时候， initWithCoder 会被调用，那么你有可能会在这个方法里做一些初始化工作，比如恢复到保存之前的状态，当然前提是需要在 encodeWithCoder 中预先保存下来。</p>
-
-<p>不过我们很少会自己直接把一个 View 保存到文件中，一般是在 xib 或 storyboard 中写一个 View，然后让系统来完成反序列化的工作，此时在 initWithCoder 调用之后，awakeFromNib 方法也会被执行，既然在 awakeFromNib 方法里也能做初始化操作，那我们如何抉择?</p>
-
-<p>一般来说要尽量在 initWithCoder 中做初始化操作，毕竟这是最合理的地方，只要你的控件支持序列化，那么它就能在任何被反序列化的时候执行初始化操作，这里适合做全局数据、状态的初始化工作，也适合手动添加子视图。</p>
-
-<p>awakeFromNib 相较于 initWithCoder 的优势是：当 awakeFromNib 执行的时候，各种 IBOutlet 也都连接好了；而 initWithCoder 调用的时候，虽然子视图已经被添加到视图层级中，但是还没有引用。如果你是基于 xib 或 storyboard 创建的控件，那么你可能需要对 IBOutlet 连接的子控件进行初始化工作，这种情况下，你只能在 awakeFromNib 里进行处理。同时 xib 或 storyboard 对灵活性是有打折的，因为它们创建的代码无法被继承，所以当你选择用 xib 或 storyboard 来实现一个控件的时候，你已经不需要对灵活性有很高的要求了，唯一要做的是要保证用户一定是通过 xib 创建的此控件，否则可能是一个空的视图，可以在 initWithFrame 里放置一个 断言 或者异常来通知控件的用户。</p>
-
-<p>最后还要注意视图层级的问题，比如你要给 View 放置一个背景，你可能会在 initWithCoder 或 awakeFromNib 中这样写：</p>
-
-<pre><code>[self addSubview:self.backgroundView]; // 通过懒加载一个背景 View，然后添加到视图层级上
-</code></pre>
-
-<p>你的本意是在控件的最下面放置一个背景，却有可能将这个背景覆盖到控件的最上方，原因是用户可能会在 xib 里写入这个控件，然后往它上面添加一些子视图，这样一来，用户添加的这些子视图会在你添加背景之前先进入视图层级，你的背景被添加后就挡住了用户的子视图。如果你想支持用户的这种操作，可以把 addSubview 替换成 insertSubview:atIndex:。</p>
-
-<p>同时支持从代码和文件中加载</p>
-
-<p>如果你要同时支持 initWithFrame 和 initWithCoder ，那么你可以提供一个 commonInit 方法来做统一的初始化：</p>
-
-<pre><code>- (id)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (id)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)commonInit {
-    // do something ...
-}
-</code></pre>
-
-<p>awakeFromNib 方法里就不要再去调用 commonInit 了。</p>
-
-<p>调整布局的时机</p>
-
-<p>当一个控件被初始化以及开始使用之后，它的 frame 仍然可能发生变化，我们也需要接受这些变化，因为你提供的是 UIView 的接口，UIView 有很多种初始化方式：initWithFrame、initWithCoder、init 和类方法 new，用户完全可以在初始化之后再设置 frame 属性，而且用户就算使用 initWithFrame 来初始化也避免不了 frame 的改变，比如在横竖屏切换的时候。为了确保当它的 Size 发生变化后其子视图也能同步更新，我们不能一开始就把布局写死（使用约束除外）。</p>
-
-<p>基于 frame</p>
-
-<p>如果你是直接基于 frame 来布局的，你应该确保在初始化的时候只添加视图，而不去设置它们的frame，把设置子视图 frame 的过程全部放到 layoutSubviews 方法里：</p>
-
-<pre><code>- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    self.label.frame = CGRectInset(self.bounds, 20, 0);
-}
-- (void)commonInit {
-    [self addSubview:self.label];
-}
-- (UILabel *)label {
-    if (_label == nil) {
-        _label = [UILabel new];
-        _label.textColor = [UIColor grayColor];
-    }
-    return _label;
-}
-</code></pre>
-
-<p>这么做就能保证 label 总是出现在正确的位置上。</p>
-
-<p>使用 layoutSubviews 方法有几点需要注意：</p>
-
-<p>不要依赖前一次的计算结果，应该总是根据当前最新值来计算
-由于 layoutSubviews 方法是在自身的 bounds 发生改变的时候调用， 因此 UIScrollView 会在滚动时不停地调用，当你只关心 Size 有没有变化的时候，可以把前一次的 Size 保存起来，通过与最新的 Size 比较来判断是否需要更新，在大多数情况下都能改善性能
-基于 Auto Layout 约束</p>
-
-<p>如果你是基于 Auto Layout 约束来进行布局，那么可以在 commonInit 调用的时候就把约束添加上去，不要重写 layoutSubviews 方法，因为这种情况下它的默认实现就是根据约束来计算 frame。最重要的一点，把 translatesAutoresizingMaskIntoConstraints 属性设为 NO，以免产生 NSAutoresizingMaskLayoutConstraint 约束，如果你使用 Masonry 框架的话，则不用担心这个问题，mas_makeConstraints 方法会首先设置这个属性为 NO:</p>
-
-<pre><code>- (void)commonInit {
-    ...
-    [self setupConstraintsForSubviews];
-}
-- (void)setupConstraintsForSubviews {
-    [self.label mas_makeConstraints:^(MASConstraintMaker *make) {
-        ...
-    }];
-}
-</code></pre>
-
-<p>支持 sizeToFit</p>
-
-<p>如果你的控件对尺寸有严格的限定，比如有一个统一的宽高比或者是固定尺寸，那么最好能实现系统给出的约定成俗的接口。</p>
-
-<p>sizeToFit 用在基于 frame 布局的情况下，由你的控件去实现 sizeThatFits: 方法：</p>
-
-<pre><code>- (CGSize)sizeThatFits:(CGSize)size {
-    CGSize fitSize = [super sizeThatFits:size];
-    fitSize.height += self.label.frame.size.height;
-    // 如果是固定尺寸，就像 UISwtich 那样返回一个固定 Size 就 OK 了
-    return fitSize;
-}
-</code></pre>
-
-<p>然后在外部调用该控件的 sizeToFit 方法，这个方法内部会自动调用 sizeThatFits 并更新自身的 Size：</p>
-
-<p>[self.customView sizeToFit];
-在 ViewController 里调整视图布局</p>
-
-<p>当执行 viewDidLoad 方法时，不要依赖 self.view 的 Size。很多人会这样写：</p>
-
-<pre><code>- (void)viewDidLoad {
-    ...
-    self.label.width = self.view.width;
-}
-</code></pre>
-
-<p>这样是不对的，哪怕看上去没问题也只是碰巧没问题而已。当 viewDidLoad 方法被调用的时候，self.view 才刚刚被初始化，此时它的容器还没有对它的 frame 进行设置，如果 view 是从 xib 加载的，那么它的 Size 就是 xib 中设置的值；如果它是从代码加载的，那么它的 Size 和屏幕大小有关系，除了 Size 以外，Origin 也不会准确。整个过程看起来像这样：</p>
-
-<p>当访问 ViewController 的 view 的时候，ViewController 会先执行 loadViewIfRequired 方法，如果 view 还没有加载，则调用 loadView，然后是 viewDidLoad 这个钩子方法，最后是返回 view，容器拿到 view 后，根据自身的属性（如 edgesForExtendedLayout、判断是否存在 tabBar、判断 navigationBar 是否透明等）添加约束或者设置 frame。</p>
-
-<p>你至少应该设置 autoresizingMask 属性：</p>
-
-<pre><code>- (void)viewDidLoad {
-    ...
-    self.label.width = self.view.width;
-    self.label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-}
-</code></pre>
-
-<p>或者在 viewDidLayoutSubviews 里处理：</p>
-
-<pre><code>- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    self.label.width = self.view.width;
-}
-</code></pre>
-
-<p>如果是基于 Auto Layout 来布局，则在 viewDidLoad 里添加约束即可。</p>
-
-<p>正确的处理 touches 方法</p>
-
-<p>如果你需要重写 touches 方法，那么应该完整的重写这四个方法：</p>
-
-<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-</code></pre>
-
-<p>当你的视图在这四个方法执行的时候，如果已经对事件进行了处理，就不要再调用 super 的 touches 方法，super 的 touches 方法默认实现是在响应链里继续转发事件（UIView 的默认实现）。如果你的基类是 UIScrollView 或者 UIButton 这些已经重写了事件处理的类，那么当你不想处理事件的时候可以调用 self.nextResponder 的 touches 方法来转发事件，其他的情况就调用 super 的 touches 方法来转发，比如 UIScrollView 可以这样来转发 触摸 事件：</p>
-
-<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (!self.dragging) {
-        [self.nextResponder touchesBegan: touches withEvent:event]; 
-    }       
-    [super touchesBegan: touches withEvent: event];
-}
-- (void)touchesMoved...
-- (void)touchesEnded...
-- (void)touchesCancelled...
-</code></pre>
-
-<p>这么实现以后，当你仅仅只是“碰”一个 UIScrollView 的时候，该事件就有可能被 nextResponder 处理。</p>
-
-<p>如果你没有实现自己的事件处理，也没有调用 nextResponder 和 super，那么响应链就会断掉。另外，尽量用手势识别器去处理自定义事件，它的好处是你不需要关心响应链，逻辑处理起来也更加清晰，事实上，UIScrollView 也是通过手势识别器实现的：</p>
-
-<pre><code>@property(nonatomic, readonly) UIPanGestureRecognizer *panGestureRecognizer NS_AVAILABLE_IOS(5_0); 
-@property(nonatomic, readonly) UIPinchGestureRecognizer *pinchGestureRecognizer NS_AVAILABLE_IOS(5_0);
-</code></pre>
-
-<p>drawRect、CALayer 与动画</p>
-
-<p>drawRect 方法很适合做自定义的控件，当你需要更新 UI 的时候，只要用 setNeedsDisplay 标记一下就行了，这么做又简单又方便；控件也常常用于封装动画，但是动画却有可能被移除掉。</p>
-
-<p>需要注意的地方：</p>
-
-<ol>
-<li>在 drawRect 里尽量用 CGContext 绘制 UI。如果你用 addSubview 插入了其他的视图，那么当系统在每次进入绘制的时候，会先把当前的上下文清除掉（此处不考虑 clearsContextBeforeDrawing 的影响），然后你也要清除掉已有的 subviews，以免重复添加视图；用户可能会往你的控件上添加他自己的子视图，然后在某个情况下清除所有的子视图（我就喜欢这么做）：</li>
-</ol>
-
-
-<p>[subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-2. 用 CALayer 代替 UIView。CALayer 节省内存，而且更适合去做一个“图层”，因为它不会接收事件、也不会成为响应链中的一员，但是它能够响应父视图（或 layer）的尺寸变化，这种特性很适合做单纯的数据展示：</p>
-
-<pre><code>CALayer *imageLayer = [CALayer layer];
-imageLayer.frame = rect;
-imageLayer.contents = (id)image;
-[self.view.layer addSublayer:imageLayer];
-</code></pre>
-
-<ol>
-<li><p>如果有可能的话使用 setNeedsDisplayInRect 代替 setNeedsDisplay 以优化性能，但是遇到性能问题的时候应该先检查自己的绘图算法和绘图时机，我个人其实从来没有使用过 setNeedsDisplayInRect。</p></li>
-<li><p>当你想做一个无限循环播放的动画的时候，可能会创建几个封装了动画的 CALayer，然后把它们添加到视图层级上，就像我在 iOS 实现脉冲雷达以及动态增减元素 By Swift 中这么做的：</p></li>
-</ol>
-
-
-<p><img src="/images/kongjianfengzhuang001.gif" title="Caption" ></p>
-
-<p>效果还不错，实现又简单，但是当你按下 Home 键并再次返回到 app 的时候，原本好看的动画就变成了一滩死水：</p>
-
-<p>这是因为在按下 Home 键的时候，所有的动画被移除了，具体的，每个 layer 都调用了 removeAllAnimations 方法。</p>
-
-<p>如果你想重新播放动画，可以监听 UIApplicationDidBecomeActiveNotification 通知，就像我在 上述博客 中做的那样。</p>
-
-<ol>
-<li><p>UIImageView 的 drawRect 永远不会被调用：</p>
-
-<pre><code> Special Considerations
- The UIImageView class is optimized to draw its images to the display. UIImageView will not call drawRect: in a subclass. If your subclass needs custom drawing code, it is recommended you use UIView as the base class.
-</code></pre></li>
-<li>UIView 的 drawRect 也不一定会调用，我在 12 年的博客：定制UINavigationBar 中曾经提到过 UIKit 框架的实现机制：</li>
-</ol>
-
-
-<p>众所周知一个视图如何显示是取决于它的 drawRect 方法，因为调这个方法之前 UIKit 也不知道如何显示它，但其实 drawRect 方法的目的也是画图（显示内容），而且我们如果以其他的方式给出了内容（图）的话， drawRect 方法就不会被调用了。</p>
-
-<p>注：实际上 UIView 是 CALayer 的delegate，如果 CALayer 没有内容的话，会回调给 UIView 的 displayLayer: 或者 drawLayer:inContext: 方法，UIView 在其中调用 drawRect ，draw 完后的图会缓存起来，除非使用 setNeedsDisplay 或是一些必要情况，否则都是使用缓存的图。</p>
-
-<p>UIView 和 CALayer 都是模型对象，如果我们以这种方式给出内容的话，drawRect 也就不会被调用了：</p>
-
-<pre><code>self.customView.layer.contents = (id)[UIImage imageNamed:@"AppIcon"];
-// 哪怕是给它一个 nil，这两句等价
-self.customView.layer.contents = nil;
-</code></pre>
-
-<p>我猜测是在 CALayer 的 setContents 方法里有个标记，无论传入的对象是什么都会将该标记打开，但是调用 setNeedsDisplay 的时候会将该标记去除。</p>
-
-<p>UIControl 与 UIButton</p>
-
-<p>如果要做一个可交互的控件，那么把 UIControl 作为基类就是首选，这个完美的基类支持各种状态：</p>
-
-<ul>
-<li>enabled</li>
-<li>selected</li>
-<li>highlighted</li>
-<li>tracking</li>
-<li><p>……
-还支持多状态下的观察者模式：</p>
-
-<pre><code>  @property(nonatomic,readonly) UIControlState state;
-  - (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
-  - (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
-</code></pre>
-
-<p>这个基类可以很方便地为视图添加各种点击状态，最常见的用法就是将 UIViewController 的 view 改成 UIControl，然后就能快速实现 resignFirstResponder。</p></li>
-</ul>
-
-
-<p>UIButton 自带图文接口，支持更强大的状态切换，titleEdgeInsets 和 imageEdgeInsets 也比较好用，配合两个基类的属性更好，先设置对齐规则，再设置 insets：</p>
-
-<pre><code>@property(nonatomic) UIControlContentVerticalAlignment contentVerticalAlignment;    
-@property(nonatomic) UIControlContentHorizontalAlignment contentHorizontalAlignment;
-</code></pre>
-
-<p>UIControl 和 UIButton 都能很好的支持 xib，可以设置各种状态下的显示和 Selector，但是对 UIButton 来说这些并不够，因为 Normal 、Highlighted 和 Normal | Highlighted 是三种不同的状态，如果你需要实现根据当前状态显示不同高亮的图片，可以参考我下面的代码：</p>
-
-<p><img src="/images/kongjianfengzhuang002.png" title="Caption" ></p>
-
-<pre><code>- (void)updateStates {
-    [super setTitle:[self titleForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
-    [super setImage:[self imageForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
-    [super setTitle:[self titleForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
-    [super setImage:[self imageForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
-}
-</code></pre>
-
-<p>或者使用初始化设置：</p>
-
-<pre><code>- (void)commonInit {
-    [self setImage:[UIImage imageNamed:@"Normal"] forState:UIControlStateNormal];
-    [self setImage:[UIImage imageNamed:@"Selected"] forState:UIControlStateSelected];
-    [self setImage:[UIImage imageNamed:@"Highlighted"] forState:UIControlStateHighlighted];
-    [self setImage:[UIImage imageNamed:@"Selected_Highlighted"] forState:UIControlStateSelected | UIControlStateHighlighted];
-}
-</code></pre>
-
-<p>总之尽量使用原生类的接口，或者模仿原生类的接口。</p>
-
-<p>大多数情况下根据你所需要的特性来选择现有的基类就够了，或者用 UIView + 手势识别器 的组合也是一个好方案，尽量不要用 touches 方法（userInteractionEnabled 属性对 touches 和手势识别器的作用一样），这是我在 DKCarouselView 中内置的一个可点击的 ImageView，也可以继承 UIButton，不过 UIButton 更侧重于状态，ImageView 侧重于图片本身：</p>
-
-<pre><code>typedef void(^DKCarouselViewTapBlock)();
-@interface DKClickableImageView : UIImageView
-@property (nonatomic, assign) BOOL enable;
-@property (nonatomic, copy) DKCarouselViewTapBlock tapBlock;
-@end
-@implementation DKClickableImageView
-- (instancetype)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
-        [self commonInit];
-    }
-    return self;
-}
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    if ((self = [super initWithCoder:aDecoder])) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)commonInit {
-    self.userInteractionEnabled = YES;
-    self.enable = YES;
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onTap:)];
-    [self addGestureRecognizer:tapGesture];
-}
-- (IBAction)onTap:(id)sender {
-    if (!self.enable) return;
-    if (self.tapBlock) {
-        self.tapBlock();
-    }
-}
-@end
-</code></pre>
-
-<p>更友好的支持 xib</p>
-
-<p>你的控件现在应该可以正确的从文件、代码中初始化了，但是从 xib 中初始化以后可能还需要通过代码来进行一些设置，你或许觉得像上面那样设置 Button 的状态很恶心而且不够直观，但是也没办法，这是由于 xib 虽然对原生控件，如 UIView、UIImageView、UIScrollView 等支持较好（想设置圆角、边框等属性也没办法，只能通过 layer 来设置），但是对自定义控件却没有什么办法，当你拖一个 UIView 到 xib 中，然后把它的 Class 改成你自己的子类后，xib 如同一个瞎子一样，不会有任何变化。————好在这些都成了过去。</p>
-
-<p>Xcode 6 引入了两个新的宏：IBInspectable 和 IBDesignable。</p>
-
-<p>IBInspectable</p>
-
-<p>该宏会让 xib 识别属性，它支持这些数据类型：布尔、字符串、数字（NSNumber）、 CGPoint、CGSize、CGRect、UIColor 、 NSRange 和 UIImage。</p>
-
-<p>比如我们要让自定义的 Button 能在 xib 中设置 UIControlStateSelected | UIControlStateHighlighted 状态的图片，就可以这么做：</p>
-
-<pre><code>// CustomButton
-@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
-- (void)setHighlightSelectedImage:(UIImage *)highlightSelectedImage {
-    _highlightSelectedImage = highlightSelectedImage;
-    [self setImage:highlightSelectedImage forState:UIControlStateHighlighted | UIControlStateSelected];
-}
-</code></pre>
-
-<p>只需要在属性上加个 IBInspectable 宏即可，然后 xib 中就能显示这个自定义的属性：</p>
-
-<p><img src="/images/kongjianfengzhuang003.png" title="Caption" ></p>
-
-<p>xib 会把属性名以大驼峰样式显示，如果有多个属性，xib 也会自动按属性名的第一个单词分组显示，如：</p>
-
-<p><img src="/images/kongjianfengzhuang004.png" title="Caption" ></p>
-
-<p>通过使用 IBInspectable 宏，你可以把原本只能通过代码来设置的属性，也放到 xib 里来，代码就显得更加简洁了。</p>
-
-<p>IBDesignable</p>
-
-<p>xib 配合 IBInspectable 宏虽然可以让属性设置变得简单化，但是只有在运行期间你才能看到控件的真正效果，而使用 IBDesignable 可以让 Interface Builder 实时渲染控件，这一切只需要在类名加上 IBDesignable 宏即可：</p>
-
-<pre><code>IB_DESIGNABLE
-@interface CustomButton : UIButton
-@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
-@end
-</code></pre>
-
-<p>这样一来，当你在 xib 中调整属性的时候，画布也会实时更新。</p>
-
-<p>关于对 IBInspectable / IBDesignable 的详细介绍可以看这里：<a href="http://nshipster.cn/ibinspectable-ibdesignable/">http://nshipster.cn/ibinspectable-ibdesignable/</a></p>
-
-<p>这是 Twitter 上其他开发者做出的效果：</p>
-
-<p><img src="/images/kongjianfengzhuang005.png" title="Caption" ></p>
-
-<p><img src="/images/kongjianfengzhuang006.png" title="Caption" ></p>
-
-<p>相信通过使用 IBInspectable / IBDesignable ，会让控件使用起来更加方便、也更加有趣。</p>
-
-<p>不规则图形和事件触发范围</p>
-
-<p>不规则图形在 iOS 上并不多见，想来设计师也怕麻烦。不过 iOS 上的控件说到底都是各式各样的矩形，就算你修改 cornerRadius，让它看起来像这样：</p>
-
-<p><img src="/images/kongjianfengzhuang007.png" title="Caption" ></p>
-
-<p>也只是看起来像这样罢了，它的实际事件触发范围还是一个矩形。</p>
-
-<p>问题描述</p>
-
-<p>想象一个复杂的可交互的控件，它并不是单独工作的，可能需要和另一个控件交互，而且它们的事件触发范围可能会重叠，像这个选择联系人的列表：</p>
-
-<p><img src="/images/kongjianfengzhuang008.gif" title="Caption" ></p>
-
-<p>在设计的时候让上面二级菜单在最大的范围内可以被点击，下面的一级菜单也能在自己的范围内很好的工作，正常情况下它们的触发范围是这样的：</p>
-
-<p><img src="/images/kongjianfengzhuang009.png" title="Caption" ></p>
-
-<p>我们想要的是这样的：</p>
-
-<p><img src="/images/kongjianfengzhuang010.png" title="Caption" ></p>
-
-<p>想要实现这样的效果需要对事件分发有一定的了解。首先我们来想想，当触摸屏幕的时候发生了什么?</p>
-
-<p>当触摸屏幕的时候发生了什么?</p>
-
-<p>当屏幕接收到一个 touch 的时候，iOS 需要找到一个合适的对象来处理事件（ touch 或者手势），要寻找这个对象，需要用到这个方法：</p>
-
-<ul>
-<li>(UIView <em>)hitTest:(CGPoint)point withEvent:(UIEvent </em>)event;
-该方法会首先在 application 的 keyWindow 上调用（UIWindow 也是 UIView 的子类），并且该方法的返回值将被用来处理事件。如果这个 view（无论是 window 还是普通的 UIView） 的 userInteractionEnabled 属性被设置为 NO，则它的 hitTest: 永远返回 nil，这意味着它和它的子视图没有机会去接收和处理事件。如果 userInteractionEnabled 属性为 YES，则会先判断产生触摸的 point 是否发生在自己的 bounds 内，如果没有也将返回 nil；如果 point 在自己的范围内，则会为自己的每个子视图调用 hitTest: 方法，只要有一个子视图通过这个方法返回一个 UIView 对象，那么整个方法就一层一层地往上返回；如果没有子视图返回 UIView 对象，则父视图将会把自己返回。</li>
-</ul>
-
-
-<p>所以，在事件分发中，有这么几个关键点：</p>
-
-<p>如果父视图不能响应事件（userInteractionEnabled 为 NO），则其子视图也将无法响应事件。</p>
-
-<p>如果子视图的 frame 有一半在外面，就像这样：</p>
-
-<p><img src="/images/kongjianfengzhuang011.png" title="Caption" ></p>
-
-<p>则在外面的部分是无法响应事件的，因为它超出了父视图的范围。</p>
-
-<p>整个事件链只会返回一个 Hit-Test View 来处理事件。</p>
-
-<p>子视图的顺序会影响到 Hit-Test View 的选择：最先通过 hitTest: 方法返回的 UIView 才会被返回，假如有两个子视图平级，并且它们的 frame 一样，但是谁是后添加的谁就优先返回。</p>
-
-<p>了解了事件分发的这些特点后，还需要知道最后一件事：UIView 如何判断产生事件的 point 是否在自己的范围内? 答案是通过 pointInside 方法，这个方法的默认实现类似于这样：</p>
-
-<pre><code>// point 被转化为对应视图的坐标系统
-- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
-    return CGRectContainsPoint(self.bounds, point);
-}
-</code></pre>
-
-<p>所以，当我们想改变一个 View 的事件触发范围的时候，重写 pointInside 方法就可以了。</p>
-
-<p>回到问题</p>
-
-<p>针对这种视图一定要处理它们的事件触发范围，也就是 pointInside 方法，一般来说，我们先判断 point 是不是在自己的范围内（通过调用 super 来判断），然后再判断该 point 符不符合我们的处理要求：</p>
-
-<p>这个例子我用 Swift 来写</p>
-
-<pre><code>override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
-    let inside = super.pointInside(point, withEvent: event)
-    if inside {
-        let radius = self.layer.cornerRadius
-        let dx = point.x - self.bounds.size.width / 2
-        let dy = point.y - radius
-        let distace = sqrt(dx * dx + dy * dy)
-        return distace &lt; radius
-    }
-    return inside
-}
-</code></pre>
-
-<p>如果你要实现非矩形的控件，那么请在开发时处理好这类问题。</p>
-
-<p>这里附上一个很容易测试的小 Demo：</p>
-
-<pre><code>class CustomView: UIControl {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.backgroundColor = UIColor.redColor()
-    }
-    required init(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        self.backgroundColor = UIColor.redColor()
-    }
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        self.layer.cornerRadius = self.bounds.size.width / 2
-    }
-    override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -&gt; Bool {
-        self.backgroundColor = UIColor.grayColor()
-        return super.beginTrackingWithTouch(touch, withEvent: event)
-    }
-    override func endTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) {
-        super.endTrackingWithTouch(touch, withEvent: event)
-        self.backgroundColor = UIColor.redColor()
-    }
-    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
-        let inside = super.pointInside(point, withEvent: event)
-        if inside {
-            let radius = self.layer.cornerRadius
-            let dx = point.x - self.bounds.size.width / 2
-            let dy = point.y - radius
-            let distace = sqrt(dx * dx + dy * dy)
-            return distace &lt; radius
-        }
-        return inside
-    }
-}
-</code></pre>
-
-<h4>合理使用 KVO</h4>
-
-<p>某些视图的接口比较宝贵，被你用掉后外部的使用者就无法使用了，比如 UITextField 的 delegate，好在 UITextField 还提供了通知和 UITextInput 方法可以使用；像 UIScrollView 或者基于 UIScrollView 的控件，你既不能设置它的 delegate，又没有其他的替代方法可以使用，对于像以下这种需要根据某些属性实时更新的控件来说，KVO 真是极好的：</p>
-
-<p>这是一个动态高度 Header 的例子（DKStickyHeaderView）：</p>
-
-<p>两者都是基于 UIScrollView、基于 KVO ，不依赖外部参数：</p>
-
-<pre><code>override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer) {
-    if keyPath == KEY_PATH_CONTENTOFFSET {
-        let scrollView = self.superview as! UIScrollView
-        var delta: CGFloat = 0.0
-        if scrollView.contentOffset.y &lt; 0.0 {
-            delta = fabs(min(0.0, scrollView.contentOffset.y))
-        }
-        var newFrame = self.frame
-        newFrame.origin.y = -delta
-        newFrame.size.height = self.minHeight + delta
-        self.frame = newFrame
-    } else {
-        super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
-    }
-}
-</code></pre>
-
-<p>对容器类的 ViewController 来说也一样有用。在 iOS8 之前没有 UIContentContainer 这个正式协议，如果你要实现一个很长的、非列表、可滚动的 ViewController，那么你可能会将其中的功能分散到几个 ChildViewController 里，然后把它们组合起来，这样一来，这些 ChildViewController 既能被单独作为一个 ViewController 展示，也可以被组合到一起。作为组合到一起的前提，就是需要一个至少有以下两个方法的协议：</p>
-
-<p>提供一个统一的输入源，大多是一个 Model 或者像 userId 这样的
-能够返回你所需要的高度，比如设置 preferredContentSize 属性
-ChildViewController 动态地设置 contentSize，容器监听 contentSize 的变化动态地设置约束或者 frame。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Block实战]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan/"/>
-    <updated>2015-12-06T19:42:57+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/06/fen-lei-shi-zhan</id>
-    <content type="html"><![CDATA[<p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
-
-<p>从闭包说起
-在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
-
-<!--more-->
-
-
-<p>所谓词法作用域，顾名思义，是指一个符号引用的是其词法环境中的变量，而无关程序在运行时的状态。这么说可能有点抽象，让我来看一段Common Lisp3代码：</p>
-
-<pre><code>(defvar printer (let ((x 42))
-          (lambda () (format t "~a" x))))
-</code></pre>
-
-<p>这里我们定义了一个变量printer，它的值是一个函数，这个函数会打印词法作用域中的变量x（其值为42）。
-现在我们来调用这个函数：</p>
-
-<pre><code>CL-USER&gt; (funcall printer)
-</code></pre>
-
-<p>42
-可以看到，我们调用了printer中存放的函数之后，打印出来的数字是42，跟我们的预期相符。</p>
-
-<p>接下来再让我们看一个可能会出乎意料的结果：</p>
-
-<pre><code>CL-USER&gt; (let ((x 1))
-       (funcall printer))
-</code></pre>
-
-<p>42
-我们在调用之前把x设置为了1，但是打印的结果仍然是42。</p>
-
-<p>为什么？因为printer中存放的函数在被调用时所引用的变量位于其词法作用域中， 即该函数被定义时所处的词法环境中，所以程序在运行时设置的变量x对函数不起作用。</p>
-
-<p>前面我们讲过，所谓闭包，就是函数及其词法作用域的合称，具体到上例，那么匿名函数和x就构成了一个闭包，它会为函数保存一种状态，有点类似于全局变量，不过除了那个匿名函数，其他函数无法访问到x。</p>
-
-<p>说了这么多，似乎跟block毫无关系？事实上，block为C带来了闭包。</p>
-
-<p>Block
-Apple从OS X 10.6和iOS 4以后开始支持block，让我们用C把上面的例子重写一下：</p>
-
-<pre><code>#include &lt;stdio.h&gt;
-
-int main ()
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
 {
-    int x = 42;
-    void (^block)() = ^() {
-        printf("%d\n", x);
-    };
-    block();
-    x = 1;
-    block();
+    if (_apps == nil) {
+        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+    }
+    return _apps;
+}
+</code></pre>
 
+<h6>加载Plsit中的数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    NSDictionary *dic = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+    */
+     icon.image = [UIImage imageNamed:dic[@"icon"]];
+
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = dic[@"label"];
+
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
+
+    [view addSubview:btn];
+</code></pre>
+
+<h2>二：使用简单的模型加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
+
+<pre><code> 1 //定义一个数组属性
+
+  2 @property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>在模型中定义模型对应的属性</h6>
+
+<pre><code>@property (nonatomic, copy) NSString *icon;
+
+
+@property (nonatomic, copy) NSString *label;
+
+
+@property (nonatomic, copy) NSString *btn;
+</code></pre>
+
+<h6>模型方法</h6>
+
+<pre><code>/**
+ 模型数据方法
+ */
++(instancetype)messageWithDict:(NSDictionary *)dict;
+
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>模型的实现文件</h6>
+
+<pre><code>/**
+ 模型数据方法的实现
+ */
+
++ (instancetype)messageWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>实用模型加载Plist文件</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            appsModel *model = [[appsModel alloc] init];
+            model.label = dic[@"label"];
+            model.btn = dic[@"btn"];
+            model.icon = dic[@"icon"];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载模型中对应的plist数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    appsModel *app = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+     */
+    icon.image = [UIImage imageNamed:app.icon];
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = app.label;
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:app.btn forState:UIControlStateNormal];
+    [view addSubview:btn];
+</code></pre>
+
+<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+{
+self = [super init];
+if (self) {
+    self.label = dict[@"label"];
+    self.btn = dict[@"btn"];
+    self.icon = dict[@"icon"];
+
+//[self setValue:dict[@"label"] forKeyPath:@"label"];
+
+    //封装
+    [self setValuesForKeysWithDictionary:dict];
+}
+
+return self;
+}
+</code></pre>
+
+<p>/<em>*
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ </em>/</p>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+//            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
+
+<p>在模型中定义并且实现一个模型封装的方法</p>
+
+<pre><code>+(NSArray *)appList
+{
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+    }
+    return arrayApps;
+
+}
+</code></pre>
+
+<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+
+        _apps = [appsModel appList];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h2>三：复杂Plist转模型</h2>
+
+<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
+
+<p>比如Plist中海油一个friends这歌子模型</p>
+
+<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
+
+<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
+
+<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
+
+<pre><code>/**
+ 根据plist里面存在的子列中的数据再创建一个模型数据
+ */
+
+/**
+ 设置子模型数据的属性
+ */
+
+@property (nonatomic, assign) NSString *icon;
+
+@property (nonatomic, assign) NSString *intro;
+
+@property (nonatomic, assign) NSString *name;
+
+@property (nonatomic, assign, getter=isVip)BOOL vip;
+
+
+/**
+ 子模型数据的方法
+ */
++ (instancetype)friendWithDict:(NSDictionary *)dict;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>子模型的实现</h6>
+
+<pre><code>/**
+ 子模型数据的方法de实现
+ */
+
++ (instancetype)friendWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>然后就是根模型</h6>
+
+<pre><code>/**
+ 根据plist中的数据创建一个模型数据
+ */
+
+/**
+ 设置模型数据的中的属性
+ */
+
+@property (nonatomic, assign) NSArray *friends;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSNumber *online;
+
+/**
+ 模型数据的方法
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict;
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
+
+<pre><code>/**
+ 模型数据的方法的实现
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+
+        NSMutableArray *friendArray = [NSMutableArray array];
+        for (NSDictionary *dict in self.friends) {
+            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
+            [friendArray addObject:friend];
+        }
+        self.friends = friendArray;
+    }
+    return self;
+}
+</code></pre>
+
+<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
+
+<pre><code>/**
+ 加载模型数据的方法
+ */
+
+- (NSArray *)groups
+{
+    if (_groups == nil) {
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
+
+        NSMutableArray *groupArray = [NSMutableArray array];
+        for (NSDictionary *dict in dictArray) {
+            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
+            [groupArray addObject:group];
+        }
+
+        _groups = groupArray;
+    }
+    return _groups;
+}
+</code></pre>
+
+<h2>四：使用第三份库</h2>
+
+<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
+
+<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
+
+<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
+
+<p>下载好了之后直接讲MJExtension拖到你的项目</p>
+
+<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
+
+<h6>首先根据plist数据新建对应的模型数据</h6>
+
+<p>这里我一新浪微博中的小部分做测试</p>
+
+<pre><code>#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  微博文本内容
+ */
+@property (copy, nonatomic) NSString *text;
+
+/**
+ *  微博作者
+ */
+@property (strong, nonatomic) User *user;
+
+/**
+ *  转发的微博
+ */
+@property (strong, nonatomic) Status *retweetedStatus;
+/**
+ *  存放着某一页微博数据（里面都是Status模型）
+ */
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+/**
+ *  总数
+ */
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+/**
+ *  上一页的游标
+ */
+@property (assign, nonatomic) long long previousCursor;
+
+/**
+ *  下一页的游标
+ */
+@property (assign, nonatomic) long long nextCursor;
+/**
+ *  名称
+ */
+@property (copy, nonatomic) NSString *name;
+
+/**
+ *  头像
+ */
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
+
+<pre><code>/**
+ MJ友情提醒：
+ 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
+ 2.MJExtension能完成的功能
+ * 字典 --&gt; 模型
+ * 模型 --&gt; 字典
+ * 字典数组 --&gt; 模型数组
+ * 模型数组 --&gt; 字典数组
+ 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
+ 4.希望各位大神能用得爽
+ */
+
+#import &lt;Foundation/Foundation.h&gt;
+#import "MJExtension.h"
+#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  简单的字典 -&gt; 模型
+ */
+void keyValues2object()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"name" : @"Jack",
+                           @"icon" : @"lufy.png",
+                           };
+
+    // 2.将字典转为User模型
+    User *user = [User objectWithKeyValues:dict];
+
+    // 3.打印User模型的属性
+    NSLog(@"name=%@, icon=%@", user.name, user.icon);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+ */
+void keyValues2object2()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"text" : @"是啊，今天天气确实不错！",
+
+                           @"user" : @{
+                                   @"name" : @"Jack",
+                                   @"icon" : @"lufy.png"
+                                   },
+
+                           @"retweetedStatus" : @{
+                                   @"text" : @"今天天气真不错！",
+
+                                   @"user" : @{
+                                           @"name" : @"Rose",
+                                           @"icon" : @"nami.png"
+                                           }
+                                   }
+                           };
+
+    // 2.将字典转为Status模型
+    Status *status = [Status objectWithKeyValues:dict];
+
+    // 3.打印status的属性
+    NSString *text = status.text;
+    NSString *name = status.user.name;
+    NSString *icon = status.user.icon;
+    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+    // 4.打印status.retweetedStatus的属性
+    NSString *text2 = status.retweetedStatus.text;
+    NSString *name2 = status.retweetedStatus.user.name;
+    NSString *icon2 = status.retweetedStatus.user.icon;
+    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+ */
+void keyValues2object3()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"statuses" : @[
+                                   @{
+                                       @"text" : @"今天天气真不错！",
+
+                                       @"user" : @{
+                                               @"name" : @"Rose",
+                                               @"icon" : @"nami.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"明天去旅游了",
+
+                                       @"user" : @{
+                                               @"name" : @"Jack",
+                                               @"icon" : @"lufy.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"嘿嘿，这东西不错哦！",
+
+                                       @"user" : @{
+                                               @"name" : @"Jim",
+                                               @"icon" : @"zero.png"
+                                               }
+                                       }
+
+                                   ],
+
+                           @"totalNumber" : @"2014",
+
+                           @"previousCursor" : @"13476589",
+
+                           @"nextCursor" : @"13476599"
+                           };
+
+    // 2.将字典转为StatusResult模型
+    StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+    // 3.打印StatusResult模型的简单属性
+    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+    // 4.打印statuses数组中的模型属性
+    for (Status *status in result.statuses) {
+        NSString *text = status.text;
+        NSString *name = status.user.name;
+        NSString *icon = status.user.icon;
+        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+    }
+}
+
+/**
+ *  字典数组 -&gt; 模型数组
+ */
+void keyValuesArray2objectArray()
+{
+    // 1.定义一个字典数组
+    NSArray *dictArray = @[
+                           @{
+                               @"name" : @"Jack",
+                               @"icon" : @"lufy.png",
+                               },
+
+                           @{
+                               @"name" : @"Rose",
+                               @"icon" : @"nami.png",
+                               },
+
+                           @{
+                               @"name" : @"Jim",
+                               @"icon" : @"zero.png",
+                               }
+                           ];
+
+    // 2.将字典数组转为User模型数组
+    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+    // 3.打印userArray数组中的User模型属性
+    for (User *user in userArray) {
+        NSLog(@"name=%@, icon=%@", user.name, user.icon);
+    }
+}
+
+/**
+ *  模型 -&gt; 字典
+ */
+void object2keyValues()
+{
+    // 1.新建模型
+    User *user = [[User alloc] init];
+    user.name = @"Jack";
+    user.icon = @"lufy.png";
+
+    Status *status = [[Status alloc] init];
+    status.user = user;
+    status.text = @"今天的心情不错！";
+
+    // 2.将模型转为字典
+    //    NSDictionary *dict = [status keyValues];
+    NSDictionary *dict = status.keyValues;
+    NSLog(@"%@", dict);
+}
+
+/**
+ *  模型数组 -&gt; 字典数组
+ */
+void objectArray2keyValuesArray()
+{
+    // 1.新建模型数组
+    User *user1 = [[User alloc] init];
+    user1.name = @"Jack";
+    user1.icon = @"lufy.png";
+
+    User *user2 = [[User alloc] init];
+    user2.name = @"Rose";
+    user2.icon = @"nami.png";
+
+    User *user3 = [[User alloc] init];
+    user3.name = @"Jim";
+    user3.icon = @"zero.png";
+
+    NSArray *userArray = @[user1, user2, user3];
+
+    // 2.将模型数组转为字典数组
+    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+    NSLog(@"%@", dictArray);
+}
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        // 简单的字典 -&gt; 模型
+        keyValues2object();
+
+        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+        keyValues2object2();
+
+        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+        keyValues2object3();
+
+        // 字典数组 -&gt; 模型数组
+        keyValuesArray2objectArray();
+
+        // 模型转字典
+        object2keyValues();
+
+        // 模型数组 -&gt; 字典数组
+        objectArray2keyValuesArray();
+    }
     return 0;
 }
 </code></pre>
-
-<p>编译运行后得到的输出同样是两个42。</p>
-
-<p>到了这里，相信读者对闭包已经有一个直观的认识了，但是它有什么用？有什么好处？
-设想如下场景，我们要请求一个URL，并以block的形式传入回调函数，并在回调函数中用到刚才这个URL：</p>
-
-<pre><code>NSURL *someURL = …;
-[SomeClass getURL:someURL finished:^(id responseObject) {
-    // process responseObject with someURL
-}];
-</code></pre>
-
-<p>这里网络请求是异步的，所以当block中代码执行时，getURL:finished:方法调用所在的栈很可能已经不存在了，但是因为回调block和someURL构成了closure，所以即使栈不存在，block仍然可以引用到someURL。</p>
-
-<p>可能你会说，“我在block中增加一个NSURL类型的参数，把someURL传回来不也可以实现同样的目的吗？”不妨设想如果我们在block中要引用的对象有10个之多，用参数列表传递明显不再现实，用容器类或者专门定义一个类来传递虽然可以，但是前者没有编译器为我们检查错误，后者则相当繁琐。而利用闭包，可以轻易达到灵活性和简洁性的平衡。事实上，美团客户端就大量利用了闭包，在UI层发出请求，在回调中更新某些UI组件。</p>
-
-<p>函数式编程4
-在Lisp中，函数是一等公民，可以随时创建、作为参数传递、作为返回值返回，Objective C在没有block之前，没有类似的机制，有了block，Objective C也就具备了函数式编程的能力，block是对象，有自己的ISA指针，可以随时创建，作为参数传递，作为返回值返回。</p>
-
-<p>先来看看block的经典用法：</p>
-
-<pre><code>[UIView animateWithDuration:0.25 animations:^{
-            self.view.alpha = 1.0f;
-        }];
-</code></pre>
-
-<p>UIView的animateWithDuration:animations:方法的第二个参数是一个block，它把跟动画相关的操作封装起来传递进去，以实现动画效果。</p>
-
-<p>现在让我们发掘一下类似的用法：</p>
-
-<pre><code>[SAKBaseModel comboRequest:^() {
- [dealModel fetchDealByID:123456
-               withFields:nil
-               completion:^(MTDeal *deal, NSError *error) {
-                   ...
-               }];
- [orderModel fetchOrderByID:654321
-             withDealFields:nil
-                 completion:^(MTOrder *order, NSError *error) {
-                ...
-             }];
-}];
-</code></pre>
-
-<p>这里我们为SAKBaseModel设计了一个类似于UIView的接口叫comboRequest，它会接受一个block作为参数，在这个block中发出的请求都会作为combo请求的一部分。如果dealModel或者orderModel的任何一个请求不是出现在block中，那么它就是一个普通的请求。这样做的好处是dealModel和orderModel的接口不需要关心自己是不是属于一个combo请求，调用者则可以灵活地调整代码。</p>
-
-<p>那么怎么实现这样的接口呢？还是从UIView上获取灵感。我们知道UIView有个方法setAnimationsEnabled:，实际上SAKBaseModel也可以有这么一个方法：setComboRequestEnabled:，而在comboRequest方法的实现中，在调用传进来的block之前先setComboRequestEnabled:YES，调用完后再恢复为原状态。相应的，在实际的model接口中，检查comboRequest是否为YES，如果是，则把自己作为一个combo请求的一部分，否则正常发出请求即可。</p>
-
-<p>Think Big
-Lisp最强大的特性之一是condition系统，它可以分离异常的检测、异常的解决和异常解决方式的决策，看一段示例代码：</p>
-
-<pre><code>(define-condition network-timeout-error (error)
-    ((url :initarg :url :accessor url)))
-
-(defun try-again (condition)
-    (let ((restart (find-restart ‘try-again)))
-      (when restart (invoke-restart restart))))
-
-(defun deal-requester (deal-id)
-    (handler-bind ((network-timeout-error #’try-again))
-      (request-from-url (format nil “http://api.mobile.meituan.com/deal/~a” deal-id)
-        (lambda (deal error)
-        (if error
-            (format t “error: ~a”, error)
-            (process-deal))))))
-(defun request-from-url (url finished)
-    (let ((callback (lambda (response error)
-              (if (network-timeout-error-p error)
-                (error ‘network-timeout-error :url url)
-                (funcall finished (parse-deal response) error)))))
-      (restart-bind
-        ((try-again (lambda () (http-request url callback))))
-        (http-request url callback))))
-</code></pre>
-
-<p>可以看到，condition系统对于代码的分层提供了良好的支持，请求超时的错误在底层代码被检测到，在发出请求前注册一个restart，而在业务层去决定要不要调用restart。</p>
-
-<p>一直以来，C语言要实现优雅的异常处理就是一件不简单的事情，而Objective-C虽然加入了try-catch支持，但是苹果并不鼓励使用，那么能否实现类似于condition系统这样的异常处理机制呢？</p>
-
-<p>答案是能。让我们来看看接口设计：</p>
-
-<pre><code>typedef void (^RESTART)(id userInfo);
-typedef void (^HANDLER)(id condition);
-
-void restart_bind(void (^body)(), NSString *restartName, RESTART restart, ...) NS_REQUIRES_NIL_TERMINATION;
-
-void handler_bind(void (^body)(), Class class, HANDLER handler, ...) NS_REQUIRES_NIL_TERMINATION;
-
-void notify(id condition);
-
-RESTART find_restart(NSString *restartName);
-</code></pre>
-
-<p>如下图所示，handler_bind首先在栈中注册好handler，而restart_bind则在handler有效的环境中注册restart，当有异常发生时，notify函数会在当前环境中寻找handler，找到后，控制会转移到上层的handler代码中，这时handler可以用find_restart在栈中搜索restart，找到之后可以调用，从而实现异常的恢复，做完这一切，控制回到notify发生的点继续向下执行。</p>
-
-<p>完整的代码敬请期待美团iOS的开源项目。</p>
-
-<p>有了SAKCondition，我们可以实现任意底层代码的逻辑穿透到上层代码，比如网络层和UI层，使得上层代码可以在不了解下层代码实现细节的情况下调用恢复机制。事实上，美团的iPhone客户端就是利用SAKCondition实现了美团账户的安全解锁功能。</p>
-
-<p>总结
-block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。</p>
 ]]></content>
   </entry>
   

@@ -1,0 +1,700 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS9-WKWebView+SFSafariViewController - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iOS9-WKWebView+SFSafariViewController ordinal 一：WKWebView简单介绍 webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS9-WKWebView+SFSafariViewController</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>一：WKWebView简单介绍</h2>
+
+<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<p>先来看看WKWebView和UIWebView有什么区别：</p>
+
+<h6>UIWebView：</h6>
+
+<ul>
+<li>始祖级别，支持的iOS版本比较多</li>
+<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
+<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
+<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
+<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
+<li>无法清除本地存储数据（Local Storage）</li>
+<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
+</ul>
+
+
+<h6>WKWebView：</h6>
+
+<ul>
+<li>iOS 8引入的，比较年轻</li>
+<li>在内存和执行效率上要比UIWebView高很多</li>
+<li>开放度较高但据说Bug成吨</li>
+<li>类似UIWebView，UI定制比较麻烦···</li>
+<li>没具体测试使用过，就不继续列举了 L~</li>
+</ul>
+
+
+<!--more-->
+
+
+<h5>第一、WKWebView增加的属性和方法</h5>
+
+<p>类比UIWebView，跟UIWebView的API对比，
+增加的属性：</p>
+
+<pre><code>* 1、estimatedProgress 加载进度条，在IOS8之前我们是通过一个假的进度条来实现
+* 2、backForwardList 表示historyList
+* 3、WKWebViewConfiguration *configuration; 初始化webview的配置
+</code></pre>
+
+<p>增加的方法：</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration 
+</code></pre>
+
+<p>初始化</p>
+
+<pre><code>    - (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item; 
+</code></pre>
+
+<p>跳到历史的某个页面</p>
+
+<!--more-->
+
+
+<h5>第二、相同的属性和方法</h5>
+
+<ul>
+<li>goBack、</li>
+<li>goForward、</li>
+<li>canGoBack、</li>
+<li>canGoForward、</li>
+<li>stopLoading、</li>
+<li>loadRequest、</li>
+<li>scrollView</li>
+</ul>
+
+
+<h5>第三、被删去的属性和方法：</h5>
+
+<pre><code>- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+</code></pre>
+
+<p>在跟js交互时，我们使用这个API，目前WKWebView完档没有给出实现类似功能的API</p>
+
+<ul>
+<li>无法设置缓存
+在UIWebView，使用NSURLCache缓存，通过setSharedURLCache可以设置成我们自己的缓存，但WKWebView不支持NSURLCache
+
+<h5>第四、delegate方法的不同</h5>
+
+<p>UIWebView支持的代理是UIWebViewDelegate，WKWebView支持的代理是WKNavigationDelegate和
+WKUIDelegate
+WKNavigationDelegate主要实现了涉及到导航跳转方面的回调方法
+WKUIDelegate主要实现了涉及到界面显示的回调方法：如WKWebView的改变和js相关内容
+具体来说WKNavigationDelegate除了有开始加载、加载成功、加载失败的API外，还具有额外的三个代理方法：</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation
+</code></pre>
+
+<p>这个代理是服务器redirect时调用</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
+</code></pre>
+
+<p>这个代理方法表示当客户端收到服务器的响应头，根据response相关信息，可以决定这次跳转是否可以继续进行。</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+</code></pre>
+
+<p>根据webView、navigationAction相关信息决定这次跳转是否可以继续进行,这些信息包含HTTP发送请求，如头部包含User-Agent,Accept</p></li>
+</ul>
+
+
+<hr />
+
+<h2>二、WKWebView新特性</h2>
+
+<ul>
+<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国* 网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
+<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
+<li>支持了更多的HTML5特性；</li>
+<li>高达60fps的滚动刷新率以及内置手势；</li>
+<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议（查看苹果官方文档）；</li>
+</ul>
+
+
+<hr />
+
+<h2>三：基本使用</h2>
+
+<p>WKWebView相对于UIWebView强大了很多，内存的消耗相对少了，所提供的接口也丰富了。
+现在谈一谈WKWebView的基本使用</p>
+
+<h4>1. navigationDelegate</h4>
+
+<pre><code>- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation { // 类似UIWebView的 -webViewDidStartLoad:  
+    NSLog(@"didStartProvisionalNavigation");  
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;  
+}  
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {  
+    NSLog(@"didCommitNavigation");  
+}  
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation { // 类似 UIWebView 的 －webViewDidFinishLoad:  
+    NSLog(@"didFinishNavigation");  
+    [self resetControl];  
+    if (webView.title.length &gt; 0) {  
+        self.title = webView.title;  
+    }  
+
+}  
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {  
+    // 类似 UIWebView 的- webView:didFailLoadWithError:  
+
+    NSLog(@"didFailProvisionalNavigation");  
+
+}  
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {  
+
+    decisionHandler(WKNavigationResponsePolicyAllow);  
+}  
+
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {  
+    // 类似 UIWebView 的 -webView: shouldStartLoadWithRequest: navigationType:  
+
+    NSLog(@"4.%@",navigationAction.request);  
+
+
+    NSString *url = [navigationAction.request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];  
+
+
+
+    decisionHandler(WKNavigationActionPolicyAllow);  
+
+}  
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler {  
+
+}  
+</code></pre>
+
+<h4>2 UIDelegate</h4>
+
+<pre><code>- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {  
+    // 接口的作用是打开新窗口委托  
+    [self createNewWebViewWithURL:webView.URL.absoluteString config:configuration];  
+
+    return currentSubView.webView;  
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)())completionHandler  
+{    // js 里面的alert实现，如果不实现，网页的alert函数无效  
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler();  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler {  
+    //  js 里面的alert实现，如果不实现，网页的alert函数无效  ,   
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleDefault  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler(YES);  
+                                                      }]];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"取消"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action){  
+                                                          completionHandler(NO);  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler {  
+
+    completionHandler(@"Client Not handler");  
+
+}  
+</code></pre>
+
+<h4>3. WKWebView 执行脚本方法</h4>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString completionHandler:(void (^)(id, NSError *))completionHandler;  
+
+completionHandler 拥有两个参数，一个是返回错误，一个可以返回执行脚本后的返回值  
+</code></pre>
+
+<h4>4. WKWebView 的Cookie问题</h4>
+
+<p>UIWebView 中会自动保存Cookie，如果登录了一次，下次再次进入的时候，会记住登录状态
+而在WKWebView中，并不会这样，WKWebView在初始化的时候有一个方法</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration  
+</code></pre>
+
+<p>通过这个方法，设置 configuration 让WKWebView知道登录状态，configuration 可以通过已有的Cookie进行设置，也可以通过保存上一次的configuration进行设置</p>
+
+<p>参考 stackoverflow上回答：</p>
+
+<p><a href="http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303">http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303</a></p>
+
+<pre><code>WKWebView * webView = /*set up your webView*/  
+NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://example.com/index.html"]];  
+[request addValue:@"TeskCookieKey1=TeskCookieValue1;TeskCookieKey2=TeskCookieValue2;" forHTTPHeaderField:@"Cookie"];  
+// use stringWithFormat: in the above line to inject your values programmatically  
+[webView loadRequest:request];  
+
+[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+WKUserContentController* userContentController = WKUserContentController.new;  
+WKUserScript * cookieScript = [[WKUserScript alloc]   
+    initWithSource: @"document.cookie = 'TeskCookieKey1=TeskCookieValue1';document.cookie = 'TeskCookieKey2=TeskCookieValue2';"  
+    injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];  
+// again, use stringWithFormat: in the above line to inject your values programmatically  
+[userContentController addUserScript:cookieScript];  
+WKWebViewConfiguration* webViewConfig = WKWebViewConfiguration.new;  
+webViewConfig.userContentController = userContentController;  
+WKWebView * webView = [[WKWebView alloc] initWithFrame:CGRectMake(/*set your values*/) configuration:webViewConfig];  
+</code></pre>
+
+<hr />
+
+<h2>四：WKWebView与js通信</h2>
+
+<p>iOS 8 引入WKWebView, WKWebView 不支持JavaScriptCore的方式但提供message handler的方式为JavaScript 与Objective-C 通信.
+在Objective-C 中使用WKWebView的以下方法调用JavaScript:</p>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString
+         completionHandler:(void (^)(id, NSError *))completionHandler
+如果JavaScript 代码出错, 可以在completionHandler 进行处理.
+在Objective-C 中注册 message handler:
+// WKScriptMessageHandler protocol?
+
+- (void)userContentController:(WKUserContentController *)userContentController
+    didReceiveScriptMessage:(WKScriptMessage *)message
+{
+    NSLog(@"Message: %@", message.body);
+}
+
+[userContentController addScriptMessageHandler:handler name:@"myName"];
+在JavaScript 将信息发给Objective-C:
+// window.webkit.messageHandlers.&lt;name&gt;.postMessage();?
+
+function postMyMessage()? {?
+    var message = { 'message' : 'Hello, World!', 'numbers' : [ 1, 2, 3 ] };?
+    window.webkit.messageHandlers.myName.postMessage(message);?
+}
+</code></pre>
+
+<hr />
+
+<h2>五：常见问题：</h2>
+
+<p>32 位的app在使用WKWebView的时候，如果运行在64位的设备上，会出现一下问题：</p>
+
+<ul>
+<li>（1）iOS8.1 系统，部分网页加载白屏，例如 百度，iOS8.3 似乎没问题</li>
+<li>（2）web输入框输入汉字也会出现白屏</li>
+</ul>
+
+
+<p>通过搜索得到问题根源：</p>
+
+<blockquote><p>WKWebView&rsquo;s WebProcess runs out-of-process as a 64-bit process on hardware supporting 64bit. There is a 32bit/64bit marshalling IPC bug for 32 bit apps using the WKWebView client on such hardware. The bug causes the WebProcess to exit, leaving a blank screen.</p></blockquote>
+
+<ul>
+<li>也就是一个进程间通讯的bug引起的。</li>
+</ul>
+
+
+<h6>解决方案，可以使app支持arm64，便不会出现问题。</h6>
+
+<hr />
+
+<h2>六：SFSafariViewController：</h2>
+
+<ul>
+<li>iOS 9引入，更加年轻，意味着是Apple的新菜，总是有什么优势的</li>
+<li>也是用来显示网页内容的</li>
+<li>这是一个特殊的View Controller，而不是一个单独的 View，和前面两个的区别</li>
+<li>在当前App中使用Safari的UI框架展现Web内容，包括相同的地址栏，工具栏等，类似一个内置于App的小型Safari</li>
+<li>共享Safari的一些便利特性，包括：相似的用户体验，和Safari共享Cookie，iCloud Web表单数据，密码、证书自动填充，Safari阅读器（Safari Reader）</li>
+<li>可定制性比较差，甚至连地址栏都是不可编辑的，只能在init的时候，传入一个URL来指定网页的地址</li>
+<li>只能用来展示单个页面，并且有一个完成按钮用来退出</li>
+</ul>
+
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<p>如果你的App需要显示网页，但是又不想自己去定制浏览器界面的话，可以考虑用SFSafariViewController来试试。从好的方面看，SFSafariViewController也去掉了从App中跳转到Safari的撕裂感，不同App之间切换总是让人感觉麻烦和不舒服。</p>
+
+<p>代码例子:</p>
+
+<pre><code>- (IBAction)onButtonClick:(id)sender
+
+{
+
+    NSString *urlString = @"http://www.kdanmobile.com";
+
+    SFSafariViewController *sfViewControllr = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:urlString]];
+
+    sfViewControllr.delegate = self;
+
+    [self presentViewController:sfViewControllr animated:YES completion:^{
+
+       //...
+
+    }];
+
+}
+
+
+
+// Done 按钮
+
+- (void)safariViewControllerDidFinish:(nonnull SFSafariViewController *)controller
+
+{
+
+    [controller dismissViewControllerAnimated:YES completion:nil];
+
+}
+</code></pre>
+
+<p>SFSafariViewController 的接口比较少，就不再继续一一列举了。另外一个定制功能在于SFSafariViewControllerDelegate里面的一个方法：</p>
+
+<pre><code>-(NSArray&lt;UIActivity *&gt; *)safariViewController:(SFSafariViewController *)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title;
+</code></pre>
+
+<p>这个代理会在用户点击动作（Action）按钮（底部工具栏中间的按钮）的时候调用，可以传入UIActivity的数组，创建添加一些自定义的各类插件式的服务，比如分享到微信，微博什么的。</p>
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<blockquote><p>小细节：
+SFSafariViewController有保存Cookies的功能，但是貌似不能和Safari浏览器共享，也可能是Beta版的bug</p></blockquote>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xin-ji-zhu/'>新技术</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/22/ios9-unit-test/" title="Previous Post: iOS9-Unit Test">&laquo; iOS9-Unit Test</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/25/ios9-corespotlight/" title="Next Post: iOS9-CoreSpotlight">iOS9-CoreSpotlight &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

@@ -1,0 +1,1031 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>字典转模型深究 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="字典转模型深究 ordinal 引言：
+在文字开始之前先介绍两个软件： JSONExport JSON Accelerator 关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。 如果你觉得自己对应本文后面的内容非常了解， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">字典转模型深究</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><blockquote><p>引言：
+在文字开始之前先介绍两个软件：</p></blockquote>
+
+<h5>JSONExport</h5>
+
+<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
+
+<h5>JSON Accelerator</h5>
+
+<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
+
+<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+
+<ul>
+<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
+<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+</ul>
+
+
+<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
+
+<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
+
+<!--more-->
+
+
+<h2>一：直接加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
+
+<pre><code>定义一个数组属性 
+@property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>获取Plist文件</h6>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载Plsit中的数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    NSDictionary *dic = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+    */
+     icon.image = [UIImage imageNamed:dic[@"icon"]];
+
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = dic[@"label"];
+
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
+
+    [view addSubview:btn];
+</code></pre>
+
+<h2>二：使用简单的模型加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
+
+<pre><code> 1 //定义一个数组属性
+
+  2 @property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>在模型中定义模型对应的属性</h6>
+
+<pre><code>@property (nonatomic, copy) NSString *icon;
+
+
+@property (nonatomic, copy) NSString *label;
+
+
+@property (nonatomic, copy) NSString *btn;
+</code></pre>
+
+<h6>模型方法</h6>
+
+<pre><code>/**
+ 模型数据方法
+ */
++(instancetype)messageWithDict:(NSDictionary *)dict;
+
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>模型的实现文件</h6>
+
+<pre><code>/**
+ 模型数据方法的实现
+ */
+
++ (instancetype)messageWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>实用模型加载Plist文件</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            appsModel *model = [[appsModel alloc] init];
+            model.label = dic[@"label"];
+            model.btn = dic[@"btn"];
+            model.icon = dic[@"icon"];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载模型中对应的plist数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    appsModel *app = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+     */
+    icon.image = [UIImage imageNamed:app.icon];
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = app.label;
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:app.btn forState:UIControlStateNormal];
+    [view addSubview:btn];
+</code></pre>
+
+<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+{
+self = [super init];
+if (self) {
+    self.label = dict[@"label"];
+    self.btn = dict[@"btn"];
+    self.icon = dict[@"icon"];
+
+//[self setValue:dict[@"label"] forKeyPath:@"label"];
+
+    //封装
+    [self setValuesForKeysWithDictionary:dict];
+}
+
+return self;
+}
+</code></pre>
+
+<p>/<em>*
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ </em>/</p>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+//            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
+
+<p>在模型中定义并且实现一个模型封装的方法</p>
+
+<pre><code>+(NSArray *)appList
+{
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+    }
+    return arrayApps;
+
+}
+</code></pre>
+
+<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+
+        _apps = [appsModel appList];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h2>三：复杂Plist转模型</h2>
+
+<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
+
+<p>比如Plist中海油一个friends这歌子模型</p>
+
+<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
+
+<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
+
+<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
+
+<pre><code>/**
+ 根据plist里面存在的子列中的数据再创建一个模型数据
+ */
+
+/**
+ 设置子模型数据的属性
+ */
+
+@property (nonatomic, assign) NSString *icon;
+
+@property (nonatomic, assign) NSString *intro;
+
+@property (nonatomic, assign) NSString *name;
+
+@property (nonatomic, assign, getter=isVip)BOOL vip;
+
+
+/**
+ 子模型数据的方法
+ */
++ (instancetype)friendWithDict:(NSDictionary *)dict;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>子模型的实现</h6>
+
+<pre><code>/**
+ 子模型数据的方法de实现
+ */
+
++ (instancetype)friendWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>然后就是根模型</h6>
+
+<pre><code>/**
+ 根据plist中的数据创建一个模型数据
+ */
+
+/**
+ 设置模型数据的中的属性
+ */
+
+@property (nonatomic, assign) NSArray *friends;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSNumber *online;
+
+/**
+ 模型数据的方法
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict;
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
+
+<pre><code>/**
+ 模型数据的方法的实现
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+
+        NSMutableArray *friendArray = [NSMutableArray array];
+        for (NSDictionary *dict in self.friends) {
+            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
+            [friendArray addObject:friend];
+        }
+        self.friends = friendArray;
+    }
+    return self;
+}
+</code></pre>
+
+<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
+
+<pre><code>/**
+ 加载模型数据的方法
+ */
+
+- (NSArray *)groups
+{
+    if (_groups == nil) {
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
+
+        NSMutableArray *groupArray = [NSMutableArray array];
+        for (NSDictionary *dict in dictArray) {
+            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
+            [groupArray addObject:group];
+        }
+
+        _groups = groupArray;
+    }
+    return _groups;
+}
+</code></pre>
+
+<h2>四：使用第三份库</h2>
+
+<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
+
+<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
+
+<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
+
+<p>下载好了之后直接讲MJExtension拖到你的项目</p>
+
+<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
+
+<h6>首先根据plist数据新建对应的模型数据</h6>
+
+<p>这里我一新浪微博中的小部分做测试</p>
+
+<pre><code>#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  微博文本内容
+ */
+@property (copy, nonatomic) NSString *text;
+
+/**
+ *  微博作者
+ */
+@property (strong, nonatomic) User *user;
+
+/**
+ *  转发的微博
+ */
+@property (strong, nonatomic) Status *retweetedStatus;
+/**
+ *  存放着某一页微博数据（里面都是Status模型）
+ */
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+/**
+ *  总数
+ */
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+/**
+ *  上一页的游标
+ */
+@property (assign, nonatomic) long long previousCursor;
+
+/**
+ *  下一页的游标
+ */
+@property (assign, nonatomic) long long nextCursor;
+/**
+ *  名称
+ */
+@property (copy, nonatomic) NSString *name;
+
+/**
+ *  头像
+ */
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
+
+<pre><code>/**
+ MJ友情提醒：
+ 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
+ 2.MJExtension能完成的功能
+ * 字典 --&gt; 模型
+ * 模型 --&gt; 字典
+ * 字典数组 --&gt; 模型数组
+ * 模型数组 --&gt; 字典数组
+ 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
+ 4.希望各位大神能用得爽
+ */
+
+#import &lt;Foundation/Foundation.h&gt;
+#import "MJExtension.h"
+#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  简单的字典 -&gt; 模型
+ */
+void keyValues2object()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"name" : @"Jack",
+                           @"icon" : @"lufy.png",
+                           };
+
+    // 2.将字典转为User模型
+    User *user = [User objectWithKeyValues:dict];
+
+    // 3.打印User模型的属性
+    NSLog(@"name=%@, icon=%@", user.name, user.icon);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+ */
+void keyValues2object2()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"text" : @"是啊，今天天气确实不错！",
+
+                           @"user" : @{
+                                   @"name" : @"Jack",
+                                   @"icon" : @"lufy.png"
+                                   },
+
+                           @"retweetedStatus" : @{
+                                   @"text" : @"今天天气真不错！",
+
+                                   @"user" : @{
+                                           @"name" : @"Rose",
+                                           @"icon" : @"nami.png"
+                                           }
+                                   }
+                           };
+
+    // 2.将字典转为Status模型
+    Status *status = [Status objectWithKeyValues:dict];
+
+    // 3.打印status的属性
+    NSString *text = status.text;
+    NSString *name = status.user.name;
+    NSString *icon = status.user.icon;
+    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+    // 4.打印status.retweetedStatus的属性
+    NSString *text2 = status.retweetedStatus.text;
+    NSString *name2 = status.retweetedStatus.user.name;
+    NSString *icon2 = status.retweetedStatus.user.icon;
+    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+ */
+void keyValues2object3()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"statuses" : @[
+                                   @{
+                                       @"text" : @"今天天气真不错！",
+
+                                       @"user" : @{
+                                               @"name" : @"Rose",
+                                               @"icon" : @"nami.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"明天去旅游了",
+
+                                       @"user" : @{
+                                               @"name" : @"Jack",
+                                               @"icon" : @"lufy.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"嘿嘿，这东西不错哦！",
+
+                                       @"user" : @{
+                                               @"name" : @"Jim",
+                                               @"icon" : @"zero.png"
+                                               }
+                                       }
+
+                                   ],
+
+                           @"totalNumber" : @"2014",
+
+                           @"previousCursor" : @"13476589",
+
+                           @"nextCursor" : @"13476599"
+                           };
+
+    // 2.将字典转为StatusResult模型
+    StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+    // 3.打印StatusResult模型的简单属性
+    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+    // 4.打印statuses数组中的模型属性
+    for (Status *status in result.statuses) {
+        NSString *text = status.text;
+        NSString *name = status.user.name;
+        NSString *icon = status.user.icon;
+        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+    }
+}
+
+/**
+ *  字典数组 -&gt; 模型数组
+ */
+void keyValuesArray2objectArray()
+{
+    // 1.定义一个字典数组
+    NSArray *dictArray = @[
+                           @{
+                               @"name" : @"Jack",
+                               @"icon" : @"lufy.png",
+                               },
+
+                           @{
+                               @"name" : @"Rose",
+                               @"icon" : @"nami.png",
+                               },
+
+                           @{
+                               @"name" : @"Jim",
+                               @"icon" : @"zero.png",
+                               }
+                           ];
+
+    // 2.将字典数组转为User模型数组
+    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+    // 3.打印userArray数组中的User模型属性
+    for (User *user in userArray) {
+        NSLog(@"name=%@, icon=%@", user.name, user.icon);
+    }
+}
+
+/**
+ *  模型 -&gt; 字典
+ */
+void object2keyValues()
+{
+    // 1.新建模型
+    User *user = [[User alloc] init];
+    user.name = @"Jack";
+    user.icon = @"lufy.png";
+
+    Status *status = [[Status alloc] init];
+    status.user = user;
+    status.text = @"今天的心情不错！";
+
+    // 2.将模型转为字典
+    //    NSDictionary *dict = [status keyValues];
+    NSDictionary *dict = status.keyValues;
+    NSLog(@"%@", dict);
+}
+
+/**
+ *  模型数组 -&gt; 字典数组
+ */
+void objectArray2keyValuesArray()
+{
+    // 1.新建模型数组
+    User *user1 = [[User alloc] init];
+    user1.name = @"Jack";
+    user1.icon = @"lufy.png";
+
+    User *user2 = [[User alloc] init];
+    user2.name = @"Rose";
+    user2.icon = @"nami.png";
+
+    User *user3 = [[User alloc] init];
+    user3.name = @"Jim";
+    user3.icon = @"zero.png";
+
+    NSArray *userArray = @[user1, user2, user3];
+
+    // 2.将模型数组转为字典数组
+    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+    NSLog(@"%@", dictArray);
+}
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        // 简单的字典 -&gt; 模型
+        keyValues2object();
+
+        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+        keyValues2object2();
+
+        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+        keyValues2object3();
+
+        // 字典数组 -&gt; 模型数组
+        keyValuesArray2objectArray();
+
+        // 模型转字典
+        object2keyValues();
+
+        // 模型数组 -&gt; 字典数组
+        objectArray2keyValuesArray();
+    }
+    return 0;
+}
+</code></pre>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xiang-mu-shi-zhan/'>项目实战</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/04/20/h5ying-yong-shi-zhan/" title="Previous Post: H5应用实战">&laquo; H5应用实战</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/05/11/xcode-menu/" title="Next Post: Xcode Menu">Xcode Menu &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
