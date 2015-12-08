@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS9-CoreSpotlight - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iOS9-CoreSpotlight ordinal iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。 在第一篇文章中， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">其他</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS9-CoreSpotlight</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
+
+<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
+
+<ul>
+<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
+<li><p>Web Markup，Web内容可被搜索。</p></li>
+<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
+译文如下：</p></li>
+</ul>
+
+
+<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
+
+<h3>三大API</h3>
+
+<h5>NSUserActivity</h5>
+
+<ul>
+<li><p>NSUserActivity是iOS 8专为Handoff推出的API，iOS 9之后得到了提升。现在用户只需提供元数据（metadata）就能搜索不同的activity（活动）了。</p></li>
+<li><p>换言之，Spotlight可以将activity编入索引，而NSUserActivity就好比网页浏览器的历史堆栈（history stack），使用户能在Spotlight上搜到最近的活动。</p></li>
+</ul>
+
+
+<h5>Web Markup</h5>
+
+<ul>
+<li><p>Web Markup在网页上显示App的内容并编入Spotlight索引，如此一来即便没有安装某个App，苹果的索引器也能在网页上搜索特别的标记（markup），在Safari或Spotlight上显示搜索结果。</p></li>
+<li><p>显示未安装App的搜索结果是一大亮点，有望为开发者带来更多潜在用户。公布在搜索API上的App深链接则储存在苹果的cloud index中。更多详情，请参阅苹果的“Web Markup使用指南（Use Web Markup to Make App Content Searchable）”。</p></li>
+</ul>
+
+
+<h5>CoreSpotlight</h5>
+
+<ul>
+<li>NSUserActivity帮助储存用户历史，而全新的Core Spotlight则能将App中的任何内容编入索引，实质是在用户设备上提供基础的Core Spotlight索引渠道，满足用户另外一个需求。</li>
+</ul>
+
+
+<hr />
+
+<p>至于前面两个这里就不过多介绍，这里只介绍iOS9相关新特性，所以就来说我们应该怎么去学习并使用CoreSpotlight。</p>
+
+<blockquote><p>对于CoreSpotlight可以类比NSUserDefault，都是全局的存储空间。不同的是CoreSpotlight是系统的存储空间，每个App都能访问（可能这个访问有限制，目前还没有时间研究），但是NSUserDefault是每个App私有的。另外对于存储的内容CoreSpotlight存储的是item，即CSSearchableItem，而每个CSSearchableItem又有许多属性，这些属性是通过CSSearchableItemAttributeSet进行设置。具体都有神马属性，大家自己去看头文件吧。</p></blockquote>
+
+<p> 下面写一下简单得步骤：</p>
+
+<ul>
+<li><p>1 引入CoreSpotlight.framework</p></li>
+<li><p>2 创建CSSearchableItemAttributeSet、CSSearchableItem</p></li>
+<li><p>3 调用CSSearchableIndex.defaultSearchableIndex()的相关的方法对item进行操作。</p></li>
+</ul>
+
+
+<blockquote><p>由于本人水平有限，只找到了添加、删除itme的操作，并没有找到更新itme的方法，如果谁清楚了，麻烦告知一下。</p></blockquote>
+
+<p> 下面贴出本人测试的一个简单例子的代码：
+    import UIKit</p>
+
+<pre><code>@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    // 从搜索结果点击的时候将会调用这个方法
+    func application(application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: ([AnyObject]?) -&gt; Void) -&gt; Bool {
+        // 这里能够获取到点击搜索结果的identifier 但是不清楚是不是应该这样做
+        let identifier = userActivity.userInfo?["kCSSearchableItemActivityIdentifier"]
+        print("continueUserActivity \(identifier!)")
+        return true
+    }
+
+
+}
+</code></pre>
+
+<hr />
+
+<pre><code>import UIKit
+import CoreSpotlight
+
+class ViewController: UIViewController {
+    let identifier = "com.mxy.test.identifier"
+    var index = 1 // 用于标识添加的itme
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        CSSearchableIndex.defaultSearchableIndex().deleteAllSearchableItemsWithCompletionHandler { (error) -&gt; Void in
+
+        }
+    }
+
+
+    @IBAction func insertItem() {
+        let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+        attributeSet.title = "孟祥月 测试 mxy \(index)"
+        attributeSet.contentDescription = "this 这里写点什么好呢 mxy \(index)"
+        // 设置搜索结果的缩略图 不知道 为何就是不生效 我给应用程序添加了icon后，搜索结果那里显示的是icon
+        attributeSet.thumbnailURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("aa", ofType: "png")!)
+        attributeSet.thumbnailData = UIImagePNGRepresentation(UIImage(named: "aa")!)
+        let item = CSSearchableItem(uniqueIdentifier: "\(identifier) \(index)", domainIdentifier: "mxy", attributeSet: attributeSet)
+        let tmpItmes: [CSSearchableItem] = [item]
+        CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+        }
+        index++
+    }
+
+    // 貌似是没有更新操作 所以只好根据identifier先删除，修改后再添加进去。
+    @IBAction func updateItem() {
+        if index &gt; 0 {
+            let tmpIdentifier = "\(identifier) \(index - 1)"
+            CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers([tmpIdentifier], completionHandler: { (error) -&gt; Void in
+
+            })
+
+            let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+            attributeSet.title = "孟祥月 测试 mxy \(index - 1)"
+            attributeSet.contentDescription = "this 这里写点更新后 mxy \(index - 1)"
+            let item = CSSearchableItem(uniqueIdentifier: tmpIdentifier, domainIdentifier: "mxy", attributeSet: attributeSet)
+            let tmpItmes: [CSSearchableItem] = [item]
+            CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+            }
+
+        }
+
+    }
+
+    @IBAction func deleteItem() {
+        let identifiers = ["\(identifier) \(index)"]
+        index--
+        if index &lt;= 0 {
+            return
+        }
+        CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers(identifiers) { (error) -&gt; Void in
+
+        }
+    }
+
+}
+</code></pre>
+
+<p>在storyboard中只是添加了三个按钮，关联对应的操作。下面是演示，点击更新的时候会更新最后一个item的内容：</p>
+
+<p><img src="/images/Spotlight001.gif" title="Caption" ></p>
+
+<p>例子代码的下载地址：<a href="http://download.csdn.net/detail/mengxiangyue/8827141">http://download.csdn.net/detail/mengxiangyue/8827141</a></p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xin-ji-zhu/'>新技术</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/15/kan-wo-zen-yao-na-dao-she-bei-xin-xi/" title="Previous Post: 看我怎么拿到设备信息">&laquo; 看我怎么拿到设备信息</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/15/xiang-ce-shen-jiu/" title="Next Post: 相册深究">相册深究 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/全栈工程师必备/'>全栈工程师必备 (2)</a></li>
+<li class='category'><a href='/blog/categories/底层开发/'>底层开发 (5)</a></li>
+<li class='category'><a href='/blog/categories/开发工具/'>开发工具 (2)</a></li>
+<li class='category'><a href='/blog/categories/性能相关/'>性能相关 (7)</a></li>
+<li class='category'><a href='/blog/categories/性能问题/'>性能问题 (5)</a></li>
+<li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
+<li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
+<li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
+<li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
+<li class='category'><a href='/blog/categories/面试汇总/'>面试汇总 (1)</a></li>
+<li class='category'><a href='/blog/categories/项目实战/'>项目实战 (19)</a></li>
+<li class='category'><a href='/blog/categories/高级开发/'>高级开发 (28)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/15/xiang-ce-shen-jiu/">相册深究</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/15/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/15/kan-wo-zen-yao-na-dao-she-bei-xin-xi/">看我怎么拿到设备信息</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/14/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - iCocos -
+<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

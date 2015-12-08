@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T11:22:06+08:00</updated>
+  <updated>2015-12-08T13:41:54+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,616 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[相册深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/15/xiang-ce-shen-jiu/"/>
+    <updated>2015-12-15T13:38:22+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/15/xiang-ce-shen-jiu</id>
+    <content type="html"><![CDATA[<h3>一. 概要</h3>
+
+<p>在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS 应用发展步伐以及代码设计原则但确实强大的框架，考虑到 iOS7 仍占有不少的渗透率，因此 AssetsLibrary 也是本文重点介绍的部分。而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架，一个可以让应用更好地与设备照片库对接的框架，文末也会介绍一下这个框架。</p>
+
+<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
+
+<h3>二. AssetsLibrary 组成介绍</h3>
+
+<p>AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。</p>
+
+<ul>
+<li>AssetsLibrary: 代表整个设备中的资源库（照片库），通过 AssetsLibrary 可以获取和包括设备中的照片和视频</li>
+<li>ALAssetsGroup: 映射照片库中的一个相册，通过 ALAssetsGroup 可以获取某个相册的信息，相册下的资源，同时也可以对某个相册添加资源。</li>
+<li>ALAsset: 映射照片库中的一个照片或视频，通过 ALAsset 可以获取某个照片或视频的详细信息，或者保存照片和视频。</li>
+<li>ALAssetRepresentation: ALAssetRepresentation 是对 ALAsset 的封装（但不是其子类），可以更方便地获取 ALAsset 中的资源信息，每个 ALAsset 都有至少有一个 ALAssetRepresentation 对象，可以通过 defaultRepresentation 获取。而例如使用系统相机应用拍摄的 RAW + JPEG 照片，则会有两个 ALAssetRepresentation，一个封装了照片的 RAW 信息，另一个则封装了照片的 JPEG 信息。</li>
+</ul>
+
+
+<h3>三. AssetsLibrary 的基本使用</h3>
+
+<p>AssetsLibrary 的功能很多，基本可以分为对资源的获取/保存两个部分，保存的部分相对简单，API 也比较少，因此这里不作详细介绍。获取资源的 API 则比较丰富了，一个常见的使用大量 AssetsLibrary API 的例子就是图片选择器（ALAsset Picker）。要制作一个图片选择器，思路应该是获取照片库-列出所有相册-展示相册中的所有图片-预览图片大图。</p>
+
+<p>首先是要检查 App 是否有照片操作授权：</p>
+
+<pre><code>NSString *tipTextWhenNoPhotosAuthorization; // 提示语
+// 获取当前应用对照片的访问授权状态
+ALAuthorizationStatus authorizationStatus = [ALAssetsLibrary authorizationStatus];
+// 如果没有获取访问授权，或者访问授权状态已经被明确禁止，则显示提示语，引导用户开启授权
+if (authorizationStatus == ALAuthorizationStatusRestricted || authorizationStatus == ALAuthorizationStatusDenied) {
+    NSDictionary *mainInfoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *appName = [mainInfoDictionary objectForKey:@"CFBundleDisplayName"];
+    tipTextWhenNoPhotosAuthorization = [NSString stringWithFormat:@"请在设备的\"设置-隐私-照片\"选项中，允许%@访问你的手机相册", appName];
+    // 展示提示语
+}
+</code></pre>
+
+<p>如果已经获取授权，则可以获取相册列表：</p>
+
+<pre><code>_assetsLibrary = [[ALAssetsLibrary alloc] init];
+_albumsArray = [[NSMutableArray alloc] init];
+[_assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+    if (group) {
+        [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+        if (group.numberOfAssets &gt; 0) {
+            // 把相册储存到数组中，方便后面展示相册时使用
+            [_albumsArray addObject:group];
+        }
+    } else {
+        if ([_albumsArray count] &gt; 0) {
+            // 把所有的相册储存完毕，可以展示相册列表
+        } else {
+            // 没有任何有资源的相册，输出提示
+        }
+    }
+} failureBlock:^(NSError *error) {
+    NSLog(@"Asset group not found!\n");
+}];
+</code></pre>
+
+<p>上面的代码中，遍历出所有的相册列表，并把相册中资源数不为空的相册 ALAssetGroup 对象的引用储存到一个数组中。这里需要强调几点：</p>
+
+<ul>
+<li>iOS中允许相册为空，即相册中没有任何资源，如果不希望获取空相册，则需要像上面的代码中那样手动过滤</li>
+<li>ALAssetsGroup 有一个 setAssetsFilter 的方法，可以传入一个过滤器，控制只获取相册中的照片或只获取视频。一旦设置过滤，ALAssetsGroup 中资源列表和资源数量的获取也会被自动更新。</li>
+<li>整个 AssetsLibrary 中对相册、资源的获取和保存都是使用异步处理（Asynchronous），这是考虑到资源文件体积相当比较大（还可能很大）。例如上面的遍历相册操作，相册的结果使用 block 输出，如果相册遍历完毕，则最后一次输出的 block 中的 group 参数值为 nil。而 stop 参数则是用于手工停止遍历，只要把 *stop 置 YES，则会停止下一次的遍历。关于这一点常常会引起误会，所以需要注意。</li>
+</ul>
+
+
+<p>现在，已经可以获取相册了，接下来是获取相册中的资源：</p>
+
+<pre><code>_imagesAssetArray = [[NSMutableArray alloc] init];
+[assetsGroup enumerateAssetsWithOptions:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+    if (result) {
+        [_imagesAssetArray addObject:result];
+    } else {
+        // result 为 nil，即遍历相片或视频完毕，可以展示资源列表
+    }
+}];
+</code></pre>
+
+<p>跟遍历相册的过程类似，遍历相片也是使用一系列的异步方法，其中上面的方法所输出的 block 中，除了 result 参数表示资源信息，stop 用于手工停止遍历外，还提供了一个 index 参数，这个参数表示资源的索引。一般来说，展示资源列表都会使用缩略图（result.thumbnail），因此即使资源很多，遍历资源的速度也会相当快。但如果确实需要加载资源的高清图或者其他耗时的处理，则可以利用上面的 index 参数和 stop 参数做一个分段拉取资源。例如：</p>
+
+<pre><code>NSUInteger _targetIndex; // index 目标值，拉取资源直到这个值就手工停止拉取
+NSUInteger _currentIndex; // 当前 index，每次拉取资源时从这个值开始
+
+_targetIndex = 50;
+_currentIndex = 0;
+
+- (void)loadAssetWithAssetsGroup:(assetsGroup *)assetsGroup {
+    [assetsGroup enumerateAssetsAtIndexes:[NSIndexSet indexSetWithIndex:_currentIndex] options:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+        _currentIndex = index;
+        if (index &gt; _targetIndex) {
+            // 拉取资源的索引如果比目标值大，则停止拉取
+            *stop = YES;
+        } else {
+            if (result) {
+                [_imagesAssetArray addObject:result];
+            } else {
+                // result 为 nil，即遍历相片或视频完毕
+            }
+        }
+    }];
+}
+</code></pre>
+
+<p>// 之前拉取的数据已经显示完毕，需要展示新数据，重新调用 loadAssetWithAssetsGroup 方法，并根据需要更新 _targetIndex 的值</p>
+
+<p>最后一步是获取图片详细信息，例如：</p>
+
+<pre><code>// 获取资源图片的详细资源信息，其中 imageAsset 是某个资源的 ALAsset 对象
+ALAssetRepresentation *representation = [imageAsset defaultRepresentation];
+// 获取资源图片的 fullScreenImage
+UIImage *contentImage = [UIImage imageWithCGImage:[representation fullScreenImage]];
+</code></pre>
+
+<p>对于一个 ALAssetRepresentation，里面包含了图片的多个版本。最常用的是 fullResolutionImage 和 fullScreenImage。fullResolutionImage 是图片的原图，通过 fullResolutionImage 获取的图片没有任何处理，包括通过系统相册中“编辑”功能处理后的信息也没有被包含其中，因此需要展示“编辑”功能处理后的信息，使用 fullResolutionImage 就比较不方便，另外 fullResolutionImage 的拉取也会比较慢，在多张 fullResolutionImage 中切换时能明显感觉到图片的加载过程。因此这里建议获取图片的 fullScreenImage，它是图片的全屏图版本，这个版本包含了通过系统相册中“编辑”功能处理后的信息，同时也是一张缩略图，但图片的失真很少，缺点是图片的尺寸是一个适应屏幕大小的版本，因此展示图片时需要作出额外处理，但考虑到加载速度非常快的原因（在多张图片之间切换感受不到图片加载耗时），仍建议使用 fullScreenImage。</p>
+
+<p>系统相册的处理过程大概也是如上，可以看出，在整个过程中并没有使用到图片的 fullResolutionImage，从相册列表展示到最终查看资源，都是使用缩略图，这也是 iOS 相册加载快的一个重要原因。</p>
+
+<h3>三. AssetsLibrary 的坑点</h3>
+
+<p>作为一套老框架，AssetsLibrary 不但有坑，而且还不少，除了上面提到的资源异步拉取时需要注意的事项，下面几点也是值得注意的：</p>
+
+<h6>1. AssetsLibrary 实例需要强引用</h6>
+
+<p>实例一个 AssetsLibrary 后，如上面所示，我们可以通过一系列枚举方法获取到需要的相册和资源，并把其储存到数组中，方便用于展示。但是，当我们把这些获取到的相册和资源储存到数组时，实际上只是在数组中储存了这些相册和资源在 AssetsLibrary 中的引用（指针），因而无论把相册和资源储存数组后如何利用这些数据，都首先需要确保 AssetsLibrary 没有被 ARC 释放，否则把数据从数组中取出来时，会发现对应的引用数据已经丢失（参见下图）。这一点较为容易被忽略，因此建议在使用 AssetsLibrary 的 viewController 中，把 AssetsLibrary 作为一个强持有的 property 或私有变量，避免在枚举出 AssetsLibrary 中所需要的数据后，AssetsLibrary 就被 ARC 释放了。</p>
+
+<p>如下图：实例化一个 AssetsLibrary 的局部变量，枚举所有相册并储存在名为 _albumsArray 的数组中，展示相册时再次查看数组，发现 ALAssetsGroup 中的数据已经丢失。</p>
+
+<pre><code>ALAssetsLibrary_release
+</code></pre>
+
+<h6>2. AssetsLibrary 遵循写入优先原则</h6>
+
+<p>写入优先也就是說，在利用 AssetsLibrary 读取资源的过程中，有任何其它的进程（不一定是同一个 App）在保存资源时，就会收到 ALAssetsLibraryChangedNotification，让用户自行中断读取操作。最常见的就是读取 fullResolutionImage 时，用进程在写入，由于读取 fullResolutionImage 耗时较长，很容易就会 exception。</p>
+
+<h6>3. 开启 Photo Stream 容易导致 exception</h6>
+
+<p>本质上，这跟上面的 AssetsLibrary 遵循写入优先原则是同一个问题。如果用户开启了共享照片流（Photo Stream），共享照片流会以 mstreamd 的方式“偷偷”执行，当有人把相片写入 Camera Roll 时，它就会自动保存到 Photo Stream Album 中，如果用户刚好在读取，那就跟上面说的一样产生 exception 了。由于共享照片流是用户决定是否要开启的，所以开发者无法改变，但是可以通过下面的接口在需要保护的时刻关闭监听共享照片流产生的频繁通知信息。</p>
+
+<p>[ALAssetsLibrary disableSharedPhotoStreamsSupport];</p>
+
+<h3>四. PhotoKit 简介</h3>
+
+<p>PhotoKit 是一套比 AssetsLibrary 更完整也更高效的库，对资源的处理跟 AssetsLibrary 也有很大的不同。</p>
+
+<p>首先简单介绍几个概念：</p>
+
+<ul>
+<li>PHAsset: 代表照片库中的一个资源，跟 ALAsset 类似，通过 PHAsset 可以获取和保存资源</li>
+<li>PHFetchOptions: 获取资源时的参数，可以传 nil，即使用系统默认值</li>
+<li>PHFetchResult: 表示一系列的资源集合，也可以是相册的集合</li>
+<li>PHAssetCollection: 表示一个相册或者一个时刻，或者是一个「智能相册（系统提供的特定的一系列相册，例如：最近删除，视频列表，收藏等等，如下图所示）</li>
+<li>PHImageManager: 用于处理资源的加载，加载图片的过程带有缓存处理，可以通过传入一个 PHImageRequestOptions 控制资源的输出尺寸等规格</li>
+<li>PHImageRequestOptions: 如上面所说，控制加载图片时的一系列参数</li>
+</ul>
+
+
+<p>下图中 UITableView 的第二个 section 就是 PhotoKit 所列出的所有智能相册</p>
+
+<p>photoKit001.png</p>
+
+<p>再列出几个代码片段，展示如何获取相册以及某个相册下资源的代码：</p>
+
+<pre><code>// 列出所有相册智能相册
+PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+
+// 列出所有用户创建的相册
+PHFetchResult *topLevelUserCollections = [PHCollectionList fetchTopLevelUserCollectionsWithOptions:nil];
+
+// 获取所有资源的集合，并按资源的创建时间排序
+PHFetchOptions *options = [[PHFetchOptions alloc] init];
+options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
+PHFetchResult *assetsFetchResults = [PHAsset fetchAssetsWithOptions:options];
+
+// 在资源的集合中获取第一个集合，并获取其中的图片
+PHCachingImageManager *imageManager = [[PHCachingImageManager alloc] init];
+PHAsset *asset = assetsFetchResults[0];
+[imageManager requestImageForAsset:asset
+                         targetSize:SomeSize
+                        contentMode:PHImageContentModeAspectFill
+                            options:nil
+                      resultHandler:^(UIImage *result, NSDictionary *info) {
+
+                          // 得到一张 UIImage，展示到界面上
+
+                      }];
+</code></pre>
+
+<p>结合上面几个代码片段上看，PhotoKit 相对 AssetsLibrary 主要有三点重要的改进：</p>
+
+<ul>
+<li>从 AssetsLibrary 中获取数据，无论是相册，还是资源，本质上都是使用枚举的方式，遍历照片库取得相应的数据。而 PhotoKit 则是通过传入参数，直接获取相应的数据，因而效率会提高不少。</li>
+<li>在 AssetsLibrary 中，相册和资源是对应不同的对象（ALAssetGroup 和 ALAsset），因此获取相册和获取资源是两个完全没有关联的接口。而 PhotoKit 中则有 PHFetchResult 这个可以统一储存相册或资源的对象，因此处理相册和资源时也会比较方便。</li>
+<li>PhotoKit 返回资源结果时，同时返回了资源的元数据，获取元数据在 AssetsLibrary 中是很难办到的一件事。同时通过 PHAsset，开发者还能直接获取资源是否被收藏（favorite）和隐藏（hidden），拍摄图片时是否开启了 HDR 或全景模式，甚至能通过一张连拍图片获取到连拍图片中的其他图片。这也是文章开头说的，PhotoKit 能更好地与设备照片库接入的一个重要因素。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-CoreSpotlight]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight/"/>
+    <updated>2015-12-15T13:37:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/15/ios9-corespotlight</id>
+    <content type="html"><![CDATA[<p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
+
+<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
+
+<ul>
+<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
+<li><p>Web Markup，Web内容可被搜索。</p></li>
+<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
+译文如下：</p></li>
+</ul>
+
+
+<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
+
+<h3>三大API</h3>
+
+<h5>NSUserActivity</h5>
+
+<ul>
+<li><p>NSUserActivity是iOS 8专为Handoff推出的API，iOS 9之后得到了提升。现在用户只需提供元数据（metadata）就能搜索不同的activity（活动）了。</p></li>
+<li><p>换言之，Spotlight可以将activity编入索引，而NSUserActivity就好比网页浏览器的历史堆栈（history stack），使用户能在Spotlight上搜到最近的活动。</p></li>
+</ul>
+
+
+<h5>Web Markup</h5>
+
+<ul>
+<li><p>Web Markup在网页上显示App的内容并编入Spotlight索引，如此一来即便没有安装某个App，苹果的索引器也能在网页上搜索特别的标记（markup），在Safari或Spotlight上显示搜索结果。</p></li>
+<li><p>显示未安装App的搜索结果是一大亮点，有望为开发者带来更多潜在用户。公布在搜索API上的App深链接则储存在苹果的cloud index中。更多详情，请参阅苹果的“Web Markup使用指南（Use Web Markup to Make App Content Searchable）”。</p></li>
+</ul>
+
+
+<h5>CoreSpotlight</h5>
+
+<ul>
+<li>NSUserActivity帮助储存用户历史，而全新的Core Spotlight则能将App中的任何内容编入索引，实质是在用户设备上提供基础的Core Spotlight索引渠道，满足用户另外一个需求。</li>
+</ul>
+
+
+<hr />
+
+<p>至于前面两个这里就不过多介绍，这里只介绍iOS9相关新特性，所以就来说我们应该怎么去学习并使用CoreSpotlight。</p>
+
+<blockquote><p>对于CoreSpotlight可以类比NSUserDefault，都是全局的存储空间。不同的是CoreSpotlight是系统的存储空间，每个App都能访问（可能这个访问有限制，目前还没有时间研究），但是NSUserDefault是每个App私有的。另外对于存储的内容CoreSpotlight存储的是item，即CSSearchableItem，而每个CSSearchableItem又有许多属性，这些属性是通过CSSearchableItemAttributeSet进行设置。具体都有神马属性，大家自己去看头文件吧。</p></blockquote>
+
+<p> 下面写一下简单得步骤：</p>
+
+<ul>
+<li><p>1 引入CoreSpotlight.framework</p></li>
+<li><p>2 创建CSSearchableItemAttributeSet、CSSearchableItem</p></li>
+<li><p>3 调用CSSearchableIndex.defaultSearchableIndex()的相关的方法对item进行操作。</p></li>
+</ul>
+
+
+<blockquote><p>由于本人水平有限，只找到了添加、删除itme的操作，并没有找到更新itme的方法，如果谁清楚了，麻烦告知一下。</p></blockquote>
+
+<p> 下面贴出本人测试的一个简单例子的代码：
+    import UIKit</p>
+
+<pre><code>@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    // 从搜索结果点击的时候将会调用这个方法
+    func application(application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: ([AnyObject]?) -&gt; Void) -&gt; Bool {
+        // 这里能够获取到点击搜索结果的identifier 但是不清楚是不是应该这样做
+        let identifier = userActivity.userInfo?["kCSSearchableItemActivityIdentifier"]
+        print("continueUserActivity \(identifier!)")
+        return true
+    }
+
+
+}
+</code></pre>
+
+<hr />
+
+<pre><code>import UIKit
+import CoreSpotlight
+
+class ViewController: UIViewController {
+    let identifier = "com.mxy.test.identifier"
+    var index = 1 // 用于标识添加的itme
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        CSSearchableIndex.defaultSearchableIndex().deleteAllSearchableItemsWithCompletionHandler { (error) -&gt; Void in
+
+        }
+    }
+
+
+    @IBAction func insertItem() {
+        let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+        attributeSet.title = "孟祥月 测试 mxy \(index)"
+        attributeSet.contentDescription = "this 这里写点什么好呢 mxy \(index)"
+        // 设置搜索结果的缩略图 不知道 为何就是不生效 我给应用程序添加了icon后，搜索结果那里显示的是icon
+        attributeSet.thumbnailURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("aa", ofType: "png")!)
+        attributeSet.thumbnailData = UIImagePNGRepresentation(UIImage(named: "aa")!)
+        let item = CSSearchableItem(uniqueIdentifier: "\(identifier) \(index)", domainIdentifier: "mxy", attributeSet: attributeSet)
+        let tmpItmes: [CSSearchableItem] = [item]
+        CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+        }
+        index++
+    }
+
+    // 貌似是没有更新操作 所以只好根据identifier先删除，修改后再添加进去。
+    @IBAction func updateItem() {
+        if index &gt; 0 {
+            let tmpIdentifier = "\(identifier) \(index - 1)"
+            CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers([tmpIdentifier], completionHandler: { (error) -&gt; Void in
+
+            })
+
+            let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+            attributeSet.title = "孟祥月 测试 mxy \(index - 1)"
+            attributeSet.contentDescription = "this 这里写点更新后 mxy \(index - 1)"
+            let item = CSSearchableItem(uniqueIdentifier: tmpIdentifier, domainIdentifier: "mxy", attributeSet: attributeSet)
+            let tmpItmes: [CSSearchableItem] = [item]
+            CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+            }
+
+        }
+
+    }
+
+    @IBAction func deleteItem() {
+        let identifiers = ["\(identifier) \(index)"]
+        index--
+        if index &lt;= 0 {
+            return
+        }
+        CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers(identifiers) { (error) -&gt; Void in
+
+        }
+    }
+
+}
+</code></pre>
+
+<p>在storyboard中只是添加了三个按钮，关联对应的操作。下面是演示，点击更新的时候会更新最后一个item的内容：</p>
+
+<p><img src="http://al1020119.github.io/images/Spotlight001.gif" title="Caption" ></p>
+
+<p>例子代码的下载地址：<a href="http://download.csdn.net/detail/mengxiangyue/8827141">http://download.csdn.net/detail/mengxiangyue/8827141</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[看我怎么拿到设备信息]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/15/kan-wo-zen-yao-na-dao-she-bei-xin-xi/"/>
+    <updated>2015-12-15T13:36:55+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/15/kan-wo-zen-yao-na-dao-she-bei-xin-xi</id>
+    <content type="html"><![CDATA[<h4>设备唯一标识符：</h4>
+
+<ul>
+<li>1.已禁用-[UIDevice uniqueIdentifier]</li>
+</ul>
+
+
+<p>　　苹果总是把用户的隐私看的很重要。-[UIDevice uniqueIdentifier]在iOS5实际在iOS5的时候已经被遗弃了，但是iOS7中已经完全的禁用了它。Xcode5甚至不会允许你编译包含了指引到-[UIDevice uniqueIdentifier]的app。此外，iOS7之前的使用了-[UIDevice uniqueIdentifier] 的app如果在iOS7上运行，它不会返回设备的UUID，而是会返回一串字符串，以FFFFFFFF开头，跟着-[UIDevice identifierForVendor]的十六进制值。</p>
+
+<ul>
+<li>2.MAC地址不能再用来设别设备</li>
+</ul>
+
+
+<p>　　还有一个生成iOS设备唯一标示符的方法是使用iOS设备的Media Access Control（MAC）地址。一个MAC地址是一个唯一的号码，它是物理网络层级方面分配给网络适配器的。这个地址苹果还有其他的名字，比如说是硬件地址（Hardware Address)或是Wifi地址，都是指同样的东西。</p>
+
+<p>　　有很多工程和框架都使用这个方法来生成唯一的设备ID。比如说ODIN。然而，苹果并不希望有人通过MAC地址来分辨用户，所以如果你在iOS7系统上查询MAC地址，它现在只会返回02:00:00:00:00:00。</p>
+
+<p>现在苹果明确的表明你应该使用-[UIDevice identifierForVendor]或是-[ASIdentifierManager advertisingIdentifier]来作为你框架和应用的唯一标示符。坦白的来说，应对这些变化也不是那么的难，见以下代码片段：</p>
+
+<pre><code>NSString *identifierForVendor = [[UIDevice currentDevice].identifierForVendor UUIDString]; 
+NSString *identifierForAdvertising = [[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString]; 
+</code></pre>
+
+<p>每种方法都适配一种特别的用法：</p>
+
+<p>　　identifierForVendor对供应商来说是唯一的一个值，也就是说，由同一个公司发行的的app在相同的设备上运行的时候都会有这个相同的标识符。然而，如果用户删除了这个供应商的app然后再重新安装的话，这个标识符就会不一致。</p>
+
+<p>　　advertisingIdentifier会返回给在这个设备上所有软件供应商相同的 一个值，所以只能在广告的时候使用。这个值会因为很多情况而有所变化，比如说用户初始化设备的时候便会改变。</p>
+
+<pre><code>-(void) setKeyChainValue
+{
+    KeychainItemWrapper *keyChainItem=[[KeychainItemWrapper alloc]initWithIdentifier:@"TestUUID" accessGroup:@"XXXXXX.h.HelloWorld"];
+    NSString *strUUID = [keyChainItem objectForKey:(id)kSecValueData];
+    if (strUUID==nil||[strUUID isEqualToString:@""])
+    {
+        [keyChainItem setObject:[self gen_uuid] forKey:(id)kSecValueData];
+    }
+    [keyChainItem release];
+
+}
+
+-(NSString *) gen_uuid
+{
+    CFUUIDRef uuid_ref=CFUUIDCreate(nil);
+    CFStringRef uuid_string_ref=CFUUIDCreateString(nil, uuid_ref);
+    CFRelease(uuid_ref);
+    NSString *uuid=[NSString stringWithString:uuid_string_ref];
+    CFRelease(uuid_string_ref);
+    return uuid;
+}  
+</code></pre>
+
+<h4>获取用户信息</h4>
+
+<pre><code>-(void)getDeviceInfo{
+    UIDevice *curDevice = [UIDevice currentDevice];
+
+    iPhoneInfoModel *model = [[iPhoneInfoModel alloc] init];
+
+    // 用户名称
+    NSString *deviceInfo = [NSString stringWithFormat:@"%@", curDevice.name];
+    model.key = @"名称:";
+    model.value = deviceInfo;
+    [self.infoArray addObject:model];
+
+    // 系统信息
+    iPhoneInfoModel *systemModel = [[iPhoneInfoModel alloc] init];
+    NSString *systemInfo = [NSString stringWithFormat:@"%@(%@)", curDevice.systemName, curDevice.systemVersion];
+    systemModel.key = @"系统:";
+    systemModel.value = systemInfo;
+    [self.infoArray addObject:systemModel];
+
+    // UUID获取
+    iPhoneInfoModel *uuidModel = [[iPhoneInfoModel alloc] init];
+    NSString *uuidInfo = [NSString stringWithFormat:@"%@", [[curDevice identifierForVendor] UUIDString]];
+    uuidModel.key = @"UUID:";
+    uuidModel.value = uuidInfo;
+    [self.infoArray addObject:uuidModel];
+}
+</code></pre>
+
+<h4>获取屏幕信息</h4>
+
+<pre><code>-(void)getScreenInfo{
+    NSInteger kHeight = (NSInteger)kScreenHeight;
+    NSString *screenSize = @"";
+    NSInteger abs = 1;
+
+    switch (kHeight) {
+        case 480:
+            screenSize = @"3.5寸";
+            break;
+        case 568:
+            screenSize = @"4.0寸";
+            abs = 2;
+            break;
+        case 667:
+            screenSize = @"4.7寸";
+            abs = 2;
+            break;
+        case 736:
+            screenSize = @"5.5寸";
+            abs = 2;
+            break;
+        default:
+            break;
+    }
+
+    NSString *screenInfo = [NSString stringWithFormat:@"%@(%.0f*%.0f)", screenSize, kScreenWidth * abs, kScreenHeight * abs];
+    iPhoneInfoModel *model = [[iPhoneInfoModel alloc] init];
+    model.key = @"屏幕:";
+    model.value = screenInfo;
+    [self.infoArray addObject:model];
+}
+</code></pre>
+
+<h4>获取运营商信息</h4>
+
+<pre><code>-(void)getNetInfo{
+    CTTelephonyNetworkInfo *info = [[CTTelephonyNetworkInfo alloc] init];
+
+    // 运营商
+    CTCarrier *carriver = info.subscriberCellularProvider;
+    NSString *carriverName = [carriver carrierName];
+
+    NSString *netInfo = [NSString stringWithFormat:@"%@", carriverName];
+    iPhoneInfoModel *model = [[iPhoneInfoModel alloc] init];
+    model.key = @"运营商:";
+    model.value = netInfo;
+    [self.infoArray addObject:model];
+}
+</code></pre>
+
+<h4>获取电池信息</h4>
+
+<pre><code>-(void)getBetaryInfo{
+    UIDevice *curDevice = [UIDevice currentDevice];
+    CGFloat batteryLevel = curDevice.batteryLevel * 100;
+    NSString *batteryState = @"";
+    if (curDevice.batteryState == UIDeviceBatteryStateCharging) {
+        batteryState = [NSString stringWithFormat:@"正在充电--%.0f%%", fabs(curDevice.batteryLevel * 100)];
+    }else if (curDevice.batteryState == UIDeviceBatteryStateFull){
+        batteryState = [NSString stringWithFormat:@"满电量"];
+    }else{
+        batteryState = [NSString stringWithFormat:@"剩余电量 %.0f%%", fabs(curDevice.batteryLevel * 100)];
+    }
+    iPhoneInfoModel *model = [[iPhoneInfoModel alloc] init];
+    model.key = @"电池:";
+    model.value = batteryState;
+    [self.infoArray addObject:model];
+}
+</code></pre>
+
+<h4>获取内存信息</h4>
+
+<pre><code>-(void)getMemInfo{
+    vm_statistics_data_t    vmStats;
+    mach_msg_type_number_t  infoCount = HOST_VM_INFO_COUNT;
+    kern_return_t           kernReturn = host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t)&amp;vmStats, &amp;infoCount);
+
+    double total = 0.0;
+    double avalible = 0.0;
+
+    if (kernReturn == KERN_SUCCESS) {
+        total = vm_page_size * (vmStats.free_count + vmStats.active_count + vmStats.inactive_count + vmStats.wire_count) / 1024 / 1024.0;
+        avalible = (vm_page_size * vmStats.free_count) / 1024 / 1024.0;
+    }
+    NSString *memInfo = [NSString stringWithFormat:@"%.2fM", avalible];
+    iPhoneInfoModel *model = [[iPhoneInfoModel alloc] init];
+    model.key = @"可用内存:";
+    model.value = memInfo;
+    [self.infoArray addObject:model];
+}
+</code></pre>
+
+<h6>设备信息汇总：</h6>
+
+<pre><code>NSDictionary* infoDict =[[NSBundle mainBundle] infoDictionary];
+NSString* versionNum =[infoDict objectForKey:@"CFBundleVersion"];
+NSString*appName =[infoDict objectForKey:@"CFBundleDisplayName"];
+NSString*text =[NSString stringWithFormat:@"%@ %@",appName,versionNum];
+</code></pre>
+
+<h6>手机序列号</h6>
+
+<pre><code>    NSString* identifierNumber = [[UIDevice currentDevice] uniqueIdentifier]; 
+    NSLog(@"手机序列号: %@",identifierNumber); 
+</code></pre>
+
+<h6>手机别名： 用户定义的名称</h6>
+
+<pre><code>    NSString* userPhoneName = [[UIDevice currentDevice] name]; 
+    NSLog(@"手机别名: %@", userPhoneName); 
+</code></pre>
+
+<h6>设备名称</h6>
+
+<pre><code>    NSString* deviceName = [[UIDevice currentDevice] systemName]; 
+    NSLog(@"设备名称: %@",deviceName ); 
+</code></pre>
+
+<h6>手机系统版本</h6>
+
+<pre><code>    NSString* phoneVersion = [[UIDevice currentDevice] systemVersion]; 
+    NSLog(@"手机系统版本: %@", phoneVersion); 
+</code></pre>
+
+<h6>手机型号</h6>
+
+<pre><code>    NSString* phoneModel = [[UIDevice currentDevice] model]; 
+    NSLog(@"手机型号: %@",phoneModel ); 
+</code></pre>
+
+<h6>地方型号  （国际化区域名称）</h6>
+
+<pre><code>    NSString* localPhoneModel = [[UIDevice currentDevice] localizedModel]; 
+    NSLog(@"国际化区域名称: %@",localPhoneModel ); 
+
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary]; 
+</code></pre>
+
+<h6>当前应用名称</h6>
+
+<pre><code>    NSString *appCurName = [infoDictionary objectForKey:@"CFBundleDisplayName"]; 
+    NSLog(@"当前应用名称：%@",appCurName); 
+</code></pre>
+
+<h6>当前应用软件版本  比如：1.0.1</h6>
+
+<pre><code>    NSString *appCurVersion = [infoDictionary objectForKey:@"CFBundleShortVersionString"]; 
+    NSLog(@"当前应用软件版本:%@",appCurVersion); 
+</code></pre>
+
+<h6>当前应用版本号码   int类型</h6>
+
+<pre><code>    NSString *appCurVersionNum = [infoDictionary objectForKey:@"CFBundleVersion"]; 
+    NSLog(@"当前应用版本号码：%@",appCurVersionNum); 
+</code></pre>
+
+<p>参考文章：<a href="http://www.jianshu.com/p/b83b0240bd0e">http://www.jianshu.com/p/b83b0240bd0e</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS9+Xcode总结]]></title>
@@ -4164,1018 +4774,6 @@ statusLabel: On time
 <p>在这个练习中你已经学会了如何往现有的iOS app中添加手表app，如何创建一个界面控制器和使用嵌套组构造一个非常复杂的界面，以及使用WKInterfaceController类来配合这项工作。那么，接下来呢？</p>
 
 <p>本教程系列的第二部分，你将学习所有关于表和导航WatchKit的使用。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[方法缓存]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/08/fang-fa-huan-cun/"/>
-    <updated>2015-12-08T17:42:41+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/08/fang-fa-huan-cun</id>
-    <content type="html"><![CDATA[<blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#x6d;&#97;&#106;&#105;&#97;&#48;&#x33;&#x40;&#x6d;&#101;&#105;&#116;&#117;&#97;&#x6e;&#x2e;&#x63;&#x6f;&#109;">&#109;&#97;&#106;&#x69;&#x61;&#x30;&#x33;&#64;&#x6d;&#x65;&#x69;&#116;&#117;&#x61;&#110;&#x2e;&#x63;&#x6f;&#109;</a> ）。</p>
-
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
-
-<ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
-</ul>
-
-
-<!--more-->
-
-
-<p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
-
-<pre><code>[object methodA];
-</code></pre>
-
-<p>这表示我们想去调用object的methodA。
-但是在Objective-C里面调用一个方法到底意味着什么呢，是否和C++一样，任何一个非虚方法都会被编译成一个唯一的符号，在调用的时候去查找符号表，找到这个方法然后调用呢？
-答案是否定的。在Objective-C里面调用一个方法的时候，runtime层会将这个调用翻译成</p>
-
-<pre><code>objc_msgSend(id self, SEL op, ...)
-</code></pre>
-
-<p>而objc_msgSend具体又是如何分发的呢？ 我们来看下runtime层objc_msgSend的源码。
-在objc-msg-arm.s中，objc_msgSend的代码如下：
-（ps：Apple为了高度优化objc_msgSend的性能，这个文件是汇编写成的，不过即使我们不懂汇编，详尽的注释也可以让我们一窥其真面目）</p>
-
-<pre><code>ENTRY objc_msgSend
-# check whether receiver is nil
-teq     a1, #0
-    beq     LMsgSendNilReceiver
-
-# save registers and load receiver's class for CacheLookup
-stmfd   sp!, {a4,v1}
-ldr     v1, [a1, #ISA]
-
-# receiver is non-nil: search the cache
-CacheLookup a2, v1, LMsgSendCacheMiss
-
-# cache hit (imp in ip) and CacheLookup returns with nonstret (eq) set, restore registers and call
-ldmfd   sp!, {a4,v1}
-bx      ip
-
-# cache miss: go search the method lists
-LMsgSendCacheMiss:
-ldmfd sp!, {a4,v1}
-b _objc_msgSend_uncached
-
-LMsgSendNilReceiver:
-    mov     a2, #0
-    bx      lr
-
-LMsgSendExit:
-END_ENTRY objc_msgSend
-
-
-STATIC_ENTRY objc_msgSend_uncached
-
-# Push stack frame
-stmfd sp!, {a1-a4,r7,lr}
-add     r7, sp, #16
-
-# Load class and selector
-ldr a3, [a1, #ISA] /* class = receiver-&gt;isa  */
-/* selector already in a2 */
-/* receiver already in a1 */
-
-# Do the lookup
-MI_CALL_EXTERNAL(__class_lookupMethodAndLoadCache3)
-MOVE    ip, a1
-
-# Prep for forwarding, Pop stack frame and call imp
-teq v1, v1 /* set nonstret (eq) */
-ldmfd sp!, {a1-a4,r7,lr}
-bx ip
-</code></pre>
-
-<p>从上述代码中可以看到，objc_msgSend（就arm平台而言）的消息分发分为以下几个步骤：</p>
-
-<p>判断receiver是否为nil，也就是objc_msgSend的第一个参数self，也就是要调用的那个方法所属对象
-从缓存里寻找，找到了则分发，否则
-利用objc-class.mm中_class_lookupMethodAndLoadCache3（为什么有个这么奇怪的方法。本文末尾会解释）方法去寻找selector</p>
-
-<p>如果支持GC，忽略掉非GC环境的方法（retain等）
-从本class的method list寻找selector，如果找到，填充到缓存中，并返回selector，否则
-寻找父类的method list，并依次往上寻找，直到找到selector，填充到缓存中，并返回selector，否则
-调用_class_resolveMethod，如果可以动态resolve为一个selector，不缓存，方法返回，否则
-转发这个selector，否则
-报错，抛出异常
-缓存为谁而生
-从上面的分析中我们可以看到，当一个方法在比较“上层”的类中，用比较“下层”（继承关系上的上下层）对象去调用的时候，如果没有缓存，那么整个查找链是相当长的。就算方法是在这个类里面，当方法比较多的时候，每次都查找也是费事费力的一件事情。
-考虑下面的一个调用过程：</p>
-
-<pre><code>for ( int i = 0; i &lt; 100000; ++i) {
-    MyClass *myObject = myObjects[i];
-    [myObject methodA];
-}
-</code></pre>
-
-<p>当我们需要去调用一个方法数十万次甚至更多地时候，查找方法的消耗会变的非常显著。
-就算我们平常的非大规模调用，除非一个方法只会调用一次，否则缓存都是有用的。在运行时，那么多对象，那么多方法调用，节省下来的时间也是非常可观的。</p>
-
-<p>追本溯源，何为方法缓存
-本着源码面前，了无秘密的原则，我们看下源码中的方法缓存到底是什么，在objc-cache.mm中，objc_cache的定义如下：</p>
-
-<pre><code>struct objc_cache {
-    uintptr_t mask;            /* total = mask + 1 */
-    uintptr_t occupied;       
-    cache_entry *buckets[1];
-};
-</code></pre>
-
-<p>嗯，objc_cache的定义看起来很简单，它包含了下面三个变量：</p>
-
-<ul>
-<li>1)、mask：可以认为是当前能达到的最大index（从0开始的），所以缓存的size（total）是mask+1</li>
-<li>2)、occupied：被占用的槽位，因为缓存是以散列表的形式存在的，所以会有空槽，而occupied表示当前被占用的数目</li>
-<li>3)、buckets：用数组表示的hash表，cache_entry类型，每一个cache_entry代表一个方法缓存
-(buckets定义在objc_cache的最后，说明这是一个可变长度的数组)</li>
-</ul>
-
-
-<p>而cache_entry的定义如下：</p>
-
-<pre><code>typedef struct {
-    SEL name;     // same layout as struct old_method
-    void *unused;
-    IMP imp;  // same layout as struct old_method
-} cache_entry;
-</code></pre>
-
-<p>cache_entry定义也包含了三个字段，分别是：</p>
-
-<ul>
-<li>1)、name，被缓存的方法名字</li>
-<li>2)、unused，保留字段，还没被使用。</li>
-<li>3)、imp，方法实现</li>
-</ul>
-
-
-<p>缓存和散列
-缓存的存储使用了散列表。
-为什么要用散列表呢？因为散列表检索起来更快，我们来看下是方法缓存如何散列和检索的：</p>
-
-<pre><code>// Scan for the first unused slot and insert there.
-// There is guaranteed to be an empty slot because the 
-// minimum size is 4 and we resized at 3/4 full.
-buckets = (cache_entry **)cache-&gt;buckets;
-for (index = CACHE_HASH(sel, cache-&gt;mask); 
-     buckets[index] != NULL; 
-     index = (index+1) &amp; cache-&gt;mask)
-{
-    // empty
-}
-buckets[index] = entry;
-</code></pre>
-
-<p>这是往方法缓存里存放一个方法的代码片段，我们可以看到sel被散列后找到一个空槽放在buckets中，而CACHE_HASH的定义如下：</p>
-
-<pre><code>#define CACHE_HASH(sel, mask) (((uintptr_t)(sel)&gt;&gt;2) &amp; (mask))
-</code></pre>
-
-<p>这段代码就是利用了sel的指针地址和mask做了一下简单计算得出的。
-而从散列表取缓存则是利用汇编语言写成的（是为了高度优化objc_msgSend而使用汇编的）。我们看objc-msg-arm.mm 里面的CacheLookup方法：</p>
-
-<pre><code>.macro CacheLookup /* selReg, classReg, missLabel */
-
- MOVE r9, $0, LSR #2          /* index = (sel &gt;&gt; 2) */
- ldr     a4, [$1, #CACHE]        /* cache = class-&gt;cache */
- add     a4, a4, #BUCKETS        /* buckets = &amp;cache-&gt;buckets */
-
-/* search the cache */
-/* a1=receiver, a2 or a3=sel, r9=index, a4=buckets, $1=method */
-1:
- ldr     ip, [a4, #NEGMASK]      /* mask = cache-&gt;mask */
- and     r9, r9, ip              /* index &amp;= mask           */
- ldr     $1, [a4, r9, LSL #2]    /* method = buckets[index] */
- teq     $1, #0                  /* if (method == NULL)     */
- add     r9, r9, #1              /* index++                 */
- beq     $2                      /*     goto cacheMissLabel */
-
- ldr     ip, [$1, #METHOD_NAME]  /* load method-&gt;method_name        */
- teq     $0, ip                  /* if (method-&gt;method_name != sel) */
- bne     1b                      /*     retry                       */
-
-/* cache hit, $1 == method triplet address */
-/* Return triplet in $1 and imp in ip      */
- ldr     ip, [$1, #METHOD_IMP]   /* imp = method-&gt;method_imp */
-
-.endmacro
-</code></pre>
-
-<p>虽然是汇编，但是注释太详尽了，理解起来并不难，还是求hash，去buckets里找，找不到按照hash冲突的规则继续向下，直到最后。</p>
-
-<p>十万个为什么
-了解了方法缓存的定义之后，我们提出几个问题并一一解答</p>
-
-<p>方法缓存存在什么地方？
-让我们去翻看类的定义，在Objective-C 2.0中，Class的定义大致是这样的（见objc-runtime.mm）</p>
-
-<pre><code>  struct _class_t {
-  struct _class_t *isa;
-  struct _class_t *superclass;
-  void *cache;
-  void *vtable;
-  struct _class_ro_t *ro;
-  };
-</code></pre>
-
-<p>我们看到在类的定义里就有cache字段，没错，类的所有缓存都存在metaclass上，所以每个类都只有一份方法缓存，而不是每一个类的object都保存一份。
-父类方法的缓存只存在父类么，还是子类也会缓存父类的方法？
-在第一节对objc_msgSend的追溯中我们可以看到，即便是从父类取到的方法，也会存在类本身的方法缓存里。而当用一个父类对象去调用那个方法的时候，也会在父类的metaclass里缓存一份。
-类的方法缓存大小有没有限制？
-要回答这个问题，我们需要再看一下源码，在objc-cache.mm有一个变量定义如下：</p>
-
-<pre><code>  /* When _class_slow_grow is non-zero, any given cache is actually grown
-   * only on the odd-numbered times it becomes full; on the even-numbered
-   * times, it is simply emptied and re-used.  When this flag is zero,
-   * caches are grown every time. */
-  static const int _class_slow_grow = 1;
-</code></pre>
-
-<p>其实不用再看进一步的代码片段，仅从注释我们就可以看到问题的答案。注释中说明，当<em>class_slow_grow是非0值的时候，只有当方法缓存第奇数次满（使用的槽位超过3/4）的时候，方法缓存的大小才会增长（会清空缓存，否则hash值就不对了）；当第偶数次满的时候，方法缓存会被清空并重新利用。 如果</em>class_slow_grow值为0，那么每一次方法缓存满的时候，其大小都会增长。
-所以单就问题而言，答案是没有限制，虽然这个值被设置为1，方法缓存的大小增速会慢一点，但是确实是没有上限的。
-为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？
-这个问题么，我觉得有以下三个原因：</p>
-
-<p>散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
-list的方法还保存了除了selector和imp之外其他很多属性
-散列表是有空槽的，会浪费空间
-缓存 - 性能优化的万金油？
-非也，就算有了有了Objective-C本身的方法缓存，我们还是有很多调用方法的优化空间，对于这件事情，这篇文章讲的非常详细，大家可以自行移步观摩<a href="http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html">http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html</a> （强烈推荐，虽然我们一般不会遇到需要这么强度优化的地方，但是这种精神和思想是值得我们学习的）</p>
-
-<p>优化，永无止境
-在文章末尾，我们再来回答一下第一节提出的问题：“为什么会有_class_lookupMethodAndLoadCache3这个方法？”
-这个方法的实现如下所示：</p>
-
-<pre><code>/***********************************************************************
-* _class_lookupMethodAndLoadCache.
-* Method lookup for dispatchers ONLY. OTHER CODE SHOULD USE lookUpImp().
-* This lookup avoids optimistic cache scan because the dispatcher
-* already tried that.
-**********************************************************************/
-IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
-{
-    return lookUpImpOrForward(cls, sel, obj, 
-                              YES/*initialize*/, NO/*cache*/, YES/*resolver*/);
-}
-</code></pre>
-
-<p>如果单纯看方法名，这个方法应该会从缓存和方法列表中查找一个方法，但是如第一节所讲，在调用这个方法之前，我们已经是从缓存无法找到这个方法了，所以这个方法避免了再去扫描缓存查找方法的过程，而是直接从方法列表找起。从Apple代码的注释，我们也完全可以了解这一点。不顾一切地追求完美和性能，是一种品质。</p>
-
-<p>后记
-本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 <a href="http://www.opensource.apple.com/tarballs/">http://www.opensource.apple.com/tarballs/</a> 下载。如有错误，敬请指正。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[iBeacon初探]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/08/ibeaconchu-tan/"/>
-    <updated>2015-12-08T17:42:15+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/08/ibeaconchu-tan</id>
-    <content type="html"><![CDATA[<blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
-当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
-
-<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
-等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
-
-<!--more-->
-
-
-<h4>Apple Store 中的 iBeacon 支持</h4>
-
-<h6>特点</h6>
-
-<pre><code>iBeacon 基于低功耗蓝牙技术（Bluetooth Low Energy, BLE）这一开放标准，因此也继承了 BLE 的一些特点。
-</code></pre>
-
-<h6>范围广</h6>
-
-<pre><code>相比于 NFC 的数厘米的识别范围，iBeacon 的识别范围可以达到数十米，并且能够估计距离的远近。
-</code></pre>
-
-<h6>兼容性</h6>
-
-<pre><code>iBeacon 是基于 BLE 做的一个简单封装，因此大部分支持 BLE 的设备都可以兼容。
-例如可以使用一个普通的蓝牙芯片作为信标，使用 Android 设备检测信标的存在。
-</code></pre>
-
-<h6>低能耗</h6>
-
-<pre><code>不少 beacon 实现宣称可以不依赖外部能源独立运行两年。
-</code></pre>
-
-<h6>使用场景</h6>
-
-<pre><code>我们以一个连锁商场的例子来讲解 iBeacon 的一个流程。在一个连锁商场中，店家需要在商场中的不同地方推送不同的优惠信息，比如服装和家居柜台推送的消息就很有可能不同。
-</code></pre>
-
-<p>当消费者走进某个商场时，会扫描到一个 beacon。这个 beacon 有三个标志符，proximityUUID 是一个整个公司（所有连锁商场）统一的值，可以用来标识这个公司，major 值用来标识特定的连锁商场，比如消费者正在走进的商场，minor 值标识了特定的一个位置的 beacon，例如定位到消费者正在门口。</p>
-
-<p>这时商场的 app 会被系统唤醒，app 可以运行一个比较短的时间。在这段时间内，app 可以根据 beacon 的属性查询到用户的地理位置（通过查询服务器或者本地数据），例如在化妆品专柜，之后就可以通过一个 local notification 推送化妆品的促销信息。用户可以点击这次 local notification 来查看更详细的信息，这样一次促销行为就完成了。</p>
-
-<h6>API</h6>
-
-<pre><code>闲话少说，我们来看下 iBeacon 具体怎么使用：
-</code></pre>
-
-<h6>Beacon 的表示</h6>
-
-<pre><code>iBeacon 本质上来说是一个位置（区域）信息，所以 Apple 把 iBeacon 功能集成在了 Core Location 里面。
-</code></pre>
-
-<p>iBeacon 信标在 Core Location 中表现为一个 CLBeacon，它圈定的范围则表现为 CLBeaconRegion，这是一个 CLRegion 的子类。</p>
-
-<p>CLBeaconRegion 主要用三个属性来标识一个 iBeacon，proximityUUID、major 和 minor。
-proximityUUID 是一个 NSUUID，用来标识公司，每个公司、组织使用的 iBeacon 应该拥有同样的 proximityUUID。
-major 用来识别一组相关联的 beacon，例如在连锁超市的场景中，每个分店的 beacon 应该拥有同样的 major。
-minor 则用来区分某个特定的 beacon。</p>
-
-<pre><code>这些属性如果不指定（即 nil），匹配的时候就会忽略这个属性。例如只指定 proximityUUID 的 CLBeaconRegion 可以匹配某公司的所有 beacons。
-</code></pre>
-
-<h6>Monitoring</h6>
-
-<pre><code>Apple 在 iOS 4 中增加了地理围栏 API，可以用来在设备进入/退出某个地理区域时获得通知，这些 API 包括 -startMonitoringForRegion:、-locationManager:didEnterRegion:、-locationManager:didExitRegion: 等。
-</code></pre>
-
-<p>CLBeaconRegion 作为 CLRegion 的子类也可以复用这些 API，这种检测 iBeacon 的方式叫做 monitoring。</p>
-
-<p>使用这种方法可以在程序在后台运行时检测 iBeacon，但是只能同时检测 20 个 region，也不能推测设备与 beacon 的距离。</p>
-
-<h6>Ranging</h6>
-
-<pre><code>除了使用地理围栏 API 的方式，Apple 还在 iOS 7 中新增加了 iBeacon 专用的检测方式，也就是 ranging。
-</code></pre>
-
-<p>通过 CLLocationManager 的 -startRangingBeaconsInRegion: 方法可以开始检测特定的 iBeacon。</p>
-
-<p>当检测到 beacon 的时候，CLLocationManager 的 delegate 方法 -locationManager:didRangeBeacons:inRegion: 会被调用，通知调用者现在被检测到的 beacons。
-这个方法会返回一个 CLBeacon 的数组，根据 CLBeacon 的 proximity 属性就可以判断设备和 beacon 之间的距离。</p>
-
-<blockquote><p>proximity 属性有四个可能的值，unknown、immediate、near 和 far。
-另外 CLBeacon 还有 accuracy 和 rssi 两个属性能提供更详细的距离数据。</p></blockquote>
-
-<h6>使用 iOS 设备作为 iBeacon</h6>
-
-<p>我们可以使用 Core Bluetooth 框架来广播特定的 payload 来让 iOS 设备成为一个 iBeacon。
-这个 payload 可以由 CLBeaconRegion 的 -peripheralDataWithMeasuredPower: 方法来获取。
-之后交给 CBPeripheralManager 广播出去就可以了。</p>
-
-<p>需要注意的是，广播 iBeacon 信息的时候 app 必须在前台运行。</p>
-
-<h6>行为</h6>
-
-<p>iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别是当应用运行在后台时，检测到 beacon 的时间延迟会让开发者难以推测。在做了一些实验和合理的推测后，我们得出了一些</p>
-
-<blockquote><p>结论：
-检测到 beacon 的时间跟设备进行蓝牙扫描的时间间隔有关，每当设备进行扫描的时候，就能发现 iBeacon region 的变化。
-在 ranging 打开的情况下，设备会每秒钟做一次扫描，也就是说状态更新最多延迟一秒。
-程序在后台运行，并且 monitoring 打开的时候，设备可能每隔数分钟做一次扫描。iOS 7 的响应速度较慢，iOS 7.1 有比较大的改善。
-如果存在设置 notifyEntryStateOnDisplay=YES 的 beacon，iOS 会在屏幕点亮的时候（锁屏状态下按下 home 键，或者因为收到推送点亮等）进行一次扫描。
-设备重启并不影响 iBeacon 后台检测的执行。
-iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。</p></blockquote>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[怎么封装一个控件]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/07/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/"/>
-    <updated>2015-12-07T17:44:16+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/07/zen-yao-feng-zhuang-[?]-ge-kong-jian</id>
-    <content type="html"><![CDATA[<p>一个控件从外在特征来说，主要是封装这几点：</p>
-
-<ul>
-<li>交互方式</li>
-<li>显示样式</li>
-<li>数据使用</li>
-</ul>
-
-
-<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
-
-<ul>
-<li>灵活性</li>
-<li>低耦合</li>
-<li>易拓展</li>
-<li>易维护</li>
-</ul>
-
-
-<!--more-->
-
-
-<p>通常特征之间需要做一些取舍，比如灵活性与耦合度，有时候接口越多越能适应各种环境，但是接口越少对外产生的依赖就越少，维护起来也更容易。通常一些前期看起来还不错的代码，往往也会随着时间加深慢慢“成长”，功能的增加也会带来新的接口，很不自觉地就加深了耦合度，在开发中时不时地进行一些重构工作很有必要。总之，尽量减少接口的数量，但有足够的定制空间，可以在一开始把接口全部隐藏起来，再根据实际需要慢慢放开。</p>
-
-<p>自定义控件在 iOS 项目里很常见，通常页面之间入口很多，而且使用场景极有可能大不相同，比如一个 UIView 既可以以代码初始化，也可以以 xib 的形式初始化，而我们是需要保证这两种操作都能产生同样的行为。本文将会讨论到以下几点：</p>
-
-<ul>
-<li>选择正确的初始化方式</li>
-<li>调整布局的时机</li>
-<li>正确的处理 touches 方法</li>
-<li>drawRectCALayer 与动画</li>
-<li>UIControl 与 UIButton</li>
-<li>更友好的支持 xib</li>
-<li>不规则图形和事件触发范围（事件链的简单介绍以及处理）</li>
-<li>合理使用 KVO</li>
-</ul>
-
-
-<p>如果这些问题你一看就懂的话就不用继续往下看了。</p>
-
-<p>设计方针</p>
-
-<p>选择正确的初始化方式</p>
-
-<p>UIView 的首要问题就是既能从代码中初始化，也能从 xib 中初始化，两者有何不同? UIView 是支持 NSCoding 协议的，当在 xib 或 storyboard 里存在一个 UIView 的时候，其实是将 UIView 序列化到文件里（xib 和 storyboard 都是以 XML 格式来保存的），加载的时候反序列化出来，所以：</p>
-
-<ul>
-<li>当从代码实例化 UIView 的时候，initWithFrame 会执行；</li>
-<li>当从文件加载 UIView 的时候，initWithCoder 会执行。</li>
-</ul>
-
-
-<p>从代码中加载</p>
-
-<p>虽然 initWithFrame 是 UIView 的Designated Initializer，理论上来讲你继承自 UIView 的任何子类，该方法最终都会被调用，但是有一些类在初始化的时候没有遵守这个约定，如 UIImageView 的 initWithImage 和 UITableViewCell 的 initWithStyle:reuseIdentifier: 的构造器等，所以我们在写自定义控件的时候，最好只假设父视图的 Designated Initializer 被调用。</p>
-
-<p>如果控件在初始化或者在使用之前必须有一些参数要设置，那我们可以写自己的 Designated Initializer 构造器，如：</p>
-
-<pre><code>- (instancetype)initWithName:(NSString *)name;
-</code></pre>
-
-<p>在实现中一定要调用父类的 Designated Initializer，而且如果你有多个自定义的 Designated Initializer，最终都应该指向一个全能的初始化构造器：</p>
-
-<pre><code>- (instancetype)initWithName:(NSString *)name {
-    self = [self initWithName:name frame:CGRectZero];
-    return self;
-}
-- (instancetype)initWithName:(NSString *)name frame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.name = name;
-    }
-    return self;
-}
-</code></pre>
-
-<p>并且你要考虑到，因为你的控件是继承自 UIView 或 UIControl 的，那么用户完全可以不使用你提供的构造器，而直接调用基类的构造器，所以最好重写父类的 Designated Initializer，使它调用你提供的 Designated Initializer ，比如父类是个 UIView：</p>
-
-<pre><code>- (instancetype)initWithFrame:(CGRect)frame {
-    self = [self initWithName:nil frame:frame];
-    return self;
-}
-</code></pre>
-
-<p>这样当用户从代码里初始化你的控件的时候，就总是逃脱不了你需要执行的初始化代码了，哪怕用户直接调用 init 方法，最终还是会回到父类的 Designated Initializer 上。</p>
-
-<p>从 xib 或 storyboard 中加载</p>
-
-<p>当控件从 xib 或 storyboard 中加载的时候，情况就变得复杂了，首先我们知道有 initWithCoder 方法，该方法会在对象被反序列化的时候调用，比如从文件加载一个 UIView 的时候：</p>
-
-<pre><code>UIView *view = [[UIView alloc] init];
-NSData *data = [NSKeyedArchiver archivedDataWithRootObject:view];
-[[NSUserDefaults standardUserDefaults] setObject:data forKey:@"KeyView"];
-[[NSUserDefaults standardUserDefaults] synchronize];
-data = [[NSUserDefaults standardUserDefaults] objectForKey:@"KeyView"];
-view = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-NSLog(@"%@", view);
-</code></pre>
-
-<p>执行 unarchiveObjectWithData 的时候， initWithCoder 会被调用，那么你有可能会在这个方法里做一些初始化工作，比如恢复到保存之前的状态，当然前提是需要在 encodeWithCoder 中预先保存下来。</p>
-
-<p>不过我们很少会自己直接把一个 View 保存到文件中，一般是在 xib 或 storyboard 中写一个 View，然后让系统来完成反序列化的工作，此时在 initWithCoder 调用之后，awakeFromNib 方法也会被执行，既然在 awakeFromNib 方法里也能做初始化操作，那我们如何抉择?</p>
-
-<p>一般来说要尽量在 initWithCoder 中做初始化操作，毕竟这是最合理的地方，只要你的控件支持序列化，那么它就能在任何被反序列化的时候执行初始化操作，这里适合做全局数据、状态的初始化工作，也适合手动添加子视图。</p>
-
-<p>awakeFromNib 相较于 initWithCoder 的优势是：当 awakeFromNib 执行的时候，各种 IBOutlet 也都连接好了；而 initWithCoder 调用的时候，虽然子视图已经被添加到视图层级中，但是还没有引用。如果你是基于 xib 或 storyboard 创建的控件，那么你可能需要对 IBOutlet 连接的子控件进行初始化工作，这种情况下，你只能在 awakeFromNib 里进行处理。同时 xib 或 storyboard 对灵活性是有打折的，因为它们创建的代码无法被继承，所以当你选择用 xib 或 storyboard 来实现一个控件的时候，你已经不需要对灵活性有很高的要求了，唯一要做的是要保证用户一定是通过 xib 创建的此控件，否则可能是一个空的视图，可以在 initWithFrame 里放置一个 断言 或者异常来通知控件的用户。</p>
-
-<p>最后还要注意视图层级的问题，比如你要给 View 放置一个背景，你可能会在 initWithCoder 或 awakeFromNib 中这样写：</p>
-
-<pre><code>[self addSubview:self.backgroundView]; // 通过懒加载一个背景 View，然后添加到视图层级上
-</code></pre>
-
-<p>你的本意是在控件的最下面放置一个背景，却有可能将这个背景覆盖到控件的最上方，原因是用户可能会在 xib 里写入这个控件，然后往它上面添加一些子视图，这样一来，用户添加的这些子视图会在你添加背景之前先进入视图层级，你的背景被添加后就挡住了用户的子视图。如果你想支持用户的这种操作，可以把 addSubview 替换成 insertSubview:atIndex:。</p>
-
-<p>同时支持从代码和文件中加载</p>
-
-<p>如果你要同时支持 initWithFrame 和 initWithCoder ，那么你可以提供一个 commonInit 方法来做统一的初始化：</p>
-
-<pre><code>- (id)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (id)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)commonInit {
-    // do something ...
-}
-</code></pre>
-
-<p>awakeFromNib 方法里就不要再去调用 commonInit 了。</p>
-
-<p>调整布局的时机</p>
-
-<p>当一个控件被初始化以及开始使用之后，它的 frame 仍然可能发生变化，我们也需要接受这些变化，因为你提供的是 UIView 的接口，UIView 有很多种初始化方式：initWithFrame、initWithCoder、init 和类方法 new，用户完全可以在初始化之后再设置 frame 属性，而且用户就算使用 initWithFrame 来初始化也避免不了 frame 的改变，比如在横竖屏切换的时候。为了确保当它的 Size 发生变化后其子视图也能同步更新，我们不能一开始就把布局写死（使用约束除外）。</p>
-
-<p>基于 frame</p>
-
-<p>如果你是直接基于 frame 来布局的，你应该确保在初始化的时候只添加视图，而不去设置它们的frame，把设置子视图 frame 的过程全部放到 layoutSubviews 方法里：</p>
-
-<pre><code>- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    self.label.frame = CGRectInset(self.bounds, 20, 0);
-}
-- (void)commonInit {
-    [self addSubview:self.label];
-}
-- (UILabel *)label {
-    if (_label == nil) {
-        _label = [UILabel new];
-        _label.textColor = [UIColor grayColor];
-    }
-    return _label;
-}
-</code></pre>
-
-<p>这么做就能保证 label 总是出现在正确的位置上。</p>
-
-<p>使用 layoutSubviews 方法有几点需要注意：</p>
-
-<p>不要依赖前一次的计算结果，应该总是根据当前最新值来计算
-由于 layoutSubviews 方法是在自身的 bounds 发生改变的时候调用， 因此 UIScrollView 会在滚动时不停地调用，当你只关心 Size 有没有变化的时候，可以把前一次的 Size 保存起来，通过与最新的 Size 比较来判断是否需要更新，在大多数情况下都能改善性能
-基于 Auto Layout 约束</p>
-
-<p>如果你是基于 Auto Layout 约束来进行布局，那么可以在 commonInit 调用的时候就把约束添加上去，不要重写 layoutSubviews 方法，因为这种情况下它的默认实现就是根据约束来计算 frame。最重要的一点，把 translatesAutoresizingMaskIntoConstraints 属性设为 NO，以免产生 NSAutoresizingMaskLayoutConstraint 约束，如果你使用 Masonry 框架的话，则不用担心这个问题，mas_makeConstraints 方法会首先设置这个属性为 NO:</p>
-
-<pre><code>- (void)commonInit {
-    ...
-    [self setupConstraintsForSubviews];
-}
-- (void)setupConstraintsForSubviews {
-    [self.label mas_makeConstraints:^(MASConstraintMaker *make) {
-        ...
-    }];
-}
-</code></pre>
-
-<p>支持 sizeToFit</p>
-
-<p>如果你的控件对尺寸有严格的限定，比如有一个统一的宽高比或者是固定尺寸，那么最好能实现系统给出的约定成俗的接口。</p>
-
-<p>sizeToFit 用在基于 frame 布局的情况下，由你的控件去实现 sizeThatFits: 方法：</p>
-
-<pre><code>- (CGSize)sizeThatFits:(CGSize)size {
-    CGSize fitSize = [super sizeThatFits:size];
-    fitSize.height += self.label.frame.size.height;
-    // 如果是固定尺寸，就像 UISwtich 那样返回一个固定 Size 就 OK 了
-    return fitSize;
-}
-</code></pre>
-
-<p>然后在外部调用该控件的 sizeToFit 方法，这个方法内部会自动调用 sizeThatFits 并更新自身的 Size：</p>
-
-<p>[self.customView sizeToFit];
-在 ViewController 里调整视图布局</p>
-
-<p>当执行 viewDidLoad 方法时，不要依赖 self.view 的 Size。很多人会这样写：</p>
-
-<pre><code>- (void)viewDidLoad {
-    ...
-    self.label.width = self.view.width;
-}
-</code></pre>
-
-<p>这样是不对的，哪怕看上去没问题也只是碰巧没问题而已。当 viewDidLoad 方法被调用的时候，self.view 才刚刚被初始化，此时它的容器还没有对它的 frame 进行设置，如果 view 是从 xib 加载的，那么它的 Size 就是 xib 中设置的值；如果它是从代码加载的，那么它的 Size 和屏幕大小有关系，除了 Size 以外，Origin 也不会准确。整个过程看起来像这样：</p>
-
-<p>当访问 ViewController 的 view 的时候，ViewController 会先执行 loadViewIfRequired 方法，如果 view 还没有加载，则调用 loadView，然后是 viewDidLoad 这个钩子方法，最后是返回 view，容器拿到 view 后，根据自身的属性（如 edgesForExtendedLayout、判断是否存在 tabBar、判断 navigationBar 是否透明等）添加约束或者设置 frame。</p>
-
-<p>你至少应该设置 autoresizingMask 属性：</p>
-
-<pre><code>- (void)viewDidLoad {
-    ...
-    self.label.width = self.view.width;
-    self.label.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-}
-</code></pre>
-
-<p>或者在 viewDidLayoutSubviews 里处理：</p>
-
-<pre><code>- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    self.label.width = self.view.width;
-}
-</code></pre>
-
-<p>如果是基于 Auto Layout 来布局，则在 viewDidLoad 里添加约束即可。</p>
-
-<p>正确的处理 touches 方法</p>
-
-<p>如果你需要重写 touches 方法，那么应该完整的重写这四个方法：</p>
-
-<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-</code></pre>
-
-<p>当你的视图在这四个方法执行的时候，如果已经对事件进行了处理，就不要再调用 super 的 touches 方法，super 的 touches 方法默认实现是在响应链里继续转发事件（UIView 的默认实现）。如果你的基类是 UIScrollView 或者 UIButton 这些已经重写了事件处理的类，那么当你不想处理事件的时候可以调用 self.nextResponder 的 touches 方法来转发事件，其他的情况就调用 super 的 touches 方法来转发，比如 UIScrollView 可以这样来转发 触摸 事件：</p>
-
-<pre><code>- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (!self.dragging) {
-        [self.nextResponder touchesBegan: touches withEvent:event]; 
-    }       
-    [super touchesBegan: touches withEvent: event];
-}
-- (void)touchesMoved...
-- (void)touchesEnded...
-- (void)touchesCancelled...
-</code></pre>
-
-<p>这么实现以后，当你仅仅只是“碰”一个 UIScrollView 的时候，该事件就有可能被 nextResponder 处理。</p>
-
-<p>如果你没有实现自己的事件处理，也没有调用 nextResponder 和 super，那么响应链就会断掉。另外，尽量用手势识别器去处理自定义事件，它的好处是你不需要关心响应链，逻辑处理起来也更加清晰，事实上，UIScrollView 也是通过手势识别器实现的：</p>
-
-<pre><code>@property(nonatomic, readonly) UIPanGestureRecognizer *panGestureRecognizer NS_AVAILABLE_IOS(5_0); 
-@property(nonatomic, readonly) UIPinchGestureRecognizer *pinchGestureRecognizer NS_AVAILABLE_IOS(5_0);
-</code></pre>
-
-<p>drawRect、CALayer 与动画</p>
-
-<p>drawRect 方法很适合做自定义的控件，当你需要更新 UI 的时候，只要用 setNeedsDisplay 标记一下就行了，这么做又简单又方便；控件也常常用于封装动画，但是动画却有可能被移除掉。</p>
-
-<p>需要注意的地方：</p>
-
-<ol>
-<li>在 drawRect 里尽量用 CGContext 绘制 UI。如果你用 addSubview 插入了其他的视图，那么当系统在每次进入绘制的时候，会先把当前的上下文清除掉（此处不考虑 clearsContextBeforeDrawing 的影响），然后你也要清除掉已有的 subviews，以免重复添加视图；用户可能会往你的控件上添加他自己的子视图，然后在某个情况下清除所有的子视图（我就喜欢这么做）：</li>
-</ol>
-
-
-<p>[subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-2. 用 CALayer 代替 UIView。CALayer 节省内存，而且更适合去做一个“图层”，因为它不会接收事件、也不会成为响应链中的一员，但是它能够响应父视图（或 layer）的尺寸变化，这种特性很适合做单纯的数据展示：</p>
-
-<pre><code>CALayer *imageLayer = [CALayer layer];
-imageLayer.frame = rect;
-imageLayer.contents = (id)image;
-[self.view.layer addSublayer:imageLayer];
-</code></pre>
-
-<ol>
-<li><p>如果有可能的话使用 setNeedsDisplayInRect 代替 setNeedsDisplay 以优化性能，但是遇到性能问题的时候应该先检查自己的绘图算法和绘图时机，我个人其实从来没有使用过 setNeedsDisplayInRect。</p></li>
-<li><p>当你想做一个无限循环播放的动画的时候，可能会创建几个封装了动画的 CALayer，然后把它们添加到视图层级上，就像我在 iOS 实现脉冲雷达以及动态增减元素 By Swift 中这么做的：</p></li>
-</ol>
-
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang001.gif" title="Caption" ></p>
-
-<p>效果还不错，实现又简单，但是当你按下 Home 键并再次返回到 app 的时候，原本好看的动画就变成了一滩死水：</p>
-
-<p>这是因为在按下 Home 键的时候，所有的动画被移除了，具体的，每个 layer 都调用了 removeAllAnimations 方法。</p>
-
-<p>如果你想重新播放动画，可以监听 UIApplicationDidBecomeActiveNotification 通知，就像我在 上述博客 中做的那样。</p>
-
-<ol>
-<li><p>UIImageView 的 drawRect 永远不会被调用：</p>
-
-<pre><code> Special Considerations
- The UIImageView class is optimized to draw its images to the display. UIImageView will not call drawRect: in a subclass. If your subclass needs custom drawing code, it is recommended you use UIView as the base class.
-</code></pre></li>
-<li>UIView 的 drawRect 也不一定会调用，我在 12 年的博客：定制UINavigationBar 中曾经提到过 UIKit 框架的实现机制：</li>
-</ol>
-
-
-<p>众所周知一个视图如何显示是取决于它的 drawRect 方法，因为调这个方法之前 UIKit 也不知道如何显示它，但其实 drawRect 方法的目的也是画图（显示内容），而且我们如果以其他的方式给出了内容（图）的话， drawRect 方法就不会被调用了。</p>
-
-<p>注：实际上 UIView 是 CALayer 的delegate，如果 CALayer 没有内容的话，会回调给 UIView 的 displayLayer: 或者 drawLayer:inContext: 方法，UIView 在其中调用 drawRect ，draw 完后的图会缓存起来，除非使用 setNeedsDisplay 或是一些必要情况，否则都是使用缓存的图。</p>
-
-<p>UIView 和 CALayer 都是模型对象，如果我们以这种方式给出内容的话，drawRect 也就不会被调用了：</p>
-
-<pre><code>self.customView.layer.contents = (id)[UIImage imageNamed:@"AppIcon"];
-// 哪怕是给它一个 nil，这两句等价
-self.customView.layer.contents = nil;
-</code></pre>
-
-<p>我猜测是在 CALayer 的 setContents 方法里有个标记，无论传入的对象是什么都会将该标记打开，但是调用 setNeedsDisplay 的时候会将该标记去除。</p>
-
-<p>UIControl 与 UIButton</p>
-
-<p>如果要做一个可交互的控件，那么把 UIControl 作为基类就是首选，这个完美的基类支持各种状态：</p>
-
-<ul>
-<li>enabled</li>
-<li>selected</li>
-<li>highlighted</li>
-<li>tracking</li>
-<li><p>……
-还支持多状态下的观察者模式：</p>
-
-<pre><code>  @property(nonatomic,readonly) UIControlState state;
-  - (void)addTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
-  - (void)removeTarget:(id)target action:(SEL)action forControlEvents:(UIControlEvents)controlEvents;
-</code></pre>
-
-<p>这个基类可以很方便地为视图添加各种点击状态，最常见的用法就是将 UIViewController 的 view 改成 UIControl，然后就能快速实现 resignFirstResponder。</p></li>
-</ul>
-
-
-<p>UIButton 自带图文接口，支持更强大的状态切换，titleEdgeInsets 和 imageEdgeInsets 也比较好用，配合两个基类的属性更好，先设置对齐规则，再设置 insets：</p>
-
-<pre><code>@property(nonatomic) UIControlContentVerticalAlignment contentVerticalAlignment;    
-@property(nonatomic) UIControlContentHorizontalAlignment contentHorizontalAlignment;
-</code></pre>
-
-<p>UIControl 和 UIButton 都能很好的支持 xib，可以设置各种状态下的显示和 Selector，但是对 UIButton 来说这些并不够，因为 Normal 、Highlighted 和 Normal | Highlighted 是三种不同的状态，如果你需要实现根据当前状态显示不同高亮的图片，可以参考我下面的代码：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang002.png" title="Caption" ></p>
-
-<pre><code>- (void)updateStates {
-    [super setTitle:[self titleForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
-    [super setImage:[self imageForState:UIControlStateNormal] forState:UIControlStateNormal | UIControlStateHighlighted];
-    [super setTitle:[self titleForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
-    [super setImage:[self imageForState:UIControlStateSelected] forState:UIControlStateSelected | UIControlStateHighlighted];
-}
-</code></pre>
-
-<p>或者使用初始化设置：</p>
-
-<pre><code>- (void)commonInit {
-    [self setImage:[UIImage imageNamed:@"Normal"] forState:UIControlStateNormal];
-    [self setImage:[UIImage imageNamed:@"Selected"] forState:UIControlStateSelected];
-    [self setImage:[UIImage imageNamed:@"Highlighted"] forState:UIControlStateHighlighted];
-    [self setImage:[UIImage imageNamed:@"Selected_Highlighted"] forState:UIControlStateSelected | UIControlStateHighlighted];
-}
-</code></pre>
-
-<p>总之尽量使用原生类的接口，或者模仿原生类的接口。</p>
-
-<p>大多数情况下根据你所需要的特性来选择现有的基类就够了，或者用 UIView + 手势识别器 的组合也是一个好方案，尽量不要用 touches 方法（userInteractionEnabled 属性对 touches 和手势识别器的作用一样），这是我在 DKCarouselView 中内置的一个可点击的 ImageView，也可以继承 UIButton，不过 UIButton 更侧重于状态，ImageView 侧重于图片本身：</p>
-
-<pre><code>typedef void(^DKCarouselViewTapBlock)();
-@interface DKClickableImageView : UIImageView
-@property (nonatomic, assign) BOOL enable;
-@property (nonatomic, copy) DKCarouselViewTapBlock tapBlock;
-@end
-@implementation DKClickableImageView
-- (instancetype)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
-        [self commonInit];
-    }
-    return self;
-}
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    if ((self = [super initWithCoder:aDecoder])) {
-        [self commonInit];
-    }
-    return self;
-}
-- (void)commonInit {
-    self.userInteractionEnabled = YES;
-    self.enable = YES;
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onTap:)];
-    [self addGestureRecognizer:tapGesture];
-}
-- (IBAction)onTap:(id)sender {
-    if (!self.enable) return;
-    if (self.tapBlock) {
-        self.tapBlock();
-    }
-}
-@end
-</code></pre>
-
-<p>更友好的支持 xib</p>
-
-<p>你的控件现在应该可以正确的从文件、代码中初始化了，但是从 xib 中初始化以后可能还需要通过代码来进行一些设置，你或许觉得像上面那样设置 Button 的状态很恶心而且不够直观，但是也没办法，这是由于 xib 虽然对原生控件，如 UIView、UIImageView、UIScrollView 等支持较好（想设置圆角、边框等属性也没办法，只能通过 layer 来设置），但是对自定义控件却没有什么办法，当你拖一个 UIView 到 xib 中，然后把它的 Class 改成你自己的子类后，xib 如同一个瞎子一样，不会有任何变化。————好在这些都成了过去。</p>
-
-<p>Xcode 6 引入了两个新的宏：IBInspectable 和 IBDesignable。</p>
-
-<p>IBInspectable</p>
-
-<p>该宏会让 xib 识别属性，它支持这些数据类型：布尔、字符串、数字（NSNumber）、 CGPoint、CGSize、CGRect、UIColor 、 NSRange 和 UIImage。</p>
-
-<p>比如我们要让自定义的 Button 能在 xib 中设置 UIControlStateSelected | UIControlStateHighlighted 状态的图片，就可以这么做：</p>
-
-<pre><code>// CustomButton
-@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
-- (void)setHighlightSelectedImage:(UIImage *)highlightSelectedImage {
-    _highlightSelectedImage = highlightSelectedImage;
-    [self setImage:highlightSelectedImage forState:UIControlStateHighlighted | UIControlStateSelected];
-}
-</code></pre>
-
-<p>只需要在属性上加个 IBInspectable 宏即可，然后 xib 中就能显示这个自定义的属性：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang003.png" title="Caption" ></p>
-
-<p>xib 会把属性名以大驼峰样式显示，如果有多个属性，xib 也会自动按属性名的第一个单词分组显示，如：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang004.png" title="Caption" ></p>
-
-<p>通过使用 IBInspectable 宏，你可以把原本只能通过代码来设置的属性，也放到 xib 里来，代码就显得更加简洁了。</p>
-
-<p>IBDesignable</p>
-
-<p>xib 配合 IBInspectable 宏虽然可以让属性设置变得简单化，但是只有在运行期间你才能看到控件的真正效果，而使用 IBDesignable 可以让 Interface Builder 实时渲染控件，这一切只需要在类名加上 IBDesignable 宏即可：</p>
-
-<pre><code>IB_DESIGNABLE
-@interface CustomButton : UIButton
-@property (nonatomic, strong) IBInspectable UIImage *highlightSelectedImage;
-@end
-</code></pre>
-
-<p>这样一来，当你在 xib 中调整属性的时候，画布也会实时更新。</p>
-
-<p>关于对 IBInspectable / IBDesignable 的详细介绍可以看这里：<a href="http://nshipster.cn/ibinspectable-ibdesignable/">http://nshipster.cn/ibinspectable-ibdesignable/</a></p>
-
-<p>这是 Twitter 上其他开发者做出的效果：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang005.png" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang006.png" title="Caption" ></p>
-
-<p>相信通过使用 IBInspectable / IBDesignable ，会让控件使用起来更加方便、也更加有趣。</p>
-
-<p>不规则图形和事件触发范围</p>
-
-<p>不规则图形在 iOS 上并不多见，想来设计师也怕麻烦。不过 iOS 上的控件说到底都是各式各样的矩形，就算你修改 cornerRadius，让它看起来像这样：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang007.png" title="Caption" ></p>
-
-<p>也只是看起来像这样罢了，它的实际事件触发范围还是一个矩形。</p>
-
-<p>问题描述</p>
-
-<p>想象一个复杂的可交互的控件，它并不是单独工作的，可能需要和另一个控件交互，而且它们的事件触发范围可能会重叠，像这个选择联系人的列表：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang008.gif" title="Caption" ></p>
-
-<p>在设计的时候让上面二级菜单在最大的范围内可以被点击，下面的一级菜单也能在自己的范围内很好的工作，正常情况下它们的触发范围是这样的：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang009.png" title="Caption" ></p>
-
-<p>我们想要的是这样的：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang010.png" title="Caption" ></p>
-
-<p>想要实现这样的效果需要对事件分发有一定的了解。首先我们来想想，当触摸屏幕的时候发生了什么?</p>
-
-<p>当触摸屏幕的时候发生了什么?</p>
-
-<p>当屏幕接收到一个 touch 的时候，iOS 需要找到一个合适的对象来处理事件（ touch 或者手势），要寻找这个对象，需要用到这个方法：</p>
-
-<ul>
-<li>(UIView <em>)hitTest:(CGPoint)point withEvent:(UIEvent </em>)event;
-该方法会首先在 application 的 keyWindow 上调用（UIWindow 也是 UIView 的子类），并且该方法的返回值将被用来处理事件。如果这个 view（无论是 window 还是普通的 UIView） 的 userInteractionEnabled 属性被设置为 NO，则它的 hitTest: 永远返回 nil，这意味着它和它的子视图没有机会去接收和处理事件。如果 userInteractionEnabled 属性为 YES，则会先判断产生触摸的 point 是否发生在自己的 bounds 内，如果没有也将返回 nil；如果 point 在自己的范围内，则会为自己的每个子视图调用 hitTest: 方法，只要有一个子视图通过这个方法返回一个 UIView 对象，那么整个方法就一层一层地往上返回；如果没有子视图返回 UIView 对象，则父视图将会把自己返回。</li>
-</ul>
-
-
-<p>所以，在事件分发中，有这么几个关键点：</p>
-
-<p>如果父视图不能响应事件（userInteractionEnabled 为 NO），则其子视图也将无法响应事件。</p>
-
-<p>如果子视图的 frame 有一半在外面，就像这样：</p>
-
-<p><img src="http://al1020119.github.io/images/kongjianfengzhuang011.png" title="Caption" ></p>
-
-<p>则在外面的部分是无法响应事件的，因为它超出了父视图的范围。</p>
-
-<p>整个事件链只会返回一个 Hit-Test View 来处理事件。</p>
-
-<p>子视图的顺序会影响到 Hit-Test View 的选择：最先通过 hitTest: 方法返回的 UIView 才会被返回，假如有两个子视图平级，并且它们的 frame 一样，但是谁是后添加的谁就优先返回。</p>
-
-<p>了解了事件分发的这些特点后，还需要知道最后一件事：UIView 如何判断产生事件的 point 是否在自己的范围内? 答案是通过 pointInside 方法，这个方法的默认实现类似于这样：</p>
-
-<pre><code>// point 被转化为对应视图的坐标系统
-- (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
-    return CGRectContainsPoint(self.bounds, point);
-}
-</code></pre>
-
-<p>所以，当我们想改变一个 View 的事件触发范围的时候，重写 pointInside 方法就可以了。</p>
-
-<p>回到问题</p>
-
-<p>针对这种视图一定要处理它们的事件触发范围，也就是 pointInside 方法，一般来说，我们先判断 point 是不是在自己的范围内（通过调用 super 来判断），然后再判断该 point 符不符合我们的处理要求：</p>
-
-<p>这个例子我用 Swift 来写</p>
-
-<pre><code>override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
-    let inside = super.pointInside(point, withEvent: event)
-    if inside {
-        let radius = self.layer.cornerRadius
-        let dx = point.x - self.bounds.size.width / 2
-        let dy = point.y - radius
-        let distace = sqrt(dx * dx + dy * dy)
-        return distace &lt; radius
-    }
-    return inside
-}
-</code></pre>
-
-<p>如果你要实现非矩形的控件，那么请在开发时处理好这类问题。</p>
-
-<p>这里附上一个很容易测试的小 Demo：</p>
-
-<pre><code>class CustomView: UIControl {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.backgroundColor = UIColor.redColor()
-    }
-    required init(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        self.backgroundColor = UIColor.redColor()
-    }
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        self.layer.cornerRadius = self.bounds.size.width / 2
-    }
-    override func beginTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) -&gt; Bool {
-        self.backgroundColor = UIColor.grayColor()
-        return super.beginTrackingWithTouch(touch, withEvent: event)
-    }
-    override func endTrackingWithTouch(touch: UITouch, withEvent event: UIEvent) {
-        super.endTrackingWithTouch(touch, withEvent: event)
-        self.backgroundColor = UIColor.redColor()
-    }
-    override func pointInside(point: CGPoint, withEvent event: UIEvent?) -&gt; Bool {
-        let inside = super.pointInside(point, withEvent: event)
-        if inside {
-            let radius = self.layer.cornerRadius
-            let dx = point.x - self.bounds.size.width / 2
-            let dy = point.y - radius
-            let distace = sqrt(dx * dx + dy * dy)
-            return distace &lt; radius
-        }
-        return inside
-    }
-}
-</code></pre>
-
-<h4>合理使用 KVO</h4>
-
-<p>某些视图的接口比较宝贵，被你用掉后外部的使用者就无法使用了，比如 UITextField 的 delegate，好在 UITextField 还提供了通知和 UITextInput 方法可以使用；像 UIScrollView 或者基于 UIScrollView 的控件，你既不能设置它的 delegate，又没有其他的替代方法可以使用，对于像以下这种需要根据某些属性实时更新的控件来说，KVO 真是极好的：</p>
-
-<p>这是一个动态高度 Header 的例子（DKStickyHeaderView）：</p>
-
-<p>两者都是基于 UIScrollView、基于 KVO ，不依赖外部参数：</p>
-
-<pre><code>override func observeValueForKeyPath(keyPath: String, ofObject object: AnyObject, change: [NSObject : AnyObject], context: UnsafeMutablePointer) {
-    if keyPath == KEY_PATH_CONTENTOFFSET {
-        let scrollView = self.superview as! UIScrollView
-        var delta: CGFloat = 0.0
-        if scrollView.contentOffset.y &lt; 0.0 {
-            delta = fabs(min(0.0, scrollView.contentOffset.y))
-        }
-        var newFrame = self.frame
-        newFrame.origin.y = -delta
-        newFrame.size.height = self.minHeight + delta
-        self.frame = newFrame
-    } else {
-        super.observeValueForKeyPath(keyPath, ofObject: object, change: change, context: context)
-    }
-}
-</code></pre>
-
-<p>对容器类的 ViewController 来说也一样有用。在 iOS8 之前没有 UIContentContainer 这个正式协议，如果你要实现一个很长的、非列表、可滚动的 ViewController，那么你可能会将其中的功能分散到几个 ChildViewController 里，然后把它们组合起来，这样一来，这些 ChildViewController 既能被单独作为一个 ViewController 展示，也可以被组合到一起。作为组合到一起的前提，就是需要一个至少有以下两个方法的协议：</p>
-
-<p>提供一个统一的输入源，大多是一个 Model 或者像 userId 这样的
-能够返回你所需要的高度，比如设置 preferredContentSize 属性
-ChildViewController 动态地设置 contentSize，容器监听 contentSize 的变化动态地设置约束或者 frame。</p>
 ]]></content>
   </entry>
   
