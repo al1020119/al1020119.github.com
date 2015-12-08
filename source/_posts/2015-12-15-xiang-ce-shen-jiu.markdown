@@ -14,6 +14,11 @@ categories: 高级开发
 
 AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。
 
+
+<!--more-->
+
+
+
 * AssetsLibrary: 代表整个设备中的资源库（照片库），通过 AssetsLibrary 可以获取和包括设备中的照片和视频
 * ALAssetsGroup: 映射照片库中的一个相册，通过 ALAssetsGroup 可以获取某个相册的信息，相册下的资源，同时也可以对某个相册添加资源。
 * ALAsset: 映射照片库中的一个照片或视频，通过 ALAsset 可以获取某个照片或视频的详细信息，或者保存照片和视频。

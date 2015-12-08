@@ -17,6 +17,11 @@ categories: 系统相关
 
  
 
+<!--more-->
+
+
+
+
 * 2.MAC地址不能再用来设别设备
 
 　　还有一个生成iOS设备唯一标示符的方法是使用iOS设备的Media Access Control（MAC）地址。一个MAC地址是一个唯一的号码，它是物理网络层级方面分配给网络适配器的。这个地址苹果还有其他的名字，比如说是硬件地址（Hardware Address)或是Wifi地址，都是指同样的东西。

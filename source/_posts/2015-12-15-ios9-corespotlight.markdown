@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "iOS9-CoreSpotlight"
-date: 2015-12-15 13:37:30 +0800
+date: 2015-12-15 13:35:30 +0800
 comments: true
 categories: 新技术
 ---
@@ -20,6 +20,11 @@ iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开
 在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。
 
 ###三大API
+
+
+<!--more-->
+
+
 
 #####NSUserActivity
 
