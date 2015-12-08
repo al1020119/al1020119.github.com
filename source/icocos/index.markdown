@@ -9,6 +9,13 @@ footer: true
 
 ---
  
+ 
+ 
+
+
+{% img /images/iCocos.jpg Caption %}  
+
+ 
 
 	
 											|  个人信息  | 
