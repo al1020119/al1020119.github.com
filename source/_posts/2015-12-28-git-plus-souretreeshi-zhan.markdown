@@ -149,11 +149,14 @@ SourceTree 是 Windows 和Mac OS X 下免费的 Git 和 Hg 客户端，拥有可
 {% img /images/git012.png Caption %}  
 
 
-
-
 后面就是需要熟悉souretree界面，并且使用了，也就是平时开发者们最常用的一些操作。
 
 {% img /images/git013.png Caption %}  
+
+
+
+
+
 
 具体的详细步骤，后面我会找机会根据项目实际开发整理好(不过，如果你使用果Coerstone那这个也并不难)。由于时间的原因，这里就到这里了！
 
