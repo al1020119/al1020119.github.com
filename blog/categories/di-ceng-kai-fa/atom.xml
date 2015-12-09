@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 底层开发 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/di-ceng-kai-fa/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-09T16:23:05+08:00</updated>
+  <updated>2015-12-09T18:12:47+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,358 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[粘包&amp;封包&amp;拆包]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/"/>
+    <updated>2015-12-09T18:11:05+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao</id>
+    <content type="html"><![CDATA[<p>这两天看csdn有一些关于socket粘包，socket缓冲区设置的问题，发现自己不是很清楚，所以查资料了解记录一下：</p>
+
+<h3>两个简单概念长连接与短连接：</h3>
+
+<h6>1.长连接</h6>
+
+<pre><code>Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。
+</code></pre>
+
+<h6>2.短连接</h6>
+
+<pre><code>Client方与Server每进行一次报文收发交易时才进行通讯连接，交易完毕后立即断开连接。此种方式常用于一点对多点
+</code></pre>
+
+<p>通讯，比如多个Client连接一个Server.</p>
+
+<h3>什么时候需要考虑粘包问题?</h3>
+
+<ul>
+<li>1:如果利用tcp每次发送数据，就与对方建立连接，然后双方发送完一段数据后，就关闭连接，这样就不会出现粘包问题（因为只有一种包结构,类似于http协议）。关闭连接主要要双方都发送close连接（参考tcp关闭协议）。如：A需要发送一段字符串给B，那么A与B建立连接，然后发送双方都默认好的协议字符如"hello give me sth abour yourself"，然后B收到报文后，就将缓冲区数据接收,然后关闭连接，这样粘包问题不用考虑到，因为大家都知道是发送一段字符。</li>
+<li>2：如果发送数据无结构，如文件传输，这样发送方只管发送，接收方只管接收存储就ok，也不用考虑粘包</li>
+<li><p>3：如果双方建立连接，需要在连接后一段时间内发送不同结构数据，如连接后，有好几种结构：</p>
+
+<pre><code>   1)"hello give me sth abour yourself"
+   2)"Don't give me sth abour yourself"
+</code></pre>
+
+<p> 那这样的话，如果发送方连续发送这个两个包出去，接收方一次接收可能会是"hello give me sth abour yourselfDon&rsquo;t give me sth abour yourself" 这样接收方就傻了，到底是要干嘛？不知道，因为协议没有规定这么诡异的字符串，所以要处理把它分包，怎么分也需要双方组织一个比较好的包结构，所以一般可能会在头加一个数据长度之类的包，以确保接收。</p></li>
+</ul>
+
+
+<h3>粘包出现原因：</h3>
+
+<p>在流传输中出现，UDP不会出现粘包，因为它有消息边界(参考Windows 网络编程)</p>
+
+<ul>
+<li>1 发送端需要等缓冲区满才发送出去，造成粘包</li>
+<li>2 接收方不及时接收缓冲区的包，造成多个包接收</li>
+</ul>
+
+
+<h4>解决办法：</h4>
+
+<p>为了避免粘包现象，可采取以下几种措施。一是对于发送方引起的粘包现象，用户可通过编程设置来避免，TCP提供了强制数据立即传送的操作指令push，TCP软件收到该操作指令后，就立即将本段数据发送出去，而不必等待发送缓冲区满；二是对于接收方引起的粘包，则可通过优化程序设计、精简接收进程工作量、提高接收进程优先级等措施，使其及时接收数据，从而尽量避免出现粘包现象；三是由接收方控制，将一包数据按结构字段，人为控制分多次接收，然后合并，通过这种手段来避免粘包。</p>
+
+<blockquote><p>以上提到的三种措施，都有其不足之处。第一种编程设置方法虽然可以避免发送方引起的粘包，但它关闭了优化算法，降低了网络发送效率，影响应用程序的性能，一般不建议使用。第二种方法只能减少出现粘包的可能性，但并不能完全避免粘包，当发送频率较高时，或由于网络突发可能使某个时间段数据包到达接收方较快，接收方还是有可能来不及接收，从而导致粘包。第三种方法虽然避免了粘包，但应用程序的效率较低，对实时应用的场合不适合。</p></blockquote>
+
+<h4>补充：封包和拆包</h4>
+
+<h6>封包:</h6>
+
+<ul>
+<li>封包就是给一段数据加上包头,这样一来数据包就分为包头和包体两部分内容了(以后讲过滤非法包时封包会加入"包尾"内容).包头其实上是个大小固定的结构体,其中有个结构体成员变量表示包体的长度,这是个很重要的变量,其他的结构体成员可根据需要自己定义.根据包头长度固定以及包头中含有包体长度的变量就能正确的拆分出一个完整的数据包.</li>
+</ul>
+
+
+<h6>拆包</h6>
+
+<p>目前我最常用的是以下两种方式.</p>
+
+<ul>
+<li><p>1.动态缓冲区暂存方式.之所以说缓冲区是动态的是因为当需要缓冲的数据长度超出缓冲区的长度时会增大缓冲区长度. 大概过程描述如下:</p>
+
+<ul>
+<li><p>A,为每一个连接动态分配一个缓冲区,同时把此缓冲区和SOCKET关联,常用的是通过结构体关联.</p></li>
+<li><p>B,当接收到数据时首先把此段数据存放在缓冲区中.</p></li>
+<li><p>C,判断缓存区中的数据长度是否够一个包头的长度,如不够,则不进行拆包操作.</p></li>
+<li><p>D,根据包头数据解析出里面代表包体长度的变量.</p></li>
+<li><p>E,判断缓存区中除包头外的数据长度是否够一个包体的长度,如不够,则不进行拆包操作.</p></li>
+<li><p>F,取出整个数据包.这里的"取"的意思是不光从缓冲区中拷贝出数据包,而且要把此数据包从缓存区中删除掉.删除的办法就是把此包后面的数据移动到缓冲区的起始地址.</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>这种方法有两个缺点.</p>
+
+<pre><code>    1. 为每个连接动态分配一个缓冲区增大了内存的使用.
+    2. 有三个地方需要拷贝数据,一个地方是把数据存放在缓冲区,一个地方是把完整的数据包从缓冲区取出来,一个地方是把数据包从缓冲区中删除.
+</code></pre>
+
+<p>这种拆包的改进方法会解决和完善部分缺点.</p>
+
+<ul>
+<li>2.利用底层的缓冲区来进行拆包</li>
+</ul>
+
+
+<p>由于TCP也维护了一个缓冲区,所以我们完全可以利用TCP的缓冲区来缓存我们的数据,这样一来就不需要为每一个连接分配一个缓冲区了.另一方面我们知道recv或者wsarecv都有一个参数,用来表示我们要接收多长长度的数据.利用这两个条件我们就可以对第一种方法进行优化了.</p>
+
+<blockquote><p>对于阻塞SOCKET来说,我们可以利用一个循环来接收包头长度的数据,然后解析出代表包体长度的那个变量,再用一个循环来接收包体长度的数据.</p></blockquote>
+
+<h3>Socket通讯源码！</h3>
+
+<p>客户端：
+导入头文件：</p>
+
+<pre><code>#import &lt;sys/socket.h&gt;
+#import &lt;netinet/in.h&gt;
+#import &lt;arpa/inet.h&gt;
+#import &lt;unistd.h&gt;
+</code></pre>
+
+<p> 创建连接</p>
+
+<pre><code>CFSocketContext sockContext = {0, // 结构体的版本，必须为0
+self,  // 一个任意指针的数据，可以用在创建时CFSocket对象相关联。这个指针被传递给所有的上下文中定义的回调。
+NULL, // 一个定义在上面指针中的retain的回调， 可以为NULL
+NULL, NULL};
+
+CFSocketRef _socket = (kCFAllocatorDefault, // 为新对象分配内存，可以为nil
+PF_INET, // 协议族，如果为0或者负数，则默认为PF_INET
+SOCK_STREAM, // 套接字类型，如果协议族为PF_INET,则它会默认为SOCK_STREAM
+IPPROTO_TCP, // 套接字协议，如果协议族是PF_INET且协议是0或者负数，它会默认为IPPROTO_TCP
+kCFSocketConnectCallBack, // 触发回调函数的socket消息类型，具体见Callback Types
+TCPServerConnectCallBack, // 上面情况下触发的回调函数
+&amp;sockContext // 一个持有CFSocket结构信息的对象，可以为nil
+);
+
+if (_socket != nil) {
+    struct sockaddr_in addr4;   // IPV4
+    memset(&amp;addr4, 0, sizeof(addr4));
+    addr4.sin_len = sizeof(addr4);
+    addr4.sin_family = AF_INET;
+    addr4.sin_port = htons(8888);
+    addr4.sin_addr.s_addr = inet_addr([strAddress UTF8String]);  // 把字符串的地址转换为机器可识别的网络地址
+
+    // 把sockaddr_in结构体中的地址转换为Data
+    CFDataRef address = CFDataCreate(kCFAllocatorDefault, (UInt8 *)&amp;addr4, sizeof(addr4));
+    CFSocketConnectToAddress(_socket, // 连接的socket
+address, // CFDataRef类型的包含上面socket的远程地址的对象
+-1  // 连接超时时间，如果为负，则不尝试连接，而是把连接放在后台进行，如果_socket消息类型为kCFSocketConnectCallBack，将会在连接成功或失败的时候在后台触发回调函数
+);
+
+    CFRunLoopRef cRunRef = CFRunLoopGetCurrent();    // 获取当前线程的循环
+    // 创建一个循环，但并没有真正加如到循环中，需要调用CFRunLoopAddSource
+    CFRunLoopSourceRef sourceRef = CFSocketCreateRunLoopSource(kCFAllocatorDefault, _socket, 0);
+    CFRunLoopAddSource(cRunRef, // 运行循环
+    sourceRef,  // 增加的运行循环源, 它会被retain一次
+    kCFRunLoopCommonModes  // 增加的运行循环源的模式
+    );
+    CFRelease(courceRef);
+}
+</code></pre>
+
+<p> 设置回调函数</p>
+
+<pre><code>// socket回调函数的格式：
+static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) ｛
+    if (data != NULL) {
+        // 当socket为kCFSocketConnectCallBack时，失败时回调失败会返回一个错误代码指针，其他情况返回NULL
+        NSLog(@"连接失败");
+        return;
+    }
+    TCPClient *client = (TCPClient *)info;
+    // 读取接收的数据
+    [info performSlectorInBackground:@selector(readStream) withObject:nil];
+｝
+</code></pre>
+
+<p>接收发送数据</p>
+
+<pre><code>// 读取接收的数据
+- (void)readStream {
+    char buffer[1024];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    while (recv(CFSocketGetNative(_socket), //与本机关联的Socket 如果已经失效返回－1:INVALID_SOCKET
+           buffer, sizeof(buffer), 0)) {
+        NSLog(@"%@", [NSString stringWithUTF8String:buffer]);
+    }
+}
+
+// 发送数据
+- (void)sendMessage {
+    NSString *stringTosend = @"你好";
+    char *data = [stringTosend UTF8String];
+    send(SFSocketGetNative(_socket), data, strlen(data) + 1, 0);
+}
+</code></pre>
+
+<p>服务器端：</p>
+
+<pre><code>CFSockteRef _socket;
+CFWriteStreamRef outputStream = NULL;
+
+int setupSocket() {
+    _socket = CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, kCFSocketAcceptCallBack, TCPServerAcceptCallBack, NULL);
+    if (NULL == _socket) {
+        NSLog(@"Cannot create socket!");
+        return 0;
+    }
+
+    int optval = 1;
+    setsockopt(CFSocketGetNative(_socket), SOL_SOCKET, SO_REUSEADDR, // 允许重用本地地址和端口
+(void *)&amp;optval, sizeof(optval));
+
+    struct sockaddr_in addr4;
+    memset(&amp;addr4, 0, sizeof(addr4));
+    addr4.sin_len = sizeof(addr4);
+    addr4.sin_family = AF_INET;
+    addr4.sin_port = htons(port);
+    addr4.sin_addr.s_addr = htonl(INADDR_ANY);
+    CFDataRef address = CFDataCreate(kCFAllocatorDefault, (UInt8 *)&amp;addr4, sizeof(addr4));
+
+    if (kCFSocketSuccess != CFSocketSetAddress(_socket, address)) {
+        NSLog(@"Bind to address failed!");
+        if (_socket)
+             CFRelease(_socket);
+        _socket = NULL;
+        return 0;
+    }
+
+    CFRunLoopRef cfRunLoop = CFRunLoopGetCurrent();
+    CFRunLoopSourceRef source = CFSocketCreateRunLoopSource(kCFAllocatorDefault, _socket, 0);
+    CFRunLoopAddSource(cfRunLoop, source, kCFRunLoopCommonModes);
+    CFRelease(source);
+
+    return 1;
+}
+
+// socket回调函数，同客户端
+void TCPServerAcceptCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
+    if (kCFSocketAcceptCallBack == type) {
+        // 本地套接字句柄
+        CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
+        uint8_t name[SOCK_MAXADDRLEN];      
+        socklen_t nameLen = sizeof(name);
+        if (0 != getpeername(nativeSocketHandle, (struct sockaddr *)name, &amp;nameLen)) {
+            NSLog(@"error");
+            exit(1);
+        }
+        NSLog(@"%@ connected.", inet_ntoa( ((struct sockaddr_in *)name)-&gt;sin_addr )):
+
+        CFReadStreamRef iStream;
+        CFWriteStreamRef oStream;
+        // 创建一个可读写的socket连接
+        CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &amp;iStream, &amp;oStream);
+        if (iStream &amp;&amp; oStream) {
+            CFStreamClientContext streamContext = {0, NULL, NULL, NULL};
+            if (!CFReadStreamSetClient(iStream, kCFStreamEventHasBytesAvaiable,
+                                       readStream, // 回调函数，当有可读的数据时调用
+                                       &amp;streamContext)){
+                exit(1);
+            }
+
+            if (!CFReadStreamSetClient(iStream, kCFStreamEventCanAcceptBytes, writeStream, &amp;streamContext)){
+                exit(1);
+            }
+
+            CFReadStreamScheduleWithRunLoop(iStream, CFRunLoopGetCurrent(), kCFRunLoopCommomModes);
+            CFWriteStreamScheduleWithRunLoop(wStream, CFRunLoopGetCurrent(), kCFRunLoopCommomModes);
+            CFReadStreamOpen(iStream);
+            CFWriteStreamOpen(wStream);
+        } else {
+             close(nativeSocketHandle);
+        }
+    }
+}
+
+// 读取数据
+void readStream(CFReadStreamRef stream, CFStreamEventType eventType, void *clientCallBackInfo) {
+    UInt8 buff[255];
+    CFReadStreamRead(stream, buff, 255);
+    printf("received: %s", buff);
+}
+
+void writeStream (CFWriteStreamRef stream, CFStreamEventType eventType, void *clientCallBackInfo) {
+    outputStream = stream;
+}
+
+main {
+    char *str = "nihao";
+
+    if (outputStream != NULL) {
+        CFWriteStreamWrite(outputStream, str, strlen(line) + 1);
+    } else {
+        NSLog(@"Cannot send data!");
+    }
+}
+
+// 开辟一个线程线程函数中
+void runLoopInThread() {
+    int res = setupSocket();
+    if (!res) {
+        exit(1);
+    }
+    CFRunLoopRun();    // 运行当前线程的CFRunLoop对象
+} 
+</code></pre>
+
+<h3>Socket常见问题</h3>
+
+<h6>1.recv不等待是因为你使用的是非阻塞socket，换而你使用阻塞socket一样需要等待。</h6>
+
+<p>recv的recvfrom是可以替换使用的，只是recvfrom多了两个参数，可以用来接收对端的地址信息，这个对于udp这种无连接的，可以很方便地进行回复。
+而换过来如果你在udp当中也使用recv，那么就不知道该回复给谁了，如果你不需要回复的话，也是可以使用的。另外就是对于tcp是已经知道对端的，
+就没必要每次接收还多收一个地址，没有意义，要取地址信息，在accept当中取得就可以加以记录了。</p>
+
+<h6>2.在服务器端不能获取正确的发送方的IP地址</h6>
+
+<p>Q.服务器端代码：</p>
+
+<pre><code>n=recvfrom(sockfd,msg,MAX_MSG_SIZE,0,(structaddr*)&amp;addr,&amp;addrlen);
+</code></pre>
+
+<p>客户端向服务器端发送msg后，服务器端能收到，但是，在服务器端不能获取正确的发送方的IP地址。</p>
+
+<p>A.几经努力，问题终于解决：</p>
+
+<pre><code>n=recvfrom(sockfd,msg,MAX_MSG_SIZE,0,(structaddr*)&amp;addr,&amp;addrlen);
+</code></pre>
+
+<p>在调用recvfrom()之前，加上：addrlen = sizeof(struct sockaddr);即可（之前声明 int addrlen; ）。</p>
+
+<h6>3.标志字符串结束</h6>
+
+<p> 使用java开发socket通信时，当使用输出流的情况输出时，例如：</p>
+
+<pre><code>PrintWriter os=new PrintWriter(socket.getOutputStream());
+os.println(msg);//一定要用println才能标志字符串结束
+os.flush();
+</code></pre>
+
+<p>最后一句不可省略，否则不会刷新缓存，客户端则不能接收到任何数据。若是不用println，用print则字符串不会结束，这样，接收端则会一直等待，直到字符串结束或连接断开才会说明本次字符串已传输完毕，因此在使用这种方法输出时，一定要注意传送字符串传送完毕的标志位。</p>
+
+<p>此外，我在使用perl进行socket通信时，也出现了此类问题。用perl进行socket通信的编程时，发送的消息最后一定要加上\n，也就是换行符，这样，才被认为是通信结束。</p>
+
+<h6>4.Socket中 设置连接超时</h6>
+
+<p>设置connect超时很简单，CSDN上也有人提到过使用select，但却没有一个令人满意与完整的答案。偶所讲的也正是select函数，此函数集成在winsock1.1中，简单点讲，"作用使那些想避免在套接字调用过程中被锁定的应用程序，采取一种有序的方式，同时对多个套接字进行管理"(《Windows网络编程技术》原话)。使用方法与解释请见《Windows网络编程技术》。</p>
+
+<blockquote><p>在使用此函数前，需先将socket设置为非阻塞模式，这样，在connect时，才会立马跳过，同时，通常也会产生一个WSAEWOULDBLOCK错误，这个错误没关系。再执行select则是真正的超时。</p></blockquote>
+
+<h6>5.IOS Socket 如何判断接受完成　　</h6>
+
+<p>　　
+　　发送起始时传递文件的大小信息给接收方，接收方每读取一个数据块就缓存到nsdata或写入到存储器上，当接收块的size小于等于缓存buffer的大小时，说明接收到了最后一个块，把这个快也缓存到nsdata或写入到存储器上，接收就完成了，然后作check，检查接收到的内容（缓存用的nsdata或反复写入的那个临时磁盘文件）是否和发送方开始给过来的文件大小相等，相等就是对的，不相等就是错的，需要向发送端申请复发。ios里建议用asyncSocket类，异步+代理，收到数据块时自动进入事件委托过程。
+　　
+　　</p>
+
+<h6>6.AsyncSocket接收到数据出现粘包问题该如何解决？</h6>
+
+<p>　　发送的包里每个包前边加个长度的字段。 你收到的时候先将这个字段解析出来，然后读入接下来的data内容。 如果data内容过长，那可能是几个包粘在一块儿了，只读入当前包 的内容， 如果不足，证明出现断包的情况，缓存下来，等下次收到包的时候，肯定显示上次收到包的内容了，拼在一块儿解出来。
+tcp的协议中，包的接收顺序就是包发送时候的顺序，你需要处理的就是当出现一个段包时，自己缓存直到这个包长度够了就完成了。完成这个的基础，一般的做法都是自己发送的每个包头添加一个长度字段</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[函数&amp;方法的奥秘]]></title>
@@ -467,7 +819,7 @@ return jailbroken;
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x6d;&#x61;&#106;&#x69;&#x61;&#x30;&#x33;&#64;&#109;&#101;&#105;&#116;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;">&#x6d;&#97;&#106;&#105;&#x61;&#48;&#x33;&#64;&#109;&#101;&#105;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#x6d;&#x61;&#x6a;&#105;&#x61;&#48;&#51;&#x40;&#x6d;&#x65;&#x69;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#111;&#x6d;">&#109;&#97;&#106;&#105;&#97;&#x30;&#x33;&#x40;&#x6d;&#101;&#105;&#x74;&#117;&#x61;&#110;&#46;&#99;&#111;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -1328,609 +1680,6 @@ static double heightKey;//用来参考
 <p><a href="http://www.cnblogs.com/iCocos/p/4734687.html">http://www.cnblogs.com/iCocos/p/4734687.html</a></p>
 
 <p><a href="http://www.cnblogs.com/iCocos/p/4761600.html">http://www.cnblogs.com/iCocos/p/4761600.html</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[自己写套缓存机制]]></title>
-    <link href="http://al1020119.github.io/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu/"/>
-    <updated>2013-12-07T02:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu</id>
-    <content type="html"><![CDATA[<ul>
-<li>前言</li>
-</ul>
-
-
-<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
-
-<!--more-->
-
-
-<h2>一： 研究UITableView底层实现</h2>
-
-<h5>1.系统UITabelView的简单使用，这里就不考虑分组了，默认为1组。</h5>
-
-<pre><code> 1 // 返回第section组有多少行
- 2 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
- 3 {
- 4     NSLog(@"%s",__func__);
- 5     return 10;
- 6 }
- 7  
- 8 // 返回每一行cell的样子
- 9 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-10 {
-11     NSLog(@"%s",__func__);
-12     static NSString *ID = @"cell";
-13     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
-14      
-15     if (cell == nil) {
-16          
-17         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
-18     }
-19      
-20     cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
-21      
-22     return cell;
-23 }
-24 // 返回每行cell的高度
-25 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-26 {
-27     NSLog(@"%s--%@",__func__,indexPath);
-28     return 100;
-29 } 
-</code></pre>
-
-<h5>2.验证UITabelView的实现机制。</h5>
-
-<p>如图打印结果:</p>
-
-<p><img src="/images/huancun001.png" title="Caption" ></p>
-
-<ul>
-<li><p>分析：底层先获取有多少cell（10个），在获取每个cell的高度，返回高度的方法一开始调用10次。</p>
-
-<ul>
-<li>目的：确定tableView的滚动范围，一开始计算所有cell的frame,就能计算下tableView的滚动范围。</li>
-</ul>
-</li>
-<li><p>分析：tableView:cellForRowAtIndexPath:方法什么时候调用。</p></li>
-</ul>
-
-
-<p>打印验证，如图：</p>
-
-<p><img src="/images/huancun002.png" title="Caption" ></p>
-
-<p>一开始调用了7次，因为一开始屏幕最多显示7个cell</p>
-
-<pre><code>- 目的：一开始只加载显示出来的cell，等有新的cell出现的时候会继续调用这个方法加载cell。
-</code></pre>
-
-<h5>3.UITableView循环利用思想</h5>
-
-<p>当新的cell出现的时候，首先从缓存池中获取，如果没有获取到，就自己创建cell。</p>
-
-<p>当有cell移除屏幕的时候，把cell放到缓存池中去。</p>
-
-<h2>二、自定义UIScroolView，模仿UITableView循环利用</h2>
-
-<h5>1.提供数据源和代理方法，命名和UITableView一致。</h5>
-
-<pre><code> 1 @class YZTableView;
- 2 @protocol YZTableViewDataSource
- 3  
- 4 @required
- 5  
- 6 // 返回有多少行cell
- 7 - (NSInteger)tableView:(YZTableView *)tableView numberOfRowsInSection:(NSInteger)section;
- 8  
- 9  
-10 // 返回每行cell长什么样子
-11 - (UITableViewCell *)tableView:(YZTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
-12  
-13 @end
-14  
-15 @protocol YZTableViewDelegate
-16  
-17 // 返回每行cell有多高
-18 - (CGFloat)tableView:(YZTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
-19  
-20 @end 
-</code></pre>
-
-<h5>2.提供代理和数据源属性</h5>
-
-<pre><code>1 @interface YZTableView : UIScrollView
-2  
-3 @property (nonatomic, weak) id dataSource;
-4  
-5 @property (nonatomic, weak) id delegate;
-6  
-7 @end 
-</code></pre>
-
-<p>警告:</p>
-
-<p><img src="/images/huancun003.png" title="Caption" ></p>
-
-<p>解决，在YZTableView.m的实现中声明。</p>
-
-<p><img src="/images/huancun004.png" title="Caption" ></p>
-
-<ul>
-<li><p>原因：有人会问为什么我要定义同名的delegate属性，我主要想模仿系统的tableView，系统tableView也有同名的属性。</p>
-
-<ul>
-<li>思路：这样做，外界在使用设置我的tableView的delegate，就必须遵守的我的代理协议，而不是UIScrollView的代理协议。</li>
-</ul>
-</li>
-</ul>
-
-
-<h5>3.提供刷新方法reloadData，因为tableView通过这个刷新tableView。</h5>
-
-<pre><code> 1 @interface YZTableView : UIScrollView
- 2  
- 3 @property (nonatomic, weak) id dataSource;
- 4  
- 5 @property (nonatomic, weak) id delegate;
- 6  
- 7 // 刷新tableView
- 8 - (void)reloadData;
- 9  
-10 @end 
-</code></pre>
-
-<h5>4.实现reloadData方法，刷新表格</h5>
-
-<p>回顾系统如何刷新tableView</p>
-
-<ul>
-<li><p>1).先获取有多少cell,在获取每个cell的高度。因此应该是先计算出每个cell的frame.</p></li>
-<li><p>2).然后再判断当前有多少cell显示在屏幕上，就加载多少</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code> 1 // 刷新tableView
- 2 - (void)reloadData
- 3 {
- 4     // 这里不考虑多组，假设tableView默认只有一组。
- 5      
- 6     // 先获取总共有多少cell
- 7     NSInteger rows = [self.dataSource tableView:self numberOfRowsInSection:0];
- 8      
- 9     // 遍历所有cell的高度，计算每行cell的frame
-10     CGRect cellF;
-11     CGFloat cellX = 0;
-12     CGFloat cellY = 0;
-13     CGFloat cellW = self.bounds.size.width;
-14     CGFloat cellH = 0;
-15     CGFloat totalH = 0;
-16      
-17     for (int i = 0; i &lt; rows; i++) {
-18         
-19         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-20         // 注意：这里获取的delegate，是UIScrollView中声明的属性
-21         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-22             cellH = [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
-23         }else{
-24             cellH = 44;
-25         }
-26         cellY = i * cellH;
-27          
-28         cellF = CGRectMake(cellX, cellY, cellW, cellH);
-29          
-30         // 记录每个cell的y值对应的indexPath
-31         self.indexPathDict[@(cellY)] = indexPath;
-32          
-33         // 判断有多少cell显示在屏幕上,只加载显示在屏幕上的cell
-34         if ([self isInScreen:cellF]) { // 当前cell的frame在屏幕上
-35             // 通过数据源获取cell
-36             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
-37              
-38             cell.frame = cellF;
-39              
-40             [self addSubview:cell];
-41              
-42         }
-43          
-44         // 添加分割线
-45         UIView *divideV = [[UIView alloc] initWithFrame:CGRectMake(0, cellY + cellH - 1, cellW, 1)];
-46         divideV.backgroundColor = [UIColor lightGrayColor];
-47         divideV.alpha = 0.3;
-48         [self addSubview:divideV];
-49          
-50         // 添加到cell可见数组中
-51             [self.visibleCells addObject:cell];
-52          
-53         // 计算tableView内容总高度
-54         totalH += cellY + cellH;
-55      
-56     }
-57      
-58     // 设置tableView的滚动范围
-59     self.contentSize = CGSizeMake(self.bounds.size.width, totalH);
-60      
-61 } 
-</code></pre>
-
-<h5>5.如何判断cell显示在屏幕上</h5>
-
-<p>当tableView内容往下走</p>
-
-<p><img src="/images/huancun005.gif" title="Caption" ></p>
-
-<p>当tableView内容往上走</p>
-
-<p><img src="/images/huancun006.gif" title="Caption" ></p>
-
-<pre><code> 1 // 根据cell尺寸判断cell在不在屏幕上
- 2 - (BOOL)isInScreen:(CGRect)cellF
- 3 {
- 4     // tableView能滚动，因此需要加上偏移量判断
- 5      
- 6     // 当tableView内容往下走，offsetY会一直增加 ,cell的最大y值 &lt; offsetY偏移量   ,cell移除屏幕
- 7     // tableView内容往上走 , offsetY会一直减少，屏幕的最大Y值 &lt;  cell的y值 ，Cell移除屏幕
- 8     // 屏幕最大y值 = 屏幕的高度 + offsetY
- 9      
-10     // 这里拿屏幕来比较，其实是因为tableView的尺寸我默认等于屏幕的高度，正常应该是tableView的高度。
-11     // cell在屏幕上， cell的最大y值 &gt; offsetY &amp;&amp; cell的y值 &lt; 屏幕的最大Y值(屏幕的高度 + offsetY)
-12      
-13     CGFloat offsetY = self.contentOffset.y;
-14      
-15     return CGRectGetMaxY(cellF) &gt; offsetY &amp;&amp; cellF.origin.y &lt; self.bounds.size.height + offsetY;
-16  
-17     } 
-</code></pre>
-
-<h5>6.在滚动的时候，如果有新的cell出现在屏幕上，先从缓存池中取，没有取到，在创建新的cell.</h5>
-
-<ul>
-<li>分析：</li>
-</ul>
-
-
-<p>需要及时监听tableView的滚动，判断下有没有新的cell出现。</p>
-
-<p>大家都会想到scrollViewDidScroll方法，这个方法只要一滚动scrollView就会调用，但是这个方法有个弊端，就是tableView内部需要作为自身的代理，才能监听，这样不好，有时候外界也需要监听滚动，因此自身类最好不要成为自己的代理。（设计思想）</p>
-
-<ul>
-<li>解决：</li>
-</ul>
-
-
-<p>重写layoutSubviews，判断当前哪些cell显示在屏幕上。</p>
-
-<p>因为只要一滚动，就会修改contentOffset,就会调用layoutSubviews，其实修改contentOffset，内部其实是修改tableView的bounds,而layoutSubviews刚好是父控件尺寸一改就会调用.具体需要了解scrollView底层实现。</p>
-
-<ul>
-<li>思路：</li>
-</ul>
-
-
-<p>判断下，当前tableView内容往上移动，还是往下移动，如何判断，取出显示在屏幕上的第一次cell，当前偏移量 > 第一个cell的y值，往下走。</p>
-
-<p>需要搞个数组记录下，当前有多少cell显示在屏幕上，在一开始的时候记录.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 4  
- 5 @end
- 6  
- 7 @implementation YZTableView
- 8  
- 9 @dynamic delegate;
-10  
-11 - (NSMutableArray *)visibleCells
-12 {
-13  
-14     if (_visibleCells == nil) {
-15         _visibleCells = [NSMutableArray array];
-16     }
-17     return _visibleCells;
-18      
-19 }
-20 @end 
-</code></pre>
-
-<h3>往下移动</h3>
-
-<ul>
-<li><p>1.如果已经滚动到tableView内容最底部，就不需要判断新的cell，直接返回.</p></li>
-<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
-<li><p>3.只需要判断下当前可见cell数组中第一个cell有没有离开屏幕</p></li>
-<li><p>4.只需要判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上即可。</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code> 1 // 判断有没有滚动到最底部
- 2         if (offsetY + self.bounds.size.height &gt; self.contentSize.height) {
- 3             return;
- 4         }
- 5          
- 6         // 判断下当前可见cell数组中第一个cell有没有离开屏幕
- 7         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
- 8             // 从可见cell数组移除
- 9             [self.visibleCells removeObject:firstCell];
-10              
-11             // 删除第0个从可见的indexPath
-12             [self.visibleIndexPaths removeObjectAtIndex:0];
-13              
-14             // 添加到缓存池中
-15             [self.reuserCells addObject:firstCell];
-16              
-17             // 移除父控件
-18             [firstCell removeFromSuperview];
-19              
-20         }
-21         // 判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上
-22         // 这里需要计算下一个cell的y值，需要获取对应的cell的高度
-23         // 而高度需要根据indexPath，从数据源获取
-24         // 可以数组记录每个可见cell的indexPath的顺序,然后获取对应可见的indexPath的角标，就能获取下一个indexPath.
-25          
-26         // 获取最后一个cell的indexPath
-27         NSIndexPath *indexPath = [self.visibleIndexPaths lastObject];
-28          
-29         // 获取下一个cell的indexPath
-30         NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:indexPath.row + 1 inSection:0];
-31          
-32         // 获取cell的高度
-33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:nextIndexPath];
-35         }else{
-36             cellH = 44;
-37         }
-38          
-39         // 计算下一个cell的y值
-40         cellY = lastCellY + cellH;
-41          
-42         // 计算下下一个cell的frame
-43         CGRect nextCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-44          
-45         if ([self isInScreen:nextCellFrame]) { // 如果在屏幕上，就加载
-46              
-47             // 通过数据源获取cell
-48             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:nextIndexPath];
-49              
-50             cell.frame = nextCellFrame;
-51              
-52             [self insertSubview:cell atIndex:0];
-53              
-54             // 添加到cell可见数组中
-55             [self.visibleCells addObject:cell];
-56              
-57             // 添加到可见的indexPaths数组
-58             [self.visibleIndexPaths addObject:nextIndexPath];
-59              
-60              
-61         } 
-</code></pre>
-
-<h3>往上移动</h3>
-
-<ul>
-<li><p>1.如果已经滚动到tableView最顶部，就不需要判断了有没有心的cell，直接返回.</p></li>
-<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
-<li><p>3.只需要判断下当前可见cell数组中最后一个cell有没有离开屏幕</p></li>
-<li><p>4.只需要判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上即可</p></li>
-</ul>
-
-
-<p>注意点：如果可见cell数组中第一个cell的上一个cell显示到屏幕上，一定要记得是插入到可见数组第0个的位置。</p>
-
-<pre><code> 1 // 判断有没有滚动到最顶部
- 2         if (offsetY &lt; 0) {
- 3             return;
- 4         }
- 5          
- 6          
- 7          
- 8         // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
- 9         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
-10             // 从可见cell数组移除
-11             [self.visibleCells removeObject:lastCell];
-12              
-13             // 删除最后一个可见的indexPath
-14             [self.visibleIndexPaths removeLastObject];
-15              
-16             // 添加到缓存池中
-17             [self.reuserCells addObject:lastCell];
-18              
-19             // 移除父控件
-20             [lastCell removeFromSuperview];
-21              
-22         }
-23          
-24         // 判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上
-25         // 获取第一个cell的indexPath
-26         NSIndexPath *indexPath = self.visibleIndexPaths[0];
-27          
-28          
-29         // 获取下一个cell的indexPath
-30         NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:indexPath.row - 1 inSection:0];
-31          
-32         // 获取cell的高度
-33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
-34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:preIndexPath];
-35         }else{
-36             cellH = 44;
-37         }
-38          
-39         // 计算上一个cell的y值
-40         cellY = firstCellY - cellH;
-41          
-42          
-43         // 计算上一个cell的frame
-44         CGRect preCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
-45          
-46         if ([self isInScreen:preCellFrame]) { // 如果在屏幕上，就加载
-47              
-48             // 通过数据源获取cell
-49             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:preIndexPath];
-50              
-51             cell.frame = preCellFrame;
-52              
-53             [self insertSubview:cell atIndex:0];
-54              
-55             // 添加到cell可见数组中,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
-56             [self.visibleCells insertObject:cell atIndex:0];
-57              
-58             // 添加到可见的indexPaths数组,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
-59             [self.visibleIndexPaths insertObject:preIndexPath atIndex:0];
-60              
-61         }
-62          
-63     } 
-</code></pre>
-
-<ul>
-<li>问题1：</li>
-</ul>
-
-
-<p>判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上</p>
-
-<p>这里需要计算下一个cell的frame,frame就需要计算下一个cell的y值，需要获取对应的cell的高度 cellY = lastCellY + cellH</p>
-
-<p>而高度需要根据indexPath，从数据源获取</p>
-
-<ul>
-<li>解决：</li>
-</ul>
-
-
-<p>可以搞个字典记录每个可见cell的indexPath,然后获取对应可见的indexPath，就能获取下一个indexPath.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 // 屏幕可见数组
- 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 5  
- 6 // 缓存池
- 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
- 8  
- 9  
-10 // 记录每个可见cell的indexPaths的顺序
-11 @property (nonatomic, strong) NSMutableDictionary *visibleIndexPaths;
-12  
-13 @end
-14  
-15 - (NSMutableDictionary *)visibleIndexPaths
-16 {
-17     if (_visibleIndexPaths == nil) {
-18         _visibleIndexPaths = [NSMutableDictionary dictionary];
-19     }
-20      
-21     return _visibleIndexPaths;
-22 } 
-</code></pre>
-
-<h5>注意：</h5>
-
-<p>当cell从缓存池中移除，一定要记得从可见数组cell中移除，还有可见cell的indexPath也要移除.</p>
-
-<pre><code> 1 // 判断下当前可见cell数组中第一个cell有没有离开屏幕
- 2         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
- 3             // 从可见cell数组移除
- 4             [self.visibleCells removeObject:firstCell];
- 5              
- 6             // 删除第0个从可见的indexPath
- 7             [self.visibleIndexPaths removeObjectAtIndex:0];
- 8              
- 9             // 添加到缓存池中
-10             [self.reuserCells addObject:firstCell];
-11              
-12         }
-13          
-14  // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
-15         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
-16             // 从可见cell数组移除
-17             [self.visibleCells removeObject:lastCell];
-18              
-19             // 删除最后一个可见的indexPath
-20             [self.visibleIndexPaths removeLastObject];
-21              
-22             // 添加到缓存池中
-23             [self.reuserCells addObject:lastCell];
-24              
-25         } 
-</code></pre>
-
-<h5>7.缓存池搭建，缓存池其实就是一个NSSet集合。</h5>
-
-<p>搞一个NSSet集合充当缓存池.</p>
-
-<p>cell离开屏幕，放进缓存池</p>
-
-<p>提供从缓存池获取方法，从缓存池中获取cell,记住要从NSSet集合移除cell.</p>
-
-<pre><code> 1 @interface YZTableView ()
- 2  
- 3 // 屏幕可见数组
- 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
- 5  
- 6 // 缓存池
- 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
- 8  
- 9 // 记录每个cell的y值都对应一个indexPath
-10 @property (nonatomic, strong) NSMutableDictionary *indexPathDict;
-11  
-12 @end
-13 @implementation YZTableView
-14 - (NSMutableSet *)reuserCells
-15 {
-16     if (_reuserCells == nil) {
-17         _reuserCells = [NSMutableSet set];
-18     }
-19     return _reuserCells;
-20 }
-21  
-22 // 从缓存池中获取cell
-23 - (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
-24 {
-25     UITableViewCell *cell = [self.reuserCells anyObject];
-26      
-27     // 能取出cell,并且cell的标示符正确
-28     if (cell &amp;&amp; [cell.reuseIdentifier isEqualToString:identifier]) {     
-29         // 从缓存池中获取
-30         [self.reuserCells removeObject:cell];
-31          
-32         return cell;
-33     }
-34     return nil;
-35 }
-36  
-37 @end 
-</code></pre>
-
-<h5>8.tableView细节处理</h5>
-
-<p>原因：刷新方法经常要调用</p>
-
-<p>解决：每次刷新的时候，先把之前记录的全部清空</p>
-
-<pre><code> 1 // 刷新tableView
- 2 - (void)reloadData
- 3 {
- 4      
- 5     // 刷新方法经常要调用
- 6     // 每次刷新的时候，先把之前记录的全部清空
- 7     // 清空indexPath字典
- 8     [self.indexPathDict removeAllObjects];
- 9     // 清空屏幕可见数组
-10     [self.visibleCells removeAllObjects];
-11     ...
-12 } 
-</code></pre>
-
-<!--more-->
-
 ]]></content>
   </entry>
   
