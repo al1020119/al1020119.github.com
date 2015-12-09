@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T14:49:48+08:00</updated>
+  <updated>2015-12-09T12:31:45+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,176 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Git+SoureTree实战]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan/"/>
+    <updated>2015-12-28T12:28:06+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan</id>
+    <content type="html"><![CDATA[<p>由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！</p>
+
+<p>GitHub相信大家都知道，上面有很多优秀的开源项目供我们学习，比较著名的类似AFNetworking、SDWebImage等等。本篇文章就是教大家如何在Mac系统下提交自己的项目到GitHub上，相信对于新手还是很有帮助的。</p>
+
+<h2>首先我们必须先从git命令开始，没有为什么！</h2>
+
+<h3>需要的工具</h3>
+
+<ul>
+<li><p>1.安装Git  <a href="http://git-scm.com/download/mac">http://git-scm.com/download/mac</a> 我下的是2.2.1版本的。</p></li>
+<li><p>2.终端 (自带的，请允许我卖个萌。。。)</p></li>
+</ul>
+
+
+<h3>操作流程</h3>
+
+<ul>
+<li><p>1.GitHub 上注册账号  <a href="https://github.com/">https://github.com/</a> 去这上面注册下就行（这里就不多说，自己去做吧）。</p></li>
+<li><p>2.配置 SSH key</p></li>
+</ul>
+
+
+<!--more-->
+
+
+<pre><code>-  ①  defaults write com.apple.finder AppleShowAllFiles -bool true     终端 显示隐藏文件（需要重新运行Finder)。
+
+-  ② 点击桌面顶部菜单  前往&gt;个人  看看自己电脑上有没有个 .ssh 的隐藏文件，有的话个人建议删除，新建个。
+
+-  ③  mkdir .ssh    终端新建个 .ssh文件
+
+-  ④  cd .ssh   进入到刚才新建的.ssh文件目录下 
+
+-  ⑤  ssh-Keygen -t rsa -C "your_email@example.com"       后面“ ”里面 随意输入个邮箱就行,回车会提示你输入密码什么的，可以无视一直回车下去。
+
+-  ⑥  ls -la      查看是否存在 id_rsa(私钥)  id_rsa.pub(公钥) 这两个东西，如果存在就成功了。
+
+-  ⑦ pbcopy &lt; ~/.ssh/id_rsa.pub     拷贝 公钥
+
+-  ⑧ 进入GitHub 登入 。 
+
+        添加你刚才生成的SSH Key 到GitHub上，也就是最后一张图的 Add SSH Key 点击 会让你输入秘钥 以及秘钥的名称。 秘钥 pbcopy &lt; ~/.ssh/id_rsa.pub 这个终端命令就已经复制过了  直接command + V 粘贴上去就行，秘钥名称随意。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/git004.png" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/git005.png" title="Caption" ></p>
+
+<p>ssh -T <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#103;&#105;&#x74;&#x40;&#103;&#x69;&#116;&#x68;&#x75;&#98;&#46;&#x63;&#x6f;&#109;">&#103;&#105;&#x74;&#x40;&#x67;&#x69;&#x74;&#104;&#117;&#98;&#x2e;&#x63;&#111;&#109;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+
+<p><img src="http://al1020119.github.io/images/git006.png" title="Caption" ></p>
+
+<ul>
+<li>3.在GitHub 上创建公开项目。</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git001.png" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/git002.png" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/git003.png" title="Caption" ></p>
+
+<ul>
+<li><p>4.上传本地项目到GitHub。</p>
+
+<ul>
+<li><p> ① 在电脑上新建个项目文件夹 。</p></li>
+<li><p> ②  cd + 刚才新建的项目文件夹路径</p></li>
+<li><p> ③  git clone + GitHub 上创建的项目地址    （GitHub 上创建的项目地址如下图所示）这样你在GitHub 上创建的项目就克隆下来了</p></li>
+<li><p> ④ cd + 克隆下来的项目路径 （如何在终端输入路径，可以直接把你想要知道路径的文件夹拖到终端里 这样自动就要该文件夹的路径了）</p></li>
+<li><p> ⑤ git init    (git 仓库的初始化)</p></li>
+<li><p> ⑥ git add .    (这里注意：add 空格 再加 .)</p></li>
+<li><p> ⑦ git status    (查看add 成功没)</p></li>
+<li><p> ⑧ git commit -m &ldquo;描述&rdquo;   （“ ” 引号里面输入你的描述 随意）</p></li>
+<li><p> ⑨ git push origin master        (最后push到GitHub上)</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git007.png" title="Caption" ></p>
+
+<p>到这里大概结束了，祝大家能够在GitHub上发起更多好的项目，发扬光大开源精神！</p>
+
+<p><img src="http://al1020119.github.io/images/git008.png" title="Caption" ></p>
+
+<hr />
+
+<h2>SourceTree</h2>
+
+<blockquote><p>简介
+SourceTree 是 Windows 和Mac OS X 下免费的 Git 和 Hg 客户端，拥有可视化界面，容易上手操作。同时它也是Mercurial和Subversion版本控制系统工具。支持创建、提交、clone、push、pull 和merge等操作。
+  </p></blockquote>
+
+<p>关于SourceTree的下载，github的账号注册，仓库的创建这里就不介绍了，亦或者没有什么好说的，因为会用电脑都会做，而且前面已经介绍过了，一部分。我们就从上面做好的所用项目中最后一步开始。看卡下面的图片：
+  
+<img src="http://al1020119.github.io/images/git008.png" title="Caption" ><br/>
+  </p>
+
+<h5>SourceTree基本使用</h5>
+
+<blockquote><p>以下以SourceTree For Mac V2.0.5.2中文版为例，托管平台以Github为例</p></blockquote>
+
+<ul>
+<li>1.打开我们的SourceTree，点击：“+新仓库”，选择：“从URL克隆”</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git009.png" title="Caption" ></p>
+
+<ul>
+<li>2.粘贴我们的仓库链接至源URL，SourceTree会自动帮我们生成目标路径（本地仓库路径）以及名称，点击克隆</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git010.png" title="Caption" ></p>
+
+<ul>
+<li>3.等待数秒后，SourceTree会为我们自动打开我们刚才克隆的仓库，选择master选项，这里我们可以看到我们仓库里的所有文件</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git011.png" title="Caption" ></p>
+
+<ul>
+<li>4.双击souretree中对应的项目之后。</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/git012.png" title="Caption" ></p>
+
+<p>后面就是需要熟悉souretree界面，并且使用了，也就是平时开发者们最常用的一些操作。</p>
+
+<p><img src="http://al1020119.github.io/images/git013.png" title="Caption" ></p>
+
+<p>具体的详细步骤，后面我会找机会根据项目实际开发整理好(不过，如果你使用果Coerstone那这个也并不难)。由于时间的原因，这里就到这里了！</p>
+
+<h5>最后总结一下：SourceTree&amp;Git部分名词解释</h5>
+
+<pre><code>克隆(clone)：从远程仓库URL加载创建一个与远程仓库一样的本地仓库
+提交(commit)：将暂存文件上传到本地仓库（我们在Finder中对本地仓库做修改后一般都得先提交一次，再推送）
+检出(checkout)：切换不同分支
+添加（add）：添加文件到暂存区
+移除（remove）：移除文件至暂存区
+暂存(git stash)：保存工作现场
+重置(reset)：回到最近添加(add)/提交(commit)状态
+合并(merge)：将多个同名文件合并为一个文件，该文件包含多个同名文件的所有内容，相同内容抵消
+抓取(fetch)：从远程仓库获取信息并同步至本地仓库
+拉取(pull)：从远程仓库获取信息并同步至本地仓库，并且自动执行合并（merge）操作，即 pull=fetch+merge
+推送(push)：将本地仓库同步至远程仓库，一般推送（push）前先拉取（pull）一次，确保一致
+分支(branch)：创建/修改/删除分枝
+标签(tag):给项目增添标签
+工作流(Git Flow):团队工作时，每个人创建属于自己的分枝（branch），确定无误后提交到master分枝
+终端(terminal):可以输入git命令行
+</code></pre>
+
+<h6>相关链接推荐</h6>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for mac</a></p>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for win</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS9-CoreSpotlight]]></title>
@@ -5305,141 +5475,6 @@ wrapper resetKeychainItem];
 
 <pre><code>NSString *passWord =  [SFHFKeychainUtils getPasswordForUsername:@"dd"andServiceName:SERVICE_NAME error:nil];
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[App卡顿了怎么办？]]></title>
-    <link href="http://al1020119.github.io/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/"/>
-    <updated>2015-07-16T09:37:46+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-?</id>
-    <content type="html"><![CDATA[<p><img src="http://al1020119.github.io/images/kadun001.jpg" title="Caption" ></p>
-
-<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
-
-<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
-
-<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
-
-<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
-
-<!--more-->
-
-
-<h2>CPU 资源消耗原因和解决方案</h2>
-
-<h4>对象创建</h4>
-
-<p>对象的创建会分配内存、调整属性、甚至还有读取文件等操作，比较消耗 CPU 资源。</p>
-
-<p>尽量用轻量的对象代替重量的对象，可以对性能有所优化。</p>
-
-<p>比如 CALayer 比 UIView 要轻量许多，那么不需要响应触摸事件的控件，用 CALayer 显示会更加合适。如果对象不涉及 UI 操作，则尽量放到后台线程去创建，但可惜的是包含有 CALayer 的控件，都只能在主线程创建和操作。通过 Storyboard 创建视图对象时，其资源消耗会比直接通过代码创建对象要大非常多，在性能敏感的界面里，Storyboard 并不是一个好的技术选择。</p>
-
-<p>尽量推迟对象创建的时间，并把对象的创建分散到多个任务中去。尽管这实现起来比较麻烦，并且带来的优势并不多，但如果有能力做，还是要尽量尝试一下。如果对象可以复用，并且复用的代价比释放、创建新对象要小，那么这类对象应当尽量放到一个缓存池里复用。</p>
-
-<h4>对象调整</h4>
-
-<p>对象的调整也经常是消耗 CPU 资源的地方。</p>
-
-<p>这里特别说一下 CALayer：</p>
-
-<ul>
-<li><p>CALayer 内部并没有属性，当调用属性方法时，它内部是通过运行时 resolveInstanceMethod 为对象临时添加一个方法，并把对应属性值保存到内部的一个 Dictionary 里，同时还会通知 delegate、创建动画等等，非常消耗资源。</p></li>
-<li><p>UIView 的关于显示相关的属性（比如 frame/bounds/transform）等实际上都是 CALayer 属性映射来的，所以对 UIView 的这些属性进行调整时，消耗的资源要远大于一般的属性。对此你在应用中，应该尽量减少不必要的属性修改。</p></li>
-</ul>
-
-
-<p>当视图层次调整时，UIView、CALayer 之间会出现很多方法调用与通知，所以在优化性能时，应该尽量避免调整视图层次、添加和移除视图。</p>
-
-<h4>对象销毁</h4>
-
-<p>对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。</p>
-
-<pre><code>NSArray *tmp = self.array;
-
-self.array = nil;
-
-dispatch_async(queue, ^{
-
-    [tmp class];
-
-});
-</code></pre>
-
-<h4>布局计算</h4>
-
-<p>视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。</p>
-
-<p>不论通过何种技术对视图进行布局，其最终都会落到对 UIView.frame/bounds/center 等属性的调整上。上面也说过，对这些属性的调整非常消耗资源，所以尽量提前计算好布局，在需要时一次性调整好对应属性，而不要多次、频繁的计算和调整这些属性。</p>
-
-<h4>Autolayout</h4>
-
-<ul>
-<li>Autolayout 是苹果本身提倡的技术，在大部分情况下也能很好的提升开发效率，但是 Autolayout 对于复杂视图来说常常会产生严重的性能问题。随着视图数量的增长，Autolayout 带来的 CPU 消耗会呈指数级上升。具体数据可以看这个文章：<a href="http://pilky.me/36/%E3%80%82">http://pilky.me/36/%E3%80%82</a> 如果你不想手动调整 frame 等属性，你可以用一些工具方法替代（比如常见的 left/right/top/bottom/width/height 快捷属性），或者使用 ComponentKit、AsyncDisplayKit 等框架。</li>
-</ul>
-
-
-<h4>文本计算</h4>
-
-<p>如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。尽管这两个方法性能不错，但仍旧需要放到后台线程进行以避免阻塞主线程。</p>
-
-<blockquote><p>注意：如果你用 CoreText 绘制文本，那就可以先生成 CoreText 排版对象，然后自己计算了，并且 CoreText 对象还能保留以供稍后绘制使用。</p></blockquote>
-
-<h4>文本渲染</h4>
-
-<p>屏幕上能看到的所有文本内容控件，包括 UIWebView，在底层都是通过 CoreText 排版、绘制为 Bitmap 显示的。常见的文本控件 （UILabel、UITextView 等），其排版和绘制都是在主线程进行的，当显示大量文本时，CPU 的压力会非常大。对此解决方案只有一个，那就是自定义文本控件，用 TextKit 或最底层的 CoreText 对文本异步绘制。尽管这实现起来非常麻烦，但其带来的优势也非常大，CoreText 对象创建好后，能直接获取文本的宽高等信息，避免了多次计算（调整 UILabel 大小时算一遍、UILabel 绘制时内部再算一遍）；CoreText 对象占用内存较少，可以缓存下来以备稍后多次渲染。</p>
-
-<h4>图片的解码</h4>
-
-<p>当你用 UIImage 或 CGImageSource 的那几个方法创建图片时，图片数据并不会立刻解码。图片设置到 UIImageView 或者 CALayer.contents 中去，并且 CALayer 被提交到 GPU 前，CGImage 中的数据才会得到解码。这一步是发生在主线程的，并且不可避免。如果想要绕开这个机制，常见的做法是在后台线程先把图片绘制到 CGBitmapContext 中，然后从 Bitmap 直接创建图片。目前常见的网络图片库都自带这个功能。</p>
-
-<h4>图像的绘制</h4>
-
-<p>图像的绘制通常是指用那些以 CG 开头的方法把图像绘制到画布中，然后从画布创建图片并显示这样一个过程。这个最常见的地方就是 [UIView drawRect:] 里面了。由于 CoreGraphic 方法通常都是线程安全的，所以图像的绘制可以很容易的放到后台线程进行。一个简单异步绘制的过程大致如下（实际情况会比这个复杂得多，但原理基本一致）：</p>
-
-<pre><code>- (void)display {
-
-    dispatch_async(backgroundQueue, ^{
-
-    CGContextRef ctx = CGBitmapContextCreate(...);
-
-    // draw in context...
-
-    CGImageRef img = CGBitmapContextCreateImage(ctx);
-
-    CFRelease(ctx);
-
-    dispatch_async(mainQueue, ^{
-
-        layer.contents = img;
-
-    });
-
-    });
-}
-</code></pre>
-
-<h2>GPU 资源消耗原因和解决方案</h2>
-
-<p>相对于 CPU 来说，GPU 能干的事情比较单一：接收提交的纹理（Texture）和顶点描述（三角形），应用变换（transform）、混合并渲染，然后输出到屏幕上。通常你所能看到的内容，主要也就是纹理（图片）和形状（三角模拟的矢量图形）两类。</p>
-
-<h4>纹理的渲染</h4>
-
-<p>所有的 Bitmap，包括图片、文本、栅格化的内容，最终都要由内存提交到显存，绑定为 GPU Texture。不论是提交到显存的过程，还是 GPU 调整和渲染 Texture 的过程，都要消耗不少 GPU 资源。当在较短时间显示大量图片时（比如 TableView 存在非常多的图片并且快速滑动时），CPU 占用率很低，GPU 占用非常高，界面仍然会掉帧。避免这种情况的方法只能是尽量减少在短时间内大量图片的显示，尽可能将多张图片合成为一张进行显示。</p>
-
-<blockquote><p>注意：当图片过大，超过 GPU 的最大纹理尺寸时，图片需要先由 CPU 进行预处理，这对 CPU 和 GPU 都会带来额外的资源消耗。目前来说，iPhone 4S 以上机型，纹理尺寸上限都是 4096x4096，更详细的资料可以看这里：iosres.com。所以，尽量不要让图片和视图的大小超过这个值。</p></blockquote>
-
-<h4>视图的混合 (Composing)</h4>
-
-<p>当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。为了减轻这种情况的 GPU 消耗，应用应当尽量减少视图数量和层次，并在不透明的视图里标明 opaque 属性以避免无用的 Alpha 通道合成。当然，这也可以用上面的方法，把多个视图预先渲染为一张图片来显示。</p>
-
-<h4>图形的生成</h4>
-
-<p>CALayer 的 border、圆角、阴影、遮罩（mask），CASharpLayer 的矢量图形显示，通常会触发离屏渲染（offscreen rendering），而离屏渲染通常发生在 GPU 中。当一个列表视图中出现大量圆角的 CALayer，并且快速滑动时，可以观察到 GPU 资源已经占满，而 CPU 资源消耗很少。这时界面仍然能正常滑动，但平均帧数会降到很低。为了避免这种情况，可以尝试开启 CALayer.shouldRasterize 属性，但这会把原本离屏渲染的操作转嫁到 CPU 上去。对于只需要圆角的某些场合，也可以用一张已经绘制好的圆角图片覆盖到原本视图上面来模拟相同的视觉效果。最彻底的解决办法，就是把需要显示的图形在后台线程绘制为图片，避免使用圆角、阴影、遮罩等属性。</p>
-
-<!--more-->
-
 ]]></content>
   </entry>
   

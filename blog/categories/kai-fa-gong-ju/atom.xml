@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 开发工具 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/kai-fa-gong-ju/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-08T14:49:48+08:00</updated>
+  <updated>2015-12-09T12:31:45+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,176 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Git+SoureTree实战]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan/"/>
+    <updated>2015-12-28T12:28:06+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan</id>
+    <content type="html"><![CDATA[<p>由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！</p>
+
+<p>GitHub相信大家都知道，上面有很多优秀的开源项目供我们学习，比较著名的类似AFNetworking、SDWebImage等等。本篇文章就是教大家如何在Mac系统下提交自己的项目到GitHub上，相信对于新手还是很有帮助的。</p>
+
+<h2>首先我们必须先从git命令开始，没有为什么！</h2>
+
+<h3>需要的工具</h3>
+
+<ul>
+<li><p>1.安装Git  <a href="http://git-scm.com/download/mac">http://git-scm.com/download/mac</a> 我下的是2.2.1版本的。</p></li>
+<li><p>2.终端 (自带的，请允许我卖个萌。。。)</p></li>
+</ul>
+
+
+<h3>操作流程</h3>
+
+<ul>
+<li><p>1.GitHub 上注册账号  <a href="https://github.com/">https://github.com/</a> 去这上面注册下就行（这里就不多说，自己去做吧）。</p></li>
+<li><p>2.配置 SSH key</p></li>
+</ul>
+
+
+<!--more-->
+
+
+<pre><code>-  ①  defaults write com.apple.finder AppleShowAllFiles -bool true     终端 显示隐藏文件（需要重新运行Finder)。
+
+-  ② 点击桌面顶部菜单  前往&gt;个人  看看自己电脑上有没有个 .ssh 的隐藏文件，有的话个人建议删除，新建个。
+
+-  ③  mkdir .ssh    终端新建个 .ssh文件
+
+-  ④  cd .ssh   进入到刚才新建的.ssh文件目录下 
+
+-  ⑤  ssh-Keygen -t rsa -C "your_email@example.com"       后面“ ”里面 随意输入个邮箱就行,回车会提示你输入密码什么的，可以无视一直回车下去。
+
+-  ⑥  ls -la      查看是否存在 id_rsa(私钥)  id_rsa.pub(公钥) 这两个东西，如果存在就成功了。
+
+-  ⑦ pbcopy &lt; ~/.ssh/id_rsa.pub     拷贝 公钥
+
+-  ⑧ 进入GitHub 登入 。 
+
+        添加你刚才生成的SSH Key 到GitHub上，也就是最后一张图的 Add SSH Key 点击 会让你输入秘钥 以及秘钥的名称。 秘钥 pbcopy &lt; ~/.ssh/id_rsa.pub 这个终端命令就已经复制过了  直接command + V 粘贴上去就行，秘钥名称随意。
+</code></pre>
+
+<p><img src="/images/git004.png" title="Caption" ></p>
+
+<p><img src="/images/git005.png" title="Caption" ></p>
+
+<p>ssh -T <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#103;&#105;&#x74;&#x40;&#103;&#x69;&#116;&#x68;&#x75;&#x62;&#x2e;&#99;&#111;&#109;">&#103;&#x69;&#116;&#x40;&#x67;&#x69;&#116;&#104;&#x75;&#x62;&#46;&#x63;&#x6f;&#x6d;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+
+<p><img src="/images/git006.png" title="Caption" ></p>
+
+<ul>
+<li>3.在GitHub 上创建公开项目。</li>
+</ul>
+
+
+<p><img src="/images/git001.png" title="Caption" ></p>
+
+<p><img src="/images/git002.png" title="Caption" ></p>
+
+<p><img src="/images/git003.png" title="Caption" ></p>
+
+<ul>
+<li><p>4.上传本地项目到GitHub。</p>
+
+<ul>
+<li><p> ① 在电脑上新建个项目文件夹 。</p></li>
+<li><p> ②  cd + 刚才新建的项目文件夹路径</p></li>
+<li><p> ③  git clone + GitHub 上创建的项目地址    （GitHub 上创建的项目地址如下图所示）这样你在GitHub 上创建的项目就克隆下来了</p></li>
+<li><p> ④ cd + 克隆下来的项目路径 （如何在终端输入路径，可以直接把你想要知道路径的文件夹拖到终端里 这样自动就要该文件夹的路径了）</p></li>
+<li><p> ⑤ git init    (git 仓库的初始化)</p></li>
+<li><p> ⑥ git add .    (这里注意：add 空格 再加 .)</p></li>
+<li><p> ⑦ git status    (查看add 成功没)</p></li>
+<li><p> ⑧ git commit -m &ldquo;描述&rdquo;   （“ ” 引号里面输入你的描述 随意）</p></li>
+<li><p> ⑨ git push origin master        (最后push到GitHub上)</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p><img src="/images/git007.png" title="Caption" ></p>
+
+<p>到这里大概结束了，祝大家能够在GitHub上发起更多好的项目，发扬光大开源精神！</p>
+
+<p><img src="/images/git008.png" title="Caption" ></p>
+
+<hr />
+
+<h2>SourceTree</h2>
+
+<blockquote><p>简介
+SourceTree 是 Windows 和Mac OS X 下免费的 Git 和 Hg 客户端，拥有可视化界面，容易上手操作。同时它也是Mercurial和Subversion版本控制系统工具。支持创建、提交、clone、push、pull 和merge等操作。
+  </p></blockquote>
+
+<p>关于SourceTree的下载，github的账号注册，仓库的创建这里就不介绍了，亦或者没有什么好说的，因为会用电脑都会做，而且前面已经介绍过了，一部分。我们就从上面做好的所用项目中最后一步开始。看卡下面的图片：
+  
+<img src="/images/git008.png" title="Caption" ><br/>
+  </p>
+
+<h5>SourceTree基本使用</h5>
+
+<blockquote><p>以下以SourceTree For Mac V2.0.5.2中文版为例，托管平台以Github为例</p></blockquote>
+
+<ul>
+<li>1.打开我们的SourceTree，点击：“+新仓库”，选择：“从URL克隆”</li>
+</ul>
+
+
+<p><img src="/images/git009.png" title="Caption" ></p>
+
+<ul>
+<li>2.粘贴我们的仓库链接至源URL，SourceTree会自动帮我们生成目标路径（本地仓库路径）以及名称，点击克隆</li>
+</ul>
+
+
+<p><img src="/images/git010.png" title="Caption" ></p>
+
+<ul>
+<li>3.等待数秒后，SourceTree会为我们自动打开我们刚才克隆的仓库，选择master选项，这里我们可以看到我们仓库里的所有文件</li>
+</ul>
+
+
+<p><img src="/images/git011.png" title="Caption" ></p>
+
+<ul>
+<li>4.双击souretree中对应的项目之后。</li>
+</ul>
+
+
+<p><img src="/images/git012.png" title="Caption" ></p>
+
+<p>后面就是需要熟悉souretree界面，并且使用了，也就是平时开发者们最常用的一些操作。</p>
+
+<p><img src="/images/git013.png" title="Caption" ></p>
+
+<p>具体的详细步骤，后面我会找机会根据项目实际开发整理好(不过，如果你使用果Coerstone那这个也并不难)。由于时间的原因，这里就到这里了！</p>
+
+<h5>最后总结一下：SourceTree&amp;Git部分名词解释</h5>
+
+<pre><code>克隆(clone)：从远程仓库URL加载创建一个与远程仓库一样的本地仓库
+提交(commit)：将暂存文件上传到本地仓库（我们在Finder中对本地仓库做修改后一般都得先提交一次，再推送）
+检出(checkout)：切换不同分支
+添加（add）：添加文件到暂存区
+移除（remove）：移除文件至暂存区
+暂存(git stash)：保存工作现场
+重置(reset)：回到最近添加(add)/提交(commit)状态
+合并(merge)：将多个同名文件合并为一个文件，该文件包含多个同名文件的所有内容，相同内容抵消
+抓取(fetch)：从远程仓库获取信息并同步至本地仓库
+拉取(pull)：从远程仓库获取信息并同步至本地仓库，并且自动执行合并（merge）操作，即 pull=fetch+merge
+推送(push)：将本地仓库同步至远程仓库，一般推送（push）前先拉取（pull）一次，确保一致
+分支(branch)：创建/修改/删除分枝
+标签(tag):给项目增添标签
+工作流(Git Flow):团队工作时，每个人创建属于自己的分枝（branch），确定无误后提交到master分枝
+终端(terminal):可以输入git命令行
+</code></pre>
+
+<h6>相关链接推荐</h6>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for mac</a></p>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for win</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Xcode Menu]]></title>
