@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 底层开发 | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/di-ceng-kai-fa/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-09T18:12:47+08:00</updated>
+  <updated>2015-12-09T18:21:11+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -18,7 +18,7 @@
     <link href="http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/"/>
     <updated>2015-12-09T18:11:05+08:00</updated>
     <id>http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao</id>
-    <content type="html"><![CDATA[<p>这两天看csdn有一些关于socket粘包，socket缓冲区设置的问题，发现自己不是很清楚，所以查资料了解记录一下：</p>
+    <content type="html"><![CDATA[<p>今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！</p>
 
 <h3>两个简单概念长连接与短连接：</h3>
 
@@ -35,6 +35,9 @@
 <p>通讯，比如多个Client连接一个Server.</p>
 
 <h3>什么时候需要考虑粘包问题?</h3>
+
+<!--more-->
+
 
 <ul>
 <li>1:如果利用tcp每次发送数据，就与对方建立连接，然后双方发送完一段数据后，就关闭连接，这样就不会出现粘包问题（因为只有一种包结构,类似于http协议）。关闭连接主要要双方都发送close连接（参考tcp关闭协议）。如：A需要发送一段字符串给B，那么A与B建立连接，然后发送双方都默认好的协议字符如"hello give me sth abour yourself"，然后B收到报文后，就将缓冲区数据接收,然后关闭连接，这样粘包问题不用考虑到，因为大家都知道是发送一段字符。</li>
@@ -819,7 +822,7 @@ return jailbroken;
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#x6d;&#x61;&#x6a;&#105;&#x61;&#48;&#51;&#x40;&#x6d;&#x65;&#x69;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#111;&#x6d;">&#109;&#97;&#106;&#105;&#97;&#x30;&#x33;&#x40;&#x6d;&#101;&#105;&#x74;&#117;&#x61;&#110;&#46;&#99;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#109;&#97;&#106;&#x69;&#97;&#48;&#51;&#x40;&#x6d;&#x65;&#x69;&#x74;&#x75;&#97;&#110;&#x2e;&#x63;&#x6f;&#x6d;">&#x6d;&#97;&#x6a;&#105;&#x61;&#48;&#x33;&#64;&#x6d;&#101;&#x69;&#116;&#117;&#97;&#110;&#46;&#99;&#111;&#109;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 

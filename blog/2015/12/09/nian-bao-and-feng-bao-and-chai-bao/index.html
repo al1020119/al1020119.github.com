@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="粘包&amp;封包&amp;拆包 ordinal 这两天看csdn有一些关于socket粘包，socket缓冲区设置的问题，发现自己不是很清楚，所以查资料了解记录一下： 两个简单概念长连接与短连接： 1.长连接 Client方与Server方先建立通讯连接，连接建立后不断开， &hellip;">
+  <meta name="description" content="粘包&amp;封包&amp;拆包 ordinal 今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！ 两个简单概念长连接与短连接： 1.长连接 Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -97,7 +97,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>这两天看csdn有一些关于socket粘包，socket缓冲区设置的问题，发现自己不是很清楚，所以查资料了解记录一下：</p>
+<div class="entry-content"><p>今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！</p>
 
 <h3>两个简单概念长连接与短连接：</h3>
 
@@ -114,6 +114,9 @@ $(document).bind('DOMNodeInserted', function(event) {
 <p>通讯，比如多个Client连接一个Server.</p>
 
 <h3>什么时候需要考虑粘包问题?</h3>
+
+<!--more-->
+
 
 <ul>
 <li>1:如果利用tcp每次发送数据，就与对方建立连接，然后双方发送完一段数据后，就关闭连接，这样就不会出现粘包问题（因为只有一种包结构,类似于http协议）。关闭连接主要要双方都发送close连接（参考tcp关闭协议）。如：A需要发送一段字符串给B，那么A与B建立连接，然后发送双方都默认好的协议字符如"hello give me sth abour yourself"，然后B收到报文后，就将缓冲区数据接收,然后关闭连接，这样粘包问题不用考虑到，因为大家都知道是发送一段字符。</li>
