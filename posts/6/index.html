@@ -9,7 +9,13 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="之前写过一篇 UItableView性能优化和卡顿问题 还有一篇 App卡顿了怎么办 今天看到一篇总结的非常好的文章（移动端性能优化），就移过来，后期我也会根据自己所做的项目做一个开发中性能优化的总结，希望你们喜欢！ 随着移动互联网的发展，我们越发要关注移动页面的性能优化， &hellip;">
+  <meta name="description" content="1. 网络图片显示大体步骤: 下载图片
+图片处理（裁剪，边框等)
+写入磁盘
+从磁盘读取数据到内核缓冲区
+从内核缓冲区复制到用户空间(内存级别拷贝)
+解压缩为位图（耗cpu较高）
+如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +80,61 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -508,50 +569,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/07/12/popkeyboard/">你是怎么退出键盘的？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS开发中键盘的退出方法用很多中我们应该在合适的地方使用合适的方法才能更好的提高开发的效率和应用的性能</p>
-
-<p>下面给大家介绍几种最常用的键盘退出方法，基本上iOS开发中的键盘退出方法都是这几种中的一种活着几种。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/07/12/popkeyboard/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/07/12/popkeyboard/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/7">&larr; Older</a>
@@ -575,6 +592,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/精华/'>精华 (1)</a></li>
 <li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
@@ -586,6 +604,10 @@ $(document).bind('DOMNodeInserted', function(event) {
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
@@ -601,10 +623,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
       </li>
     
   </ul>

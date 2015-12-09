@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此， Java代码可以依据任何对象来实现它的基本方法。 &hellip;">
+  <meta name="description" content="首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。 layoutSubviews在以下情况下会被调用： 1、init初始化不会触发layoutSubviews。
+2、addSubview会触发layoutSubviews。
+3、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +76,61 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/03/23/layoutsubviews%20drawrects/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -541,53 +598,6 @@ NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ul>
-<li>前言</li>
-</ul>
-
-
-<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2013/12/07/huan-cun-ji-zhi-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/9">&larr; Older</a>
@@ -611,6 +621,7 @@ NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/精华/'>精华 (1)</a></li>
 <li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
@@ -622,6 +633,10 @@ NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
@@ -637,10 +652,6 @@ NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
     
       <li class="post">
         <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
       </li>
     
   </ul>

@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。 这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面: ">
+  <meta name="description" content="一、底层实现 1> AFN的底层基于OC的NSURLConnection和NSURLSession
+2> ASI的底层基于纯C语言的CFNetwork框架
+3> ASI的运行性能 高于 AFN ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +76,55 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>一、底层实现</h6>
+
+<ul>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -354,7 +405,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#105;&#x6c;&#116;&#x6f;&#x3a;&#x6d;&#97;&#106;&#105;&#x61;&#48;&#51;&#64;&#x6d;&#101;&#105;&#116;&#117;&#x61;&#x6e;&#x2e;&#99;&#x6f;&#109;">&#x6d;&#x61;&#x6a;&#105;&#x61;&#x30;&#51;&#x40;&#109;&#101;&#x69;&#x74;&#x75;&#x61;&#x6e;&#46;&#99;&#x6f;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#58;&#109;&#97;&#x6a;&#x69;&#x61;&#x30;&#x33;&#x40;&#109;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#46;&#99;&#111;&#x6d;">&#109;&#x61;&#x6a;&#x69;&#x61;&#48;&#51;&#64;&#109;&#101;&#105;&#116;&#x75;&#97;&#x6e;&#46;&#x63;&#111;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -554,61 +605,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
-
-<ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -632,6 +628,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/新技术/'>新技术 (5)</a></li>
 <li class='category'><a href='/blog/categories/欢迎来到ios梦工厂/'>欢迎来到ios梦工厂 (1)</a></li>
 <li class='category'><a href='/blog/categories/程序员必备/'>程序员必备 (7)</a></li>
+<li class='category'><a href='/blog/categories/精华/'>精华 (1)</a></li>
 <li class='category'><a href='/blog/categories/系统相关/'>系统相关 (1)</a></li>
 <li class='category'><a href='/blog/categories/适配问题/'>适配问题 (1)</a></li>
 <li class='category'><a href='/blog/categories/面试总结-技术/'>面试总结＋技术 (1)</a></li>
@@ -643,6 +640,10 @@ $(document).bind('DOMNodeInserted', function(event) {
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
@@ -658,10 +659,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode总结</a>
       </li>
     
   </ul>
