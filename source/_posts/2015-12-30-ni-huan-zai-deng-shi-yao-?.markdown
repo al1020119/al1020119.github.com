@@ -47,13 +47,17 @@ categories: 精华
 
 #####补充：
 
+
+
 * 管理机制：使用了一种叫做引用计数的机制来管理内存中的对象。OC中每个对象都对应着他们自己的引用计数，引用计数可以理解为一个整数计数器，当使用alloc方法创建对象的时候，持有计数会自动设置为1。当你向一个对象发送retain消息 时，持有计数数值会增加1。相反，当你像一个对象发送release消息时，持有计数数值会减小1。当对象的持有计数变为0的时候，对象会释放自己所占用的内存。* retain(引用计数加1)->release（引用计数减1）* alloc（申请内存空间）->dealloc(释放内存空间)* readwrite: 表示既有getter，也有setter   (默认)* readonly: 表示只有getter，没有setter* nonatomic:不考虑线程安全* atomic:线程操作安全   （默认）
 线程安全情况下的setter和getter：
 	- (NSString*) value  {     	        @synchronized(self) {         	        return [[_value retain] autorelease];    
 	         }
 	       } 
 	-	(void) setValue:(NSString*)aValue {     	   @synchronized(self) {         	   [aValue retain];         	   [_value release];         	   _value = aValue;     
-	   }  	 }* retain: release旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1* assign: 简单赋值，不更改索引计数    （默认）* copy: 其实是建立了一个相同的对象,地址不同（retain：指针拷贝  copy：内容拷贝）* strong:（ARC下的）和（MRC）retain一样    （默认）* weak:（ARC下的）和（MRC）assign一样， weak当指向的内存释放掉后自动nil化，防止野指针* unsafe_unretained 声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了。* autoreleasing 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放。1、	类变量的@protected ,@private,@public,@package，声明各有什么含义？* @private：作用范围只能在自身类* @protected：作用范围在自身类和继承自己的子类  （默认）* @public：作用范围最大，可以在任何地方被访问。* @package：这个类型最常用于框架类的实例变量,同一包内能用，跨包就不能访问
+	   }  	 }
+	 
+	 * retain: release旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1* assign: 简单赋值，不更改索引计数    （默认）* copy: 其实是建立了一个相同的对象,地址不同（retain：指针拷贝  copy：内容拷贝）* strong:（ARC下的）和（MRC）retain一样    （默认）* weak:（ARC下的）和（MRC）assign一样， weak当指向的内存释放掉后自动nil化，防止野指针* unsafe_unretained 声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了。* autoreleasing 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放。1、	类变量的@protected ,@private,@public,@package，声明各有什么含义？* @private：作用范围只能在自身类* @protected：作用范围在自身类和继承自己的子类  （默认）* @public：作用范围最大，可以在任何地方被访问。* @package：这个类型最常用于框架类的实例变量,同一包内能用，跨包就不能访问
 
 
 
@@ -697,6 +701,21 @@ PS：利用响应者链条我们可以通过调用touches的super 方法，让�
 
 当你为多种显示设备设计时，你应该以“点”为单位作参考，但设计还是以像素为单位设计的。这意味着仍然需要以3种不同的分辨率导出你的素材，不管你以哪种分辨率设计你的应用。
 
+
+
+#二十九：属性与成员变量：
+
+成员变量是不与外界接触的变量，应用于类的内部，如果你说那用@Public外部不就是可以访问了么。简单的说public只能适当使用，不要泛滥，否则就像你把钥匙插在你自己家门上了。谁来都可以开门。毫无安全性。
+
+由于成员变量的私有性，为了解决外部访问的问题就有了属性变量。属性变量个人认为最大的好处就是让其他对象访问这个变量。而且你可以设置只读、可写等等属性，同时设置的方法我们也可以自己定义。记住一点，属性变量主要是用于与其他对象相互交互的变量。
+
+
+如果对于上面所说还是含糊不清那就记住这几点吧！
+
+* 1.只有类内使用，属性为private，那么就定义成员变量。
+* 2.如果你发现你需要的这个属性需要是public的，那么毫不犹豫就用属性在.h中定义。
+* 3.当你自己内部需要setter实现一些功能的时候，用属性在.m中定义。
+* 4.当你自己内部需要getter实现一些功能的时候，用属性在.m中定义。
 
 <br>
 <br> 
