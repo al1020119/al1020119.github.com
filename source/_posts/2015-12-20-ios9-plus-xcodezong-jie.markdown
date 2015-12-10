@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS9+Xcode总结"
+title: "iOS9+Xcode7总结"
 date: 2015-12-20 23:56:09 +0800
 comments: true
 categories: 新技术
