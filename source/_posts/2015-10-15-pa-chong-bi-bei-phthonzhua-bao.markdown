@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "爬虫必备-Phthon抓包"
+title: "爬虫必备-Python抓包"
 date: 2015-10-15 11:03:23 +0800
 comments: true
 categories: 程序员必备
@@ -8,7 +8,7 @@ categories: 程序员必备
 
  
 
-由于最近都在研究网络爬虫技术，自己也总结了一些。接住一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！
+由于最近都在研究网络爬虫技术，自己也总结了一些。借助一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！
 
 ####准备搭建环境 
 因为是MAC电脑，所以自动安装了Python 2.7的版本
