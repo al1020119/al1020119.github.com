@@ -142,8 +142,9 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li>(NSString*) value  {              @synchronized(self) {                   return [[_value retain] autorelease];  <br/>
        }
      }</li>
-<li>  (void) setValue:(NSString<em>)aValue {            @synchronized(self) {               [aValue retain];                [<em>value release];               </em>value = aValue;   <br/>
- }     }</em> retain: release旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1<em> assign: 简单赋值，不更改索引计数    （默认）</em> copy: 其实是建立了一个相同的对象,地址不同（retain：指针拷贝  copy：内容拷贝）<em> strong:（ARC下的）和（MRC）retain一样    （默认）</em> weak:（ARC下的）和（MRC）assign一样， weak当指向的内存释放掉后自动nil化，防止野指针<em> unsafe_unretained 声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了。</em> autoreleasing 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放。1、    类变量的@protected ,@private,@public,@package，声明各有什么含义？<em> @private：作用范围只能在自身类</em> @protected：作用范围在自身类和继承自己的子类  （默认）<em> @public：作用范围最大，可以在任何地方被访问。</em> @package：这个类型最常用于框架类的实例变量,同一包内能用，跨包就不能访问</li>
+<li><p>  (void) setValue:(NSString*)aValue {            @synchronized(self) {               [aValue retain];                [<em>value release];               </em>value = aValue;   <br/>
+ }     }</p></li>
+<li><p> retain: release旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1<em> assign: 简单赋值，不更改索引计数    （默认）</em> copy: 其实是建立了一个相同的对象,地址不同（retain：指针拷贝  copy：内容拷贝）<em> strong:（ARC下的）和（MRC）retain一样    （默认）</em> weak:（ARC下的）和（MRC）assign一样， weak当指向的内存释放掉后自动nil化，防止野指针<em> unsafe_unretained 声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了。</em> autoreleasing 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放。1、 类变量的@protected ,@private,@public,@package，声明各有什么含义？<em> @private：作用范围只能在自身类</em> @protected：作用范围在自身类和继承自己的子类  （默认）<em> @public：作用范围最大，可以在任何地方被访问。</em> @package：这个类型最常用于框架类的实例变量,同一包内能用，跨包就不能访问</p></li>
 </ul>
 </li>
 </ul>
@@ -902,6 +903,22 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 
 
 <p>当你为多种显示设备设计时，你应该以“点”为单位作参考，但设计还是以像素为单位设计的。这意味着仍然需要以3种不同的分辨率导出你的素材，不管你以哪种分辨率设计你的应用。</p>
+
+<h1>二十九：属性与成员变量：</h1>
+
+<p>成员变量是不与外界接触的变量，应用于类的内部，如果你说那用@Public外部不就是可以访问了么。简单的说public只能适当使用，不要泛滥，否则就像你把钥匙插在你自己家门上了。谁来都可以开门。毫无安全性。</p>
+
+<p>由于成员变量的私有性，为了解决外部访问的问题就有了属性变量。属性变量个人认为最大的好处就是让其他对象访问这个变量。而且你可以设置只读、可写等等属性，同时设置的方法我们也可以自己定义。记住一点，属性变量主要是用于与其他对象相互交互的变量。</p>
+
+<p>如果对于上面所说还是含糊不清那就记住这几点吧！</p>
+
+<ul>
+<li>1.只有类内使用，属性为private，那么就定义成员变量。</li>
+<li>2.如果你发现你需要的这个属性需要是public的，那么毫不犹豫就用属性在.h中定义。</li>
+<li>3.当你自己内部需要setter实现一些功能的时候，用属性在.m中定义。</li>
+<li>4.当你自己内部需要getter实现一些功能的时候，用属性在.m中定义。</li>
+</ul>
+
 
 <p><br>
 <br>
