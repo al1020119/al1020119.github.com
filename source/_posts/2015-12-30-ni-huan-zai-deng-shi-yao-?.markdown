@@ -712,7 +712,7 @@ PS：利用响应者链条我们可以通过调用touches的super 方法，让�
 
 
 
-#二十九：属性与成员变量：
+#二十九：属性&成员变量：
 
 成员变量是不与外界接触的变量，应用于类的内部，如果你说那用@Public外部不就是可以访问了么。简单的说public只能适当使用，不要泛滥，否则就像你把钥匙插在你自己家门上了。谁来都可以开门。毫无安全性。
 
@@ -726,6 +726,42 @@ PS：利用响应者链条我们可以通过调用touches的super 方法，让�
 * 3.当你自己内部需要setter实现一些功能的时候，用属性在.m中定义。
 * 4.当你自己内部需要getter实现一些功能的时候，用属性在.m中定义。
 
+
+
+
+
+#三十：IBInspectable & IBDesignable
+
+* IBInspectable 属性提供了访问旧功能的新方式：用户自定义的运行时属性。从目前的身份检查器（identity inspector）中访问，这些属性在 Interface Builder 被整合到 Xcode 之前就可用了。他们提供了一个强有力的机制来配置一个 NIB，XIB，或者 storyboard 实例中的任何键值编码（key-value coded）属性：
+
+* IBDesignable 自定义视图也在 Xcode 6 中亮相了。当应用到 UIView 或 NSView 子类中的时候，@ IBDesignable 让 Interface Builder 知道它应该在画布上直接渲染视图。你会看到你的自定义视图在每次更改后不必编译并运行你的应用程序就会显示。
+
+	- 标记一个自定义视图为 IBDesignable，只需在类名前加上 @IBDesignable 的前缀（或是 Objective-C 里的 IB_DESIGNABLE 宏）。你的初始化、布置和绘制方法将被用来在画布上渲染你的自定义视图：
+
+
+#三十一：串行(Serial) & 并行(Concurrent)
+
+* 串行和并行描述的是任务和任务之间的执行方式. 串行是任务A执行完了任务B才能执行, 它们俩只能顺序执行. 并行则是任务A和任务B可以同时执行.
+
+#三十二：同步(Synchronous) & 异步(Asynchronous)
+
+* 同步和异步描述的其实就是函数什么时候返回. 比如用来下载图片的函数A: {download image}, 同步函数只有在image下载结束之后才返回, 下载的这段时间函数A只能搬个小板凳在那儿坐等... 而异步函数, 立即返回. 图片会去下载, 但函数A不会去等它完成. So, 异步函数不会堵塞当前线程去执行下一个函数!
+
+#三十三：并发(Concurrency) & 并行(Parallelism)
+
+这个更容易混淆了, 先用Ray大神的示意图和说明来解释一下: 并发是程序的属性(property of the program), 而并行是计算机的属性(property of the machine).
+还是很抽象? 那我再来解释一下, 并行和并发都是用来让不同的任务可以"同时执行", 只是并行是伪同时, 而并发是真同时. 假设你有任务T1和任务T2(这里的任务可以是进程也可以是线程):
+
+* a. 首先如果你的CPU是单核的, 为了实现"同时"执行T1和T2, 那只能分时执行, CPU执行一会儿T1后马上再去执行T2, 切换的速度非常快(这里的切换也是需要消耗资源的, context switch), 以至于你以为T1和T2是同时执行了(但其实同一时刻只有一个任务占有着CPU).
+
+* b. 如果你是多核CPU, 那么恭喜你, 你可以真正同时执行T1和T2了, 在同一时刻CPU的核心core1执行着T1, 然后core2执行着T2, great!
+
+> 其实我们平常说的并发编程包括狭义上的"并行"和"并发", 你不能保证你的代码会被并行执行, 但你可以以并发的方式设计你的代码. 系统会判断在某一个时刻是否有可用的core(多核CPU核心), 如果有就并行(parallelism)执行, 否则就用context switch来分时并发(concurrency)执行. 最后再以Ray大神的话结尾: Parallelism requires Concurrency, but Concurrency does not guarantee Parallelism!
+
+
+
+
+
 <br>
 <br> 
 .....
@@ -737,7 +773,7 @@ PS：利用响应者链条我们可以通过调用touches的super 方法，让�
 <br>
 <br>
 
-待续。。。。。。。。。。
+待续。。。。。。。。。。后续会陆续更新，想了解更多，请等待并查看本文，谢谢！
 
 <br>
 <br>
