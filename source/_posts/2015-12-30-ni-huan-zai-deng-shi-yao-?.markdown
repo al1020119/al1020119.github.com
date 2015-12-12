@@ -759,7 +759,7 @@ PS：利用响应者链条我们可以通过调用touches的super 方法，让�
 > 其实我们平常说的并发编程包括狭义上的"并行"和"并发", 你不能保证你的代码会被并行执行, 但你可以以并发的方式设计你的代码. 系统会判断在某一个时刻是否有可用的core(多核CPU核心), 如果有就并行(parallelism)执行, 否则就用context switch来分时并发(concurrency)执行. 最后再以Ray大神的话结尾: Parallelism requires Concurrency, but Concurrency does not guarantee Parallelism!
 
 
-#黑盒测试&白盒测试
+#三十四：黑盒测试&白盒测试
 
 
 首先纠正 这个问题不属于“硬件”类的
