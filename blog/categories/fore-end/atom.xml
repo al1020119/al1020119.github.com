@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Fore-end | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/fore-end/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2015-12-15T12:23:38+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[H5应用实战]]></title>
+    <link href="http://al1020119.github.io/blog/2015/04/20/h5ying-yong-shi-zhan/"/>
+    <updated>2015-04-20T11:03:23+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/04/20/h5ying-yong-shi-zhan</id>
+    <content type="html"><![CDATA[<blockquote><p>前言:
+ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
+
+<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
+
+<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
+
+<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
+
+<!--more-->
+
+
+<h3>OC——调用——HTML</h3>
+
+<p>这里有两种方式
+直接使用网络链接（接口）
+使用本地的html</p>
+
+<p>由于没有完成一个完整的html项目，这里就以链接演示。</p>
+
+<p>先来看看官方链接显示情况
+<img src="/images/html&amp;oc001.png" title="Caption" ></p>
+
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节），并且增加一个指示器</p>
+
+<pre><code>// 加载网页
+NSURL *url = [NSURL URLWithString:@"http://www.xianhua.cn/m/"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
+
+self.webView.scrollView.hidden = YES;
+self.webView.backgroundColor = [UIColor grayColor];
+
+UIActivityIndicatorView *displayView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+[displayView startAnimating];
+self.displayView = displayView;
+displayView.center = self.view.center;
+[self.webView addSubview:displayView];
+</code></pre>
+
+<p>2.在WebView加载完成的方法中实现我们想要的功能需求</p>
+
+<pre><code>#pragma mark -&lt;UIWebViewDelegate&gt;
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+
+    // 改变标题
+    NSString *str = @"document.getElementsByTagName('h1')[0].innerText = 'iCocos鲜花网';";
+    [webView stringByEvaluatingJavaScriptFromString:str];
+
+    // 删除广告
+    NSString *str2 =@"document.getElementsByClassName('detail_btns2')[0].remove();";
+    [webView stringByEvaluatingJavaScriptFromString:str2];
+
+    // 改变尾部
+    NSString *str3 = @"document.getElementById('xiazaiapp').getElementsByTagName('a')[0].innerText='iCocos鲜花网App';";
+    [webView stringByEvaluatingJavaScriptFromString:str3];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.webView.scrollView.hidden = NO;
+        [self.displayView stopAnimating];
+    });
+}
+</code></pre>
+
+<p>修改后子在手机就是这样的效果</p>
+
+<p><img src="/images/html&amp;oc002.png" title="Caption" ></p>
+
+<h3>HTML——调用——OC</h3>
+
+<p>这里的例子是通过在html中点击一个按钮去调用OC代码，访问系统系相册</p>
+
+<h6>先来看看OC中需要怎么写：</h6>
+
+<p>1.使用WebView，设置代理，加载对应的Html（略过部分细节）</p>
+
+<pre><code>// 加载网页
+NSURL *url = [[NSBundle mainBundle] URLForResource:@"test" withExtension:@"html"];
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+[self.webView loadRequest:request];
+</code></pre>
+
+<p>2.在Web开始加载请求的代理方法中拼接方法（包装）</p>
+
+<pre><code>#pragma mark - &lt;UIWebViewDelegate&gt;
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+//    NSLog(@"------%@", request.URL.absoluteString);
+    NSString *requestUrl = request.URL.absoluteString;
+    NSRange range = [requestUrl rangeOfString:@"ds3q:///"];
+    NSUInteger location = range.location;
+    if (location != NSNotFound) {
+        NSString *str = [requestUrl substringFromIndex:location + range.length];
+        NSLog(@"%@", str);
+        // 包装SEL
+        SEL method = NSSelectorFromString(str);
+        [self performSelector:method];
+    }
+
+    return YES;
+}
+</code></pre>
+
+<p>3.实现打开相册的OC方法</p>
+
+<pre><code>// 打开相册
+- (void)openCamera{
+    UIImagePickerController *vc = [[UIImagePickerController alloc] init];
+    vc.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    [self presentViewController:vc animated:YES completion:nil];
+}
+</code></pre>
+
+<p>4.再来看看html中简单的写法</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head lang="en"&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;&lt;/title&gt;
+    &lt;style&gt;
+        body{
+            margin-top: 50px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;button onclick="openCamera();"&gt;访问相册&lt;/button&gt;
+    &lt;script type="text/javascript"&gt;
+        function openCamera(){
+            window.location.href = 'ds3q:///openCamera';
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p> 显示效果</p>
+
+<p> <img src="/images/html&amp;oc003.png" title="Caption" ></p>
+
+<hr />
+
+<p>  <img src="/images/html&amp;oc004.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[H5初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/04/15/h5chu-tan/"/>
+    <updated>2015-04-15T15:51:33+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/04/15/h5chu-tan</id>
+    <content type="html"><![CDATA[<h2>H5精华</h2>
+
+<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
+
+<!--more-->
+
+
+<h6>1：链接</h6>
+
+<p>图像标签</p>
+
+<pre><code>相对路径 ../../
+
+绝对路径  https:// http://  ftp://  file://
+</code></pre>
+
+<ul>
+<li><p> href: 引用 不是必须的</p></li>
+<li><p> src: 引入  必需的</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>&lt;!--超链接标签  javascript:void(0) --&gt;
+&lt;a href="#"&gt;我是超链接&lt;/a&gt;
+&lt;a href="http://baidu.com" target="_blank"&gt;百度一下,你就知道&lt;/a&gt;
+
+
+&lt;img src="https://www.baidu.com/img/bd_logo1.png" alt="百度logo" width="200"&gt;
+&lt;img src="images/img_01.jpg"&gt;
+</code></pre>
+
+<h6>2：列表&lt;&ndash;列表标签&ndash;></h6>
+
+<p>无序：</p>
+
+<pre><code>&lt;ul&gt;
+  &lt;li&gt;我是列表1&lt;/li&gt;
+  &lt;li&gt;我是列表2&lt;/li&gt;
+  &lt;li&gt;我是列表3&lt;/li&gt;
+  &lt;li&gt;我是列表4&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>有序：</p>
+
+<pre><code>&lt;Ol&gt;
+    &lt;li&gt;我是列表1&lt;/li&gt;
+    &lt;li&gt;我是列表2&lt;/li&gt;
+    &lt;li&gt;我是列表3&lt;/li&gt;
+    &lt;li&gt;我是列表4&lt;/li&gt;
+&lt;/Ol&gt;
+</code></pre>
+
+<h6>3:文章：</h6>
+
+<pre><code>&lt;article&gt;
+
+    &lt;header&gt;
+
+    &lt;/header&gt;
+
+    &lt;section&gt;&lt;/section&gt;
+
+    &lt;section&gt;&lt;/section&gt;
+
+    &lt;footer&gt;
+
+    &lt;/footer&gt;
+
+&lt;/article&gt;
+</code></pre>
+
+<h6>4：高级:</h6>
+
+<pre><code>   &lt;!--进度条--&gt;
+   &lt;progress max="100" value="50"&gt;&lt;/progress&gt;
+   &lt;!--音频--&gt;
+   &lt;audio src="sources/music.m4a" controls="controls"&gt;&lt;/audio&gt;
+   &lt;!--视频--&gt;
+   &lt;video src="sources/BigBuck.m4v" controls="controls"&gt;&lt;/video&gt;
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+
+<hr />
+
+<h2>CSS3</h2>
+
+<h4>一:样式</h4>
+
+<blockquote><p>CSS即层叠样式表（Cascading StyleSheet）。 在网页制作时采用层叠样式表技术，可以有效地对页面的布局、字体、颜色、背景和其它效果实现更加精确的控制。 只要对相应的代码做一些简单的修改，就可以改变同一页面的不同部分，或者页数不同的网页的外观和格式。CSS3是CSS技术的升级版本，CSS3语言开发是朝着模块化发展的。以前的规范作为一个模块实在是太庞大而且比较复杂，所以，把它分解为一些小的模块，更多新的模块也被加入进来。这些模块包括： 盒子模型、列表模块、超链接方式 、语言模块 、背景和边框 、文字特效 、多栏布局等。</p></blockquote>
+
+<h6>1.行内：</h6>
+
+<p>&lt;&ndash;style=&ldquo;background-color: red;&rdquo;&ndash;></p>
+
+<p><--
+   单值属性: 后面只有一个属性值
+   复合属性: 后面有多个属性值
+--></p>
+
+<pre><code>   &lt;div style="color: purple; font-size: 40px; background-color: yellowgreen;"&gt;我是容器div&lt;/div&gt;
+   &lt;p style="color: blue; font-size: 100px; border:3px solid red;"&gt;我是段落&lt;/p&gt;
+</code></pre>
+
+<h6>2.页内：</h6>
+
+<pre><code>&lt;--
+  网站 = N个网页 + 服务器 + 数据库 + ....
+
+--&gt;
+
+&lt;!--
+  css遵循的规律:
+  1&gt; 就近原则
+  2&gt; 叠加原则
+--&gt;
+</code></pre>
+
+<hr />
+
+<pre><code>    &lt;style&gt;
+        div{
+            color: chartreuse;
+            border: 3px dashed blueviolet;
+            font-size: 90px;
+        }
+    &lt;/style&gt; 
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div&gt;我是div&lt;/div&gt; 
+</code></pre>
+
+<h6>3.外部</h6>
+
+<pre><code>    &lt;!--引入--&gt;
+    &lt;link href="css/index.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+   &lt;div&gt;哈哈哈哈哈&lt;/div&gt;
+</code></pre>
+
+<hr />
+
+<pre><code>div{
+    color: darkgoldenrod;
+    background-color: mediumvioletred;
+    font-size: 5px;
+}
+</code></pre>
+
+<h4>二：选择器</h4>
+
+<pre><code>    /** 标签选择器*/
+    div{
+        color: red;
+    }
+    /*类选择器*/
+    .test1{
+        color: green;
+    }
+    /*id选择器*/
+    #main{
+        font-size: 90px;
+    }
+    /*并列选择器*/
+    #main,.test1{
+        border: 5px double darkviolet;
+    }
+    /*复合选择器*/
+    p.test2{
+       background-color: red;
+    }
+    /*后代选择器*/
+    #first p a{
+        font-size: 90px;
+    }
+    /*伪类*/
+    input:focus{
+       width: 500px;
+       height: 60px;
+       font-size: 55px;
+       /*去除外边框*/
+       outline: none;
+    }
+
+    div#main:hover{
+       background-color: yellow;
+       width: 500px;
+       height: 250px;
+    }
+    /*伪元素*/
+    p:first-letter{
+        color: goldenrod;
+        font-size: 60px;
+    }
+</code></pre>
+
+<hr />
+
+<pre><code>   &lt;div id="main"&gt;bjbjwefbjb&lt;/div&gt;
+   &lt;div&gt;bjbjwefbjb&lt;/div&gt; 
+   &lt;p&gt;我是段落&lt;/p&gt; 
+   &lt;div class="test1"&gt;bjbjwefbjb&lt;/div&gt;
+   &lt;div id="first"&gt;
+       &lt;p&gt;
+           &lt;a href="#"&gt;我是超链接&lt;/a&gt;
+       &lt;/p&gt;
+   &lt;/div&gt;
+</code></pre>
+
+<h4>三：优先级：</h4>
+
+<pre><code>    &lt;--
+      CSS遵循的规律:
+      1.相同级别的选择器: a.就近原则  b.叠加原则
+      2.不同选择器:
+        important &gt; 内联 &gt; id &gt; 类 &gt; 标签 | 伪类 | 属性选择 &gt; 伪元素 &gt; 通配符 &gt; 继承
+      3. 选择器的针对性越强，它的优先级就越高
+    --&gt;
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+
+<hr />
+
+<h2>编写 JScript</h2>
+
+<blockquote><p>与其他许多编程语言一样， Microsoft JScript 是用文本方式编写的，并被组织成为语句、由相关的语句集组成的块、以及注释。在一条语句内可以使用变量、比如字符串和数字（称为“文字”）的立即数、以及表达式。</p></blockquote>
+
+<h5>一：语句</h5>
+
+<p>JScript 程序是语句的集合。一条 Jscript 语句相当于英语中的一个完整句。Jscript 语句将表达式组合起来，完成一个任务。</p>
+
+<p>一条语句由一个或多个表达式、关键字或者运算符（符号）组成。典型地，一条语句写一行，尽管一条语句可以超过两行或更多行。两条或更多条语句也可以写在同一行上，语句之间用分号“;”隔开。通常，每一新行开始一条新语句。不过显式地终止语句是一个好方法。这是用分号 (;)来实现的，分号是 JScript 语句的终止字符。下面给出 Jscript 语句的两隔示例。</p>
+
+<pre><code>aBird = "Robin"; //将文本“Robin”赋值给变量 aBird
+var today = new Date(); // 将今天的日期赋值给变量 today
+</code></pre>
+
+<p>用大括号（{}）括起来的一组 JScript 语句称为一个语句块。分组到一个语句块中的语句通常可当作单条语句处理。这就是说在 JScript 期望有一条单个语句的大多数地方可以使用语句块。应该注意以 for 和 while 打头的循环语句是例外情况。注意，语句块中的原始语句以分号结束，但语句块本身并不以分号结束。</p>
+
+<p>通常，在函数和条件语句中使用语句块。</p>
+
+<blockquote><p>注意，Jscript 与 C++ 以及其他某些语言不同，它不认为语句块是一个新的范围；只有函数创建新范围。在下面的示例中，第一条语句开始定义一个函数，该函数包含一个五条语句组成的语句块。语句块后的三条语句没有用大括号括起来；这些语句不是一个语句块，所以就不是函数定义的一部分。</p></blockquote>
+
+<pre><code>function convert(inches)  {
+   feet = inches / 12;  //  这五条语句属于一个语句块。
+   miles = feet / 5280;
+   nauticalMiles = feet / 6080;
+   cm = inches * 2.54;
+   meters = inches / 39.37;
+}
+km = meters / 1000;  //  这三条语句不在语句块内。
+kradius = km;
+mradius = miles;
+</code></pre>
+
+<h5>二：注释</h5>
+
+<p>单行的 JScript 注释以一对正斜杠(//)开始。下面给出一个单行注释的示例。</p>
+
+<pre><code>aGoodIdea = "Comment your code thoroughly.";  //  这是一个单行注释。
+</code></pre>
+
+<p>多行注释以一个正斜杠加一个星号的组合(/<em>)开始,并以其逆向顺序 (</em>/)结束。</p>
+
+<pre><code>/*
+这是一个用来解释前面的代码语句的多行注释。
+
+该语句将一个值赋给 aGoodIdea 变量。
+用引号包含的这种值称为一个文字。
+文字显式并直接包含信息；
+而不是简接地引用信息。
+（引号不属于该文字的内容。）
+*/
+</code></pre>
+
+<blockquote><p>注意   如果您试图将一个多行注释插入到另一个中，JScript 不能按正常的方式解释生成的多行注释。标明嵌入的多行注释结束的 */ 被认为是整个多行注释的结尾。这就意味着嵌入多行注释之后的文本不再被认为是注释；相应地，它将被解释为 JScript 代码，并会产生语法错误。</p></blockquote>
+
+<p>建议将所有的注释写为单行注释的语句块。这样您以后就能够将大段的代码与多行注释区分开。</p>
+
+<pre><code>//这是另一种多行注释，写成一系列单行注释。
+
+//  在执行完该语句后，可以使用 aGoodIdea 变量的名字来引用其内容，
+//  如下一条语句那样，即采用连接操作将字符串文字添加到
+//  aGoodIdea 变量，以创建一个新的变量。
+
+var extendedIdea = aGoodIdea + " You never know when you'll have to figure out what it does.";
+</code></pre>
+
+<p>赋值和相等</p>
+
+<p>JScript 语句中使用等号 (=)给变量赋值：等号是赋值运算符。= 运算符左边的操作项总是一个 Lvalue。Lvalue 可以是：</p>
+
+<h5>三：变量，</h5>
+
+<p>数组元素，
+对象属性。
+= 运算符右边的操作项总是一个 Rvalue。Rvalues 可以是任何类型的一个任意值，包括表达式的值。下面给出一个 JScript 赋值语句的示例。</p>
+
+<pre><code>anInteger = 3;
+</code></pre>
+
+<p>Jscript 编译器解释本语句的意义为：“将 3 赋给变量 anInteger”或“anInteger 的值为 3”。</p>
+
+<p>确定您理解了 = 运算符（赋值）和 == 运算符（相等）的差异。在比较两个值是否相等时，应使用两个等于号 (==)。这些内容将在 控制程序的流程 中详细介绍。</p>
+
+<h5>四：表达式</h5>
+
+<p>JScript 表达式是指 JScript 解释器能够计算生成值的 JScript “短语”。这个值可以是任何有效的 JScript 类型 — 数字、字符串、对象，等等。最简单的表达式是文字。下面给出 JScript 文字表达式的一些示例。</p>
+
+<pre><code>3.9                       // 数字文字
+"Hello!"                  // 字符串文字
+false                     // 布尔文字
+null                      // 文字空值
+{x:1, y:2}                // 对象文字
+[1,2,3]                   // 数组文字
+function(x){return x*x;}  // 函数文字
+</code></pre>
+
+<p>更多复杂的表达式中包含变量、函数、函数调用以及其他表达式。可以用运算符将表达式组合，创建复合表达式。运算符可以是：</p>
+
+<pre><code>+  // 加法
+-  // 减法
+*  // 乘法
+/  // 除法
+</code></pre>
+
+<p>下面给出 JScript 复合表达式的一些示例。</p>
+
+<pre><code>var anExpression = 3 * (4 / 5) + 6;
+var aSecondExpression = Math.PI * radius * radius;
+var aThirdExpression = aSecondExpression + "%" + anExpression;
+var aFourthExpression = "(" + aSecondExpression + ") % (" + anExpression + ")";
+</code></pre>
+
+<blockquote><h6>其他请参考相关文档</h6></blockquote>
+]]></content>
+  </entry>
+  
+</feed>
