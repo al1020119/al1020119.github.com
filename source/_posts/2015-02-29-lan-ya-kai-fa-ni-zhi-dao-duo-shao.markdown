@@ -212,3 +212,8 @@ iOS中提供了4个框架用于实现蓝牙连接
 	NSData *d2 = [[PBABluetoothDecode sharedManager] HexStringToNSData:@"0x02"];
                 [self.peripheral writeValue:d2 forCharacteristic:characteristic type:CBCharacteristicWriteWithoutResponse];
  
+ 
+ 
+ 详细请参看：
+ 
+ [蓝牙开发专题](http://liuyanwei.jumppo.com/2015/07/17/ios-BLE-0.html)
