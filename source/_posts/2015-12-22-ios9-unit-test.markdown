@@ -3,7 +3,7 @@ layout: post
 title: "iOS9-Unit Test"
 date: 2015-12-22 00:59:07 +0800
 comments: true
-categories: New features 
+categories: Newfeatures 
 ---
 
  
