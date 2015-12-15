@@ -4,7 +4,7 @@ layout: post
 title: "玩转数据持久化"
 date: 2014-06-03 13:53:19 +0800
 comments: true
-categories: 高级开发 
+categories: Advanced 
 
 --- 
 

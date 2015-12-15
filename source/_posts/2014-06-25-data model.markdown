@@ -4,7 +4,7 @@ layout: post
 title: "数据与模型"
 date: 2014-06-25 13:53:19 +0800
 comments: true
-categories: 项目实战 
+categories: Projects 
 
 --- 
  

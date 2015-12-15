@@ -4,7 +4,7 @@ layout: post
 title: "三维动画初探"
 date: 2014-01-01 13:53:19 +0800
 comments: true
-categories: 高级开发 
+categories: Advanced 
 
 --- 
 

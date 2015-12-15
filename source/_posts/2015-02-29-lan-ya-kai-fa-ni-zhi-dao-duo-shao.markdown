@@ -4,7 +4,7 @@ layout: post
 title: "蓝牙开发你知道多少"
 date: 2015-02-29 00:38:13 +0800
 comments: true
-categories: 高级开发
+categories: Advanced
 
 ---
 

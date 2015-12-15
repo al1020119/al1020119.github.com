@@ -3,7 +3,7 @@ layout: post
 title: "站在AFN上看ASI"
 date: 2015-01-05 14:53:45 +0800
 comments: true
-categories: 项目实战
+categories: Summary
 ---
 
 ######一、底层实现

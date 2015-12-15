@@ -3,7 +3,7 @@ layout: post
 title: "NSProxy&amp;NSObject初探"
 date: 2014-03-17 13:20:37 +0800
 comments: true
-categories: 高级开发
+categories: Summary
 ---
 
 NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此，

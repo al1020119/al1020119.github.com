@@ -3,7 +3,7 @@ layout: post
 title: "屏幕旋转的奥妙"
 date: 2015-01-10 23:51:52 +0800
 comments: true
-categories: 项目实战
+categories: Projects
 ---
 
 

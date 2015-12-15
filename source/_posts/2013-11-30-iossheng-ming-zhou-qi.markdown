@@ -4,7 +4,7 @@ layout: post
 title: "iOS生命周期"
 date: 2013-11-30 21:52:15 +0800
 comments: true
-categories: 面试总结＋技术
+categories: Developer
 
 ---
 

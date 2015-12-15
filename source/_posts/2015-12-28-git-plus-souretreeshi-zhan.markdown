@@ -3,7 +3,7 @@ layout: post
 title: "Git+SoureTree实战"
 date: 2015-12-28 12:28:06 +0800
 comments: true
-categories: Projects
+categories: Tools
 ---
 
 由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！

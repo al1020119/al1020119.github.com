@@ -3,7 +3,7 @@ layout: post
 title: "Watch OS2 初探"
 date: 2015-11-14 17:44:31 +0800
 comments: true
-categories: 新技术
+categories: Watch OS2
 ---
 
 

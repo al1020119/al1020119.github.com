@@ -4,7 +4,7 @@ layout: post
 title: "NSCache&NSDcitionary你了解多少？"
 date: 2014-04-14 13:53:19 +0800
 comments: true
-categories: 性能问题 
+categories: Summary 
 
 --- 
 

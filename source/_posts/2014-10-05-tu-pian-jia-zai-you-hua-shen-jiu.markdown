@@ -3,7 +3,7 @@ layout: post
 title: "图片加载优化深究"
 date: 2014-10-05 14:56:39 +0800
 comments: true
-categories: 性能相关
+categories: Performance
 ---
 
 

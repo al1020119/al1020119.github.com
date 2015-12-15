@@ -4,7 +4,7 @@ layout: post
 title: "序列化&amp;反序列化深究"
 date: 2015-09-20 09:36:37 +0800
 comments: true
-categories: 高级开发
+categories: Summary
 
 ---
 

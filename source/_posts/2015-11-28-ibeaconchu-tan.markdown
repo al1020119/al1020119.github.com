@@ -3,7 +3,7 @@ layout: post
 title: "iBeacon初探"
 date: 2015-11-28 17:42:15 +0800
 comments: true
-categories: 高级开发
+categories: New features
 ---
 
  

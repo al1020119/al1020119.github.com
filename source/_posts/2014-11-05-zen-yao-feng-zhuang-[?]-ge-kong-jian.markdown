@@ -3,7 +3,7 @@ layout: post
 title: "怎么封装一个控件"
 date: 2014-11-05 17:44:16 +0800
 comments: true
-categories: 项目实战
+categories: Projects
 ---
 
 

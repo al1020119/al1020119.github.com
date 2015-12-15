@@ -3,7 +3,7 @@ layout: post
 title: "OpenEL GS初探"
 date: 2014-10-28 17:43:44 +0800
 comments: true
-categories: 高级开发
+categories: Advanced
 ---
 
 

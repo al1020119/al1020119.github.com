@@ -3,7 +3,7 @@ layout: post
 title: "分类深究"
 date: 2014-11-26 17:42:51 +0800
 comments: true
-categories: 高级开发
+categories: Advanced
 ---
 
  

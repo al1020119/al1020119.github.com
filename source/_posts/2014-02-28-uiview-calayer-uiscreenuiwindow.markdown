@@ -4,7 +4,7 @@ layout: post
 title: "面试会问到的？"
 date: 2014-02-28 13:53:19 +0800
 comments: true
-categories: 面试汇总 
+categories: Interview 
 
 --- 
 

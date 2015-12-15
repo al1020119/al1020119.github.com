@@ -4,7 +4,7 @@ layout: post
 title: "XMPP使用总结"
 date: 2014-09-12 00:21:39 +0800
 comments: true
-categories: 高级开发
+categories: Projects
 
 ---
 

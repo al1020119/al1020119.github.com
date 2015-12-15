@@ -3,7 +3,7 @@ layout: post
 title: "SVN实战总结"
 date: 2015-07-02 22:44:29 +0800
 comments: true
-categories: 项目实战
+categories: Tools
 ---
 
 

@@ -3,7 +3,7 @@ layout: post
 title: "移动端性能优化"
 date: 2014-09-25 14:16:31 +0800
 comments: true
-categories: 性能问题
+categories: Performance
 ---
 
 之前写过一篇

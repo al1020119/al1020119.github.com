@@ -4,7 +4,7 @@ layout: post
 title: "消除警告"
 date: 2014-12-02 02:51:46 +0800
 comments: true
-categories: 性能相关
+categories: Performance
 
 ---
 

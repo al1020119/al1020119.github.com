@@ -4,7 +4,7 @@ layout: post
 title: "取消TableView的Header与Footer的黏性效果"
 date: 2014-08-05 00:24:40 +0800
 comments: true
-categories: 项目实战
+categories: Projects
 
 ---
  

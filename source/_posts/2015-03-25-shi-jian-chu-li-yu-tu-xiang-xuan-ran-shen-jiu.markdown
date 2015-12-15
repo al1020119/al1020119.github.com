@@ -3,7 +3,7 @@ layout: post
 title: "事件处理与图像渲染深究"
 date: 2015-03-25 09:47:11 +0800
 comments: true
-categories: 性能问题
+categories: Performance
 ---
 
 

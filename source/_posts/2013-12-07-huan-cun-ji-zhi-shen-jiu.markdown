@@ -4,7 +4,7 @@ layout: post
 title: "自己写套缓存机制"
 date: 2013-12-07 02:59:42 +0800
 comments: true
-categories: 底层开发
+categories: Bottom
 
 ---
 

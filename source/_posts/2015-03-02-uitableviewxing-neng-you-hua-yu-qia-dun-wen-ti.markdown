@@ -4,7 +4,7 @@ layout: post
 title: "UITableView性能优化与卡顿问题"
 date: 2015-03-02 00:19:52 +0800
 comments: true
-categories: 性能相关
+categories: Performance
 
 ---
 

@@ -4,7 +4,7 @@ layout: post
 title: "语法精选"
 date: 2014-03-12 13:53:19 +0800
 comments: true
-categories: 高级开发 
+categories: Developer 
 
 --- 
 

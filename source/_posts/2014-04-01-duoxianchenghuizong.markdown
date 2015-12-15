@@ -4,7 +4,7 @@ layout: post
 title: "多线程总结"
 date: 2014-04-01 13:53:19 +0800
 comments: true
-categories: 高级开发 
+categories: Advanced 
 
 --- 
 

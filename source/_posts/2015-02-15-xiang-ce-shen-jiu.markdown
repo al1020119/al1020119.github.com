@@ -3,7 +3,7 @@ layout: post
 title: "相册深究"
 date: 2015-02-15 13:38:22 +0800
 comments: true
-categories: 高级开发
+categories: Advanced
 ---
 ###一. 概要
 

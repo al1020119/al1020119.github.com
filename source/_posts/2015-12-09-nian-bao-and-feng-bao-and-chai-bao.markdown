@@ -3,7 +3,7 @@ layout: post
 title: "粘包&amp;封包&amp;拆包"
 date: 2015-12-09 18:11:05 +0800
 comments: true
-categories: 底层开发
+categories: Necessary
 ---
 
 今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！

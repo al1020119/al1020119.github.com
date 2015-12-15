@@ -3,7 +3,7 @@ layout: post
 title: "谈谈KVC与KVO精髓"
 date: 2014-12-05 23:11:52 +0800
 comments: true
-categories: 高级开发
+categories: Advanced
 ---
 
  
