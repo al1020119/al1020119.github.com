@@ -1063,6 +1063,65 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 </ul>
 
 
+<h2>三十六：UIWebView&amp;WKWebView</h2>
+
+<p>ios的webview有2个类，一个叫UIWebView，另一个是WKWebView。两者的基础方法都差不多，本文重点是后者，他是取代UIWebView出现的，在app开发者若不需要兼容ios8之前版本，都应该使用WKWebVIew。</p>
+
+<ul>
+<li><p>WKWebView 是苹果在 iOS 8 中引入的新组件，目的是给出一个新的高性能的 Web View 解决方案，摆脱过去 UIWebView 的老旧笨重特别是内存占用量巨大的问题，它使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快.</p></li>
+<li><p>新特性</p>
+
+<ul>
+<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
+<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
+<li>支持了更多的HTML5特性；</li>
+<li>高达60fps的滚动刷新率以及内置手势；</li>
+<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议</li>
+</ul>
+</li>
+</ul>
+
+
+<blockquote><p>ios9默认是不允许加载http请求的，对于webview，加载http网页也是不允许的。可以通过修改info.plist取消http限制</p></blockquote>
+
+<ul>
+<li>WKWebVIew是UIWebView的代替品，新的WebKit框架把原来的功能拆分成许多小类。本例中主要用到了WKNavigationDelegate,WKUIDelegate,WKScriptMessageHandler三个委托和配置类WKWebViewConfiguration去实现webView的request控制，界面控制，js交互，alert重写等功能。 使用WKWebView需要引入#import &lt;WebKit/WebKit.h></li>
+</ul>
+
+
+<h2>三十七：指针&amp;地址</h2>
+
+<ul>
+<li><p>区别:</p>
+
+<ul>
+<li><p>1指针意味着已经有一个指针变量存在,他的值是一个地址,指针变量本身也存放在一个长度为四个字节的地址当中,而地址概念本身并不代表有任何变量存在.</p></li>
+<li><p>2 指针的值,如果没有限制,通常是可以变化的,也可以指向另外一个地址.</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>地址表示内存空间的一个位置点,他是用来赋给指针的,地址本身是没有大小概念,指针指向变量的大小,取决于地址后面存放的变量类型.</p>
+
+<h2>三十八：通知&amp;协议</h2>
+
+<ul>
+<li>答案：协议有控制链(has-a)的关系，通知没有。</li>
+</ul>
+
+
+<p>首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解</p>
+
+<p>简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。</p>
+
+<p>代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。</p>
+
+<p>只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
+发布会了。但是通知就不一样，他只关心发出通知，而不关心多少接收到感兴趣要处理。</p>
+
+<p>因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。</p>
+
 <p><br>
 <br>
 &hellip;..
