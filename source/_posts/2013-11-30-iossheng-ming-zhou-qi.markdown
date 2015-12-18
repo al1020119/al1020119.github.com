@@ -34,6 +34,13 @@ categories: Developer
 	3、dealloc                                 视图被销毁，此处需要对你在init和viewDidLoad中创建的对象进行释放
 
 
+再来看张网上找到的图，结合上面的总结那么久很清晰了！
+
+
+{% img /images/kongzhiqshengmzhouqi001.jpg Caption %}  
+
+
+
 －－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
  
 ###app的启动过程
