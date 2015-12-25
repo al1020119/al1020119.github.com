@@ -82,3 +82,24 @@ footer: true
 
 
 * 近十年除了提高自己吃饭的家伙，每年会研究一门语言。
+
+
+
+
+								更多请关注
+								
+								
+
+[微博](http://weibo.com/u/3288975567)
+
+[博客园](http://www.cnblogs.com/iCocos/)
+
+[github博文：http://al1020119.github.io/](http://al1020119.github.io/)
+
+[github：https://github.com/al1020119](https://github.com/al1020119)
+
+
+
+							 QQ：2211523682
+							
+							微信：18370997821
