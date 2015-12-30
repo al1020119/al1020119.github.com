@@ -11,7 +11,6 @@ categories: Summary
 首先再这里祝大家新年快乐.......
 
 
-
 新的一年来点重量级的东西，那么是什么呢？
 
 
@@ -24,6 +23,10 @@ MVVM不正是MVC的增强版吗？
 
 ##Model-View-Controller
 
+
+
+
+<!--more-->
 
 
 首先我们来看看MVC，这里MVC具体细节就不多说了。
