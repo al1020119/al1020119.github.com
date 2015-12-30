@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Summary | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/summary/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-25T14:49:02+08:00</updated>
+  <updated>2015-12-30T15:25:22+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,178 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[重量级-MVC-MVVM-DC]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji/"/>
+    <updated>2016-01-01T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji</id>
+    <content type="html"><![CDATA[<p>新的一年来的重量级的东西，那么是什么呢？</p>
+
+<p>相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！
+如果你听说过MVC，那么或许你听说过MVVM，这里可能很多人对MVVM并不了解，或许只是听过，但是没有用过，有些就算用过还是不请求，里面的关系，只是搬砖而已。
+对了，今天我们讨论的就是一个MVVM的技术，也就是在MVVM上面的一个增强版！
+MVVM不正是MVC的增强版吗？</p>
+
+<p>好了下面正式开始，新年不能耽误大家太多时间搬砖，，哈哈！</p>
+
+<h2>Model-View-Controller</h2>
+
+<p>首先我们来看看MVC，这里MVC具体细节就不多说了。</p>
+
+<ul>
+<li>Model(M)：模型数据</li>
+<li>View(V)：视图</li>
+<li>Controller&copy;：控制器</li>
+</ul>
+
+
+<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
+
+<h6>有点：</h6>
+
+<ul>
+<li>易学习</li>
+<li>易开发</li>
+<li>同哟欧诺个成熟</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>Massive View Controller</li>
+</ul>
+
+
+<h2>Model-View-ViewModel</h2>
+
+<p>然后来看看现在比较热得话题（架构）MVVM
+* Model（M）:模型
+* View(V）:视图
+* ViewModel（VM）:模型（逻辑）</p>
+
+<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
+
+<h6>View与ViewModule连接可以通过下面的方式</h6>
+
+<ul>
+<li><p>Binding Data：实现数据的传递</p></li>
+<li><p>Command：实现操作的调用</p></li>
+<li><p>AttachBehavior：实现控件加载过程中的操作</p></li>
+</ul>
+
+
+<h5>View没有大量代码逻辑。</h5>
+
+<ul>
+<li><p>结合WPF、Silverlight绑定机制，MVP演变出了MVVM，充分利用了WPF、Silverlight的优势，将大量代码逻辑、状态转到ViewModel，可以说MVVM是专门为WPF、Silverlight打造的。</p></li>
+<li><p>View绑定到ViewModel，然后执行一些命令在向它请求一个动作。而反过来，ViewModel跟Model通讯，告诉它更新来响应UI。这样便使得为应用构建UI非常的容易。往一个应用程序上贴一个界面越容易，外观设计师就越容易使用Blend来创建一个漂亮的界面。同时，当UI和功能越来越松耦合的时候，功能的可测试性就越来越强。</p></li>
+</ul>
+
+
+<h6>优点：</h6>
+
+<ul>
+<li>减轻ViewController的负担</li>
+<li>提高了测试性</li>
+<li>强大的绑定机制</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>极高的学习成本和开发成本</li>
+<li>数据绑定是的bug更难调试</li>
+<li>View Model的职责任然很重</li>
+<li>据本人了解，MVVM结合RAC使用能够发挥最大的效率</li>
+</ul>
+
+
+<p>总上我们可以得知：</p>
+
+<ul>
+<li>每个V都有一个对应的VM，V的数据展示盒样式都由其定制</li>
+<li>不引入双想绑定机制或者观察机制，而是通过传统的代理回调或者通知将UI事件传给外界</li>
+<li>VC只负责将VM装配给V，接受UI事件</li>
+</ul>
+
+
+<p>或许细心地能发现下面的好处</p>
+
+<ul>
+<li>View可以完全解耦，只需要确定好ViewModel和回调接口即可</li>
+<li>View Controller层可以尽可能少得和View的具体表现打交道，将这不分职责转给了View Model，减轻了* View Controller的负担</li>
+<li>使用回调的传统回调机制，学习成本低，数据和事件流入和流出易观察而且更易控制，降低维护和回调成本</li>
+</ul>
+
+
+<h2>Model-View-ViewModel-DataController-Model</h2>
+
+<p>好了重量级的东西来了，MVVM-DM（MVVM Without Binding With Data Controller）</p>
+
+<ul>
+<li>Model（M）:模型</li>
+<li>View(V）:视图</li>
+<li>ViewModel（VM）:加工后的数据）</li>
+<li>Data Controller：相关逻辑</li>
+<li>Model：对应Data Controller</li>
+</ul>
+
+
+<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
+
+<p>或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！</p>
+
+<h6>优点：</h6>
+
+<ul>
+<li>避免了传统的MVVM架构VM层有可能变得臃肿的情况，更加清晰的模块职责</li>
+<li>业务逻辑解耦，数据的加工和处理都放在Data Controller中，View Controiller不用关心数据如何获得，如何处理，Data Controller不用关心界面如何展示，如何交互</li>
+<li>Data Controller与界面无关，所以可以有更好的可测试性和可服用性</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<p>暂时没有发现（难度：一下比较难接受）</p>
+
+<h4>具体思路是：</h4>
+
+<ul>
+<li>1.每个Viewcontroller会有一个对应的Data Controller（包含页面的所有相关逻辑：View Related data Controller） ，在View的ViewDidLoad方法中初始化View，layoutSubViews中布局</li>
+<li>2.Viewcongtroller向Data Controller发送请求，Data Controller包含只是纯粹的Model相关逻辑（当然你也可以复用更小的Data Controller）如：网络请求，数据持久（请求），数据加工，其他。</li>
+<li>3.Data Controller将请求到得数据加工返回给View Controller</li>
+<li>4.View Controller将Data Controller返回的加工好的数据生成ViewModel（展示View所需要的数据），</li>
+<li>5.View Controller协调控制并将生成的View Model装配到View（每个View都有一个对应的View Model，可以有子View Model）上面显示，这里相当于使用ViewModel数据来渲染界面</li>
+</ul>
+
+
+<p>综上：</p>
+
+<ul>
+<li>将处理数据和获取数据的职责从传统的MVVM的Vm中抽取出来，成为Data Controller</li>
+<li>VC请求数据和将一些数据修改的事件（可以是UI事件触发）传递给Data Controller</li>
+<li>Data Controller收到VC的请求后，向M获取数据和更新数据，并将加工后的数据返回</li>
+<li>Data Controller还负责网络层和持久化层的逻辑</li>
+</ul>
+
+
+<blockquote><p>总结：</p>
+
+<ul>
+<li>层次清晰，职责明确。</li>
+<li>耦合性低，复用性高</li>
+<li>测试性高</li>
+<li>低学习成本，低开发成本</li>
+<li>高实施性，无需整体重构</li>
+</ul>
+</blockquote>
+
+<p>本文借鉴猿题库客户端架构设计，最后附上<a href="blog.devtang.com">唐巧大V</a>得博客，以表敬意</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[你还在等什么？]]></title>
@@ -1724,193 +1896,6 @@ grayCover.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2] C
 </code></pre>
 
 <p>9.变形：Quartz Core的渲染能力，使二维图像可以被自由操纵，就好像是三维的。图像可以在一个三维坐标系中以任意角度被旋转，缩放和倾斜。CATransform3D的一套方法提供了一些魔术般的变换效果。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[NSCache&NSDcitionary你了解多少？]]></title>
-    <link href="http://al1020119.github.io/blog/2014/04/14/nscache%20nsdictionary/"/>
-    <updated>2014-04-14T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2014/04/14/nscache nsdictionary</id>
-    <content type="html"><![CDATA[<p>NSCache</p>
-
-<p>NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下：</p>
-
-<ol>
-<li><p>NSCache具有自动删除的功能，以减少系统占用的内存；</p></li>
-<li><p>NSCache是线程安全的，不需要加线程锁；</p></li>
-<li><p>键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。</p></li>
-</ol>
-
-
-<!--more-->
-
-
-<h5>NSCache的属性以及方法介绍：</h5>
-
-<pre><code>@property NSUInteger totalCostLimit;
-</code></pre>
-
-<p>设置缓存占用的内存大小，并不是一个严格的限制，当总数超过了totalCostLimit设定的值，系统会清除一部分缓存，直至总消耗低于totalCostLimit的值。</p>
-
-<pre><code>@property NSUInteger countLimit;
-</code></pre>
-
-<p>设置缓存对象的大小，这也不是一个严格的限制。</p>
-
-<pre><code>- (id)objectForKey:(id)key;
-</code></pre>
-
-<p>获取缓存对象，基于key-value对</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key; // 0 cost
-</code></pre>
-
-<p>存储缓存对象，考虑缓存的限制属性；</p>
-
-<pre><code>- (void)setObject:(id)obj forKey:(id)key cost:(NSUInteger)g;
-</code></pre>
-
-<p>存储缓存对象，cost是提前知道该缓存对象占用的字节数，也会考虑缓存的限制属性，建议直接使用  - (void)setObject:(id)obj forKey:(id)key;</p>
-
-<h5>NSCacheDelegate代理</h5>
-
-<p>代理属性声明如下：</p>
-
-<pre><code>@property (assign) id&lt;NSCacheDelegate&gt;delegate;
-</code></pre>
-
-<p>实现了NSCacheDelegate代理的对象，在缓存对象即将被清理的时候，系统回调代理方法如下：</p>
-
-<pre><code>- (void)cache:(NSCache *)cache willEvictObject:(id)obj;
-</code></pre>
-
-<p>第一个参数是当前缓存（NSCache），不要修改该对象；</p>
-
-<p>第二个参数是当前将要被清理的对象，如果需要存储该对象，可以在此操作（存入Sqlite or CoreData）;</p>
-
-<p>该代理方法的调用会在缓存对象即将被清理的时候调用，如下场景会调用：</p>
-
-<ol>
-<li><ul>
-<li>(void)removeObjectForKey:(id)key; 手动删除对象；</li>
-</ul>
-</li>
-<li><p>缓存对象超过了NSCache的属性限制；（countLimit 和 totalCostLimit ）</p></li>
-<li><p>App进入后台会调用；</p></li>
-<li><p>系统发出内存警告；</p></li>
-</ol>
-
-
-<h5>NSDiscardableContent协议</h5>
-
-<p>NSDiscardableContent是一个协议，实现这个协议的目的是为了让我们的对象在不被使用时，可以将其丢弃，以让程序占用更少的内存。</p>
-
-<p>一个NSDiscardableContent对象的生命周期依赖于一个“counter”变量。一个NSDiscardableContent对象实际是一个可清理内存块，这个内存记录了对象当前是否被其它对象使用。如果这块内存正在被读取，或者仍然被需要，则它的counter变量是大于或等于1的；当它不再被使用时，就可以丢弃，此时counter变量将等于0。当counter变量等于0时，如果当前时间点内存比较紧张的话，内存块就可能被丢弃。这点类似于MRC&amp;ARC，对象内存回收机制。</p>
-
-<pre><code>- (void)discardContentIfPossible
-</code></pre>
-
-<p>当counter等于0的时候，为了丢弃这些对象，会调用这个方法。</p>
-
-<p>默认情况下，NSDiscardableContent对象的counter变量初始值为1，以确保对象不会被内存管理系统立即释放。</p>
-
-<pre><code>- (BOOL)beginContentAccess    (counter++)
-</code></pre>
-
-<p>调用该方法，对象的counter会加1；</p>
-
-<p>与beginContentAccess相对应的是endContentAccess。如果可丢弃内存不再被访问时调用。其声明如下：</p>
-
-<pre><code>- (void)endContentAccess  （counter--）
-</code></pre>
-
-<p>该方法会减少对象的counter变量，通常是让对象的counter值变回为0，这样在对象的内容不再被需要时，就要以将其丢弃。</p>
-
-<p>NSCache类提供了一个属性，来标识缓存是否自动舍弃那些内存已经被丢弃的对象(默认该属性为YES)，其声明如下：</p>
-
-<pre><code>@property BOOL evictsObjectsWithDiscardedContent
-</code></pre>
-
-<p>如果设置为YES，则在对象的内存被丢弃时舍弃对象。</p>
-
-<p>个人建议：如果需要使用缓存，直接用系统的NSCache就OK了，不要做死。</p>
-
-<h4>区别：</h4>
-
-<p>NSCache</p>
-
-<ul>
-<li>(1)可以存储(当然是使用内存)</li>
-<li>(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary</li>
-<li>(3)有固定客户.</li>
-</ul>
-
-
-<hr />
-
-<pre><code>+---------------------------+------------------------------+
-| NSCache | NSMutableDictionary |
-+---------------------------+------------------------------+
-| NSDiscardableContent | NSObject |
-+---------------------------+------------------------------+
-</code></pre>
-
-<p>下面是 UIImageView+AFNetworking的使用:</p>
-
-<pre><code>@interface AFImageCache :NSCache
-- (UIImage *)cachedImageForRequest:(NSURLRequest *)request;
-- (void)cacheImage:(UIImage *)image
-forRequest:(NSURLRequest *)request;
-@end
-</code></pre>
-
-<p>NSURLCache</p>
-
-<p>iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
-这里有详细的说明:here
-这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.</p>
-
-<p>映射关系:</p>
-
-<pre><code>+---------------------------+---------------------------------+
-| NSURLRequest ----|----&gt; NSCachedURLResponse |
-+---------------------------+---------------------------------+
-</code></pre>
-
-<p>通过这样的映射关系实现缓存. 这里存的是NSCachedURLResponse. 也就是说这里的NSURLCache也是一个类似于NSCache的容器.
-只不过data是NSCachedURLResponse对象. 并不是类似于image这样的data.</p>
-
-<p>这篇文章可以的: NSURLCache使用心得here
-我测试了一下UIImage->NSData->URL,NSURLConnection, UIWebView不同时候调用</p>
-
-<pre><code>- (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request;
--(void)storeCachedResponse:(NSCachedURLResponse *)cachedResponse forRequest:(NSURLRequest *)request;
-</code></pre>
-
-<p>的情况:</p>
-
-<pre><code>+-------------+---------------------+----------------------+------------------+
-| | UIImage-&gt;URL | NSURLConnection | UIWebView |
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|1’s time |---+---------------------+----------------------+------------------+
-| | s | first called | second called | second called | 
-+---------+---+---------------------+----------------------+------------------+
-| | c | X | first called | first called | 
-|2’s time +---+---------------------+----------------------+------------------+
-| | s | first called | X | X | 
-+---------+---+---------------------+----------------------+------------------+
-</code></pre>
-
-<blockquote><p>注意</p></blockquote>
-
-<pre><code>* c 表示 cachedResponseForRequest
-* s 表示 storeCachedResponse
-* X 表示不被调用
-</code></pre>
-
-<p>结果显示: UIImage->URL 是同步的请求. 因为cachedResponseForRequest不能发起同步请求来请求网络.</p>
 ]]></content>
   </entry>
   

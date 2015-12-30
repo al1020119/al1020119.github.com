@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2015-12-25T14:49:02+08:00</updated>
+  <updated>2015-12-30T15:25:22+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,178 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[重量级-MVC-MVVM-DC]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji/"/>
+    <updated>2016-01-01T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji</id>
+    <content type="html"><![CDATA[<p>新的一年来的重量级的东西，那么是什么呢？</p>
+
+<p>相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！
+如果你听说过MVC，那么或许你听说过MVVM，这里可能很多人对MVVM并不了解，或许只是听过，但是没有用过，有些就算用过还是不请求，里面的关系，只是搬砖而已。
+对了，今天我们讨论的就是一个MVVM的技术，也就是在MVVM上面的一个增强版！
+MVVM不正是MVC的增强版吗？</p>
+
+<p>好了下面正式开始，新年不能耽误大家太多时间搬砖，，哈哈！</p>
+
+<h2>Model-View-Controller</h2>
+
+<p>首先我们来看看MVC，这里MVC具体细节就不多说了。</p>
+
+<ul>
+<li>Model(M)：模型数据</li>
+<li>View(V)：视图</li>
+<li>Controller&copy;：控制器</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/zhongliangji001.png" title="Caption" ></p>
+
+<h6>有点：</h6>
+
+<ul>
+<li>易学习</li>
+<li>易开发</li>
+<li>同哟欧诺个成熟</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>Massive View Controller</li>
+</ul>
+
+
+<h2>Model-View-ViewModel</h2>
+
+<p>然后来看看现在比较热得话题（架构）MVVM
+* Model（M）:模型
+* View(V）:视图
+* ViewModel（VM）:模型（逻辑）</p>
+
+<p><img src="http://al1020119.github.io/images/zhongliangji001.png" title="Caption" ></p>
+
+<h6>View与ViewModule连接可以通过下面的方式</h6>
+
+<ul>
+<li><p>Binding Data：实现数据的传递</p></li>
+<li><p>Command：实现操作的调用</p></li>
+<li><p>AttachBehavior：实现控件加载过程中的操作</p></li>
+</ul>
+
+
+<h5>View没有大量代码逻辑。</h5>
+
+<ul>
+<li><p>结合WPF、Silverlight绑定机制，MVP演变出了MVVM，充分利用了WPF、Silverlight的优势，将大量代码逻辑、状态转到ViewModel，可以说MVVM是专门为WPF、Silverlight打造的。</p></li>
+<li><p>View绑定到ViewModel，然后执行一些命令在向它请求一个动作。而反过来，ViewModel跟Model通讯，告诉它更新来响应UI。这样便使得为应用构建UI非常的容易。往一个应用程序上贴一个界面越容易，外观设计师就越容易使用Blend来创建一个漂亮的界面。同时，当UI和功能越来越松耦合的时候，功能的可测试性就越来越强。</p></li>
+</ul>
+
+
+<h6>优点：</h6>
+
+<ul>
+<li>减轻ViewController的负担</li>
+<li>提高了测试性</li>
+<li>强大的绑定机制</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>极高的学习成本和开发成本</li>
+<li>数据绑定是的bug更难调试</li>
+<li>View Model的职责任然很重</li>
+<li>据本人了解，MVVM结合RAC使用能够发挥最大的效率</li>
+</ul>
+
+
+<p>总上我们可以得知：</p>
+
+<ul>
+<li>每个V都有一个对应的VM，V的数据展示盒样式都由其定制</li>
+<li>不引入双想绑定机制或者观察机制，而是通过传统的代理回调或者通知将UI事件传给外界</li>
+<li>VC只负责将VM装配给V，接受UI事件</li>
+</ul>
+
+
+<p>或许细心地能发现下面的好处</p>
+
+<ul>
+<li>View可以完全解耦，只需要确定好ViewModel和回调接口即可</li>
+<li>View Controller层可以尽可能少得和View的具体表现打交道，将这不分职责转给了View Model，减轻了* View Controller的负担</li>
+<li>使用回调的传统回调机制，学习成本低，数据和事件流入和流出易观察而且更易控制，降低维护和回调成本</li>
+</ul>
+
+
+<h2>Model-View-ViewModel-DataController-Model</h2>
+
+<p>好了重量级的东西来了，MVVM-DM（MVVM Without Binding With Data Controller）</p>
+
+<ul>
+<li>Model（M）:模型</li>
+<li>View(V）:视图</li>
+<li>ViewModel（VM）:加工后的数据）</li>
+<li>Data Controller：相关逻辑</li>
+<li>Model：对应Data Controller</li>
+</ul>
+
+
+<p><img src="http://al1020119.github.io/images/zhongliangji001.png" title="Caption" ></p>
+
+<p>或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！</p>
+
+<h6>优点：</h6>
+
+<ul>
+<li>避免了传统的MVVM架构VM层有可能变得臃肿的情况，更加清晰的模块职责</li>
+<li>业务逻辑解耦，数据的加工和处理都放在Data Controller中，View Controiller不用关心数据如何获得，如何处理，Data Controller不用关心界面如何展示，如何交互</li>
+<li>Data Controller与界面无关，所以可以有更好的可测试性和可服用性</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<p>暂时没有发现（难度：一下比较难接受）</p>
+
+<h4>具体思路是：</h4>
+
+<ul>
+<li>1.每个Viewcontroller会有一个对应的Data Controller（包含页面的所有相关逻辑：View Related data Controller） ，在View的ViewDidLoad方法中初始化View，layoutSubViews中布局</li>
+<li>2.Viewcongtroller向Data Controller发送请求，Data Controller包含只是纯粹的Model相关逻辑（当然你也可以复用更小的Data Controller）如：网络请求，数据持久（请求），数据加工，其他。</li>
+<li>3.Data Controller将请求到得数据加工返回给View Controller</li>
+<li>4.View Controller将Data Controller返回的加工好的数据生成ViewModel（展示View所需要的数据），</li>
+<li>5.View Controller协调控制并将生成的View Model装配到View（每个View都有一个对应的View Model，可以有子View Model）上面显示，这里相当于使用ViewModel数据来渲染界面</li>
+</ul>
+
+
+<p>综上：</p>
+
+<ul>
+<li>将处理数据和获取数据的职责从传统的MVVM的Vm中抽取出来，成为Data Controller</li>
+<li>VC请求数据和将一些数据修改的事件（可以是UI事件触发）传递给Data Controller</li>
+<li>Data Controller收到VC的请求后，向M获取数据和更新数据，并将加工后的数据返回</li>
+<li>Data Controller还负责网络层和持久化层的逻辑</li>
+</ul>
+
+
+<blockquote><p>总结：</p>
+
+<ul>
+<li>层次清晰，职责明确。</li>
+<li>耦合性低，复用性高</li>
+<li>测试性高</li>
+<li>低学习成本，低开发成本</li>
+<li>高实施性，无需整体重构</li>
+</ul>
+</blockquote>
+
+<p>本文借鉴猿题库客户端架构设计，最后附上<a href="blog.devtang.com">唐巧大V</a>得博客，以表敬意</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[你还在等什么？]]></title>
@@ -1118,7 +1290,7 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 
 <p><img src="http://al1020119.github.io/images/git005.png" title="Caption" ></p>
 
-<p>ssh -T <a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#58;&#103;&#x69;&#116;&#64;&#103;&#105;&#x74;&#x68;&#x75;&#x62;&#x2e;&#x63;&#111;&#x6d;">&#103;&#x69;&#x74;&#64;&#x67;&#105;&#116;&#104;&#x75;&#98;&#46;&#99;&#x6f;&#x6d;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+<p>ssh -T <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#x67;&#x69;&#116;&#64;&#103;&#105;&#x74;&#104;&#117;&#98;&#x2e;&#x63;&#x6f;&#x6d;">&#103;&#105;&#x74;&#x40;&#103;&#x69;&#x74;&#104;&#117;&#98;&#x2e;&#x63;&#111;&#109;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
 
 <p><img src="http://al1020119.github.io/images/git006.png" title="Caption" ></p>
 
@@ -6227,345 +6399,6 @@ iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/detai
 A look inside blocks: Episode 3
 runtime.c
 Block_private.h</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[网络请求疯（封）装]]></title>
-    <link href="http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/"/>
-    <updated>2015-08-25T09:37:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang</id>
-    <content type="html"><![CDATA[<p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
-
-<p>关于XLNetworkApi</p>
-
-<!--more-->
-
-
-<p>XLNetworkApi的一些功能和说明：</p>
-
-<p>使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。
-以及网络下载、上传文件，以block的形式返回实时的下载、上传进度，上传文件参数通过模型XLFileConfig去存取。
-通过继承于XLDataService来将一些数据处理，模型转化封装起来，于业务逻辑对接返回的是对应的模型，减少Controllor处理数据处理逻辑的压力。
-自定义一些回调的block</p>
-
-<pre><code>/**
-请求成功block
-*/
-typedef void (^requestSuccessBlock)(id responseObj);
-/**
-请求失败block
-*/
-typedef void (^requestFailureBlock) (NSError *error);
-/**
-请求响应block
-*/
-typedef void (^responseBlock)(id dataObj, NSError *error);
-/**
-监听进度响应block
-*/
-typedef void (^progressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
-XLNetworkRequest.m部分实现
-#import "XLNetworkRequest.h"
-#import "AFNetworking.h"
-@implementation XLNetworkRequest
-+ (void)getRequest:(NSString *)url params:(NSDictionary *)params success:(requestSuccessBlock)successHandler failure:(requestFailureBlock)failureHandler {
-//网络不可用
-  if (![self checkNetworkStatus]) {
-      successHandler(nil);
-      failureHandler(nil);
-      return;
-  }
-  AFHTTPRequestOperationManager *manager = [self getRequstManager];
-  [manager GET:url parameters:params success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      successHandler(responseObject);
-  } failure:^(AFHTTPRequestOperation * _Nullable operation, NSError * _Nonnull error) {
-      XLLog(@"------请求失败-------%@",error);
-      failureHandler(error);
-  }];
-}
-</code></pre>
-
-<p>下载部分代码</p>
-
-<pre><code>    //下载文件，监听下载进度
-    + (void)downloadRequest:(NSString *)url successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-      if (![self checkNetworkStatus]) {
-          progressHandler(0, 0, 0);
-          completionHandler(nil, nil);
-          return;
-      }
-      NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
-      AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:sessionConfiguration];
-      NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
-      NSProgress *kProgress = nil;
-      NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:&amp;kProgress destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-          NSURL *documentUrl = [[NSFileManager defaultManager] URLForDirectory :NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-          return [documentUrl URLByAppendingPathComponent:[response suggestedFilename]];
-      } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nonnull filePath, NSError * _Nonnull error){
-          if (error) {
-              XLLog(@"------下载失败-------%@",error);
-          }
-          completionHandler(response, error);
-      }];
-      [manager setDownloadTaskDidWriteDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDownloadTask * _Nonnull downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
-          progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-      }];
-      [downloadTask resume];
-    }
-</code></pre>
-
-<p>上传部分代码</p>
-
-<pre><code>//上传文件，监听上传进度
-+ (void)updateRequest:(NSString *)url params:(NSDictionary *)params fileConfig:(XLFileConfig *)fileConfig successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-  if (![self checkNetworkStatus]) {
-      progressHandler(0, 0, 0);
-      completionHandler(nil, nil);
-      return;
-  }
-  NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:url parameters:params constructingBodyWithBlock:^(id  _Nonnull formData) {
-      [formData appendPartWithFileData:fileConfig.fileData name:fileConfig.name fileName:fileConfig.fileName mimeType:fileConfig.mimeType];
-  } error:nil];
-  //获取上传进度
-  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-  [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
-      progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-  }];
-  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      completionHandler(responseObject, nil);
-  } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
-      completionHandler(nil, error);
-      if (error) {
-          XLLog(@"------上传失败-------%@",error);
-      }
-  }];
-  [operation start];
-}
-</code></pre>
-
-<p>XLDataService.m部分实现</p>
-
-<pre><code>+ (void)getWithUrl:(NSString *)url param:(id)param modelClass:(Class)modelClass responseBlock:(responseBlock)responseDataBlock {
-      [XLNetworkRequest getRequest:url params:param success:^(id responseObj) {
-      //数组、字典转化为模型数组
-      dataObj = [self modelTransformationWithResponseObj:responseObj modelClass:modelClass];
-      responseDataBlock(dataObj, nil);
-  } failure:^(NSError *error) {
-      responseDataBlock(nil, error);
-  }];
-}
-</code></pre>
-
-<p>（关键）下面这个方法提供给继承XLDataService的子类重写，将转化为模型的代码写在这里，相似业务的网络数据请求都可以用这个子类去请求数据，直接返回对应的模型数组。
-    /<em>*
-    数组、字典转化为模型
-    </em>/
-    + (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-         return nil;
-    }
-关于离线数据缓存</p>
-
-<p>当用户进入程序的展示页面，有三个情况下可能涉及到数据库存取操作，简单画了个图来理解，思路比较简单，主要是一些存取的细节处理。</p>
-
-<p>进入展示页面</p>
-
-<p><img src="http://al1020119.github.io/images/net001.png" title="Caption" ></p>
-
-<p>下拉刷新最新数据</p>
-
-<p><img src="http://al1020119.github.io/images/net002.png" title="Caption" ></p>
-
-<p>上拉加载更多数据</p>
-
-<p><img src="http://al1020119.github.io/images/net003.png" title="Caption" ></p>
-
-<p>需要注意的是，上拉加载更多的时候，每次从数据库返回一定数量的数据，而不是一次性将数据全部加载，否则会有内存问题，直到数据库中没有更多数据时再发生网络请求，再次将新数据存入数据库。这里存储数据的方式是将服务器返回每组数据的字典归档成二进制作为数据库字段直接存储，这样存储在模型属性比较多的情况下更有好处，避免每一个属性作为一个字段，另外增加了一个idStr字段用来判断数据的唯一性，避免重复存储。
-首先定义一个工具类XLDataBase来做数据库相关的操作，这里用的是第三方的FMDB。</p>
-
-<pre><code>#import "XLDataBase.h"
-#import "FMDatabase.h"
-#import "Item.h"
-#import "MJExtension.h"
-@implementation XLDataBase
-static FMDatabase *_db;
-+ (void)initialize {
-    NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/Data.db",NSHomeDirectory()];
-    _db = [FMDatabase databaseWithPath:path];
-    [_db open];
-    [_db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_item (id integer PRIMARY KEY, itemDict blob NOT NULL, idStr text NOT NULL)"];
-}
-//存入数据库
-+ (void)saveItemDict:(NSDictionary *)itemDict {
-    //此处把字典归档成二进制数据直接存入数据库，避免添加过多的数据库字段
-    NSData *dictData = [NSKeyedArchiver archivedDataWithRootObject:itemDict];
-    [_db executeUpdateWithFormat:@"INSERT INTO t_item (itemDict, idStr) VALUES (%@, %@)",dictData, itemDict[@"id"]];
-}
-//返回全部数据
-+ (NSArray *)list {
-    FMResultSet *set = [_db executeQuery:@"SELECT * FROM t_item"];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        // 获得当前所指向的数据
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//取出某个范围内的数据
-+ (NSArray *)listWithRange:(NSRange)range {
-    NSString *SQL = [NSString stringWithFormat:@"SELECT * FROM t_item LIMIT %lu, %lu",range.location, range.length];
-    FMResultSet *set = [_db executeQuery:SQL];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//通过一组数据的唯一标识判断数据是否存在
-+ (BOOL)isExistWithId:(NSString *)idStr
-{
-    BOOL isExist = NO;
-    FMResultSet *resultSet= [_db executeQuery:@"SELECT * FROM t_item where idStr = ?",idStr];
-    while ([resultSet next]) {
-        if([resultSet stringForColumn:@"idStr"]) {
-            isExist = YES;
-        }else{
-            isExist = NO;
-        }
-    }
-    return isExist;
-}
-@end
-</code></pre>
-
-<p>一些继承于XLDataService的子类的数据库存储和模型转换的逻辑代码</p>
-
-<pre><code>#import "GetTableViewData.h"
-#import "XLDataBase.h"
-@implementation GetTableViewData
-//重写父类方法
-+ (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-    NSArray *lists = responseObj[@"data"][@"list"];
-    NSMutableArray *array = [NSMutableArray array];
-    for (NSDictionary *dict in lists) {
-        [modelClass mj_setupReplacedKeyFromPropertyName:^NSDictionary *{
-            return @{ @"ID" : @"id" };
-        }];
-        [array addObject:[modelClass mj_objectWithKeyValues:dict]];
-        //通过idStr先判断数据是否存储过，如果没有，网络请求新数据存入数据库
-        if (![XLDataBase isExistWithId:dict[@"id"]]) {
-            //存数据库
-            NSLog(@"存入数据库");
-            [XLDataBase saveItemDict:dict];
-        }
-    }
-    return array;
-}
-</code></pre>
-
-<p>下面是一些控制器的代码实现：</p>
-
-<pre><code>#import "ViewController.h"
-#import "GetTableViewData.h"
-#import "Item.h"
-#import "XLDataBase.h"
-#import "ItemCell.h"
-#import "MJRefresh.h"
-#define URL_TABLEVIEW @"https://api.108tian.com/mobile/v3/EventList?cityId=1&amp;step=10&amp;theme=0&amp;page=%lu"
-@interface ViewController () {
-    NSMutableArray *_dataArray;
-    UITableView *_tableView;
-    NSInteger _currentPage;//当前数据对应的page
-}
-@end
-@implementation ViewController
-#pragma mark Life cycle
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    [self createTableView];
-    _dataArray = [NSMutableArray array];
-}
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    NSRange range = NSMakeRange(0, 10);
-    //如果数据库有数据则读取，不发送网络请求
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        NSLog(@"从数据库加载");
-    }else{
-        [self getTableViewDataWithPage:0];
-    }
-}
-#pragma mark UI
-- (void)createTableView {
-    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
-    _tableView.delegate = self;
-    _tableView.dataSource = self;
-    _tableView.rowHeight = 100.0;
-    [self.view addSubview:_tableView];
-    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
-        [self loadNewData];
-    }];
-    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
-        [self loadMoreData];
-    }];
-}
-#pragma mark GetDataSoure
-- (void)getTableViewDataWithPage:(NSInteger)page {
-    NSLog(@"发送网络请求！");
-    NSString *url = [NSString stringWithFormat:URL_TABLEVIEW, page];
-    [GetTableViewData getWithUrl:url param:nil modelClass:[Item class] responseBlock:^(id dataObj, NSError *error) {
-        [_dataArray addObjectsFromArray:dataObj];
-        [_tableView reloadData];
-        [_tableView.mj_header endRefreshing];
-        [_tableView.mj_footer endRefreshing];
-    }];
-}
-- (void)loadNewData {
-    NSLog(@"下拉刷新");
-    _currentPage = 0;
-    [_dataArray removeAllObjects];
-    [self getTableViewDataWithPage:_currentPage];
-}
-- (void)loadMoreData {
-    NSLog(@"上拉加载");
-    _currentPage ++;
-    NSRange range = NSMakeRange(_currentPage * 10, 10);
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        [_tableView reloadData];
-        [_tableView.mj_footer endRefreshing];
-        NSLog(@"数据库加载%lu条更多数据",[[XLDataBase listWithRange:range] count]);
-    }else{
-        //数据库没更多数据时再网络请求
-        [self getTableViewDataWithPage:_currentPage];
-    }
-}
-#pragma mark UITableViewDataSource
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _dataArray.count;
-}
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    ItemCell *cell = [ItemCell itemCellWithTableView:tableView];
-    cell.item = _dataArray[indexPath.row];
-    return cell;
-}
-@end
-</code></pre>
-
-<p>最后附上代码的下载地址，重要的部分代码中都有相应的注释和文字打印，运行程序可以很直观的表现。</p>
-
-<p><a href="https://github.com/ShelinShelin/OffLineCache.git">Demo</a></p>
-
-<p>希望大家能提出一些意见，很乐意与大家互相交流。</p>
-
-<!--more-->
-
 ]]></content>
   </entry>
   
