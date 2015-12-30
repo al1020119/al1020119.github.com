@@ -22,6 +22,9 @@ EXC_BAD_ACCESS, objc_msgSend,
  
 #####一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到 
  
+<!--more-->
+
+
  Scheme >Edit Scheme>Arguments>Environment Variables下添加
 
  1. NSZombieEnabled               YES    

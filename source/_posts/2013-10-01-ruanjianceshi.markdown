@@ -14,6 +14,9 @@ categories: Projects
 
 {% img /images/ruanjianceshi001.png Caption %}  
 
+<!--more-->
+
+
 二：方式
 
 代码:(不建议白盒)

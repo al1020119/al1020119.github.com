@@ -20,6 +20,9 @@ categories: Projects
     GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) data:localData];  
     [self.view addSubview:dataView];
     
+<!--more-->
+
+
 ######或者你也可以这样，直接加载路径
     
     GifView *pathView =[[GifView alloc] initWithFrame:CGRectMake(100, 0, 100, 100) filePath:[[NSBundle mainBundle] pathForResource:@"run" ofType:@"gif"]];

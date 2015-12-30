@@ -19,6 +19,9 @@ Stackoverflow中这位就在抱怨苹果开发人员的傲慢：
 
 [http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580](http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580) 
 
+<!--more-->
+
+
 
 闲话少说，下面进入正题：各个文件/目录的作用，以及要不要提交更新。
 

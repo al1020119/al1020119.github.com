@@ -25,6 +25,9 @@ categories: Projects
 	b=b-a; //a=2;b=10
 	a=b+a; //a=10;b=10
 
+<!--more-->
+
+
 
 2） 指针地址操作
 

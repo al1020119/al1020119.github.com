@@ -18,6 +18,9 @@ ios开发学习中，经常弄不清楚ios的开发模式，今天我们就来�
 列表row个数delegate
 自定义的delegate
 
+<!--more-->
+
+
 
 ###（二）观察者模式(通知)
 * 应用场景：一般为model层对，controller和view进行的通知方式，不关心谁去接收，只负责发布信息。
