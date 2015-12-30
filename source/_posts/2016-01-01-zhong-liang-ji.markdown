@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "重量级-MVC-MVVM-DC"
-date: 2016-01-01 16:21:08 +0800
+date: 2015-12-30 16:21:08 +0800
 comments: true
 categories: Summary
 ---
@@ -162,3 +162,6 @@ MVVM不正是MVC的增强版吗？
 > * 高实施性，无需整体重构
 
 本文借鉴猿题库客户端架构设计，最后附上[唐巧大V](blog.devtang.com)得博客，以表敬意
+
+参考：
+[https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&mid=444322139&idx=1&sn=c7bef4d439f46ee539aa76d612023d43&scene=1&srcid=1230NOb8TaHKmwxS9l8H6ctl&key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&ascene=0&uin=MjMzNjU5MzYyMQ%3D%3D&devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&version=11020201&pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C](https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&mid=444322139&idx=1&sn=c7bef4d439f46ee539aa76d612023d43&scene=1&srcid=1230NOb8TaHKmwxS9l8H6ctl&key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&ascene=0&uin=MjMzNjU5MzYyMQ%3D%3D&devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&version=11020201&pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C)
