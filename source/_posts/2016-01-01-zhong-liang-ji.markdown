@@ -51,7 +51,7 @@ MVVM不正是MVC的增强版吗？
 * View(V）:视图
 * ViewModel（VM）:模型（逻辑）
 
-{% img /images/zhongliangji001.png Caption %}  
+{% img /images/zhongliangji002.png Caption %}  
 
 
 ######View与ViewModule连接可以通过下面的方式
@@ -109,7 +109,7 @@ MVVM不正是MVC的增强版吗？
 * Data Controller：相关逻辑
 * Model：对应Data Controller
 
-{% img /images/zhongliangji001.png Caption %}  
+{% img /images/zhongliangji003.png Caption %}  
 
 
 或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！
