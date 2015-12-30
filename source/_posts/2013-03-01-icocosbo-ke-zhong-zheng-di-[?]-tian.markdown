@@ -2,7 +2,7 @@
 
 layout: post
 title: "iCocos博客重整第一天"
-date: 2013-10-01 11:11:30 +0800
+date: 2013-03-01 11:11:30 +0800
 comments: true
 categories: Developer 
 description: "我的第一篇Octopress博客" 

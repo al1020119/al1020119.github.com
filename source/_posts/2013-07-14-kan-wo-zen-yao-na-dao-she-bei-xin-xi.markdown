@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "看我怎么拿到设备信息"
-date: 2013-12-14 13:36:55 +0800
+date: 2013-07-14 13:36:55 +0800
 comments: true
 categories: Advanced
 ---
