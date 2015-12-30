@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>EXC_BAD_ACCESS无处不在 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="EXC_BAD_ACCESS无处不在 ordinal 这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend, 此类报错往往来的莫明奇妙. 原因往往是内存过度释放导致, 即多写了release; &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2013/12/08/badaccess-error/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">EXC_BAD_ACCESS无处不在</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend,</p>
+
+<p>此类报错往往来的莫明奇妙.</p>
+
+<p>原因往往是内存过度释放导致, 即多写了release;</p>
+
+<p>至于是哪里多写了release, 很难查知,</p>
+
+<p>出现这种情况， 也就是对指针对象的过度释放，导致次指针为野指针报错， （注意：如：[nil release] 操作空指针是不会报错的，在java中是有问题， [野指针 release] 报错  crash  很危险，）解决中bug，有很多中，暂时简单的说下几种简单的：</p>
+
+<h5>一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到</h5>
+
+<p> Scheme >Edit Scheme>Arguments>Environment Variables下添加</p>
+
+<ol>
+<li>NSZombieEnabled               YES</li>
+<li>MallocStackLoggingNoCompact  YES</li>
+<li>MallocStackLogging                      YES</li>
+</ol>
+
+
+<p><img src="/images/BADACCESS001.png" title="Caption" ></p>
+
+<p><img src="/images/BADACCESS002.png" title="Caption" ></p>
+
+<p><img src="/images/BADACCESS003.png" title="Caption" ></p>
+
+<ul>
+<li>第一項 让系统把错误地址打印出来</li>
+<li>第二項 可让xcode记录每个地址alloc的历史，这样我们就可以用命令把这个地址还原出来</li>
+<li>第三項 可開啟MallocStack，就知道記憶體在程式運行中被配置的歷史</li>
+</ul>
+
+
+<blockquote><p>（注意：这个命令只支持gdb，必须把控制台的输出改成gdb，只支持模拟器，不支持真机调试）</p></blockquote>
+
+<h5>二：在.m或者.mm文件中  直接添加打印最后日志文件 代码如下：</h5>
+
+<pre><code>#ifdef _FOR_DEBUG_
+
+- (BOOL)respondsToSelector:(SEL)rtSelector
+
+{
+
+    NSString *className = NSStringFromClass([self class]) ;    
+
+    NSLog(@"%@ --&gt; RTSelector: %s",className,[NSStringFromSelector(rtSelector)UTF8String]);
+
+        return [super respondsToSelector:rtSelector];
+
+}
+
+#endif
+</code></pre>
+
+<h5>三：找到模糊的地方， 断点调试， 或者打印标识 从大范围到小范围，</h5>
+
+<p>具体操作我这里就不多说了，根据项目的需求在对应代码行的左边点击就可以打断点</p>
+
+<h5>四：Leak的方式</h5>
+
+<ol>
+<li>打开Instruments工具:</li>
+</ol>
+
+
+<p>Xcode -> Open Developer Tool -> Instruments,</p>
+
+<ol>
+<li><p>选择Zombies类型.
+<img src="/images/BADACCESS004.png" title="Caption" ></p></li>
+<li><p>重新启动运行Project, 先不要执行到崩溃点.</p></li>
+<li><p>在打开的Instruments工具中choose要检查的程序名称;</p></li>
+<li><p>然后点击Instruments左上角的record按钮, 开始记录内存使用情况.</p></li>
+</ol>
+
+
+<p><img src="/images/BADACCESS005.png" title="Caption" ></p>
+
+<p><img src="/images/BADACCESS006.png" title="Caption" ><br/>
+6. 继续执行程序至崩溃点.</p>
+
+<p>程序执行到第40秒报出zombie Messaged错误;</p>
+
+<ol>
+<li><p>点击图中圈选的">&ldquo;查看内存详情.
+<img src="/images/BADACCESS007.png" title="Caption" ></p></li>
+<li><p>分析内存调用详情:</p></li>
+</ol>
+
+
+<p>排除操作系统retain, release的部分,</p>
+
+<p>可知是由于CameraLiveViewController执行dealloc,</p>
+
+<p>对内存0x180d5420多调用了release.
+<img src="/images/BADACCESS008.png" title="Caption" ></p>
+
+<h3>综合以上结果:</h3>
+
+<p>可知是存在于CameraLiveViewController中的一个UILabel多执行了release.</p>
+
+<p>此时可添加代码对CameraLiveViewController中的可疑UILabel打印日志.</p>
+
+<p>重新执行上述过程, 对比打印UILabel与Zobmie内存的地址,</p>
+
+<p>从而定位出错位置.
+<img src="/images/BADACCESS009.png" title="Caption" ></p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/projects/'>projects</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/11/26/xcode-settingfile/" title="Previous Post: Xcode配置文件">&laquo; Xcode配置文件</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/12/25/xingnengyouhua-xiaojie/" title="Next Post: 性能优化小结">性能优化小结 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (8)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2013/12/08/badaccess-error/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2013/12/08/badaccess-error/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2015 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
