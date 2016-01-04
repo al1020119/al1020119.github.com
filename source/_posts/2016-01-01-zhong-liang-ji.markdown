@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "重量级-MVC-MVVM-DC"
-date: 2015-12-30 16:21:08 +0800
+date: 2016-01-01 16:21:08 +0800
 comments: true
 categories: Summary
 ---
