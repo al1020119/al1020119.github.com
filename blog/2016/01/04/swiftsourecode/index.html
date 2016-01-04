@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>重量级-MVC-MVVM-DC - iOS梦工厂</title>
+  <title>Swift开源总结 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="重量级-MVC-MVVM-DC ordinal 首先再这里祝大家新年快乐&hellip;&hellip;. 新的一年来点重量级的东西，那么是什么呢？ 相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！ 如果你听说过MVC，那么或许你听说过MVVM， &hellip;">
+  <meta name="description" content="Swift开源总结 ordinal 引言： 从swift一出来本人就在开始学习相关语法和新技术，随着一直到1.2知道2.0出来之前的变动，最后我放下了一段时间，当然也由于工作的原因，所以可以说也有一段时间没有摸他了。 记得今年6月份的时候，苹果放话说是将要开源swift，着对应iOS开发者， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/30/zhong-liang-ji/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/04/swiftsourecode/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">重量级-MVC-MVVM-DC</h1>
+      <h1 class="entry-title">Swift开源总结</h1>
     
     
       <p class="meta">
@@ -97,181 +97,50 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>首先再这里祝大家新年快乐&hellip;&hellip;.</p>
+<div class="entry-content"><blockquote><p>引言：</p>
 
-<p>新的一年来点重量级的东西，那么是什么呢？</p>
+<p>从swift一出来本人就在开始学习相关语法和新技术，随着一直到1.2知道2.0出来之前的变动，最后我放下了一段时间，当然也由于工作的原因，所以可以说也有一段时间没有摸他了。</p></blockquote>
 
-<p>相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！</p>
+<p>记得今年6月份的时候，苹果放话说是将要开源swift，着对应iOS开发者，乃至所有程序员来说都是一件非常值得庆幸的事情（最终庆幸的还是苹果）。</p>
 
-<p>如果你听说过MVC，那么或许你听说过MVVM，这里可能很多人对MVVM并不了解，或许只是听过，但是没有用过，有些就算用过还是不清楚里面的关系，只是搬砖而已。</p>
+<blockquote><p>发布于2014年的Swift，不仅具备编译语言的性能和效率，还兼有热门脚本语言的简洁和互动功能。</p></blockquote>
 
-<p>对了，今天我们讨论的就是一个类MVVM的技术，也就是在MVVM上面的一个增强版的开发模式！</p>
+<p>在2.0出来之后我也花了一段时间看了一下关于2.0的新特性，这一次的变化确实比较大，可以看出来苹果非常重视swift，将来有望替代Objective-C，但这都只是看到的未来，真正结果是什么苹果说了算（毕竟Cocoa是不会开源的）。</p>
 
-<p>MVVM不正是MVC的增强版吗？</p>
+<p>前几天swift源码被放出来了，苹果也遵守了最开始的承若，还有。。。。。。</p>
 
-<p>好了下面正式开始，新年不能耽误大家太多时间搬砖，，哈哈！</p>
+<p>乘着刚好项目不是很紧就认认真真的研究了一番，虽然本人英语不是很好，也有很多都是略过，但是还是学到了和那多东西，主要的是苹果的思想！</p>
 
-<h2>Model-View-Controller</h2>
+<blockquote><p>值得注意的是，除了Swift，苹果还开源了两个项目：Swfit核心库项目和全新的Swift包管理器项目。</p></blockquote>
 
-<!--more-->
+<p>这里就总结一下。。。。</p>
 
-
-<p>首先我们来看看MVC，这里MVC具体细节就不多说了。</p>
+<h5>Swift源码大致可以分为6块</h5>
 
 <ul>
-<li>Model(M)：模型数据</li>
-<li>View(V)：视图</li>
-<li>Controller&copy;：控制器</li>
+<li>物理节点的管理   ： 主要包括物理节点的添加，删除，ring文件，builder文件生成，重平衡，核心算法与数据结构。</li>
+<li>请求与处理    : 各种服务处理请求的模型，都使用线程池来处理并发请求，一致性的服务也使用了固定的daemon模型。</li>
+<li>文件操作    ：文件的操作，具体的逻辑。</li>
+<li>文件管理    ：account和container概念，类别与用户与文件夹的概念（但是不是这个概念）。</li>
+<li>认证与鉴权    ： 认证的程序依靠keystone中间件，而鉴权独立到swift中，真正的鉴权发生在具体操作之前。</li>
+<li>服务管理    ：同一启动服务，管理服务，manager功能。</li>
 </ul>
 
 
-<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
+<h5>开源带来了什么？</h5>
 
-<h6>有点：</h6>
+<p>从技术角度来思考，Swift开源能带给我们什么？我觉得主要有以下几个方面：</p>
 
 <ul>
-<li>易学习</li>
-<li>易开发</li>
-<li>同哟欧诺个成熟</li>
+<li>除了苹果自家的平台，以后也能在Linux上用Swift开发应用了，这样可以吸收更多Linux平台上的Swift开发者；</li>
+<li>基于Swift的应用会更加丰富，有了开发者对Swift的普遍热情，以后也许会出来各种Swift的Web框架或其他什么有趣、有用的应用；</li>
+<li>Windows平台虽然不在此列，而官方并不反对把Swift移至到其他平台，但需要有人做这件事。嗯，微软应该不会忽略Swift？总之，只要机会之门打开，一切皆有可能；</li>
+<li>苹果的私房菜Cocoa并未开源，开源的是Swift编译器和标准库，要在非苹果官方平台开发iOS应用，暂时还不太可能；</li>
+<li>Swift开源后的成功，特别是在不同平台上的成功，很大程度上取决于生态的建立、有多少框架/第三方库的支持。同时，也直接受Swift最终采用何种开源许可的影响。</li>
 </ul>
 
 
-<h6>缺点：</h6>
-
-<ul>
-<li>Massive View Controller</li>
-</ul>
-
-
-<h2>Model-View-ViewModel</h2>
-
-<p>然后来看看现在比较热得话题（架构）MVVM
-* Model（M）:模型
-* View(V）:视图
-* ViewModel（VM）:模型（逻辑）</p>
-
-<p><img src="/images/zhongliangji002.png" title="Caption" ></p>
-
-<h6>View与ViewModule连接可以通过下面的方式</h6>
-
-<ul>
-<li><p>Binding Data：实现数据的传递</p></li>
-<li><p>Command：实现操作的调用</p></li>
-<li><p>AttachBehavior：实现控件加载过程中的操作</p></li>
-</ul>
-
-
-<h5>View没有大量代码逻辑。</h5>
-
-<ul>
-<li><p>结合WPF、Silverlight绑定机制，MVP演变出了MVVM，充分利用了WPF、Silverlight的优势，将大量代码逻辑、状态转到ViewModel，可以说MVVM是专门为WPF、Silverlight打造的。</p></li>
-<li><p>View绑定到ViewModel，然后执行一些命令在向它请求一个动作。而反过来，ViewModel跟Model通讯，告诉它更新来响应UI。这样便使得为应用构建UI非常的容易。往一个应用程序上贴一个界面越容易，外观设计师就越容易使用Blend来创建一个漂亮的界面。同时，当UI和功能越来越松耦合的时候，功能的可测试性就越来越强。</p></li>
-</ul>
-
-
-<h6>优点：</h6>
-
-<ul>
-<li>减轻ViewController的负担</li>
-<li>提高了测试性</li>
-<li>强大的绑定机制</li>
-</ul>
-
-
-<h6>缺点：</h6>
-
-<ul>
-<li>极高的学习成本和开发成本</li>
-<li>数据绑定是的bug更难调试</li>
-<li>View Model的职责任然很重</li>
-<li>据本人了解，MVVM结合RAC使用能够发挥最大的效率</li>
-</ul>
-
-
-<p>总上我们可以得知：</p>
-
-<ul>
-<li>每个V都有一个对应的VM，V的数据展示盒样式都由其定制</li>
-<li>不引入双想绑定机制或者观察机制，而是通过传统的代理回调或者通知将UI事件传给外界</li>
-<li>VC只负责将VM装配给V，接受UI事件</li>
-</ul>
-
-
-<p>或许细心地能发现下面的好处</p>
-
-<ul>
-<li>View可以完全解耦，只需要确定好ViewModel和回调接口即可</li>
-<li>View Controller层可以尽可能少得和View的具体表现打交道，将这不分职责转给了View Model，减轻了* View Controller的负担</li>
-<li>使用回调的传统回调机制，学习成本低，数据和事件流入和流出易观察而且更易控制，降低维护和回调成本</li>
-</ul>
-
-
-<h2>Model-View-ViewModel-DataController-Model</h2>
-
-<p>好了重量级的东西来了，MVVM-DM（MVVM Without Binding With Data Controller）</p>
-
-<ul>
-<li>Model（M）:模型</li>
-<li>View(V）:视图</li>
-<li>ViewModel（VM）:加工后的数据）</li>
-<li>Data Controller：相关逻辑</li>
-<li>Model：对应Data Controller</li>
-</ul>
-
-
-<p><img src="/images/zhongliangji003.png" title="Caption" ></p>
-
-<p>或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！</p>
-
-<h6>优点：</h6>
-
-<ul>
-<li>避免了传统的MVVM架构VM层有可能变得臃肿的情况，更加清晰的模块职责</li>
-<li>业务逻辑解耦，数据的加工和处理都放在Data Controller中，View Controiller不用关心数据如何获得，如何处理，Data Controller不用关心界面如何展示，如何交互</li>
-<li>Data Controller与界面无关，所以可以有更好的可测试性和可服用性</li>
-</ul>
-
-
-<h6>缺点：</h6>
-
-<p>暂时没有发现（难度：一下比较难接受）</p>
-
-<h4>具体思路是：</h4>
-
-<ul>
-<li>1.每个Viewcontroller会有一个对应的Data Controller（包含页面的所有相关逻辑：View Related data Controller） ，在View的ViewDidLoad方法中初始化View，layoutSubViews中布局</li>
-<li>2.Viewcongtroller向Data Controller发送请求，Data Controller包含只是纯粹的Model相关逻辑（当然你也可以复用更小的Data Controller）如：网络请求，数据持久（请求），数据加工，其他。</li>
-<li>3.Data Controller将请求到得数据加工返回给View Controller</li>
-<li>4.View Controller将Data Controller返回的加工好的数据生成ViewModel（展示View所需要的数据），</li>
-<li>5.View Controller协调控制并将生成的View Model装配到View（每个View都有一个对应的View Model，可以有子View Model）上面显示，这里相当于使用ViewModel数据来渲染界面</li>
-</ul>
-
-
-<p>综上：</p>
-
-<ul>
-<li>将处理数据和获取数据的职责从传统的MVVM的Vm中抽取出来，成为Data Controller</li>
-<li>VC请求数据和将一些数据修改的事件（可以是UI事件触发）传递给Data Controller</li>
-<li>Data Controller收到VC的请求后，向M获取数据和更新数据，并将加工后的数据返回</li>
-<li>Data Controller还负责网络层和持久化层的逻辑</li>
-</ul>
-
-
-<blockquote><p>总结：</p>
-
-<ul>
-<li>层次清晰，职责明确。</li>
-<li>耦合性低，复用性高</li>
-<li>测试性高</li>
-<li>低学习成本，低开发成本</li>
-<li>高实施性，无需整体重构</li>
-</ul>
-</blockquote>
-
-<p>本文借鉴猿题库客户端架构设计，最后附上<a href="blog.devtang.com">唐巧大V</a>得博客，以表敬意</p>
-
-<p>参考：
-<a href="https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&amp;mid=444322139&amp;idx=1&amp;sn=c7bef4d439f46ee539aa76d612023d43&amp;scene=1&amp;srcid=1230NOb8TaHKmwxS9l8H6ctl&amp;key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&amp;ascene=0&amp;uin=MjMzNjU5MzYyMQ%3D%3D&amp;devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&amp;version=11020201&amp;pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C">猿题库 iOS 客户端架构设计</a></p>
+<blockquote><p>总而言之，Swift开源是大大前进了一步。而超越Swift开源本身，当今编程语言的发展趋势也值得我们认真思考。如果从完全理性的角度看待编程语言，那么编程语言无非就是一门编程语言：“选择好适合自己的编程语言就是了”。但问题就在于如何选择合适的编程语言呢？语言的魅力也许就像盲人摸象，你无法做到足够理性，或者这世界就没有银弹，编程语言的比较和纷争，将是一个永恒的话题，热度无限&hellip;&hellip;</p></blockquote>
 </div>
 
 
@@ -329,7 +198,7 @@ $(document).bind('DOMNodeInserted', function(event) {
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/" title="Previous Post: 你还在等什么？">&laquo; 你还在等什么？</a>
+        <a class="basic-alignment left" href="/blog/2016/01/01/zhong-liang-ji/" title="Previous Post: 重量级-MVC-MVVM-DC">&laquo; 重量级-MVC-MVVM-DC</a>
       
       
     </p>
@@ -354,7 +223,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (8)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (9)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -364,7 +233,11 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/30/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+        <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/01/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
       </li>
     
       <li class="post">
@@ -377,10 +250,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
       </li>
     
   </ul>
@@ -420,7 +289,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/12/30/zhong-liang-ji/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/30/zhong-liang-ji/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2016/01/04/swiftsourecode/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/04/swiftsourecode/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
@@ -463,7 +332,7 @@ $(document).bind('DOMNodeInserted', function(event) {
     </div>
   </div>
   <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2015 - iCocos --->
+<!--  Copyright &copy; 2016 - iCocos --->
 <!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
 <!--</p>-->
 

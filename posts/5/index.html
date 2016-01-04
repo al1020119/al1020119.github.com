@@ -9,7 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ ">
+  <meta name="description" content="首先问个问题，你知道函数与方法的区别吗？ 什么？没有区别？那你就out了！ 函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
+直到前几天，一个新来的同事，在看我整理的 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +75,178 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/">函数&amp;方法的奥秘</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先问个问题，你知道函数与方法的区别吗？</p>
+
+<p>什么？没有区别？那你就out了！</p>
+
+<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
+直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
+
+<h5>初始化函数</h5>
+
+<pre><code>- (void)init
+{
+…
+} 
+…
+</code></pre>
+
+<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
+哦？原来函数跟方法是不一样的。</p>
+
+<h2>函数</h2>
+
+<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
+
+<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
+{
+  // Code here
+}
+一个函数声明与调用的例子：
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+int main (int argc, const char *argv[])
+{
+  int x = 2;
+  int y = 3;
+  // 调用函数
+  int result = plus(x, y);
+
+  return 0;
+}
+</code></pre>
+
+<h2>方法</h2>
+
+<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
+
+<pre><code>@implementation Person
+
+// 实现方法
+- (void)setName:(NSString *)name
+{
+  //code here
+}
+
+@end
+
+int main (int argc, const char *argv[])
+{
+  // 使用对象调用方法
+  [[Person new] setName:@"zhenby"];
+
+  return 0;
+}
+</code></pre>
+
+<hr />
+
+<h1>有什么不同</h1>
+
+<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
+
+<h3>Objective-C中的函数</h3>
+
+<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
+知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
+
+<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
+
+<pre><code>// 函数原型
+int plus(int, int);
+/*
+ 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
+ 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
+ */
+long timestamp(void);
+
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+long timestamp()
+{
+  // 返回当前的时间戳
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+</code></pre>
+
+<h3>Objective-C中的方法</h3>
+
+<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
+
+<pre><code>@implementation Test
+
+- (long)timestamp
+{
+  NSLog(@"in timestamp");
+  // 返回当前时间戳   
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+
+@end
+
+// 调用 timestamp 方法
+Test *test = [Test new];
+[test timestamp];
+[test release];
+
+//----------------------------------------------------------
+
+/*
+ 上面 [test timestamp] 这句代码就相当于以下的函数调用，
+ 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
+ */
+#import &lt;objc/message.h&gt;
+
+objc_msgSend(test, @selector(timestamp));
+</code></pre>
+
+<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -614,7 +787,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#109;&#x61;&#x6a;&#x69;&#97;&#x30;&#51;&#64;&#x6d;&#x65;&#x69;&#116;&#117;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;">&#x6d;&#97;&#106;&#x69;&#97;&#x30;&#x33;&#x40;&#x6d;&#x65;&#105;&#116;&#x75;&#x61;&#x6e;&#46;&#99;&#111;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#x6c;&#116;&#111;&#58;&#109;&#x61;&#x6a;&#x69;&#97;&#x30;&#x33;&#x40;&#109;&#101;&#105;&#x74;&#x75;&#x61;&#110;&#46;&#x63;&#111;&#x6d;">&#109;&#97;&#106;&#105;&#97;&#48;&#51;&#64;&#109;&#x65;&#105;&#116;&#x75;&#x61;&#110;&#46;&#99;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -645,65 +818,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一个控件从外在特征来说，主要是封装这几点：</p>
-
-<ul>
-<li>交互方式</li>
-<li>显示样式</li>
-<li>数据使用</li>
-</ul>
-
-
-<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
-
-<ul>
-<li>灵活性</li>
-<li>低耦合</li>
-<li>易拓展</li>
-<li>易维护</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -730,7 +844,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (8)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (9)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -740,7 +854,11 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/30/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+        <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/01/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
       </li>
     
       <li class="post">
@@ -753,10 +871,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
       </li>
     
   </ul>
@@ -818,7 +932,7 @@ $(document).bind('DOMNodeInserted', function(event) {
     </div>
   </div>
   <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2015 - iCocos --->
+<!--  Copyright &copy; 2016 - iCocos --->
 <!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
 <!--</p>-->
 

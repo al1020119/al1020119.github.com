@@ -9,9 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="引言：
-在文字开始之前先介绍两个软件： JSONExport JSON Accelerator 关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。 如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。
-如果你并不是很熟练， &hellip;">
+  <meta name="description" content="　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +74,50 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/05/11/xcode-menu/">Xcode Menu</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
+
+<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/05/11/xcode-menu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/05/11/xcode-menu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -535,178 +577,6 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/">函数&amp;方法的奥秘</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>首先问个问题，你知道函数与方法的区别吗？</p>
-
-<p>什么？没有区别？那你就out了！</p>
-
-<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
-直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
-
-<h5>初始化函数</h5>
-
-<pre><code>- (void)init
-{
-…
-} 
-…
-</code></pre>
-
-<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
-哦？原来函数跟方法是不一样的。</p>
-
-<h2>函数</h2>
-
-<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
-
-<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
-{
-  // Code here
-}
-一个函数声明与调用的例子：
-
-// 实现函数
-int plus(int x, int y)
-{
-  return x * y;
-}
-
-int main (int argc, const char *argv[])
-{
-  int x = 2;
-  int y = 3;
-  // 调用函数
-  int result = plus(x, y);
-
-  return 0;
-}
-</code></pre>
-
-<h2>方法</h2>
-
-<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
-
-<pre><code>@implementation Person
-
-// 实现方法
-- (void)setName:(NSString *)name
-{
-  //code here
-}
-
-@end
-
-int main (int argc, const char *argv[])
-{
-  // 使用对象调用方法
-  [[Person new] setName:@"zhenby"];
-
-  return 0;
-}
-</code></pre>
-
-<hr />
-
-<h1>有什么不同</h1>
-
-<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
-
-<h3>Objective-C中的函数</h3>
-
-<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
-知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
-
-<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
-
-<pre><code>// 函数原型
-int plus(int, int);
-/*
- 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
- 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
- */
-long timestamp(void);
-
-
-// 实现函数
-int plus(int x, int y)
-{
-  return x * y;
-}
-
-long timestamp()
-{
-  // 返回当前的时间戳
-    return (long)[[NSDate date] timeIntervalSince1970];
-}
-</code></pre>
-
-<h3>Objective-C中的方法</h3>
-
-<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
-
-<pre><code>@implementation Test
-
-- (long)timestamp
-{
-  NSLog(@"in timestamp");
-  // 返回当前时间戳   
-    return (long)[[NSDate date] timeIntervalSince1970];
-}
-
-@end
-
-// 调用 timestamp 方法
-Test *test = [Test new];
-[test timestamp];
-[test release];
-
-//----------------------------------------------------------
-
-/*
- 上面 [test timestamp] 这句代码就相当于以下的函数调用，
- 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
- */
-#import &lt;objc/message.h&gt;
-
-objc_msgSend(test, @selector(timestamp));
-</code></pre>
-
-<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -733,7 +603,7 @@ objc_msgSend(test, @selector(timestamp));
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (8)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (9)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -743,7 +613,11 @@ objc_msgSend(test, @selector(timestamp));
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/12/30/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+        <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/01/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
       </li>
     
       <li class="post">
@@ -756,10 +630,6 @@ objc_msgSend(test, @selector(timestamp));
     
       <li class="post">
         <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a>
       </li>
     
   </ul>
@@ -821,7 +691,7 @@ objc_msgSend(test, @selector(timestamp));
     </div>
   </div>
   <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2015 - iCocos --->
+<!--  Copyright &copy; 2016 - iCocos --->
 <!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
 <!--</p>-->
 
