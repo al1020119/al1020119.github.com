@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="首先问个问题，你知道函数与方法的区别吗？ 什么？没有区别？那你就out了！ 函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
-直到前几天，一个新来的同事，在看我整理的 &hellip;">
+  <meta name="description" content="一. 概要 在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,6 +74,56 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/02/15/xiang-ce-shen-jiu/">相册深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一. 概要</h3>
+
+<p>在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS 应用发展步伐以及代码设计原则但确实强大的框架，考虑到 iOS7 仍占有不少的渗透率，因此 AssetsLibrary 也是本文重点介绍的部分。而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架，一个可以让应用更好地与设备照片库对接的框架，文末也会介绍一下这个框架。</p>
+
+<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
+
+<h3>二. AssetsLibrary 组成介绍</h3>
+
+<p>AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/02/15/xiang-ce-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2015/02/15/xiang-ce-shen-jiu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -758,66 +807,6 @@ objc_msgSend(test, @selector(timestamp));
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/11/14/fang-fa-huan-cun/">方法缓存</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#x6d;&#x61;&#x6a;&#x69;&#97;&#x30;&#51;&#x40;&#109;&#101;&#x69;&#116;&#117;&#x61;&#110;&#x2e;&#99;&#x6f;&#x6d;">&#109;&#97;&#x6a;&#105;&#97;&#48;&#x33;&#x40;&#109;&#101;&#x69;&#116;&#x75;&#x61;&#x6e;&#46;&#x63;&#x6f;&#x6d;</a> ）。</p>
-
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
-
-<ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/11/14/fang-fa-huan-cun/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/11/14/fang-fa-huan-cun/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -844,7 +833,7 @@ objc_msgSend(test, @selector(timestamp));
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (9)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (10)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -852,6 +841,10 @@ objc_msgSend(test, @selector(timestamp));
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/07/code-review/">Code ReView</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
@@ -867,10 +860,6 @@ objc_msgSend(test, @selector(timestamp));
     
       <li class="post">
         <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a>
       </li>
     
   </ul>

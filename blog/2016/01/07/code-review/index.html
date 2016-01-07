@@ -5,11 +5,14 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>iOS9-CoreSpotlight - iOS梦工厂</title>
+  <title>Code ReView - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iOS9-CoreSpotlight ordinal iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。 在第一篇文章中， &hellip;">
+  <meta name="description" content="Code ReView ordinal 提高代码质量的方法： 1，codereview Why we do Code Review(为什么进行) 1、提高质量
+2、及早发现潜在缺陷与BUG，降低事故成本。
+3、促进团队内部知识共享，提高团队整体水平
+4、评审过程对于评审人员来说， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/07/code-review/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +80,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">iOS9-CoreSpotlight</h1>
+      <h1 class="entry-title">Code ReView</h1>
     
     
       <p class="meta">
@@ -97,157 +100,108 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
+<div class="entry-content"><p>提高代码质量的方法：</p>
 
-<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
+<p>1，codereview</p>
 
-<ul>
-<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
-<li><p>Web Markup，Web内容可被搜索。</p></li>
-<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
-译文如下：</p></li>
-</ul>
+<p> Why we do Code Review(为什么进行)</p>
 
-
-<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
-
-<h3>三大API</h3>
-
-<!--more-->
-
-
-<h5>NSUserActivity</h5>
-
-<ul>
-<li><p>NSUserActivity是iOS 8专为Handoff推出的API，iOS 9之后得到了提升。现在用户只需提供元数据（metadata）就能搜索不同的activity（活动）了。</p></li>
-<li><p>换言之，Spotlight可以将activity编入索引，而NSUserActivity就好比网页浏览器的历史堆栈（history stack），使用户能在Spotlight上搜到最近的活动。</p></li>
-</ul>
-
-
-<h5>Web Markup</h5>
-
-<ul>
-<li><p>Web Markup在网页上显示App的内容并编入Spotlight索引，如此一来即便没有安装某个App，苹果的索引器也能在网页上搜索特别的标记（markup），在Safari或Spotlight上显示搜索结果。</p></li>
-<li><p>显示未安装App的搜索结果是一大亮点，有望为开发者带来更多潜在用户。公布在搜索API上的App深链接则储存在苹果的cloud index中。更多详情，请参阅苹果的“Web Markup使用指南（Use Web Markup to Make App Content Searchable）”。</p></li>
-</ul>
-
-
-<h5>CoreSpotlight</h5>
-
-<ul>
-<li>NSUserActivity帮助储存用户历史，而全新的Core Spotlight则能将App中的任何内容编入索引，实质是在用户设备上提供基础的Core Spotlight索引渠道，满足用户另外一个需求。</li>
-</ul>
-
-
-<hr />
-
-<p>至于前面两个这里就不过多介绍，这里只介绍iOS9相关新特性，所以就来说我们应该怎么去学习并使用CoreSpotlight。</p>
-
-<blockquote><p>对于CoreSpotlight可以类比NSUserDefault，都是全局的存储空间。不同的是CoreSpotlight是系统的存储空间，每个App都能访问（可能这个访问有限制，目前还没有时间研究），但是NSUserDefault是每个App私有的。另外对于存储的内容CoreSpotlight存储的是item，即CSSearchableItem，而每个CSSearchableItem又有许多属性，这些属性是通过CSSearchableItemAttributeSet进行设置。具体都有神马属性，大家自己去看头文件吧。</p></blockquote>
-
-<p> 下面写一下简单得步骤：</p>
-
-<ul>
-<li><p>1 引入CoreSpotlight.framework</p></li>
-<li><p>2 创建CSSearchableItemAttributeSet、CSSearchableItem</p></li>
-<li><p>3 调用CSSearchableIndex.defaultSearchableIndex()的相关的方法对item进行操作。</p></li>
-</ul>
-
-
-<blockquote><p>由于本人水平有限，只找到了添加、删除itme的操作，并没有找到更新itme的方法，如果谁清楚了，麻烦告知一下。</p></blockquote>
-
-<p> 下面贴出本人测试的一个简单例子的代码：
-    import UIKit</p>
-
-<pre><code>@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    var window: UIWindow?
-
-    // 从搜索结果点击的时候将会调用这个方法
-    func application(application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: ([AnyObject]?) -&gt; Void) -&gt; Bool {
-        // 这里能够获取到点击搜索结果的identifier 但是不清楚是不是应该这样做
-        let identifier = userActivity.userInfo?["kCSSearchableItemActivityIdentifier"]
-        print("continueUserActivity \(identifier!)")
-        return true
-    }
-
-
-}
+<pre><code>1、提高质量
+2、及早发现潜在缺陷与BUG，降低事故成本。
+3、促进团队内部知识共享，提高团队整体水平
+4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
 </code></pre>
 
-<hr />
+<p> Options of Code Review(代码评审的选择)</p>
 
-<pre><code>import UIKit
-import CoreSpotlight
-
-class ViewController: UIViewController {
-    let identifier = "com.mxy.test.identifier"
-    var index = 1 // 用于标识添加的itme
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        CSSearchableIndex.defaultSearchableIndex().deleteAllSearchableItemsWithCompletionHandler { (error) -&gt; Void in
-
-        }
-    }
-
-
-    @IBAction func insertItem() {
-        let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
-        attributeSet.title = "孟祥月 测试 mxy \(index)"
-        attributeSet.contentDescription = "this 这里写点什么好呢 mxy \(index)"
-        // 设置搜索结果的缩略图 不知道 为何就是不生效 我给应用程序添加了icon后，搜索结果那里显示的是icon
-        attributeSet.thumbnailURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("aa", ofType: "png")!)
-        attributeSet.thumbnailData = UIImagePNGRepresentation(UIImage(named: "aa")!)
-        let item = CSSearchableItem(uniqueIdentifier: "\(identifier) \(index)", domainIdentifier: "mxy", attributeSet: attributeSet)
-        let tmpItmes: [CSSearchableItem] = [item]
-        CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
-
-        }
-        index++
-    }
-
-    // 貌似是没有更新操作 所以只好根据identifier先删除，修改后再添加进去。
-    @IBAction func updateItem() {
-        if index &gt; 0 {
-            let tmpIdentifier = "\(identifier) \(index - 1)"
-            CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers([tmpIdentifier], completionHandler: { (error) -&gt; Void in
-
-            })
-
-            let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
-            attributeSet.title = "孟祥月 测试 mxy \(index - 1)"
-            attributeSet.contentDescription = "this 这里写点更新后 mxy \(index - 1)"
-            let item = CSSearchableItem(uniqueIdentifier: tmpIdentifier, domainIdentifier: "mxy", attributeSet: attributeSet)
-            let tmpItmes: [CSSearchableItem] = [item]
-            CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
-
-            }
-
-        }
-
-    }
-
-    @IBAction func deleteItem() {
-        let identifiers = ["\(identifier) \(index)"]
-        index--
-        if index &lt;= 0 {
-            return
-        }
-        CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers(identifiers) { (error) -&gt; Void in
-
-        }
-    }
-
-}
+<pre><code>1、最近一次迭代开发的代码
+2、系统关键模块
+3、业务较复杂的模块
+4、缺陷率较高的模块
 </code></pre>
 
-<p>在storyboard中只是添加了三个按钮，关联对应的操作。下面是演示，点击更新的时候会更新最后一个item的内容：</p>
+<p>如何做出从零开始code review呢, 我的建议是:</p>
 
-<p><img src="/images/Spotlight001.gif" title="Caption" ></p>
+<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
+安排一次编码规范的技术分享
+前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
+对于积极的同学表示鼓励, 支持现场重构代码
+每天不光可以review代码, 也可以安排整场的技术分享
+</code></pre>
 
-<p>例子代码的下载地址：<a href="http://download.csdn.net/detail/mengxiangyue/8827141">http://download.csdn.net/detail/mengxiangyue/8827141</a></p>
+<p>2，单元测试</p>
+
+<p>　本文对比两个iOS开发中常见的单元测试框架：OCUnit，被官方集成进XCode 4.x版本中；GHUnit，被推荐最多的测试框架，带GUI界面。初窥两款测试框架非常相似，而上手使用就会发现其中的区别。细节上的区别使两款框架在不同角度各有优劣。</p>
+
+<ul>
+<li><p>3种时候会去想写测试：</p>
+
+<ul>
+<li>代码完成以后</li>
+<li>开始写代码之前</li>
+<li>修复了一个bug以后</li>
+</ul>
+
+
+<blockquote><p>第一种是完成了代码，恩我要测试一下我写的这些方法可靠不可靠。那这时候可以写测试。</p>
+
+<p>第二种一个著名的方法论TDD。主要思想就是在写代码之前，就全部设计好借口。函数名字什么的。然后在写能通过测试的函数。</p>
+
+<p>第三种就是发现了bug，我修复了这个bug。为了确保修复是成功的。那就写个测试吧。</p></blockquote></li>
+</ul>
+
+
+<h5>OCUnit</h5>
+
+<p>　　OCUnit是XCode 4.x集成的单元测试框架，OCUnit中的测试分为两类，一类称为Logic Tests，另一类称为Application Tests。Logic Tests更倾向于所谓的白盒测试，用于测试工程中较细节的逻辑；Application Tests更倾向于黑盒测试，或接口测试，用于测试直接与用户交互的接口。</p>
+
+<ul>
+<li><p>OCUnit的测试用例最常用的方法有三个</p>
+
+<ol>
+<li><ul>
+<li>(void)setUp：每个test方法执行前调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)tearDown：每个test方法执行后调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)testXXX：命名为XXX的测试方法</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>GHUnit</h5>
+
+<p>　　GHUnit是一款Objective-C的测试框架，除了支持iOS工程还支持OSX的工程，但OSX不在本文的讨论范围。GHUnit不同于OCUnit，它提供了GUI界面来操作测试用例，而且也不区分Logic Tests和Application Tests。</p>
+
+<ul>
+<li>添加单元测试
+
+<ul>
+<li><p>与集成进XCode的OCUnit相比，GHUnit的添加过程略显复杂。首先在上下载GHUnit的框架包，当前的For iOS的最新版本是0.5.6，解压后是一个GHUnitIOS.framework的文件夹。</p></li>
+<li><p>打开已经存在的工程，添加一个EmptyApplication Target，并在新Target中添加刚刚下载的GHUnitIOS.framework</p></li>
+<li><p>在Build Phases中添加非官方框架并不会把框架文件拷贝到工程目录，而是只做一个链接，所以建议在添加之前先把框架拷贝到工程目录下。</p></li>
+<li><p>接下来用相同的方法添加框架依赖的其他库：“QuartzCore.framework”。</p></li>
+<li><p>在Build Settings中搜索“linker flags”，设置Other Linker Flags - Debug - 添加一个支持全架构和全版本SDK的标示“-ObjC -all_load”</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>3，看AF 等开源程序</p>
+
+<p>架构设计</p>
+
+<p>测试用例</p>
+
+<p>XCTAssert
+XCTAssertNotNil</p>
 </div>
 
 
@@ -276,7 +230,7 @@ class ViewController: UIViewController {
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/newfeatures/'>newfeatures</a>
+    <a class='category' href='/blog/categories/summary/'>summary</a>
   
 </span>
 
@@ -305,10 +259,8 @@ class ViewController: UIViewController {
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/" title="Previous Post: iOS9-WKWebView+SFSafariViewController">&laquo; iOS9-WKWebView+SFSafariViewController</a>
+        <a class="basic-alignment left" href="/blog/2016/01/04/swiftsourecode/" title="Previous Post: Swift开源总结">&laquo; Swift开源总结</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/12/28/git-plus-souretreeshi-zhan/" title="Next Post: Git+SoureTree实战">Git+SoureTree实战 &raquo;</a>
       
     </p>
   </footer>
@@ -398,7 +350,7 @@ class ViewController: UIViewController {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2016/01/07/code-review/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/07/code-review/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

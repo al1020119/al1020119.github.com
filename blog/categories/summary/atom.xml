@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Summary | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/summary/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-01-04T11:34:23+08:00</updated>
+  <updated>2016-01-07T16:41:58+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,116 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Code ReView]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/07/code-review/"/>
+    <updated>2016-01-07T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/07/code-review</id>
+    <content type="html"><![CDATA[<p>提高代码质量的方法：</p>
+
+<p>1，codereview</p>
+
+<p> Why we do Code Review(为什么进行)</p>
+
+<pre><code>1、提高质量
+2、及早发现潜在缺陷与BUG，降低事故成本。
+3、促进团队内部知识共享，提高团队整体水平
+4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
+</code></pre>
+
+<p> Options of Code Review(代码评审的选择)</p>
+
+<pre><code>1、最近一次迭代开发的代码
+2、系统关键模块
+3、业务较复杂的模块
+4、缺陷率较高的模块
+</code></pre>
+
+<p>如何做出从零开始code review呢, 我的建议是:</p>
+
+<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
+安排一次编码规范的技术分享
+前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
+对于积极的同学表示鼓励, 支持现场重构代码
+每天不光可以review代码, 也可以安排整场的技术分享
+</code></pre>
+
+<p>2，单元测试</p>
+
+<p>　本文对比两个iOS开发中常见的单元测试框架：OCUnit，被官方集成进XCode 4.x版本中；GHUnit，被推荐最多的测试框架，带GUI界面。初窥两款测试框架非常相似，而上手使用就会发现其中的区别。细节上的区别使两款框架在不同角度各有优劣。</p>
+
+<ul>
+<li><p>3种时候会去想写测试：</p>
+
+<ul>
+<li>代码完成以后</li>
+<li>开始写代码之前</li>
+<li>修复了一个bug以后</li>
+</ul>
+
+
+<blockquote><p>第一种是完成了代码，恩我要测试一下我写的这些方法可靠不可靠。那这时候可以写测试。</p>
+
+<p>第二种一个著名的方法论TDD。主要思想就是在写代码之前，就全部设计好借口。函数名字什么的。然后在写能通过测试的函数。</p>
+
+<p>第三种就是发现了bug，我修复了这个bug。为了确保修复是成功的。那就写个测试吧。</p></blockquote></li>
+</ul>
+
+
+<h5>OCUnit</h5>
+
+<p>　　OCUnit是XCode 4.x集成的单元测试框架，OCUnit中的测试分为两类，一类称为Logic Tests，另一类称为Application Tests。Logic Tests更倾向于所谓的白盒测试，用于测试工程中较细节的逻辑；Application Tests更倾向于黑盒测试，或接口测试，用于测试直接与用户交互的接口。</p>
+
+<ul>
+<li><p>OCUnit的测试用例最常用的方法有三个</p>
+
+<ol>
+<li><ul>
+<li>(void)setUp：每个test方法执行前调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)tearDown：每个test方法执行后调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)testXXX：命名为XXX的测试方法</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>GHUnit</h5>
+
+<p>　　GHUnit是一款Objective-C的测试框架，除了支持iOS工程还支持OSX的工程，但OSX不在本文的讨论范围。GHUnit不同于OCUnit，它提供了GUI界面来操作测试用例，而且也不区分Logic Tests和Application Tests。</p>
+
+<ul>
+<li>添加单元测试
+
+<ul>
+<li><p>与集成进XCode的OCUnit相比，GHUnit的添加过程略显复杂。首先在上下载GHUnit的框架包，当前的For iOS的最新版本是0.5.6，解压后是一个GHUnitIOS.framework的文件夹。</p></li>
+<li><p>打开已经存在的工程，添加一个EmptyApplication Target，并在新Target中添加刚刚下载的GHUnitIOS.framework</p></li>
+<li><p>在Build Phases中添加非官方框架并不会把框架文件拷贝到工程目录，而是只做一个链接，所以建议在添加之前先把框架拷贝到工程目录下。</p></li>
+<li><p>接下来用相同的方法添加框架依赖的其他库：“QuartzCore.framework”。</p></li>
+<li><p>在Build Settings中搜索“linker flags”，设置Other Linker Flags - Debug - 添加一个支持全架构和全版本SDK的标示“-ObjC -all_load”</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>3，看AF 等开源程序</p>
+
+<p>架构设计</p>
+
+<p>测试用例</p>
+
+<p>XCTAssert
+XCTAssertNotNil</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Swift开源总结]]></title>
@@ -1709,101 +1819,6 @@ Avro解析性能高并且序列化之后的数据非常简洁，比较适合于�
 </code></pre>
 
 <!--more-->
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[站在AFN上看ASI]]></title>
-    <link href="http://al1020119.github.io/blog/2015/01/05/zhan-zai-afnshang-kan-asi/"/>
-    <updated>2015-01-05T14:53:45+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/01/05/zhan-zai-afnshang-kan-asi</id>
-    <content type="html"><![CDATA[<h6>一、底层实现</h6>
-
-<ul>
-<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
-<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
-<li><p>3> ASI的运行性能 高于 AFN</p></li>
-</ul>
-
-
-<!--more-->
-
-
-<h6>二、对服务器返回的数据处理</h6>
-
-<ul>
-<li><p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string</p></li>
-<li><p>2> AFN提供了多种对服务器数据处理的方式</p>
-
-<ul>
-<li><p>JSON处理</p></li>
-<li><p>XML处理</p></li>
-<li><p>其他处理</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h6>三、监听请求的过程</h6>
-
-<ul>
-<li><p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
-
-<ul>
-<li><p>success : 请求成功后调用</p></li>
-<li><p>failure : 请求失败后调用</p></li>
-</ul>
-</li>
-<li><p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程</p></li>
-</ul>
-
-
-<p>（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
-
-<pre><code>* 成为代理，遵守协议，实现协议中的代理方法
-
-* 成为代理，不遵守协议，自定义代理方法
-
-* 设置block
-</code></pre>
-
-<h6>四、在文件下载和文件上传的使用难易度</h6>
-
-<ul>
-<li><p>1> AFN</p>
-
-<ul>
-<li><p>不容易监听下载进度和上传进度</p></li>
-<li><p>不容易实现断点续传</p></li>
-<li><p>一般只用来下载不大的文件</p></li>
-</ul>
-</li>
-<li><p>2> ASI</p>
-
-<ul>
-<li><p>非常容易实现下载和上传</p></li>
-<li><p>非常容易监听下载进度和上传进度</p></li>
-<li><p>非常容易实现断点续传</p></li>
-<li><p>下载或大或小的文件都行</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h6>五、ASI提供了更多的实用功能</h6>
-
-<ul>
-<li><p>1> 控制圈圈要不要在请求过程中转</p></li>
-<li><p>2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象</p></li>
-<li><p>3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
-
-<ul>
-<li><p>暂停\恢复\取消所有的请求</p></li>
-<li><p>监听整个队列中所有请求的下载进度和上传进度</p></li>
-</ul>
-</li>
-</ul>
 
 ]]></content>
   </entry>

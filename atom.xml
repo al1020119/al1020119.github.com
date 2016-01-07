@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-01-04T11:34:23+08:00</updated>
+  <updated>2016-01-07T16:41:58+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,116 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Code ReView]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/07/code-review/"/>
+    <updated>2016-01-07T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/07/code-review</id>
+    <content type="html"><![CDATA[<p>提高代码质量的方法：</p>
+
+<p>1，codereview</p>
+
+<p> Why we do Code Review(为什么进行)</p>
+
+<pre><code>1、提高质量
+2、及早发现潜在缺陷与BUG，降低事故成本。
+3、促进团队内部知识共享，提高团队整体水平
+4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
+</code></pre>
+
+<p> Options of Code Review(代码评审的选择)</p>
+
+<pre><code>1、最近一次迭代开发的代码
+2、系统关键模块
+3、业务较复杂的模块
+4、缺陷率较高的模块
+</code></pre>
+
+<p>如何做出从零开始code review呢, 我的建议是:</p>
+
+<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
+安排一次编码规范的技术分享
+前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
+对于积极的同学表示鼓励, 支持现场重构代码
+每天不光可以review代码, 也可以安排整场的技术分享
+</code></pre>
+
+<p>2，单元测试</p>
+
+<p>　本文对比两个iOS开发中常见的单元测试框架：OCUnit，被官方集成进XCode 4.x版本中；GHUnit，被推荐最多的测试框架，带GUI界面。初窥两款测试框架非常相似，而上手使用就会发现其中的区别。细节上的区别使两款框架在不同角度各有优劣。</p>
+
+<ul>
+<li><p>3种时候会去想写测试：</p>
+
+<ul>
+<li>代码完成以后</li>
+<li>开始写代码之前</li>
+<li>修复了一个bug以后</li>
+</ul>
+
+
+<blockquote><p>第一种是完成了代码，恩我要测试一下我写的这些方法可靠不可靠。那这时候可以写测试。</p>
+
+<p>第二种一个著名的方法论TDD。主要思想就是在写代码之前，就全部设计好借口。函数名字什么的。然后在写能通过测试的函数。</p>
+
+<p>第三种就是发现了bug，我修复了这个bug。为了确保修复是成功的。那就写个测试吧。</p></blockquote></li>
+</ul>
+
+
+<h5>OCUnit</h5>
+
+<p>　　OCUnit是XCode 4.x集成的单元测试框架，OCUnit中的测试分为两类，一类称为Logic Tests，另一类称为Application Tests。Logic Tests更倾向于所谓的白盒测试，用于测试工程中较细节的逻辑；Application Tests更倾向于黑盒测试，或接口测试，用于测试直接与用户交互的接口。</p>
+
+<ul>
+<li><p>OCUnit的测试用例最常用的方法有三个</p>
+
+<ol>
+<li><ul>
+<li>(void)setUp：每个test方法执行前调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)tearDown：每个test方法执行后调用</li>
+</ul>
+</li>
+<li><ul>
+<li>(void)testXXX：命名为XXX的测试方法</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>GHUnit</h5>
+
+<p>　　GHUnit是一款Objective-C的测试框架，除了支持iOS工程还支持OSX的工程，但OSX不在本文的讨论范围。GHUnit不同于OCUnit，它提供了GUI界面来操作测试用例，而且也不区分Logic Tests和Application Tests。</p>
+
+<ul>
+<li>添加单元测试
+
+<ul>
+<li><p>与集成进XCode的OCUnit相比，GHUnit的添加过程略显复杂。首先在上下载GHUnit的框架包，当前的For iOS的最新版本是0.5.6，解压后是一个GHUnitIOS.framework的文件夹。</p></li>
+<li><p>打开已经存在的工程，添加一个EmptyApplication Target，并在新Target中添加刚刚下载的GHUnitIOS.framework</p></li>
+<li><p>在Build Phases中添加非官方框架并不会把框架文件拷贝到工程目录，而是只做一个链接，所以建议在添加之前先把框架拷贝到工程目录下。</p></li>
+<li><p>接下来用相同的方法添加框架依赖的其他库：“QuartzCore.framework”。</p></li>
+<li><p>在Build Settings中搜索“linker flags”，设置Other Linker Flags - Debug - 添加一个支持全架构和全版本SDK的标示“-ObjC -all_load”</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>3，看AF 等开源程序</p>
+
+<p>架构设计</p>
+
+<p>测试用例</p>
+
+<p>XCTAssert
+XCTAssertNotNil</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Swift开源总结]]></title>
@@ -1356,7 +1466,7 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 
 <p><img src="http://al1020119.github.io/images/git005.png" title="Caption" ></p>
 
-<p>ssh -T <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#103;&#x69;&#x74;&#x40;&#103;&#x69;&#x74;&#104;&#x75;&#98;&#46;&#x63;&#x6f;&#x6d;">&#x67;&#x69;&#x74;&#x40;&#103;&#x69;&#x74;&#x68;&#117;&#98;&#46;&#x63;&#x6f;&#x6d;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+<p>ssh -T <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x67;&#105;&#x74;&#x40;&#103;&#x69;&#x74;&#x68;&#117;&#98;&#46;&#x63;&#111;&#109;">&#103;&#x69;&#116;&#64;&#x67;&#105;&#116;&#x68;&#x75;&#x62;&#46;&#x63;&#x6f;&#109;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
 
 <p><img src="http://al1020119.github.io/images/git006.png" title="Caption" ></p>
 
@@ -5298,94 +5408,6 @@ Avro解析性能高并且序列化之后的数据非常简洁，比较适合于�
 8、如果需要提供一个完整的RPC解决方案，Thrift是一个好的选择。
 9、如果序列化之后需要支持不同的传输层协议，或者需要跨防火墙访问的高性能场景，Protobuf可以优先考虑。
 </code></pre>
-
-<!--more-->
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[够逼格的注释习惯]]></title>
-    <link href="http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"/>
-    <updated>2015-09-13T02:59:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de</id>
-    <content type="html"><![CDATA[<p>够逼格的注释习惯总结</p>
-
-<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
-
-<h6>也许你使用过#warning 警告提示</h6>
-
-<h6>也许你也使用过#pragma marks。</h6>
-
-<p>但是你见过或者使用过下面这个吗？</p>
-
-<pre><code>Comments containing:
-MARK:
-TODO:
-FIXME:
-!!!:
-???:
-</code></pre>
-
-<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
-
-<!--more-->
-
-
-<p> 首先说一下三个最常用的：</p>
-
-<ul>
-<li>1、TODO</li>
-</ul>
-
-
-<p> 等待实现的功能</p>
-
-<ul>
-<li>2、FIXME</li>
-</ul>
-
-
-<p> 需要修正的功能</p>
-
-<ul>
-<li>3、！！！</li>
-</ul>
-
-
-<p> 需要改进的功能</p>
-
-<p>具体使用</p>
-
-<pre><code>// FIXME:sss
-/* FIXME: sss */
-
-
-// MARK:sss
-/* MARK:sss */
-
-
-// !!!:sss
-/* !!!: sss */
-
-
-// ???:sss
-/* ???: sss */
-
-
-// TODO:sss
-/* TODO: sss */
-
-
-// Comments containing: sss
-/* Comments containing: sss */
-</code></pre>
-
-<p>注意空格.</p>
-
-<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
-
-<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
 
 <!--more-->
 
