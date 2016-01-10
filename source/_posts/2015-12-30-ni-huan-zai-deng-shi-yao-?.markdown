@@ -865,16 +865,65 @@ ios的webview有2个类，一个叫UIWebView，另一个是WKWebView。两者的
 
 
 
-首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解
+* 首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解
 
-简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。
+* 简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。
 
-代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。
+* 代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。
 
-只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
+* 只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
 发布会了。但是通知就不一样，他只关心发出通知，而不关心多少接收到感兴趣要处理。
 
-因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。
+* 因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。
+
+
+
+##三十九：hitTest:withEvent:&pointInside:withEvent:
+
+
+* 当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中
+
+
+* UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)
+
+* 主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件
+
+(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)
+
+######hitTest:withEvent:方法大致处理流程是这样的：
+
+
+* 首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：
+
+	▶ 若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil
+
+	▶ 若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：
+
+	▷ 若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束
+
+	▷ 若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)
+
+* 最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理
+
+我大致画了个iOS触摸事件分发的原理图：
+
+
+{% img /images/nihaizaidengsm099.png Caption %}  
+
+* hitTest:withEvent:方法会忽略以下视图：
+
+	1> 隐藏(hidden=YES)的视图
+
+	2> 禁止用户操作(userInteractionEnabled=NO)的视图
+
+	3> alpha<0.01的视图
+
+	4> 如果一个子视图的区域超过父视图的区域(如果父视图的clipsToBounds属性为NO,超过父视图区域的子视图内容也会显示)，那么正常情况下在父 视图区域外的触摸操作不会被识别,因为父视图的pointInside:withEvent:方法会返回NO,这样就不会继续向下遍历子视图了。当然，也 可以重写pointInside:withEvent:方法来处理这种
+
+> 综上所述可得：如果父视图的userInteractionEnabled=NO，触摸事件不会继续往下传递给子视图，所以子视图永远无法处理触摸事件。而UIImageView在默认情况下的userInteractionEnabled就是NO。
+
+
+
 
 
 <br>
