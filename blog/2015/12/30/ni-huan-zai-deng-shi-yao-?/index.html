@@ -1107,20 +1107,61 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 <h2>三十八：通知&amp;协议</h2>
 
 <ul>
-<li>答案：协议有控制链(has-a)的关系，通知没有。</li>
+<li><p>答案：协议有控制链(has-a)的关系，通知没有。</p></li>
+<li><p>首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解</p></li>
+<li><p>简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。</p></li>
+<li><p>代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。</p></li>
+<li><p>只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
+发布会了。但是通知就不一样，他只关心发出通知，而不关心多少接收到感兴趣要处理。</p></li>
+<li><p>因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。</p></li>
 </ul>
 
 
-<p>首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解</p>
+<h2>三十九：hitTest:withEvent:&amp;pointInside:withEvent:</h2>
 
-<p>简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。</p>
+<ul>
+<li><p>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</p></li>
+<li><p>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</p></li>
+<li><p>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</p></li>
+</ul>
 
-<p>代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。</p>
 
-<p>只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
-发布会了。但是通知就不一样，他只关心发出通知，而不关心多少接收到感兴趣要处理。</p>
+<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
 
-<p>因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。</p>
+<h6>hitTest:withEvent:方法大致处理流程是这样的：</h6>
+
+<ul>
+<li><p>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：</p>
+
+<p>  ▶ 若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</p>
+
+<p>  ▶ 若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</p>
+
+<p>  ▷ 若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</p>
+
+<p>  ▷ 若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</p></li>
+<li><p>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理</p></li>
+</ul>
+
+
+<p>我大致画了个iOS触摸事件分发的原理图：</p>
+
+<p><img src="/images/nihaizaidengsm099.png" title="Caption" ></p>
+
+<ul>
+<li><p>hitTest:withEvent:方法会忽略以下视图：</p>
+
+<p>  1> 隐藏(hidden=YES)的视图</p>
+
+<p>  2> 禁止用户操作(userInteractionEnabled=NO)的视图</p>
+
+<p>  3> alpha&lt;0.01的视图</p>
+
+<p>  4> 如果一个子视图的区域超过父视图的区域(如果父视图的clipsToBounds属性为NO,超过父视图区域的子视图内容也会显示)，那么正常情况下在父 视图区域外的触摸操作不会被识别,因为父视图的pointInside:withEvent:方法会返回NO,这样就不会继续向下遍历子视图了。当然，也 可以重写pointInside:withEvent:方法来处理这种</p></li>
+</ul>
+
+
+<blockquote><p>综上所述可得：如果父视图的userInteractionEnabled=NO，触摸事件不会继续往下传递给子视图，所以子视图永远无法处理触摸事件。而UIImageView在默认情况下的userInteractionEnabled就是NO。</p></blockquote>
 
 <p><br>
 <br>
@@ -1225,7 +1266,7 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (10)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (11)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -1233,6 +1274,10 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/11/ffmpeg-kxmovies/">Ffmpeg+kxmovie</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/07/code-review/">Code ReView</a>
@@ -1248,10 +1293,6 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
     
       <li class="post">
         <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a>
       </li>
     
   </ul>
