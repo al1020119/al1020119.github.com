@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Summary | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/summary/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-01-15T13:46:05+08:00</updated>
+  <updated>2016-01-15T13:49:05+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -38,22 +38,24 @@
  写入磁盘
  需要时从磁盘读取并展示</p>
 
-<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
- if ([self hasImageDataForURL:imageUrl] {
-     NSData <em>data = [self imageDataForUrl:imageUrl];
-     UIImage </em>image = [UIImage imageWithData:imageData];
+<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示</p>
+
+<pre><code> if ([self hasImageDataForURL:imageUrl] {
+     NSData *data = [self imageDataForUrl:imageUrl];
+     UIImage *image = [UIImage imageWithData:imageData];
      dispatch_async(dispatch_get_main_queue(), ^{
          imageView.image = image;
      });
  } else {
-     [self downloadImageFromURL:imageUrl withCompletion:^(NSData <em>imageData, …) {
+     [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
          [self storeImageData:imageData …];
-         UIImage </em>image = [UIImage imageWithData:imageData];
+         UIImage *image = [UIImage imageWithData:imageData];
          dispatch_async(dispatch_get_main_queue(), ^{
              imageView.image = image;
          });
      }];
- }</p></li>
+ }
+</code></pre></li>
 </ol>
 
 
@@ -901,37 +903,32 @@ CGImageRelease(cgimg);
 
 <p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。</p>
 
-<p>使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。</p>
+<p>使用UIImagePickerController和用户交互，我们需要实现2个协议</p>
 
-<p>View Code</p>
+<pre><code>&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate&gt;。
 
-<p>代码如下 复制代码</p>
+#pragma mark 从用户相册获取活动图片
 
-<h1>pragma mark 从用户相册获取活动图片</h1>
+- (void)pickImageFromAlbum
 
-<ul>
-<li>(void)pickImageFromAlbum</li>
-</ul>
+{
 
+    imagePicker = [[UIImagePickerController alloc] init];
 
-<p>{</p>
+    imagePicker.delegate =self;
 
-<pre><code>imagePicker = [[UIImagePickerController alloc] init];
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
 
-imagePicker.delegate =self;
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
 
-imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-
-imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-
-imagePicker.allowsEditing =YES;
+    imagePicker.allowsEditing =YES;
 
 
 
-[self presentModalViewController:imagePicker animated:YES];
+    [self presentModalViewController:imagePicker animated:YES];
+
+}
 </code></pre>
-
-<p>}</p>
 
 <p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。</p>
 

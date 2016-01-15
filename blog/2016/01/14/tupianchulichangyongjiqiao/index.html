@@ -120,37 +120,32 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。</p>
 
-<p>使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。</p>
+<p>使用UIImagePickerController和用户交互，我们需要实现2个协议</p>
 
-<p>View Code</p>
+<pre><code>&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate&gt;。
 
-<p>代码如下 复制代码</p>
+#pragma mark 从用户相册获取活动图片
 
-<h1>pragma mark 从用户相册获取活动图片</h1>
+- (void)pickImageFromAlbum
 
-<ul>
-<li>(void)pickImageFromAlbum</li>
-</ul>
+{
 
+    imagePicker = [[UIImagePickerController alloc] init];
 
-<p>{</p>
+    imagePicker.delegate =self;
 
-<pre><code>imagePicker = [[UIImagePickerController alloc] init];
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
 
-imagePicker.delegate =self;
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
 
-imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-
-imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-
-imagePicker.allowsEditing =YES;
+    imagePicker.allowsEditing =YES;
 
 
 
-[self presentModalViewController:imagePicker animated:YES];
+    [self presentModalViewController:imagePicker animated:YES];
+
+}
 </code></pre>
-
-<p>}</p>
 
 <p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。</p>
 

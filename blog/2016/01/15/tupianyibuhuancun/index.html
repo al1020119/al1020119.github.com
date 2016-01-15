@@ -117,22 +117,24 @@ $(document).bind('DOMNodeInserted', function(event) {
  写入磁盘
  需要时从磁盘读取并展示</p>
 
-<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
- if ([self hasImageDataForURL:imageUrl] {
-     NSData <em>data = [self imageDataForUrl:imageUrl];
-     UIImage </em>image = [UIImage imageWithData:imageData];
+<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示</p>
+
+<pre><code> if ([self hasImageDataForURL:imageUrl] {
+     NSData *data = [self imageDataForUrl:imageUrl];
+     UIImage *image = [UIImage imageWithData:imageData];
      dispatch_async(dispatch_get_main_queue(), ^{
          imageView.image = image;
      });
  } else {
-     [self downloadImageFromURL:imageUrl withCompletion:^(NSData <em>imageData, …) {
+     [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
          [self storeImageData:imageData …];
-         UIImage </em>image = [UIImage imageWithData:imageData];
+         UIImage *image = [UIImage imageWithData:imageData];
          dispatch_async(dispatch_get_main_queue(), ^{
              imageView.image = image;
          });
      }];
- }</p></li>
+ }
+</code></pre></li>
 </ol>
 
 
