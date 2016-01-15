@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>图片处理-补充 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="图片处理-补充 ordinal 前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！ 图片资源使用png还是jpg格式
+如何选择图片加载方式imageNamed&amp; &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/14/tupianchulibuchong/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">图片处理-补充</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！</p>
+
+<ol>
+<li><p>图片资源使用png还是jpg格式</p></li>
+<li><p>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</p></li>
+</ol>
+
+
+<h3>图片资源使用png还是jpg格式</h3>
+
+<p>对于iOS本地应用程序来说最简单的答案就是始终使用PNG，除非你有非常非常好的理由不用它。</p>
+
+<p>当iOS应用构建的时候，Xcode会通过一种方式优化.png文件而不会优化其它文件格式。它优化得相当的好</p>
+
+<p>他们之间有以下区别：</p>
+
+<ol>
+<li><p>同个分辨率的图片，保存为png要比jpg大；</p></li>
+<li><p>png图片有alpha通道，因此它支持图片透明，这点在ios开发中尤为重要；而jpg不支持透明</p></li>
+<li><p>xcode会对png格式进行特殊的优化处理，而对于其他图片不做处理</p></li>
+</ol>
+
+
+<p>总结一下有以下几点：</p>
+
+<pre><code>1.如果你的图片都是xcode本地就有，那就用png；如果图片是从网络上下载的，考虑到流量以及速度，可以考虑用jpg因为它具有较高的压缩率
+
+2.本地的png优化由xcode帮你做；其他格式的需要在程序运行时做优化，更耗性能
+
+3.如果你的图片要求有较高的色彩饱和度、图像质量，那就用jpg
+</code></pre>
+
+<h3>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</h3>
+
+<p>IOS内存稀缺，而图片资源通常又是最占内存的部分之一，因此，选择如何加载图片，对于优化应用内存占用量，能起到立竿见影的效果。通常加载图片的方式有两种：</p>
+
+<h5>一、imageNamed</h5>
+
+<p>为什么有两种方法完成同样的事情呢？imageNamed的优点在于可以缓存已经加载的图片。苹果的文档中有如下说法：</p>
+
+<pre><code>This method looks in the system caches for an image object with the specified name and returns that object if it exists. If a matching image object is not already in the cache, this method locates and loads the image data from disk or asset catelog, and then returns the resulting object. You can not assume that this method is thread safe.
+</code></pre>
+
+<p>这种方法会首先在系统缓存中根据指定的名字寻找图片，如果找到了就返回。如果没有在缓存中找到图片，该方法会从指定的文件中加载图片数据，并将其缓存起来，然后再把结果返回，下次再使用该名称图片的时候就省去了从硬盘中加载图片的过程。对于相同名称的图片，系统只会把它Cache到内存一次。</p>
+
+<p>另外，在iOS4及以上系统中，如果是PNG格式的图片，使用该方法加载时不用再指定文件的.png后缀，即只写文件名称即可。</p>
+
+<blockquote><p>最后，在iOS4及以上系统中，如果屏幕的scale是2（即高分辨率屏幕），该方法会自动使用加上@2x后缀的图片。比如在高分辨率屏幕设备上要加载名称为button的图片，该方法会自动使用名称为button@2x的图片；如果找不到该名称图片再去加载名称为button的图片。这就为开发者省去了适配高、低分辨率屏幕的时间。</p></blockquote>
+
+<h5>二、imageWithContentsOfFile或者imageWithData</h5>
+
+<p>而imageWithContentsOfFile方法只是简单的加载图片，并不会将图片缓存起来，图像会被系统以数据方式加载到程序。当你不需要重用该图像，或者你需要将图像以数据方式存储到数据库，又或者你要通过网络下载一个很大的图像时，可以使用这种方式。</p>
+
+<h5>三、如何选择</h5>
+
+<p>两种加载图片方法的使用方式：</p>
+
+<pre><code>UIImage *img = [UIImage imageNamed:@"myImage"]; // caching    
+// or    
+UIImage *img = [UIImage imageWithContentsOfFile:@"myImage"]; // no caching  
+</code></pre>
+
+<p>那么该如何选择呢？</p>
+
+<ul>
+<li><p>如果加载一张很大的图片，并且只使用一次，那么就不需要缓存这个图片。这种情况imageWithContentsOfFile比较合适——系统不会浪费内存来缓存图片。</p></li>
+<li><p>然而，如果在程序中经常需要重用的图片，比如用于UITableView的图片，那么最好是选择imageNamed方法。这种方法可以节省出每次都从磁盘加载图片的时间。</p></li>
+</ul>
+
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/14/tupianchuligaojijiqiao/" title="Previous Post: 图片处理高级篇">&laquo; 图片处理高级篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/01/15/tupianchuliyouhuajiqiao/" title="Next Post: 图片优化总结">图片优化总结 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片异步缓存优化</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理高级篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/01/14/tupianchulibuchong/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/14/tupianchulibuchong/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

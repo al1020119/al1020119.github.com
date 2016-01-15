@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Summary | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/summary/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-01-11T00:11:49+08:00</updated>
+  <updated>2016-01-15T13:40:29+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -14,1792 +14,1541 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Ffmpeg+kxmovie]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/11/ffmpeg-kxmovies/"/>
-    <updated>2016-01-11T16:21:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/11/ffmpeg-kxmovies</id>
-    <content type="html"><![CDATA[<p>首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：<a href="http://objccn.io/issue-24-4/">API预览</a></p>
-
-<p>好了开始吧！</p>
-
-<p>首先介绍两个概念：</p>
-
-<ul>
-<li><p>FFmpeg：是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。采用LGPL或GPL许可证。它提供了录制、转换以及流化音视频的完整解决方案。它包含了非常先进的音频/视频编解码库libavcodec，为了保证高可移植性和编解码质量，libavcodec里很多codec都是从头开发的。</p></li>
-<li><p>kxmovie：在FFmpeg基础上封装的一套OC的框架，非常好用么热切很强大！</p></li>
-</ul>
-
-
-<h2>一：编译针对iOS平台的ffmpeg库（kxmovie）</h2>
-
-<p>近期有一个项目，需要播放各种格式的音频、视频以及网络摄像头实时监控的视频流数据，经过多种折腾之后，最后选择了kxmovie，kxmovie项目已经整合了ffmpeg和简单的播放器，具体可以参考kxmovie主页：<a href="https://">https://</a></p>
-
-<ul>
-<li>github.com/kolyvan/kxmovie
-
-<ul>
-<li>编译kxmovie很简单，已经支持iOS 6.1 和 armv7s，一次成功，编译过程没出现什么问题：</li>
-</ul>
-</li>
-<li>git clone git://github.com/kolyvan/kxmovie.git</li>
-<li>cd kxmovie</li>
-<li>git submodule update &ndash;init</li>
-<li>rake</li>
-</ul>
-
-
-<!--more-->
-
-
-<h2>二：编译ffmpeg</h2>
-
-<p>要使用FFMPEG，首先需要理解FFMPEG的代码结构。根据志哥的提示，ffmpeg的代码是包括两部分的，一部分是library，一部分是tool。api都是在library里面，如果直接调api来操作视频的话，就需要写c或者c++了。另一部分是tool，使用的是命令行，则不需要自己去编码来实现视频操作的流程。实际上tool只不过把命令行转换为api的操作而已。</p>
-
-<ol>
-<li>到<a href="https://github.com/gabriel/ffmpeg-iphone-build%E4%B8%8B%E8%BD%BDffmpeg-iphone-build">https://github.com/gabriel/ffmpeg-iphone-build%E4%B8%8B%E8%BD%BDffmpeg-iphone-build</a></li>
-<li>先将gas-preprocessor.pl拷贝到/usr/sbin/目录中。</li>
-<li>到这里下载最新的ffmpeg:<a href="http://ffmpeg.org/download.html%E6%88%96%E8%80%85%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AE%89%E8%A3%85%EF%BC%9Agit">http://ffmpeg.org/download.html%E6%88%96%E8%80%85%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%AE%89%E8%A3%85%EF%BC%9Agit</a> clone git://source.ffmpeg.org/ffmpeg.git ffmpeg</li>
+    <title type="html"><![CDATA[图片异步缓存优化]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/15/tupianyibuhuancun/"/>
+    <updated>2016-01-15T02:35:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/15/tupianyibuhuancun</id>
+    <content type="html"><![CDATA[<ol>
+<li>引言</li>
 </ol>
 
 
-<p>下载一个事例工程：git clone git://github.com/lajos/iFrameExtractor.git
-然后到命令行下到ffmpeg的目录下，执行：
-自己修改一下对应自己的SDK就可以了，我这儿是4.2</p>
+<p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
 
-<h5>模拟器</h5>
+<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。
+2. 常用的解决途径</p>
 
-<pre><code>./configure –disable-doc –disable-ffmpeg –disable-ffplay –disable-ffserver –disable-avfilter –disable-debug –disable-encoders
-–enable-cross-compile –disable-decoders –disable-armv5te –enable-decoder=h264 –enable-pic
-–cc=/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/gcc –as='gas-preprocessor/gas-preprocessor.pl
-/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/gcc'
-–extra-ldflags=-L/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.2.sdk/usr/lib/system
-–sysroot=/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.2.sdk –target-os=darwin –arch=i386
-–cpu=i386 –extra-cflags='-arch i386' –extra-ldflags='-arch i386' –disable-asm
+<pre><code>异步下载图像
+处理图像（拉伸，去红眼，去边框）以便展示
+写入磁盘
+需要时从磁盘读取并展示
+
+// 假设我们有一个 NSURL *imageUrl and UIImageView *imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
+if ([self hasImageDataForURL:imageUrl] {
+    NSData *data = [self imageDataForUrl:imageUrl];
+    UIImage *image = [UIImage imageWithData:imageData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        imageView.image = image;
+    });
+} else {
+    [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
+        [self storeImageData:imageData …];
+        UIImage *image = [UIImage imageWithData:imageData];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            imageView.image = image;
+        });
+    }];
+}
 </code></pre>
 
-<hr />
+<p>FPS 简介</p>
 
-<h5>真机</h5>
-
-<pre><code>./configure –
-cc=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc 
-–as='gas-preprocessor.pl 
-/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc' –
-sysroot=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPh
-oneOS4.2.sdk –extra-ldflags=-
-L/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.
-2.sdk/usr/lib/system –target-os=darwin –arch=arm –cpu=cortex-
-a8 –extra-cflags='-arch armv7' –extra-ldflags='-arch armv7' –
-enable-pic –enable-cross-compile –enable-ffmpeg –disable-
-ffplay –disable-ffserver –disable-asm –disable-encoders –
-disable-decoders –enable-decoder=h264 –enable-decoder=mjpeg –
-enable-decoder=mpeg4 –disable-doc
+<pre><code>UI 渲染理想情况 FPS=60
+60FPS =&gt; 16.7ms 每帧，这就意味着如果任何主线程操作大于 16.7ms，动态 FPS 将会下降，因为 CPU 忙于处理其他事情，而不是渲染 UI。
 </code></pre>
 
-<blockquote><p>注意了，上面有–disable-asm \，这是没办法的，禁用了汇编，这样应该是会影响效率的，如果不禁用就编译不通过。谁有更好的办法不禁用，麻烦分享一下。</p></blockquote>
+<ol>
+<li><p>常用解决途径的缺点</p>
 
-<p>一般是ok的，如果提示permission deny，那就chmod 777 configure（这个情况是我同事在windows上改了这个文件）</p>
+<p> 从磁盘加载图像或文件时间消耗昂贵（磁盘读取比内存读取慢大概 10-1000 倍，如果是 SSD 硬盘，则可能与内存读取速度更接近（大概慢 10 倍）。参考这里的比较：Introduction to RAM Disks
+ 如果使用 SSD，将获得接近内存的速度（大概比内存访问速度慢十倍），但目前还没有手机和平板集成 SSD 模块。
+ 创建 UIImage 实例将会在内存区生成一个图片的压缩版。但是压缩后的图像太小且无法渲染，如果我们从磁盘加载图像，图像甚至都没有加载到内存。解压图片同样也很消耗资源。
+ 设置 imageView 的 image 属性，这种情况下将会创建一个 CATransaction 并加入主循环中。在下一次循环迭代中，CATransaction 会对任何设置为 layer contents 的图像进行拷贝。</p></li>
+</ol>
 
-<p>然后就make,完了再make install一下，如果出现权限不够使用 sudo make install，然后输入密码；
-如果给代码做了修改，就先make clean,然后make一下
-使用Finder，前往文件夹，输入/usr/local
-然后把lib和include放到你的工程中，你可以在你的工程根目录下创建一个叫ffmpeg的文件夹，把lib和linclude里面的东西放进去</p>
+
+<p>拷贝图像包含以下过程：</p>
+
+<pre><code>给文件 io 和解压缩分配缓冲区
+读取磁盘数据到内存
+解压图像数据（生成原位图） - 高 CPU 消耗
+CoreAnimation 使用解压数据并渲染
+</code></pre>
+
+<p>字节位没有正确对齐的图像将被 CoreAnimation 拷贝，以修复字节位对齐并使之能被渲染。这一点在 Apple 文档里没有说明，但是使用 Instruments 表明 CA::Render::copy_image 会执行此操作，即使 Core Aniation 即使没有拷贝图像。</p>
+
+<p>从 iOS7 开始，第三方应用不能使用JPEG硬件解码器。这意味着我们只能使用慢很多的软解码器。这一点在 FastImageCache 团队的 GitHub 主页以及 Nick Lockwood 的推文上都有指出。
+4. 一个强大的 iOS 图像缓存需包含以下部分：</p>
+
+<pre><code>异步下载图像，尽可能减少使用主线程队列
+使用后台队列解压图像。这是个复杂的过程，请阅读 Avoiding Image Decompression Sickness
+在内存和磁盘上缓存图像。在磁盘上缓存图像很重要，因为 App 可能因为内存不足而被强行关闭或者需要清理内存。这种情况下，重新从磁盘加载图像比下载会快很多。
+备注：如果使用 NSCache 作为内存缓存，当有内存警告时，NSCache 会清空缓存内容。NSCache 相关细节请查看 nshipster 文章：NSCache
+保存解压过的图片到硬盘以及内存中，以避免再次解压。
+使用 GCD 和 blocks，这将使得代码更加高效和简单，如今 GCD 和 blocks 是异步操作时必需的。
+最好使用 UIImageView 的分类以便集成
+最好在下载后以及存入到缓存前能够处理图像
+</code></pre>
+
+<p>iOS图像优化</p>
+
+<p>更多的成像相关以及 SDK 框架（CoreGraphics, ImageIO, CoreAnimation, CoreImage)工作原理，CPU vs GPU 等，请阅读 @rsebbe 的文章：Advanced Imaging on iOS
+Core Data 是一个好的选择吗？</p>
+
+<p>这有一篇文章&ndash;CoreData 对比 File System，实现图像缓存的基准测试，结果 File System 的表现更好。</p>
+
+<p>看一看上面罗列的观点，自己实现图像缓存不仅复杂，耗时而且痛苦。这也是为什么我倾向于使用开源的图像缓存解决方案，你们大部分已经听说过 SDWebImage 或 new FastImageCache。</p>
+
+<p>为了让你知道哪个开源库最适合你，我做了测试并且分析它们如何满足上述要求。
+5. 基准测试</p>
+
+<p>测试库：</p>
+
+<pre><code>SDWebImage - version 3.5.4
+FastImageCache - version 1.2
+AFNetworking - version 2.2.1
+TMCache - version 1.2.0
+Haneke - version 0.0.5
+</code></pre>
+
+<p>注：AFNetworking 加入对比是由于其自iOS7后在磁盘缓存方面出色的表现（基于 NSURLCache 实现）
+测试场景</p>
+
+<p>对于每个库，我都会使用全新的测试app，然后启动app，等所有图像加载完后，慢慢滑动。然后以不同力度来回滑动（从慢到快）。接着关掉app强制应用从磁盘缓存中加载图像，最后重复以上测试场景。
+关于测试 App 工程</p>
+
+<pre><code>相关 demo 可以在 GitHub 找到并获取，名字是 ImageCachingBenchmark，同时还有本次实验的图表、结果数据表以及更多。
+
+请注意，请注意 GitHub 上的工程和图像缓存库都需要做一些调整，以便能让我们看到每一张缓存的图片都能够被加载出来。由于我不想检查 Cocoapods 源码文件（不是个好习惯），所以需要对 Cocoapods clean 后重新编译工程代码，目前 GitHub 上的版本与我做测试的版本有些差别。
+
+如果你们想重新跑一下测试，你需要编写相同 completionBlock 用于图像加载，所有库得要跟默认的 SDWebImage 一样返回 SDImageCacheType。
+</code></pre>
+
+<p>最快与最慢的设备对比结果</p>
+
+<p>在 GitHub 工程上能看到完整的基准测试结果，由于这些表格很大，我只使用运行最快的设备 iPhone 5s 和运行最慢的 iPhone 4 来测试。</p>
+
+<p>汇总：</p>
+
+<p>表格名词解释：</p>
+
+<pre><code>异步下载：库支持异步下载
+后台解压：通过后台队列或线程执行图像解压
+存储解压：存储解压后的图像版本
+内存/磁盘缓存：支持内存/磁盘缓存
+UIImageView 分类：库中含 UIImageView 类别
+从内存/磁盘：从缓存（内存/磁盘）中读取的平均时间
+</code></pre>
+
+<ol>
+<li><p>结论</p>
+
+<p> 从头开始编写 iOS 图像缓存组件很困难</p>
+
+<p> SDWebImage 和 AFNetworking 是稳定的工程。由于有很多贡献者，这样保证代码能够及时得到维护，FastImageCache 在维护方面更新很快。</p>
+
+<p> 基于以上所有数据，我认为 SDWebImage 在目前是一个很好的解决方案。即使有些工程使用 AFNetworking 或 FastImageCache 更好，但是这些都依赖于项目需求。
+tu</p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片优化总结]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/15/tupianchuliyouhuajiqiao/"/>
+    <updated>2016-01-15T01:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/15/tupianchuliyouhuajiqiao</id>
+    <content type="html"><![CDATA[<p>主要针对问题</p>
 
 <ul>
-<li>工程中制定head file path :&ldquo;$(SRCROOT)/ffmpeg/include&rdquo;   这样编译就可以通过了</li>
-<li>工程中制定library file path :&ldquo;$(SRCROOT)/ffmpeg/lib&rdquo;   这样编译就可以通过了</li>
-<li>然后，打开iFrameExtractor这个工程，在ffmpeg这个文件夹建一个lib文件夹，把之前拷贝（就这个cp -rf lib* /src）出来的.a文件全部丢进去。为什么要这么做呢？应为iFrameExtractor里面的ffmpeg版本比较老，所以我没有编译它，没有编译，就不会产生一个lib文件夹。</li>
+<li><p>图片文件比较大</p></li>
+<li><p>图片文件比较多</p></li>
 </ul>
 
 
-<p>如果编译出现问题，大部分的情况应该是类库没有导入完全，在target里面改入一下类库就可以了。
-然后在link binary with library中导入这些.a文件和libbz.2.1.0.dylib。
-然后插上真机，运行工程，ok，成功啦！！！看下面的图片。</p>
-
-<h2>三：使用kxmovie</h2>
-
-<p>先来看张我这里demo的图片：</p>
-
-<p><img src="/images/kxmovie001.png" title="Caption" ></p>
-
-<p>所以下面你需要：</p>
+<h4>网络图片显示大体步骤:</h4>
 
 <ul>
-<li>1.把kxmovie/output文件夹下文件添加到工程</li>
-<li>2.添加框架：MediaPlayer, CoreAudio, AudioToolbox, Accelerate, QuartzCore, OpenGLES and libz.dylib，libiconv.dylib</li>
-<li>3.添加lib库：libkxmovie.a, libavcodec.a, libavformat.a, libavutil.a, libswscale.a, libswresample.a</li>
-<li>4.播放视频:</li>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
 </ul>
 
 
-<p>列如：</p>
+<h4>一些优化思路：</h4>
 
-<pre><code>ViewController *vc;
-    vc = [KxMovieViewController movieViewControllerWithContentPath:path parameters:nil];
-    [self presentViewController:vc animated:YES completion:nil]; 
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<p>在IOS下通过URL读一张网络图片并不像其他编程语言那样可以直接把图片路径放到图片路径的位置就ok，而是需要我们通过一段类似流的方式去加载网络图片，接着才能把图片放入图片路径显示。比如：</p>
+
+<pre><code>-(UIImage *) getImageFromURL:(NSString *)fileURL {
+  //NSLog(@"执行图片下载函数");    
+  UIImage * result;    
+  NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:fileURL]];
+  result = [UIImage imageWithData:data];    
+  return result;
+}
 </code></pre>
 
+<p>加载网络图片可以说是网络应用中必备的。如果单纯的去下载图片，而不去做多线程、缓存等技术去优化，加载图片时的效果与用户体验就会很差。</p>
+
+<p>优化思路为：</p>
+
+<p>（1）本地缓存</p>
+
+<p>（2）异步加载</p>
+
+<p>（3）加载完毕前使用占位图片</p>
+
+<h3>优化方法</h3>
+
+<h5>方法1：用NSOperation开异步线程下载图片，当下载完成时替换占位图片</h5>
+
+<pre><code>#import "XNViewController.h"
+#import "XNApp.h"
+
+@interface XNViewController ()
+@property (nonatomic, strong) NSArray *appList;
+@property (nonatomic, strong) NSOperationQueue *queue;
+@end
+
+@implementation XNViewController
+#pragma mark - 懒加载
+
+- (NSOperationQueue *)queue {
+    if (!_queue) _queue = [[NSOperationQueue alloc] init];
+    return _queue;
+}
+
+//可抽取出来写到模型中
+- (NSArray *)appList {
+    if (!_appList) {
+        //1.加载plist到数组中
+        NSURL *url = [[NSBundle mainBundle] URLForResource:@"apps.plist" withExtension:nil];
+        NSArray *array = [NSArray arrayWithContentsOfURL:url];
+        //2.遍历数组
+        NSMutableArray *arrayM = [NSMutableArray array];
+        [array enumerateObjectsUsingBlock: ^(id obj, NSUInteger idx, BOOL *stop) {
+            [arrayM addObject:[XNApp appWithDict:obj]];  //数组中存放的是字典, 转换为app对象后再添加到数组
+        }];
+        _appList = [arrayM copy];
+    }
+    return _appList;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.tableView.rowHeight = 88;
+
+//    NSLog(@"appList-%@",_appList);
+}
+
+#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+    //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+    if (!app.image) {
+        cell.imageView.image = [UIImage imageNamed:@"user_default"];
+
+        [self downloadImg:indexPath];
+    }
+    else {
+        //直接用模型中的内存缓存
+        cell.imageView.image = app.image;
+    }
+//  NSLog(@"cell--%p", cell);
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+- (void)downloadImg:(NSIndexPath *)indexPath {
+    XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+
+    [self.queue addOperationWithBlock: ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+        UIImage *image = [UIImage imageWithData:imgData];
+
+        //在主线程中更新UI
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+            //通过修改模型, 来修改数据
+            app.image = image;
+            //刷新指定表格行
+            [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+}
+
+@end
+</code></pre>
+
+<p>上述代码只是做了内存缓存，还没有做本地缓存，因为这里这种方法不是重点，也不是首选方法。上面代码每次重新进入应用时，还会从网上重新下载。如果要继续优化上面的代码，需要自己去实现本地缓存。</p>
+
+<h5>方法2：使用第三方框架SDWebImage</h5>
+
+<p>依赖的库很少，功能全面。</p>
+
+<p>自动实现磁盘缓存：缓存图片名字是以MD5进行加密的后的名字进行命名.(因为加密那堆字串是唯一的)</p>
+
+<p>加载网络图片时直接设置占位图片：</p>
+
+<pre><code>[imageView sd_setImageWithURL:imageurl  placeholderImage:[UIImage imageNamed:@”xxxxx”]]。
+</code></pre>
+
+<p>就一个方法就实现了多线程\带缓冲等效果.(可用带参数的方法,具体可看头文件)</p>
+
+<pre><code>#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+//  //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+//  if (!cell.imageView.image) {
+//      cell.imageView.image = [UIImage imageNamed:@"user_default"];
+//
+//      [self downloadImg:indexPath];
+//  }
+//  else {
+//      //直接用模型中的内存缓存
+//      cell.imageView.image = app.image;
+//  }
+
+
+    //使用SDWebImage来完成上面的功能. 针对ImageView.
+    //一句话, 自动实现了异步下载. 图片本地缓存. 网络下载. 自动设置占位符.
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:app.icon] placeholderImage:[UIImage imageNamed:@"user_default"]];
+
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+//- (void)downloadImg:(NSIndexPath *)indexPath {
+//  XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+//
+//  [self.queue addOperationWithBlock: ^{
+//      NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+//      UIImage *image = [UIImage imageWithData:imgData];
+//
+//      //在主线程中更新UI
+//      [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+//          //通过修改模型, 来修改数据
+//          app.image = image;
+//          //刷新指定表格行
+//          [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+//      }];
+//  }];
+//}
+
+@end
+</code></pre>
+
+<p>如果你觉得SDWebImage不好用那么你可以试试FastImageCache这个框架：</p>
+
+<p>FastImageCache是Path团队开发的一个开源库，用于提升图片的加载和渲染速度，让基于图片的列表滑动起来更顺畅，来看看它是怎么做的。</p>
+
+<p>优化点</p>
+
+<p>iOS从磁盘加载一张图片，使用UIImageVIew显示在屏幕上，需要经过以下步骤：</p>
+
 <ul>
-<li>5.具体使用参考demo工程:KxMovieExample</li>
+<li>从磁盘拷贝数据到内核缓冲区</li>
+<li>从内核缓冲区复制数据到用户空间</li>
+<li>生成UIImageView，把图像数据赋值给UIImageView</li>
+<li>如果图像数据为未解码的PNG/JPG，解码为位图数据</li>
+<li>CATransaction捕获到UIImageView layer树的变化</li>
+<li><p>主线程Runloop提交CATransaction，开始进行图像渲染</p>
+
+<ul>
+<li><p>6.1 如果数据没有字节对齐，Core Animation会再拷贝一份数据，进行字节对齐。</p></li>
+<li><p>6.2 GPU处理位图数据，进行渲染。</p></li>
+</ul>
+</li>
 </ul>
 
 
-<p>附上一段作者使用的案例：</p>
+<p>FastImageCache分别优化了2,4,6.1三个步骤：</p>
 
-<pre><code>#pragma mark - Table view delegate
+<ul>
+<li>使用mmap内存映射，省去了上述第2步数据从内核空间拷贝到用户空间的操作。</li>
+<li>缓存解码后的位图数据到磁盘，下次从磁盘读取时省去第4步解码的操作。</li>
+<li>生成字节对齐的数据，防止上述第6.1步CoreAnimation在渲染时再拷贝一份数据。</li>
+</ul>
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+
+<h3>常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip </th>
+<th style="text-align:center;"> SDWebImage   </th>
+<th style="text-align:right;">AFNetworking </th>
+<th>    FastImageCache </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES  </td>
+<td>NO </td>
+</tr>
+<tr>
+<td>子线程解压缩     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES </td>
+<td> YES </td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES    </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>内存级别缓存     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES   YES</td>
+<td></td>
+</tr>
+<tr>
+<td>磁盘级别缓存     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>UIImageView category </td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">   NO </td>
+<td>    NO </td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO     </td>
+<td style="text-align:right;">NO     </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>接口易用性 </td>
+<td style="text-align:center;"> *** </td>
+<td style="text-align:right;">   *** </td>
+<td>   * </td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>总结</h3>
+
+<ul>
+<li><p>使用低分辨率图：仔细想想，其实没有必要第一时间加载全部图片的高清原图，事先存好每张图配套的低分辨率图，用空间换时间。
+先加载所有的图片的低分辨率图, 当用户翻阅到某一张图片时, 即时的加载原始尺寸的高清无码大图. 过程优化为：</p></li>
+<li><p>多线程任务：即使是这样，当照片数量达到一定量时，需要消耗的时间也并非毫秒级，体验无法领人满意,  页面跳转时仍然会出现卡顿现象。
+于是考虑使用多线程来进一步拆分任务， 执行跳转的同时再后台执行加载低分辨率图的步骤.</p></li>
+<li><p>优化快速翻阅体验：通过这样的拆分，可以实现立即跳转，体验满意。但是翻阅浏览时，当用户很快左右滑动时, 出现黑屏的几率很高, 因为加载低分辨率图任务的线程可能还在进行大量IO操作，不能及时跟上。 为了完善它，要把加载低分辨率图的步骤再次分解，精益求精。
+在页面跳转时间允许的范围内，加载用户选定的那张图片的高清原图的同时，尽可能多的加载几张左右临近的图片的低分辨率图。</p></li>
+</ul>
+
+
+<blockquote><p>尽量减少内存占用.  因为原始图片要比低分辨率图大很多, 所以当用户从一张图片翻阅到另一张图片时,  当前图片加载为原始尺寸的高清大图, 而原来那张就被替换为低分辨率图了。 虽然读写次数增多了, 但内存确实省了不少。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片处理-补充]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/14/tupianchulibuchong/"/>
+    <updated>2016-01-14T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/14/tupianchulibuchong</id>
+    <content type="html"><![CDATA[<p>前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！</p>
+
+<ol>
+<li><p>图片资源使用png还是jpg格式</p></li>
+<li><p>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</p></li>
+</ol>
+
+
+<h3>图片资源使用png还是jpg格式</h3>
+
+<p>对于iOS本地应用程序来说最简单的答案就是始终使用PNG，除非你有非常非常好的理由不用它。</p>
+
+<p>当iOS应用构建的时候，Xcode会通过一种方式优化.png文件而不会优化其它文件格式。它优化得相当的好</p>
+
+<p>他们之间有以下区别：</p>
+
+<ol>
+<li><p>同个分辨率的图片，保存为png要比jpg大；</p></li>
+<li><p>png图片有alpha通道，因此它支持图片透明，这点在ios开发中尤为重要；而jpg不支持透明</p></li>
+<li><p>xcode会对png格式进行特殊的优化处理，而对于其他图片不做处理</p></li>
+</ol>
+
+
+<p>总结一下有以下几点：</p>
+
+<pre><code>1.如果你的图片都是xcode本地就有，那就用png；如果图片是从网络上下载的，考虑到流量以及速度，可以考虑用jpg因为它具有较高的压缩率
+
+2.本地的png优化由xcode帮你做；其他格式的需要在程序运行时做优化，更耗性能
+
+3.如果你的图片要求有较高的色彩饱和度、图像质量，那就用jpg
+</code></pre>
+
+<h3>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</h3>
+
+<p>IOS内存稀缺，而图片资源通常又是最占内存的部分之一，因此，选择如何加载图片，对于优化应用内存占用量，能起到立竿见影的效果。通常加载图片的方式有两种：</p>
+
+<h5>一、imageNamed</h5>
+
+<p>为什么有两种方法完成同样的事情呢？imageNamed的优点在于可以缓存已经加载的图片。苹果的文档中有如下说法：</p>
+
+<pre><code>This method looks in the system caches for an image object with the specified name and returns that object if it exists. If a matching image object is not already in the cache, this method locates and loads the image data from disk or asset catelog, and then returns the resulting object. You can not assume that this method is thread safe.
+</code></pre>
+
+<p>这种方法会首先在系统缓存中根据指定的名字寻找图片，如果找到了就返回。如果没有在缓存中找到图片，该方法会从指定的文件中加载图片数据，并将其缓存起来，然后再把结果返回，下次再使用该名称图片的时候就省去了从硬盘中加载图片的过程。对于相同名称的图片，系统只会把它Cache到内存一次。</p>
+
+<p>另外，在iOS4及以上系统中，如果是PNG格式的图片，使用该方法加载时不用再指定文件的.png后缀，即只写文件名称即可。</p>
+
+<blockquote><p>最后，在iOS4及以上系统中，如果屏幕的scale是2（即高分辨率屏幕），该方法会自动使用加上@2x后缀的图片。比如在高分辨率屏幕设备上要加载名称为button的图片，该方法会自动使用名称为button@2x的图片；如果找不到该名称图片再去加载名称为button的图片。这就为开发者省去了适配高、低分辨率屏幕的时间。</p></blockquote>
+
+<h5>二、imageWithContentsOfFile或者imageWithData</h5>
+
+<p>而imageWithContentsOfFile方法只是简单的加载图片，并不会将图片缓存起来，图像会被系统以数据方式加载到程序。当你不需要重用该图像，或者你需要将图像以数据方式存储到数据库，又或者你要通过网络下载一个很大的图像时，可以使用这种方式。</p>
+
+<h5>三、如何选择</h5>
+
+<p>两种加载图片方法的使用方式：</p>
+
+<pre><code>UIImage *img = [UIImage imageNamed:@"myImage"]; // caching    
+// or    
+UIImage *img = [UIImage imageWithContentsOfFile:@"myImage"]; // no caching  
+</code></pre>
+
+<p>那么该如何选择呢？</p>
+
+<ul>
+<li><p>如果加载一张很大的图片，并且只使用一次，那么就不需要缓存这个图片。这种情况imageWithContentsOfFile比较合适——系统不会浪费内存来缓存图片。</p></li>
+<li><p>然而，如果在程序中经常需要重用的图片，比如用于UITableView的图片，那么最好是选择imageNamed方法。这种方法可以节省出每次都从磁盘加载图片的时间。</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片处理高级篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/14/tupianchuligaojijiqiao/"/>
+    <updated>2016-01-14T12:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/14/tupianchuligaojijiqiao</id>
+    <content type="html"><![CDATA[<h3>一：UIImage的加载方式</h3>
+
+<p>在网上看了很多，有关图片处理的文章，有些感觉不错，有些感觉只是说了大概，具体的使用方式没有说出来，这几天正好一个有关图片处理的，这就就和大家说说。
+显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
+     一般加载图片的方式：
+第一种：</p>
+
+<pre><code>NSString * imagePath = [[NSBundle mainBundle] pathForResource:@"pic@.png" ofType:nil inDirectory:nil];  
+UIImage * image = [UIImage imageWithContentsOfFile:imagePath];  
+</code></pre>
+
+<p>第二种：</p>
+
+<pre><code>UIImage * image = [UIImage imageNamed:picName];  
+</code></pre>
+
+<p>这两种是我经常用到的</p>
+
+<ul>
+<li>用imageWithContentOfFile 加载图片的时候，图片不会做缓存，这样在加载大的图片和使用率低的图片的时候就可以用到。我建议大家使用这种，对控制内存很有帮助。</li>
+<li>用imageName的加载的时候，系统会件图像保存在内存中去，下次利用的时候，直接在内存中调用，速度很快，重复利用率高的图片有利于这样做，但是在释放内存的时候比较麻烦，只有程序结束的时候内存才释放，有时候会出现内存警告。。。</li>
+</ul>
+
+
+<h3>二：图片的混合模式</h3>
+
+<p>接下来我们看看图片一下常用的混合模式，我觉得这个最好是先自己玩一玩photoshop，上面有很多混合模式可以自己试验，这里我们用代码进行尝试修改图片的混合模式，这样可以看到不同的图片效果。
+这里我们就必须用到绘图。常用的方法是：</p>
+
+<pre><code>[image drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:blendMode alpha:alpha];  
+</code></pre>
+
+<p>先让大家看看这个代码：</p>
+
+<pre><code>- (UIImage *)drawPiucureFrontImage:(UIImage *)personImage backImage:(UIImage *)hatImage blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha  
+{  
+    CGSize newSize =[personImage size];  
+    UIGraphicsBeginImageContext(newSize);  
+    [personImage drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:kCGBlendModeNormal alpha:1];  
+    [hatImage drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:blendMode alpha:alpha];  
+    UIImage*newImage = UIGraphicsGetImageFromCurrentImageContext();  
+    UIGraphicsEndImageContext();  
+    _imageV.image = newImage;  
+    num++;  
+    return newImage;  
+}  
+</code></pre>
+
+<p>kCGBlendModeNormal<br/>
+这个是混合模式的效果  在ps中是正常，以下是常用的模式</p>
+
+<pre><code>     kCGBlendModeNormal --ok  正常,
+     kCGBlendModeMultiply,    正片叠底
+     kCGBlendModeScreen,      滤色
+     kCGBlendModeOverlay,     叠加
+     kCGBlendModeDarken,      变暗
+     kCGBlendModeLighten,     变亮
+     kCGBlendModeColorDodge,  颜色减淡
+     kCGBlendModeColorBurn,   颜色加深
+     kCGBlendModeSoftLight,   柔光
+     kCGBlendModeHardLight,   强光
+     kCGBlendModeDifference,  差值
+     kCGBlendModeExclusion,   排除
+     kCGBlendModeHue,         色相
+     kCGBlendModeSaturation,  保护度
+     kCGBlendModeColor,       颜色
+     kCGBlendModeLuminosity   明度,
+</code></pre>
+
+<p>这几个可以试试，每一种图片的模式都不一样。其中正片叠底 和叠加应该是我经常用到的混合模式。</p>
+
+<h3>三：图片的滤镜</h3>
+
+<p>上面我们介绍了图片的混合模式，接下来我们来看看图片滤镜，说道滤镜网上有很多的教程，在code4app中也有很多的教程，大家可以去看看看，这里我们使用一个第三方的类  ImageUtil.h，在后面有下载的链接</p>
+
+<p>将这个类导入到自己的工程中 导入头文件：</p>
+
+<pre><code>#import "ImageUtil.h"     
+</code></pre>
+
+<p>接下来直接调用里面的放大就可以了，在这个类中ColorMatrix.h的文件中，我们可以看见有13中特效可以自己使用，而且调用也十分简单</p>
+
+<pre><code>[ImageUtil imageWithImage:_imageV.image withColorMatrix:colormatrix_heibai];  
+</code></pre>
+
+<p>colormatrix_heibai 这个就是他的调用样式，这里是黑白，大家可以替换修改在ColorMatrix.h名字，已达到自己想要的效过，这个方法同时也返回一个UIimage，这样就可以加载到自己想要的UIImageView上了。
+下面是特效</p>
+
+<pre><code>//LOMO  
+const float colormatrix_lomo[] = {  
+    1.7f,  0.1f, 0.1f, 0, -73.1f,  
+    0,  1.7f, 0.1f, 0, -73.1f,  
+    0,  0.1f, 1.6f, 0, -73.1f,  
+    0,  0, 0, 1.0f, 0 };  
+
+//黑白  
+const float colormatrix_heibai[] = {  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0,  0, 0, 1.0f, 0 };  
+//复古  
+const float colormatrix_huajiu[] = {   
+    0.2f,0.5f, 0.1f, 0, 40.8f,  
+    0.2f, 0.5f, 0.1f, 0, 40.8f,   
+    0.2f,0.5f, 0.1f, 0, 40.8f,   
+    0, 0, 0, 1, 0 };  
+
+//哥特  
+const float colormatrix_gete[] = {   
+    1.9f,-0.3f, -0.2f, 0,-87.0f,  
+    -0.2f, 1.7f, -0.1f, 0, -87.0f,   
+    -0.1f,-0.6f, 2.0f, 0, -87.0f,   
+    0, 0, 0, 1.0f, 0 };  
+
+//锐化  
+const float colormatrix_ruise[] = {   
+    4.8f,-1.0f, -0.1f, 0,-388.4f,  
+    -0.5f,4.4f, -0.1f, 0,-388.4f,   
+    -0.5f,-1.0f, 5.2f, 0,-388.4f,  
+    0, 0, 0, 1.0f, 0 };  
+
+
+//淡雅  
+const float colormatrix_danya[] = {   
+    0.6f,0.3f, 0.1f, 0,73.3f,  
+    0.2f,0.7f, 0.1f, 0,73.3f,   
+    0.2f,0.3f, 0.4f, 0,73.3f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//酒红  
+const float colormatrix_jiuhong[] = {   
+    1.2f,0.0f, 0.0f, 0.0f,0.0f,  
+    0.0f,0.9f, 0.0f, 0.0f,0.0f,   
+    0.0f,0.0f, 0.8f, 0.0f,0.0f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//清宁  
+const float colormatrix_qingning[] = {   
+    0.9f, 0, 0, 0, 0,   
+    0, 1.1f,0, 0, 0,   
+    0, 0, 0.9f, 0, 0,   
+    0, 0, 0, 1.0f, 0 };  
+
+//浪漫  
+const float colormatrix_langman[] = {   
+    0.9f, 0, 0, 0, 63.0f,   
+    0, 0.9f,0, 0, 63.0f,   
+    0, 0, 0.9f, 0, 63.0f,   
+    0, 0, 0, 1.0f, 0 };  
+
+//光晕  
+const float colormatrix_guangyun[] = {   
+    0.9f, 0, 0,  0, 64.9f,  
+    0, 0.9f,0,  0, 64.9f,  
+    0, 0, 0.9f,  0, 64.9f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//蓝调  
+const float colormatrix_landiao[] = {  
+    2.1f, -1.4f, 0.6f, 0.0f, -31.0f,   
+    -0.3f, 2.0f, -0.3f, 0.0f, -31.0f,  
+    -1.1f, -0.2f, 2.6f, 0.0f, -31.0f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+
+//梦幻  
+const float colormatrix_menghuan[] = {  
+    0.8f, 0.3f, 0.1f, 0.0f, 46.5f,   
+    0.1f, 0.9f, 0.0f, 0.0f, 46.5f,   
+    0.1f, 0.3f, 0.7f, 0.0f, 46.5f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+
+//夜色  
+const float colormatrix_yese[] = {  
+    1.0f, 0.0f, 0.0f, 0.0f, -66.6f,  
+    0.0f, 1.1f, 0.0f, 0.0f, -66.6f,   
+    0.0f, 0.0f, 1.0f, 0.0f, -66.6f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+</code></pre>
+
+<h3>四：图片的饱和度，亮度，对比度。</h3>
+
+<p>在做图片处理的时候，会遇到调节图片的饱和度的问题，这里就要用到Core Image这个框架，Core Image是一个很强大的框架。它可以让你简单地应用各种滤镜来处理图像，比如修改鲜艳程度, 色泽, 或者曝光。它利用GPU（或者CPU，取决于客户）来非常快速、甚至实时地处理图像数据和视频的帧。多个CoreImage滤镜可以叠加在一起，从而可以一次性地产生多重滤镜效果。这种多重滤镜的优点在于它可以生成一个改进的滤镜，从而一次性的处理图像达到目标效果，而不是对同一个图像顺序地多次应用单个滤镜。每一个滤镜都有属于它自己的参数。这些参数和滤镜信息，比如功能、输入参数等都可以通过程序来查询。用户也可以来查询系统从而得到当前可用的滤镜信息。到目前为止，Mac上只有一部分CoreImage滤镜可以在iOS上使用。但是随着这些可使用滤镜的数目越来越多，API可以用来发现新的滤镜属性。
+下面是这个框架下的几个重要的类</p>
+
+<ul>
+<li>CIContext:所有的图像处理都是在一个CIContext中完成的。</li>
+<li>CIImage 这个类保存图像数据，它可以从UIImage，图像文件或者是像素数据中构造出来。</li>
+<li>CIFilter：滤镜类总保函一个字典结构，对各种滤镜定义了属于他们各自的属性，滤镜有很多种，比如鲜艳程度的滤镜，色彩反转滤镜，剪裁滤镜等等。</li>
+</ul>
+
+
+<p>用下面的我们来试试修改一张图片的饱和度，亮度，对比度。
+首先用到的是CIFilter 我们可以通过字典来看看里面所有的</p>
+
+<pre><code>NSArray *cifilter = [CIFilter filterNamesInCategory:kCICategoryBuiltIn];  
+
+NSLog(@"FilterName:\n%@,,,===%ld", cifilter,cifilter.count);//显示所有过滤器名字  
+
+for (NSString *filterName in cifilter) {  
+
+    CIFilter *fltr = [CIFilter filterWithName:filterName];//用一个过滤器名字生成一个过滤器CIFilter对象  
+
+    NSLog(@"%@:\n%@", filterName, [fltr attributes]);//这个过滤器支持的属性  
+
+}  
+</code></pre>
+
+<p>可以看见多有的属性
+今天我们用到是滤镜名称是CIColorControls</p>
+
+<pre><code>/////////////////////////////////////
+    CIAttributeFilterDisplayName = "Color Controls";
+    CIAttributeFilterName = CIColorControls;
+    inputBrightness =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 0;
+        CIAttributeIdentity = 0;
+        CIAttributeSliderMax = 1;
+        CIAttributeSliderMin = "-1";
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+    inputContrast =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 1;
+        CIAttributeIdentity = 1;
+        CIAttributeSliderMax = 4;
+        CIAttributeSliderMin = 0;
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+    inputImage =     {
+        CIAttributeClass = CIImage;
+        CIAttributeType = CIAttributeTypeImage;
+    };
+    inputSaturation =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 1;
+        CIAttributeIdentity = 1;
+        CIAttributeSliderMax = 2;
+        CIAttributeSliderMin = 0;
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+/////////////////////////////////////
+</code></pre>
+
+<p>上面是这个滤镜的名称和属性
+下面是具体的修改图片的饱和度亮度和对比度的代码</p>
+
+<pre><code>CIImage *beginImage = [CIImage imageWithCGImage:image.CGImage];  
+CIFilter * filter = [CIFilter filterWithName:@"CIColorControls"];  
+[filter setValue:beginImage forKey:kCIInputImageKey];  
+//  饱和度      0---2  
+[filter setValue:[NSNumber numberWithFloat:0.5] forKey:@"inputSaturation"];  
+//  亮度  10   -1---1  
+[filter setValue:[NSNumber numberWithFloat:0.5] forKey:@"inputBrightness"];  
+//  对比度 -11  0---4  
+[filter setValue:[NSNumber numberWithFloat:2] forKey:@"inputContrast"];  
+
+// 得到过滤后的图片  
+CIImage *outputImage = [filter outputImage];  
+// 转换图片, 创建基于GPU的CIContext对象  
+CIContext *context = [CIContext contextWithOptions: nil nil];  
+CGImageRef cgimg = [context createCGImage:outputImage fromRect:[outputImage extent]];  
+UIImage *newImg = [UIImage imageWithCGImage:cgimg];  
+// 显示图片  
+[_imageV setImage:newImg];  
+// 释放C对象  
+CGImageRelease(cgimg);  
+</code></pre>
+
+<p>有兴趣的可以去看看关于CoreImage的源码</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片处理-常用技巧]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/14/tupianchulichangyongjiqiao/"/>
+    <updated>2016-01-14T09:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/14/tupianchulichangyongjiqiao</id>
+    <content type="html"><![CDATA[<p>iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。</p>
+
+<p>这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！</p>
+
+<p>目录</p>
+
+<ul>
+<li>获取图片</li>
+<li>比例缩放</li>
+<li>圆角 化</li>
+<li>添加阴影</li>
+<li>压缩大小</li>
+<li>格式的转换</li>
+</ul>
+
+
+<h2>获取图片</h2>
+
+<p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。</p>
+
+<p>使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。</p>
+
+<p>View Code</p>
+
+<p>代码如下 复制代码</p>
+
+<h1>pragma mark 从用户相册获取活动图片</h1>
+
+<ul>
+<li>(void)pickImageFromAlbum</li>
+</ul>
+
+
+<p>{</p>
+
+<pre><code>imagePicker = [[UIImagePickerController alloc] init];
+
+imagePicker.delegate =self;
+
+imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+
+imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+imagePicker.allowsEditing =YES;
+
+
+
+[self presentModalViewController:imagePicker animated:YES];
+</code></pre>
+
+<p>}</p>
+
+<p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。</p>
+
+<pre><code>#pragma mark 从摄像头获取活动图片
+
+- (void)pickImageFromCamera
+
 {
-    NSString *path;
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
 
-    if (indexPath.section == 0) {
+    imagePicker = [[UIImagePickerController alloc] init];
 
-        if (indexPath.row &gt;= _remoteMovies.count) return;
-        path = _remoteMovies[indexPath.row];
+    imagePicker.delegate =self;
 
+    imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+    imagePicker.allowsEditing =YES;
+
+
+
+    [self presentModalViewController:imagePicker animated:YES];
+
+}
+
+//打开相机
+
+- (IBAction)touch_photo:(id)sender {
+
+    // for iphone
+
+    UIImagePickerController *pickerImage = [[UIImagePickerController alloc] init];
+
+   if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+
+        pickerImage.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+        pickerImage.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:pickerImage.sourceType];
+
+
+
+    }
+
+    pickerImage.delegate =self;
+
+    pickerImage.allowsEditing =YES;//自定义照片样式
+
+    [self presentViewController:pickerImage animated:YES completion:nil];
+
+}
+</code></pre>
+
+<p>以上是从摄像头获取图片，和从相册获取图片只是图片来源的设置不一样，摄像头图片的来源为UIImagePickerControllerSourceTypeCamera。</p>
+
+<p>在和用户交互之后，用户选择好图片后，会回调选择结束的方法。</p>
+
+<h2>UIImage 图像 等比例缩放</h2>
+
+<pre><code>PicAfterZoomWidth:缩放后图片宽  PicAfterZoomHeight:缩放后图片高 (预定义)
++ (UIImage *)getPicZoomImage:(UIImage *)image {
+
+    UIImage *img = image;
+
+    int h = img.size.height;
+    int w = img.size.width;
+    if(h &lt;= PicAfterZoomWidth &amp;&amp; w &lt;= PicAfterZoomHeight)
+    {
+        image = img;
+    }
+    else 
+    {
+        float b = (float)PicAfterZoomWidth/w &lt; (float)PicAfterZoomHeight/h ? (float)PicAfterZoomWidth/w : (float)PicAfterZoomHeight/h;
+        CGSize itemSize = CGSizeMake(b*w, b*h);
+        UIGraphicsBeginImageContext(itemSize);
+        CGRect imageRect = CGRectMake(0, 0, b*w, b*h);
+        [img drawInRect:imageRect];
+        img = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    return img;
+}
+</code></pre>
+
+<p>或者：</p>
+
+<p>绘图技术改变图片大小缩放方法：</p>
+
+<pre><code>-(UIImage*) OriginImage:(UIImage *)image scaleToSize:(CGSize)size
+{
+    UIGraphicsBeginImageContext(size); //size 为CGSize类型，即你所需要的图片尺寸
+
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+
+    UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+
+    UIGraphicsEndImageContext();
+
+    return scaledImage; //返回的就是已经改变的图片
+}
+</code></pre>
+
+<h2>把图片 圆角 化</h2>
+
+<p>设置圆角的方法</p>
+
+<pre><code>直接使用setCornerRadius
+
+    这种就是最常用的，也是最耗性能的。
+
+setCornerRadius设置圆角之后，shouldRasterize=YES光栅化
+
+    avatarImageView.clipsToBounds = YES; [avatarImageView.layer setCornerRadius:50]; avatarImageView.layer.shouldRasterize = YES;
+
+    shouldRasterize=YES设置光栅化，可以使离屏渲染的结果缓存到内存中存为位图， 使用的时候直接使用缓存，节省了一直离屏渲染损耗的性能。
+
+    但是如果layer及sublayers常常改变的话，它就会一直不停的渲染及删除缓存重新 创建缓存，所以这种情况下建议不要使用光栅化，这样也是比较损耗性能的。
+
+    问题：我发现UIImageView上加载网络图片使用光栅化会有一点模糊，而UIButton 上使用光栅化没有模糊，不知道为什么？求大神解答！
+
+直接覆盖一张中间为圆形透明的图片
+
+    这种方法就是多加了一张透明的图片，GPU计算多层的混合渲染blending也是会消耗 一点性能的，但比第一种方法还是好上很多的。
+
+Core Graphics绘制圆角
+
+    这种方式性能最好，但是UIButton上不知道怎么绘制，可以用UIimageView添加个 点击手势当做UIButton使用。
+
+      UIGraphicsBeginImageContextWithOptions(avatarImageView.bounds.size, NO, [UIScreen mainScreen].scale);
+      [[UIBezierPath bezierPathWithRoundedRect:avatarImageView.bounds cornerRadius:50] addClip];
+      [image drawInRect:avatarImageView.bounds];
+      avatarImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+      UIGraphicsEndImageContext();
+
+    这段方法可以写在SDWebImage的completed回调里，也可以在UIImageView+WebCache.h 里添加一个方法，isClipRound判断是否切圆角，把上面绘制圆角的方法封装到里面。
+
+      - (void)sd_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options isClipRound:(BOOL)isRound progress:(SDWebImageDownloaderProgressBlock)progressBlock completed:(SDWebImageCompletionBlock)completedBlock;
+</code></pre>
+
+<p>使用Instruments的Core Animation查看性能</p>
+
+<pre><code>Color Offscreen-Rendered Yellow
+
+    开启后会把那些需要离屏渲染的图层高亮成黄色，这就意味着黄色图层可能存在性能问题。
+
+Color Hits Green and Misses Red
+
+    如果shouldRasterize被设置成YES，对应的渲染结果会被缓存，如果图层是绿色，就表示这些缓存被复用；如果是红色就表示缓存会被重复创建，这就表示该处存在性能问题了。
+</code></pre>
+
+<p>用Instruments测试得</p>
+
+<pre><code>第一种方法，ios9.0之前UIImageView和UIButton都高亮为黄色。ios9.0之后只有UIButton高亮为黄色。
+
+第二种方法UIImageView和UIButton都高亮为绿色，但UIImageView加载网络图片后会有一点模糊
+
+第三种方法无任何高亮，说明没离屏渲染
+
+第四种方法无任何高亮，说明没离屏渲染
+</code></pre>
+
+<p>这里以一种比较好的方式实现圆角的处理</p>
+
+<pre><code>static void addRoundedRectToPath(CGContextRef context, CGRect rect, float ovalWidth,
+                                 float ovalHeight)
+{
+    float fw, fh;
+    if (ovalWidth == 0 || ovalHeight == 0) {
+        CGContextAddRect(context, rect);
+        return;
+    }
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, CGRectGetMinX(rect), CGRectGetMinY(rect));
+    CGContextScaleCTM(context, ovalWidth, ovalHeight);
+    fw = CGRectGetWidth(rect) / ovalWidth;
+    fh = CGRectGetHeight(rect) / ovalHeight;
+    CGContextMoveToPoint(context, fw, fh/2);  // Start at lower right corner
+    CGContextAddArcToPoint(context, fw, fh, fw/2, fh, 1);  // Top right corner
+    CGContextAddArcToPoint(context, 0, fh, 0, fh/2, 1); // Top left corner
+    CGContextAddArcToPoint(context, 0, 0, fw/2, 0, 1); // Lower left corner
+    CGContextAddArcToPoint(context, fw, 0, fw, fh/2, 1); // Back to lower right
+    CGContextClosePath(context);
+    CGContextRestoreGState(context);
+}
++ (id) createRoundedRectImage:(UIImage*)image size:(CGSize)size
+{
+    // the size of CGContextRef
+    int w = size.width;
+    int h = size.height;
+
+    UIImage *img = image;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, w, h, 8, 4 * w, colorSpace, kCGImageAlphaPremultipliedFirst);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    CGContextBeginPath(context);
+    addRoundedRectToPath(context, rect, 10, 10);
+    CGContextClosePath(context);
+    CGContextClip(context);
+    CGContextDrawImage(context, CGRectMake(0, 0, w, h), img.CGImage);
+    CGImageRef imageMasked = CGBitmapContextCreateImage(context);
+    CGContextRelease(context);
+    CGColorSpaceRelease(colorSpace);
+    return [UIImage imageWithCGImage:imageMasked];
+}
+</code></pre>
+
+<h2>给图片 添加阴影</h2>
+
+<p>一直以来，为IOS添加图片的特殊效果都是通过跟美工的配合，比如，要加阴影，就从美工那边获得一张阴影效果图，在界面上画两个UIImageView，将阴影放在下面，图像放上上面，错开一定角度。有比如想做圆角效果，就画一张跟背景一个颜色的图片，中间透明，盖在原图上方。看起来很拙劣，效果还是不错的，直到愚钝的我发现IOS已经帮我们准备好了一切。其实就是几行代码的事情：</p>
+
+<p>請先添加库 import QuartzCore.framework
+然后要导入头文件 #import &lt;QuartzCore/QuartzCore.h></p>
+
+<pre><code>[[myView layer] setShadowOffset:CGSizeMake(5, 5)]; //设置阴影起点位置
+[[myView layer] setShadowRadius:6];                       //设置阴影扩散程度
+[[myView layer] setShadowOpacity:1];                      //设置阴影透明度
+[[myView layer] setShadowColor:[UIColor blueColor].CGColor]; //设置阴影颜色
+ ========== (Four) UIImage 图像 旋转==================================
+- (UIImage *)imageRotatedByRadians:(CGFloat)radians
+{
+    return [self imageRotatedByDegrees:radians * 180/M_PI];
+}
+- (UIImage *)imageRotatedByDegrees:(CGFloat)degrees 
+{   
+    // calculate the size of the rotated view's containing box for our drawing space
+    UIView *rotatedViewBox = [[UIView alloc] initWithFrame:CGRectMake(0,0,self.size.width, self.size.height)];
+    CGAffineTransform t = CGAffineTransformMakeRotation(degrees * M_PI / 180);
+    rotatedViewBox.transform = t;
+    CGSize rotatedSize = rotatedViewBox.frame.size;
+    [rotatedViewBox release];
+    // Create the bitmap context
+    UIGraphicsBeginImageContext(rotatedSize);
+    CGContextRef bitmap = UIGraphicsGetCurrentContext();
+    // Move the origin to the middle of the image so we will rotate and scale around the center.
+    CGContextTranslateCTM(bitmap, rotatedSize.width/2, rotatedSize.height/2);
+
+    //   // Rotate the image context
+    CGContextRotateCTM(bitmap, degrees * M_PI / 180);
+    // Now, draw the rotated/scaled image into the context
+    CGContextScaleCTM(bitmap, 1.0, -1.0);
+    CGContextDrawImage(bitmap, CGRectMake(-self.size.width / 2, -self.size.height / 2, self.size.width, self.size.height), [self CGImage]);
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+</code></pre>
+
+<h2>图片压缩大小</h2>
+
+<p>对于移动端的Jpg文件，有这样的结论：</p>
+
+<ul>
+<li><p>a.使用大尺寸大有损压缩比的jpg</p></li>
+<li><p>b.使用jpegtran进行无损压缩</p></li>
+</ul>
+
+
+<p>而对于png有以下结论：</p>
+
+<ul>
+<li><p>a.多彩图片使用png24</p></li>
+<li><p>b.低彩图片使用png8</p></li>
+<li><p>c.推荐使用pngquant</p></li>
+</ul>
+
+
+<p>在Iphone上有两种读取图片数据的简单方法: UIImageJPEGRepresentation和UIImagePNGRepresentation.</p>
+
+<ul>
+<li><p>UIImageJPEGRepresentation函数需要两个参数:图片的引用和压缩系数.而UIImagePNGRepresentation只需要图片引用作为参数.通过在实际使用过程中,比较发现: UIImagePNGRepresentation(UIImage* image) 要比</p></li>
+<li><p>UIImageJPEGRepresentation(UIImage<em> image, 1.0) 返回的图片数据量大很多.譬如,同样是读取摄像头拍摄的同样景色的照片, UIImagePNGRepresentation()返回的数据量大小为199K ,而 UIImageJPEGRepresentation(UIImage</em> image, 1.0)返回的数据量大小只为140KB,比前者少了50多KB.如果对图片的清晰度要求不高,还可以通过设置 UIImageJPEGRepresentation函数的第二个参数,大幅度降低图片数据量.譬如,刚才拍摄的图片, 通过调用UIImageJPEGRepresentation(UIImage* image, 1.0)读取数据时,返回的数据大小为140KB,但更改压缩系数后,通过调用</p></li>
+<li><p>UIImageJPEGRepresentation(UIImage* image, 0.5)读取数据时,返回的数据大小只有11KB多,大大压缩了图片的数据量 ,而且从视角角度看,图片的质量并没有明显的降低.因此,在读取图片数据内容时,建议优先使用UIImageJPEGRepresentation,并可根据自己的实际使用场景,设置压缩系数,进一步降低图片数据量大小.</p></li>
+</ul>
+
+
+<h4>这里我们以一个常用的框架演示</h4>
+
+<p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。
+使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。
+代码如下 复制代码</p>
+
+<pre><code>#pragma mark 从用户相册获取活动图片
+- (void)pickImageFromAlbum
+{
+    imagePicker = [[UIImagePickerController alloc] init];
+    imagePicker.delegate =self;
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    imagePicker.allowsEditing =YES;
+
+    [self presentModalViewController:imagePicker animated:YES];
+}
+</code></pre>
+
+<p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。
+代码如下 复制代码</p>
+
+<pre><code>    #pragma mark 从摄像头获取活动图片
+    - (void)pickImageFromCamera
+    {
+        imagePicker = [[UIImagePickerController alloc] init];
+        imagePicker.delegate =self;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+        imagePicker.allowsEditing =YES;
+
+        [self presentModalViewController:imagePicker animated:YES];
+    }
+    //打开相机
+    - (IBAction)touch_photo:(id)sender {
+        // for iphone
+        UIImagePickerController *pickerImage = [[UIImagePickerController alloc] init];
+       if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            pickerImage.sourceType = UIImagePickerControllerSourceTypeCamera;
+            pickerImage.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:pickerImage.sourceType];
+
+        }
+        pickerImage.delegate =self;
+        pickerImage.allowsEditing =YES;//自定义照片样式
+        [self presentViewController:pickerImage animated:YES completion:nil];
+    }
+</code></pre>
+
+<p>以上是从摄像头获取图片，和从相册获取图片只是图片来源的设置不一样，摄像头图片的来源为UIImagePickerControllerSourceTypeCamera。
+在和用户交互之后，用户选择好图片后，会回调选择结束的方法。</p>
+
+<pre><code>        -(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary*)info
+        {
+            //初始化imageNew为从相机中获得的--
+            UIImage *imageNew = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+            //设置image的尺寸
+            CGSize imagesize = imageNew.size;
+            imagesize.height =626;
+            imagesize.width =413;
+            //对图片大小进行压缩--
+            imageNew = [self imageWithImage:imageNew scaledToSize:imagesize];
+            NSData *imageData = UIImageJPEGRepresentation(imageNew,0.00001);
+           if(m_selectImage==nil)
+            {
+                m_selectImage = [UIImage imageWithData:imageData];
+                NSLog(@"m_selectImage:%@",m_selectImage);
+                [self.TakePhotoBtn setImage:m_selectImage forState:UIControlStateNormal];
+                [picker dismissModalViewControllerAnimated:YES];
+               return ;
+            }
+            [picker release];
+        }
+        //对图片尺寸进行压缩--
+        -(UIImage*)imageWithImage:(UIImage*)image scaledToSize:(CGSize)newSize
+        {
+            // Create a graphics image context
+            UIGraphicsBeginImageContext(newSize);
+
+            // Tell the old image to draw in this new context, with the desired
+            // new size
+            [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+
+            // Get the new image from the context
+            UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+
+            // End the context
+            UIGraphicsEndImageContext();
+
+            // Return the new image.
+           return newImage;
+        }
+</code></pre>
+
+<h4>你还可以使用专门的压缩框架（ZipArchive）实现图片的压缩</h4>
+
+<p>将第三方倒入到工程中就可以</p>
+
+<p>调用头文件</p>
+
+<pre><code>#import "ZipArchive.h"  
+</code></pre>
+
+<p>首先是压缩文件</p>
+
+<pre><code>[objc] view plaincopy
+- (void)zipFunction  
+{  
+    zip = [[ZipArchive alloc] init];  
+    NSString *documentPath = [self documentsPath];  
+    NSString * zipFile = [documentPath stringByAppendingString:@"/images.zip"] ;  
+
+    NSString * image1 = [[NSBundle mainBundle] pathForResource:@"a" ofType:@"jpg" inDirectory:nil];  
+    NSString * image2 = [[NSBundle mainBundle] pathForResource:@"b" ofType:@"jpg" inDirectory:nil];  
+    BOOL result = [zip CreateZipFile2:zipFile];  
+    result = [zip addFileToZip:image1 newname:@"a.jpg"];  
+    result = [zip addFileToZip:image2 newname:@"b.jpg"];  
+    if( ![zip CloseZipFile2] ){  
+        zipFile = @"";  
+    }  
+    [zip release];  
+    NSLog(@"%@",NSHomeDirectory());  
+}  
+</code></pre>
+
+<p>然后解压函数</p>
+
+<pre><code>- (void)unzip  
+{  
+    zip = [[ZipArchive alloc] init];  
+    NSString *documentPath = [self documentsPath];  
+    NSString* zipFile = [documentPath stringByAppendingString:@"/images.zip"] ;  
+    NSString* unZipTo = [documentPath stringByAppendingString:@"/images"] ;  
+    if( [zip UnzipOpenFile:zipFile] ){  
+        BOOL result = [zip UnzipFileTo:unZipTo overWrite:YES];  
+        if( NO==result ){  
+            //添加代码  
+        }  
+        [zip UnzipCloseFile];  
+
+        NSString * imageField = [unZipTo stringByAppendingPathComponent:@"a.jpg"];  
+        NSData * imagedata = [NSData dataWithContentsOfFile:imageField];  
+        UIImage * image = [UIImage imageWithData:imagedata];  
+
+        UIImageView * iamgePic = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];  
+
+        [iamgePic setImage:image];  
+
+        [self.view addSubview:iamgePic];  
+
+    }  
+    [zip release];  
+}  
+</code></pre>
+
+<p>这样就把a图片解压出来了
+很简单吧。。。。。
+剩下的就是自己调用了。。。。。。</p>
+
+<h3>把一张图片压缩并截取中间部分</h3>
+
+<pre><code>//这个方法是把一张UIImage压缩成newSize的尺寸
+
+-(UIImage*)imageWithImageSimple:(UIImage*)image scaledToSize:(CGSize)newSize
+
+{
+
+    UIGraphicsBeginImageContext(newSize);
+
+    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+
+    UIGraphicsEndImageContext();
+
+    return newImage;
+
+}
+</code></pre>
+
+<ul>
+<li><p>截取中间部分</p>
+
+<pre><code>  - (UIImage *)scaleImage:(UIImage *)image toScale:(CGSize)reSize
+
+  {
+
+  //先按要显示的大小去比例缩放下图片，这里压缩成245*245的大小
+
+  UIImage *scaledImage = [self imageWithImageSimple:image scaledToSize:CGSizeMake(245, 245)];
+
+  //计算截取位置。这里我们考虑一般拍照边界位置可能存在全白或全黑的情况，多数重要的会在中间位置。所以计算下截取是重绘图片的中间位置
+
+  float drawW = 0.0;
+
+  float drawH = 0.0;
+
+  CGSize size_new = scaledImage.size;
+
+  if (size_new.width &gt; reSize.width) {
+
+      drawW = (size_new.width - reSize.width)/2.0;
+
+  }
+
+  if (size_new.height &gt; reSize.height) {
+
+      drawH = (size_new.height - reSize.height)/2.0;
+
+  }
+
+  NSLog(@"drawW=====w==%f\n--------drawH==%f\n\n",drawW,drawH);    
+
+  //截取截取大小为需要显示的大小。取图片中间位置截取
+
+  CGRect myImageRect = CGRectMake(drawW, drawH, reSize.width, reSize.height);
+
+  UIImage* bigImage= scaledImage;
+
+  scaledImage = nil;
+
+  CGImageRef imageRef = bigImage.CGImage;
+
+  CGImageRef subImageRef = CGImageCreateWithImageInRect(imageRef, myImageRect);
+
+
+
+  UIGraphicsBeginImageContext(reSize);
+
+  CGContextRef context = UIGraphicsGetCurrentContext();
+
+  CGContextDrawImage(context, myImageRect, subImageRef);
+
+  UIImage* smallImage = [UIImage imageWithCGImage:subImageRef];
+
+  UIGraphicsEndImageContext();
+
+  CGImageRelease(subImageRef);
+
+  return smallImage;
+</code></pre>
+
+<p>  }</p></li>
+</ul>
+
+
+<h4>我还看到有人这么做过</h4>
+
+<ul>
+<li>方法一：将图片按照原来的宽高比例压缩到与窗口合适的大小，然后在设置了_imageView.contentMode = UIViewContentModeCenter;</li>
+</ul>
+
+
+<p>这个属性的UIImageView中展示压缩后的图片。</p>
+
+<pre><code>//压缩图片  
+- (UIImage *)image:(UIImage*)image scaledToSize:(CGSize)newSize  
+{  
+    // Create a graphics image context  
+    UIGraphicsBeginImageContext(newSize);  
+    // Tell the old image to draw in this new context, with the desired  
+    // new size  
+    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];  
+    // Get the new image from the context  
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();  
+    // End the context  
+    UIGraphicsEndImageContext();  
+    // Return the new image.  
+    return newImage;  
+}  
+</code></pre>
+
+<p>上面方法的参数newSize是和图片显示窗口差不多大的，结果出现了原图清晰，但压缩后图片不清晰的情况。</p>
+
+<ul>
+<li><p>方法二：按照窗口宽高比例，将原图横向或者纵向裁剪掉多余的部分，然后不设置UIImageView的contentMode属性，将裁剪后的图片送进去，使其自动适应窗口。
+缩放效果的代码如下</p>
+
+<pre><code>  //裁剪图片  
+  - (UIImage *)cutImage:(UIImage*)image  
+  {  
+      //压缩图片  
+      CGSize newSize;  
+      CGImageRef imageRef = nil;  
+
+      if ((image.size.width / image.size.height) &lt; (_headerView.bgImgView.size.width / _headerView.bgImgView.size.height)) {  
+          newSize.width = image.size.width;  
+          newSize.height = image.size.width * _headerView.bgImgView.size.height / _headerView.bgImgView.size.width;  
+
+          imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(0, fabs(image.size.height - newSize.height) / 2, newSize.width, newSize.height));  
+
+      } else {  
+          newSize.height = image.size.height;  
+          newSize.width = image.size.height * _headerView.bgImgView.size.width / _headerView.bgImgView.size.height;  
+
+          imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(fabs(image.size.width - newSize.width) / 2, 0, newSize.width, newSize.height));  
+
+      }  
+
+      return [UIImage imageWithCGImage:imageRef];  
+  }  
+</code></pre></li>
+</ul>
+
+
+<h2>图片格式的转换</h2>
+
+<p>图片保存到本地document里面&ndash;以及图片格式的转换
+IOS开发之保存图片到Documents目录及PNG，JPEG格式相互转换</p>
+
+<pre><code>    - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary*)info {
+        NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+        if ([mediaType isEqualToString:@"public.image"]){
+            image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+            NSData *data;
+            if (UIImagePNGRepresentation(image) == nil) {
+                data = UIImageJPEGRepresentation(image, 1);
+            } else {
+                data = UIImagePNGRepresentation(image);
+            }
+
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *filePath = [NSString stringWithString:[self getPath:@"image1"]];         //将图片存储到本地documents
+         [fileManager createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+         [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.png"] contents:dataattributes:nil];
+
+        UIImage *editedImage = [[UIImage alloc] init];
+        editedImage = image;
+        CGRect rect = CGRectMake(0, 0, 64, 96);
+        UIGraphicsBeginImageContext(rect.size);
+        [editedImage drawInRect:rect];
+        editedImage = UIGraphicsGetImageFromCurrentImageContext();
+
+        UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        imageButton.frame = CGRectMake(10, 10, 64, 96);
+        [imageButton setImage:editedImage forState:UIControlStateNormal];
+        [self.view addSubview:imageButton];
+        [imageButton addTarget:self action:@selector(imageAction:)forControlEvents:UIControlEventTouchUpInside];
+        [ipc dismissModalViewControllerAnimated:YES];
     } else {
-
-        if (indexPath.row &gt;= _localMovies.count) return;
-        path = _localMovies[indexPath.row];
-    }
-
-    // increase buffering for .wmv, it solves problem with delaying audio frames
-    if ([path.pathExtension isEqualToString:@"wmv"])
-        parameters[KxMovieParameterMinBufferedDuration] = @(5.0);
-
-    // disable deinterlacing for iPhone, because it's complex operation can cause stuttering
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-        parameters[KxMovieParameterDisableDeinterlacing] = @(YES);
-
-    // disable buffering
-    //parameters[KxMovieParameterMinBufferedDuration] = @(0.0f);
-    //parameters[KxMovieParameterMaxBufferedDuration] = @(0.0f);
-
-    KxMovieViewController *vc = [KxMovieViewController movieViewControllerWithContentPath:path
-                                                                               parameters:parameters];
-    [self presentViewController:vc animated:YES completion:nil];
-    //[self.navigationController pushViewController:vc animated:YES];    
-
-    LoggerApp(1, @"Playing a movie: %@", path);
-}
-</code></pre>
-
-<h2>四：碰到的问题</h2>
-
-<h6>1.播放本地视频和网络视频正常，播放网络摄像头实时监控视频流（h264）的时候出现错误：</h6>
-
-<pre><code>[rtsp @ 0x906cc00] UDP timeout, retrying with TCP
-[rtsp @ 0x906cc00] Nonmatching transport in server reply
-[rtsp @ 0x906cc00] Could not find codec parameters for stream 0 (Video: h264): unspecified size
-Consider increasing the value for the 'analyzeduration' and 'probesize' options
-Couldn't find stream information
-</code></pre>
-
-<p>跟踪代码，错误是在avformat_find_stream_info获取流信息失败的时候的时候触发。</p>
-
-<pre><code>if(avformat_find_stream_info(pFormatCtx,NULL) &lt; 0) {
-    av_log(NULL, AV_LOG_ERROR, "Couldn't find stream information\n");
-    goto initError;
-}
-</code></pre>
-
-<p>经过几天的摸索，最终确定是网络的问题（在模拟器播放一直出错，在3G网络下能播放iOS使用ffmpeg播放rstp实时监控视频数据流），具体原因估计是rstp视频流，程序默认采用udp传输或者组播，导致在私有网络视频流不能正常传输。
-解决方法，把视频流的传输模式强制成tcp传输：</p>
-
-<pre><code>// Open video file
-pFormatCtx = avformat_alloc_context();  
-//有三种传输方式：tcp udp_multicast udp，强制采用tcp传输
-AVDictionary* options = NULL;
-av_dict_set(&amp;options, "rtsp_transport", "tcp", 0);
-if(avformat_open_input(&amp;pFormatCtx, [moviePath cStringUsingEncoding:NSASCIIStringEncoding],                              NULL, &amp;options) != 0) {
-    av_log(NULL, AV_LOG_ERROR, "Couldn't open file\n");
-    goto initError;
-}
-// Retrieve stream information
-if(avformat_find_stream_info(pFormatCtx,NULL) &lt; 0) {
-    av_log(NULL, AV_LOG_ERROR, "Couldn't find stream information\n");
-    goto initError;
+        NSLog(@"MEdia");
     }
 </code></pre>
 
-<p>问题解决。iOS使用ffmpeg播放rstp实时监控视频数据流</p>
+<p>上面的代码是当从相册里面选取图片之后保存到本地程序沙盒，在上面我们得到的图片中不能够得到图片名字，
+以及不清楚图片格式，所以这个时候我们需要将其转换成NSdata二进制存储，</p>
 
-<h6>2、time.h重复问题</h6>
-
-<p>　　我们知道一般静态库都是搭配头文件使用的，要在项目里面使用FFmpeg库，我们出了需要在xcode的build phases中添加静态库以外，还需要导入该库对应的头文件。FFmpeg库对应的头文件有很多，通常会采用设置header search path的方式来导入头文件，这样做有两个好处: 第一可以避免对我们的工程结构造成干扰。第二可以在一定程序上降低头文件冲突。</p>
-
-<p>　　time.h冲突的问题就是属于头文件冲突，系统的标准库中有time.h文件，FFmpeg应该是在1.1之后也加入了一个time.h文件，路径为libavutil/time.h。所以如果你使用的是FFmpeg1.1之后的版本，那么在使用中就可能会碰到头文件冲突的问题。解决这个问题，网上流传一个方法是修改FFmpeg库中time.h文件的名字，我觉得这太麻烦了，而且也容易出错。后来查看FFmpeg源码的时候偶然发现它自身内部引用这个time.h的时候都有带一层父目录，如#include &ldquo;libavutil/time.h"。因此想是不是通过指定头文件搜索路径就可以解决这个问题。</p>
-
-<p>　　打开工程设置页面，搜索header search path如下图所示:</p>
-
-<p><img src="/images/kxmovie002.png" title="Caption" ></p>
-
-<p>　　如果你的FFmpeg库正好是放在当前的路径下，且为了偷懒设置了递归包含头文件的话，那么你很可能就会遇到time.h冲突的问题。因为xcode工程默认的设置是优先查找用户路径，编译时FFmpeg中libavutil下的time.h就会优先被链接，从而导致不会再链接系统time.h文件，最终导致编译失败。</p>
-
-<p>　　解决这个问题有两个办法:</p>
-
-<ul>
-<li><p>a、取消掉Header Search Paths中的递归引用。</p></li>
-<li><p>b、设置Always Search User Paths为NO。</p></li>
-</ul>
-
-
-<h6>3、gcc c compiletest error问题</h6>
-
-<p>　　xcode5下面编译FFmpeg都采用clang，同样也会遇到类似问题。这个问题通常出现在配置文件错误的情况下，一般都是gcc路径错误，当然也可能是其他编译参数错误问题。</p>
-
-<p>　　出现这个问题我们应该首先检查gcc的路径是否正确，如果确认了指定路径上存在gcc程序，但是还是报错的，我们再去检查当前要编译的平台和指定的gcc路径是否一致，如果你使用iPhoneOS.platform下面的gcc去编译i386平台的库那肯定是不会测试通过的。</p>
-
-<h6>4、C compiler test failed问题</h6>
-
-<p>　　编译i386版本的FFmpeg库和armv版本库可能用到的参数不尽相同，例如我遇到这个问题，我的编译选项中有一项如下:</p>
-
-<p>　　&ndash;extra-cflags=&lsquo;-arch i386 -mfloat-abi=softfp -miphoneos-version-min=5.0&rsquo;</p>
-
-<p>　　在我确认其他参数(如cpu，arch)都正确的情况下，依然提示我们“C compiler test failed.” 后面紧跟着一句查看config.log你可以得到更详细的信息，于是打开该文件，你可以在最开始的地方看到你的配置语句，如果是用脚本，这块儿会显示最终解释后(替换参数为真实值)的配置语句。然后紧跟着一堆具体的配置，通常哭啼的错误信息会在该文件的最末尾。我遇到的问题的信息如下:</p>
-
-<p><img src="/images/kxmovie003.png" title="Caption" ></p>
-
-<p>　　看到标红的这个区域了没有，提示“-mfloat-abi=softfp”选项不支持，删掉该选项后，在运行时配置就通过了。其他配置问题，都可以通过查看config.log来获取更详细的错误信息。</p>
-
-<h6>5、由于未导入libbz动态库的问题</h6>
-
-<p>　　如果导入FFmpeg库了，并且配置了头文件搜索路径，遇到"Undefined symbols for architecture armv7s: _BZ2_bzDecompressInit"，如下图所示:</p>
-
-<p><img src="/images/kxmovie004.png" title="Caption" ></p>
-
-<p>　　这个问题是由于没有导入“libbz2.dylib”库的原因，导入库即可解决该问题。</p>
-
-<h6>6、libavcodec/audioconvert.h头文件缺失问题</h6>
-
-<p>　　不知道为什么执行make install的时候libavcodec中的audioconvert.h怎么没有拷贝到include目录下的libavcodec中去，查看发现原来libavutil目录下已经有一个audioconvert.h了。解决这个问题只需要从FFmpeg库的libavcodec中拷贝audioconvert.h头文件到include的libavcodec目录中即可解决。</p>
-
-<h2>五：国外靠谱的有这几个：</h2>
-
-<p>1、<a href="https://github.com/mooncatventures-group">Mooncatventures group</a></p>
-
-<p>2、<a href="https://github.com/kolyvan/kxmovie">KxMoviePlayer (use OpenGLES, Core Audio)</a></p>
-
-<p>3、<a href="https://github.com/flyhawk007/FFmpeg-for-iOS.git">FFmpeg for ios (with OpenGLES, AudioQueue)</a></p>
-
-<p>4、<a href="https://github.com/lajos/iFrameExtractor.git">iFrameExtractor</a></p>
-
-<p>当然还有ffmpeg自带的ffplay，如果想学习ffplay可以参考<a href="http://dranger.com/ffmpeg/">ffmpeg tutorial</a></p>
-
-<p>中文版连接：<a href="http://download.csdn.net/detail/dayudian/4600783">http://download.csdn.net/detail/dayudian/4600783</a>（这个好多地方都有，可以自己搜索）</p>
-
-<h3>这里借助objc中国里面的一个篇视频音频汇总：</h3>
-
-<p>流媒体，播放在线视频/音频 并且边放边下载</p>
-
-<p>iOS 和 OS X 平台都有一系列操作音频的 API，其中涵盖了从低到高的全部层级。随着时间的推移、平台的增长以及改变，不同 API 的数量可以说有着非常巨大的变化。本文对当前可以使用的 API 以及它们使用的不同目的进行简要的概括。</p>
-
-<h4>Media Player 框架</h4>
-
-<p>Media Player 框架是 iOS 平台上一个用于音频和视频播放的高层级接口，它包含了一个你可以在应用中直接使用的默认的用户界面。你可以使用它来播放用户在 iPod 库中的项目，或者播放本地文件以及网络流。</p>
-
-<blockquote><p>另外，这个框架也包括了查找用户媒体库中内容的 API，同时还可以配置像是在锁屏界面或者控制中心里的音频控件。</p>
-
-<h4>AVFoundation</h4></blockquote>
-
-<p>AVFoundation 是苹果的现代媒体框架，它包含了一些不同的用途的 API 和不同层级的抽象。其中有一些是现代 Objective-C 对于底层 C 语言接口的封装。除了少数的例外情况，AVFoundation 可以同时在 iOS 和 OS X 中使用。</p>
-
-<h4>AVAudioSession</h4>
-
-<p>AVAudioSession 是用于 iOS 系统中协调应用程序之间的音频播放的 API 的。例如，当有电话打进来时，音频的播放就会被暂停；在用户启动电影时，音乐的播放就会停止。我们需要使用这些 API 来确保一个应用程序能够正确响应并处理这类事件。</p>
-
-<h4>AVAudioPlayer</h4>
-
-<p>这个高层级的 API 为你提供一个简单的接口，用来播放本地或者内存中的音频。这是一个无界面的音频播放器 (也就是说没有提供 UI 元素)，使用起来也很直接简单。它不适用于网络音频流或者低延迟的实时音频播放。如果这些问题都不需要担心，那么 AVAudioPlayer 可能就是正确的选择。音频播放器的 API 也为我们带来了一些额外的功能，比如循环播放、获取音频的音量强度等等。</p>
-
-<h4>AVAudioRecorder</h4>
-
-<p>作为与 AVAudioPlayer 相对应的 API，AVAudioRecorder 是将音频录制为文件的最简单的方法。除了用一个音量计接受音量的峰值和平均值以外，这个 API 简单粗暴，但要是你的使用场景很简单的话，这可能恰恰就是你想要的方法。</p>
-
-<h4>AVPlayer</h4>
-
-<p>AVPlayer 与上面提到的 API 相比，提供了更多的灵活性和可控性。它基于 AVPlayerItem 和 AVAsset，为你提供了颗粒度更细的权限来获取资源，比如选择指定的音轨。它还通过 AVQueuePlayer 子类支持播放列表，而且你可以控制这些资源是否能够通过 AirPlay 发送。</p>
-
-<p>与 AVAudioPlayer 最主要的区别是，AVPlayer 对来自网络的流媒体资源的 “开箱即用” 支持。这增加了处理播放状态的复杂性，但是你可以使用 KVO 来观测所有的状态参数来解决这个问题。</p>
-
-<h4>AVAudioEngine</h4>
-
-<p>AVAudioEngine 是播放和录制的 Objective-C 接口。它提供了以前需要深入到 Audio Toolbox 框架的 C API 才能做的控制 (例如一些实时音频任务)。该音频引擎 API 对底层的 API 建立了优秀的接口。如果你不得不处理底层的问题，你仍然可以使用 Audio Toolbox 框架。</p>
-
-<p>这个 API 的基本概念是建立一个音频的节点图，从源节点 (播放器和麦克风) 以及过处理 (overprocessing) 节点 (混音器和效果器) 到目标节点 (硬件输出)。每一个节点都具有一定数量的输入和输出总线，同时这些总线也有良好定义的数据格式。这种结构使得它非常的灵活和强大。而且它集成了音频单元 (audio unit)。</p>
-
-<h4>Audio Unit 框架</h4>
-
-<p>Audio Unit 框架是一个底层的 API；所有 iOS 中的音频技术都构建在 Audio Unit 这个框架之上。音频单元是用来加工音频数据的插件。一个音频单元链叫做音频处理图。</p>
-
-<p>如果你需要非常低的延迟 (如 VoIP 或合成乐器)、回声消除、混音或者音调均衡的话，你可能需要直接使用音频单元，或者自己写一个音频单元。但是其中的大部分工作可以使用 AVAudioEngine 的 API 来完成。如果你不得不写自己的音频单元的话，你可以将它们与 AVAudioUnit 节点一起集成在 AVAudioEngine 处理图中。</p>
-
-<h4>跨应用程序音频</h4>
-
-<p>Audio Unit 的 API 可以在 iOS 中进行跨应用音频。音频流 (和 MIDI 命令) 可以在应用程序之间发送。比如说：一个应用程序可以提供音频的效果器或者滤波器。另一个应用程序可以将它的音频发送到第一个应用程序中，并使用其中的音频效果器处理音频。被过滤的音频又会被实时地发送回原来的应用程序中。 CoreAudioKit 提供了一个简单的跨应用程序的音频界面。</p>
-
-<h3>其他 APIs</h3>
-
-<h4>OpenAL</h4>
-
-<p>OpenAL 是一个跨平台的 API。它提供了位置 (3D) 和低延迟的音频服务。它主要用于跨平台游戏的开发。它有意地模仿了 OpenGL 中 API 的风格。</p>
-
-<h4>MIDI</h4>
-
-<p>在 iOS 上，Core MIDI 和 CoreAudioKit 可以被用来使应用程序表现为 MIDI 设备。在 OS X 上，Music Sequencing 服务提供了基于 MIDI 的控制和对音乐数据访问的权限。Core MIDI 服务为服务器和驱动程序提供了支持。
-更多</p>
-
-<pre><code>在 OS X 中，最基本的音频接口就是 NSBeep()，它能够简单地播放系统中的声音。
-NSSound 类为 OS X 提供了用于播放声音的简单接口，与 iOS 中的 AVAudioPlayer 在概念上基本类似。
-所有的通知 API，包括 iOS 中的本地通知或者推送通知、OS X 中的 NSUserNotification 以及 CloudKit 通知，都可以播放声音。
-Audio Toolbox 框架是强大的，但是它的层级却非常的低。在过去，它基于 C++ 所编写，但是其大多数的功能现在都可以通过 AVFoundation 实现。
-QTKit 和 QuickTime 框架现在已经过时了，它们不应该被用在以后的开发中。我们应该使用 AVFoundation (和 AVKit) 来代替它们。
+<pre><code> image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+NSData *data;
+        if (UIImagePNGRepresentation(image) == nil) {
+            data = UIImageJPEGRepresentation(image, 1);
+        } else {
+            data = UIImagePNGRepresentation(image);
+        }
+UIImagePNGRepresentation转换PNG格式的图片为二进制，如果图片的格式为JPEG则返回nil；
+ [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.png"] contents:data attributes:nil];    将图片保存为PNG格式
+ [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.jpg"] contents:data attributes:nil];   将图片保存为JPEG格式
+我们也可以写成下面的格式存储图片
+NSString *pngImage = [filePath stringByAppendingPathComponent:@"Documents/image.png"];
+NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.jpg"];
+[data writeToFile:pngImage atomically:YES];
+[data writeToFile:jpgImage atomically:YES];
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Code ReView]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/07/code-review/"/>
-    <updated>2016-01-07T16:21:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/07/code-review</id>
-    <content type="html"><![CDATA[<p>提高代码质量的方法：</p>
-
-<p>1，codereview</p>
-
-<p> Why we do Code Review(为什么进行)</p>
-
-<pre><code>1、提高质量
-2、及早发现潜在缺陷与BUG，降低事故成本。
-3、促进团队内部知识共享，提高团队整体水平
-4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
-</code></pre>
-
-<p> Options of Code Review(代码评审的选择)</p>
-
-<pre><code>1、最近一次迭代开发的代码
-2、系统关键模块
-3、业务较复杂的模块
-4、缺陷率较高的模块
-</code></pre>
-
-<p>如何做出从零开始code review呢, 我的建议是:</p>
-
-<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
-安排一次编码规范的技术分享
-前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
-对于积极的同学表示鼓励, 支持现场重构代码
-每天不光可以review代码, 也可以安排整场的技术分享
-</code></pre>
-
-<!--more-->
-
-
-<p>2，单元测试</p>
-
-<p>　本文对比两个iOS开发中常见的单元测试框架：OCUnit，被官方集成进XCode 4.x版本中；GHUnit，被推荐最多的测试框架，带GUI界面。初窥两款测试框架非常相似，而上手使用就会发现其中的区别。细节上的区别使两款框架在不同角度各有优劣。</p>
-
-<ul>
-<li><p>3种时候会去想写测试：</p>
-
-<ul>
-<li>代码完成以后</li>
-<li>开始写代码之前</li>
-<li>修复了一个bug以后</li>
-</ul>
-
-
-<blockquote><p>第一种是完成了代码，恩我要测试一下我写的这些方法可靠不可靠。那这时候可以写测试。</p>
-
-<p>第二种一个著名的方法论TDD。主要思想就是在写代码之前，就全部设计好借口。函数名字什么的。然后在写能通过测试的函数。</p>
-
-<p>第三种就是发现了bug，我修复了这个bug。为了确保修复是成功的。那就写个测试吧。</p></blockquote></li>
-</ul>
-
-
-<h5>OCUnit</h5>
-
-<p>　　OCUnit是XCode 4.x集成的单元测试框架，OCUnit中的测试分为两类，一类称为Logic Tests，另一类称为Application Tests。Logic Tests更倾向于所谓的白盒测试，用于测试工程中较细节的逻辑；Application Tests更倾向于黑盒测试，或接口测试，用于测试直接与用户交互的接口。</p>
-
-<ul>
-<li><p>OCUnit的测试用例最常用的方法有三个</p>
-
-<ol>
-<li><ul>
-<li>(void)setUp：每个test方法执行前调用</li>
-</ul>
-</li>
-<li><ul>
-<li>(void)tearDown：每个test方法执行后调用</li>
-</ul>
-</li>
-<li><ul>
-<li>(void)testXXX：命名为XXX的测试方法</li>
-</ul>
-</li>
-</ol>
-</li>
-</ul>
-
-
-<h5>GHUnit</h5>
-
-<p>　　GHUnit是一款Objective-C的测试框架，除了支持iOS工程还支持OSX的工程，但OSX不在本文的讨论范围。GHUnit不同于OCUnit，它提供了GUI界面来操作测试用例，而且也不区分Logic Tests和Application Tests。</p>
-
-<ul>
-<li>添加单元测试
-
-<ul>
-<li><p>与集成进XCode的OCUnit相比，GHUnit的添加过程略显复杂。首先在上下载GHUnit的框架包，当前的For iOS的最新版本是0.5.6，解压后是一个GHUnitIOS.framework的文件夹。</p></li>
-<li><p>打开已经存在的工程，添加一个EmptyApplication Target，并在新Target中添加刚刚下载的GHUnitIOS.framework</p></li>
-<li><p>在Build Phases中添加非官方框架并不会把框架文件拷贝到工程目录，而是只做一个链接，所以建议在添加之前先把框架拷贝到工程目录下。</p></li>
-<li><p>接下来用相同的方法添加框架依赖的其他库：“QuartzCore.framework”。</p></li>
-<li><p>在Build Settings中搜索“linker flags”，设置Other Linker Flags - Debug - 添加一个支持全架构和全版本SDK的标示“-ObjC -all_load”</p></li>
-</ul>
-</li>
-</ul>
-
-
-<p>3，看AF 等开源程序</p>
-
-<p>架构设计</p>
-
-<p>测试用例</p>
-
-<p>XCTAssert
-XCTAssertNotNil</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Swift开源总结]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/04/swiftsourecode/"/>
-    <updated>2016-01-04T16:21:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/04/swiftsourecode</id>
-    <content type="html"><![CDATA[<blockquote><p>引言：</p>
-
-<p>从swift一出来本人就在开始学习相关语法和新技术，随着一直到1.2知道2.0出来之前的变动，最后我放下了一段时间，当然也由于工作的原因，所以可以说也有一段时间没有摸他了。</p></blockquote>
-
-<p>记得今年6月份的时候，苹果放话说是将要开源swift，着对应iOS开发者，乃至所有程序员来说都是一件非常值得庆幸的事情（最终庆幸的还是苹果）。</p>
-
-<blockquote><p>发布于2014年的Swift，不仅具备编译语言的性能和效率，还兼有热门脚本语言的简洁和互动功能。</p></blockquote>
-
-<p>在2.0出来之后我也花了一段时间看了一下关于2.0的新特性，这一次的变化确实比较大，可以看出来苹果非常重视swift，将来有望替代Objective-C，但这都只是看到的未来，真正结果是什么苹果说了算（毕竟Cocoa是不会开源的）。</p>
-
-<!--more-->
-
-
-<p>前段时间天swift源码被放出来了，苹果也遵守了最开始的承若，还有。。。。。。</p>
-
-<p>乘着刚好项目不是很紧就认认真真的研究了一番，虽然本人英语不是很好，也有很多都是略过，但是还是学到了和那多东西，主要的是苹果的思想！</p>
-
-<blockquote><p>值得注意的是，除了Swift，苹果还开源了两个项目：Swfit核心库项目和全新的Swift包管理器项目。</p></blockquote>
-
-<p>这里就总结一下。。。。</p>
-
-<h5>Swift源码大致可以分为6块</h5>
-
-<ul>
-<li>物理节点的管理   ： 主要包括物理节点的添加，删除，ring文件，builder文件生成，重平衡，核心算法与数据结构。</li>
-<li>请求与处理    : 各种服务处理请求的模型，都使用线程池来处理并发请求，一致性的服务也使用了固定的daemon模型。</li>
-<li>文件操作    ：文件的操作，具体的逻辑。</li>
-<li>文件管理    ：account和container概念，类别与用户与文件夹的概念（但是不是这个概念）。</li>
-<li>认证与鉴权    ： 认证的程序依靠keystone中间件，而鉴权独立到swift中，真正的鉴权发生在具体操作之前。</li>
-<li>服务管理    ：同一启动服务，管理服务，manager功能。</li>
-</ul>
-
-
-<h5>开源带来了什么？</h5>
-
-<p>从技术角度来思考，Swift开源能带给我们什么？我觉得主要有以下几个方面：</p>
-
-<ul>
-<li>除了苹果自家的平台，以后也能在Linux上用Swift开发应用了，这样可以吸收更多Linux平台上的Swift开发者；</li>
-<li>基于Swift的应用会更加丰富，有了开发者对Swift的普遍热情，以后也许会出来各种Swift的Web框架或其他什么有趣、有用的应用；</li>
-<li>Windows平台虽然不在此列，而官方并不反对把Swift移至到其他平台，但需要有人做这件事。嗯，微软应该不会忽略Swift？总之，只要机会之门打开，一切皆有可能；</li>
-<li>苹果的私房菜Cocoa并未开源，开源的是Swift编译器和标准库，要在非苹果官方平台开发iOS应用，暂时还不太可能；</li>
-<li>Swift开源后的成功，特别是在不同平台上的成功，很大程度上取决于生态的建立、有多少框架/第三方库的支持。同时，也直接受Swift最终采用何种开源许可的影响。</li>
-</ul>
-
-
-<blockquote><p>总而言之，Swift开源是大大前进了一步。而超越Swift开源本身，当今编程语言的发展趋势也值得我们认真思考。如果从完全理性的角度看待编程语言，那么编程语言无非就是一门编程语言：“选择好适合自己的编程语言就是了”。但问题就在于如何选择合适的编程语言呢？语言的魅力也许就像盲人摸象，你无法做到足够理性，或者这世界就没有银弹，编程语言的比较和纷争，将是一个永恒的话题，热度无限&hellip;&hellip;</p></blockquote>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[重量级-MVC-MVVM-DC]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji/"/>
-    <updated>2016-01-01T16:21:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji</id>
-    <content type="html"><![CDATA[<p>首先再这里祝大家新年快乐&hellip;&hellip;.</p>
-
-<p>新的一年来点重量级的东西，那么是什么呢？</p>
-
-<p>相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！</p>
-
-<p>如果你听说过MVC，那么或许你听说过MVVM，这里可能很多人对MVVM并不了解，或许只是听过，但是没有用过，有些就算用过还是不清楚里面的关系，只是搬砖而已。</p>
-
-<p>对了，今天我们讨论的就是一个类MVVM的技术，也就是在MVVM上面的一个增强版的开发模式！</p>
-
-<p>MVVM不正是MVC的增强版吗？</p>
-
-<p>好了下面正式开始，新年不能耽误大家太多时间搬砖，，哈哈！</p>
-
-<h2>Model-View-Controller</h2>
-
-<!--more-->
-
-
-<p>首先我们来看看MVC，这里MVC具体细节就不多说了。</p>
-
-<ul>
-<li>Model(M)：模型数据</li>
-<li>View(V)：视图</li>
-<li>Controller&copy;：控制器</li>
-</ul>
-
-
-<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
-
-<h6>有点：</h6>
-
-<ul>
-<li>易学习</li>
-<li>易开发</li>
-<li>同哟欧诺个成熟</li>
-</ul>
-
-
-<h6>缺点：</h6>
-
-<ul>
-<li>Massive View Controller</li>
-</ul>
-
-
-<h2>Model-View-ViewModel</h2>
-
-<p>然后来看看现在比较热得话题（架构）MVVM
-* Model（M）:模型
-* View(V）:视图
-* ViewModel（VM）:模型（逻辑）</p>
-
-<p><img src="/images/zhongliangji002.png" title="Caption" ></p>
-
-<h6>View与ViewModule连接可以通过下面的方式</h6>
-
-<ul>
-<li><p>Binding Data：实现数据的传递</p></li>
-<li><p>Command：实现操作的调用</p></li>
-<li><p>AttachBehavior：实现控件加载过程中的操作</p></li>
-</ul>
-
-
-<h5>View没有大量代码逻辑。</h5>
-
-<ul>
-<li><p>结合WPF、Silverlight绑定机制，MVP演变出了MVVM，充分利用了WPF、Silverlight的优势，将大量代码逻辑、状态转到ViewModel，可以说MVVM是专门为WPF、Silverlight打造的。</p></li>
-<li><p>View绑定到ViewModel，然后执行一些命令在向它请求一个动作。而反过来，ViewModel跟Model通讯，告诉它更新来响应UI。这样便使得为应用构建UI非常的容易。往一个应用程序上贴一个界面越容易，外观设计师就越容易使用Blend来创建一个漂亮的界面。同时，当UI和功能越来越松耦合的时候，功能的可测试性就越来越强。</p></li>
-</ul>
-
-
-<h6>优点：</h6>
-
-<ul>
-<li>减轻ViewController的负担</li>
-<li>提高了测试性</li>
-<li>强大的绑定机制</li>
-</ul>
-
-
-<h6>缺点：</h6>
-
-<ul>
-<li>极高的学习成本和开发成本</li>
-<li>数据绑定是的bug更难调试</li>
-<li>View Model的职责任然很重</li>
-<li>据本人了解，MVVM结合RAC使用能够发挥最大的效率</li>
-</ul>
-
-
-<p>总上我们可以得知：</p>
-
-<ul>
-<li>每个V都有一个对应的VM，V的数据展示盒样式都由其定制</li>
-<li>不引入双想绑定机制或者观察机制，而是通过传统的代理回调或者通知将UI事件传给外界</li>
-<li>VC只负责将VM装配给V，接受UI事件</li>
-</ul>
-
-
-<p>或许细心地能发现下面的好处</p>
-
-<ul>
-<li>View可以完全解耦，只需要确定好ViewModel和回调接口即可</li>
-<li>View Controller层可以尽可能少得和View的具体表现打交道，将这不分职责转给了View Model，减轻了* View Controller的负担</li>
-<li>使用回调的传统回调机制，学习成本低，数据和事件流入和流出易观察而且更易控制，降低维护和回调成本</li>
-</ul>
-
-
-<h2>Model-View-ViewModel-DataController-Model</h2>
-
-<p>好了重量级的东西来了，MVVM-DM（MVVM Without Binding With Data Controller）</p>
-
-<ul>
-<li>Model（M）:模型</li>
-<li>View(V）:视图</li>
-<li>ViewModel（VM）:加工后的数据）</li>
-<li>Data Controller：相关逻辑</li>
-<li>Model：对应Data Controller</li>
-</ul>
-
-
-<p><img src="/images/zhongliangji003.png" title="Caption" ></p>
-
-<p>或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！</p>
-
-<h6>优点：</h6>
-
-<ul>
-<li>避免了传统的MVVM架构VM层有可能变得臃肿的情况，更加清晰的模块职责</li>
-<li>业务逻辑解耦，数据的加工和处理都放在Data Controller中，View Controiller不用关心数据如何获得，如何处理，Data Controller不用关心界面如何展示，如何交互</li>
-<li>Data Controller与界面无关，所以可以有更好的可测试性和可服用性</li>
-</ul>
-
-
-<h6>缺点：</h6>
-
-<p>暂时没有发现（难度：一下比较难接受）</p>
-
-<h4>具体思路是：</h4>
-
-<ul>
-<li>1.每个Viewcontroller会有一个对应的Data Controller（包含页面的所有相关逻辑：View Related data Controller） ，在View的ViewDidLoad方法中初始化View，layoutSubViews中布局</li>
-<li>2.Viewcongtroller向Data Controller发送请求，Data Controller包含只是纯粹的Model相关逻辑（当然你也可以复用更小的Data Controller）如：网络请求，数据持久（请求），数据加工，其他。</li>
-<li>3.Data Controller将请求到得数据加工返回给View Controller</li>
-<li>4.View Controller将Data Controller返回的加工好的数据生成ViewModel（展示View所需要的数据），</li>
-<li>5.View Controller协调控制并将生成的View Model装配到View（每个View都有一个对应的View Model，可以有子View Model）上面显示，这里相当于使用ViewModel数据来渲染界面</li>
-</ul>
-
-
-<p>综上：</p>
-
-<ul>
-<li>将处理数据和获取数据的职责从传统的MVVM的Vm中抽取出来，成为Data Controller</li>
-<li>VC请求数据和将一些数据修改的事件（可以是UI事件触发）传递给Data Controller</li>
-<li>Data Controller收到VC的请求后，向M获取数据和更新数据，并将加工后的数据返回</li>
-<li>Data Controller还负责网络层和持久化层的逻辑</li>
-</ul>
-
-
-<blockquote><p>总结：</p>
-
-<ul>
-<li>层次清晰，职责明确。</li>
-<li>耦合性低，复用性高</li>
-<li>测试性高</li>
-<li>低学习成本，低开发成本</li>
-<li>高实施性，无需整体重构</li>
-</ul>
-</blockquote>
-
-<p>本文借鉴猿题库客户端架构设计，最后附上<a href="blog.devtang.com">唐巧大V</a>得博客，以表敬意</p>
-
-<p>参考：
-<a href="https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&amp;mid=444322139&amp;idx=1&amp;sn=c7bef4d439f46ee539aa76d612023d43&amp;scene=1&amp;srcid=1230NOb8TaHKmwxS9l8H6ctl&amp;key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&amp;ascene=0&amp;uin=MjMzNjU5MzYyMQ%3D%3D&amp;devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&amp;version=11020201&amp;pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C">猿题库 iOS 客户端架构设计</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[你还在等什么？]]></title>
-    <link href="http://al1020119.github.io/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/"/>
-    <updated>2015-12-30T16:21:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/12/30/ni-huan-zai-deng-shi-yao-?</id>
-    <content type="html"><![CDATA[<p>最近，一直在寻找灵感，摸索新技术，提高个人的开发能力，比如swift开源代码，也在研究前端开发，但是偶尔看到一个问题，学了这么久，也做了这么久，突然发现很多东西都忘了，或者说搞不太清楚，就是有些相似的弄混了，最后网上到处找。看完之后我也颇有感受，也想了很久，觉得整理一份重要的总结。</p>
-
-<p>宗旨内容如下：</p>
-
-<ul>
-<li>1：ios开发中常见技术的总结（主要是区别）</li>
-<li>2：作为一个iOS程序员必备的常识问题</li>
-<li>3：作为面试必备的一份宝典</li>
-<li>4：初学者快速了解相关技术</li>
-<li>5：老程序员快速回顾混淆，忘记的知识点</li>
-</ul>
-
-
-<p>后续我也会一直讲本文更新下去，有露点或者错误的地方望指出，或者联系<a href="http://al1020119.github.io/other/">我</a>，相互交流技术，谢谢！</p>
-
-<p>好了开始吧。。。。。。。。。。。</p>
-
-<!--more-->
-
-
-<h1>一：weak&amp;strong</h1>
-
-<ul>
-<li><p>strong表示保留它指向的堆上的内存区域不再指向这块区域了。
-也就是说我强力指向了一个区域，我们不再指向它的条件只有我们指向nil或者我自己也不在内存上，没有人strong指向我了。</p></li>
-<li><p>weak表示如果还没有人指向它了，它就会被清除内存，同时被指向nil，因为我不能读取不存在的东西。</p></li>
-</ul>
-
-
-<blockquote><p>weak只在IOS5.0使用</p></blockquote>
-
-<p>这并不是垃圾回收，我们用reference count表示堆上还有多少strong指针，当它变为0就马上释放。</p>
-
-<p>本地变量都是strong，编辑器帮你计算.</p>
-
-<h5>补充：</h5>
-
-<ul>
-<li>管理机制：使用了一种叫做引用计数的机制来管理内存中的对象。OC中每个对象都对应着他们自己的引用计数，引用计数可以理解为一个整数计数器，当使用alloc方法创建对象的时候，持有计数会自动设置为1。当你向一个对象发送retain消息 时，持有计数数值会增加1。相反，当你像一个对象发送release消息时，持有计数数值会减小1。当对象的持有计数变为0的时候，对象会释放自己所占用的内存。<em> retain(引用计数加1)->release（引用计数减1）</em> alloc（申请内存空间）->dealloc(释放内存空间)<em> readwrite: 表示既有getter，也有setter   (默认)</em> readonly: 表示只有getter，没有setter<em> nonatomic:不考虑线程安全</em> atomic:线程操作安全   （默认）
-线程安全情况下的setter和getter：
-
-<ul>
-<li>(NSString*) value  {              @synchronized(self) {                   return [[_value retain] autorelease];  <br/>
-       }
-     }</li>
-<li><p>  (void) setValue:(NSString*)aValue {            @synchronized(self) {               [aValue retain];                [<em>value release];               </em>value = aValue;   <br/>
- }     }</p></li>
-<li><p> retain: release旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1<em> assign: 简单赋值，不更改索引计数    （默认）</em> copy: 其实是建立了一个相同的对象,地址不同（retain：指针拷贝  copy：内容拷贝）<em> strong:（ARC下的）和（MRC）retain一样    （默认）</em> weak:（ARC下的）和（MRC）assign一样， weak当指向的内存释放掉后自动nil化，防止野指针<em> unsafe_unretained 声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了。</em> autoreleasing 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放。1、 类变量的@protected ,@private,@public,@package，声明各有什么含义？<em> @private：作用范围只能在自身类</em> @protected：作用范围在自身类和继承自己的子类  （默认）<em> @public：作用范围最大，可以在任何地方被访问。</em> @package：这个类型最常用于框架类的实例变量,同一包内能用，跨包就不能访问</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h1>二：catagory&amp;extension</h1>
-
-<h6>类别主要有3个作用：</h6>
-
-<ul>
-<li><p>(1)可以将类的实现分散到多个不同文件或多个不同框架中，方便代码管理。也可以对框架提供类的扩展（没有源码，不能修改）。</p></li>
-<li><p>(2)创建对私有方法的前向引用：如果其他类中的方法未实现，在你访问其他类的私有方法时编译器报错这时使用类别，在类别中声明这些方法（不必提供方法实现），编译器就不会再产生警告</p></li>
-<li><p>(3)向对象添加非正式协议：创建一个NSObject的类别称为“创建一个非正式协议”，因为可以作为任何类的委托对象使用。</p></li>
-</ul>
-
-
-<h6>他们的主要区别是：</h6>
-
-<ul>
-<li><p>1、形式上来看，extension是匿名的category。</p></li>
-<li><p>2、extension里声明的方法需要在mainimplementation中实现，category不强制要求。</p></li>
-<li><p>3、extension可以添加属性（变量），category不可以。</p></li>
-</ul>
-
-
-<h6>Category和Extension都是用来给已定义的类增加新的内容的。</h6>
-
-<ul>
-<li><p>Category和原有类的耦合更低一些，声明和实现都可以写在单独的文件里。但是只能为已定义类增加Method，而不能加入instance variable。</p></li>
-<li><p>Extension耦合比较高，声明可以单独写，但是实现必须写在原有类的@implementation中。可以增加Method和instance variable。</p></li>
-<li><p>Extension给人感觉更像是在编写类时为了封装之类的特性而设计，和类是同时编写的。而category则是在用到某一个framework中的类时临时增加的特性。</p></li>
-<li><p>Extension的一个特性就是可以redeclare一个instance variable，将之从readonly改为对内readwrite.</p></li>
-</ul>
-
-
-<blockquote><p>使用Extension可以更好的封装类，在h文件中能看到的都是对外的接口，其余的instance variable和对内的@property等都可以写在Extension，这样类的结构更加清晰。</p></blockquote>
-
-<h1>三：define&amp;const</h1>
-
-<ul>
-<li>define在预处理阶段进行替换，const常量在编译阶段使用<em> 宏不做类型检查，仅仅进行替换，const常量有数据类型，会执行类型检查</em> define不能调试，const常量可以调试<em> define定义的常量在替换后运行过程中会不断地占用内存，而const定义的常量存储在数据段只有一份copy，效率更高</em> define可以定义一些简单的函数，const不可以</li>
-</ul>
-
-
-<h1>四：synthesize&amp;denamic</h1>
-
-<ul>
-<li>1：通过@synthesize 指令告诉编译器在编译期间产生getter/setter方法。</li>
-<li>2：通过@dynamic指令，自己实现方法。</li>
-</ul>
-
-
-<p>有些存取是在运行时动态创建的，如在CoreData的NSManagedObject类使用的某些。如果你想这些情况下，声明和使用属性，但要避免缺少方法在编译时的警告，你可以使用@dynamic动态指令，而不是@synthesize合成指令。</p>
-
-<h1>五：UIView的setNeedsDisplay和setNeedsLayout方法</h1>
-
-<ul>
-<li><p>1、在Mac OS中NSWindow的父类是NSResponder，而在i OS 中UIWindow 的父类是UIVIew。程序一般只有一个窗口但是会又很多视图。</p></li>
-<li><p>2、UIView的作用：描画和动画，视图负责对其所属的矩形区域描画、布局和子视图管理、事件处理、可以接收触摸事件、事件信息的载体、等等。</p></li>
-<li><p>3、UIViewController 负责创建其管理的视图及在低内存的时候将他们从内存中移除。还为标准的系统行为进行响应。</p></li>
-<li></li>
-<li><p>4、layOutSubViews 可以在自己定制的视图中重载这个方法，用来调整子视图的尺寸和位置。</p></li>
-<li><p>5、UIView的setNeedsDisplay和setNeedsLayout方法。首先两个方法都是异步执行的。而setNeedsDisplay会调用自动调用drawRect方法，这样可以拿到UIGraphicsGetCurrentContext，就可以画画了。而setNeedsLayout会默认调用layoutSubViews，就可以处理子视图中的一些数据。</p></li>
-</ul>
-
-
-<p>综上所述：setNeedsDisplay方便绘图，而layoutSubViews方便出来数据</p>
-
-<p>setNeedDisplay告知视图它发生了改变，需要重新绘制自身，就相当于刷新界面.</p>
-
-<h1>六：UILayer&amp;UIView</h1>
-
-<p>UIView是iOS系统中界面元素的基础，所有的界面元素都继承自它。它本身完全是由CoreAnimation来实现的（Mac下似乎不是这样）。它真正的绘图部分，是由一个叫CALayer（Core Animation Layer）的类来管理。UIView本身，更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等等，实际上内部都是在访问它所包含的CALayer的相关属性。</p>
-
-<ol>
-<li><p>UIView是iOS系统中界面元素的基础，所有的界面元素都是继承自它。它本身完全是由CoreAnimation来实现的。它真正的绘图部分，是由一个CALayer类来管理。UIView本身更像是一个CALayer的管理器，访问它的跟绘图和跟坐标有关的属性，例如frame，bounds等，实际上内部都是在访问它所包含的CALayer的相关属性。</p></li>
-<li><p>UIView有个重要属性layer，可以返回它的主CALayer实例。</p></li>
-<li><p>UIView的CALayer类似UIView的子View树形结构，也可以向它的layer上添加子layer，来完成某些特殊的表示。即CALayer层是可以嵌套的。</p></li>
-<li><p>UIView的layer树形在系统内部，被维护着三份copy。分别是逻辑树，这里是代码可以操纵的；动画树，是一个中间层，系统就在这一层上更改属性，进行各种渲染操作；显示树，其内容就是当前正被显示在屏幕上得内容。</p></li>
-<li><p>动画的运作：对UIView的subLayer（非主Layer）属性进行更改，系统将自动进行动画生成，动画持续时间的缺省值似乎是0.5秒。</p></li>
-<li><p>坐标系统：CALayer的坐标系统比UIView多了一个anchorPoint属性，使用CGPoint结构表示，值域是0~1，是个比例值。</p></li>
-<li><p>渲染：当更新层，改变不能立即显示在屏幕上。当所有的层都准备好时，可以调用setNeedsDisplay方法来重绘显示。</p></li>
-<li><p>变换：要在一个层中添加一个3D或仿射变换，可以分别设置层的transform或affineTransform属性。</p></li>
-<li><p>变形：Quartz Core的渲染能力，使二维图像可以被自由操纵，就好像是三维的。图像可以在一个三维坐标系中以任意角度被旋转，缩放和倾斜。CATransform3D的一套方法提供了一些魔术般的变换效果。</p></li>
-</ol>
-
-
-<h1>七：UITableView&amp;UICollection</h1>
-
-<p>UICollectionView是iOS6新引进的API，用于展示集合视图，布局更加灵活，其用法类似于UITableView。而UICollectionView、UICollectionViewCell与UITableView、UITableViewCell在用法上有相似的也有不同的，下面是一些基本的使用方法：</p>
-
-<p>对于UITableView，仅需要UITableViewDataSource,UITableViewDelegate这两个协议，使用UICollectionView需要实现UICollectionViewDataSource,
-UICollectionViewDelegate，UICollectionViewDelegateFlowLayout这三个协议，这是因为UICollectionViewDelegateFlowLayout实际上是UICollectionViewDelegate的一个子协议，它继承了UICollectionViewDelegate，它的作用是提供一些定义UICollectionView布局模式的函数</p>
-
-<h1>八：NSProxy&amp;NSObject</h1>
-
-<h6>NSObjetc：</h6>
-
-<p>NSObject协议组对所有的Object－C下的objects都生效。 如果objects遵从该协议，就会被看作是first－class objects（一级类）。 另外，遵从该协议的objects的retain，release，autorelease等方法也服从objects的管理和在Foundation中定义的释放方法。一些容器中的对象也可以管理这些objects，比如 说NSArray 和NSDictionary定义的对象。 Cocoa的根类也遵循该协议，所以所有继承NSObjects的objects都有遵循该协议的特性。</p>
-
-<h6>NSProXY：</h6>
-
-<p>NSProxy 是一个虚基类，它为一些表现的像是其它对象替身或者并不存在的对象定义一套API。一般的，发送给代理的消息被转发给一个真实的对象或者代理本身load(或者将本身转换成)一个真实的对象。NSProxy的基类可以被用来透明的转发消息或者耗费巨大的对象的lazy 初始化。</p>
-
-<h1>九：layoutSubViews&amp;drawRects</h1>
-
-<h6>layoutSubviews在以下情况下会被调用：</h6>
-
-<ul>
-<li>1、init初始化不会触发layoutSubviews。</li>
-<li>2、addSubview会触发layoutSubviews。</li>
-<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
-<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
-<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
-<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
-<li>7、直接调用setLayoutSubviews。</li>
-</ul>
-
-
-<h6>drawRect在以下情况下会被调用：</h6>
-
-<ul>
-<li>1、如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 掉用是在Controller->loadView, Controller->viewDidLoad 两方法之后掉用的.所以不用担心在 控制器中,这些View的drawRect就开始画了.这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量 值).</li>
-<li>2、该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
-<li>3、通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
-<li>4、直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
-</ul>
-
-
-<h6>drawRect方法使用注意点：</h6>
-
-<ul>
-<li><p>1、 若使用UIView绘图，只能在drawRect：方法中获取相应的contextRef并绘图。如果在其他方法中获取将获取到一个invalidate 的ref并且不能用于画图。drawRect：方法不能手动显示调用，必须通过调用setNeedsDisplay 或 者 setNeedsDisplayInRect，让系统自动调该方法。</p></li>
-<li><p>2、若使用calayer绘图，只能在drawInContext: 中（类似鱼drawRect）绘制，或者在delegate中的相应方法绘制。同样也是调用setNeedDisplay等间接调用以上方法 3、若要实时画图，不能使用gestureRecognizer，只能使用touchbegan等方法来掉用setNeedsDisplay实时刷新屏幕</p></li>
-</ul>
-
-
-<h1>十：NSCache&amp;NSDcitionary</h1>
-
-<p>NSCache与可变集合有几点不同：</p>
-
-<ul>
-<li>NSCache类结合了各种自动删除策略，以确保不会占用过多的系统内存。如果其它应用需要内存时，系统自动执行这些策略。当调用这些策略时，会从缓存中删除一些对象，以最大限度减少内存的占用。</li>
-<li>NSCache是线程安全的，我们可以在不同的线程中添加、删除和查询缓存中的对象，而不需要锁定缓存区域。</li>
-<li>不像NSMutableDictionary对象，一个缓存对象不会拷贝key对象。</li>
-</ul>
-
-
-<p>NSCache和NSDictionary类似，不同的是系统回收内存的时候它会自动删掉它的内容。</p>
-
-<ul>
-<li>(1)可以存储(当然是使用内存)</li>
-<li>(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary</li>
-<li>(3)有固定客户.
-
-<h1>十一：AFnetworking&amp;ASIHttpRequest&amp;MKNetWorking</h1></li>
-</ul>
-
-
-<p> 一、底层实现</p>
-
-<pre><code>1、AFN的底层实现基于OC的NSURLConnection和NSURLSession
-2、ASI的底层实现基于纯C语言的CFNetwork框架
-3、因为NSURLConnection和NSURLSession是在CFNetwork之上的一层封装，因此ASI的运行性能高于AFN
-</code></pre>
-
-<p>AFNetworking的下载地址: <a href="https://github.com/AFNetworking/AFNetworking">https://github.com/AFNetworking/AFNetworking</a>
-二、对服务器返回的数据处理</p>
-
-<pre><code>1、ASI没有直接提供对服务器数据处理的方式，直接返回的是NSData/NSString
-2、AFN提供了多种对服务器数据处理的方式
-(1)JSON处理-直接返回NSDictionary或者NSArray
-(2)XML处理-返回的是xml类型数据，需对其进行解析
-(3)其他类型数据处理
-</code></pre>
-
-<p>三、监听请求过程</p>
-
-<pre><code>1、AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）
-* success : 请求成功后调用
-* failure : 请求失败后调用
-2、ASI提供了3套方案，每一套方案都能监听请求的完整过程
-（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）
-* 成为代理，遵守协议，实现协议中的代理方法
-* 成为代理，不遵守协议，自定义代理方法
-* 设置block
-</code></pre>
-
-<p>四、在文件下载和文件上传的使用难易度</p>
-
-<pre><code>1、AFN
-*不容易实现监听下载进度和上传进度
-*不容易实现断点续传
-*一般只用来下载不大的文件
-2、ASI
-*非常容易实现下载和上传
-*非常容易监听下载进度和上传进度
-*非常容易实现断点续传
-*下载大文件或小文件均可
-3、实现下载上传推荐使用ASI
-</code></pre>
-
-<p>五、网络监控</p>
-
-<pre><code>1、AFN自己封装了网络监控类，易使用
-2、ASI使用的是Reachability，因为使用CocoaPods下载ASI时，会同步下载Reachability，但Reachability作为网络监控使用较为复杂（相对于AFN的网络监控类来说）
-3、推荐使用AFN做网络监控-AFNetworkReachabilityManager
-</code></pre>
-
-<p>六、ASI提供的其他实用功能</p>
-
-<pre><code>1、控制信号旁边的圈圈要不要在请求过程中转
-2、可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
-3、可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）
-* 暂停/恢复/取消所有的请求
-* 监听整个队列中所有请求的下载进度和上传进度
-</code></pre>
-
-<p>MKNetworkKit 是一个使用十分方便，功能又十分强大、完整的iOS网络编程代码库。它只有两个类, 它的目标是使用像AFNetworking这么简单，而功能像ASIHTTPRequest(已经停止维护)那么强大。它除了拥有AFNetworking和ASIHTTPRequest所有功能以外，还有一些新特色，包括：</p>
-
-<ul>
-<li><p>1、高度的轻量级，仅仅只有2个主类</p></li>
-<li><p>2、自主操作多个网络请求</p></li>
-<li><p>3、更加准确的显示网络活动指标</p></li>
-<li><p>4、自动设置网络速度，实现自动的2G、3G、wifi切换</p></li>
-<li><p>5、自动缓冲技术的完美应用，实现网络操作记忆功能，当你掉线了又上线后，会继续执行未完成的网络请求</p></li>
-<li><p>6、可以实现网络请求的暂停功能</p></li>
-<li><p>7、准确无误的成功执行一次网络请求，摒弃后台的多次请求浪费</p></li>
-<li><p>8、支持图片缓冲</p></li>
-<li><p>9、支持ARC机制</p></li>
-<li><p>10、在整个app中可以只用一个队列（queue），队列的大小可以自动调整</p></li>
-</ul>
-
-
-<p><img src="/images/netqubiezongjie001.png" title="Caption" ></p>
-
-<h1>十二：load&amp;initialize</h1>
-
-<ul>
-<li>(void)load;</li>
-<li>(void)initialize;</li>
-</ul>
-
-
-<p>可以看到这两个方法都是以“+”开头的类方法，返回为空。通常情况下，我们在开发过程中可能不必关注这两个方法。如果有需要定制，我们可以在自定义的NSObject子类中给出这两个方法的实现，这样在类的加载和初始化过程中，自定义的方法可以得到调用。</p>
-
-<h6>load和initialize的共同特点</h6>
-
-<ul>
-<li><p>在不考虑开发者主动使用的情况下，系统最多会调用一次</p></li>
-<li><p>如果父类和子类都被调用，父类的调用一定在子类之前</p></li>
-<li><p>都是为了应用运行提前创建合适的运行环境</p></li>
-<li><p>在使用时都不要过重地依赖于这两个方法，除非真正必要</p></li>
-</ul>
-
-
-<blockquote><p>它们的相同点在于：方法只会被调用一次。（其实这是相对runtime来说的，后边会做进一步解释）。</p></blockquote>
-
-<hr />
-
-<pre><code>    The runtime sends initialize to each class in a program exactly one time just before the class, or any class that inherits from it, is sent its first message from within the program. (Thus the method may never be invoked if the class is not used.) The runtime sends the initialize message to classes in a thread-safe manner. Superclasses receive this message before their subclasses.
-</code></pre>
-
-<hr />
-
-<pre><code>        The load message is sent to classes and categories that are both dynamically loaded and statically linked, but only if the newly loaded class or category implements a method that can respond.
-</code></pre>
-
-<ul>
-<li>load是只要类所在文件被引用就会被调用，而initialize是在类或者其子类的第一个方法被调用前调用。所以如果类没有被引用进项目，就不会有load调用；但即使类文件被引用进来，但是没有使用，那么initialize也不会被调用。</li>
-</ul>
-
-
-<p>文档也明确阐述了方法调用的顺序：父类(Superclass)的方法优先于子类(Subclass)的方法，类中的方法优先于类别(Category)中的方法。</p>
-
-<table>
-<thead>
-<tr>
-<th>区别 </th>
-<th style="text-align:center;">   +(void)load </th>
-<th style="text-align:right;">   +(void)initialize</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 执行时机 </td>
-<td style="text-align:center;">    在程序运行后立即执行 </td>
-<td style="text-align:right;">    在类的方法第一次被调时执行</td>
-</tr>
-<tr>
-<td> 若自身未定义，是否沿用父类的方法？ </td>
-<td style="text-align:center;">     否 </td>
-<td style="text-align:right;">   是</td>
-</tr>
-<tr>
-<td> 类别中的定义</td>
-<td style="text-align:center;">   全都执行，但后于类中的方法 </td>
-<td style="text-align:right;">   覆盖类中的方法，只执行一个</td>
-</tr>
-</tbody>
-</table>
-
-
-<h1>十三：ARC-Block&amp;MRC-Block</h1>
-
-<p>block虽然好用，但是里面也有不少坑，最大的坑莫过于循环引用问题。稍不注意，可能就会造成内存泄漏。这节，我将从源码的角度来分析造成循环引用问题的根本原因。并解释变量前加<strong>block，和</strong>weak的区别。</p>
-
-<h5>明确两点</h5>
-
-<p>1,Block可以访问Block函数以及语法作用域以内的外部变量。也就是说:一个函数里定义了个block，这个block可以访问该函数的内部变量(当然还包括静态，全局变量)-即block可以使用和本身定义范围相同的变量。
-2,Block其实是特殊的Objective-C对象，可以使用copy,release等来管理内存,但和一般的NSObject的管理方式有些不同，稍后会说明。</p>
-
-<h6>MRC:防止 block 对self的引用 解决办法</h6>
-
-<pre><code>__block typeof(self) weakSelf = self;
-</code></pre>
-
-<h6>ARC:防止 block 对self的引用 解决办法</h6>
-
-<pre><code>__weak typeof(self) weakSelf = self;
-</code></pre>
-
-<blockquote><p>对于非ARC下, 为了防止循环引用, 我们使用__block来修饰在Block中使用的对象:</p>
-
-<p>对于ARC下, 为了防止循环引用, 我们使用<strong>weak来修饰在Block中使用的对象。原理就是:ARC中，Block中如果引用了</strong>strong修饰符的自动变量，则相当于Block对该变量的引用计数+1。</p></blockquote>
-
-<h1>十四：MVC&amp;MVVM</h1>
-
-<ul>
-<li><p>在MVC里，View是可以直接访问Model的！从而，View里会包含Model信息，不可避免的还要包括一些业务逻辑。 MVC模型关注的是Model的不变，所以，在MVC模型里，Model不依赖于View，但是 View是依赖于Model的。不仅如此，因为有一些业务逻辑在View里实现了，导致要更改View也是比较困难的，至少那些业务逻辑是无法重用的。</p></li>
-<li><p>MVVM在概念上是真正将页面与数据逻辑分离的模式，它把数据绑定工作放到一个JS里去实现，而这个JS文件的主要功能是完成数据的绑定，即把model绑定到UI的元素上。</p></li>
-</ul>
-
-
-<blockquote><p>有人做过测试：使用Angular（MVVM）代替Backbone（MVC）来开发，代码可以减少一半。</p></blockquote>
-
-<p>此外，MVVM另一个重要特性，双向绑定。它更方便你同时维护页面上都依赖于某个字段的N个区域，而不用手动更新它们。</p>
-
-<h6>MVVM小酌：</h6>
-
-<ol>
-<li><p>Model层是少不了的了，我们得有东西充当DTO(数据传输对象)，当然，用字典也是可以的，编程么，要灵活一些。Model层是比较薄的一层，如果学过Java的小伙伴的话，对JavaBean应该不陌生吧。</p></li>
-<li><p>ViewModel层，就是View和Model层的粘合剂，他是一个放置用户输入验证逻辑，视图显示逻辑，发起网络请求和其他各种各样的代码的极好的地方。说白了，就是把原来ViewController层的业务逻辑和页面逻辑等剥离出来放到ViewModel层。</p></li>
-<li><p>View层，就是ViewController层，他的任务就是从ViewModel层获取数据，然后显示。</p></li>
-</ol>
-
-
-<h6>总结：</h6>
-
-<ul>
-<li>优点：MVVM就是在MVC的基础上加入了一个视图模型viewModel，用于数据有效性的验证，视图的展示逻辑，网络数据请求及处理，其他的数据处理逻辑集合，并定下相关接口和协议。相比起MVC，MVVM中vc的职责和复杂度更小，对数据处理逻辑的测试更加方便，对bug的原因排查更加方便，代码可阅读性，重用性和可维护性更高。MVVM耦合性更低。MVVM不同层级的职责更加明确，更有利于代码的编写和团队的协作。
-缺点：MVVM相比MVC代码量有所增加。MVVM相比MVC在代码编写之前需要有更清晰的模式思路。</li>
-</ul>
-
-
-<h1>十五：Object&amp;Swift</h1>
-
-<p>Obejective-C复杂的语法，更加简单易用、有未来，让许多开发者心动不已，Swift明显的特点有：</p>
-
-<ul>
-<li><p>苹果宣称 Swift 的特点是：快速、现代、安全、互动，而且明显优于 Objective-C 语言</p></li>
-<li><p>可以使用现有的 <code>Cocoa</code> 和 <code>Cocoa Touch</code> 框架</p></li>
-<li><p>Swift 取消了 Objective C 的指针及其他不安全访问的使用</p></li>
-<li><p>舍弃 Objective C 早期应用 <code>Smalltalk</code> 的语法，全面改为句点表示法</p></li>
-<li><p>提供了类似 Java 的名字空间(namespace)、泛型(generic)、运算对象重载（operator overloading）</p></li>
-<li><p>Swift 被简单的形容为 “没有 C 的 Objective-C”（Objective-C without the C）</p></li>
-<li><p>为苹果开发工具带来了Xcode Playgrounds功能，该功能提供强大的互动效果，能让Swift源代码在撰写过程中实时显示出其运行结果；</p></li>
-<li><p>基于C和Objective-C，而却没有C的一些兼容约束；</p></li>
-<li><p>采用了安全的编程模式；</p></li>
-<li><p>界面基于Cocoa和Cocoa Touch框架；</p></li>
-<li><p>保留了Smalltalk的动态特性。</p></li>
-</ul>
-
-
-<h1>十六：TCP&amp;UDP</h1>
-
-<ul>
-<li><p>TCP（Transmission Control Protocol，传输控制协议）是基于连接的协议，也就是说，在正式收发数据前，必须和对方建立可靠的连接。一个TCP连接必须要经过三次“对话”才能建立起来，其中的过程非常复杂，我们这里只做简单、形象的介绍，你只要做到能够理解这个过程即可。</p></li>
-<li><p>UDP（User Data Protocol，用户数据报协议）是与TCP相对应的协议。它是面向非连接的协议，它不与对方建立连接，而是直接就把数据包发送过去！
-UDP适用于一次只传送少量数据、对可靠性要求不高的应用环境。</p></li>
-</ul>
-
-
-<table>
-<thead>
-<tr>
-<th>  区别</th>
-<th style="text-align:center;"> TCP</th>
-<th style="text-align:right;">  UDP </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 是否连接  </td>
-<td style="text-align:center;">面向连接  </td>
-<td style="text-align:right;">面向非连接  </td>
-</tr>
-<tr>
-<td> 传输可靠性  </td>
-<td style="text-align:center;">可靠  </td>
-<td style="text-align:right;">不可靠  </td>
-</tr>
-<tr>
-<td> 应用场合  </td>
-<td style="text-align:center;">传输大量数据  </td>
-<td style="text-align:right;">少量数据  </td>
-</tr>
-<tr>
-<td> 速度 </td>
-<td style="text-align:center;"> 慢 </td>
-<td style="text-align:right;"> 快 </td>
-</tr>
-</tbody>
-</table>
-
-
-<h1>十七：POST&amp;GET</h1>
-
-<ol>
-<li>get是从服务器上获取数据，post是向服务器传送数据。</li>
-<li>get是把参数数据队列加到提交表单的ACTION属性所指的URL中，值和表单内各个字段一一对应，在URL中可以看到。post是通过HTTP post机制，将表单内各个字段与其内容放置在HTML HEADER内一起传送到ACTION属性所指的URL地址。用户看不到这个过程。</li>
-<li>对于get方式，服务器端用Request.QueryString获取变量的值，对于post方式，服务器端用Request.Form获取提交的数据。</li>
-<li>get传送的数据量较小，不能大于2KB。post传送的数据量较大，一般被默认为不受限制。但理论上，IIS4中最大量为80KB，IIS5中为100KB。</li>
-<li>get安全性非常低，post安全性较高。但是执行效率却比Post方法好。</li>
-</ol>
-
-
-<p>建议：
-1、get方式的安全性较Post方式要差些，包含机密信息的话，建议用Post数据提交方式；
-2、在做数据查询时，建议用Get方式；而在做数据添加、修改或删除时，建议用Post方式；</p>
-
-<h1>十八：长链接&amp;短链接</h1>
-
-<ul>
-<li>TCP短连接</li>
-</ul>
-
-
-<p>我们模拟一下TCP短连接的情况，client向server发起连接请求，server接到请求，然后双方建立连接。client向server 发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起 close操作。为什么呢，一般的server不会回复完client后立即关闭连接的，当然不排除有特殊的情况。从上面的描述看，短连接一般只会在 client/server间传递一次读写操作</p>
-
-<ul>
-<li>TCP长连接</li>
-</ul>
-
-
-<p>接下来我们再模拟一下长连接的情况，client向server发起连接，server接受client连接，双方建立连接。Client与server完成一次读写之后，它们之间的连接并不会主动关闭，后续的读写操作会继续使用这个连接。</p>
-
-<h6>长连接短连接操作过程</h6>
-
-<ul>
-<li>短连接的操作步骤是：</li>
-</ul>
-
-
-<p>建立连接——数据传输——关闭连接…建立连接——数据传输——关闭连接</p>
-
-<ul>
-<li>长连接的操作步骤是：</li>
-</ul>
-
-
-<p>建立连接——数据传输…（保持连接）…数据传输——关闭连接</p>
-
-<h6>什么时候用长连接，短连接？</h6>
-
-<ul>
-<li><p>长连接多用于操作频繁，点对点的通讯，而且连接数不能太多情况，。每个TCP连接都需要三步握手，这需要时间，如果每个操作都是先连接，再操作的话那么处理速度会降低很多，所以每个操作完后都不断开，次处理时直接发送数据包就OK了，不用建立TCP连接。例如：数据库的连接用长连接， 如果用短连接频繁的通信会造成socket错误，而且频繁的socket 创建也是对资源的浪费。</p></li>
-<li><p>而像WEB网站的http服务一般都用短链接，因为长连接对于服务端来说会耗费一定的资源，而像WEB网站这么频繁的成千上万甚至上亿客户端的连接用短连接会更省一些资源，如果用长连接，而且同时有成千上万的用户，如果每个用户都占用一个连接的话，那可想而知吧。所以并发量大，但每个用户无需频繁操作情况下需用短连好。</p></li>
-</ul>
-
-
-<h6>长连接和短连接的优点和缺点</h6>
-
-<p>由上可以看出，长连接可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。对于频繁请求资源的客户来说，较适用长连接。不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。在长连接的应用场景下，client端一般不会主动关闭它们之间的连接，Client与server之间的连接如果一直不关闭的话，会存在一个问题，随着客户端连接越来越多，server早晚有扛不住的时候，这时候server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数，这样可以完全避免某个蛋疼的客户端连累后端服务。</p>
-
-<ul>
-<li><p>短连接对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。但如果客户请求频繁，将在TCP的建立和关闭操作上浪费时间和带宽。</p></li>
-<li><p>长连接和短连接的产生在于client和server采取的关闭策略，具体的应用场景采用具体的策略，没有十全十美的选择，只有合适的选择。</p></li>
-</ul>
-
-
-<h1>十九：内存泄露&amp;内存溢出</h1>
-
-<ul>
-<li><p>内存溢出 out of memory，是指程序在申请内存时，没有足够的内存空间供其使用，出现out of memory；比如申请了一个integer,但给它存了long才能存下的数，那就是内存溢出。</p></li>
-<li><p>内存泄露 memory leak，是指程序在申请内存后，无法释放已申请的内存空间，一次内存泄露危害可以忽略，但内存泄露堆积后果很严重，无论多少内存,迟早会被占光。</p></li>
-</ul>
-
-
-<blockquote><p>memory leak会最终会导致out of memory！</p></blockquote>
-
-<p>内存溢出就是你要求分配的内存超出了系统能给你的，系统不能满足需求，于是产生溢出。</p>
-
-<h1>二十：CoreData&amp;SQLite3</h1>
-
-<p>首先，coredata和sqlite的概念不同，core为对象周期管理，而sqlite为dbms。</p>
-
-<ul>
-<li>使用方便性。实际上，一个成熟的工程中一定是对数据持久化进行了封装的，因此底层使用的到底是core data还是sqlite，不应该被业务逻辑开发者关心。因此，即使习惯写SQL查询的人，也应该避免在业务逻辑中直接编写SQL语句。</li>
-<li>存储性能，在写入性能上，因为都是使用的sqlite格式作为磁盘存储格式，因此其性能是一样的，如果你觉得用core data写的慢，很可能是你用sqlite的时候写的每条数据的内容没有core data时多，或者是你批量写入的时候每写入一条就调用了一次save。</li>
-<li>查询性能，core data因为要兼容多种后端格式，因此查询时，其可用的语句比直接使用sqlite少，因此有些fetch实际上不是在sqlite中执行的。但这样未必会降低查询效率。因为iPhone的flash memory速度还是很快的。我的经验是大部分时候，在内存不是很紧张时，直接fetch一个entity的所有数据然后在内存中做filter往往比使用predicate在fetch时过滤更快。如果你觉的查询慢，很可能是查询方式有问题，可以把core data的debug模式打开，看一下到底执行了多少SQL语句，相信其中大部分是可以通过改写core data的调用方式避免的。</li>
-<li>core data的一个比较大的痛点是多人合作开发的时候，管理coredata的模型需要很小心，尤其是合并的时候，他的data model是XML格式的，手动resolve比较烦心。</li>
-<li>core data还有其他sql所不具备的优点，比如对undo的支持，多个context实现sketchbook类似的功能。为ManagedObject优化的row cash等。</li>
-<li>另外core data是支持多线程的，但需要thread confinement的方式实现,使用了多线程之后可以最大化的防止阻塞主线程。</li>
-</ul>
-
-
-<h1>二十一：传值通知&amp;推送通知（本地&amp;远程）</h1>
-
-<ul>
-<li>传值通知：类似通知，代理，Block实现值得传递</li>
-<li>推送通知：推送到用户手机对应的App上（主要是不再前台的情况）</li>
-</ul>
-
-
-<h6>本地通知。</h6>
-
-<p>local notification，用于基于时间行为的通知，比如有关日历或者todo列表的小应用。另外，应用如果在后台执行，iOS允许它在受限的时间内运行，它也会发现本地通知有用。比如，一个应用，在后台运行，向应用的服务器端获取消息，当消息到达时，比如下载更新版本的提示消息，通过本地通知机制通知用户。</p>
-
-<p>本地通知是UILocalNotification的实例，主要有三类属性：</p>
-
-<ul>
-<li>scheduled time，时间周期，用来指定iOS系统发送通知的日期和时间；</li>
-<li>notification type，通知类型，包括警告信息、动作按钮的标题、应用图标上的badge（数字标记）和播放的声音；</li>
-<li>自定义数据，本地通知可以包含一个dictionary类型的本地数据。</li>
-</ul>
-
-
-<p>对本地通知的数量限制，iOS最多允许最近本地通知数量是64个，超过限制的本地通知将被iOS忽略。</p>
-
-<h6>远程通知（需要服务器）。</h6>
-
-<p>流程大概是这样的</p>
-
-<ul>
-<li><p>1.生成CertificateSigningRequest.certSigningRequest文件</p></li>
-<li><p>2.将CertificateSigningRequest.certSigningRequest上传进developer，导出.cer文件</p></li>
-<li><p>3.利用CSR导出P12文件</p></li>
-<li><p>4.需要准备下设备token值（无空格）</p></li>
-<li><p>5.使用OpenSSL合成服务器所使用的推送证书</p></li>
-</ul>
-
-
-<p>一般使用极光推送，步骤是一样的，只是我们使用的服务器是极光的，不需要自己大服务器！</p>
-
-<h1>二十二：第三方库&amp;第三方平台</h1>
-
-<ul>
-<li>第三方库:一般是指大牛封装好的一个框架（库），或者第三方给我们提供的一个库，这里比较笼统
-*第三方平台：指第三方提供的一些服务，其实很多方面跟第三方库是一样的，但是还是存在一些区别。</li>
-</ul>
-
-
-<h6>区别：</h6>
-
-<ul>
-<li>库：AFN，ASI，Alomofire，MJRefresh，MJExtension，MBProgressHUD</li>
-<li>平台：极光，百度，友盟，Mob，环信，
-
-<h1>二十三：KVO&amp;KVC</h1></li>
-</ul>
-
-
-<h5>底层实现：</h5>
-
-<ul>
-<li><p>KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa- swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据。</p></li>
-<li><p>当观察者为一个对象的属性进行了注册，被观察对象的isa指针被修改的时候，isa指针就会指向一个中间类，而不是真实的类。所以isa指 针其实不需要指向实例对象真实的类。所以我们的程序最好不要依赖于isa指针。在调用类的方法的时候，最好要明确对象实例的类名。</p></li>
-</ul>
-
-
-<h6>KVO概述</h6>
-
-<p>KVO,即：Key-Value Observing，它提供一种机制，当指定的对象的属性被修改后，则对象就会接受到通知。简单的说就是每次指定的被观察的对象的属性被修改后，KVO就会自动通知相应的观察者了。</p>
-
-<h6>使用方法</h6>
-
-<p>系统框架已经支持KVO，所以程序员在使用的时候非常简单。</p>
-
-<ol>
-<li><p>注册，指定被观察者的属性，</p></li>
-<li><p>实现回调方法</p></li>
-<li><p>移除观察</p></li>
-</ol>
-
-
-<h6>KVC概述</h6>
-
-<p>KVC是KeyValueCoding的简称，它是一种可以直接通过字符串的名字(key)来访问类属性(实例变量)的机制。而不是通过调用Setter、Getter方法访问。</p>
-
-<p>当使用KVO、Core Data、CocoaBindings、AppleScript(Mac支持)时，KVC是关键技术。</p>
-
-<h6>使用方法</h6>
-
-<p>关键方法定义在：NSKeyValueCodingprotocol</p>
-
-<p>KVC支持类对象和内建基本数据类型。</p>
-
-<ul>
-<li><p>获取值</p>
-
-<ul>
-<li><p>valueForKey:，传入NSString属性的名字。</p></li>
-<li><p>valueForKeyPath:，传入NSString属性的路径，xx.xx形式。</p></li>
-<li><p>valueForUndefinedKey它的默认实现是抛出异常，可以重写这个函数做错误处理。</p></li>
-</ul>
-</li>
-<li><p>修改值</p>
-
-<ul>
-<li><p>setValue:forKey:</p></li>
-<li><p>setValue:forKeyPath:</p></li>
-<li><p>setValue:forUndefinedKey:</p></li>
-<li><p>setNilValueForKey:当对非类对象属性设置nil时，调用，默认抛出异常。</p></li>
-</ul>
-</li>
-<li><p>一对多关系成员的情况</p>
-
-<ul>
-<li><p>mutableArrayValueForKey：有序一对多关系成员  NSArray</p></li>
-<li><p>mutableSetValueForKey：无序一对多关系成员  NSSet</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h6>补充：KVO与Notification之间的区别：</h6>
-
-<ul>
-<li><p>notification是需要一个发送notification的对象，一般是notificationCenter，来通知观察者。</p></li>
-<li><p>KVO是直接通知到观察对象，并且逻辑非常清晰，实现步骤简单。</p></li>
-</ul>
-
-
-<h1>二十四：时间传递&amp;响应者链</h1>
-
-<h6>事件的产生和传递过程：</h6>
-
-<ul>
-<li><p>1.发生触摸事件后，系统会将该事件加入到一个由UIApplication管理的队列事件中</p></li>
-<li><p>2.UIApplication会从事件队列中取出最前面的事件，并将事件分发下去以便处理，通常会先发送事件给应用程序的主窗口(keyWindow)</p></li>
-<li><p>3.主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件</p></li>
-<li><p>4.找到合适的视图控件后，就会调用视图控件的touches方法来作事件的具体处理：touchesBegin&hellip; touchesMoved&hellip;touchesEnded等</p></li>
-<li><p>5.这些touches方法默认的做法是将事件顺着响应者链条向上传递，将事件叫个上一个相应者进行处理</p></li>
-</ul>
-
-
-<blockquote><p>一般事件的传递是从父控件传递到子控件的</p>
-
-<p>如果父控件接受不到触摸事件，那么子控件就不可能接收到触摸事件
-UIView不能接收触摸事件的三种情况：</p></blockquote>
-
-<ul>
-<li><p>1.不接受用户交互：userInteractionEnabled = NO;</p></li>
-<li><p>2.隐藏：hidden = YES;</p></li>
-<li><p>3.透明：alpha = 0.0~0.01</p>
-
-<pre><code>  用户的触摸事件首先会由系统截获，进行包装处理等。
-  然后递归遍历所有的view，进行碰触测试(hitTest)，直到找到可以处理事件的view。
-  - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;   // recursively calls -pointInside:withEvent:. point is in the receiver's coordinate system
-  - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event;   // default returns YES if point is in bounds
-  大致的过程application –&gt; window –&gt; root view –&gt;……–&gt;lowest view 
-</code></pre></li>
-</ul>
-
-
-<h6>响应者链</h6>
-
-<p>响应者链条其实就是很多响应者对象(继承自UIResponder的对象)一起组合起来的链条称之为响应者链条</p>
-
-<p>一般默认做法是控件将事件顺着响应者链条向上传递，将事件交给上一个响应者进行处理。那么如何判断当前响应者的上一个响应者是谁呢？有以下两个规则：</p>
-
-<ul>
-<li><p>1.判断当前是否是控制器的View，如果是控制器的View，上一个响应者就是控制器</p></li>
-<li><p>2.如果不是控制器的View，上一个响应者就是父控件</p>
-
-<p>  当有view能够处理触摸事件后，开始响应事件。
-      系统会调用view的以下方法：</p>
-
-<pre><code>  - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-  - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-  - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-  - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-  可以多对象共同响应事件。只需要在以上方法重载中调用super的方法。
-
-  大致的过程initial view –&gt; super view –&gt; …..–&gt; view controller –&gt; window –&gt; Application
-
-  需要特别注意的一点是，传递链中时没有controller的，因为controller本身不具有大小的概念。但是响应链中是有controller的，因为controller继承自UIResponder。
-</code></pre></li>
-</ul>
-
-
-<blockquote><p>UIApplication&ndash;>UIWindow&ndash;>递归找到最合适处理的控件&ndash;>控件调用touches方法&ndash;>判断是否实现touches方法&ndash;>没有实现默认会将事件传递给上一个响应者&ndash;>找到上一个响应者&ndash;>找不到方法作废</p></blockquote>
-
-<p>PS：利用响应者链条我们可以通过调用touches的super 方法，让多个响应者同时响应该事件。</p>
-
-<h1>二十五：堆&amp;栈</h1>
-
-<h6>一、堆栈空间分配区别：</h6>
-
-<pre><code>* 1、栈（操作系统）：由操作系统自动分配释放 ，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈；
-
-* 2、堆（操作系统）： 一般由程序员分配释放， 若程序员不释放，程序结束时可能由OS回收，分配方式倒是类似于链表。
-</code></pre>
-
-<h6>二、堆栈缓存方式区别：</h6>
-
-<pre><code>* 1、栈使用的是一级缓存， 他们通常都是被调用时处于存储空间中，调用完毕立即释放；
-
-* 2、堆是存放在二级缓存中，生命周期由虚拟机的垃圾回收算法来决定（并不是一旦成为孤儿对象就能被回收）。所以调用这些对象的速度要相对来得低一些。
-</code></pre>
-
-<h6>三、堆栈数据结构区别：</h6>
-
-<pre><code>* 堆（数据结构）：堆可以被看成是一棵树，如：堆排序；
-
-* 栈（数据结构）：一种先进后出的数据结构。 
-</code></pre>
-
-<h6>内存其他补充：</h6>
-
-<ul>
-<li>全局区（静态区）（static）—，全局变量和静态变量的存储是放在一块的，初始化的全局变量和静态变量在一块区域， 未初始化的全局变量和未初始化的静态变量在相邻的另一块区域。 - 程序结束后有系统释放</li>
-<li>文字常量区—常量字符串就是放在这里的。 程序结束后由系统释放</li>
-<li>程序代码区—存放函数体的二进制代码。</li>
-</ul>
-
-
-<h1>二十六：UDID&amp;UUID</h1>
-
-<ul>
-<li>UDID是Unique Device Identifier的缩写,中文意思是设备唯一标识.</li>
-</ul>
-
-
-<p>在很多需要限制一台设备一个账号的应用中经常会用到,在Symbian时代,我们是使用IMEI作为设备的唯一标识的,可惜的是Apple官方不允许开发者获得设备的IMEI.</p>
-
-<pre><code>[UIDevice currentDevice] uniqueIdentifier]
-</code></pre>
-
-<p>但是我们需要注意的一点是,对于已越狱了的设备,UDID并不是唯一的.使用Cydia插件UDIDFaker,可以为每一个应用分配不同的UDID.
-所以UDID作为标识唯一设备的用途已经不大了.</p>
-
-<ul>
-<li>UUID是Universally Unique Identifier的缩写,中文意思是通用唯一识别码.</li>
-</ul>
-
-
-<p>由网上资料显示,UUID是一个软件建构的标准,也是被开源软件基金会(Open Software Foundation,OSF)的组织在分布式计算环境(Distributed Computing Environment,DCE)领域的一部份.UUID的目的,是让分布式系统中的所有元素,都能有唯一的辨识资讯,而不需要透过中央控制端来做辨识资讯的指定.</p>
-
-<h1>二十七：CPU&amp;GPU</h1>
-
-<ul>
-<li><p>CPU:中央处理器（英文Central Processing Unit）是一台计算机的运算核心和控制核心。CPU、内部存储器和输入/输出设备是电子计算机三大核心部件。其功能主要是解释计算机指令以及处理计算机软件中的数据。</p></li>
-<li><p>GPU:英文全称Graphic Processing Unit，中文翻译为“图形处理器”。一个专门的图形核心处理器。GPU是显示卡的“大脑”，决定了该显卡的档次和大部分性能，同时也是2D显示卡和3D显示卡的区别依据。2D显示芯片在处理3D图像和特效时主要依赖CPU的处理能力，称为“软加速”。3D显示芯片是将三维图像和特效处理功能集中在显示芯片内，也即所谓的“硬件加速”功能。</p></li>
-</ul>
-
-
-<h1>二十八:点（pt）&amp;像素（px）</h1>
-
-<ul>
-<li><p>像素（pixels）是数码显示上最小的计算单位。在同一个屏幕尺寸，更高的PPI（每英寸的像素数目），就能显示更多的像素，同时渲染的内容也会更清晰。</p></li>
-<li><p>点（points）是一个与分辨率无关的计算单位。根据屏幕的像素密度，一个点可以包含多个像素（例如，在标准Retina显示屏上1 pt里有2 x 2个像素）。</p></li>
-</ul>
-
-
-<p>当你为多种显示设备设计时，你应该以“点”为单位作参考，但设计还是以像素为单位设计的。这意味着仍然需要以3种不同的分辨率导出你的素材，不管你以哪种分辨率设计你的应用。</p>
-
-<h1>二十九：属性&amp;成员变量：</h1>
-
-<p>成员变量是不与外界接触的变量，应用于类的内部，如果你说那用@Public外部不就是可以访问了么。简单的说public只能适当使用，不要泛滥，否则就像你把钥匙插在你自己家门上了。谁来都可以开门。毫无安全性。</p>
-
-<p>由于成员变量的私有性，为了解决外部访问的问题就有了属性变量。属性变量个人认为最大的好处就是让其他对象访问这个变量。而且你可以设置只读、可写等等属性，同时设置的方法我们也可以自己定义。记住一点，属性变量主要是用于与其他对象相互交互的变量。</p>
-
-<p>如果对于上面所说还是含糊不清那就记住这几点吧！</p>
-
-<ul>
-<li>1.只有类内使用，属性为private，那么就定义成员变量。</li>
-<li>2.如果你发现你需要的这个属性需要是public的，那么毫不犹豫就用属性在.h中定义。</li>
-<li>3.当你自己内部需要setter实现一些功能的时候，用属性在.m中定义。</li>
-<li>4.当你自己内部需要getter实现一些功能的时候，用属性在.m中定义。</li>
-</ul>
-
-
-<h1>三十：IBInspectable &amp; IBDesignable</h1>
-
-<ul>
-<li><p>IBInspectable 属性提供了访问旧功能的新方式：用户自定义的运行时属性。从目前的身份检查器（identity inspector）中访问，这些属性在 Interface Builder 被整合到 Xcode 之前就可用了。他们提供了一个强有力的机制来配置一个 NIB，XIB，或者 storyboard 实例中的任何键值编码（key-value coded）属性：</p></li>
-<li><p>IBDesignable 自定义视图也在 Xcode 6 中亮相了。当应用到 UIView 或 NSView 子类中的时候，@ IBDesignable 让 Interface Builder 知道它应该在画布上直接渲染视图。你会看到你的自定义视图在每次更改后不必编译并运行你的应用程序就会显示。</p>
-
-<ul>
-<li>标记一个自定义视图为 IBDesignable，只需在类名前加上 @IBDesignable 的前缀（或是 Objective-C 里的 IB_DESIGNABLE 宏）。你的初始化、布置和绘制方法将被用来在画布上渲染你的自定义视图：</li>
-</ul>
-</li>
-</ul>
-
-
-<h1>三十一：串行(Serial) &amp; 并行(Concurrent)</h1>
-
-<ul>
-<li>串行和并行描述的是任务和任务之间的执行方式. 串行是任务A执行完了任务B才能执行, 它们俩只能顺序执行. 并行则是任务A和任务B可以同时执行.</li>
-</ul>
-
-
-<h1>三十二：同步(Synchronous) &amp; 异步(Asynchronous)</h1>
-
-<ul>
-<li>同步和异步描述的其实就是函数什么时候返回. 比如用来下载图片的函数A: {download image}, 同步函数只有在image下载结束之后才返回, 下载的这段时间函数A只能搬个小板凳在那儿坐等&hellip; 而异步函数, 立即返回. 图片会去下载, 但函数A不会去等它完成. So, 异步函数不会堵塞当前线程去执行下一个函数!</li>
-</ul>
-
-
-<h1>三十三：并发(Concurrency) &amp; 并行(Parallelism)</h1>
-
-<p>这个更容易混淆了, 先用Ray大神的示意图和说明来解释一下: 并发是程序的属性(property of the program), 而并行是计算机的属性(property of the machine).
-还是很抽象? 那我再来解释一下, 并行和并发都是用来让不同的任务可以"同时执行", 只是并行是伪同时, 而并发是真同时. 假设你有任务T1和任务T2(这里的任务可以是进程也可以是线程):</p>
-
-<ul>
-<li><ol type="a">
-<li>首先如果你的CPU是单核的, 为了实现"同时"执行T1和T2, 那只能分时执行, CPU执行一会儿T1后马上再去执行T2, 切换的速度非常快(这里的切换也是需要消耗资源的, context switch), 以至于你以为T1和T2是同时执行了(但其实同一时刻只有一个任务占有着CPU).</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>如果你是多核CPU, 那么恭喜你, 你可以真正同时执行T1和T2了, 在同一时刻CPU的核心core1执行着T1, 然后core2执行着T2, great!</li>
-</ol>
-</li>
-</ul>
-
-
-<blockquote><p>其实我们平常说的并发编程包括狭义上的"并行"和"并发", 你不能保证你的代码会被并行执行, 但你可以以并发的方式设计你的代码. 系统会判断在某一个时刻是否有可用的core(多核CPU核心), 如果有就并行(parallelism)执行, 否则就用context switch来分时并发(concurrency)执行. 最后再以Ray大神的话结尾: Parallelism requires Concurrency, but Concurrency does not guarantee Parallelism!</p></blockquote>
-
-<h1>三十四：黑盒测试&amp;白盒测试</h1>
-
-<p>首先纠正 这个问题不属于“硬件”类的</p>
-
-<p>什么是黑盒测试和白盒测试？
-任何工程产品（注意是任何工程产品）都可以使用以下两种方法之一进行测试。</p>
-
-<ul>
-<li>黑盒测试：已知产品的功能设计规格，可以进行测试证明每个实现了的功能是否符合要求。</li>
-<li>白盒测试：已知产品的内部工作过程，可以通过测试证明每种内部操作是否符合设计规格要求，所有内部成分是否以经过检查。</li>
-</ul>
-
-
-<h5>黑盒测试(界面):</h5>
-
-<p>软件的黑盒测试意味着测试要在软件的接口处进行。这种方法是把测试对象看做一个黑盒子，测试人员完全不考虑程序内部的逻辑结构和内部特性，只依据程序的需求规格说明书，检查程序的功能是否符合它的功能说明。因此黑盒测试又叫功能测试或数据驱动测试。黑盒测试主要是为了发现以下几类错误：</p>
-
-<ul>
-<li>1、是否有不正确或遗漏的功能？</li>
-<li>2、在接口上，输入是否能正确的接受？能否输出正确的结果？</li>
-<li>3、是否有数据结构错误或外部信息（例如数据文件）访问错误？</li>
-<li>4、性能上是否能够满足要求？</li>
-<li>5、是否有初始化或终止性错误？</li>
-</ul>
-
-
-<h5>白盒测试(代码：服务器):实现细节，覆盖率</h5>
-
-<p>软件的白盒测试是对软件的过程性细节做细致的检查。这种方法是把测试对象看做一个打开的盒子，它允许测试人员利用程序内部的逻辑结构及有关信息，设计或选择测试用例，对程序所有逻辑路径进行测试。通过在不同点检查程序状态，确定实际状态是否与预期的状态一致。因此白盒测试又称为结构测试或逻辑驱动测试。白盒测试主要是想对程序模块进行如下检查：</p>
-
-<ul>
-<li>1、对程序模块的所有独立的执行路径至少测试一遍。</li>
-<li>2、对所有的逻辑判定，取“真”与取“假”的两种情况都能至少测一遍。</li>
-<li>3、在循环的边界和运行的界限内执行循环体。</li>
-<li>4、测试内部数据结构的有效性，等等。</li>
-</ul>
-
-
-<p>以上事实说明，软件测试有一个致命的缺陷，即测试的不完全、不彻底性。由于任何程序只能进行少量（相对于穷举的巨大数量而言）的有限的测试，在未发现错误时，不能说明程序中没有错误。</p>
-
-<blockquote><p>补充：</p>
-
-<p>灰盒测试:不需要关注代码细节，只需关注接口和参数</p>
-
-<p>灰盒测试，是介于白盒测试与黑盒测试之间的，可以这样理解，灰盒测试关注输出对于输入的正确性，同时也关注内部表现，但这种关注不象白盒那样详细、完整，只是通过一些表征性的现象、事件、标志来判断内部的运行状态，有时候输出是正确的，但内部其实已经错误了，这种情况非常多，如果每次都通过白盒测试来操作，效率会很低，因此需要采取这样的一种灰盒的方法。</p></blockquote>
-
-<h2>三十五：const * &amp; *const</h2>
-
-<ul>
-<li><p>int * const a;</p>
-
-<ul>
-<li>a是一个指向整型数的常指针（也就是说，指针指向的整型数是可以修改的，但指针是不可修改的）。</li>
-</ul>
-</li>
-<li><p>const int *a;</p>
-
-<ul>
-<li>a是一个指向常整型数的常指针（也就是说，指针指向的整型数是不可修改的，同时指针也是不可修改的）。</li>
-</ul>
-</li>
-</ul>
-
-
-<h5>结论：</h5>
-
-<ul>
-<li>1 关键字const的作用是为给读你代码的人传达非常有用的信息，实际上，声明一个参数为常量是为了告诉了用户这个参数的应用目的。如果
-你曾花很多时间清理其它人留下的垃圾，你就会很快学会感谢这点多余的信息。（当然，懂得用const的程序员很少会留下的垃圾让别人来清
-理的。）</li>
-<li>2 通过给优化器一些附加的信息，使用关键字const也许能产生更紧凑的代码。</li>
-<li>3 合理地使用关键字const可以使编译器很自然地保护那些不希望被改变的参数，防止其被无意的代码修改。简而言之，这样可以减少bug的出现。</li>
-</ul>
-
-
-<h6>欲阻止一个变量被改变，可以使用 const 关键字。</h6>
-
-<ul>
-<li>（1）在定义该 const 变量时，通常需要对它进行初
-始化，因为以后就没有机会再去改变它了；</li>
-<li>（2）对指针来说，可以指定指针本身为 const，也可以指定指针所指的数据为 const，或二者同时指
-定为 const；</li>
-<li>（3）在一个函数声明中，const 可以修饰形参，表明它是一个输入参数，在函数内部不能改变其值；</li>
-<li>（4）对于类的成员函数，若指定其为 const 类型，则表明其是一个常函数，不能修改类的成员变量；</li>
-<li>（5）对于类的成员函数，有时候必须指定其返回值为 const 类型，以使得其返回值不为“左值”。</li>
-</ul>
-
-
-<h2>三十六：UIWebView&amp;WKWebView</h2>
-
-<p>ios的webview有2个类，一个叫UIWebView，另一个是WKWebView。两者的基础方法都差不多，本文重点是后者，他是取代UIWebView出现的，在app开发者若不需要兼容ios8之前版本，都应该使用WKWebVIew。</p>
-
-<ul>
-<li><p>WKWebView 是苹果在 iOS 8 中引入的新组件，目的是给出一个新的高性能的 Web View 解决方案，摆脱过去 UIWebView 的老旧笨重特别是内存占用量巨大的问题，它使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快.</p></li>
-<li><p>新特性</p>
-
-<ul>
-<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
-<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
-<li>支持了更多的HTML5特性；</li>
-<li>高达60fps的滚动刷新率以及内置手势；</li>
-<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议</li>
-</ul>
-</li>
-</ul>
-
-
-<blockquote><p>ios9默认是不允许加载http请求的，对于webview，加载http网页也是不允许的。可以通过修改info.plist取消http限制</p></blockquote>
-
-<ul>
-<li>WKWebVIew是UIWebView的代替品，新的WebKit框架把原来的功能拆分成许多小类。本例中主要用到了WKNavigationDelegate,WKUIDelegate,WKScriptMessageHandler三个委托和配置类WKWebViewConfiguration去实现webView的request控制，界面控制，js交互，alert重写等功能。 使用WKWebView需要引入#import &lt;WebKit/WebKit.h></li>
-</ul>
-
-
-<h2>三十七：指针&amp;地址</h2>
-
-<ul>
-<li><p>区别:</p>
-
-<ul>
-<li><p>1指针意味着已经有一个指针变量存在,他的值是一个地址,指针变量本身也存放在一个长度为四个字节的地址当中,而地址概念本身并不代表有任何变量存在.</p></li>
-<li><p>2 指针的值,如果没有限制,通常是可以变化的,也可以指向另外一个地址.</p></li>
-</ul>
-</li>
-</ul>
-
-
-<p>地址表示内存空间的一个位置点,他是用来赋给指针的,地址本身是没有大小概念,指针指向变量的大小,取决于地址后面存放的变量类型.</p>
-
-<h2>三十八：通知&amp;协议</h2>
-
-<ul>
-<li><p>答案：协议有控制链(has-a)的关系，通知没有。</p></li>
-<li><p>首先我一开始也不太明白，什么叫控制链（专业术语了~）。但是简单分析下通知和代理的行为模式，我们大致可以有自己的理解</p></li>
-<li><p>简单来说，通知的话，它可以一对多，一条消息可以发送给多个消息接受者。</p></li>
-<li><p>代理按我们的理解，到不是直接说不能一对多，比如我们知道的明星经济代理人，很多时候一个经济人负责好几个明星的事务。</p></li>
-<li><p>只是对于不同明星间，代理的事物对象都是不一样的，一一对应，不可能说明天要处理A明星要一个发布会，代理人发出处理发布会的消息后，别称B的
-发布会了。但是通知就不一样，他只关心发出通知，而不关心多少接收到感兴趣要处理。</p></li>
-<li><p>因此控制链（has-a从英语单词大致可以看出，单一拥有和可控制的对应关系。</p></li>
-</ul>
-
-
-<h2>三十九：hitTest:withEvent:&amp;pointInside:withEvent:</h2>
-
-<ul>
-<li><p>当用户点击屏幕时，会产生一个触摸事件，系统会将该事件加入到一个由UIApplication管理的事件队列中</p></li>
-<li><p>UIApplication会从事件队列中取出最前面的事件进行分发以便处理，通常，先发送事件给应用程序的主窗口(UIWindow)</p></li>
-<li><p>主窗口会调用hitTest:withEvent:方法在视图(UIView)层次结构中找到一个最合适的UIView来处理触摸事件</p></li>
-</ul>
-
-
-<p>(hitTest:withEvent:其实是UIView的一个方法，UIWindow继承自UIView，因此主窗口UIWindow也是属于视图的一种)</p>
-
-<h6>hitTest:withEvent:方法大致处理流程是这样的：</h6>
-
-<ul>
-<li><p>首先调用当前视图的pointInside:withEvent:方法判断触摸点是否在当前视图内：</p>
-
-<p>  ▶ 若pointInside:withEvent:方法返回NO，说明触摸点不在当前视图内，则当前视图的hitTest:withEvent:返回nil</p>
-
-<p>  ▶ 若pointInside:withEvent:方法返回YES，说明触摸点在当前视图内，则遍历当前视图的所有子视图(subviews)，调用子视图的hitTest:withEvent:方法重复前面的步骤，子视图的遍历顺序是从top到bottom，即从subviews数组的末尾向前遍历，直到有子视图的hitTest:withEvent:方法返回非空对象或者全部子视图遍历完毕：</p>
-
-<p>  ▷ 若第一次有子视图的hitTest:withEvent:方法返回非空对象,则当前视图的hitTest:withEvent:方法就返回此对象，处理结束</p>
-
-<p>  ▷ 若所有子视图的hitTest:withEvent:方法都返回nil，则当前视图的hitTest:withEvent:方法返回当前视图自身(self)</p></li>
-<li><p>最终，这个触摸事件交给主窗口的hitTest:withEvent:方法返回的视图对象去处理</p></li>
-</ul>
-
-
-<p>我大致画了个iOS触摸事件分发的原理图：</p>
-
-<p><img src="/images/nihaizaidengsm099.png" title="Caption" ></p>
-
-<ul>
-<li><p>hitTest:withEvent:方法会忽略以下视图：</p>
-
-<p>  1> 隐藏(hidden=YES)的视图</p>
-
-<p>  2> 禁止用户操作(userInteractionEnabled=NO)的视图</p>
-
-<p>  3> alpha&lt;0.01的视图</p>
-
-<p>  4> 如果一个子视图的区域超过父视图的区域(如果父视图的clipsToBounds属性为NO,超过父视图区域的子视图内容也会显示)，那么正常情况下在父 视图区域外的触摸操作不会被识别,因为父视图的pointInside:withEvent:方法会返回NO,这样就不会继续向下遍历子视图了。当然，也 可以重写pointInside:withEvent:方法来处理这种</p></li>
-</ul>
-
-
-<blockquote><p>综上所述可得：如果父视图的userInteractionEnabled=NO，触摸事件不会继续往下传递给子视图，所以子视图永远无法处理触摸事件。而UIImageView在默认情况下的userInteractionEnabled就是NO。</p></blockquote>
-
-<p><br>
-<br>
-&hellip;..
-&hellip;.
-&hellip;
-..
-.</p>
-
-<p><br>
-<br></p>
-
-<p>待续。。。。。。。。。。后续会陆续更新，想了解更多，请等待并查看本文，谢谢！</p>
-
-<p><br>
-<br>
-<br>
-<br>
-<br>
-<br></p>
 ]]></content>
   </entry>
   

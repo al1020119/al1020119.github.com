@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：API预览 好了开始吧！ 首先介绍两个概念： FFmpeg：是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。 &hellip;">
+  <meta name="description" content="引言 过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +74,1685 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianyibuhuancun/">图片异步缓存优化</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ol>
+<li>引言</li>
+</ol>
+
+
+<p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
+
+<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。
+2. 常用的解决途径</p>
+
+<pre><code>异步下载图像
+处理图像（拉伸，去红眼，去边框）以便展示
+写入磁盘
+需要时从磁盘读取并展示
+
+// 假设我们有一个 NSURL *imageUrl and UIImageView *imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
+if ([self hasImageDataForURL:imageUrl] {
+    NSData *data = [self imageDataForUrl:imageUrl];
+    UIImage *image = [UIImage imageWithData:imageData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        imageView.image = image;
+    });
+} else {
+    [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
+        [self storeImageData:imageData …];
+        UIImage *image = [UIImage imageWithData:imageData];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            imageView.image = image;
+        });
+    }];
+}
+</code></pre>
+
+<p>FPS 简介</p>
+
+<pre><code>UI 渲染理想情况 FPS=60
+60FPS =&gt; 16.7ms 每帧，这就意味着如果任何主线程操作大于 16.7ms，动态 FPS 将会下降，因为 CPU 忙于处理其他事情，而不是渲染 UI。
+</code></pre>
+
+<ol>
+<li><p>常用解决途径的缺点</p>
+
+<p> 从磁盘加载图像或文件时间消耗昂贵（磁盘读取比内存读取慢大概 10-1000 倍，如果是 SSD 硬盘，则可能与内存读取速度更接近（大概慢 10 倍）。参考这里的比较：Introduction to RAM Disks
+ 如果使用 SSD，将获得接近内存的速度（大概比内存访问速度慢十倍），但目前还没有手机和平板集成 SSD 模块。
+ 创建 UIImage 实例将会在内存区生成一个图片的压缩版。但是压缩后的图像太小且无法渲染，如果我们从磁盘加载图像，图像甚至都没有加载到内存。解压图片同样也很消耗资源。
+ 设置 imageView 的 image 属性，这种情况下将会创建一个 CATransaction 并加入主循环中。在下一次循环迭代中，CATransaction 会对任何设置为 layer contents 的图像进行拷贝。</p></li>
+</ol>
+
+
+<p>拷贝图像包含以下过程：</p>
+
+<pre><code>给文件 io 和解压缩分配缓冲区
+读取磁盘数据到内存
+解压图像数据（生成原位图） - 高 CPU 消耗
+CoreAnimation 使用解压数据并渲染
+</code></pre>
+
+<p>字节位没有正确对齐的图像将被 CoreAnimation 拷贝，以修复字节位对齐并使之能被渲染。这一点在 Apple 文档里没有说明，但是使用 Instruments 表明 CA::Render::copy_image 会执行此操作，即使 Core Aniation 即使没有拷贝图像。</p>
+
+<p>从 iOS7 开始，第三方应用不能使用JPEG硬件解码器。这意味着我们只能使用慢很多的软解码器。这一点在 FastImageCache 团队的 GitHub 主页以及 Nick Lockwood 的推文上都有指出。
+4. 一个强大的 iOS 图像缓存需包含以下部分：</p>
+
+<pre><code>异步下载图像，尽可能减少使用主线程队列
+使用后台队列解压图像。这是个复杂的过程，请阅读 Avoiding Image Decompression Sickness
+在内存和磁盘上缓存图像。在磁盘上缓存图像很重要，因为 App 可能因为内存不足而被强行关闭或者需要清理内存。这种情况下，重新从磁盘加载图像比下载会快很多。
+备注：如果使用 NSCache 作为内存缓存，当有内存警告时，NSCache 会清空缓存内容。NSCache 相关细节请查看 nshipster 文章：NSCache
+保存解压过的图片到硬盘以及内存中，以避免再次解压。
+使用 GCD 和 blocks，这将使得代码更加高效和简单，如今 GCD 和 blocks 是异步操作时必需的。
+最好使用 UIImageView 的分类以便集成
+最好在下载后以及存入到缓存前能够处理图像
+</code></pre>
+
+<p>iOS图像优化</p>
+
+<p>更多的成像相关以及 SDK 框架（CoreGraphics, ImageIO, CoreAnimation, CoreImage)工作原理，CPU vs GPU 等，请阅读 @rsebbe 的文章：Advanced Imaging on iOS
+Core Data 是一个好的选择吗？</p>
+
+<p>这有一篇文章&ndash;CoreData 对比 File System，实现图像缓存的基准测试，结果 File System 的表现更好。</p>
+
+<p>看一看上面罗列的观点，自己实现图像缓存不仅复杂，耗时而且痛苦。这也是为什么我倾向于使用开源的图像缓存解决方案，你们大部分已经听说过 SDWebImage 或 new FastImageCache。</p>
+
+<p>为了让你知道哪个开源库最适合你，我做了测试并且分析它们如何满足上述要求。
+5. 基准测试</p>
+
+<p>测试库：</p>
+
+<pre><code>SDWebImage - version 3.5.4
+FastImageCache - version 1.2
+AFNetworking - version 2.2.1
+TMCache - version 1.2.0
+Haneke - version 0.0.5
+</code></pre>
+
+<p>注：AFNetworking 加入对比是由于其自iOS7后在磁盘缓存方面出色的表现（基于 NSURLCache 实现）
+测试场景</p>
+
+<p>对于每个库，我都会使用全新的测试app，然后启动app，等所有图像加载完后，慢慢滑动。然后以不同力度来回滑动（从慢到快）。接着关掉app强制应用从磁盘缓存中加载图像，最后重复以上测试场景。
+关于测试 App 工程</p>
+
+<pre><code>相关 demo 可以在 GitHub 找到并获取，名字是 ImageCachingBenchmark，同时还有本次实验的图表、结果数据表以及更多。
+
+请注意，请注意 GitHub 上的工程和图像缓存库都需要做一些调整，以便能让我们看到每一张缓存的图片都能够被加载出来。由于我不想检查 Cocoapods 源码文件（不是个好习惯），所以需要对 Cocoapods clean 后重新编译工程代码，目前 GitHub 上的版本与我做测试的版本有些差别。
+
+如果你们想重新跑一下测试，你需要编写相同 completionBlock 用于图像加载，所有库得要跟默认的 SDWebImage 一样返回 SDImageCacheType。
+</code></pre>
+
+<p>最快与最慢的设备对比结果</p>
+
+<p>在 GitHub 工程上能看到完整的基准测试结果，由于这些表格很大，我只使用运行最快的设备 iPhone 5s 和运行最慢的 iPhone 4 来测试。</p>
+
+<p>汇总：</p>
+
+<p>表格名词解释：</p>
+
+<pre><code>异步下载：库支持异步下载
+后台解压：通过后台队列或线程执行图像解压
+存储解压：存储解压后的图像版本
+内存/磁盘缓存：支持内存/磁盘缓存
+UIImageView 分类：库中含 UIImageView 类别
+从内存/磁盘：从缓存（内存/磁盘）中读取的平均时间
+</code></pre>
+
+<ol>
+<li><p>结论</p>
+
+<p> 从头开始编写 iOS 图像缓存组件很困难</p>
+
+<p> SDWebImage 和 AFNetworking 是稳定的工程。由于有很多贡献者，这样保证代码能够及时得到维护，FastImageCache 在维护方面更新很快。</p>
+
+<p> 基于以上所有数据，我认为 SDWebImage 在目前是一个很好的解决方案。即使有些工程使用 AFNetworking 或 FastImageCache 更好，但是这些都依赖于项目需求。
+tu</p></li>
+</ol>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/15/tupianyibuhuancun/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>主要针对问题</p>
+
+<ul>
+<li><p>图片文件比较大</p></li>
+<li><p>图片文件比较多</p></li>
+</ul>
+
+
+<h4>网络图片显示大体步骤:</h4>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
+</ul>
+
+
+<h4>一些优化思路：</h4>
+
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<p>在IOS下通过URL读一张网络图片并不像其他编程语言那样可以直接把图片路径放到图片路径的位置就ok，而是需要我们通过一段类似流的方式去加载网络图片，接着才能把图片放入图片路径显示。比如：</p>
+
+<pre><code>-(UIImage *) getImageFromURL:(NSString *)fileURL {
+  //NSLog(@"执行图片下载函数");    
+  UIImage * result;    
+  NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:fileURL]];
+  result = [UIImage imageWithData:data];    
+  return result;
+}
+</code></pre>
+
+<p>加载网络图片可以说是网络应用中必备的。如果单纯的去下载图片，而不去做多线程、缓存等技术去优化，加载图片时的效果与用户体验就会很差。</p>
+
+<p>优化思路为：</p>
+
+<p>（1）本地缓存</p>
+
+<p>（2）异步加载</p>
+
+<p>（3）加载完毕前使用占位图片</p>
+
+<h3>优化方法</h3>
+
+<h5>方法1：用NSOperation开异步线程下载图片，当下载完成时替换占位图片</h5>
+
+<pre><code>#import "XNViewController.h"
+#import "XNApp.h"
+
+@interface XNViewController ()
+@property (nonatomic, strong) NSArray *appList;
+@property (nonatomic, strong) NSOperationQueue *queue;
+@end
+
+@implementation XNViewController
+#pragma mark - 懒加载
+
+- (NSOperationQueue *)queue {
+    if (!_queue) _queue = [[NSOperationQueue alloc] init];
+    return _queue;
+}
+
+//可抽取出来写到模型中
+- (NSArray *)appList {
+    if (!_appList) {
+        //1.加载plist到数组中
+        NSURL *url = [[NSBundle mainBundle] URLForResource:@"apps.plist" withExtension:nil];
+        NSArray *array = [NSArray arrayWithContentsOfURL:url];
+        //2.遍历数组
+        NSMutableArray *arrayM = [NSMutableArray array];
+        [array enumerateObjectsUsingBlock: ^(id obj, NSUInteger idx, BOOL *stop) {
+            [arrayM addObject:[XNApp appWithDict:obj]];  //数组中存放的是字典, 转换为app对象后再添加到数组
+        }];
+        _appList = [arrayM copy];
+    }
+    return _appList;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.tableView.rowHeight = 88;
+
+//    NSLog(@"appList-%@",_appList);
+}
+
+#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+    //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+    if (!app.image) {
+        cell.imageView.image = [UIImage imageNamed:@"user_default"];
+
+        [self downloadImg:indexPath];
+    }
+    else {
+        //直接用模型中的内存缓存
+        cell.imageView.image = app.image;
+    }
+//  NSLog(@"cell--%p", cell);
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+- (void)downloadImg:(NSIndexPath *)indexPath {
+    XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+
+    [self.queue addOperationWithBlock: ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+        UIImage *image = [UIImage imageWithData:imgData];
+
+        //在主线程中更新UI
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+            //通过修改模型, 来修改数据
+            app.image = image;
+            //刷新指定表格行
+            [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+}
+
+@end
+</code></pre>
+
+<p>上述代码只是做了内存缓存，还没有做本地缓存，因为这里这种方法不是重点，也不是首选方法。上面代码每次重新进入应用时，还会从网上重新下载。如果要继续优化上面的代码，需要自己去实现本地缓存。</p>
+
+<h5>方法2：使用第三方框架SDWebImage</h5>
+
+<p>依赖的库很少，功能全面。</p>
+
+<p>自动实现磁盘缓存：缓存图片名字是以MD5进行加密的后的名字进行命名.(因为加密那堆字串是唯一的)</p>
+
+<p>加载网络图片时直接设置占位图片：</p>
+
+<pre><code>[imageView sd_setImageWithURL:imageurl  placeholderImage:[UIImage imageNamed:@”xxxxx”]]。
+</code></pre>
+
+<p>就一个方法就实现了多线程\带缓冲等效果.(可用带参数的方法,具体可看头文件)</p>
+
+<pre><code>#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+//  //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+//  if (!cell.imageView.image) {
+//      cell.imageView.image = [UIImage imageNamed:@"user_default"];
+//
+//      [self downloadImg:indexPath];
+//  }
+//  else {
+//      //直接用模型中的内存缓存
+//      cell.imageView.image = app.image;
+//  }
+
+
+    //使用SDWebImage来完成上面的功能. 针对ImageView.
+    //一句话, 自动实现了异步下载. 图片本地缓存. 网络下载. 自动设置占位符.
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:app.icon] placeholderImage:[UIImage imageNamed:@"user_default"]];
+
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+//- (void)downloadImg:(NSIndexPath *)indexPath {
+//  XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+//
+//  [self.queue addOperationWithBlock: ^{
+//      NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+//      UIImage *image = [UIImage imageWithData:imgData];
+//
+//      //在主线程中更新UI
+//      [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+//          //通过修改模型, 来修改数据
+//          app.image = image;
+//          //刷新指定表格行
+//          [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+//      }];
+//  }];
+//}
+
+@end
+</code></pre>
+
+<p>如果你觉得SDWebImage不好用那么你可以试试FastImageCache这个框架：</p>
+
+<p>FastImageCache是Path团队开发的一个开源库，用于提升图片的加载和渲染速度，让基于图片的列表滑动起来更顺畅，来看看它是怎么做的。</p>
+
+<p>优化点</p>
+
+<p>iOS从磁盘加载一张图片，使用UIImageVIew显示在屏幕上，需要经过以下步骤：</p>
+
+<ul>
+<li>从磁盘拷贝数据到内核缓冲区</li>
+<li>从内核缓冲区复制数据到用户空间</li>
+<li>生成UIImageView，把图像数据赋值给UIImageView</li>
+<li>如果图像数据为未解码的PNG/JPG，解码为位图数据</li>
+<li>CATransaction捕获到UIImageView layer树的变化</li>
+<li><p>主线程Runloop提交CATransaction，开始进行图像渲染</p>
+
+<ul>
+<li><p>6.1 如果数据没有字节对齐，Core Animation会再拷贝一份数据，进行字节对齐。</p></li>
+<li><p>6.2 GPU处理位图数据，进行渲染。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>FastImageCache分别优化了2,4,6.1三个步骤：</p>
+
+<ul>
+<li>使用mmap内存映射，省去了上述第2步数据从内核空间拷贝到用户空间的操作。</li>
+<li>缓存解码后的位图数据到磁盘，下次从磁盘读取时省去第4步解码的操作。</li>
+<li>生成字节对齐的数据，防止上述第6.1步CoreAnimation在渲染时再拷贝一份数据。</li>
+</ul>
+
+
+<h3>常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip </th>
+<th style="text-align:center;"> SDWebImage   </th>
+<th style="text-align:right;">AFNetworking </th>
+<th>    FastImageCache </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES  </td>
+<td>NO </td>
+</tr>
+<tr>
+<td>子线程解压缩     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES </td>
+<td> YES </td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES    </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>内存级别缓存     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES   YES</td>
+<td></td>
+</tr>
+<tr>
+<td>磁盘级别缓存     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>UIImageView category </td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">   NO </td>
+<td>    NO </td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO     </td>
+<td style="text-align:right;">NO     </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>接口易用性 </td>
+<td style="text-align:center;"> *** </td>
+<td style="text-align:right;">   *** </td>
+<td>   * </td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>总结</h3>
+
+<ul>
+<li><p>使用低分辨率图：仔细想想，其实没有必要第一时间加载全部图片的高清原图，事先存好每张图配套的低分辨率图，用空间换时间。
+先加载所有的图片的低分辨率图, 当用户翻阅到某一张图片时, 即时的加载原始尺寸的高清无码大图. 过程优化为：</p></li>
+<li><p>多线程任务：即使是这样，当照片数量达到一定量时，需要消耗的时间也并非毫秒级，体验无法领人满意,  页面跳转时仍然会出现卡顿现象。
+于是考虑使用多线程来进一步拆分任务， 执行跳转的同时再后台执行加载低分辨率图的步骤.</p></li>
+<li><p>优化快速翻阅体验：通过这样的拆分，可以实现立即跳转，体验满意。但是翻阅浏览时，当用户很快左右滑动时, 出现黑屏的几率很高, 因为加载低分辨率图任务的线程可能还在进行大量IO操作，不能及时跟上。 为了完善它，要把加载低分辨率图的步骤再次分解，精益求精。
+在页面跳转时间允许的范围内，加载用户选定的那张图片的高清原图的同时，尽可能多的加载几张左右临近的图片的低分辨率图。</p></li>
+</ul>
+
+
+<blockquote><p>尽量减少内存占用.  因为原始图片要比低分辨率图大很多, 所以当用户从一张图片翻阅到另一张图片时,  当前图片加载为原始尺寸的高清大图, 而原来那张就被替换为低分辨率图了。 虽然读写次数增多了, 但内存确实省了不少。</p></blockquote>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！</p>
+
+<ol>
+<li><p>图片资源使用png还是jpg格式</p></li>
+<li><p>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</p></li>
+</ol>
+
+
+<h3>图片资源使用png还是jpg格式</h3>
+
+<p>对于iOS本地应用程序来说最简单的答案就是始终使用PNG，除非你有非常非常好的理由不用它。</p>
+
+<p>当iOS应用构建的时候，Xcode会通过一种方式优化.png文件而不会优化其它文件格式。它优化得相当的好</p>
+
+<p>他们之间有以下区别：</p>
+
+<ol>
+<li><p>同个分辨率的图片，保存为png要比jpg大；</p></li>
+<li><p>png图片有alpha通道，因此它支持图片透明，这点在ios开发中尤为重要；而jpg不支持透明</p></li>
+<li><p>xcode会对png格式进行特殊的优化处理，而对于其他图片不做处理</p></li>
+</ol>
+
+
+<p>总结一下有以下几点：</p>
+
+<pre><code>1.如果你的图片都是xcode本地就有，那就用png；如果图片是从网络上下载的，考虑到流量以及速度，可以考虑用jpg因为它具有较高的压缩率
+
+2.本地的png优化由xcode帮你做；其他格式的需要在程序运行时做优化，更耗性能
+
+3.如果你的图片要求有较高的色彩饱和度、图像质量，那就用jpg
+</code></pre>
+
+<h3>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</h3>
+
+<p>IOS内存稀缺，而图片资源通常又是最占内存的部分之一，因此，选择如何加载图片，对于优化应用内存占用量，能起到立竿见影的效果。通常加载图片的方式有两种：</p>
+
+<h5>一、imageNamed</h5>
+
+<p>为什么有两种方法完成同样的事情呢？imageNamed的优点在于可以缓存已经加载的图片。苹果的文档中有如下说法：</p>
+
+<pre><code>This method looks in the system caches for an image object with the specified name and returns that object if it exists. If a matching image object is not already in the cache, this method locates and loads the image data from disk or asset catelog, and then returns the resulting object. You can not assume that this method is thread safe.
+</code></pre>
+
+<p>这种方法会首先在系统缓存中根据指定的名字寻找图片，如果找到了就返回。如果没有在缓存中找到图片，该方法会从指定的文件中加载图片数据，并将其缓存起来，然后再把结果返回，下次再使用该名称图片的时候就省去了从硬盘中加载图片的过程。对于相同名称的图片，系统只会把它Cache到内存一次。</p>
+
+<p>另外，在iOS4及以上系统中，如果是PNG格式的图片，使用该方法加载时不用再指定文件的.png后缀，即只写文件名称即可。</p>
+
+<blockquote><p>最后，在iOS4及以上系统中，如果屏幕的scale是2（即高分辨率屏幕），该方法会自动使用加上@2x后缀的图片。比如在高分辨率屏幕设备上要加载名称为button的图片，该方法会自动使用名称为button@2x的图片；如果找不到该名称图片再去加载名称为button的图片。这就为开发者省去了适配高、低分辨率屏幕的时间。</p></blockquote>
+
+<h5>二、imageWithContentsOfFile或者imageWithData</h5>
+
+<p>而imageWithContentsOfFile方法只是简单的加载图片，并不会将图片缓存起来，图像会被系统以数据方式加载到程序。当你不需要重用该图像，或者你需要将图像以数据方式存储到数据库，又或者你要通过网络下载一个很大的图像时，可以使用这种方式。</p>
+
+<h5>三、如何选择</h5>
+
+<p>两种加载图片方法的使用方式：</p>
+
+<pre><code>UIImage *img = [UIImage imageNamed:@"myImage"]; // caching    
+// or    
+UIImage *img = [UIImage imageWithContentsOfFile:@"myImage"]; // no caching  
+</code></pre>
+
+<p>那么该如何选择呢？</p>
+
+<ul>
+<li><p>如果加载一张很大的图片，并且只使用一次，那么就不需要缓存这个图片。这种情况imageWithContentsOfFile比较合适——系统不会浪费内存来缓存图片。</p></li>
+<li><p>然而，如果在程序中经常需要重用的图片，比如用于UITableView的图片，那么最好是选择imageNamed方法。这种方法可以节省出每次都从磁盘加载图片的时间。</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/14/tupianchulibuchong/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理高级篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一：UIImage的加载方式</h3>
+
+<p>在网上看了很多，有关图片处理的文章，有些感觉不错，有些感觉只是说了大概，具体的使用方式没有说出来，这几天正好一个有关图片处理的，这就就和大家说说。
+显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
+     一般加载图片的方式：
+第一种：</p>
+
+<pre><code>NSString * imagePath = [[NSBundle mainBundle] pathForResource:@"pic@.png" ofType:nil inDirectory:nil];  
+UIImage * image = [UIImage imageWithContentsOfFile:imagePath];  
+</code></pre>
+
+<p>第二种：</p>
+
+<pre><code>UIImage * image = [UIImage imageNamed:picName];  
+</code></pre>
+
+<p>这两种是我经常用到的</p>
+
+<ul>
+<li>用imageWithContentOfFile 加载图片的时候，图片不会做缓存，这样在加载大的图片和使用率低的图片的时候就可以用到。我建议大家使用这种，对控制内存很有帮助。</li>
+<li>用imageName的加载的时候，系统会件图像保存在内存中去，下次利用的时候，直接在内存中调用，速度很快，重复利用率高的图片有利于这样做，但是在释放内存的时候比较麻烦，只有程序结束的时候内存才释放，有时候会出现内存警告。。。</li>
+</ul>
+
+
+<h3>二：图片的混合模式</h3>
+
+<p>接下来我们看看图片一下常用的混合模式，我觉得这个最好是先自己玩一玩photoshop，上面有很多混合模式可以自己试验，这里我们用代码进行尝试修改图片的混合模式，这样可以看到不同的图片效果。
+这里我们就必须用到绘图。常用的方法是：</p>
+
+<pre><code>[image drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:blendMode alpha:alpha];  
+</code></pre>
+
+<p>先让大家看看这个代码：</p>
+
+<pre><code>- (UIImage *)drawPiucureFrontImage:(UIImage *)personImage backImage:(UIImage *)hatImage blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha  
+{  
+    CGSize newSize =[personImage size];  
+    UIGraphicsBeginImageContext(newSize);  
+    [personImage drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:kCGBlendModeNormal alpha:1];  
+    [hatImage drawInRect:CGRectMake(0,0,newSize.width,newSize.height) blendMode:blendMode alpha:alpha];  
+    UIImage*newImage = UIGraphicsGetImageFromCurrentImageContext();  
+    UIGraphicsEndImageContext();  
+    _imageV.image = newImage;  
+    num++;  
+    return newImage;  
+}  
+</code></pre>
+
+<p>kCGBlendModeNormal<br/>
+这个是混合模式的效果  在ps中是正常，以下是常用的模式</p>
+
+<pre><code>     kCGBlendModeNormal --ok  正常,
+     kCGBlendModeMultiply,    正片叠底
+     kCGBlendModeScreen,      滤色
+     kCGBlendModeOverlay,     叠加
+     kCGBlendModeDarken,      变暗
+     kCGBlendModeLighten,     变亮
+     kCGBlendModeColorDodge,  颜色减淡
+     kCGBlendModeColorBurn,   颜色加深
+     kCGBlendModeSoftLight,   柔光
+     kCGBlendModeHardLight,   强光
+     kCGBlendModeDifference,  差值
+     kCGBlendModeExclusion,   排除
+     kCGBlendModeHue,         色相
+     kCGBlendModeSaturation,  保护度
+     kCGBlendModeColor,       颜色
+     kCGBlendModeLuminosity   明度,
+</code></pre>
+
+<p>这几个可以试试，每一种图片的模式都不一样。其中正片叠底 和叠加应该是我经常用到的混合模式。</p>
+
+<h3>三：图片的滤镜</h3>
+
+<p>上面我们介绍了图片的混合模式，接下来我们来看看图片滤镜，说道滤镜网上有很多的教程，在code4app中也有很多的教程，大家可以去看看看，这里我们使用一个第三方的类  ImageUtil.h，在后面有下载的链接</p>
+
+<p>将这个类导入到自己的工程中 导入头文件：</p>
+
+<pre><code>#import "ImageUtil.h"     
+</code></pre>
+
+<p>接下来直接调用里面的放大就可以了，在这个类中ColorMatrix.h的文件中，我们可以看见有13中特效可以自己使用，而且调用也十分简单</p>
+
+<pre><code>[ImageUtil imageWithImage:_imageV.image withColorMatrix:colormatrix_heibai];  
+</code></pre>
+
+<p>colormatrix_heibai 这个就是他的调用样式，这里是黑白，大家可以替换修改在ColorMatrix.h名字，已达到自己想要的效过，这个方法同时也返回一个UIimage，这样就可以加载到自己想要的UIImageView上了。
+下面是特效</p>
+
+<pre><code>//LOMO  
+const float colormatrix_lomo[] = {  
+    1.7f,  0.1f, 0.1f, 0, -73.1f,  
+    0,  1.7f, 0.1f, 0, -73.1f,  
+    0,  0.1f, 1.6f, 0, -73.1f,  
+    0,  0, 0, 1.0f, 0 };  
+
+//黑白  
+const float colormatrix_heibai[] = {  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0.8f,  1.6f, 0.2f, 0, -163.9f,  
+    0,  0, 0, 1.0f, 0 };  
+//复古  
+const float colormatrix_huajiu[] = {   
+    0.2f,0.5f, 0.1f, 0, 40.8f,  
+    0.2f, 0.5f, 0.1f, 0, 40.8f,   
+    0.2f,0.5f, 0.1f, 0, 40.8f,   
+    0, 0, 0, 1, 0 };  
+
+//哥特  
+const float colormatrix_gete[] = {   
+    1.9f,-0.3f, -0.2f, 0,-87.0f,  
+    -0.2f, 1.7f, -0.1f, 0, -87.0f,   
+    -0.1f,-0.6f, 2.0f, 0, -87.0f,   
+    0, 0, 0, 1.0f, 0 };  
+
+//锐化  
+const float colormatrix_ruise[] = {   
+    4.8f,-1.0f, -0.1f, 0,-388.4f,  
+    -0.5f,4.4f, -0.1f, 0,-388.4f,   
+    -0.5f,-1.0f, 5.2f, 0,-388.4f,  
+    0, 0, 0, 1.0f, 0 };  
+
+
+//淡雅  
+const float colormatrix_danya[] = {   
+    0.6f,0.3f, 0.1f, 0,73.3f,  
+    0.2f,0.7f, 0.1f, 0,73.3f,   
+    0.2f,0.3f, 0.4f, 0,73.3f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//酒红  
+const float colormatrix_jiuhong[] = {   
+    1.2f,0.0f, 0.0f, 0.0f,0.0f,  
+    0.0f,0.9f, 0.0f, 0.0f,0.0f,   
+    0.0f,0.0f, 0.8f, 0.0f,0.0f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//清宁  
+const float colormatrix_qingning[] = {   
+    0.9f, 0, 0, 0, 0,   
+    0, 1.1f,0, 0, 0,   
+    0, 0, 0.9f, 0, 0,   
+    0, 0, 0, 1.0f, 0 };  
+
+//浪漫  
+const float colormatrix_langman[] = {   
+    0.9f, 0, 0, 0, 63.0f,   
+    0, 0.9f,0, 0, 63.0f,   
+    0, 0, 0.9f, 0, 63.0f,   
+    0, 0, 0, 1.0f, 0 };  
+
+//光晕  
+const float colormatrix_guangyun[] = {   
+    0.9f, 0, 0,  0, 64.9f,  
+    0, 0.9f,0,  0, 64.9f,  
+    0, 0, 0.9f,  0, 64.9f,  
+    0, 0, 0, 1.0f, 0 };  
+
+//蓝调  
+const float colormatrix_landiao[] = {  
+    2.1f, -1.4f, 0.6f, 0.0f, -31.0f,   
+    -0.3f, 2.0f, -0.3f, 0.0f, -31.0f,  
+    -1.1f, -0.2f, 2.6f, 0.0f, -31.0f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+
+//梦幻  
+const float colormatrix_menghuan[] = {  
+    0.8f, 0.3f, 0.1f, 0.0f, 46.5f,   
+    0.1f, 0.9f, 0.0f, 0.0f, 46.5f,   
+    0.1f, 0.3f, 0.7f, 0.0f, 46.5f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+
+//夜色  
+const float colormatrix_yese[] = {  
+    1.0f, 0.0f, 0.0f, 0.0f, -66.6f,  
+    0.0f, 1.1f, 0.0f, 0.0f, -66.6f,   
+    0.0f, 0.0f, 1.0f, 0.0f, -66.6f,   
+    0.0f, 0.0f, 0.0f, 1.0f, 0.0f  
+};  
+</code></pre>
+
+<h3>四：图片的饱和度，亮度，对比度。</h3>
+
+<p>在做图片处理的时候，会遇到调节图片的饱和度的问题，这里就要用到Core Image这个框架，Core Image是一个很强大的框架。它可以让你简单地应用各种滤镜来处理图像，比如修改鲜艳程度, 色泽, 或者曝光。它利用GPU（或者CPU，取决于客户）来非常快速、甚至实时地处理图像数据和视频的帧。多个CoreImage滤镜可以叠加在一起，从而可以一次性地产生多重滤镜效果。这种多重滤镜的优点在于它可以生成一个改进的滤镜，从而一次性的处理图像达到目标效果，而不是对同一个图像顺序地多次应用单个滤镜。每一个滤镜都有属于它自己的参数。这些参数和滤镜信息，比如功能、输入参数等都可以通过程序来查询。用户也可以来查询系统从而得到当前可用的滤镜信息。到目前为止，Mac上只有一部分CoreImage滤镜可以在iOS上使用。但是随着这些可使用滤镜的数目越来越多，API可以用来发现新的滤镜属性。
+下面是这个框架下的几个重要的类</p>
+
+<ul>
+<li>CIContext:所有的图像处理都是在一个CIContext中完成的。</li>
+<li>CIImage 这个类保存图像数据，它可以从UIImage，图像文件或者是像素数据中构造出来。</li>
+<li>CIFilter：滤镜类总保函一个字典结构，对各种滤镜定义了属于他们各自的属性，滤镜有很多种，比如鲜艳程度的滤镜，色彩反转滤镜，剪裁滤镜等等。</li>
+</ul>
+
+
+<p>用下面的我们来试试修改一张图片的饱和度，亮度，对比度。
+首先用到的是CIFilter 我们可以通过字典来看看里面所有的</p>
+
+<pre><code>NSArray *cifilter = [CIFilter filterNamesInCategory:kCICategoryBuiltIn];  
+
+NSLog(@"FilterName:\n%@,,,===%ld", cifilter,cifilter.count);//显示所有过滤器名字  
+
+for (NSString *filterName in cifilter) {  
+
+    CIFilter *fltr = [CIFilter filterWithName:filterName];//用一个过滤器名字生成一个过滤器CIFilter对象  
+
+    NSLog(@"%@:\n%@", filterName, [fltr attributes]);//这个过滤器支持的属性  
+
+}  
+</code></pre>
+
+<p>可以看见多有的属性
+今天我们用到是滤镜名称是CIColorControls</p>
+
+<pre><code>/////////////////////////////////////
+    CIAttributeFilterDisplayName = "Color Controls";
+    CIAttributeFilterName = CIColorControls;
+    inputBrightness =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 0;
+        CIAttributeIdentity = 0;
+        CIAttributeSliderMax = 1;
+        CIAttributeSliderMin = "-1";
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+    inputContrast =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 1;
+        CIAttributeIdentity = 1;
+        CIAttributeSliderMax = 4;
+        CIAttributeSliderMin = 0;
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+    inputImage =     {
+        CIAttributeClass = CIImage;
+        CIAttributeType = CIAttributeTypeImage;
+    };
+    inputSaturation =     {
+        CIAttributeClass = NSNumber;
+        CIAttributeDefault = 1;
+        CIAttributeIdentity = 1;
+        CIAttributeSliderMax = 2;
+        CIAttributeSliderMin = 0;
+        CIAttributeType = CIAttributeTypeScalar;
+    };
+/////////////////////////////////////
+</code></pre>
+
+<p>上面是这个滤镜的名称和属性
+下面是具体的修改图片的饱和度亮度和对比度的代码</p>
+
+<pre><code>CIImage *beginImage = [CIImage imageWithCGImage:image.CGImage];  
+CIFilter * filter = [CIFilter filterWithName:@"CIColorControls"];  
+[filter setValue:beginImage forKey:kCIInputImageKey];  
+//  饱和度      0---2  
+[filter setValue:[NSNumber numberWithFloat:0.5] forKey:@"inputSaturation"];  
+//  亮度  10   -1---1  
+[filter setValue:[NSNumber numberWithFloat:0.5] forKey:@"inputBrightness"];  
+//  对比度 -11  0---4  
+[filter setValue:[NSNumber numberWithFloat:2] forKey:@"inputContrast"];  
+
+// 得到过滤后的图片  
+CIImage *outputImage = [filter outputImage];  
+// 转换图片, 创建基于GPU的CIContext对象  
+CIContext *context = [CIContext contextWithOptions: nil nil];  
+CGImageRef cgimg = [context createCGImage:outputImage fromRect:[outputImage extent]];  
+UIImage *newImg = [UIImage imageWithCGImage:cgimg];  
+// 显示图片  
+[_imageV setImage:newImg];  
+// 释放C对象  
+CGImageRelease(cgimg);  
+</code></pre>
+
+<p>有兴趣的可以去看看关于CoreImage的源码</p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/14/tupianchuligaojijiqiao/#comments">更多评论</a>
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。</p>
+
+<p>这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！</p>
+
+<p>目录</p>
+
+<ul>
+<li>获取图片</li>
+<li>比例缩放</li>
+<li>圆角 化</li>
+<li>添加阴影</li>
+<li>压缩大小</li>
+<li>格式的转换</li>
+</ul>
+
+
+<h2>获取图片</h2>
+
+<p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。</p>
+
+<p>使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。</p>
+
+<p>View Code</p>
+
+<p>代码如下 复制代码</p>
+
+<h1>pragma mark 从用户相册获取活动图片</h1>
+
+<ul>
+<li>(void)pickImageFromAlbum</li>
+</ul>
+
+
+<p>{</p>
+
+<pre><code>imagePicker = [[UIImagePickerController alloc] init];
+
+imagePicker.delegate =self;
+
+imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+
+imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+imagePicker.allowsEditing =YES;
+
+
+
+[self presentModalViewController:imagePicker animated:YES];
+</code></pre>
+
+<p>}</p>
+
+<p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。</p>
+
+<pre><code>#pragma mark 从摄像头获取活动图片
+
+- (void)pickImageFromCamera
+
+{
+
+    imagePicker = [[UIImagePickerController alloc] init];
+
+    imagePicker.delegate =self;
+
+    imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+    imagePicker.allowsEditing =YES;
+
+
+
+    [self presentModalViewController:imagePicker animated:YES];
+
+}
+
+//打开相机
+
+- (IBAction)touch_photo:(id)sender {
+
+    // for iphone
+
+    UIImagePickerController *pickerImage = [[UIImagePickerController alloc] init];
+
+   if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+
+        pickerImage.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+        pickerImage.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:pickerImage.sourceType];
+
+
+
+    }
+
+    pickerImage.delegate =self;
+
+    pickerImage.allowsEditing =YES;//自定义照片样式
+
+    [self presentViewController:pickerImage animated:YES completion:nil];
+
+}
+</code></pre>
+
+<p>以上是从摄像头获取图片，和从相册获取图片只是图片来源的设置不一样，摄像头图片的来源为UIImagePickerControllerSourceTypeCamera。</p>
+
+<p>在和用户交互之后，用户选择好图片后，会回调选择结束的方法。</p>
+
+<h2>UIImage 图像 等比例缩放</h2>
+
+<pre><code>PicAfterZoomWidth:缩放后图片宽  PicAfterZoomHeight:缩放后图片高 (预定义)
++ (UIImage *)getPicZoomImage:(UIImage *)image {
+
+    UIImage *img = image;
+
+    int h = img.size.height;
+    int w = img.size.width;
+    if(h &lt;= PicAfterZoomWidth &amp;&amp; w &lt;= PicAfterZoomHeight)
+    {
+        image = img;
+    }
+    else 
+    {
+        float b = (float)PicAfterZoomWidth/w &lt; (float)PicAfterZoomHeight/h ? (float)PicAfterZoomWidth/w : (float)PicAfterZoomHeight/h;
+        CGSize itemSize = CGSizeMake(b*w, b*h);
+        UIGraphicsBeginImageContext(itemSize);
+        CGRect imageRect = CGRectMake(0, 0, b*w, b*h);
+        [img drawInRect:imageRect];
+        img = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    return img;
+}
+</code></pre>
+
+<p>或者：</p>
+
+<p>绘图技术改变图片大小缩放方法：</p>
+
+<pre><code>-(UIImage*) OriginImage:(UIImage *)image scaleToSize:(CGSize)size
+{
+    UIGraphicsBeginImageContext(size); //size 为CGSize类型，即你所需要的图片尺寸
+
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+
+    UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+
+    UIGraphicsEndImageContext();
+
+    return scaledImage; //返回的就是已经改变的图片
+}
+</code></pre>
+
+<h2>把图片 圆角 化</h2>
+
+<p>设置圆角的方法</p>
+
+<pre><code>直接使用setCornerRadius
+
+    这种就是最常用的，也是最耗性能的。
+
+setCornerRadius设置圆角之后，shouldRasterize=YES光栅化
+
+    avatarImageView.clipsToBounds = YES; [avatarImageView.layer setCornerRadius:50]; avatarImageView.layer.shouldRasterize = YES;
+
+    shouldRasterize=YES设置光栅化，可以使离屏渲染的结果缓存到内存中存为位图， 使用的时候直接使用缓存，节省了一直离屏渲染损耗的性能。
+
+    但是如果layer及sublayers常常改变的话，它就会一直不停的渲染及删除缓存重新 创建缓存，所以这种情况下建议不要使用光栅化，这样也是比较损耗性能的。
+
+    问题：我发现UIImageView上加载网络图片使用光栅化会有一点模糊，而UIButton 上使用光栅化没有模糊，不知道为什么？求大神解答！
+
+直接覆盖一张中间为圆形透明的图片
+
+    这种方法就是多加了一张透明的图片，GPU计算多层的混合渲染blending也是会消耗 一点性能的，但比第一种方法还是好上很多的。
+
+Core Graphics绘制圆角
+
+    这种方式性能最好，但是UIButton上不知道怎么绘制，可以用UIimageView添加个 点击手势当做UIButton使用。
+
+      UIGraphicsBeginImageContextWithOptions(avatarImageView.bounds.size, NO, [UIScreen mainScreen].scale);
+      [[UIBezierPath bezierPathWithRoundedRect:avatarImageView.bounds cornerRadius:50] addClip];
+      [image drawInRect:avatarImageView.bounds];
+      avatarImageView.image = UIGraphicsGetImageFromCurrentImageContext();
+      UIGraphicsEndImageContext();
+
+    这段方法可以写在SDWebImage的completed回调里，也可以在UIImageView+WebCache.h 里添加一个方法，isClipRound判断是否切圆角，把上面绘制圆角的方法封装到里面。
+
+      - (void)sd_setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder options:(SDWebImageOptions)options isClipRound:(BOOL)isRound progress:(SDWebImageDownloaderProgressBlock)progressBlock completed:(SDWebImageCompletionBlock)completedBlock;
+</code></pre>
+
+<p>使用Instruments的Core Animation查看性能</p>
+
+<pre><code>Color Offscreen-Rendered Yellow
+
+    开启后会把那些需要离屏渲染的图层高亮成黄色，这就意味着黄色图层可能存在性能问题。
+
+Color Hits Green and Misses Red
+
+    如果shouldRasterize被设置成YES，对应的渲染结果会被缓存，如果图层是绿色，就表示这些缓存被复用；如果是红色就表示缓存会被重复创建，这就表示该处存在性能问题了。
+</code></pre>
+
+<p>用Instruments测试得</p>
+
+<pre><code>第一种方法，ios9.0之前UIImageView和UIButton都高亮为黄色。ios9.0之后只有UIButton高亮为黄色。
+
+第二种方法UIImageView和UIButton都高亮为绿色，但UIImageView加载网络图片后会有一点模糊
+
+第三种方法无任何高亮，说明没离屏渲染
+
+第四种方法无任何高亮，说明没离屏渲染
+</code></pre>
+
+<p>这里以一种比较好的方式实现圆角的处理</p>
+
+<pre><code>static void addRoundedRectToPath(CGContextRef context, CGRect rect, float ovalWidth,
+                                 float ovalHeight)
+{
+    float fw, fh;
+    if (ovalWidth == 0 || ovalHeight == 0) {
+        CGContextAddRect(context, rect);
+        return;
+    }
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, CGRectGetMinX(rect), CGRectGetMinY(rect));
+    CGContextScaleCTM(context, ovalWidth, ovalHeight);
+    fw = CGRectGetWidth(rect) / ovalWidth;
+    fh = CGRectGetHeight(rect) / ovalHeight;
+    CGContextMoveToPoint(context, fw, fh/2);  // Start at lower right corner
+    CGContextAddArcToPoint(context, fw, fh, fw/2, fh, 1);  // Top right corner
+    CGContextAddArcToPoint(context, 0, fh, 0, fh/2, 1); // Top left corner
+    CGContextAddArcToPoint(context, 0, 0, fw/2, 0, 1); // Lower left corner
+    CGContextAddArcToPoint(context, fw, 0, fw, fh/2, 1); // Back to lower right
+    CGContextClosePath(context);
+    CGContextRestoreGState(context);
+}
++ (id) createRoundedRectImage:(UIImage*)image size:(CGSize)size
+{
+    // the size of CGContextRef
+    int w = size.width;
+    int h = size.height;
+
+    UIImage *img = image;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, w, h, 8, 4 * w, colorSpace, kCGImageAlphaPremultipliedFirst);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    CGContextBeginPath(context);
+    addRoundedRectToPath(context, rect, 10, 10);
+    CGContextClosePath(context);
+    CGContextClip(context);
+    CGContextDrawImage(context, CGRectMake(0, 0, w, h), img.CGImage);
+    CGImageRef imageMasked = CGBitmapContextCreateImage(context);
+    CGContextRelease(context);
+    CGColorSpaceRelease(colorSpace);
+    return [UIImage imageWithCGImage:imageMasked];
+}
+</code></pre>
+
+<h2>给图片 添加阴影</h2>
+
+<p>一直以来，为IOS添加图片的特殊效果都是通过跟美工的配合，比如，要加阴影，就从美工那边获得一张阴影效果图，在界面上画两个UIImageView，将阴影放在下面，图像放上上面，错开一定角度。有比如想做圆角效果，就画一张跟背景一个颜色的图片，中间透明，盖在原图上方。看起来很拙劣，效果还是不错的，直到愚钝的我发现IOS已经帮我们准备好了一切。其实就是几行代码的事情：</p>
+
+<p>請先添加库 import QuartzCore.framework
+然后要导入头文件 #import &lt;QuartzCore/QuartzCore.h></p>
+
+<pre><code>[[myView layer] setShadowOffset:CGSizeMake(5, 5)]; //设置阴影起点位置
+[[myView layer] setShadowRadius:6];                       //设置阴影扩散程度
+[[myView layer] setShadowOpacity:1];                      //设置阴影透明度
+[[myView layer] setShadowColor:[UIColor blueColor].CGColor]; //设置阴影颜色
+ ========== (Four) UIImage 图像 旋转==================================
+- (UIImage *)imageRotatedByRadians:(CGFloat)radians
+{
+    return [self imageRotatedByDegrees:radians * 180/M_PI];
+}
+- (UIImage *)imageRotatedByDegrees:(CGFloat)degrees 
+{   
+    // calculate the size of the rotated view's containing box for our drawing space
+    UIView *rotatedViewBox = [[UIView alloc] initWithFrame:CGRectMake(0,0,self.size.width, self.size.height)];
+    CGAffineTransform t = CGAffineTransformMakeRotation(degrees * M_PI / 180);
+    rotatedViewBox.transform = t;
+    CGSize rotatedSize = rotatedViewBox.frame.size;
+    [rotatedViewBox release];
+    // Create the bitmap context
+    UIGraphicsBeginImageContext(rotatedSize);
+    CGContextRef bitmap = UIGraphicsGetCurrentContext();
+    // Move the origin to the middle of the image so we will rotate and scale around the center.
+    CGContextTranslateCTM(bitmap, rotatedSize.width/2, rotatedSize.height/2);
+
+    //   // Rotate the image context
+    CGContextRotateCTM(bitmap, degrees * M_PI / 180);
+    // Now, draw the rotated/scaled image into the context
+    CGContextScaleCTM(bitmap, 1.0, -1.0);
+    CGContextDrawImage(bitmap, CGRectMake(-self.size.width / 2, -self.size.height / 2, self.size.width, self.size.height), [self CGImage]);
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+</code></pre>
+
+<h2>图片压缩大小</h2>
+
+<p>对于移动端的Jpg文件，有这样的结论：</p>
+
+<ul>
+<li><p>a.使用大尺寸大有损压缩比的jpg</p></li>
+<li><p>b.使用jpegtran进行无损压缩</p></li>
+</ul>
+
+
+<p>而对于png有以下结论：</p>
+
+<ul>
+<li><p>a.多彩图片使用png24</p></li>
+<li><p>b.低彩图片使用png8</p></li>
+<li><p>c.推荐使用pngquant</p></li>
+</ul>
+
+
+<p>在Iphone上有两种读取图片数据的简单方法: UIImageJPEGRepresentation和UIImagePNGRepresentation.</p>
+
+<ul>
+<li><p>UIImageJPEGRepresentation函数需要两个参数:图片的引用和压缩系数.而UIImagePNGRepresentation只需要图片引用作为参数.通过在实际使用过程中,比较发现: UIImagePNGRepresentation(UIImage* image) 要比</p></li>
+<li><p>UIImageJPEGRepresentation(UIImage<em> image, 1.0) 返回的图片数据量大很多.譬如,同样是读取摄像头拍摄的同样景色的照片, UIImagePNGRepresentation()返回的数据量大小为199K ,而 UIImageJPEGRepresentation(UIImage</em> image, 1.0)返回的数据量大小只为140KB,比前者少了50多KB.如果对图片的清晰度要求不高,还可以通过设置 UIImageJPEGRepresentation函数的第二个参数,大幅度降低图片数据量.譬如,刚才拍摄的图片, 通过调用UIImageJPEGRepresentation(UIImage* image, 1.0)读取数据时,返回的数据大小为140KB,但更改压缩系数后,通过调用</p></li>
+<li><p>UIImageJPEGRepresentation(UIImage* image, 0.5)读取数据时,返回的数据大小只有11KB多,大大压缩了图片的数据量 ,而且从视角角度看,图片的质量并没有明显的降低.因此,在读取图片数据内容时,建议优先使用UIImageJPEGRepresentation,并可根据自己的实际使用场景,设置压缩系数,进一步降低图片数据量大小.</p></li>
+</ul>
+
+
+<h4>这里我们以一个常用的框架演示</h4>
+
+<p>提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。
+使用UIImagePickerController和用户交互，我们需要实现2个协议&lt;UIImagePickerControllerDelegate,UINavigationControllerDelegate>。
+代码如下 复制代码</p>
+
+<pre><code>#pragma mark 从用户相册获取活动图片
+- (void)pickImageFromAlbum
+{
+    imagePicker = [[UIImagePickerController alloc] init];
+    imagePicker.delegate =self;
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+    imagePicker.allowsEditing =YES;
+
+    [self presentModalViewController:imagePicker animated:YES];
+}
+</code></pre>
+
+<p>我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。
+代码如下 复制代码</p>
+
+<pre><code>    #pragma mark 从摄像头获取活动图片
+    - (void)pickImageFromCamera
+    {
+        imagePicker = [[UIImagePickerController alloc] init];
+        imagePicker.delegate =self;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+        imagePicker.allowsEditing =YES;
+
+        [self presentModalViewController:imagePicker animated:YES];
+    }
+    //打开相机
+    - (IBAction)touch_photo:(id)sender {
+        // for iphone
+        UIImagePickerController *pickerImage = [[UIImagePickerController alloc] init];
+       if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+            pickerImage.sourceType = UIImagePickerControllerSourceTypeCamera;
+            pickerImage.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:pickerImage.sourceType];
+
+        }
+        pickerImage.delegate =self;
+        pickerImage.allowsEditing =YES;//自定义照片样式
+        [self presentViewController:pickerImage animated:YES completion:nil];
+    }
+</code></pre>
+
+<p>以上是从摄像头获取图片，和从相册获取图片只是图片来源的设置不一样，摄像头图片的来源为UIImagePickerControllerSourceTypeCamera。
+在和用户交互之后，用户选择好图片后，会回调选择结束的方法。</p>
+
+<pre><code>        -(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary*)info
+        {
+            //初始化imageNew为从相机中获得的--
+            UIImage *imageNew = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+            //设置image的尺寸
+            CGSize imagesize = imageNew.size;
+            imagesize.height =626;
+            imagesize.width =413;
+            //对图片大小进行压缩--
+            imageNew = [self imageWithImage:imageNew scaledToSize:imagesize];
+            NSData *imageData = UIImageJPEGRepresentation(imageNew,0.00001);
+           if(m_selectImage==nil)
+            {
+                m_selectImage = [UIImage imageWithData:imageData];
+                NSLog(@"m_selectImage:%@",m_selectImage);
+                [self.TakePhotoBtn setImage:m_selectImage forState:UIControlStateNormal];
+                [picker dismissModalViewControllerAnimated:YES];
+               return ;
+            }
+            [picker release];
+        }
+        //对图片尺寸进行压缩--
+        -(UIImage*)imageWithImage:(UIImage*)image scaledToSize:(CGSize)newSize
+        {
+            // Create a graphics image context
+            UIGraphicsBeginImageContext(newSize);
+
+            // Tell the old image to draw in this new context, with the desired
+            // new size
+            [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+
+            // Get the new image from the context
+            UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+
+            // End the context
+            UIGraphicsEndImageContext();
+
+            // Return the new image.
+           return newImage;
+        }
+</code></pre>
+
+<h4>你还可以使用专门的压缩框架（ZipArchive）实现图片的压缩</h4>
+
+<p>将第三方倒入到工程中就可以</p>
+
+<p>调用头文件</p>
+
+<pre><code>#import "ZipArchive.h"  
+</code></pre>
+
+<p>首先是压缩文件</p>
+
+<pre><code>[objc] view plaincopy
+- (void)zipFunction  
+{  
+    zip = [[ZipArchive alloc] init];  
+    NSString *documentPath = [self documentsPath];  
+    NSString * zipFile = [documentPath stringByAppendingString:@"/images.zip"] ;  
+
+    NSString * image1 = [[NSBundle mainBundle] pathForResource:@"a" ofType:@"jpg" inDirectory:nil];  
+    NSString * image2 = [[NSBundle mainBundle] pathForResource:@"b" ofType:@"jpg" inDirectory:nil];  
+    BOOL result = [zip CreateZipFile2:zipFile];  
+    result = [zip addFileToZip:image1 newname:@"a.jpg"];  
+    result = [zip addFileToZip:image2 newname:@"b.jpg"];  
+    if( ![zip CloseZipFile2] ){  
+        zipFile = @"";  
+    }  
+    [zip release];  
+    NSLog(@"%@",NSHomeDirectory());  
+}  
+</code></pre>
+
+<p>然后解压函数</p>
+
+<pre><code>- (void)unzip  
+{  
+    zip = [[ZipArchive alloc] init];  
+    NSString *documentPath = [self documentsPath];  
+    NSString* zipFile = [documentPath stringByAppendingString:@"/images.zip"] ;  
+    NSString* unZipTo = [documentPath stringByAppendingString:@"/images"] ;  
+    if( [zip UnzipOpenFile:zipFile] ){  
+        BOOL result = [zip UnzipFileTo:unZipTo overWrite:YES];  
+        if( NO==result ){  
+            //添加代码  
+        }  
+        [zip UnzipCloseFile];  
+
+        NSString * imageField = [unZipTo stringByAppendingPathComponent:@"a.jpg"];  
+        NSData * imagedata = [NSData dataWithContentsOfFile:imageField];  
+        UIImage * image = [UIImage imageWithData:imagedata];  
+
+        UIImageView * iamgePic = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];  
+
+        [iamgePic setImage:image];  
+
+        [self.view addSubview:iamgePic];  
+
+    }  
+    [zip release];  
+}  
+</code></pre>
+
+<p>这样就把a图片解压出来了
+很简单吧。。。。。
+剩下的就是自己调用了。。。。。。</p>
+
+<h3>把一张图片压缩并截取中间部分</h3>
+
+<pre><code>//这个方法是把一张UIImage压缩成newSize的尺寸
+
+-(UIImage*)imageWithImageSimple:(UIImage*)image scaledToSize:(CGSize)newSize
+
+{
+
+    UIGraphicsBeginImageContext(newSize);
+
+    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+
+    UIGraphicsEndImageContext();
+
+    return newImage;
+
+}
+</code></pre>
+
+<ul>
+<li><p>截取中间部分</p>
+
+<pre><code>  - (UIImage *)scaleImage:(UIImage *)image toScale:(CGSize)reSize
+
+  {
+
+  //先按要显示的大小去比例缩放下图片，这里压缩成245*245的大小
+
+  UIImage *scaledImage = [self imageWithImageSimple:image scaledToSize:CGSizeMake(245, 245)];
+
+  //计算截取位置。这里我们考虑一般拍照边界位置可能存在全白或全黑的情况，多数重要的会在中间位置。所以计算下截取是重绘图片的中间位置
+
+  float drawW = 0.0;
+
+  float drawH = 0.0;
+
+  CGSize size_new = scaledImage.size;
+
+  if (size_new.width &gt; reSize.width) {
+
+      drawW = (size_new.width - reSize.width)/2.0;
+
+  }
+
+  if (size_new.height &gt; reSize.height) {
+
+      drawH = (size_new.height - reSize.height)/2.0;
+
+  }
+
+  NSLog(@"drawW=====w==%f\n--------drawH==%f\n\n",drawW,drawH);    
+
+  //截取截取大小为需要显示的大小。取图片中间位置截取
+
+  CGRect myImageRect = CGRectMake(drawW, drawH, reSize.width, reSize.height);
+
+  UIImage* bigImage= scaledImage;
+
+  scaledImage = nil;
+
+  CGImageRef imageRef = bigImage.CGImage;
+
+  CGImageRef subImageRef = CGImageCreateWithImageInRect(imageRef, myImageRect);
+
+
+
+  UIGraphicsBeginImageContext(reSize);
+
+  CGContextRef context = UIGraphicsGetCurrentContext();
+
+  CGContextDrawImage(context, myImageRect, subImageRef);
+
+  UIImage* smallImage = [UIImage imageWithCGImage:subImageRef];
+
+  UIGraphicsEndImageContext();
+
+  CGImageRelease(subImageRef);
+
+  return smallImage;
+</code></pre>
+
+<p>  }</p></li>
+</ul>
+
+
+<h4>我还看到有人这么做过</h4>
+
+<ul>
+<li>方法一：将图片按照原来的宽高比例压缩到与窗口合适的大小，然后在设置了_imageView.contentMode = UIViewContentModeCenter;</li>
+</ul>
+
+
+<p>这个属性的UIImageView中展示压缩后的图片。</p>
+
+<pre><code>//压缩图片  
+- (UIImage *)image:(UIImage*)image scaledToSize:(CGSize)newSize  
+{  
+    // Create a graphics image context  
+    UIGraphicsBeginImageContext(newSize);  
+    // Tell the old image to draw in this new context, with the desired  
+    // new size  
+    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];  
+    // Get the new image from the context  
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();  
+    // End the context  
+    UIGraphicsEndImageContext();  
+    // Return the new image.  
+    return newImage;  
+}  
+</code></pre>
+
+<p>上面方法的参数newSize是和图片显示窗口差不多大的，结果出现了原图清晰，但压缩后图片不清晰的情况。</p>
+
+<ul>
+<li><p>方法二：按照窗口宽高比例，将原图横向或者纵向裁剪掉多余的部分，然后不设置UIImageView的contentMode属性，将裁剪后的图片送进去，使其自动适应窗口。
+缩放效果的代码如下</p>
+
+<pre><code>  //裁剪图片  
+  - (UIImage *)cutImage:(UIImage*)image  
+  {  
+      //压缩图片  
+      CGSize newSize;  
+      CGImageRef imageRef = nil;  
+
+      if ((image.size.width / image.size.height) &lt; (_headerView.bgImgView.size.width / _headerView.bgImgView.size.height)) {  
+          newSize.width = image.size.width;  
+          newSize.height = image.size.width * _headerView.bgImgView.size.height / _headerView.bgImgView.size.width;  
+
+          imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(0, fabs(image.size.height - newSize.height) / 2, newSize.width, newSize.height));  
+
+      } else {  
+          newSize.height = image.size.height;  
+          newSize.width = image.size.height * _headerView.bgImgView.size.width / _headerView.bgImgView.size.height;  
+
+          imageRef = CGImageCreateWithImageInRect([image CGImage], CGRectMake(fabs(image.size.width - newSize.width) / 2, 0, newSize.width, newSize.height));  
+
+      }  
+
+      return [UIImage imageWithCGImage:imageRef];  
+  }  
+</code></pre></li>
+</ul>
+
+
+<h2>图片格式的转换</h2>
+
+<p>图片保存到本地document里面&ndash;以及图片格式的转换
+IOS开发之保存图片到Documents目录及PNG，JPEG格式相互转换</p>
+
+<pre><code>    - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary*)info {
+        NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+        if ([mediaType isEqualToString:@"public.image"]){
+            image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+            NSData *data;
+            if (UIImagePNGRepresentation(image) == nil) {
+                data = UIImageJPEGRepresentation(image, 1);
+            } else {
+                data = UIImagePNGRepresentation(image);
+            }
+
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *filePath = [NSString stringWithString:[self getPath:@"image1"]];         //将图片存储到本地documents
+         [fileManager createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+         [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.png"] contents:dataattributes:nil];
+
+        UIImage *editedImage = [[UIImage alloc] init];
+        editedImage = image;
+        CGRect rect = CGRectMake(0, 0, 64, 96);
+        UIGraphicsBeginImageContext(rect.size);
+        [editedImage drawInRect:rect];
+        editedImage = UIGraphicsGetImageFromCurrentImageContext();
+
+        UIButton *imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        imageButton.frame = CGRectMake(10, 10, 64, 96);
+        [imageButton setImage:editedImage forState:UIControlStateNormal];
+        [self.view addSubview:imageButton];
+        [imageButton addTarget:self action:@selector(imageAction:)forControlEvents:UIControlEventTouchUpInside];
+        [ipc dismissModalViewControllerAnimated:YES];
+    } else {
+        NSLog(@"MEdia");
+    }
+</code></pre>
+
+<p>上面的代码是当从相册里面选取图片之后保存到本地程序沙盒，在上面我们得到的图片中不能够得到图片名字，
+以及不清楚图片格式，所以这个时候我们需要将其转换成NSdata二进制存储，</p>
+
+<pre><code> image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+NSData *data;
+        if (UIImagePNGRepresentation(image) == nil) {
+            data = UIImageJPEGRepresentation(image, 1);
+        } else {
+            data = UIImagePNGRepresentation(image);
+        }
+UIImagePNGRepresentation转换PNG格式的图片为二进制，如果图片的格式为JPEG则返回nil；
+ [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.png"] contents:data attributes:nil];    将图片保存为PNG格式
+ [fileManager createFileAtPath:[filePath stringByAppendingString:@"/image.jpg"] contents:data attributes:nil];   将图片保存为JPEG格式
+我们也可以写成下面的格式存储图片
+NSString *pngImage = [filePath stringByAppendingPathComponent:@"Documents/image.png"];
+NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.jpg"];
+[data writeToFile:pngImage atomically:YES];
+[data writeToFile:jpgImage atomically:YES];
+</code></pre>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -377,327 +2056,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">Git+SoureTree实战</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！</p>
-
-<p>GitHub相信大家都知道，上面有很多优秀的开源项目供我们学习，比较著名的类似AFNetworking、SDWebImage等等。本篇文章就是教大家如何在Mac系统下提交自己的项目到GitHub上，相信对于新手还是很有帮助的。</p>
-
-<h2>首先我们必须先从git命令开始，没有为什么！</h2>
-
-<h3>需要的工具</h3>
-
-<ul>
-<li><p>1.安装Git  <a href="http://git-scm.com/download/mac">http://git-scm.com/download/mac</a> 我下的是2.2.1版本的。</p></li>
-<li><p>2.终端 (自带的，请允许我卖个萌。。。)</p></li>
-</ul>
-
-
-<h3>操作流程</h3>
-
-<ul>
-<li><p>1.GitHub 上注册账号  <a href="https://github.com/">https://github.com/</a> 去这上面注册下就行（这里就不多说，自己去做吧）。</p></li>
-<li><p>2.配置 SSH key</p></li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/28/git-plus-souretreeshi-zhan/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/28/git-plus-souretreeshi-zhan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
-
-<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
-
-<ul>
-<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
-<li><p>Web Markup，Web内容可被搜索。</p></li>
-<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
-译文如下：</p></li>
-</ul>
-
-
-<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
-
-<h3>三大API</h3>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/25/ios9-corespotlight/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/25/ios9-corespotlight/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>一：WKWebView简单介绍</h2>
-
-<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
-
-<p>先来看看WKWebView和UIWebView有什么区别：</p>
-
-<h6>UIWebView：</h6>
-
-<ul>
-<li>始祖级别，支持的iOS版本比较多</li>
-<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
-<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
-<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
-<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
-<li>无法清除本地存储数据（Local Storage）</li>
-<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
-</ul>
-
-
-<h6>WKWebView：</h6>
-
-<ul>
-<li>iOS 8引入的，比较年轻</li>
-<li>在内存和执行效率上要比UIWebView高很多</li>
-<li>开放度较高但据说Bug成吨</li>
-<li>类似UIWebView，UI定制比较麻烦···</li>
-<li>没具体测试使用过，就不继续列举了 L~</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p> XCode7(iOS9)中新增了跟多特性，包括：</p>
-
-<ul>
-<li>WKWebView+SFSafariViewController</li>
-<li>UI Test</li>
-<li>Multitasking</li>
-<li>watchOS 2</li>
-<li>Swift 2</li>
-<li>App Thinning</li>
-<li>人工智能和搜索 API</li>
-<li>HomeKit，CloudKit，HealthKit 等等杂七杂八的框架</li>
-</ul>
-
-
-<p> 前面的文章中我们已经将WKWebView+SFSafariViewController完整的介绍了一遍，现在我们就开始着手探究一下单元测试（后面的文章中我将会集中介绍一下常用功能新特性），敬请关注：<a href="http://al1020119.github.io/">iOS梦工厂</a></p>
-
-<h3>UI Tests是什么？</h3>
-
-<p>UI Tests是一个自动测试UI与交互的Testing组件</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/22/ios9-unit-test/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/22/ios9-unit-test/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode7总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
-
-<h4>1，默认使用HTTPS请求</h4>
-
-<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
-
-<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
-</code></pre>
-
-<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
-
-<p>Apple介绍了iOS9中的App Transport Security，它要求所有App在默认情况下使用HTTPS来进行网络请求。由于不是所有的服务器都运行在HTTPS环境下，Apple也提供了相关的方法来禁用ATS。</p>
-
-<ul>
-<li>最后：出于数据安全考虑，在完全禁用ATS的情况下，你也应该为某些重要的站点打开ATS。你可以通过NSExceptionDomainskey来禁用/启用特定的站点的ATS。参照如下图片:</li>
-</ul>
-
-
-<p><img src="/images/ats001.png" title="Caption" ></p>
-
-<ul>
-<li>该plist文件允许用户在HTTP环境下下载文件，但是只能在HTTPS情况下访问"workflow.is"</li>
-</ul>
-
-
-<p>需要提醒的是，ATS的设置只针对当前bundle。这意味着你不仅需要在你主项目的info.plist中添加ATS相关的Key,同时也需要在其他bundle下的info.plist中添加相关配置。</p>
-
-<blockquote><p>关于iOS9的适配，github上有一个中文项目iOS9AdaptationTips可以提供很大的帮助。</p></blockquote>
-
-<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
-
-<p>否则会提示类似如下错误:</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -722,7 +2080,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (11)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -732,23 +2090,23 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/11/ffmpeg-kxmovies/">Ffmpeg+kxmovie</a>
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片异步缓存优化</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/07/code-review/">Code ReView</a>
+        <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化总结</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
+        <a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/01/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+        <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理高级篇</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>

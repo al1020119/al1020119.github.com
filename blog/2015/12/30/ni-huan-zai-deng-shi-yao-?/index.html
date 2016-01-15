@@ -1163,6 +1163,40 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 
 <blockquote><p>综上所述可得：如果父视图的userInteractionEnabled=NO，触摸事件不会继续往下传递给子视图，所以子视图永远无法处理触摸事件。而UIImageView在默认情况下的userInteractionEnabled就是NO。</p></blockquote>
 
+<h2>四十：NSCache&amp;NSURLCache</h2>
+
+<h5>NSCache</h5>
+
+<p>(1)可以存储(当然是使用内存)
+(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary
+(3)有固定客户.
+映射关系:
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+
+| NSCache | NSMutableDictionary |
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+
+| NSDiscardableContent | NSObject |
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+</p>
+
+<h5>NSURLCache</h5>
+
+<p>iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
+这里有详细的说明:here
+这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.</p>
+
+<p>映射关系:
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+
+| NSURLRequest &mdash;-|&mdash;-> NSCachedURLResponse |
++&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;+</p>
+
+<p>区别：</p>
+
+<pre><code>NSURLCache提供的是URL Request缓存,可以在Memory和Disk上；NSCache提供了HTTP Request外的东西的缓存方式，在Memory上。
+
+NSCache和NSDictionary类似，不同的是系统回收内存的时候它会自动删掉它的内容。AFNetworking的图片缓存采用的就是NSCache。
+
+NSURLCache一般用于UIWebView，只对异步请求有效，程序中只有一个NSURLCache，为了使响应更灵敏而且更像本地用户界面。
+</code></pre>
+
 <p><br>
 <br>
 &hellip;..
@@ -1266,7 +1300,7 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (11)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -1276,23 +1310,23 @@ UIView不能接收触摸事件的三种情况：</p></blockquote>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/11/ffmpeg-kxmovies/">Ffmpeg+kxmovie</a>
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片异步缓存优化</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/07/code-review/">Code ReView</a>
+        <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化总结</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/04/swiftsourecode/">Swift开源总结</a>
+        <a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/01/zhong-liang-ji/">重量级-MVC-MVVM-DC</a>
+        <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理高级篇</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a>
+        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>
