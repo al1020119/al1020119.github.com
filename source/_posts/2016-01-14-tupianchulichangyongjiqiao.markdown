@@ -31,33 +31,31 @@ iOS开发中关于图片的处理是最常见的，就和你使用TableView的�
 ##获取图片
 提到从摄像头/相册获取图片是面向终端用户的，由用户去浏览并选择图片为程序使用。在这里，我们需要过UIImagePickerController类来和用户交互。
 
-使用UIImagePickerController和用户交互，我们需要实现2个协议<UIImagePickerControllerDelegate,UINavigationControllerDelegate>。
+使用UIImagePickerController和用户交互，我们需要实现2个协议
 
-View Code
+	<UIImagePickerControllerDelegate,UINavigationControllerDelegate>。
+	
+	#pragma mark 从用户相册获取活动图片
+	
+	- (void)pickImageFromAlbum
+	
+	{
 
-代码如下 复制代码
+	    imagePicker = [[UIImagePickerController alloc] init];
+	
+	    imagePicker.delegate =self;
+	
+	    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+	
+	    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+	
+	    imagePicker.allowsEditing =YES;
+	
+	    
+	
+	    [self presentModalViewController:imagePicker animated:YES];
 
-#pragma mark 从用户相册获取活动图片
-
-- (void)pickImageFromAlbum
-
-{
-
-    imagePicker = [[UIImagePickerController alloc] init];
-
-    imagePicker.delegate =self;
-
-    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-
-    imagePicker.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-
-    imagePicker.allowsEditing =YES;
-
-    
-
-    [self presentModalViewController:imagePicker animated:YES];
-
-}
+	}
 
 我们来看看上面的从相册获取图片，我们首先要实例化UIImagePickerController对象，然后设置imagePicker对象为当前对象，设置imagePicker的图片来源为UIImagePickerControllerSourceTypePhotoLibrary，表明当前图片的来源为相册，除此之外还可以设置用户对图片是否可编辑。
  

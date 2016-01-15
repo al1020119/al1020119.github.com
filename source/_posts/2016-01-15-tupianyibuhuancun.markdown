@@ -27,21 +27,22 @@ categories: Summary
     需要时从磁盘读取并展示
 
     // 假设我们有一个 NSURL *imageUrl and UIImageView *imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
-    if ([self hasImageDataForURL:imageUrl] {
-        NSData *data = [self imageDataForUrl:imageUrl];
-        UIImage *image = [UIImage imageWithData:imageData];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            imageView.image = image;
-        });
-    } else {
-        [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
-            [self storeImageData:imageData …];
-            UIImage *image = [UIImage imageWithData:imageData];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                imageView.image = image;
-            });
-        }];
-    }
+
+	    if ([self hasImageDataForURL:imageUrl] {
+	        NSData *data = [self imageDataForUrl:imageUrl];
+	        UIImage *image = [UIImage imageWithData:imageData];
+	        dispatch_async(dispatch_get_main_queue(), ^{
+	            imageView.image = image;
+	        });
+	    } else {
+	        [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
+	            [self storeImageData:imageData …];
+	            UIImage *image = [UIImage imageWithData:imageData];
+	            dispatch_async(dispatch_get_main_queue(), ^{
+	                imageView.image = image;
+	            });
+	        }];
+	    }
 
 FPS 简介
 
