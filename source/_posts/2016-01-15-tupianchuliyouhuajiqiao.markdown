@@ -29,6 +29,11 @@ categories: Summary
 * 以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。
 
 
+<!--more-->
+
+
+
+
 ####一些优化思路：
 
 * 异步下载图片
