@@ -922,7 +922,37 @@ ios的webview有2个类，一个叫UIWebView，另一个是WKWebView。两者的
 
 > 综上所述可得：如果父视图的userInteractionEnabled=NO，触摸事件不会继续往下传递给子视图，所以子视图永远无法处理触摸事件。而UIImageView在默认情况下的userInteractionEnabled就是NO。
 
+##四十：NSCache&NSURLCache
 
+#####NSCache
+(1)可以存储(当然是使用内存)
+(2)保持强应用, 无视垃圾回收. =>这一点同 NSMutableDictionary
+(3)有固定客户.
+映射关系:
++---------------------------+------------------------------+
+| NSCache | NSMutableDictionary |
++---------------------------+------------------------------+
+| NSDiscardableContent | NSObject |
++---------------------------+------------------------------+
+
+#####NSURLCache
+
+iOS5 之前是不能通过NSURLCache使用硬盘缓存的,所以有SDURLCache这样的library来实现硬盘缓存. iOS5可以使用NSURLCache的硬盘缓存, 只要符合http-cache-control-header即可.
+这里有详细的说明:here
+这也就是说不用做任何操作, 系统将自动完成满足缓存条件的request.
+
+映射关系:
++---------------------------+---------------------------------+
+| NSURLRequest ----|----> NSCachedURLResponse |
++---------------------------+---------------------------------+
+
+区别：
+
+    NSURLCache提供的是URL Request缓存,可以在Memory和Disk上；NSCache提供了HTTP Request外的东西的缓存方式，在Memory上。
+
+    NSCache和NSDictionary类似，不同的是系统回收内存的时候它会自动删掉它的内容。AFNetworking的图片缓存采用的就是NSCache。
+
+    NSURLCache一般用于UIWebView，只对异步请求有效，程序中只有一个NSURLCache，为了使响应更灵敏而且更像本地用户界面。
 
 
 
