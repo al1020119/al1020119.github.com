@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "图片处理高级篇"
+title: "图片处理-高级篇"
 date: 2016-01-14 12:21:08 +0800
 comments: true
 categories: Summary

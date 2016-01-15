@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "图片异步缓存优化"
+title: "图片处理-异步缓存优化"
 date: 2016-01-15 02:35:08 +0800
 comments: true
 categories: Summary

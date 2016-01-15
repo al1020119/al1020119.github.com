@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "图片优化总结"
+title: "图片优化-总结"
 date: 2016-01-15 1:21:08 +0800
 comments: true
 categories: Summary
