@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-01-15T13:40:29+08:00</updated>
+  <updated>2016-01-15T13:44:00+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -25,31 +25,37 @@
 
 <p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
 
-<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。
-2. 常用的解决途径</p>
+<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。</p>
 
-<pre><code>异步下载图像
-处理图像（拉伸，去红眼，去边框）以便展示
-写入磁盘
-需要时从磁盘读取并展示
+<!--more-->
 
-// 假设我们有一个 NSURL *imageUrl and UIImageView *imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
-if ([self hasImageDataForURL:imageUrl] {
-    NSData *data = [self imageDataForUrl:imageUrl];
-    UIImage *image = [UIImage imageWithData:imageData];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        imageView.image = image;
-    });
-} else {
-    [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
-        [self storeImageData:imageData …];
-        UIImage *image = [UIImage imageWithData:imageData];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            imageView.image = image;
-        });
-    }];
-}
-</code></pre>
+
+<ol>
+<li><p>常用的解决途径</p>
+
+<p> 异步下载图像
+ 处理图像（拉伸，去红眼，去边框）以便展示
+ 写入磁盘
+ 需要时从磁盘读取并展示</p>
+
+<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示
+ if ([self hasImageDataForURL:imageUrl] {
+     NSData <em>data = [self imageDataForUrl:imageUrl];
+     UIImage </em>image = [UIImage imageWithData:imageData];
+     dispatch_async(dispatch_get_main_queue(), ^{
+         imageView.image = image;
+     });
+ } else {
+     [self downloadImageFromURL:imageUrl withCompletion:^(NSData <em>imageData, …) {
+         [self storeImageData:imageData …];
+         UIImage </em>image = [UIImage imageWithData:imageData];
+         dispatch_async(dispatch_get_main_queue(), ^{
+             imageView.image = image;
+         });
+     }];
+ }</p></li>
+</ol>
+
 
 <p>FPS 简介</p>
 
@@ -180,6 +186,9 @@ tu</p></li>
 <li>CoreAnimation渲染解压缩过的位图</li>
 <li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
 </ul>
+
+
+<!--more-->
 
 
 <h4>一些优化思路：</h4>
@@ -513,6 +522,9 @@ tu</p></li>
 
 <h3>图片资源使用png还是jpg格式</h3>
 
+<!--more-->
+
+
 <p>对于iOS本地应用程序来说最简单的答案就是始终使用PNG，除非你有非常非常好的理由不用它。</p>
 
 <p>当iOS应用构建的时候，Xcode会通过一种方式优化.png文件而不会优化其它文件格式。它优化得相当的好</p>
@@ -582,8 +594,9 @@ UIImage *img = [UIImage imageWithContentsOfFile:@"myImage"]; // no caching
     <id>http://al1020119.github.io/blog/2016/01/14/tupianchuligaojijiqiao</id>
     <content type="html"><![CDATA[<h3>一：UIImage的加载方式</h3>
 
-<p>在网上看了很多，有关图片处理的文章，有些感觉不错，有些感觉只是说了大概，具体的使用方式没有说出来，这几天正好一个有关图片处理的，这就就和大家说说。
-显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
+<p>上一篇文章的补充中也提到了这个，关于图片的加载方式，但是没有过多的涉及，这里就大概的总结一下，希望能有用！</p>
+
+<p>显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
      一般加载图片的方式：
 第一种：</p>
 
@@ -595,6 +608,9 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 
 <pre><code>UIImage * image = [UIImage imageNamed:picName];  
 </code></pre>
+
+<!--more-->
+
 
 <p>这两种是我经常用到的</p>
 
@@ -876,6 +892,9 @@ CGImageRelease(cgimg);
 <li>压缩大小</li>
 <li>格式的转换</li>
 </ul>
+
+
+<!--more-->
 
 
 <h2>获取图片</h2>
@@ -3429,7 +3448,7 @@ NSURLCache一般用于UIWebView，只对异步请求有效，程序中只有一�
 
 <p><img src="http://al1020119.github.io/images/git005.png" title="Caption" ></p>
 
-<p>ssh -T <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#x67;&#x69;&#116;&#64;&#103;&#x69;&#x74;&#104;&#117;&#x62;&#x2e;&#99;&#111;&#x6d;">&#103;&#105;&#116;&#x40;&#x67;&#105;&#x74;&#x68;&#x75;&#98;&#x2e;&#x63;&#x6f;&#109;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+<p>ssh -T <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#x67;&#x69;&#116;&#x40;&#103;&#x69;&#116;&#104;&#x75;&#98;&#46;&#x63;&#111;&#x6d;">&#x67;&#x69;&#116;&#64;&#103;&#105;&#116;&#x68;&#117;&#x62;&#46;&#x63;&#x6f;&#x6d;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
 
 <p><img src="http://al1020119.github.io/images/git006.png" title="Caption" ></p>
 
