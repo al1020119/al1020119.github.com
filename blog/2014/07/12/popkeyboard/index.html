@@ -218,6 +218,32 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 }
 </code></pre>
+
+<p>六：辅助ScrollView</p>
+
+<p>下面再介绍一种方便的方法，先铺一个scrollview，在它上面放UITextField，不过要注意，连线的时候要把Editing Did Begin和Editing Did End连到同两个方法上，这样当开始编辑和结束编辑的时候可触发两个不同的方法</p>
+
+<p>下面是这两个方法的实现</p>
+
+<pre><code>- (IBAction)userNameDidBegin:(id)sender {
+//这里添加了一个滚动的动画
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.15];
+//开始编辑的时候，让_scrollView滚到CGPointMake(0, 216);
+    CGPoint offset = CGPointMake(0, 216);
+    [_scrollView setContentOffset:offset animated:YES];
+    [UIView commitAnimations];
+}
+
+- (IBAction)tapInputUserName:(id)sender {
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:0.15];
+//结束编辑的时候，让_scrollView滚到CGPointMake(0, 0);
+    CGPoint offset = CGPointMake(0, 0);
+    [_scrollView setContentOffset:offset animated:YES];
+    [UIView commitAnimations];
+} 
+</code></pre>
 </div>
 
 
@@ -302,7 +328,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (17)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -310,6 +336,10 @@ $(document).bind('DOMNodeInserted', function(event) {
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
@@ -325,10 +355,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>

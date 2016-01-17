@@ -110,6 +110,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li>添加阴影</li>
 <li>压缩大小</li>
 <li>格式的转换</li>
+<li>图片上传</li>
 </ul>
 
 
@@ -524,8 +525,7 @@ Color Hits Green and Misses Red
 
 <p>首先是压缩文件</p>
 
-<pre><code>[objc] view plaincopy
-- (void)zipFunction  
+<pre><code>- (void)zipFunction  
 {  
     zip = [[ZipArchive alloc] init];  
     NSString *documentPath = [self documentsPath];  
@@ -782,6 +782,90 @@ NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.
 [data writeToFile:pngImage atomically:YES];
 [data writeToFile:jpgImage atomically:YES];
 </code></pre>
+
+<h2>图片保存&amp;上传</h2>
+
+<p>保存：</p>
+
+<pre><code>- (void)saveImage:(UIImage *)tempImage WithName:(NSString *)imageName
+
+　　{
+
+　　NSData* imageData = UIImagePNGRepresentation(tempImage);
+
+　　NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+
+　　NSString* documentsDirectory = [paths objectAtIndex:0];
+
+　　// Now we get the full path to the file
+
+　　NSString* fullPathToFile = [documentsDirectory stringByAppendingPathComponent:imageName];
+
+　　// and then we write it out
+
+　　[imageData writeToFile:fullPathToFile atomically:NO];
+
+　　}
+</code></pre>
+
+<p>上传：</p>
+
+<pre><code>- (void) imageUpload:(UIImage *) image{
+
+//把图片转换成imageDate格式
+
+NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+
+//传送路径
+
+NSString *urlString = @"http://＊＊＊＊＊/test/upload.php";
+
+//建立请求对象
+
+NSMutableURLRequest * request = [[NSMutableURLRequest alloc] init];
+
+//设置请求路径
+
+[request setURL:[NSURL URLWithString:urlString]];
+
+//请求方式
+
+[request setHTTPMethod:@"POST"];
+
+//一连串上传头标签
+
+NSString *boundary = [NSString stringWithString:@"---------------------------14737809831466499882746641449"];
+
+NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+
+[request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+
+NSMutableData *body = [NSMutableData data];
+
+[body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary]dataUsingEncoding:NSUTF8StringEncoding]];
+
+[body appendData:[[NSString stringWithString:@"Content-Disposition: form-data; name="userfile"; filename="vim_go.jpg"\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+
+[body appendData:[[NSString stringWithString:@"Content-Type: application/octet-stream\r\n\r\n"]dataUsingEncoding:NSUTF8StringEncoding]];
+
+[body appendData:[NSData dataWithData:imageData]];
+
+[body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n",boundary]dataUsingEncoding:NSUTF8StringEncoding]];
+
+[request setHTTPBody:body];
+
+//上传文件开始
+
+NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+
+//获得返回值
+
+NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
+
+NSLog(@"%@",returnString);
+
+}
+</code></pre>
 </div>
 
 
@@ -866,7 +950,7 @@ NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (17)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -874,6 +958,10 @@ NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
@@ -889,10 +977,6 @@ NSString *jpgImage = [filePath stringByAppendingPathComponent:@"Documents/image.
     
       <li class="post">
         <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>

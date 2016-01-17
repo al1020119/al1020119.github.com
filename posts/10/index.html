@@ -9,7 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一个xcodeproj文件，其实是一个目录，它的格式大体上是这样的： 这里写图片描述 有的文件，比如user.mode1v3，在没有多个用户操作项目的时候，是没有的。Apple并没有提供.xcodeproj文件的文档，而且它也没有准备提供，更坑爹的是，xcodeproj的格式、内容都是随时可变的， &hellip;">
+  <meta name="description" content="这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend, 此类报错往往来的莫明奇妙. 原因往往是内存过度释放导致, 即多写了release; 至于是哪里多写了release, 很难查知, 出现这种情况， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +75,59 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/08/badaccess-error/">EXC_BAD_ACCESS无处不在</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend,</p>
+
+<p>此类报错往往来的莫明奇妙.</p>
+
+<p>原因往往是内存过度释放导致, 即多写了release;</p>
+
+<p>至于是哪里多写了release, 很难查知,</p>
+
+<p>出现这种情况， 也就是对指针对象的过度释放，导致次指针为野指针报错， （注意：如：[nil release] 操作空指针是不会报错的，在java中是有问题， [野指针 release] 报错  crash  很危险，）解决中bug，有很多中，暂时简单的说下几种简单的：</p>
+
+<h5>一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到</h5>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/12/08/badaccess-error/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2013/12/08/badaccess-error/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -540,53 +594,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ul>
-<li>前言</li>
-</ul>
-
-
-<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/11">&larr; Older</a>
@@ -613,7 +620,7 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (17)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -621,6 +628,10 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
@@ -636,10 +647,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
     
       <li class="post">
         <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>

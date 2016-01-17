@@ -9,7 +9,11 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="引言 过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。 &hellip;">
+  <meta name="description" content="引言：
+随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。 本文源码源码（封装）iCocosPay（内集常见支付方案：成支付宝，微信，银联） 目录 常见支付方案
+第三方支付SDK
+苹果官方支付方案
+web支付方案 一:常见支付方案 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +78,287 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：
+随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。</p>
+
+<p>本文源码源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>（内集常见支付方案：成支付宝，微信，银联）</p>
+
+<p>目录</p>
+
+<ul>
+<li>常见支付方案</li>
+<li>第三方支付SDK</li>
+<li>苹果官方支付方案</li>
+<li>web支付方案</li>
+</ul>
+
+
+<h2>一:常见支付方案</h2>
+
+<p>先来看一组截图</p>
+
+<p><img src="/images/zhifu001.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu002.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu003.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu004.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>微信支付</p></li>
+<li><p>支付宝支付</p></li>
+<li><p>银联（快捷）支付</p></li>
+<li><p>京东支付</p></li>
+<li><p>百度钱包</p></li>
+<li><p>web支付</p></li>
+<li><p>QQ钱包支付</p></li>
+<li><p>连连支付</p></li>
+</ul>
+
+
+<p>￼￼￼￼
+整理图：</p>
+
+<p><img src="/images/zhifu006.png" title="Caption" ></p>
+
+<h2>二：最常见的三种支付方式</h2>
+
+<ul>
+<li>微信支付SDK</li>
+<li>支付宝支付SDK</li>
+<li>银联快捷支付SDK</li>
+</ul>
+
+
+<h4>微信</h4>
+
+<h5>什么事微信支付</h5>
+
+<p>微信支付是集成在微信客户端的支付功能，用户可以通过手机完成快速的支付流程。微信支付以绑定银行卡的快捷支付为基础，向用户提供安全、快捷、高效的支付服务。</p>
+
+<h5>申请流程：</h5>
+
+<p>第一阶段：</p>
+
+<p><img src="/images/zhifu007.png" title="Caption" ></p>
+
+<p>第二阶段：</p>
+
+<p><img src="/images/zhifu008.png" title="Caption" ></p>
+
+<p>第三阶段：</p>
+
+<p><img src="/images/zhifu009.png" title="Caption" ></p>
+
+<h5>应用场景：</h5>
+
+<p>商户APP调用微信提供的SDK调用微信支付模块，商户APP会跳转到微信中完成支付，支付完后跳回到商户APP内，最后展示支付结果。</p>
+
+<h5>支付流程</h5>
+
+<p>App内提交订单（确认支付）
+商品信息确认（立即支付）
+输入密码（进行支付）
+支付成功</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu010.png" title="Caption" ></p>
+
+<h4>支付宝</h4>
+
+<h5>什么是支付宝支付：</h5>
+
+<p>支付宝移动支付是一种程序式的支付方式，在手机、掌上电脑等无线设备的应用程序内，买家可通过支付宝进行付款购买特定服务或商品，资金即时到账。</p>
+
+<h5>申请流程</h5>
+
+<p><img src="/images/zhifu011.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p>买家再手机应用中购买商品或者服务
+买家选择支付宝方式支付
+进入支付宝收银台进行支付
+支付成功
+交易完成买家可查看交易信息
+返回对应的app界面</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu012.png" title="Caption" ></p>
+
+<h4>银联</h4>
+
+<h5>什么值银联支付</h5>
+
+<p><img src="/images/zhifu013.png" title="Caption" ></p>
+
+<h5>申请流程：</h5>
+
+<p><img src="/images/zhifu0114.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p><img src="/images/zhifu015.png" title="Caption" ></p>
+
+<h5>接入流程：</h5>
+
+<p><img src="/images/zhifu016.png" title="Caption" ></p>
+
+<h5>最后整理一下具体步骤：</h5>
+
+<ol>
+<li>首先客户端浏览商品，点击下单，请求到达商户后台。</li>
+<li>商户后台再提交订单信息到银联后台。</li>
+<li>银联后台返回交易流水号。</li>
+<li>商户后台将交易流水号返回给客户端。</li>
+<li>客户端再通过交易流水号启动手机控件开始支付。</li>
+<li>支付控件收集支付信息并请求银联后台，完成支付后银联后台通知商户后台支付结果。</li>
+<li>银联后台通知支付控件支付结果。</li>
+<li>支付控件通知客户端支付结果。</li>
+<li>最后客户端将支付结果展示给用户。</li>
+</ol>
+
+
+<h2>三：苹果官方支付方案</h2>
+
+<ul>
+<li>IPA</li>
+<li>Apple Pay</li>
+</ul>
+
+
+<h5>IPA</h5>
+
+<p>什么事IPA：
+In App Purchase属于iPhone SDK3.0的新特性，用于在应用程序中购买付费道具，增加新功能，订阅杂志。是应用程序除了植入广告外的另一种取得收益的方式。</p>
+
+<h5>IPA支持的产品类型：</h5>
+
+<p><img src="/images/zhifu017.png" title="Caption" ></p>
+
+<p>IPA两种支付方式：
+方式一：内置产品类型</p>
+
+<p><img src="/images/zhifu018.png" title="Caption" >
+方式二：服务器类型</p>
+
+<p><img src="/images/zhifu019.png" title="Caption" ></p>
+
+<h5>注意事项：</h5>
+
+<ol>
+<li>你必须提供电子类产品和服务。不要使用In App Purchase 去出售实物和实际服务。</li>
+<li>不能提供代表中介货币的物品，因为让用户知晓他们购买的商品和服务是很重要的。</li>
+</ol>
+
+
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序向服务器发送请求，获得一份产品列表。</li>
+<li>服务器返回包含产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>程序从信息中获得数据，并发送至服务器。</li>
+<li>服务器纪录数据，并进行审(我们的)查。</li>
+<li>服务器将数据发给App Store来验证该交易的有效性。</li>
+<li>App Store对收到的数据进行解析，返回该数据和说明其是否有效的标识。</li>
+<li>服务器读取返回的数据，确定用户购买的内容。</li>
+<li>服务器将购买的内容传递给程序。</li>
+</ol>
+
+
+<h5>什么是Apple Pay：</h5>
+
+<p>Apple Pay与诸多传统移动支付系统不同，不但有Touch ID指纹识别技术护航，还能在Apple Watch上运作。</p>
+
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序通过bundle存储的plist文件得到产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>App获取信息并提供内容给用户。</li>
+</ol>
+
+
+<h2>四：web支付方案</h2>
+
+<h5>概述：</h5>
+
+<p>iOS中通过UIWebView展示WAP或HTML5支付页面，从而完成支付功能，无需接入额外第三方SDK。
+UIWebView是iOS SDK中一个最常用的控件，是内置的浏览器控件，我们可以用它来浏览网页、打开文档等等。</p>
+
+<h5>类型界面：</h5>
+
+<p><img src="/images/zhifu020.png" title="Caption" ></p>
+
+<p>总结：</p>
+
+<p>最后本人根据实际开发整理了一份关于支付的源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>，内集成了：支付宝支付，微信支付，银联快捷支付！</p>
+
+<p>其他参考：</p>
+
+<p><a href="https://pay.weixin.qq.com/wiki/doc/api/index.html">微信支付</a></p>
+
+<p><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218010538&amp;tabId=1#ps-tabinfo-hashhttp://doc.open.alipay.com/doc2/detail?treeId=59&amp;articleId=103563&amp;docType=1">支付宝支付</a></p>
+
+<p><a href="https://open.unionpay.com/ajweb/index">银联</a></p>
+
+<p><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218008816https://open.unionpay.com/ajweb/help/file/techFile?productId=66">Web支付</a></p>
+
+<p><a href="https://developer.apple.com/in-app-purchase/">IAP</a></p>
+
+<p><a href="https://developer.apple.com/apple-pay/">Apple Pay</a></p>
+</div>
+  
+  
+
+
+
+
+| <a href="/blog/2016/01/18/disanfangzhifu/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -332,6 +617,7 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 <li>添加阴影</li>
 <li>压缩大小</li>
 <li>格式的转换</li>
+<li>图片上传</li>
 </ul>
 
 
@@ -595,63 +881,6 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">你还在等什么？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近，一直在寻找灵感，摸索新技术，提高个人的开发能力，比如swift开源代码，也在研究前端开发，但是偶尔看到一个问题，学了这么久，也做了这么久，突然发现很多东西都忘了，或者说搞不太清楚，就是有些相似的弄混了，最后网上到处找。看完之后我也颇有感受，也想了很久，觉得整理一份重要的总结。</p>
-
-<p>宗旨内容如下：</p>
-
-<ul>
-<li>1：ios开发中常见技术的总结（主要是区别）</li>
-<li>2：作为一个iOS程序员必备的常识问题</li>
-<li>3：作为面试必备的一份宝典</li>
-<li>4：初学者快速了解相关技术</li>
-<li>5：老程序员快速回顾混淆，忘记的知识点</li>
-</ul>
-
-
-<p>后续我也会一直讲本文更新下去，有露点或者错误的地方望指出，或者联系<a href="http://al1020119.github.io/other/">我</a>，相互交流技术，谢谢！</p>
-
-<p>好了开始吧。。。。。。。。。。。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/12/30/ni-huan-zai-deng-shi-yao-%3F/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -676,7 +905,7 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (16)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (17)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -684,6 +913,10 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 </section><section>
   <h1>最新文章</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
@@ -699,10 +932,6 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
     
       <li class="post">
         <a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a>
       </li>
     
   </ul>
