@@ -127,7 +127,7 @@ App内提交订单（确认支付）
 #####申请流程：
 
 
-{% img /images/zhifu0114.png Caption %}
+{% img /images/zhifu014.png Caption %}
 
 #####支付流程：
 
