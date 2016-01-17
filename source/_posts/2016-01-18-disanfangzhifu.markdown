@@ -65,7 +65,7 @@ categories: Summary
 
 
 ####微信
-#####什么事微信支付
+#####什么是微信支付
 微信支付是集成在微信客户端的支付功能，用户可以通过手机完成快速的支付流程。微信支付以绑定银行卡的快捷支付为基础，向用户提供安全、快捷、高效的支付服务。
 
 #####申请流程：
@@ -157,8 +157,8 @@ App内提交订单（确认支付）
 + Apple Pay
 
 
-#####IPA
-什么事IPA：
+###IPA
+#####什么是IPA：
 In App Purchase属于iPhone SDK3.0的新特性，用于在应用程序中购买付费道具，增加新功能，订阅杂志。是应用程序除了植入广告外的另一种取得收益的方式。
 
 #####IPA支持的产品类型：
@@ -195,6 +195,8 @@ IPA两种支付方式：
 13. 服务器读取返回的数据，确定用户购买的内容。
 14. 服务器将购买的内容传递给程序。
 
+###Apple Pay
+
 #####什么是Apple Pay：
 Apple Pay与诸多传统移动支付系统不同，不但有Touch ID指纹识别技术护航，还能在Apple Watch上运作。
 
@@ -222,27 +224,16 @@ UIWebView是iOS SDK中一个最常用的控件，是内置的浏览器控件，�
 
 总结：
 
-
-
 最后本人根据实际开发整理了一份关于支付的源码（封装）[iCocosPay](https://github.com/al1020119/iCocosPay)，内集成了：支付宝支付，微信支付，银联快捷支付！
 
-其他参考：
+你是不是在找接口文档？
 
-[微信支付](https://pay.weixin.qq.com/wiki/doc/api/index.html)
-
-[支付宝支付](https://b.alipay.com/order/productDetail.htm?productId=2015110218010538&tabId=1#ps-tabinfo-hashhttp://doc.open.alipay.com/doc2/detail?treeId=59&articleId=103563&docType=1)
-
-
-[银联](https://open.unionpay.com/ajweb/index)
-
-
-[Web支付](https://b.alipay.com/order/productDetail.htm?productId=2015110218008816https://open.unionpay.com/ajweb/help/file/techFile?productId=66)
-
-
-[IAP](https://developer.apple.com/in-app-purchase/)
-
-
-[Apple Pay](https://developer.apple.com/apple-pay/)
+* [微信支付](https://pay.weixin.qq.com/wiki/doc/api/index.html)
+* [支付宝支付](https://b.alipay.com/order/productDetail.htm?productId=2015110218010538&tabId=1#ps-tabinfo-hashhttp://doc.open.alipay.com/doc2/detail?treeId=59&articleId=103563&docType=1)
+* [银联](https://open.unionpay.com/ajweb/index)
+* [Web支付](https://b.alipay.com/order/productDetail.htm?productId=2015110218008816https://open.unionpay.com/ajweb/help/file/techFile?productId=66)
+* [IAP](https://developer.apple.com/in-app-purchase/)
+* [Apple Pay](https://developer.apple.com/apple-pay/)
 
 
 
