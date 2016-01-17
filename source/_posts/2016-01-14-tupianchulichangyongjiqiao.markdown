@@ -21,6 +21,8 @@ iOS开发中关于图片的处理是最常见的，就和你使用TableView的�
 + 添加阴影
 + 压缩大小
 + 格式的转换
++ 图片上传
+
 	
 	
 
@@ -427,8 +429,7 @@ iOS开发中关于图片的处理是最常见的，就和你使用TableView的�
 
 
 首先是压缩文件
-
-	[objc] view plaincopy
+ 
 	- (void)zipFunction  
 	{  
 	    zip = [[ZipArchive alloc] init];  
@@ -675,3 +676,87 @@ IOS开发之保存图片到Documents目录及PNG，JPEG格式相互转换
 	[data writeToFile:pngImage atomically:YES];
 	[data writeToFile:jpgImage atomically:YES];
 
+##图片保存&上传
+
+
+保存：
+
+	- (void)saveImage:(UIImage *)tempImage WithName:(NSString *)imageName
+	
+	　　{
+	
+	　　NSData* imageData = UIImagePNGRepresentation(tempImage);
+	
+	　　NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	
+	　　NSString* documentsDirectory = [paths objectAtIndex:0];
+	
+	　　// Now we get the full path to the file
+	
+	　　NSString* fullPathToFile = [documentsDirectory stringByAppendingPathComponent:imageName];
+	
+	　　// and then we write it out
+	
+	　　[imageData writeToFile:fullPathToFile atomically:NO];
+	
+	　　}
+	
+	
+上传：
+
+
+	- (void) imageUpload:(UIImage *) image{
+	
+	//把图片转换成imageDate格式
+	
+	NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+	
+	//传送路径
+	
+	NSString *urlString = @"http://＊＊＊＊＊/test/upload.php";
+	
+	//建立请求对象
+	
+	NSMutableURLRequest * request = [[NSMutableURLRequest alloc] init];
+	
+	//设置请求路径
+	
+	[request setURL:[NSURL URLWithString:urlString]];
+	
+	//请求方式
+	
+	[request setHTTPMethod:@"POST"];
+	
+	//一连串上传头标签
+	
+	NSString *boundary = [NSString stringWithString:@"---------------------------14737809831466499882746641449"];
+	
+	NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
+	
+	[request addValue:contentType forHTTPHeaderField: @"Content-Type"];
+	
+	NSMutableData *body = [NSMutableData data];
+	
+	[body appendData:[[NSString stringWithFormat:@"\r\n--%@\r\n",boundary]dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	[body appendData:[[NSString stringWithString:@"Content-Disposition: form-data; name="userfile"; filename="vim_go.jpg"\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	[body appendData:[[NSString stringWithString:@"Content-Type: application/octet-stream\r\n\r\n"]dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	[body appendData:[NSData dataWithData:imageData]];
+	
+	[body appendData:[[NSString stringWithFormat:@"\r\n--%@--\r\n",boundary]dataUsingEncoding:NSUTF8StringEncoding]];
+	
+	[request setHTTPBody:body];
+	
+	//上传文件开始
+	
+	NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
+	
+	//获得返回值
+	
+	NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
+	
+	NSLog(@"%@",returnString);
+	
+	}

@@ -139,3 +139,29 @@ iOS开发中键盘的退出方法用很多中我们应该在合适的地方使�
 	}
 	 
 	
+	
+六：辅助ScrollView
+
+
+下面再介绍一种方便的方法，先铺一个scrollview，在它上面放UITextField，不过要注意，连线的时候要把Editing Did Begin和Editing Did End连到同两个方法上，这样当开始编辑和结束编辑的时候可触发两个不同的方法
+ 
+下面是这两个方法的实现 
+
+	- (IBAction)userNameDidBegin:(id)sender {
+	//这里添加了一个滚动的动画
+	    [UIView beginAnimations:nil context:nil];
+	    [UIView setAnimationDuration:0.15];
+	//开始编辑的时候，让_scrollView滚到CGPointMake(0, 216);
+	    CGPoint offset = CGPointMake(0, 216);
+	    [_scrollView setContentOffset:offset animated:YES];
+	    [UIView commitAnimations];
+	}
+	
+	- (IBAction)tapInputUserName:(id)sender {
+	    [UIView beginAnimations:nil context:nil];
+	    [UIView setAnimationDuration:0.15];
+	//结束编辑的时候，让_scrollView滚到CGPointMake(0, 0);
+	    CGPoint offset = CGPointMake(0, 0);
+	    [_scrollView setContentOffset:offset animated:YES];
+	    [UIView commitAnimations];
+	} 
