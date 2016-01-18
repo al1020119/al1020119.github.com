@@ -20,6 +20,13 @@ categories: Summary
 * web支付方案
 
 
+
+<!--more-->
+
+
+
+
+
 ##一:常见支付方案
 
 先来看一组截图
