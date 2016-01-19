@@ -20,9 +20,9 @@ keywords: Octopress
 
 版权声明：欢迎转载，请贴上源地址
  
- [https://al1020119.github.io](https://al1020119.github.io)
+ [http://al1020119.github.io](http://al1020119.github.io)
  
- [http://www.cnblogs.com/iCocos/（iOS梦工厂）](http://www.cnblogs.com/iCocos/（iOS梦工厂）)
+ [http://www.cnblogs.com/iCocos/（iOS梦工厂）](http://www.cnblogs.com/iCocos/)
 
 
 
@@ -33,6 +33,6 @@ keywords: Octopress
 
 更多精彩请关注
 
-[github：https://github.com/al1020119?tab=repositories](github：https://github.com/al1020119?tab=repositories)
+[https://github.com/al1020119](https://github.com/al1020119)
 
 <!--more-->
