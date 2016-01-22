@@ -9,12 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一个控件从外在特征来说，主要是封装这几点： 交互方式
-显示样式
-数据使用 对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征： 灵活性
-低耦合
-易拓展
-易维护 ">
+  <meta name="description" content="摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +75,66 @@ $(document).bind('DOMNodeInserted', function(event) {
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/14/fang-fa-huan-cun/">方法缓存</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#x6d;&#x61;&#106;&#105;&#x61;&#48;&#51;&#64;&#109;&#101;&#x69;&#116;&#117;&#97;&#x6e;&#x2e;&#99;&#111;&#x6d;">&#109;&#x61;&#x6a;&#105;&#97;&#x30;&#x33;&#x40;&#109;&#x65;&#x69;&#x74;&#117;&#97;&#x6e;&#46;&#x63;&#111;&#109;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/11/14/fang-fa-huan-cun/">阅读全文😘</a>
+    </footer>
+  
+
+
+
+
+| <a href="/blog/2014/11/14/fang-fa-huan-cun/#comments">更多评论</a>
+
+    </article>
   
   
     <article>
@@ -539,54 +595,6 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
-
-<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
-
-<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
-
-<h5>一.UDID(Unique Device Identifier)</h5>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/08/14/unio/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/08/14/unio/#comments">更多评论</a>
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/8">&larr; Older</a>
@@ -613,7 +621,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (19)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
@@ -623,7 +631,11 @@ $(document).bind('DOMNodeInserted', function(event) {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(session）</a>
+        <a href="/blog/2016/01/22/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
       </li>
     
       <li class="post">
@@ -636,10 +648,6 @@ $(document).bind('DOMNodeInserted', function(event) {
     
       <li class="post">
         <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化-总结</a>
       </li>
     
   </ul>
