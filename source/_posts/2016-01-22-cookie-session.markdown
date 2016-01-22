@@ -36,6 +36,11 @@ Cookie有两个版本,一个是版本0(Netscape Cookies)和版本1(RFC 2965),目
 
 ####二. NSHTTPCookie
 
+
+<!--more-->
+
+
+
 在iOS中使用NSHTTPCookie类封装一条cookie,通过NSHTTPCookie的方法读取到cookie的通用属性。
 
 	- (NSUInteger)version;
