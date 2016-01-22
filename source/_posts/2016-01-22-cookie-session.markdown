@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Cookie是撒(session）"
+title: "Cookie是撒(&session）"
 date: 2016-01-22 13:32:08 +0800
 comments: true
 categories: Summary
