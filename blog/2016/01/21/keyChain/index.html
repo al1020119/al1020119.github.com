@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>屏幕旋转的奥妙 - iOS梦工厂</title>
+  <title>Keychain介绍与使用 - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="屏幕旋转的奥妙 ordinal 一，决定当前UIViewController显示方向的因素 1，全局控制 工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。 &hellip;">
+  <meta name="description" content="Keychain介绍与使用 ordinal 介绍 引言： Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/21/keyChain/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -77,7 +77,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   <header>
     
-      <h1 class="entry-title">屏幕旋转的奥妙</h1>
+      <h1 class="entry-title">Keychain介绍与使用</h1>
     
     
       <p class="meta">
@@ -97,134 +97,118 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-<div class="entry-content"><h3>一，决定当前UIViewController显示方向的因素</h3>
+<div class="entry-content"><h3>介绍</h3>
 
-<h6>1，全局控制</h6>
+<p>引言：</p>
 
-<p>工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。实际上就是设置工程plist文件的Supported interface orientations属性。</p>
+<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
 
-<h6>2，配置AppDelegate</h6>
+<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
 
-<p>配置AppDelegate的如下方法返回需要用到的全部方向集合，如果要支持多个方向，一般都返回UIInterfaceOrientationMaskAll</p>
+<h3>使用</h3>
 
-<pre><code>- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(nullable UIWindow *)window{
-    return UIInterfaceOrientationMaskAll;
+<p>通常情况下，我们用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。keychain里保存的信息不会因App被删除而丢失，在用户重新安装App后依然有效，数据还在。</p>
+
+<p>使用苹果官方发布的KeychainItemWrapper或者SFHFKeychainUtils很方便，后来看到 iphone使用keychain来存取用户名和密码 一文，觉得对了解keychain有很大的帮助，于是ARC控也尝试了一把。</p>
+
+<p>需要导入Security.framework</p>
+
+<pre><code>@implementation WQKeyChain
++ (NSMutableDictionary *)getKeychainQuery:(NSString *)service {
+return [NSMutableDictionary dictionaryWithObjectsAndKeys:
+        (__bridge_transfer id)kSecClassGenericPassword,(__bridge_transfer id)kSecClass,
+        service, (__bridge_transfer id)kSecAttrService,
+        service, (__bridge_transfer id)kSecAttrAccount,
+        (__bridge_transfer id)kSecAttrAccessibleAfterFirstUnlock,(__bridge_transfer id)kSecAttrAccessible,
+        nil];
 }
-</code></pre>
 
-<p>似乎该方法默认值为Info.plist中配置的Supported interface orientations项的值。</p>
-
-<h6>3，自定义UIViewController，并实现如下orientation相关的三个方法（iOS6以后）:</h6>
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>//是否支持多方向旋转屏，会考察当前设备方向和支持的方向。一些文档上说shouldAutorotate如果返回NO则不会执行下面两个方法纯属扯淡。  
--(BOOL)shouldAutorotate  
-{  
-    return YES;  
-}  
-//第二个方法返回支持的旋转方向  
--(UIInterfaceOrientationMask)supportedInterfaceOrientations  
-{  
-    return [self.viewControllers.lastObject supportedInterfaceOrientations];  
-}  
-</code></pre>
-
-<p>返回最优先显示的屏幕方向，比如同时支持Portrait和Landscape方向，但想优先显示Landscape方向，那软件启动的时候就会先显示Landscape，在手机切换旋转方向的时候仍然可以在Portrait和Landscape之间切换；  </p>
-
-<pre><code>-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
-{  
-    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
-}  
-</code></pre>
-
-<p> 
-以上三个规则在每一个UIViewController中都会得到一个方向的交集集合，就是最终显示的方向。如果交集为空，会抛出UIApplicationInvalidInterfaceOrientationException崩溃异常。</p>
-
-<h3>二，典型的控制方案</h3>
-
-<p>另外一个非常重要的点就是并不是每一个UIViewController都会主动执行以上三个方法，根据特酷吧的实验，发现：</p>
-
-<ul>
-<li>1，当UIViewController是rootViewController（Device Orientation方向变化时会主动执行）</li>
-<li>2，当UIViewController是UINavigationController（Device Orientation方向变化时会主动执行）</li>
-<li>3，当UIViewController以modal模态形式弹出时会主动执行。
-一个典型的方案是，我们就可以在UINavigationController中这样写：</li>
-</ul>
-
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>-(BOOL)shouldAutorotate  
-{  
-    return YES;  
-}  
--(UIInterfaceOrientationMask)supportedInterfaceOrientations  
-{  
-    return [self.viewControllers.lastObject supportedInterfaceOrientations];//主动调用UIViewController对应的方法，达到在UIViewController中自定义的效果  
-}  
--(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
-{  
-    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
-}  
-</code></pre>
-
-<p> 
-接下来就只需要自定义各自的VC</p>
-
-<pre><code>-(UIInterfaceOrientationMask)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskPortrait;//根据需要
++ (void)save:(NSString *)service data:(id)data {
+    //Get search dictionary
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    //Delete old item before add new item
+    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
+    //Add new object to search dictionary(Attention:the data format)
+    [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:data] forKey:(__bridge_transfer id)kSecValueData];
+    //Add item to keychain with the search dictionary
+    SecItemAdd((__bridge_retained CFDictionaryRef)keychainQuery, NULL);
 }
-- (BOOL)shouldAutorotate
+
++ (id)load:(NSString *)service {
+    id ret = nil;
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    //Configure the search setting
+    [keychainQuery setObject:(id)kCFBooleanTrue forKey:(__bridge_transfer id)kSecReturnData];
+    [keychainQuery setObject:(__bridge_transfer id)kSecMatchLimitOne forKey:(__bridge_transfer id)kSecMatchLimit];
+    CFDataRef keyData = NULL;
+    if (SecItemCopyMatching((__bridge_retained CFDictionaryRef)keychainQuery, (CFTypeRef *)&amp;keyData) == noErr) {
+        @try {
+            ret = [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge_transfer NSData *)keyData];
+        } @catch (NSException *e) {
+            NSLog(@"Unarchive of %@ failed: %@", service, e);
+        } @finally {
+        }
+    }
+    return ret;
+}
+
++ (void)delete:(NSString *)service {
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
+}
+@end
+</code></pre>
+
+<p>比如，保存密码</p>
+
+<pre><code>@interface WQUserDataManager : NSObject
+
+
++(void)savePassWord:(NSString *)password;
+
+
++(id)readPassWord;
+
+
++(void)deletePassWord;
+
+@end
+
+#import "WQUserDataManager.h"
+
+@implementation WQUserDataManager
+
+static NSString * const KEY_IN_KEYCHAIN = @"com.wuqian.app.allinfo";
+static NSString * const KEY_PASSWORD = @"com.wuqian.app.password";
+
++(void)savePassWord:(NSString *)password
 {
-    return NO;//根据需要
+    NSMutableDictionary *usernamepasswordKVPairs = [NSMutableDictionary dictionary];
+    [usernamepasswordKVPairs setObject:password forKey:KEY_PASSWORD];
+    [WQKeyChain save:KEY_IN_KEYCHAIN data:usernamepasswordKVPairs];
 }
--(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+
++(id)readPassWord
 {
-    return UIInterfaceOrientationPortrait;//根据需要
+    NSMutableDictionary *usernamepasswordKVPair = (NSMutableDictionary *)[WQKeyChain load:KEY_IN_KEYCHAIN];
+    return [usernamepasswordKVPair objectForKey:KEY_PASSWORD];
+}
+
++(void)deletePassWord
+{
+    [WQKeyChain delete:KEY_IN_KEYCHAIN];
+}
+@end
+</code></pre>
+
+<p>实现一个简单的界面，把设定的密码存起来，然后立即读取显示出来看看效果</p>
+
+<pre><code>-(IBAction)btnAciton:(id)sender
+{
+    [WQUserDataManager savePassWord:self.textfield.text];
+    self.label.text = [WQUserDataManager readPassWord];
 }
 </code></pre>
-
-<p>事实上在作为一个UINavigationController的堆栈系统，普通的UIViewController的orientation方法只是一个配置项，最终决定屏幕方向的还是UINavigationController控制器，也就是UINavigationController拿UIViewController得配置决定当前控制器的方向。</p>
-
-<h3>三，强制屏幕旋转</h3>
-
-<p>如果UIInterfaceOrientation和UIDeviceOrientation方向不一样，想强制将UIInterfaceOrientation旋转成UIDeviceOrientation的方向，可以通过l类方法attemptRotationToDeviceOrientation，但是如果想将interface强制旋转成任一指定方向，就不太好实现了。目前大致有以下几种方式：</p>
-
-<h6>1，使用私有方法</h6>
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>[[UIDevice currentDevice] setOrientation:UIInterfaceOrientationPortrait];  
-</code></pre>
-
-<p>具体可以这样：  </p>
-
-<pre><code>         if ([[UIDevice currentDevice] respondsToSelector:@selector(setOrientation:)]) {  
-        SEL selector = NSSelectorFromString(@"setOrientation:");  
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[UIDevice instanceMethodSignatureForSelector:selector]];  
-        [invocation setSelector:selector];  
-        [invocation setTarget:[UIDevice currentDevice]];  
-        int val = UIInterfaceOrientationLandscapeRight;  
-        [invocation setArgument:&amp;val atIndex:2];  
-        [invocation invoke];  
-    }  
-</code></pre>
-
-<p> </p>
-
-<h6>2，主动触发orientation相关方法</h6>
-
-<p>只要提前设置好想要支持的orientation，然后主动触发orientation机制，使新设置的orientation起作用便能实现将 interface orientation旋转至任意方向的目的。像这样：</p>
-
-<pre><code>UIViewController *vc = [[UIViewController alloc]init]; 
-[self presentModalViewController:vc animated:NO]; 
-[self dismissModalViewControllerAnimated:NO]; 
-</code></pre>
-
-<h6>3、旋转view的transform</h6>
-
-<p>前两种都是试图触发orientation相关方法，第三种可能会造成一些不可预知的风险不推荐。</p>
 </div>
 
 
@@ -253,7 +237,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/projects/'>projects</a>
+    <a class='category' href='/blog/categories/summary/'>summary</a>
   
 </span>
 
@@ -282,10 +266,10 @@ $(document).bind('DOMNodeInserted', function(event) {
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/" title="Previous Post: 站在AFN上看ASI">&laquo; 站在AFN上看ASI</a>
+        <a class="basic-alignment left" href="/blog/2016/01/18/disanfangzhifu/" title="Previous Post: 第三方支付总结">&laquo; 第三方支付总结</a>
       
       
-        <a class="basic-alignment right" href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/" title="Next Post: cocoaPods简单粗暴">cocoaPods简单粗暴 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2016/01/22/cookie-session/" title="Next Post: Cookie是撒(session）">Cookie是撒(session） &raquo;</a>
       
     </p>
   </footer>
@@ -375,7 +359,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2016/01/21/keyChain/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/21/keyChain/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>

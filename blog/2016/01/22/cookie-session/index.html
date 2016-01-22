@@ -5,13 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>iOS梦工厂</title>
+  <title>Cookie是撒(session） - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="引言： 简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。
+  <meta name="description" content="Cookie是撒(session） ordinal 引言： 简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。
 多个应用间默认是不共亨cookie的
-删除重装应用cookie会被清除 一. Cookie介绍 Cookie是在客户端存储服务器状态的一种机制, &hellip;">
+删除重装应用cookie会被清除 一. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -20,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/">
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/22/cookie-session/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -74,15 +74,12 @@ $(document).bind('DOMNodeInserted', function(event) {
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/01/22/cookie-session/">Cookie是撒(session）</a></h1>
+      <h1 class="entry-title">Cookie是撒(session）</h1>
     
     
       <p class="meta">
@@ -102,7 +99,7 @@ $(document).bind('DOMNodeInserted', function(event) {
   </header>
 
 
-  <div class="entry-content"><p>引言：</p>
+<div class="entry-content"><p>引言：</p>
 
 <ol>
 <li><p>简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。</p></li>
@@ -397,26 +394,20 @@ session会在一定时间内保存在服务器上。当访问增多，会比较�
 <p>参考：
 <a href="http://my.oschina.net/xianggao/blog/395675">http://my.oschina.net/xianggao/blog/395675</a></p>
 </div>
-  
-  
 
 
 
 
-| <a href="/blog/2016/01/22/cookie-session/#comments">更多评论</a>
+| <a href="#comments">更多评论</a>
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a></h1>
-    
-    
-      <p class="meta">
-        
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
 
 
 
@@ -426,613 +417,48 @@ session会在一定时间内保存在服务器上。当访问增多，会比较�
 
 
  <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>介绍</h3>
-
-<p>引言：</p>
-
-<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
-
-<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
-
-<h3>使用</h3>
-
-<p>通常情况下，我们用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。keychain里保存的信息不会因App被删除而丢失，在用户重新安装App后依然有效，数据还在。</p>
-
-<p>使用苹果官方发布的KeychainItemWrapper或者SFHFKeychainUtils很方便，后来看到 iphone使用keychain来存取用户名和密码 一文，觉得对了解keychain有很大的帮助，于是ARC控也尝试了一把。</p>
-
-<p>需要导入Security.framework</p>
-
-<pre><code>@implementation WQKeyChain
-+ (NSMutableDictionary *)getKeychainQuery:(NSString *)service {
-return [NSMutableDictionary dictionaryWithObjectsAndKeys:
-        (__bridge_transfer id)kSecClassGenericPassword,(__bridge_transfer id)kSecClass,
-        service, (__bridge_transfer id)kSecAttrService,
-        service, (__bridge_transfer id)kSecAttrAccount,
-        (__bridge_transfer id)kSecAttrAccessibleAfterFirstUnlock,(__bridge_transfer id)kSecAttrAccessible,
-        nil];
-}
-
-+ (void)save:(NSString *)service data:(id)data {
-    //Get search dictionary
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    //Delete old item before add new item
-    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
-    //Add new object to search dictionary(Attention:the data format)
-    [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:data] forKey:(__bridge_transfer id)kSecValueData];
-    //Add item to keychain with the search dictionary
-    SecItemAdd((__bridge_retained CFDictionaryRef)keychainQuery, NULL);
-}
-
-+ (id)load:(NSString *)service {
-    id ret = nil;
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    //Configure the search setting
-    [keychainQuery setObject:(id)kCFBooleanTrue forKey:(__bridge_transfer id)kSecReturnData];
-    [keychainQuery setObject:(__bridge_transfer id)kSecMatchLimitOne forKey:(__bridge_transfer id)kSecMatchLimit];
-    CFDataRef keyData = NULL;
-    if (SecItemCopyMatching((__bridge_retained CFDictionaryRef)keychainQuery, (CFTypeRef *)&amp;keyData) == noErr) {
-        @try {
-            ret = [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge_transfer NSData *)keyData];
-        } @catch (NSException *e) {
-            NSLog(@"Unarchive of %@ failed: %@", service, e);
-        } @finally {
-        }
-    }
-    return ret;
-}
-
-+ (void)delete:(NSString *)service {
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
-}
-@end
-</code></pre>
-
-<p>比如，保存密码</p>
-
-<pre><code>@interface WQUserDataManager : NSObject
-
-
-+(void)savePassWord:(NSString *)password;
-
-
-+(id)readPassWord;
-
-
-+(void)deletePassWord;
-
-@end
-
-#import "WQUserDataManager.h"
-
-@implementation WQUserDataManager
-
-static NSString * const KEY_IN_KEYCHAIN = @"com.wuqian.app.allinfo";
-static NSString * const KEY_PASSWORD = @"com.wuqian.app.password";
-
-+(void)savePassWord:(NSString *)password
-{
-    NSMutableDictionary *usernamepasswordKVPairs = [NSMutableDictionary dictionary];
-    [usernamepasswordKVPairs setObject:password forKey:KEY_PASSWORD];
-    [WQKeyChain save:KEY_IN_KEYCHAIN data:usernamepasswordKVPairs];
-}
-
-+(id)readPassWord
-{
-    NSMutableDictionary *usernamepasswordKVPair = (NSMutableDictionary *)[WQKeyChain load:KEY_IN_KEYCHAIN];
-    return [usernamepasswordKVPair objectForKey:KEY_PASSWORD];
-}
-
-+(void)deletePassWord
-{
-    [WQKeyChain delete:KEY_IN_KEYCHAIN];
-}
-@end
-</code></pre>
-
-<p>实现一个简单的界面，把设定的密码存起来，然后立即读取显示出来看看效果</p>
-
-<pre><code>-(IBAction)btnAciton:(id)sender
-{
-    [WQUserDataManager savePassWord:self.textfield.text];
-    self.label.text = [WQUserDataManager readPassWord];
-}
-</code></pre>
-</div>
-  
-  
-
-
-
-
-| <a href="/blog/2016/01/21/keyChain/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a></h1>
-    
-    
-      <p class="meta">
-        
 
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：
-随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。</p>
-
-<p>本文源码源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>（内集常见支付方案：成支付宝，微信，银联）</p>
-
-<p>目录</p>
-
-<ul>
-<li>常见支付方案</li>
-<li>第三方支付SDK</li>
-<li>苹果官方支付方案</li>
-<li>web支付方案</li>
-</ul>
-
-
-</div>
+<span class="categories">
   
+    <a class='category' href='/blog/categories/summary/'>summary</a>
   
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/18/disanfangzhifu/">阅读全文😘</a>
-    </footer>
-  
+</span>
 
 
-
-
-| <a href="/blog/2016/01/18/disanfangzhifu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
       
-  <header>
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
     
-      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ol>
-<li>引言</li>
-</ol>
-
-
-<p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
-
-<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。</p>
-
+      <div class="sharing">
+  
+  
+  
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/15/tupianyibuhuancun/">阅读全文😘</a>
-    </footer>
-  
 
-
-
-
-| <a href="/blog/2016/01/15/tupianyibuhuancun/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
+    
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化-总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>主要针对问题</p>
-
-<ul>
-<li><p>图片文件比较大</p></li>
-<li><p>图片文件比较多</p></li>
-</ul>
-
-
-<h4>网络图片显示大体步骤:</h4>
-
-<ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
+        <a class="basic-alignment left" href="/blog/2016/01/21/keyChain/" title="Previous Post: keychain介绍与使用">&laquo; keychain介绍与使用</a>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！</p>
-
-<ol>
-<li><p>图片资源使用png还是jpg格式</p></li>
-<li><p>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</p></li>
-</ol>
-
-
-<h3>图片资源使用png还是jpg格式</h3>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/14/tupianchulibuchong/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2016/01/14/tupianchulibuchong/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>一：UIImage的加载方式</h3>
-
-<p>上一篇文章的补充中也提到了这个，关于图片的加载方式，但是没有过多的涉及，这里就大概的总结一下，希望能有用！</p>
-
-<p>显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
-     一般加载图片的方式：
-第一种：</p>
-
-<pre><code>NSString * imagePath = [[NSBundle mainBundle] pathForResource:@"pic@.png" ofType:nil inDirectory:nil];  
-UIImage * image = [UIImage imageWithContentsOfFile:imagePath];  
-</code></pre>
-
-<p>第二种：</p>
-
-<pre><code>UIImage * image = [UIImage imageNamed:picName];  
-</code></pre>
+    </p>
+  </footer>
+</article>
 
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/14/tupianchuligaojijiqiao/">阅读全文😘</a>
-    </footer>
-  
 
-
-
-
-| <a href="/blog/2016/01/14/tupianchuligaojijiqiao/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。</p>
-
-<p>这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！</p>
-
-<p>目录</p>
-
-<ul>
-<li>获取图片</li>
-<li>比例缩放</li>
-<li>圆角 化</li>
-<li>添加阴影</li>
-<li>压缩大小</li>
-<li>格式的转换</li>
-<li>图片上传</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/14/tupianchulichangyongjiqiao/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/11/ffmpeg-kxmovies/">Ffmpeg+kxmovie</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：<a href="http://objccn.io/issue-24-4/">API预览</a></p>
-
-<p>好了开始吧！</p>
-
-<p>首先介绍两个概念：</p>
-
-<ul>
-<li><p>FFmpeg：是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。采用LGPL或GPL许可证。它提供了录制、转换以及流化音视频的完整解决方案。它包含了非常先进的音频/视频编解码库libavcodec，为了保证高可移植性和编解码质量，libavcodec里很多codec都是从头开发的。</p></li>
-<li><p>kxmovie：在FFmpeg基础上封装的一套OC的框架，非常好用么热切很强大！</p></li>
-</ul>
-
-
-<h2>一：编译针对iOS平台的ffmpeg库（kxmovie）</h2>
-
-<p>近期有一个项目，需要播放各种格式的音频、视频以及网络摄像头实时监控的视频流数据，经过多种折腾之后，最后选择了kxmovie，kxmovie项目已经整合了ffmpeg和简单的播放器，具体可以参考kxmovie主页：<a href="https://">https://</a></p>
-
-<ul>
-<li>github.com/kolyvan/kxmovie
-
-<ul>
-<li>编译kxmovie很简单，已经支持iOS 6.1 和 armv7s，一次成功，编译过程没出现什么问题：</li>
-</ul>
-</li>
-<li>git clone git://github.com/kolyvan/kxmovie.git</li>
-<li>cd kxmovie</li>
-<li>git submodule update &ndash;init</li>
-<li>rake</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/11/ffmpeg-kxmovies/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2016/01/11/ffmpeg-kxmovies/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/07/code-review/">Code ReView</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>提高代码质量的方法：</p>
-
-<p>1，codereview</p>
-
-<p> Why we do Code Review(为什么进行)</p>
-
-<pre><code>1、提高质量
-2、及早发现潜在缺陷与BUG，降低事故成本。
-3、促进团队内部知识共享，提高团队整体水平
-4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
-</code></pre>
-
-<p> Options of Code Review(代码评审的选择)</p>
-
-<pre><code>1、最近一次迭代开发的代码
-2、系统关键模块
-3、业务较复杂的模块
-4、缺陷率较高的模块
-</code></pre>
-
-<p>如何做出从零开始code review呢, 我的建议是:</p>
-
-<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
-安排一次编码规范的技术分享
-前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
-对于积极的同学表示鼓励, 支持现场重构代码
-每天不光可以review代码, 也可以安排整场的技术分享
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/07/code-review/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2016/01/07/code-review/#comments">更多评论</a>
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/posts/2">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -1115,7 +541,7 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 
 <section>
 <h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/index.html" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/blog/2016/01/22/cookie-session/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/22/cookie-session/" alt="post-qrcode"></a></section>
 <section>
     <h1>访客统计</h1>
     <br/>
@@ -1134,6 +560,27 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
   
 </aside>
 
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
     </div>
   </div>
   <footer role="contentinfo"><!--<p>-->
