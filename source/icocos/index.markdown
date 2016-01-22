@@ -18,7 +18,7 @@ footer: true
  
 
 	
-											|  个人信息  | 
+											|  基本信息  | 
 											
  姓		名 :   曹理鹏（英：iCocos）	 
  
@@ -35,7 +35,8 @@ footer: true
  电    话：	18370997821	              
  
  电子邮件：	al10201119@163.com  
-     
+     	
+											|  工作信息  | 
 
  现居住地：广东省-广州市
 
@@ -52,6 +53,10 @@ footer: true
  座右铭：不战胜自己，何以改变未来！
 
 
+	
+											|  技术博客  | 
+
+
 ###### 个人博客：
  
  [http://al1020119.github.io/（github)](http://al1020119.github.io/)，
@@ -61,7 +66,8 @@ footer: true
  
 
  ***
-  
+  	
+											|  其他相关  | 
 ######本人目前就职：
  
  * 蓝色光标-樱淘社
@@ -71,9 +77,9 @@ footer: true
 
 * 精通C，Objective-C，Swift开发
 
-* 熟悉android（java），C#，C++
+* 熟悉android（java），C#，C++，
 
-* 最近在研究并学习前端开发：Php5+Css3+JavaScript
+* 最近在研究并学习前端开发：Php5+Css3+JavaScript，逆向工程
 
 
 ######后期规划：
