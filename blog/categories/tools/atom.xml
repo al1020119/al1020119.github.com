@@ -1,0 +1,2022 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Tools | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/tools/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Git+SoureTree实战]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan/"/>
+    <updated>2015-12-28T12:28:06+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/28/git-plus-souretreeshi-zhan</id>
+    <content type="html"><![CDATA[<p>由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！</p>
+
+<p>GitHub相信大家都知道，上面有很多优秀的开源项目供我们学习，比较著名的类似AFNetworking、SDWebImage等等。本篇文章就是教大家如何在Mac系统下提交自己的项目到GitHub上，相信对于新手还是很有帮助的。</p>
+
+<h2>首先我们必须先从git命令开始，没有为什么！</h2>
+
+<h3>需要的工具</h3>
+
+<ul>
+<li><p>1.安装Git  <a href="http://git-scm.com/download/mac">http://git-scm.com/download/mac</a> 我下的是2.2.1版本的。</p></li>
+<li><p>2.终端 (自带的，请允许我卖个萌。。。)</p></li>
+</ul>
+
+
+<h3>操作流程</h3>
+
+<ul>
+<li><p>1.GitHub 上注册账号  <a href="https://github.com/">https://github.com/</a> 去这上面注册下就行（这里就不多说，自己去做吧）。</p></li>
+<li><p>2.配置 SSH key</p></li>
+</ul>
+
+
+<!--more-->
+
+
+<pre><code>-  ①  defaults write com.apple.finder AppleShowAllFiles -bool true     终端 显示隐藏文件（需要重新运行Finder)。
+
+-  ② 点击桌面顶部菜单  前往&gt;个人  看看自己电脑上有没有个 .ssh 的隐藏文件，有的话个人建议删除，新建个。
+
+-  ③  mkdir .ssh    终端新建个 .ssh文件
+
+-  ④  cd .ssh   进入到刚才新建的.ssh文件目录下 
+
+-  ⑤  ssh-Keygen -t rsa -C "your_email@example.com"       后面“ ”里面 随意输入个邮箱就行,回车会提示你输入密码什么的，可以无视一直回车下去。
+
+-  ⑥  ls -la      查看是否存在 id_rsa(私钥)  id_rsa.pub(公钥) 这两个东西，如果存在就成功了。
+
+-  ⑦ pbcopy &lt; ~/.ssh/id_rsa.pub     拷贝 公钥
+
+-  ⑧ 进入GitHub 登入 。 
+
+        添加你刚才生成的SSH Key 到GitHub上，也就是最后一张图的 Add SSH Key 点击 会让你输入秘钥 以及秘钥的名称。 秘钥 pbcopy &lt; ~/.ssh/id_rsa.pub 这个终端命令就已经复制过了  直接command + V 粘贴上去就行，秘钥名称随意。
+</code></pre>
+
+<p><img src="/images/git004.png" title="Caption" ></p>
+
+<p><img src="/images/git005.png" title="Caption" ></p>
+
+<p>ssh -T <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#111;&#x3a;&#x67;&#x69;&#116;&#64;&#x67;&#105;&#116;&#x68;&#x75;&#98;&#46;&#x63;&#111;&#109;">&#x67;&#x69;&#x74;&#x40;&#103;&#105;&#x74;&#x68;&#x75;&#98;&#46;&#99;&#x6f;&#109;</a>   新添加到github上的秘钥左边的点一开始是灰色的，终端执行这个命令后，刷新网页会看到灰色点变成了绿色。</p>
+
+<p><img src="/images/git006.png" title="Caption" ></p>
+
+<ul>
+<li>3.在GitHub 上创建公开项目。</li>
+</ul>
+
+
+<p><img src="/images/git001.png" title="Caption" ></p>
+
+<p><img src="/images/git002.png" title="Caption" ></p>
+
+<p><img src="/images/git003.png" title="Caption" ></p>
+
+<ul>
+<li><p>4.上传本地项目到GitHub。</p>
+
+<ul>
+<li><p> ① 在电脑上新建个项目文件夹 。</p></li>
+<li><p> ②  cd + 刚才新建的项目文件夹路径</p></li>
+<li><p> ③  git clone + GitHub 上创建的项目地址    （GitHub 上创建的项目地址如下图所示）这样你在GitHub 上创建的项目就克隆下来了</p></li>
+<li><p> ④ cd + 克隆下来的项目路径 （如何在终端输入路径，可以直接把你想要知道路径的文件夹拖到终端里 这样自动就要该文件夹的路径了）</p></li>
+<li><p> ⑤ git init    (git 仓库的初始化)</p></li>
+<li><p> ⑥ git add .    (这里注意：add 空格 再加 .)</p></li>
+<li><p> ⑦ git status    (查看add 成功没)</p></li>
+<li><p> ⑧ git commit -m &ldquo;描述&rdquo;   （“ ” 引号里面输入你的描述 随意）</p></li>
+<li><p> ⑨ git push origin master        (最后push到GitHub上)</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p><img src="/images/git007.png" title="Caption" ></p>
+
+<p>到这里大概结束了，祝大家能够在GitHub上发起更多好的项目，发扬光大开源精神！</p>
+
+<p><img src="/images/git008.png" title="Caption" ></p>
+
+<hr />
+
+<h2>SourceTree</h2>
+
+<blockquote><p>简介
+SourceTree 是 Windows 和Mac OS X 下免费的 Git 和 Hg 客户端，拥有可视化界面，容易上手操作。同时它也是Mercurial和Subversion版本控制系统工具。支持创建、提交、clone、push、pull 和merge等操作。
+  </p></blockquote>
+
+<p>关于SourceTree的下载，github的账号注册，仓库的创建这里就不介绍了，亦或者没有什么好说的，因为会用电脑都会做，而且前面已经介绍过了，一部分。我们就从上面做好的所用项目中最后一步开始。看卡下面的图片：
+  
+<img src="/images/git008.png" title="Caption" ><br/>
+  </p>
+
+<h5>SourceTree基本使用</h5>
+
+<blockquote><p>以下以SourceTree For Mac V2.0.5.2中文版为例，托管平台以Github为例</p></blockquote>
+
+<ul>
+<li>1.打开我们的SourceTree，点击：“+新仓库”，选择：“从URL克隆”</li>
+</ul>
+
+
+<p><img src="/images/git009.png" title="Caption" ></p>
+
+<ul>
+<li>2.粘贴我们的仓库链接至源URL，SourceTree会自动帮我们生成目标路径（本地仓库路径）以及名称，点击克隆</li>
+</ul>
+
+
+<p><img src="/images/git010.png" title="Caption" ></p>
+
+<ul>
+<li>3.等待数秒后，SourceTree会为我们自动打开我们刚才克隆的仓库，选择master选项，这里我们可以看到我们仓库里的所有文件</li>
+</ul>
+
+
+<p><img src="/images/git011.png" title="Caption" ></p>
+
+<ul>
+<li>4.双击souretree中对应的项目之后。</li>
+</ul>
+
+
+<p><img src="/images/git012.png" title="Caption" ></p>
+
+<p>后面就是需要熟悉souretree界面，并且使用了，也就是平时开发者们最常用的一些操作。</p>
+
+<p><img src="/images/git013.png" title="Caption" ></p>
+
+<p>具体的详细步骤，后面我会找机会根据项目实际开发整理好(不过，如果你使用果Coerstone那这个也并不难)。由于时间的原因，这里就到这里了！</p>
+
+<h5>最后总结一下：SourceTree&amp;Git部分名词解释</h5>
+
+<pre><code>克隆(clone)：从远程仓库URL加载创建一个与远程仓库一样的本地仓库
+提交(commit)：将暂存文件上传到本地仓库（我们在Finder中对本地仓库做修改后一般都得先提交一次，再推送）
+检出(checkout)：切换不同分支
+添加（add）：添加文件到暂存区
+移除（remove）：移除文件至暂存区
+暂存(git stash)：保存工作现场
+重置(reset)：回到最近添加(add)/提交(commit)状态
+合并(merge)：将多个同名文件合并为一个文件，该文件包含多个同名文件的所有内容，相同内容抵消
+抓取(fetch)：从远程仓库获取信息并同步至本地仓库
+拉取(pull)：从远程仓库获取信息并同步至本地仓库，并且自动执行合并（merge）操作，即 pull=fetch+merge
+推送(push)：将本地仓库同步至远程仓库，一般推送（push）前先拉取（pull）一次，确保一致
+分支(branch)：创建/修改/删除分枝
+标签(tag):给项目增添标签
+工作流(Git Flow):团队工作时，每个人创建属于自己的分枝（branch），确定无误后提交到master分枝
+终端(terminal):可以输入git命令行
+</code></pre>
+
+<h6>相关链接推荐</h6>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for mac</a></p>
+
+<p>→<a href="https://help.github.com/desktop/">Github help for win</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[SVN实战总结]]></title>
+    <link href="http://al1020119.github.io/blog/2015/07/02/svnshi-zhan-zong-jie/"/>
+    <updated>2015-07-02T22:44:29+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/07/02/svnshi-zhan-zong-jie</id>
+    <content type="html"><![CDATA[<ul>
+<li>A：add，新增</li>
+<li>C：conflict，冲突</li>
+<li>D：delete，删除</li>
+<li>M：modify，本地已经修改</li>
+<li>G：modify and merGed，本地文件修改并且和服务器的进行合并</li>
+<li>U：update，从服务器更新</li>
+<li>R：replace，从服务器替换</li>
+<li>I：ignored，忽略</li>
+</ul>
+
+
+<p>常见提示图标：</p>
+
+<h6>黄色感叹号(有冲突):</h6>
+
+<pre><code>--这是有冲突了，冲突就是说你对某个文件进行了修改，别人也对这个文件进行了修改，别人抢在你提交之前先提交了，这时你再提交就会被提示发生冲突，而不允许你提交，防止你的提交覆盖了别人的修改。要解决冲突，如果你确认你的修改是无效的，则用TSVN还原你的修改就行了；如果认为你的修改是正确的，别人的提交是无效的，那么用TSVN先标记为“解决冲突”，然后就可以提交了；如果你认为你的修改和别人的修改都有一部分是有效的，那么你就把别人的修改手动合并到你的修改中，然后使用TSVN标注为“解决冲突”，然后就可以提交了。进入文件夹，寻找有黄色感叹号的文件，这些文件就是发生冲突的地方，根据实际情况处理冲突
+</code></pre>
+
+<!--more-->
+
+
+<h6>米字号(有本地修改代码)：</h6>
+
+<pre><code>--这是说明你有未提交的本地代码。
+</code></pre>
+
+<h6>问好(新加入的资源):</h6>
+
+<pre><code>--这说明该文件是项目中新增文件资源，新增资源可以是文件、图片、代码等。
+</code></pre>
+
+<h6>红色感叹号(本地代码与库没有保持一致)：</h6>
+
+<pre><code>--这说明本地代码跟库上没有保持一致，如果用户想修复，可以将带红色感叹号图标文件删除，直接update即可。
+</code></pre>
+
+<h6>灰色向右箭头(本地修改过)</h6>
+
+<pre><code>--本地代码没有及时上库。
+</code></pre>
+
+<h6>蓝色向左箭头(SVN上修改过)</h6>
+
+<pre><code>--记得更新代码后修改，提交前跟svn对比习惯。
+</code></pre>
+
+<h6>灰色向右且中间有个加号的箭头(本地比SVN上多出的文件)</h6>
+
+<pre><code>--修改完记得跟svn保持一致
+</code></pre>
+
+<h6>蓝色向左且中间有个加号的箭头(SVN上比本地多出的文件)</h6>
+
+<pre><code>--删除该文件后，再次更新，将svn上文件全部更新下来。
+</code></pre>
+
+<h6>灰色向右且中间有个减号的箭头(本地删除了,而SVN上未删除的文件)</h6>
+
+<pre><code>--也就是说你删除确认后，一定要记得上库，跟svn保持一致
+</code></pre>
+
+<h6>蓝色向左且中间有个减号的箭头(SVN上删除了,而本地未删除的文件)</h6>
+
+<pre><code>--比对svn库上代码，确定需要删除后，更新svn(删除无用代码)。
+</code></pre>
+
+<h6>红色双向箭头(SVN上修改过,本地也修改过的文件 )</h6>
+
+<pre><code>--这个表示本地和svn上都修改过，最好就是把本地修改合并到svn，修改代码前最后先更新。
+</code></pre>
+
+<h4>版本回退</h4>
+
+<ul>
+<li><p>本地版本回退：</p>
+
+<ul>
+<li>右键选中对应的项目或者文件，弹出菜单中选中Revert</li>
+<li>提示你当前工程有一些修改，但是还没提交，"Discard XXX"-点击后当前修改的内容会被取消，“Copy XXX”-点击会会先复制一份代码到废纸篓</li>
+<li>点击 “Discard XXX”后，本地工程已更新至选择的版本，如果想将服务器上的也更新到选择的版本，可以再commit。</li>
+</ul>
+</li>
+<li><p>服务器版本回退：误将错误的文件上传到了svn服务器，回滚的办法是：</p>
+
+<ul>
+<li>1：svn merge -r100:99 .  （注意有个点，表示当前路径）</li>
+<li>2：svn ci -m &ldquo;revert version&rdquo; . （代码提交，实际上删除之前误传的文件）</li>
+</ul>
+</li>
+</ul>
+
+
+<h4>.a（库文件）</h4>
+
+<ul>
+<li>首先打开软件左上角 CornerStone-Preferences-SubVersion</li>
+<li>第一个地方把对号去掉，第二个地方把.a那个删除，然后save。</li>
+<li>然后把你的.a文件放到本地的相应文件夹下，</li>
+<li>但是 CornerStone（我的是v2.7.10 版本的） 里相应文件夹下看不到带问号的.a文件的话，点击上边 View-Show Ignored  Items</li>
+<li>到这里就ok了，选中你的静态库 点击底部Add 问号会变成A，然后就可以提交了。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Xcode Menu]]></title>
+    <link href="http://al1020119.github.io/blog/2015/05/11/xcode-menu/"/>
+    <updated>2015-05-11T14:20:57+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/05/11/xcode-menu</id>
+    <content type="html"><![CDATA[<p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
+
+<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
+
+<!--more-->
+
+
+<h2>File:</h2>
+
+<p><img src="/images/xcodemenu001.png" title="Caption" ></p>
+
+<pre><code>New : 可以新建tap,窗口，新文件，playground，workspace，target等等。
+
+Add Files to XX: 为这个项目中引入文件
+
+Open ：打开文件
+
+Open Recent  ：打开最近的打开的项目或者工作组
+
+Open Quickly  ：通过搜索文件名快速打开一个文件
+
+Close ：这几个选项的都是关闭操作。
+
+Save ：保存
+
+Duplicate：复制
+
+Revert  to Saved：将此文件的修改直接回退到上次保存时
+
+Unlock ：要对第三方库或系统文件进行修改时解锁
+
+Show in Finder ：在Finder 中展示
+
+Open with External Editor  ：使用外部编辑器打开
+
+Save As Workspace： 另存为工作组
+
+Page Setup ：页面设置，为打印而生
+
+Print… ：用打印机打印当前文件 
+</code></pre>
+
+<h2>Edit:</h2>
+
+<p><img src="/images/xcodemenu002.png" title="Caption" ></p>
+
+<pre><code>Undo: 撤销
+
+Redo ：反撤销
+
+Cut ：剪切
+
+Copy ：拷贝
+
+Paste ：粘贴
+
+Special Paste ：特殊粘贴 ??
+
+Paste and Preserve formatter ：粘贴并匹配样式
+
+Duplicate :复制
+
+Delete :删除
+
+Select All :全选
+
+Filter : 筛选，可以选择在导航栏中筛选和在库中筛选
+
+Sort：排序 (还不知道怎么用)
+
+Format ：格式
+
+          Font ：可以打开字体和颜色的设置框，可以copy样式。
+
+          Text ：可以设置编码的页面左右对齐，显示顶部标尺。
+
+          Spelling and Grammar ：拼写提示和语法提示。
+
+          Substitutions：会出来个仪表盘，提供微操。
+
+          Transformations ：可以将英文转成全大写，全小写，首字母大写。
+
+          Speech ：开始说话结束说话。
+
+Refactor: 重构
+
+          Rename 重命名
+
+          Extract 提取
+
+          Create Superclass  创建超类
+
+          Move Up 上移
+
+          Move Down 下移
+
+Convert：转换成ARC,swift等
+
+Encapsulate 封装
+
+Start Dictation: 开始听写
+
+Emoji &amp; symbols：emoji表情和特殊符号 
+</code></pre>
+
+<h2>View:</h2>
+
+<p><img src="/images/xcodemenu003.png" title="Caption" ></p>
+
+<pre><code>Standard Editor ：标准模块
+
+Assistant Editor ：助理模块
+
+Version Editor： 版本模块
+
+Navigators：里面包含了xcode左边8个导航模块的切换。
+
+Debug Area：中下部的调试框和打印输出框。
+
+Untilities: xcode右边的上面两个选项和下面的四个选项。
+
+          Show File Inspector：显示文件检查
+
+          Show Quick Help Inspector：显示快速帮助
+
+          File Template Library  文件模板库
+
+          Code Snippet Library  代码片段库
+
+          Object Library  对象库
+
+          Media Library  媒体库
+
+          Hide Utilities  隐藏实体工具
+
+Hide Toolbar  隐藏工具栏（XCode顶部）
+
+Hide Tab Bar  隐藏标签栏（用了cmd+T出来的tab切换）
+
+Enter Full Screen：全屏
+</code></pre>
+
+<p> ##Find:</p>
+
+<p><img src="/images/xcodemenu004.png" title="Caption" ></p>
+
+<pre><code>Find in Workspace… 在工作组中查找
+
+Find and Replace in Workspace… 在工作组中查找和替换
+
+...
+
+上面4个是在哪地方查找或替换，中间4个是在你几个选中的文件或组中查找，
+
+再下面4个是查找或替换，然后是替换。
+
+Find Call Hierarchy：查找到调用层级。
+
+Hide Find Bar：隐藏查找栏
+
+Use Selection for Find ：使用选择的地方去查找
+
+Use Selection for Replace：使用选择的地方去替换
+</code></pre>
+
+<h2>Navigate:</h2>
+
+<p><img src="/images/xcodemenu005.png" title="Caption" ></p>
+
+<pre><code>Reveal in Project Navigator ：在项目导航中揭示出此文件
+
+Reveal in Symbol Navigator  ：在符号导航中揭示出某方法
+
+Open in Assistant Editor：用分屏助理打开
+
+Open in ..   你想怎么打开
+
+Move Focus To Next Area  将焦点移动到下一个区域
+
+Move Focus To Editor   将焦点移动到编辑器
+
+Go Forward  前进，相当于两个手指左划右划
+
+Go back  后退
+
+Jump to Selection 跳转到选择
+
+Jump to Definition 跳转到定义
+
+Jump to OriginalSource 跳到源文件
+
+Jump to Next Issue  跳转到下一个问题
+
+Jump to Previous Issue  跳转到上一个问题
+
+Jump to Next Counterpart  ：??
+
+Jump to Previous Counterpart : ??
+
+Jump to Line in xxx.m ：跳到这个文件的第几行。
+
+Jump to Next Placeholder ：??
+
+Jump to Previous Placeholder：??
+</code></pre>
+
+<h2>Editor:(选中文件状态下)</h2>
+
+<p><img src="/images/xcodemenu006.png" title="Caption" ></p>
+
+<pre><code>Show Completions : 显示自动补全
+
+Edit All in Scope: 在当前文件全文修改选中的一个变量或单词
+
+Fix All in Scope: 在当前文件自动处理他能解决的error，相当于点 
+
+Show issue: 展示错误和隐藏错误，相当于点左边的按钮 
+
+Issues: 可以控制展示全部错误警告，还是仅仅展示警告。
+
+Structure: 构造
+
+Balance Delimiter：直接选中光标所在的整个大括号
+
+Re-Indent : 将格式缩进整理一下
+
+这里还有四个，分别是往前或往后移一个tab，往上往下移一行
+
+Code Folding: 提供各种折叠和取消折叠
+
+Focus Follow Selection：高亮聚焦你光标所在的模块
+
+Syntax Coloring: 设置各个语法的高亮配色
+
+Show Invisibles: 显示所有隐藏的东西，比如空格。
+
+Show Blame for Line: 显示选中的行的修改者和log。
+
+Show Code Coverage: 展示代码的覆盖范围
+</code></pre>
+
+<h2>Editor:(选中xib状态下)</h2>
+
+<p><img src="/images/xcodemenu007.png" title="Caption" ></p>
+
+<pre><code>Canvas 画布
+
+          Show Selection Highlights: 显示选中控件的高亮
+
+   Show Resize Knobs：显示约束旁边的小方块
+
+Show Constraints ：显示约束
+
+Show Involved Views For Selected Constraints：显示约束涉及到的视图
+
+          Show Layout Rectangles  布局矩形
+
+Size Class: 屏幕布局相关，相当于点xib下面的按钮
+
+Show Bounds Rectangles  显示边界矩形
+
+Hide Document Outline：隐藏或显示左边的层级图
+
+Reveal in Document Outline：在左边的层级图中揭示出来
+
+Align  对准
+
+          Align Left Edges  左边缘对齐
+
+          Align Right Edges  右边缘对齐
+
+          Align Top Edges  顶部边缘对齐
+
+          Align Bottom Edges  底部边缘对齐
+
+          Align Horizontal Centers  横向中心对齐
+
+          Align Vertical Centers  竖向中心对齐
+
+          Align Baselines  基线对齐
+
+          Align Horizontal Center In Container   对齐容器中的水平中心
+
+          Align Vertical Center In Container   对齐容器中的垂直中心
+
+Arrange : 可以上移下移或移到背景等
+
+Embed ： 嵌入，可以嵌nav，tabbar，scrollView
+
+Unembed   解除嵌入
+
+Size to Fit ：大小以适合
+
+Snap to Guides：让引导线具有吸附功能，让控件靠近就自动对齐
+
+Guides：设置引导标尺线
+
+Add Horizontal Guide ： 添加横向标尺线
+
+Add Vertical Guide ： 添加垂直标尺线
+
+Automatically Refresh Views：自动刷新视图
+
+Refresh All Views：刷新所有视图
+
+Debug Selected Views：调试选中的视图？
+
+Resolve Auto Layout issues：解决自动布局的问题，类似于点 
+
+Refactor to Storyboard：把VC重构成SB？
+</code></pre>
+
+<h2>Product:</h2>
+
+<p><img src="/images/xcodemenu008.png" title="Caption" ></p>
+
+<pre><code>Run：运行
+
+Test：??
+
+Profile：打开instrument之类的
+
+Analyze：进行代码分析，可以检测一些不规范的OC语法
+
+Archive：归档
+
+Build for：和上面的功能相似。
+
+Perform Action：??
+
+Build：编译
+
+Clean：清一下之前编译的缓存
+
+Stop：停止
+</code></pre>
+
+<h2>Debug:</h2>
+
+<p><img src="/images/xcodemenu009.png" title="Caption" ></p>
+
+<pre><code>Pause : 暂停 会 切换成继续
+
+Continue to Current Line：走到你光标选中的这行
+
+Step Over ： 跨越
+
+Step Into ：步入
+
+Step Out ：走出
+
+Step Over Instruction： 跨过指示
+
+Step Over Thread ：单步执行在线程
+
+Step Into Instruction ：步入指示
+
+Step Into Thread ：单步执行线程
+
+Capture GPU Frame: 捕获GPU位置
+
+Simulate Location: 模拟模拟器的位置
+
+Simulate Background Fetch: 让模拟器去后台
+
+iCloud: 苹果云相关
+
+View Debugging: 关于视图的调试
+
+Take Screenshot of Active Device：截图
+
+Capture View Hierarchy: 用3D图 来捕获视图层次
+
+Show View Frame: 在模拟器上显示各个控件的尺寸大小
+
+Show Alignment Rectangles: 显示对齐矩形
+
+Show View Drawing: 显示查看绘图
+
+Show Responsive Scrolling Status: 显示响应滚动状态
+
+Deactivate Breakpoints  停用中断点。
+
+Breakpoints: 相当于左下角的加号，增加各种断点。
+
+Debug Workflow：可以显示内存和清除打印等操作。
+
+Always Show Disassembly: 这要是勾上就只显示堆栈信息不看代码
+
+Attach to Process by PID or Name: 设置权限id或name
+
+Attach to Progress: 附加到进程
+
+Detach: 跳过所有的断点
+</code></pre>
+
+<h4>Source Control:</h4>
+
+<p><img src="/images/xcodemenu0010.png" title="Caption" ></p>
+
+<pre><code>第一行是分支管理，可以创建分支合并分支，配置分支的源等等。
+
+Create Working Copy：项目中如果有地方是引用的那就copy一下。
+
+Checkout：可以选择切换分支。
+
+Commit  ：提交
+
+Push ： 上传代码
+
+Pull ：拉代码
+
+Refresh Status：刷新状态
+
+Discard Changes ：放弃所有修改。
+
+Add Selected Files : 将选中的这些问号文件add一下。
+
+Discard Changes  in selected Files : 将选中的这些文件放弃修改。
+
+Mark Selected  Files as Resolved: 相当于合并或rebase过程中的解决。
+
+History：可以看当前分支的log历史。
+</code></pre>
+
+<h2>Window:</h2>
+
+<p><img src="/images/xcodemenu011.png" title="Caption" ></p>
+
+<pre><code>Minimize: 最小化
+
+Zoom：相当于windows的“还原”
+
+Show next tab: 如果你有两个tab的话这个就是切换tab
+
+Show previous tab: 同上
+
+Documentation and API Reference：打开xcode文档
+
+welcome to xcode: 来到开始页面
+
+Device：硬件，能看到MAC ，模拟器和手机
+
+Organizer：打开可以看到Archives 和 Crashes
+
+Project：查看最近项目，也可以在这里删除Derived Data
+
+Bring all to Front：把所有xcode打开的都置顶。
+</code></pre>
+
+<h2>Help:</h2>
+
+<p><img src="/images/xcodemenu012.png" title="Caption" ></p>
+
+<pre><code>Search : 在目录中搜索功能。
+
+Documentation and API Reference：打开xcode文档
+
+Xcode OverView：打开xcode综述
+
+Release Notes：打开xcode各版本更新迭代的log。
+
+What's New in Xcode：有什么新特性
+
+Quick help for selected Item：快速帮助，相当于按着option点。
+
+Search Documentation for Selected  Text：详细帮 助，直接在文档里找到这个。
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[cocoaPods简单粗暴]]></title>
+    <link href="http://al1020119.github.io/blog/2015/01/28/cocoapodsjian-dan-cu-bao/"/>
+    <updated>2015-01-28T00:32:20+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/01/28/cocoapodsjian-dan-cu-bao</id>
+    <content type="html"><![CDATA[<p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+
+<pre><code> $ gem sources --remove https://rubygems.org/ 
+</code></pre>
+
+<!--more-->
+
+
+<p>2:新增淘宝镜像</p>
+
+<pre><code>$ gem sources -a http://ruby.taobao.org/ 
+</code></pre>
+
+<p>3:查看列表</p>
+
+<pre><code> $ gem sources -l 
+</code></pre>
+
+<p>成功的征兆：</p>
+
+<pre><code>*** CURRENT SOURCES ***
+http://ruby.taobao.org/
+$ sudo gem install cocoapods
+</code></pre>
+
+<p>4:正式安装</p>
+
+<pre><code> sudo gem install cocoapods 
+</code></pre>
+
+<p>接下来就是开始使用了。</p>
+
+<p>查看对应的框架</p>
+
+<pre><code> $ pod search AFNetworking 
+</code></pre>
+
+<p>创建文件</p>
+
+<pre><code> $ vim Podfile 
+</code></pre>
+
+<p> 或者在命令行行中cd到对应的项目文件夹使用</p>
+
+<pre><code>touch Podfile
+</code></pre>
+
+<p>新建一个文件</p>
+
+<p>然后在Podfile文件中输入以下文字：</p>
+
+<pre><code>platform :ios, '7.0'
+pod "AFNetworking", "~&gt; 2.0”
+</code></pre>
+
+<p>安装</p>
+
+<pre><code> pod install  
+</code></pre>
+
+<p>更新</p>
+
+<pre><code> $ pod update 
+</code></pre>
+
+<p>有时候可能上面的命令没有用可能是网络的原因，那么你可以试试下面的：</p>
+
+<pre><code>pod update 换成pod update --verbose --no-repo-update
+pod install 换成pod install --verbose --no-repo-update
+</code></pre>
+
+<ul>
+<li>$ pod install只会按照Podfile的要求来请求类库，如果类库版本号有变化，那么将获取失败。
+$ pod update会更新所有的类库，获取最新版本的类库。
+或许还有一些情况是因为mac中对应的文件有问题，比如有两个Xcode的时候就会发生歧义（系统不知道用哪个），这个时候我们可以试试下面的方法。</li>
+</ul>
+
+
+<p>CocoaPods安装东西的时候它要找到Xcode的Developer文件夹, 如果找不到会报如下错误</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>LNJ替换为你自己的用户名</p>
+
+<pre><code>sudo xcode-select --switch /Users/LNJ/Applications/Xcode.app/Contents/Developer
+</code></pre>
+
+<p>而且你会发现，如果用了 $ pod update，再用 $ pod install 就成功了。</p>
+
+<ul>
+<li><p>那你也许会问，什么时候用 $ pod install，什么时候用 $ pod update 呢，我又不知道类库有没有新版本。</p></li>
+<li><p>好吧，那你每次直接用 $ pod update 算了。或者先用 $ pod install，如果不行，再用 <br/>
+  <code>$ pod update。</code></p></li>
+</ul>
+
+
+<p>当然你也可以使用Xcode插件，使用非常简单，这里就不多介绍，以后有机会给大家整理：</p>
+
+<p><a href="https://github.com/kattrali/cocoapods-xcode-plugin">cocoapods-xcode-plugin</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[带你玩虐Ocotpress＋Github博客]]></title>
+    <link href="http://al1020119.github.io/blog/2013/03/10/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke/"/>
+    <updated>2013-03-10T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2013/03/10/kuai-icocosdai-ni-kuai-su-jian-ocotpress+githubbo-ke</id>
+    <content type="html"><![CDATA[<h5>简介</h5>
+
+<p>Octopress是利用Jekyll博客引擎开发的一个博客系统，生成的静态页面能够很好的在github page上展现。号称是hacker专属的一个博客系统(A blogging framework for hackers.)</p>
+
+<p>根据大家的反应，本文我就来介绍一下如何在苹果电脑(OS X 10.8.3)利用Octopress搭建一个Github博客。本文需要读者熟悉一些shell命令，并掌握基本的git操作。</p>
+
+<p>目录</p>
+
+<h2>一： 快速搭建</h2>
+
+<ol>
+<li>安装Ruby</li>
+<li>安装Octopress</li>
+<li>配置Octopress</li>
+<li>将博客部署到GitHub上</li>
+<li>开始写博客</li>
+</ol>
+
+
+<!--more-->
+
+
+<h2>二： 个性化配置（个性化初级篇）</h2>
+
+<ol>
+<li>Header（标题栏）</li>
+<li>Navigation（导航栏）</li>
+<li>footer（尾栏）</li>
+<li>添加背景图片</li>
+<li>LOGO图片</li>
+<li>导航栏倒圆角</li>
+<li>滑动返回顶部按钮</li>
+<li>二维码展示</li>
+</ol>
+
+
+<h2>三： 个性化配置（个性化中级篇）</h2>
+
+<ol>
+<li>提高博客访问速度</li>
+<li>设置链接在新窗口打开</li>
+<li>首页文章以摘要形式展示</li>
+<li>代码着色</li>
+<li>修改代码生成css</li>
+<li>添加侧边栏文章分类（category）</li>
+<li>添加多说评论</li>
+<li>自动为图片添加url前缀</li>
+<li>添加访客统计</li>
+</ol>
+
+
+<h2>四： 个性化配置（个性化高级篇）</h2>
+
+<ol>
+<li>侧边栏</li>
+<li>最新文章</li>
+<li>GitHub Repos</li>
+<li>微博秀</li>
+<li>豆瓣展示</li>
+<li>访客地图</li>
+<li>酷站博客</li>
+<li>最热文章</li>
+<li>3D标签云与标签列表</li>
+<li>相关文章功能</li>
+<li>社会化评论与分享</li>
+<li>为博文添加原文链接及声明</li>
+<li>添加版权声明</li>
+<li>公益404</li>
+</ol>
+
+
+<h2>五： 其他</h2>
+
+<ol>
+<li>mackdown语法<br></li>
+</ol>
+
+
+<hr />
+
+<h1>一： 快速搭建</h1>
+
+<h3>安装Ruby</h3>
+
+<p>Octopress需要Ruby环境，RVM(Ruby Version Manager)负责安装和管理Ruby的环境。所以我们先在终端输入如下命令，来安装RVM：</p>
+
+<pre><code>curl -L https://get.rvm.io | bash -s stable --ruby  
+</code></pre>
+
+<p>接着是安装Ruby 1.9.3，在终端依次运行如下命令：</p>
+
+<pre><code>rvm install 1.9.3  
+rvm use 1.9.3  
+rvm rubygems latest  
+</code></pre>
+
+<p>完成上面的操作之后，运行ruby &ndash;version应该可以看到ruby 1.9.3环境已经安装好了。
+参考：Installing Ruby With RVM</p>
+
+<h3>安装Octopress</h3>
+
+<p>在安装Octopress之前，请确保你的电脑上已经安装有git了，在终端输入git &ndash;version，应该可以看到电脑中的git版本(我电脑上输出:git version 1.7.12.4 (Apple Git-37))，如果没有显示相关内容，请先安装git。
+git安装之后，利用git命令将octopress从github上clone到本机，如下命令：</p>
+
+<pre><code>git clone git://github.com/imathis/octopress.git octopress  
+cd octopress    # If you use RVM, You'll be asked if you trust  the .rvmrc file (say yes).  
+ruby --version  # Should report Ruby 1.9.3  
+</code></pre>
+
+<p>接着安装相关依赖项：</p>
+
+<pre><code>gem install bundler  
+rbenv rehash    # If you use rbenv, rehash to be able to run the    bundle command  
+bundle install  
+</code></pre>
+
+<p>最后安装默认的Octopress 主题。</p>
+
+<pre><code>rake install  
+</code></pre>
+
+<h3>配置Octopress</h3>
+
+<p>Octopress的作者已经尽量让配置简化了。大多数情况下只需要配置_config.yml和Rakefile文件即可。其中Rakefile是跟博客部署相关，一般情况下并不需要修改这个文件，除非使用了rsync。</p>
+
+<p>config.yml是博客重要的一个配置文件，在config.yml文件中有三大配置项：Main Configs、Jekyll &amp; Plugins和3rd Party Settings。</p>
+
+<p>一般，该文件中其中url是必须要填写的，这里的url是在github上创建的一个仓库地址，具体请看第四步中创建的地址。另外再修改一下title、subtitle和author，根据需求，在开启一些第三方组件服务。</p>
+
+<p>关于_config.yml文件中的更多内容，请看这里的内容：Configuring Octopress</p>
+
+<p>建议：最好把里面的twitter相关的信息全部删掉，否则由于GFW的原因，将会造成页面load很慢。同理，修改定制文件/source/_includes/custom/head.html 把google的自定义字体去掉。from唐巧的博文中—配置。</p>
+
+<h3>将博客部署到GitHub上</h3>
+
+<p>Github的Page service可以免费托管博客，并且还可以自定义域名。
+首先需要在GitHub上创建一个仓库，并将仓库名称按照这样的方式进行命名：username.github.com或organization.github.com。等后面配置完毕之后，我们就可以在浏览器中使用页面地址</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>来访问我们的博客。一般来说，我们希望在将博客的源码放到source分支下，并把生成的内容提交到master分支。</p>
+
+<p>创建好仓库之后，我们需要利用octopress的一个配置rake任务来自动配置上面创建的仓库：可以让我们方便的部署GitHub page。在终端输入如下命令：
+C代码  收藏代码</p>
+
+<pre><code>$ rake setup_github_pages  
+</code></pre>
+
+<p>上面的命令会做一些事情(详细介绍看下面给出的参考链接)。其中最主要的就是创建一个_deploy目录，目录用来存放部署到master分支的内容。期间会要求你输入仓库的url，根据提示，进行输入即可。</p>
+
+<p>完成上面的命令之后，我们就可以生成博客并真正的部署到仓库中了。执行如下命令：</p>
+
+<pre><code>rake generate  
+rake deploy  
+</code></pre>
+
+<p>上面的命令首先生成博客文件，并将生成的博客文件拷贝到_deploy/目录下，然后将这些内容添加到git中，并commit和push到仓库的master分支。</p>
+
+<p>现在可以访问</p>
+
+<pre><code>http://username.github.com
+</code></pre>
+
+<p>注意：有时候可能会有延时，要等几分钟才能打开。
+至此，我们的博客已经完成基本的部署，不过博客的source需要单独提交，执行如下命令就可以将source提交到仓库的source分支下。</p>
+
+<pre><code>$ git add .  
+$ git commit -m 'Initial source commit'  
+$ git push origin source  
+</code></pre>
+
+<p>如果在部署到仓库之前，需要先预览一下博客，可以在终端输入rake preview命令，然后就能在浏览器中进行本地预览访问了：</p>
+
+<pre><code>http://127.0.0.1:4000/
+</code></pre>
+
+<p>或</p>
+
+<pre><code>http://localhost:4000/
+</code></pre>
+
+<p>效果跟仓库中的一样。</p>
+
+<h3>开始写博客</h3>
+
+<p>Octopress为我们提供了一些task来创建博文和页面。博文必须存储在source/_posts目录下，并且需要按照Jekyll的命名规范对文章进行命名：YYYY-MM-DD-post-title.markdown。文章的名字会被当做url的一部分，而其中的日期用于对博文的区分和排序。</p>
+
+<p>通过Octopress提供的task可以正确的按照命名规范创建一个博文，并且在博文中会附带常用的一些yaml元数据。只需要在终端输入如下命令：</p>
+
+<pre><code>rake new_post["title"]  
+</code></pre>
+
+<p>其中title为博文的文件名，创建出来的文件默认是markdown格式。上面的命令会创建出这样一个文件：source/_posts/2013-08-03-title.markdown。打开这个文件，可以看到里面有如下一些内容了(告诉Jekyll博客引擎如何处理博文和页面)：</p>
+
+<pre><code>layout: post  
+title: "title"  
+date: 2013-08-03 16:36  
+comments: true  
+categories:   
+</code></pre>
+
+<p>接着我们就可以在这个文件中写我们的博文啦。完成之后，我们可以预览和部署博文。下面是创建并部署博文的一个完整过程：</p>
+
+<pre><code>$ rake new_post["New Post"]  
+$ rake generate  
+$ git add .  
+$ git commit -am "Some comment here."   
+$ git push origin source  
+$ rake deploy  
+</code></pre>
+
+<h6>本节介绍了如何利用Octopress搭建一个Github博客，下面讲介绍桌面去个性化你的博客。</h6>
+
+<hr />
+
+<h1>个性化配置（初级篇）</h1>
+
+<p>这几个部分是经常需要个性化定制的，在 source/<em>includes 中存在其对应的HTML文件，这是主题默认的文件，更换主题，更新octopress会被覆盖，所以应该编辑 source/</em>includes/custom 下的文件来实现修改。</p>
+
+<h2>Header，Navigation，footer</h2>
+
+<h3>Header（标题栏）</h3>
+
+<p>标题栏显示的内容为 /source/<em>includes/custom/header.html 所实现的，其中title和subtitle在 </em>config.yml 中定义，你可以进行适量的修改：</p>
+
+<pre><code>    &lt;hgroup&gt;
+ &lt;h1&gt;&lt;a href="/"&gt;iOS梦工厂&lt;/a&gt;&lt;/h1&gt;
+
+&lt;h2&gt;不战胜自己，何以改变未来！&lt;/h2&gt;
+
+&lt;/hgroup&gt;
+</code></pre>
+
+<h3>Navigation（导航栏）</h3>
+
+<p>可以自行为导航栏添加项目，链接至不同的页面，在 /source/_includes/custom/navigation.html 中编辑即可。</p>
+
+<pre><code>&lt;ul class="main-navigation"&gt;
+&lt;li&gt;&lt;a href="/"&gt;博客主页&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;a href="/blog/archives"&gt;文章列表&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/category-cloud"&gt;分类云&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="/about"&gt;关于&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>当想添加一些页面，如“关于”页面，可以试验 rake new_page[&lsquo;name&rsquo;] 命令来创建，如 rake new_page[&lsquo;about&rsquo;] 后，会建立 source/about/index.html 文件，在此文件编辑，添加自己想要展示的内容，然后再 navigation.html 里添加正确的路径即可，如</p>
+
+<pre><code>&lt;li&gt;&lt;a href="http://al1020119.github.io/about"&gt;关于&lt;/a&gt;&lt;/li&gt; 
+</code></pre>
+
+<h3>footer（尾栏）</h3>
+
+<p>在 source/_includes/custom/footer.html 中编辑尾栏：</p>
+
+<pre><code>&lt;p&gt;
+    Copyright © 2016 - iCocos -
+&lt;span class="credit"&gt;
+      Powered by
+      &lt;a href="http://octopress.org"&gt;Octopress&lt;/a&gt;
+&lt;/span&gt;
+&lt;/p&gt;
+</code></pre>
+
+<p>默认显示 Copyright@2013 - author - Powered by Octopress ，你可以添加自己想显示在尾栏的东西，第三方统计流量统计工具也可以添加到这，如CNZZ、Google analytics和百度统计等，使用这些工具可以更详细的分析网站流量，改善引流措施，完善网站，具体添加方法见统计工具与SEO。</p>
+
+<h3>添加背景图片</h3>
+
+<p>在 sass/custom/_styles.scss 中添加：</p>
+
+<pre><code>html {
+    background: #555555 url("/images/bg3.jpg");
+    //background: #555555;
+}
+
+body &gt; div {
+    background-image: none;
+    //background: #F5F5D5
+} //侧边栏
+
+body &gt; div &gt; div { //文章内容
+    background-image: none;
+    //background: #F5F5D5; 
+    //background: url("/images/bg.jpg");
+}
+</code></pre>
+
+<p>将背景图片放入 source/images/ 中，修改上述代码中的路径指向想要的图片，即可 更改博客、侧边栏或文章的背景图片。博客使用背景图片后，与Header区不太和谐， 所以我在 /sass/base/_theme.scss 中将 header-bg 设置成透明色了。</p>
+
+<h3>LOGO图片</h3>
+
+<p>我所说的logo图片有两种，一个是打开一个网页时，标签栏上显示的小图片。还有一个是标题栏主标题旁的图片。</p>
+
+<p>首先针对于第一种可以选择你喜欢的图片（大小适中），替换 source 目录下的 favicon.png 即可。</p>
+
+<p>或者将logo图片放入 source/images 中，然后修改 source/_includes/head.html ，找到 favicon.png ，修改其路径指向你的图片即可。</p>
+
+<p>对于主标题旁的图片需要在 sass/custom/_styles.scss 中填入如下语句：</p>
+
+<pre><code>//Blog logo pic
+@media only screen and (min-width: 550px) {
+
+    body &gt; header h1{
+            background: url("/images/logo1.png") no-repeat 0 1px;
+            padding-left: 65px;
+    }
+
+    body &gt; header h2 { padding-left: 65px; }
+}
+</code></pre>
+
+<p>根据自己情况进行修改即可。</p>
+
+<h3>导航栏倒圆角</h3>
+
+<p>我设置的header区背景色透明，所以导航栏的直角有些尖锐，在 sass/custom/_styles.scss 中添加如下语句，将其修改为圆角：</p>
+
+<pre><code>//倒圆角
+@media only screen and (min-width: 1040px) {
+    body &gt; nav {
+            @include border-top-radius(.4em);
+    }
+
+    body &gt; footer {
+            @include border-bottom-radius(.4em);
+    }
+}
+</code></pre>
+
+<h3>滑动返回顶部按钮</h3>
+
+<p>当文章较长，通常希望有一个返回顶部的按钮，如下方法实现了在页面右下方添加一个返回顶部的图片按钮，点击后可以滑动的返回顶部。</p>
+
+<p>首先创建 source/javascripts/top.js ，实现滑动返回顶部效果，添加如下代码：</p>
+
+<pre><code>function goTop(acceleration, time)
+{
+    acceleration = acceleration || 0.1;
+    time = time || 16;
+
+    var x1 = 0;
+    var y1 = 0;
+    var x2 = 0;
+    var y2 = 0;
+    var x3 = 0;
+    var y3 = 0;
+
+    if (document.documentElement)
+    {
+            x1 = document.documentElement.scrollLeft || 0;
+            y1 = document.documentElement.scrollTop || 0;
+    }
+    if (document.body)
+    {
+            x2 = document.body.scrollLeft || 0;
+            y2 = document.body.scrollTop || 0;
+    }
+    var x3 = window.scrollX || 0;
+    var y3 = window.scrollY || 0;
+
+    var x = Math.max(x1, Math.max(x2, x3));
+    var y = Math.max(y1, Math.max(y2, y3));
+
+    var speed = 1 + acceleration;
+    window.scrollTo(Math.floor(x / speed), Math.floor(y / speed));
+
+    if(x &gt; 0 || y &gt; 0)
+    {
+            var invokeFunction = "goTop(" + acceleration + ", " + time + ")";
+            window.setTimeout(invokeFunction, time);
+    }
+}
+</code></pre>
+
+<p>然后创建 source/_includes/custom/totop.html ，设置返回顶部按钮样式和位置，代码如下：</p>
+
+<pre><code>&lt;!--返回顶部开始--&gt;
+&lt;div id="full" style="width:0px; height:0px; position:fixed; right:180px; bottom:150px; z-index:100; text-align:center; background-color:transparent; cursor:pointer;"&gt;
+    &lt;a href="#" onclick="goTop();return false;"&gt;&lt;img src="http://al1020119.github.io/images/top.png" border=0 alt="返回顶部"&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;script src="http://al1020119.github.io/javascripts/top.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;!--返回顶部结束--&gt;
+</code></pre>
+
+<p>最后，还需要将返回顶部的图片放入 source/images ，命名为 top.png （或修改totop.html中图片的路径）。</p>
+
+<h3>二维码展示</h3>
+
+<p>在关于页面或边栏可以展示你的个人博客的二维码，方便移动终端扫描访问你的博客，插件主页 点击这里 。</p>
+
+<p>在侧边栏显示，则将 qrcode.html 放入 source/<em>includes/custom/asides/ 中，在 </em>config.yml 中 default_asides 添加 custom/asides/qrcode.html 即可显示。</p>
+
+<p>或者将 qrcode.html 代码添加到你想展示的页面的HTML文件中亦可。</p>
+
+<hr />
+
+<h1>个性化配置（中级篇）</h1>
+
+<h3>提高博客访问速度</h3>
+
+<p>因为“墙”的关系，所以Octopress建立以后会发现访问速度奇慢无比，竟然超过了40s。</p>
+
+<p>仔细分析后我们发现其中都是一些被墙的请求报了404Error，所以导致访问博客巨慢无比，下面我们就一次阉割掉这些被墙的请求。T_T</p>
+
+<h4>替换Google JS公共库</h4>
+
+<p>Octopress默认使用的是Google的JS公共库地址，加载的过程无比的缓慢。因此我们要把它改为 百度的JS公共库 ，需要把 /source/_includes/head.html 文件中的Google公共库地址改为：</p>
+
+<script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+
+
+<h4>去掉Twitter</h4>
+
+<p>从上图可以看出加载失败的还有twitter，这个也得给去掉。</p>
+
+<p>把在根目录下的 _config.yml 文件中Twitter内容给注释掉。</p>
+
+<pre><code># Twitter
+#twitter_user:
+#twitter_tweet_button: true
+</code></pre>
+
+<p>把 \source_includes\after_footer.html 文件中的twitter内容给注释掉：</p>
+
+<pre><code>include twitter_sharing.html
+</code></pre>
+
+<h4>删除Google font</h4>
+
+<p>把在 \source_includes\custom\head.html 中的Google font样式给删除：</p>
+
+<pre><code>&lt;link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+&lt;link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"&gt;
+</code></pre>
+
+<h3>设置链接在新窗口打开</h3>
+
+<p>在博文中，如果点击链接直接在本窗口打开了，那么用户体验就不是很好。而markdown的标准语法是不支持链接在新窗口打开的，虽然可以通过在markdown中直接写html标签来解决这个问题，但是这与markdown的简洁书写特性不符。但是我们可以通过设置Octopress来达到这种效果，即在 \source_includes\custom\head.html 文件中添加如下一段代码：</p>
+
+<pre><code>&lt;script&gt;
+function addBlankTargetForLinks () {
+$('a[href^="http"]').each(function(){
+  $(this).attr('target', '_blank');
+});
+}
+$(document).bind('DOMNodeInserted', function(event) {
+addBlankTargetForLinks();
+});
+&lt;/script&gt;
+</code></pre>
+
+<h3>首页文章以摘要形式展示</h3>
+
+<p>2.在文章对应的markdown文件中，在需要显示在首页的文字后面添加 <!--more--> ，执行rake generate后在首页上会看到只显示&lt;!—more—>前面的文字，文字后面会显示 Read on 链接，点击后进入文字的详细页面;</p>
+
+<p>1.如果想将Read on修改为中文，可以修改_config.yml文件</p>
+
+<pre><code>excerpt_link: "Read on →"  #  "Continue reading" link text at the     bottom of excerpted articles
+excerpt_link: "阅读全文→"  # "Continue reading" link text at the  bottom of excerpted articles
+</code></pre>
+
+<h3>代码着色</h3>
+
+<p>Octopress使用的是Pygments来进行代码着色的，使用方式也比较简单如下所示：</p>
+
+<pre><code class="java xxx.java">//java code
+</code></pre>
+
+<p>Pygments支持的语言列表</p>
+
+<h3>修改代码生成css</h3>
+
+<p>当然你也可以修改Pygments生成的代码css样式。</p>
+
+<p>Pygments默认提供了很多css样式，你可以在python shell中用下面命令列出当前pygments所支持的样式：</p>
+
+<pre><code>&gt;&gt;&gt; from pygments.styles import STYLE_MAP
+&gt;&gt;&gt; STYLE_MAP.keys()
+['manni', 'igor', 'xcode', 'vim', 'autumn', 'vs', 'rrt', 'native', 'perldoc', 'borland', 'tango', 'emacs', 'friendly', 'monokai', 'paraiso-dark', 'colorful', 'murphy', 'bw', 'pastie', 'paraiso-light', 'trac', 'default', 'fruity']
+&gt;&gt;&gt;
+</code></pre>
+
+<p>通过-S来选择，需要生成default的样式：</p>
+
+<pre><code>pygmentize -S default -f html &gt; your/path/pygments.css
+</code></pre>
+
+<p>有时候Octopress会把我们想要展示的Ruby代码解析成HTML，如果只是想展示代码，而不让Octopress来解析，那么可以在代码前后加入和代码。</p>
+
+<h3>添加侧边栏文章分类（category）</h3>
+
+<p>1.在 plugins 目录下创建 category_list_tag.rb 文件，内容如下：</p>
+
+<pre><code>module Jekyll 
+class CategoryListTag &lt; Liquid::Tag 
+def render(context) 
+  html = "" 
+  categories = context.registers[:site].categories.keys 
+  categories.sort.each do |category| 
+    posts_in_category = context.registers[:site].categories[category].size 
+    category_dir = context.registers[:site].config['category_dir'] 
+    category_url = File.join(category_dir, category.gsub(/_|\P{Word}/, '-').gsub(/-{2,}/, '-').downcase) 
+    html &lt;&lt; "&lt;li class='category'&gt;&lt;a href='http://al1020119.github.io/#{category_url}/'&gt;#{category} (#{posts_in_category})&lt;/a&gt;&lt;/li&gt;\n" 
+  end 
+  html 
+end 
+end 
+end
+
+Liquid::Template.register_tag('category_list', Jekyll::CategoryListTag)
+</code></pre>
+
+<p>2.添加 source/_includes/asides/category_list.html 文件，内容如下：</p>
+
+<pre><code>&lt;section&gt;
+  &lt;h1&gt;Categories&lt;/h1&gt;
+  &lt;ul id="categories"&gt;
+  ***
+    {百分号raw百分号}{百分号 category_list 百分号}{百分号endraw百分号} 
+  ***
+  &lt;/ul&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>3.修改 _config.yml 文件，在 default_asides 项中添加 asides/category_list.html ，值之间以逗号隔开，值的先后顺序代表了侧边栏展现的先后顺序。</p>
+
+<pre><code>default_asides: [asides/category_list.html, asides/recent_posts.html, asides/github.html, asides/delicious.html, asides/pinboard.html, asides/googleplus.html]
+</code></pre>
+
+<p>在侧边栏还可以添加其他组件，如微博、标签云等，添加方式和上面类似。</p>
+
+<h3>添加多说评论</h3>
+
+<p>Octopress默认自带了DISQUS，但是对于国内不是很好用。所以在经过考虑之后选择了国内比较流行的多说评论系统。 首先要去 多说网站注册 ，获取站点的 short_name 。</p>
+
+<p>在 _config.yml 中添加</p>
+
+<pre><code># duoshuo comments
+duoshuo_comments: true
+duoshuo_short_name: yourname 
+</code></pre>
+
+<p>在 ./source/_layouts/post.html 中的 disqus 代码</p>
+
+<p>下方添加多说评论模块：</p>
+
+<pre><code>
+</code></pre>
+
+<p>如果你希望一些单独的页面下方也放置评论功能，那么在 ./source/<em>layouts/page.html 中也做如上修改。 然后创建一个 ./source/</em>includes/post/duoshuo.html 文件，内容如下：</p>
+
+<blockquote></blockquote>
+
+<pre><code>&lt;div class="ds-thread" data-title="Octopress博客的个性化配置"&gt;&lt;/div&gt;
+&lt;script type="text/javascript"&gt;
+var duoshuoQuery = {short_name:"tianweili"};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+&lt;/script&gt;
+</code></pre>
+
+<p>最后再修改 _includes/article.html 文件，在</p>
+
+<p>下方添加下面代码：</p>
+
+<pre><code>
+</code></pre>
+
+<blockquote><p>注意：
+以上所有F代表false，T代表true，更改对应的就可以
+（不要问为撒）</p></blockquote>
+
+<h3>自动为图片添加url前缀</h3>
+
+<p>我把图片资源都 放在了七牛云存储 上，写博客时候就是用七牛的外链。但是这样有几个问题：</p>
+
+<p>每次写博客插入图片外链地址时候都很麻烦，需要给每张图片都添加七牛外链地址url前缀；
+如果以后更换了存储，那就麻烦了，需要依次编辑替换每个图片的url前缀
+现在我们就使用一种灵活的方式来配置并自动生成图片的URL前缀：</p>
+
+<p>首先修改 /plugins/image_tag.rb 文件，在 @img[&lsquo;class&rsquo;].gsub!(/&ldquo;/, &lsquo;&rsquo;) if @img[&lsquo;class&rsquo;] 后添加下面一行代码：</p>
+
+<pre><code>./plugins/image_tag.rb
+@img['src'] = Jekyll.configuration({})['static_file_prefix'] + @img['src'] if @img['src'][0] == '/'
+</code></pre>
+
+<p>然后再修改根目录下的 _config.yml 文件，添加如下配置：</p>
+
+<pre><code># Add url prefix for image automatically
+static_file_prefix: http://7u2i08.com1.z0.glb.clouddn.com
+</code></pre>
+
+<p>最后我们在插入图片的时候要记住不能再使用Markdown语法来写了，要 使用Ocotpress自定义的IMG标签来插入图片 。</p>
+
+<p>本地预览先generate后preview，这样一来插入图片就灵活方便多了。</p>
+
+<h3>添加访客统计</h3>
+
+<p>本博客的访客统计系统使用的是Flag Counter，所以要 先去Flag Counter获取代码 。</p>
+
+<p>拿到代码后添加 .\source_includes\custom\asides\flag_counter.html 文件：</p>
+
+<pre><code>flag_counter.html
+&lt;section&gt;
+&lt;h1&gt;访客统计&lt;/h1&gt;
+&lt;br/&gt;
+&lt;a href="http://s07.flagcounter.com/more/2SH"&gt;&lt;img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"&gt;&lt;/a&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>将页面添加到侧边栏，在 ./_config.yml 配置文件中添加下面一行配置：</p>
+
+<pre><code>default_asides: [……, custom/asides/flag_counter.html]
+</code></pre>
+
+<p>最后添加控制开关，在 ./_config.yml 配置文件中添加下面一行配置：</p>
+
+<pre><code># Flag Counter
+flag_counter: true
+</code></pre>
+
+<hr />
+
+<h1>个性化配置（高级篇）</h1>
+
+<p>在节章 中，已经搭建起了octopress博客。使用的是默认的主题，样式千篇一律，而且自带的一些功能和侧边栏并不适合国内的国情，得不到网络的支持，如facebook、twitter、google plus和disqus等。所以还是有必要进行一下改造，打造中国特色octopress博客的。</p>
+
+<h3>第三方主题</h3>
+
+<p>首先，你先要选定的是博客使用的第三方主题，因为如果你已经进行了很多的网页设置，添加了很多的插件，再来改主题，你就要面临悲剧了，你会发现你已经配置好的东西被替换掉了，这无疑会对你的热情带来打击。所以我们先来看看第三方主题。</p>
+
+<p>你需要先找到自己喜欢的主题，之后可以在此主题上进行修改。 点击这里 是一个主题网站，给出了不同主题的预览图，使用该主题的博客和该主题的GitHub链接。选中你想要的，获得GitHub仓库地址，如下安装</p>
+
+<pre><code>$ cd blog
+$ git clone https://github.com/shashankmehta/greyshade.git ./themes/    greyshade
+$ rake install['greyshade']
+$ rake generate
+</code></pre>
+
+<p>这里我的博客在blog文件夹中，以安装greyshade主题为例。你按照自己的情况进行更改。 rake generate 后可以通过 rake preview 访问 <a href="http://localhost:4000">http://localhost:4000</a> 预览新的主题样式，不满意可以更换其他主题。</p>
+
+<h3>侧边栏</h3>
+
+<p>侧边栏可以添加的插件很多，新浪微博、豆瓣等很多网站都有相应的插件，也可以到 octopress的wiki页面 寻找。</p>
+
+<p>侧边栏在 <em>config.yml 中设置，添加进 default_asides 中，先后顺序代表显示的先后顺序，各个侧边栏插件代码放入相应的位置即可，自己添加的一般放入 source/</em>includes/custom/asides ， default_asides 中默认从 _includes 之后路径开始写。</p>
+
+<h3>最新文章</h3>
+
+<p>首先说一下主题中可用的插件。</p>
+
+<p>asides/recent_posts.html 是最近写的文章的一个展示，添加到 default_asides 中即可显示，在 _config.yml 中可以设置显示最近多少篇文章， recent_posts: 5 ，注意冒号后有空格。</p>
+
+<h3>GitHub Repos</h3>
+
+<p>asides/github.html 则是GitHub repos的一个展示，可以直接到达你的GitHub页面，在 _config.yml 中设置你的Github账号，并设置为 true 即可，如下：</p>
+
+<pre><code>Github repositories
+github_user: 812lcl   #我的github
+github_repo_count: 0
+github_show_profile_link: true
+github_skip_forks: true
+</code></pre>
+
+<h3>微博秀</h3>
+
+<p>新浪微博是一个信息传播非常迅速的媒介，如果你热衷于微博，可以在侧边栏添加自己的微博秀。首先需要获得自己的微博秀代码，链接为 <a href="http://app.weibo.com/tool/weiboshow">http://app.weibo.com/tool/weiboshow</a> ，进行相应的设置即可获得微博秀代码。</p>
+
+<p>然后在 source/_includes/custom/asides 创建weibo.html，添加如下代码，刚刚获得的微博秀代码也要添加到相应位置：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h1&gt;新浪微博&lt;/h1&gt;
+&lt;ul id="weibo"&gt;
+&lt;li&gt;
+
+&lt;!-- 在此插入获得的微博秀代码 --&gt;
+
+  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>最后在 default_asides 中加入 custom/asides/weibo.html 即可显示你的微博秀了。</p>
+
+<h3>豆瓣展示</h3>
+
+<p>你可以通过豆瓣读书、豆瓣电影、豆瓣音乐等多方面展示你自己，豆瓣也提供了类似微博秀的展示方式，添加方法也类似。获得豆瓣收藏秀的链接 <a href="http://www.douban.com/service/badgemakerjs">http://www.douban.com/service/badgemakerjs</a> ，根据自己的喜欢进行设置</p>
+
+<p>然后在 source/_includes/custom/asides 创建douban.html，添加如下代码，刚刚获得的代码添加到 <div> 之间：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h1&gt;My Douban&lt;/h1&gt;
+&lt;div&gt;
+&lt;!--添加到这--&gt;
+&lt;/div&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>最后在 default_asides 中加入 custom/asides/douban.html 显示你的豆瓣展示。</p>
+
+<h3>访客地图</h3>
+
+<p>效果如我的博客右侧那个精美的3D旋转地球所示，它可以显示访客数量，访客来自的地域，既有装饰作用，又有统计作用。它也有2D效果版，可以根据自己喜欢进行设置，地址在 这里 ，然后获得代码。</p>
+
+<p>依然在 source/_includes/custom/asides 创建earth.html，代码如下：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h1&gt;访客地图&lt;/h1&gt;
+&lt;!--获得代码添加到这--&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>在 default_asides 中加入 custom/asides/earth.html 显示你定制的访客地图。</p>
+
+<h3>酷站博客</h3>
+
+<p>你有一些经常去的网站、博客，想推荐给大家，则可以在侧边栏加上一个“酷站博客”，当然名字你自己取即可。</p>
+
+<p>在 source/_includes/custom/asides 创建blog_link.html，代码如下：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h1&gt;酷站博客&lt;/h1&gt;
+&lt;ul&gt;
+    &lt;li&gt;
+    &lt;a href="http://blog.jobbole.com/"&gt;伯乐在线&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+    &lt;a href="http://www.csdn.net/"&gt;CSDN&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+    &lt;a href="http://www.cnblogs.com/"&gt;博客园&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+    &lt;a href="http://coolshell.cn/"&gt;酷壳CoolShell&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;li&gt;
+    &lt;a href="http://www.cnblogs.com/Solstice/"&gt;陈硕&lt;/a&gt;
+    &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>可以自行添加喜爱网站，然后在 default_asides 中加入 custom/asides/blog_link.html 。</p>
+
+<p>看到这，你应该很熟悉添加侧边栏的流程了吧。</p>
+
+<h3>最热文章</h3>
+
+<p>Octopress Popular Posts Plugin是根据Google page rank计算，展示出权值最高的文章，插件的项目主页为 点击这里 。</p>
+
+<p>这个插件的安装与之前的方法不同，首先在 Gemfile 中添加</p>
+
+<pre><code>gem 'octopress-popular-posts'
+</code></pre>
+
+<p>Gemfile 中的是bundle安装时安装的所有依赖的软件，然后用bundle安装</p>
+
+<pre><code>bundle install
+</code></pre>
+
+<p>执行命令，将插件拷贝到你的source目录，如下：</p>
+
+<pre><code>bundle exec octopress-popular-posts install
+</code></pre>
+
+<p>到这就安装完了，可以设置显示了，在 _config.yml 中设置，增加下面一行：</p>
+
+<pre><code>popular_posts_count: 5      # Posts in the sidebar Popular Posts section
+</code></pre>
+
+<p>设置边栏显示文章数，最后在 default_asides 中添加 custom/asides/popular_posts.html ，即可显示出来。</p>
+
+<p>这样就设置好了，同时建议将缓存的page rank文件添加进你的 .gitignore 中</p>
+
+<pre><code>.page_rank
+</code></pre>
+
+<h3>3D标签云与标签列表</h3>
+
+<p>octopress默认的只支持category的分类，而并没有tag。category和tag分别代表有序/无序的知识点归纳。一篇文章只能属于一个category，但可以有多个tag。原来的plugin下只有category_generator.rb插件，实现category功能，在github上有两个插件帮助实现了tag生成和tag cloud功能 插件1 ， 插件2 。但似乎并不支持中文，而category_generator.rb是支持中文的，所以我有样学样，改成了支持中文的，并且实现了3D标签云的，插件已经上传到 github 。clone到你博客的目录即可。</p>
+
+<p>包含文件如下：</p>
+
+<pre><code> ├─ plugins/
+│  ├─ category_generator.rb
+│  ├─ category_list.rb
+│  ├─ category_tag_cloud.rb
+│  ├─ tag_generator.rb
+│  └─ tag_list.rb
+└─ source/
+   └─ _includes/
+      └─ custom/
+         └─ asides/
+            ├─ category_cloud.html
+            ├─ category_list.html
+            ├─ tag_cloud.html
+            └─ tag_list.html
+</code></pre>
+
+<p>其中 category_generator.rb 和 tag_generator.rb 定义了根据文章的category和tag标签分类存储文章的方法， category_tag_cloud.rb 则可以定义了根据category或tag生成3D标签云的方法。 category_list.rb 和 tag_list.rb 实现了将所有文章的category和tag列出来的方法，其中category可以显示文章个数，tag根据此标签文章多少，大小随着改变。</p>
+
+<p>四个HTML文件则是category和tag的列表和3D标签云的侧边栏实现。需要哪个，在 default_asides 中添加即可。</p>
+
+<p>还有一点需要注意，在_config.yml中默认设置了category的目录，需自己加入tag目录</p>
+
+<pre><code>category_dir: blog/categories
+tag_dir: blog/tags
+</code></pre>
+
+<p>这样可以观看效果了，不过3D效果的标签云，对于不支持flash的浏览器无效，如 safari 。</p>
+
+<p>标签功能的实现，我参考了一下几篇文章：</p>
+
+<p><a href="http://codemacro.com/2012/07/18/add-category-list-to-octopress/">为octopress添加分类(category)列表</a></p>
+
+<p><a href="http://blog.log4d.com/2012/05/tag-cloud/">给 Octopress 加上标签功能</a></p>
+
+<h3>相关文章功能</h3>
+
+<p>此功能即根据当前阅读的文章，分析博客中其他与此相近的文章，进行推荐的一个功能，在octopress wiki中推荐的第三方插件中有一个插件实现此功能，项目主页 点击这里 。该插件，利用octopress自带的LSI实现对文章分析分类，然后进行推荐，但当文章较多时分类过慢，它推荐安装GSL来进行分类。我安装过这个功能，但不知道它是根据什么规则分类，而且之后不知道安装了什么，之后每次分类都会出错。你可以自己尝试一下，项目主页都有详细的步骤。</p>
+
+<p>就在我想放弃这个功能的时候，我发现了它―― related_posts-jekyll_plugin 。这个插件很简单，只需下载_plugins/related_posts.rb放在自己的plugins文件夹中，然后在想添加相关文章推荐的地方添加如下语句：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h2&gt;相关文章：&lt;/h2&gt;
+  &lt;ul class="posts"&gt;
+   
+&lt;/ul&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>我是在source/_layouts/post.html中加入的这些语句，这个html文件是打开博文时的布局，我将相关文章添加在博文的结束处。</p>
+
+<p>这个插件是根据文章的tag进行分类的，根据所有博文与本篇文章共同tag的多少依次排序进行推荐，还是很简单有效的。</p>
+
+<h3>社会化评论与分享</h3>
+
+<h4>友言和加网</h4>
+
+<p>octopress内置了disqus评论系统，不适合我国基本国情，所以需要用一些国内的第三方评论系统，如友言、多说，可以以微博、人人、QQ等账号登陆发表评论，网站通过验证后可以对评论进行分析，管理。</p>
+
+<p>多说评论系统可参见 为 Octopress 添加多说评论系统 ，不多做介绍。</p>
+
+<p>我主要使用的是友言的一套评论系统及插件，分享使用的是加网JiaThis。首先注册 友言 账号，否则无法进行后台管理。注册之后获得代码，添加到 source/_includes/post/share_comment.html 。加网 点击这里 ，定制自己喜欢的样式，获得代码也添加到上述文件中。</p>
+
+<p>share_comment.html文件中代码如下（每个人不同）：</p>
+
+<pre><code>&lt;!-- JiaThis BEGIN --&gt;
+&lt;div class="jiathis_style_32x32"&gt;
+    &lt;a class="jiathis_button_qzone"&gt;&lt;/a&gt;
+    &lt;a class="jiathis_button_tsina"&gt;&lt;/a&gt;
+    &lt;a class="jiathis_button_tqq"&gt;&lt;/a&gt;
+    &lt;a class="jiathis_button_weixin"&gt;&lt;/a&gt;
+    &lt;a class="jiathis_button_renren"&gt;&lt;/a&gt;
+    &lt;a href="http://www.jiathis.com/share?uid=*******" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"&gt;&lt;/a&gt;
+    &lt;a class="jiathis_counter_style"&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1361705530382241" charset="utf-8"&gt;&lt;/script&gt;
+&lt;!-- JiaThis END --&gt;
+
+&lt;!-- Baidu Button BEGIN 
+&lt;div id="bdshare" class="bdshare_t bds_tools_32 get-codes-bdshare"&gt;
+    &lt;a class="bds_tsina"&gt;&lt;/a&gt;
+    &lt;a class="bds_qzone"&gt;&lt;/a&gt;
+    &lt;a class="bds_tqq"&gt;&lt;/a&gt;
+    &lt;a class="bds_renren"&gt;&lt;/a&gt;
+    &lt;a class="bds_t163"&gt;&lt;/a&gt;
+    &lt;a class="bds_hi"&gt;&lt;/a&gt;
+    &lt;span class="bds_more"&gt;&lt;/span&gt;
+    &lt;a class="shareCount"&gt;&lt;/a&gt;
+&lt;/div&gt;
+&lt;script type="text/javascript" id="bdshare_js" data="type=tools&amp;uid=6839808" &gt;&lt;/script&gt;
+&lt;script type="text/javascript" id="bdshell_js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+    document.getElementById("bdshell_js").src = "http://bdimg.share.baidu.com/static/js/shell_v2.js?cdnversion=" + Math.ceil(new Date()/3600000)
+&lt;/script&gt;
+ Baidu Button END --&gt;
+
+&lt;!-- UY BEGIN --&gt;
+&lt;div id="uyan_frame"&gt;&lt;/div&gt;
+&lt;script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=*******"&gt;&lt;/script&gt;
+&lt;!-- UY END --&gt;
+</code></pre>
+
+<p>其中有一段代码注释掉了，那是我曾经添加的百度分享的代码，如果使用其他分享或评论，代码也可以添加到这。</p>
+
+<p>现在功能代码在share_comment.html中了，下面需要使其显示到博文的底部。</p>
+
+<p>首先在_config.yml中添加开关：</p>
+
+<pre><code># comment and share
+comment_share: true
+</code></pre>
+
+<p>然后在 source/_includes/post/sharing.html 中添加如下代码：</p>
+
+<pre><code>
+</code></pre>
+
+<p>最后需要使你的网站通过友言的验证，才可以进行后台管理，后台可以进行评论管理、社交影响力分析、和评论栏的风格功能设置。</p>
+
+<h4>评论热榜和最新评论侧边栏</h4>
+
+<p>友言提供了多个嵌入式组件，如评论热榜、最新评论、评论计数等。我们可以将他们做成侧边栏进行展示，或在首页文章列表中，显示每篇文章的评论数目。</p>
+
+<p>首先在你的友言后台管理中找到 安装设置->嵌入式组件 获得评论热榜和最新评论的代码，分别创建 source/<em>includes/custom/asides/uyan_hotcmt.html 和 source/</em>includes/custom/asides/uyan_newcmt.html ，代码如下：</p>
+
+<pre><code>&lt;section&gt;
+&lt;h1&gt;评论热榜&lt;/h1&gt;
+&lt;div id="uyan_hotcmt_unit"&gt;&lt;/div&gt;
+    &lt;script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=*******"&gt;&lt;/script&gt;
+&lt;/section&gt;
+&lt;section&gt;
+&lt;h1&gt;最新评论&lt;/h1&gt;
+&lt;div id="uyan_newcmt_unit"&gt;&lt;/div&gt;
+    &lt;script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=*******"&gt;&lt;/script&gt;
+&lt;/section&gt;
+</code></pre>
+
+<p>然后再 _config.yml 的 default_asides 中添加其路径即可显示在侧边栏中。</p>
+
+<p>友言评论框、评论热榜、最新评论可以在后台进行设置，改变设置并不需要更改代码。</p>
+
+<h4>评论计数显示</h4>
+
+<p>友言提供评论计数功能，可以将每篇文章的评论数显示在博客首页相应文章题目旁。实现方法为：在 source/_includes/article.html 中</p>
+
+<p><code>
+
+
+
+
+
+
+</code></p>
+
+<p>的后边填入嵌入组件中获得的评论计数的代码，需要修改其中一些内容</p>
+
+<pre><code>| &lt;a href="#comments" id="uyan_count_unit" du="" su=""&gt;0条评论&lt;/a&gt;
+ &lt;script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=*******"&gt;&lt;/script&gt;
+</code></pre>
+
+<h3>为博文添加原文链接及声明</h3>
+
+<p>可以为你的每篇博文末尾加上原文链接，方法很简单，只需创建 plugins/post_footer_filter.rb ，代码如下：</p>
+
+<pre><code># post_footer_filter.rb
+# Append every post some footer infomation like original url 
+# Kevin Lynx
+# 7.26.2012
+#
+require './plugins/post_filters'
+
+module AppendFooterFilter
+    def append(post)
+            author = post.site.config['author']
+            url = post.site.config['url']
+            pre = post.site.config['original_url_pre']
+            post.content + %Q[&lt;p class='post-footer'&gt;
+                    #{pre or "original link:"}&lt;a    href='#{post.full_url}'&gt;#{post.full_url}&lt;/a&gt;&lt;br/&gt; written by &lt;a     href='#{url}'&gt;#{author}&lt;/a&gt; posted at &lt;a href='#{url}'&gt;#{url}&lt;/a&gt;&lt;/p&gt;]
+    end
+end
+
+module Jekyll
+    class AppendFooter &lt; PostFilter
+            include AppendFooterFilter
+            def pre_render(post)
+                    post.content = append(post) if post.is_post?
+            end
+    end
+end
+
+Liquid::Template.register_filter AppendFooterFilter
+</code></pre>
+
+<p>并可以针对这一区域的样式进行美化，在 sass/custom/_style.scss 末尾增加下列内容：</p>
+
+<pre><code>.post-footer{margin-top:10px;padding:5px;background:none repeat scroll 0pt 0pt #eee;font-size:90%;color:gray}
+</code></pre>
+
+<p>尊重原创，此功能来源 为octopress每篇文章添加一个文章信息 。</p>
+
+<h3>添加版权声明</h3>
+
+<p>这里所说的版权声明是指每篇文章后面的版权信息</p>
+
+<p>首先source_includes\post目录中添加license.html文件，文件内容如下：</p>
+
+<pre><code>
+
+&lt;DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right&gt; 
+&lt;DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px"&gt; 
+&lt;IMG alt="" src="http://images.cnblogs.com/cnblogs_com/oec2003/219566/r_fw90100.jpg" width=90 height=100&gt;&lt;/DIV&gt; 
+&lt;DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000"&gt; 
+作者： &lt;A href="http://oec2003.github.io/"&gt;冯威&lt;/A&gt; &lt;BR&gt; 
+出处： &lt;A href="http://oec2003.github.io/"&gt;http://oec2003.github.io/&lt;/A&gt; 
+&lt;BR&gt;本文基于&lt;a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/"&gt; 
+署名 2.5 中国大陆&lt;/a&gt;许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名 
+&lt;a href="http://oec2003.github.io/"&gt;冯威&lt;/a&gt;（包含链接）。 &lt;/DIV&gt;&lt;/DIV&gt; 
+
+</code></pre>
+
+<p>在sass\custom_styles.scss添加如下样式信息来控制版权信息的样式</p>
+
+<pre><code>.oec2003right 
+{ 
+    background: #C3D9FF; 
+    height:120px; 
+    border:1px solid #BBBBBB; 
+}
+
+.oec2003right a:link 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:visited 
+{ 
+    color: #0057b6; 
+    text-decoration: none; 
+} 
+.oec2003right a:active,a:hover 
+{ 
+    color: #0057b6; 
+    text-decoration: underline; 
+}
+</code></pre>
+
+<p>修改文件source_layouts\post.html</p>
+
+<pre><code>在class中增加类类似的一行，修改为对应的html就可以
+</code></pre>
+
+<p>在_config.yml添加配置项用来控制是否显示页面的版权信息</p>
+
+<pre><code># Post License 
+post_license: true
+</code></pre>
+
+<h3>公益404</h3>
+
+<p>在 source 目录下创建404.markdown，添加如下代码，即可实现公益404的功能，当你的网页出错找不到时，可以为公益尽一份力。</p>
+
+<pre><code>layout: page
+title: "404 Error"
+date: 2013-10-10 19:17
+comments: false
+sharing: false
+footer: false
+---
+&lt;script type="text/javascript" src="http://www.qq.com/404/  search_children,js" charset="utf-8&gt;&lt;/script&gt;
+</code></pre>
+
+<hr />
+
+<h2>mackdown语法简介</h2>
+
+<h3>下面简单介绍一下mackdown常用语法（mackdown语法程序员必备）</h3>
+
+<ol>
+<li><p>标题设置（让字体变大，和word的标题意思一样）
+在Markdown当中设置标题，有两种方式：
+第一种：通过在文字下方添加“=”和“-”，他们分别表示一级标题和二级标题。
+第二种：在文字开头加上 “#”，通过“#”数量表示几级标题。（一共只有1~6级标题，1级标题字体最大）</p></li>
+<li><p>块注释（blockquote）
+通过在文字开头添加“>”表示块注释。（当>和文字之间添加五个blank时，块注释的文字会有变化。）</p></li>
+<li><p>斜体
+将需要设置为斜体的文字两端使用1个“*”或者“_”夹起来</p></li>
+<li><p>粗体
+将需要设置为斜体的文字两端使用2个“*”或者“_”夹起来</p></li>
+<li><p>无序列表
+在文字开头添加(<em>, +, and -)实现无序列表。但是要注意在(</em>, +, and -)和文字之间需要添加空格。（建议：一个文档中只是用一种无序列表的表示方式）</p></li>
+<li><p>有序列表
+使用数字后面跟上句号。（还要有空格）</p></li>
+<li><p>链接（Links）
+Markdown中有两种方式，实现链接，分别为内联方式和引用方式。
+内联方式：This is an <a href="http://example.com/">example link</a>.
+引用方式：
+I get 10 times more traffic from <a href="http://google.com/" title="Google">Google</a> than from <a href="http://search.yahoo.com/" title="Yahoo Search">Yahoo</a> or <a href="http://search.msn.com/" title="MSN Search">MSN</a>.</p></li>
+<li><p>图片（Images）
+图片的处理方式和链接的处理方式，非常的类似。
+内联方式：</p>
+
+<p>  <code>![alt text](/path/to/img.jpg "Title")</code></p>
+
+<p>  引用方式：</p>
+
+<p>  <code>![alt text][id]</code></p>
+
+<p>  <code>[id]: /path/to/img.jpg "Title"</code></p></li>
+<li><p>代码（HTML中所谓的Code）
+实现方式有两种：
+第一种：简单文字出现一个代码框。使用<code>&lt;blockquote&gt;</code>。（<code>不是单引号而是左上角的ESC下面~中的</code>）
+第二种：大片文字需要实现代码框。使用Tab和四个空格。</p></li>
+<li><p>脚注（footnote）
+实现方式如下：</p>
+
+<p>  <code>hello[^hello]</code></p>
+
+<p>  <code>[^hello]: hi</code></p></li>
+<li><p>下划线
+在空白行下方添加三条“-”横线。（前面讲过在文字下方添加“-”，实现的2级标题）</p></li>
+</ol>
+
+
+<p>相关参考</p>
+
+<p><a href="http://www.cnblogs.com/itech/p/3800982.html">mackdoen语法简介</a></p>
+
+<hr />
+
+<p>版权声明：欢迎转载，请贴上源地址</p>
+
+<p> <a href="https://al1020119.github.io">https://al1020119.github.io</a></p>
+
+<p> <a href="http://www.cnblogs.com/iCocos/%EF%BC%88iOS%E6%A2%A6%E5%B7%A5%E5%8E%82%EF%BC%89">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+
+<p>更多精彩请关注</p>
+
+<p><a href="github%EF%BC%9Ahttps://github.com/al1020119?tab=repositories">github：https://github.com/al1020119?tab=repositories</a></p>
+
+<!--more-->
+
+]]></content>
+  </entry>
+  
+</feed>

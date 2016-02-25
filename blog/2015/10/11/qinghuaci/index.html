@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>爬虫必备-青花瓷抓包 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="爬虫必备-青花瓷抓包 ordinal 在之前个人学习ios开发的时候听过抓包相关的技术，但是自己没有实现，所以也只是当听听。 这段时间，由于公司新项目的原因，但是后台和UI都还没有，而又需要我先开始封装对应的工具或者一下大概的逻辑，我当时就蒙了，最后还是乖乖的来做。 网上找了一些接口， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/10/11/qinghuaci/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">爬虫必备-青花瓷抓包</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>在之前个人学习ios开发的时候听过抓包相关的技术，但是自己没有实现，所以也只是当听听。</p>
+
+<p>这段时间，由于公司新项目的原因，但是后台和UI都还没有，而又需要我先开始封装对应的工具或者一下大概的逻辑，我当时就蒙了，最后还是乖乖的来做。</p>
+
+<p>网上找了一些接口，也找了不少类似的网站，但是发现再美我用不了有什么用呢？最后我想到了之前听别人说的网络爬虫，找了不少资料研究了一番。发现效果还不错，就在这里记录下来，希望对你有用！</p>
+
+<p>关于网络数据抓取不仅仅在iOS开发中有，其他开发中也有，也叫网络爬虫，大致分为三种方式实现</p>
+
+<ul>
+<li>1: 青花瓷</li>
+<li>2: 正则表达</li>
+<li>3: 利用其他语言的工具包：java／Python</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>charles又名青花瓷，在iOS开发中的抓包中具有重要作用。最大的三点用处，一就是拦截别人软件的发送的请求和后端接口，练习开发。二是自己后端返回的response拦截修改后再接收以达到测试临界数据的作用。三写脚本重复拦截抓取别人的数据。(因为不太道德，本文不提第三点)</p>
+
+<p>如果你不是在董铂然博客园看到本文，请点击查看原文。</p>
+
+<h3>1.开始之前的准备工作</h3>
+
+<p>首先安装一下这个软件</p>
+
+<p>这个相信很多人电脑里应该都安装了，没安装的搜charles破解版也能很容易搜到。如果没安装java环境，首次进入charles会提示让你安装java包得，直接给你链接是苹果官网的，去下一个一键安装就行了。</p>
+
+<p> <img src="/images/qinghuaci001.jpg" title="Caption" ></p>
+
+<p>安装完成后先打开，在进行下面操作。</p>
+
+<p>然后去自己电脑的系统偏好设置-》网络-》选中现在连着的网(大部分人应该都是WiFi吧)可以查到自己这个电脑在现在这个wifi里的IP地址，比如我现在这个就是192.168.0.105(建议最好用私人网络，用公司网络的话可能会有限制会出现没反应的问题)</p>
+
+<p><img src="/images/qinghuaci002.jpg" title="Caption" ></p>
+
+<p>然后找到自己手机也连着这个同名的wifi，然后选中右边的蓝色i。</p>
+
+<p> <img src="/images/qinghuaci003.jpg" title="Caption" ></p>
+
+<p><img src="/images/qinghuaci004.jpg" title="Caption" ></p>
+
+<p>然后进入到了这个无线局域网的高级设置页面。进去之后拉到最下方，找到HTTP代理字样。然后选中手动代理，并在服务器中填自己电脑查到的ip地址，然后把端口调8888，最后点击左上角返回。返回值后系统会自动设置代理重新连接。</p>
+
+<p>这时候你的手机上网的过程中就要经过你的电脑了。刚用手机打开一个联网的程序，你的电脑上应该会显示一个弹窗问你【allow】还是【deny】肯定不能拒绝啊就点allow吧。这个只有第一次才弹窗，图没截上，你到时候看见肯定能看懂的。点了同意之后你手机发出的每一个请求都会被拦截出痕迹。</p>
+
+<h3>2.拦截某个软件的接口数据</h3>
+
+<p>拿网易新闻举例，以前就练习这写过网易新闻的项目，其中网易的接口全是用charles拦截的。拦截到了网易发请求时发的是什么，然后在练习项目中需要获取数据的地方也把这一串链接直接拿过来用即可。</p>
+
+<p><img src="/images/qinghuaci005.jpg" title="Caption" ></p>
+
+<p>当然这上面拦到的比较多，如果有过开发经验的话应该能很快看出来右边哪个是真正返回json数据的接口。或者一个一个点看内容也行啊。</p>
+
+<p>比如选中一个url然后右键点击copy。</p>
+
+<p><img src="/images/qinghuaci006.jpg" title="Caption" ></p>
+
+<p>放到浏览器地址栏里打一下。能看到</p>
+
+<p><img src="/images/qinghuaci007.jpg" title="Caption" ></p>
+
+<p>这就说明这个接口是对的了。可以获取到数据。然后可以给他转化一下看的更清楚。虽然很多人都是用bash看，但我还是推荐一个网址<a href="http://www.w3cschool.cc/jsontool">http://www.w3cschool.cc/jsontool</a>。转JSON之后看的非常清晰。大部分软件json整理后都是默认把大括号全都打开，而仅有这个网站是默认全给你把大括号关上。想点哪个再点开，而且能知道字典里有多少个键值对，所以看着非常清晰。</p>
+
+<p><img src="/images/qinghuaci008.jpg" title="Caption" ></p>
+
+<p>到此就已经完成了一次完整的，拉取接口，和获得数据。</p>
+
+<p>这里有两点我想说下：</p>
+
+<p>①就是如果这个App发的请求加密了或是RSA什么的，这个就算拦截了你也弄不到数据。网易是没有做任何加密，所以可以抓取到数据。以前试了拦截百度医生的就不行。他设置的是一分钟内能获取到数据，超过了1分钟这个复制过来的接口就取不到数据了。怀疑可能是用的HMAC方法加密，并且在里面加入了时间判断。32分和33分发出的请求经过编码后是不一样的，后台可能做了容错，会把32分和31分都和你判断下，只要有一个对上就让你过，但是超过了整整一分钟后是肯定获取不到数据了。</p>
+
+<p>②就是很多比较大型的网站，一般会开放一个开发者平台，里面注册开发者账号后会向你公开一个接口文档，你不用再去费事的拦截了。像新浪微博和大众点评都有开发者平台。</p>
+
+<h3>3.更改返回数据来测试临界情况</h3>
+
+<p>这个是重点了。因为这种做法可以让一个iOS前端的开发人员独立完成测试而不用拉过来一个后端一起联调。并且各种特殊维度，或是临界的账号也不用再去辛苦找了，仅仅自己在青花瓷上改来改去就可以达到效果了。比如这个地方如果返回了nil程序会不会崩，直接改response就行了。下面是具体操作方案。</p>
+
+<p>打开青花瓷切换成结构页面</p>
+
+<p><img src="/images/qinghuaci009.jpg" title="Caption" ></p>
+
+<p>这里可以看到断点和调试信息</p>
+
+<p><img src="/images/qinghuaci010.jpg" title="Caption" ><br/>
+<img src="/images/qinghuaci011.jpg" title="Caption" ></p>
+
+<p>然后找一个我们公司的页面。这个页面本来应该返回是这样的：如上图右边</p>
+
+<p>你先正常的打开这个页面把玩几下，这个青花瓷就会抓取很多接口和域名分类了。在这里找到你这个页面所属的域名分类应该不难。然后打上断点。这里要注意是在域名上打断点而不是在下面的单个请求上打断点。</p>
+
+<p>再次用手机进入这个页面，就会通过你刚才打断点的那个域名来请求数据，就会被断点拦住，如下图所示。</p>
+
+<p><img src="/images/qinghuaci012.jpg" title="Caption" ></p>
+
+<p>右边的信息也很清晰，一开始可以编辑请求。如果点击单步执行，等一下相应回来了也可以编辑响应。</p>
+
+<p><img src="/images/qinghuaci013.jpg" title="Caption" ></p>
+
+<p><img src="/images/qinghuaci014.jpg" title="Caption" ></p>
+
+<p>这里的有好几种查看的方式，但是推荐使用JSON Text看的比较清楚。 现在我们对拦截回来的数据进行修改，我把这些统计数据全改成999如下图</p>
+
+<p> <img src="/images/qinghuaci015.jpg" title="Caption" ></p>
+
+<p>然后再次点击下方的Execute单步执行，更改后的数据就会像正常返回回来的数据那样显示到，APP的页面上展示。</p>
+
+<p><img src="/images/qinghuaci016.jpg" title="Caption" ></p>
+
+<p>能来到这一步就说明已经完整的掌握了用青花瓷篡改返回数据测试App的技术。</p>
+
+<p>如果你不是在董铂然博客园看到本文，请点击查看原文。</p>
+
+<p>这么做的意义：</p>
+
+<p>这里只是简单的更改了一些数字，在页面显示更加直观。实际的操作中，你可以经常用来把某些值改为临界情况以看到App在处理这些临界状况时的反应，这样比找那些临界数据的测试账号成本要低得多。也可以把一些可能不会反回数值的字段找到，直接将里面的值删成nil，看看会不会报异常等等。</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/necessary/'>necessary</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/10/10/metal/" title="Previous Post: Metal深究">&laquo; Metal深究</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/10/13/zhengze/" title="Next Post: 爬虫必备-正则表达式抓包">爬虫必备-正则表达式抓包 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/10/11/qinghuaci/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/10/11/qinghuaci/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

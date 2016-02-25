@@ -1,0 +1,663 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>图片优化-总结 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="图片优化-总结 ordinal 主要针对问题 图片文件比较大
+图片文件比较多 网络图片显示大体步骤: 下载图片
+图片处理（裁剪，边框等)
+写入磁盘
+从磁盘读取数据到内核缓冲区
+从内核缓冲区复制到用户空间(内存级别拷贝)
+解压缩为位图（耗cpu较高）
+如果位图数据不是字节对齐的， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/01/15/tupianchuliyouhuajiqiao/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">图片优化-总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>主要针对问题</p>
+
+<ul>
+<li><p>图片文件比较大</p></li>
+<li><p>图片文件比较多</p></li>
+</ul>
+
+
+<h4>网络图片显示大体步骤:</h4>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
+</ul>
+
+
+<!--more-->
+
+
+<h4>一些优化思路：</h4>
+
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<p>在IOS下通过URL读一张网络图片并不像其他编程语言那样可以直接把图片路径放到图片路径的位置就ok，而是需要我们通过一段类似流的方式去加载网络图片，接着才能把图片放入图片路径显示。比如：</p>
+
+<pre><code>-(UIImage *) getImageFromURL:(NSString *)fileURL {
+  //NSLog(@"执行图片下载函数");    
+  UIImage * result;    
+  NSData * data = [NSData dataWithContentsOfURL:[NSURL URLWithString:fileURL]];
+  result = [UIImage imageWithData:data];    
+  return result;
+}
+</code></pre>
+
+<p>加载网络图片可以说是网络应用中必备的。如果单纯的去下载图片，而不去做多线程、缓存等技术去优化，加载图片时的效果与用户体验就会很差。</p>
+
+<p>优化思路为：</p>
+
+<p>（1）本地缓存</p>
+
+<p>（2）异步加载</p>
+
+<p>（3）加载完毕前使用占位图片</p>
+
+<h3>优化方法</h3>
+
+<h5>方法1：用NSOperation开异步线程下载图片，当下载完成时替换占位图片</h5>
+
+<pre><code>#import "XNViewController.h"
+#import "XNApp.h"
+
+@interface XNViewController ()
+@property (nonatomic, strong) NSArray *appList;
+@property (nonatomic, strong) NSOperationQueue *queue;
+@end
+
+@implementation XNViewController
+#pragma mark - 懒加载
+
+- (NSOperationQueue *)queue {
+    if (!_queue) _queue = [[NSOperationQueue alloc] init];
+    return _queue;
+}
+
+//可抽取出来写到模型中
+- (NSArray *)appList {
+    if (!_appList) {
+        //1.加载plist到数组中
+        NSURL *url = [[NSBundle mainBundle] URLForResource:@"apps.plist" withExtension:nil];
+        NSArray *array = [NSArray arrayWithContentsOfURL:url];
+        //2.遍历数组
+        NSMutableArray *arrayM = [NSMutableArray array];
+        [array enumerateObjectsUsingBlock: ^(id obj, NSUInteger idx, BOOL *stop) {
+            [arrayM addObject:[XNApp appWithDict:obj]];  //数组中存放的是字典, 转换为app对象后再添加到数组
+        }];
+        _appList = [arrayM copy];
+    }
+    return _appList;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.tableView.rowHeight = 88;
+
+//    NSLog(@"appList-%@",_appList);
+}
+
+#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+    //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+    if (!app.image) {
+        cell.imageView.image = [UIImage imageNamed:@"user_default"];
+
+        [self downloadImg:indexPath];
+    }
+    else {
+        //直接用模型中的内存缓存
+        cell.imageView.image = app.image;
+    }
+//  NSLog(@"cell--%p", cell);
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+- (void)downloadImg:(NSIndexPath *)indexPath {
+    XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+
+    [self.queue addOperationWithBlock: ^{
+        NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+        UIImage *image = [UIImage imageWithData:imgData];
+
+        //在主线程中更新UI
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+            //通过修改模型, 来修改数据
+            app.image = image;
+            //刷新指定表格行
+            [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+        }];
+    }];
+}
+
+@end
+</code></pre>
+
+<p>上述代码只是做了内存缓存，还没有做本地缓存，因为这里这种方法不是重点，也不是首选方法。上面代码每次重新进入应用时，还会从网上重新下载。如果要继续优化上面的代码，需要自己去实现本地缓存。</p>
+
+<h5>方法2：使用第三方框架SDWebImage</h5>
+
+<p>依赖的库很少，功能全面。</p>
+
+<p>自动实现磁盘缓存：缓存图片名字是以MD5进行加密的后的名字进行命名.(因为加密那堆字串是唯一的)</p>
+
+<p>加载网络图片时直接设置占位图片：</p>
+
+<pre><code>[imageView sd_setImageWithURL:imageurl  placeholderImage:[UIImage imageNamed:@”xxxxx”]]。
+</code></pre>
+
+<p>就一个方法就实现了多线程\带缓冲等效果.(可用带参数的方法,具体可看头文件)</p>
+
+<pre><code>#pragma mark - 数据源方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.appList.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *ID = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+
+    //用模型来填充每个cell
+    XNApp *app = self.appList[indexPath.row];
+    cell.textLabel.text = app.name;  //设置文字
+
+//  //设置图像: 模型中图像为nil时用默认图像,并下载图像. 否则用模型中的内存缓存图像.
+//  if (!cell.imageView.image) {
+//      cell.imageView.image = [UIImage imageNamed:@"user_default"];
+//
+//      [self downloadImg:indexPath];
+//  }
+//  else {
+//      //直接用模型中的内存缓存
+//      cell.imageView.image = app.image;
+//  }
+
+
+    //使用SDWebImage来完成上面的功能. 针对ImageView.
+    //一句话, 自动实现了异步下载. 图片本地缓存. 网络下载. 自动设置占位符.
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:app.icon] placeholderImage:[UIImage imageNamed:@"user_default"]];
+
+
+    return cell;
+}
+
+/**始终记住, 通过模型来修改显示. 而不要试图直接修改显示*/
+//- (void)downloadImg:(NSIndexPath *)indexPath {
+//  XNApp *app  = self.appList[indexPath.row]; //取得改行对应的模型
+//
+//  [self.queue addOperationWithBlock: ^{
+//      NSData *imgData = [NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]; //得到图像数据
+//      UIImage *image = [UIImage imageWithData:imgData];
+//
+//      //在主线程中更新UI
+//      [[NSOperationQueue mainQueue] addOperationWithBlock: ^{
+//          //通过修改模型, 来修改数据
+//          app.image = image;
+//          //刷新指定表格行
+//          [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+//      }];
+//  }];
+//}
+
+@end
+</code></pre>
+
+<p>如果你觉得SDWebImage不好用那么你可以试试FastImageCache这个框架：</p>
+
+<p>FastImageCache是Path团队开发的一个开源库，用于提升图片的加载和渲染速度，让基于图片的列表滑动起来更顺畅，来看看它是怎么做的。</p>
+
+<p>优化点</p>
+
+<p>iOS从磁盘加载一张图片，使用UIImageVIew显示在屏幕上，需要经过以下步骤：</p>
+
+<ul>
+<li>从磁盘拷贝数据到内核缓冲区</li>
+<li>从内核缓冲区复制数据到用户空间</li>
+<li>生成UIImageView，把图像数据赋值给UIImageView</li>
+<li>如果图像数据为未解码的PNG/JPG，解码为位图数据</li>
+<li>CATransaction捕获到UIImageView layer树的变化</li>
+<li><p>主线程Runloop提交CATransaction，开始进行图像渲染</p>
+
+<ul>
+<li><p>6.1 如果数据没有字节对齐，Core Animation会再拷贝一份数据，进行字节对齐。</p></li>
+<li><p>6.2 GPU处理位图数据，进行渲染。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>FastImageCache分别优化了2,4,6.1三个步骤：</p>
+
+<ul>
+<li>使用mmap内存映射，省去了上述第2步数据从内核空间拷贝到用户空间的操作。</li>
+<li>缓存解码后的位图数据到磁盘，下次从磁盘读取时省去第4步解码的操作。</li>
+<li>生成字节对齐的数据，防止上述第6.1步CoreAnimation在渲染时再拷贝一份数据。</li>
+</ul>
+
+
+<h3>常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip </th>
+<th style="text-align:center;"> SDWebImage   </th>
+<th style="text-align:right;">AFNetworking </th>
+<th>    FastImageCache </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES  </td>
+<td>NO </td>
+</tr>
+<tr>
+<td>子线程解压缩     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES </td>
+<td> YES </td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES    </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>内存级别缓存     </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES   YES</td>
+<td></td>
+</tr>
+<tr>
+<td>磁盘级别缓存     </td>
+<td style="text-align:center;">YES </td>
+<td style="text-align:right;"> YES </td>
+<td>   YES </td>
+</tr>
+<tr>
+<td>UIImageView category </td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">   NO </td>
+<td>    NO </td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO     </td>
+<td style="text-align:right;">NO     </td>
+<td>YES </td>
+</tr>
+<tr>
+<td>接口易用性 </td>
+<td style="text-align:center;"> *** </td>
+<td style="text-align:right;">   *** </td>
+<td>   * </td>
+</tr>
+</tbody>
+</table>
+
+
+<h3>总结</h3>
+
+<ul>
+<li><p>使用低分辨率图：仔细想想，其实没有必要第一时间加载全部图片的高清原图，事先存好每张图配套的低分辨率图，用空间换时间。
+先加载所有的图片的低分辨率图, 当用户翻阅到某一张图片时, 即时的加载原始尺寸的高清无码大图. 过程优化为：</p></li>
+<li><p>多线程任务：即使是这样，当照片数量达到一定量时，需要消耗的时间也并非毫秒级，体验无法领人满意,  页面跳转时仍然会出现卡顿现象。
+于是考虑使用多线程来进一步拆分任务， 执行跳转的同时再后台执行加载低分辨率图的步骤.</p></li>
+<li><p>优化快速翻阅体验：通过这样的拆分，可以实现立即跳转，体验满意。但是翻阅浏览时，当用户很快左右滑动时, 出现黑屏的几率很高, 因为加载低分辨率图任务的线程可能还在进行大量IO操作，不能及时跟上。 为了完善它，要把加载低分辨率图的步骤再次分解，精益求精。
+在页面跳转时间允许的范围内，加载用户选定的那张图片的高清原图的同时，尽可能多的加载几张左右临近的图片的低分辨率图。</p></li>
+</ul>
+
+
+<blockquote><p>尽量减少内存占用.  因为原始图片要比低分辨率图大很多, 所以当用户从一张图片翻阅到另一张图片时,  当前图片加载为原始尺寸的高清大图, 而原来那张就被替换为低分辨率图了。 虽然读写次数增多了, 但内存确实省了不少。</p></blockquote>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/14/tupianchulibuchong/" title="Previous Post: 图片处理-补充">&laquo; 图片处理-补充</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/01/15/tupianyibuhuancun/" title="Next Post: 图片处理-异步缓存优化">图片处理-异步缓存优化 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/01/15/tupianchuliyouhuajiqiao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/01/15/tupianchuliyouhuajiqiao/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

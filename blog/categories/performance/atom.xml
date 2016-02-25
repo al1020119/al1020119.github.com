@@ -1,0 +1,1107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Performance | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/performance/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[App卡顿了怎么办？]]></title>
+    <link href="http://al1020119.github.io/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/"/>
+    <updated>2015-07-16T09:37:46+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-?</id>
+    <content type="html"><![CDATA[<p><img src="/images/kadun001.jpg" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
+
+<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
+
+<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
+
+<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+<!--more-->
+
+
+<h2>CPU 资源消耗原因和解决方案</h2>
+
+<h4>对象创建</h4>
+
+<p>对象的创建会分配内存、调整属性、甚至还有读取文件等操作，比较消耗 CPU 资源。</p>
+
+<p>尽量用轻量的对象代替重量的对象，可以对性能有所优化。</p>
+
+<p>比如 CALayer 比 UIView 要轻量许多，那么不需要响应触摸事件的控件，用 CALayer 显示会更加合适。如果对象不涉及 UI 操作，则尽量放到后台线程去创建，但可惜的是包含有 CALayer 的控件，都只能在主线程创建和操作。通过 Storyboard 创建视图对象时，其资源消耗会比直接通过代码创建对象要大非常多，在性能敏感的界面里，Storyboard 并不是一个好的技术选择。</p>
+
+<p>尽量推迟对象创建的时间，并把对象的创建分散到多个任务中去。尽管这实现起来比较麻烦，并且带来的优势并不多，但如果有能力做，还是要尽量尝试一下。如果对象可以复用，并且复用的代价比释放、创建新对象要小，那么这类对象应当尽量放到一个缓存池里复用。</p>
+
+<h4>对象调整</h4>
+
+<p>对象的调整也经常是消耗 CPU 资源的地方。</p>
+
+<p>这里特别说一下 CALayer：</p>
+
+<ul>
+<li><p>CALayer 内部并没有属性，当调用属性方法时，它内部是通过运行时 resolveInstanceMethod 为对象临时添加一个方法，并把对应属性值保存到内部的一个 Dictionary 里，同时还会通知 delegate、创建动画等等，非常消耗资源。</p></li>
+<li><p>UIView 的关于显示相关的属性（比如 frame/bounds/transform）等实际上都是 CALayer 属性映射来的，所以对 UIView 的这些属性进行调整时，消耗的资源要远大于一般的属性。对此你在应用中，应该尽量减少不必要的属性修改。</p></li>
+</ul>
+
+
+<p>当视图层次调整时，UIView、CALayer 之间会出现很多方法调用与通知，所以在优化性能时，应该尽量避免调整视图层次、添加和移除视图。</p>
+
+<h4>对象销毁</h4>
+
+<p>对象的销毁虽然消耗资源不多，但累积起来也是不容忽视的。通常当容器类持有大量对象时，其销毁时的资源消耗就非常明显。同样的，如果对象可以放到后台线程去释放，那就挪到后台线程去。这里有个小 Tip：把对象捕获到 block 中，然后扔到后台队列去随便发送个消息以避免编译器警告，就可以让对象在后台线程销毁了。</p>
+
+<pre><code>NSArray *tmp = self.array;
+
+self.array = nil;
+
+dispatch_async(queue, ^{
+
+    [tmp class];
+
+});
+</code></pre>
+
+<h4>布局计算</h4>
+
+<p>视图布局的计算是 App 中最为常见的消耗 CPU 资源的地方。如果能在后台线程提前计算好视图布局、并且对视图布局进行缓存，那么这个地方基本就不会产生性能问题了。</p>
+
+<p>不论通过何种技术对视图进行布局，其最终都会落到对 UIView.frame/bounds/center 等属性的调整上。上面也说过，对这些属性的调整非常消耗资源，所以尽量提前计算好布局，在需要时一次性调整好对应属性，而不要多次、频繁的计算和调整这些属性。</p>
+
+<h4>Autolayout</h4>
+
+<ul>
+<li>Autolayout 是苹果本身提倡的技术，在大部分情况下也能很好的提升开发效率，但是 Autolayout 对于复杂视图来说常常会产生严重的性能问题。随着视图数量的增长，Autolayout 带来的 CPU 消耗会呈指数级上升。具体数据可以看这个文章：<a href="http://pilky.me/36/%E3%80%82">http://pilky.me/36/%E3%80%82</a> 如果你不想手动调整 frame 等属性，你可以用一些工具方法替代（比如常见的 left/right/top/bottom/width/height 快捷属性），或者使用 ComponentKit、AsyncDisplayKit 等框架。</li>
+</ul>
+
+
+<h4>文本计算</h4>
+
+<p>如果一个界面中包含大量文本（比如微博微信朋友圈等），文本的宽高计算会占用很大一部分资源，并且不可避免。如果你对文本显示没有特殊要求，可以参考下 UILabel 内部的实现方式：用 [NSAttributedString boundingRectWithSize:options:context:] 来计算文本宽高，用 -[NSAttributedString drawWithRect:options:context:] 来绘制文本。尽管这两个方法性能不错，但仍旧需要放到后台线程进行以避免阻塞主线程。</p>
+
+<blockquote><p>注意：如果你用 CoreText 绘制文本，那就可以先生成 CoreText 排版对象，然后自己计算了，并且 CoreText 对象还能保留以供稍后绘制使用。</p></blockquote>
+
+<h4>文本渲染</h4>
+
+<p>屏幕上能看到的所有文本内容控件，包括 UIWebView，在底层都是通过 CoreText 排版、绘制为 Bitmap 显示的。常见的文本控件 （UILabel、UITextView 等），其排版和绘制都是在主线程进行的，当显示大量文本时，CPU 的压力会非常大。对此解决方案只有一个，那就是自定义文本控件，用 TextKit 或最底层的 CoreText 对文本异步绘制。尽管这实现起来非常麻烦，但其带来的优势也非常大，CoreText 对象创建好后，能直接获取文本的宽高等信息，避免了多次计算（调整 UILabel 大小时算一遍、UILabel 绘制时内部再算一遍）；CoreText 对象占用内存较少，可以缓存下来以备稍后多次渲染。</p>
+
+<h4>图片的解码</h4>
+
+<p>当你用 UIImage 或 CGImageSource 的那几个方法创建图片时，图片数据并不会立刻解码。图片设置到 UIImageView 或者 CALayer.contents 中去，并且 CALayer 被提交到 GPU 前，CGImage 中的数据才会得到解码。这一步是发生在主线程的，并且不可避免。如果想要绕开这个机制，常见的做法是在后台线程先把图片绘制到 CGBitmapContext 中，然后从 Bitmap 直接创建图片。目前常见的网络图片库都自带这个功能。</p>
+
+<h4>图像的绘制</h4>
+
+<p>图像的绘制通常是指用那些以 CG 开头的方法把图像绘制到画布中，然后从画布创建图片并显示这样一个过程。这个最常见的地方就是 [UIView drawRect:] 里面了。由于 CoreGraphic 方法通常都是线程安全的，所以图像的绘制可以很容易的放到后台线程进行。一个简单异步绘制的过程大致如下（实际情况会比这个复杂得多，但原理基本一致）：</p>
+
+<pre><code>- (void)display {
+
+    dispatch_async(backgroundQueue, ^{
+
+    CGContextRef ctx = CGBitmapContextCreate(...);
+
+    // draw in context...
+
+    CGImageRef img = CGBitmapContextCreateImage(ctx);
+
+    CFRelease(ctx);
+
+    dispatch_async(mainQueue, ^{
+
+        layer.contents = img;
+
+    });
+
+    });
+}
+</code></pre>
+
+<h2>GPU 资源消耗原因和解决方案</h2>
+
+<p>相对于 CPU 来说，GPU 能干的事情比较单一：接收提交的纹理（Texture）和顶点描述（三角形），应用变换（transform）、混合并渲染，然后输出到屏幕上。通常你所能看到的内容，主要也就是纹理（图片）和形状（三角模拟的矢量图形）两类。</p>
+
+<h4>纹理的渲染</h4>
+
+<p>所有的 Bitmap，包括图片、文本、栅格化的内容，最终都要由内存提交到显存，绑定为 GPU Texture。不论是提交到显存的过程，还是 GPU 调整和渲染 Texture 的过程，都要消耗不少 GPU 资源。当在较短时间显示大量图片时（比如 TableView 存在非常多的图片并且快速滑动时），CPU 占用率很低，GPU 占用非常高，界面仍然会掉帧。避免这种情况的方法只能是尽量减少在短时间内大量图片的显示，尽可能将多张图片合成为一张进行显示。</p>
+
+<blockquote><p>注意：当图片过大，超过 GPU 的最大纹理尺寸时，图片需要先由 CPU 进行预处理，这对 CPU 和 GPU 都会带来额外的资源消耗。目前来说，iPhone 4S 以上机型，纹理尺寸上限都是 4096x4096，更详细的资料可以看这里：iosres.com。所以，尽量不要让图片和视图的大小超过这个值。</p></blockquote>
+
+<h4>视图的混合 (Composing)</h4>
+
+<p>当多个视图（或者说 CALayer）重叠在一起显示时，GPU 会首先把他们混合到一起。如果视图结构过于复杂，混合的过程也会消耗很多 GPU 资源。为了减轻这种情况的 GPU 消耗，应用应当尽量减少视图数量和层次，并在不透明的视图里标明 opaque 属性以避免无用的 Alpha 通道合成。当然，这也可以用上面的方法，把多个视图预先渲染为一张图片来显示。</p>
+
+<h4>图形的生成</h4>
+
+<p>CALayer 的 border、圆角、阴影、遮罩（mask），CASharpLayer 的矢量图形显示，通常会触发离屏渲染（offscreen rendering），而离屏渲染通常发生在 GPU 中。当一个列表视图中出现大量圆角的 CALayer，并且快速滑动时，可以观察到 GPU 资源已经占满，而 CPU 资源消耗很少。这时界面仍然能正常滑动，但平均帧数会降到很低。为了避免这种情况，可以尝试开启 CALayer.shouldRasterize 属性，但这会把原本离屏渲染的操作转嫁到 CPU 上去。对于只需要圆角的某些场合，也可以用一张已经绘制好的圆角图片覆盖到原本视图上面来模拟相同的视觉效果。最彻底的解决办法，就是把需要显示的图形在后台线程绘制为图片，避免使用圆角、阴影、遮罩等属性。</p>
+
+<!--more-->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[事件处理与图像渲染深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/"/>
+    <updated>2015-03-25T09:47:11+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu</id>
+    <content type="html"><![CDATA[<h3>iOS 事件处理机制与图像渲染过程</h3>
+
+<ul>
+<li>iOS RunLoop都干了什么</li>
+<li>iOS 为什么必须在主线程中操作UI</li>
+<li>事件响应</li>
+<li>CALayer</li>
+<li>CADisplayLink 和 NSTimer</li>
+<li>iOS 渲染过程</li>
+<li>渲染时机</li>
+<li>CPU 和 GPU渲染</li>
+<li>Core Animation</li>
+<li>Facebook Pop介绍</li>
+<li>AsyncDisplay介绍</li>
+<li>参考文章</li>
+</ul>
+
+
+<!--more-->
+
+
+<h5>iOS RunLoop都干了什么</h5>
+
+<p>RunLoop是一个接收处理异步消息事件的循环，一个循环中：等待事件发生，然后将这个事件送到能处理它的地方。
+如图1-1所示，描述了一个触摸事件从操作系统层传送到应用内的main runloop中的简单过程。</p>
+
+<p><img src="/images/tupianxuanran001.jpg" title="Caption" ></p>
+
+<p>简单的说，RunLoop是事件驱动的一个大循环，如下代码所示</p>
+
+<pre><code>int main(int argc, char * argv[]) {
+     //程序一直运行状态
+     while (AppIsRunning) {
+          //睡眠状态，等待唤醒事件
+          id whoWakesMe = SleepForWakingU  p();
+          //得到唤醒事件
+          id event = GetEvent(whoWakesMe);
+          //开始处理事件
+          HandleEvent(event);
+     }
+     return 0;
+}
+</code></pre>
+
+<p>RunLoop主要处理以下6类事件：</p>
+
+<pre><code>static void __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__();
+static void __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__();
+static void __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__();
+</code></pre>
+
+<ul>
+<li><p>Observer事件，runloop中状态变化时进行通知。（微信卡顿监控就是利用这个事件通知来记录下最近一次main runloop活动时间，在另一个check线程中用定时器检测当前时间距离最后一次活动时间过久来判断在主线程中的处理逻辑耗时和卡主线程）。这里还需要特别注意，CAAnimation是由RunloopObserver触发回调来重绘，接下来会讲到。</p></li>
+<li><p>Block事件，非延迟的NSObject PerformSelector立即调用，dispatch_after立即调用，block回调。</p></li>
+<li><p>Main_Dispatch_Queue事件：GCD中dispatch到main queue的block会被dispatch到main loop执行。</p></li>
+<li><p>Timer事件：延迟的NSObject PerformSelector，延迟的dispatch_after，timer事件。</p></li>
+<li><p>Source0事件：处理如UIEvent，CFSocket这类事件。需要手动触发。触摸事件其实是</p></li>
+<li>Source1接收系统事件后在回调 <em>_IOHIDEventSystemClientQueueCallback() 内触发的 Source0，Source0 再触发的 </em>UIApplicationHandleEventQueue()。source0一定是要唤醒runloop及时响应并执行的，如果runloop此时在休眠等待系统的 mach_msg事件，那么就会通过source1来唤醒runloop执行。</li>
+</ul>
+
+
+<blockquote><p>Source1事件：处理系统内核的mach_msg事件。（推测CADisplayLink也是这里触发）。</p></blockquote>
+
+<p>RunLoop执行顺序的伪代码</p>
+
+<pre><code>SetupThisRunLoopRunTimeoutTimer(); // by GCD timer
+//通知即将进入runloop__CFRUNLLOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__(KCFRunLoopEntry);
+do {
+     __CFRunLoopDoObservers(kCFRunLoopBeforeTimers);
+     __CFRunLoopDoObservers(kCFRunLoopBeforeSources);
+
+     __CFRunLoopDoBlocks();  //一个循环中会调用两次，确保非延迟的NSObject PerformSelector调用和非延迟的dispatch_after调用在当前runloop执行。还有回调block
+     __CFRunLoopDoSource0(); //例如UIKit处理的UIEvent事件
+
+     CheckIfExistMessagesInMainDispatchQueue(); //GCD dispatch main queue
+
+     __CFRunLoopDoObservers(kCFRunLoopBeforeWaiting); //即将进入休眠，会重绘一次界面
+     var wakeUpPort = SleepAndWaitForWakingUpPorts();
+     // mach_msg_trap，陷入内核等待匹配的内核mach_msg事件
+     // Zzz...
+     // Received mach_msg, wake up
+     __CFRunLoopDoObservers(kCFRunLoopAfterWaiting);
+     // Handle msgs
+     if (wakeUpPort == timerPort) {
+          __CFRunLoopDoTimers();
+     } else if (wakeUpPort == mainDispatchQueuePort) {
+          //GCD当调用dispatch_async(dispatch_get_main_queue(),block)时，libDispatch会向主线程的runloop发送mach_msg消息唤醒runloop，并在这里执行。这里仅限于执行dispatch到主线程的任务，dispatch到其他线程的仍然是libDispatch来处理。
+          __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__()
+     } else {
+          __CFRunLoopDoSource1();  //CADisplayLink是source1的mach_msg触发？
+     }
+ __CFRunLoopDoBlocks();
+} while (!stop &amp;&amp; !timeout);
+
+//通知observers，即将退出runloop
+__CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBERVER_CALLBACK_FUNCTION__(CFRunLoopExit);
+</code></pre>
+
+<p>结合上面的Runloop事件执行顺序，思考下面代码逻辑中为什么可以标识tableview是否reload完成</p>
+
+<pre><code>dispatch_async(dispatch_get_main_queue(), ^{
+    _isReloadDone = NO;
+    [tableView reload]; //会自动设置tableView layoutIfNeeded为YES，意味着将会在runloop结束时重绘table
+    dispatch_async(dispatch_get_main_queue(),^{
+        _isReloadDone = YES;
+    });
+});
+</code></pre>
+
+<blockquote><p>提示：这里在GCD dispatch main queue中插入了两个任务，一次RunLoop有两个机会执行GCD dispatch main queue中的任务，分别在休眠前和被唤醒后。</p></blockquote>
+
+<h5>iOS 为什么必须在主线程中操作UI</h5>
+
+<blockquote><p>因为UIKit不是线程安全的。试想下面这几种情况：</p></blockquote>
+
+<p>两个线程同时设置同一个背景图片，那么很有可能因为当前图片被释放了两次而导致应用崩溃。
+两个线程同时设置同一个UIView的背景颜色，那么很有可能渲染显示的是颜色A，而此时在UIView逻辑树上的背景颜色属性为B。
+两个线程同时操作view的树形结构：在线程A中for循环遍历并操作当前View的所有subView，然后此时线程B中将某个subView直接删除，这就导致了错乱还可能导致应用崩溃。
+iOS4之后苹果将大部分绘图的方法和诸如 UIColor 和 UIFont 这样的类改写为了线程安全可用，但是仍然强烈建议讲UI操作保证在主线程中执行。</p>
+
+<h6>事件响应</h6>
+
+<p>苹果注册了一个 Source1 (基于 mach port 的) 用来接收系统事件，其回调函数为 __IOHIDEventSystemClientQueueCallback()。</p>
+
+<p>当一个硬件事件(触摸/锁屏/摇晃等)发生后，首先由 IOKit.framework 生成一个 IOHIDEvent 事件并由 SpringBoard 接收。</p>
+
+<ul>
+<li><p>SpringBoard 只接收按键(锁屏/静音等)，触摸，加速，接近传感器等几种 Event，随后用 mach port 转发给需要的App进程。随后苹果注册的那个 Source1 就会触发回调，并调用 _UIApplicationHandleEventQueue() 进行应用内部的分发。</p></li>
+<li><p>_UIApplicationHandleEventQueue() 会把 IOHIDEvent 处理并包装成 UIEvent 进行处理或分发，其中包括识别 UIGesture/处理屏幕旋转/发送给 UIWindow 等。通常事件比如 UIButton 点击、touchesBegin/Move/End/Cancel 事件都是在这个回调中完成的。</p></li>
+</ul>
+
+
+<h6>CALayer</h6>
+
+<p>在iOS当中，所有的视图都从一个叫做UIVIew的基类派生而来，UIView可以处理触摸事件，可以支持基于Core Graphics绘图，可以做仿射变换（例如旋转或者缩放），或者简单的类似于滑动或者渐变的动画。</p>
+
+<p>CALayer类在概念上和UIView类似，同样也是一些被层级关系树管理的矩形块，同样也可以包含一些内容（像图片，文本或者背景色），管理子图层的位置。它们有一些方法和属性用来做动画和变换。和UIView最大的不同是CALayer不处理用户的交互。CALayer并不清楚具体的响应链。</p>
+
+<p>UIView和CALayer是一个平行的层级关系，每一个UIView都有一个CALayer实例的图层属性，也就是所谓的backing layer，视图的职责就是创建并管理这个图层，以确保当子视图在层级关系中添加或者被移除的时候，他们关联的图层也同样对应在层级关系树当中有相同的操作。实际上这些背后关联的Layer图层才是真正用来在屏幕上显示和做动画，UIView仅仅是对它的一个封装，提供了一些iOS类似于处理触摸的具体功能，以及Core Animation底层方法的高级接口。</p>
+
+<h6>UIView 的 Layer 在系统内部，被维护着三份同样的树形数据结构，分别是：</h6>
+
+<pre><code>图层树（这里是代码可以操纵的，设置属性的最终值会立刻在这里更新）；
+呈现树（是一个中间层，系统就在这一层上更改属性，进行各种渲染操作。比如一个动画是更改alpha值从0到1，那么在逻辑树上此属性会被立刻更新为最终属性1，而在动画树上会根据设置的动画时间从0逐步变化到1）；
+渲染树（其属性值就是当前正被显示在屏幕上的属性值）；
+</code></pre>
+
+<h5>CADisplayLink 和 NSTimer</h5>
+
+<p>NSTimer 其实就是 CFRunLoopTimerRef。一个 NSTimer 注册到 RunLoop 后，RunLoop 会为其重复的时间点注册好事件。</p>
+
+<ul>
+<li><p>RunLoop为了节省资源，并不会在非常准确的时间点回调这个Timer。Timer 有个属性叫做 Tolerance (宽容度)，标示了当时间点到后，容许有多少最大误差。如果某个时间点被错过了，例如执行了一个很长的任务，则那个时间点的回调也会跳过去，不会延后执行。</p></li>
+<li><p>RunLoop 是用GCD的 dispatch_source_t 实现的 Timer。 当调用 NSObject 的 performSelecter:afterDelay: 后，实际上其内部会创建一个 Timer 并添加到当前线程的 RunLoop 中。所以如果当前线程没有 RunLoop，则这个方法会失效。当调用 performSelector:onThread: 时，实际上其会创建一个 Timer 加到对应的线程去，同样的，如果对应线程没有 RunLoop 该方法也会失效。</p></li>
+<li><p>CADisplayLink 是一个和屏幕刷新率（每秒刷新60次）一致的定时器（但实际实现原理更复杂，和 NSTimer 并不一样，其内部实际是操作了一个 Source）。如果在两次屏幕刷新之间执行了一个长任务，那其中就会有一帧被跳过去，造成界面卡顿的感觉。</p></li>
+</ul>
+
+
+<h5>iOS 渲染过程</h5>
+
+<p><img src="/images/tupianxuanran002.png" title="Caption" ></p>
+
+<p>通常来说，计算机系统中 CPU、GPU、显示器是以上面这种方式协同工作的。CPU 计算好显示内容提交到 GPU，GPU 渲染完成后将渲染结果放入帧缓冲区，随后视频控制器会按照 VSync 信号如下图1-4所示，逐行读取帧缓冲区的数据，经过可能的数模转换传递给显示器显示。</p>
+
+<p><img src="/images/tupianxuanran003.png" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。从上图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+<p><img src="/images/tupianxuanran004.png" title="Caption" ></p>
+
+<p>iOS 的显示系统是由 VSync 信号驱动的，VSync 信号由硬件时钟生成，每秒钟发出 60 次（这个值取决设备硬件，比如 iPhone 真机上通常是 59.97）。iOS 图形服务接收到 VSync 信号后，会通过 IPC 通知到 App 内。App 的 Runloop 在启动后会注册对应的 CFRunLoopSource 通过 mach_port 接收传过来的时钟信号通知，随后 Source 的回调会驱动整个 App 的动画与显示。</p>
+
+<p>Core Animation 在 RunLoop 中注册了一个 Observer，监听了 BeforeWaiting 和 Exit 事件。当一个触摸事件到来时，RunLoop 被唤醒，App 中的代码会执行一些操作，比如创建和调整视图层级、设置 UIView 的 frame、修改 CALayer 的透明度、为视图添加一个动画；这些操作最终都会被 CALayer 标记，并通过 CATransaction 提交到一个中间状态去。当上面所有操作结束后，RunLoop 即将进入休眠（或者退出）时，关注该事件的 Observer 都会得到通知。这时 Core Animation 注册的那个 Observer 就会在回调中，把所有的中间状态合并提交到 GPU 去显示；如果此处有动画，通过 DisplayLink 稳定的刷新机制会不断的唤醒runloop，使得不断的有机会触发observer回调，从而根据时间来不断更新这个动画的属性值并绘制出来。</p>
+
+<blockquote><p>为了不阻塞主线程，Core Animation 的核心是 OpenGL ES 的一个抽象物，所以大部分的渲染是直接提交给GPU来处理。 而Core Graphics/Quartz 2D的大部分绘制操作都是在主线程和CPU上同步完成的，比如自定义UIView的drawRect里用CGContext来画图。</p></blockquote>
+
+<h5>渲染时机</h5>
+
+<p>上面已经提到过：Core Animation 在 RunLoop 中注册了一个 Observer 监听 BeforeWaiting(即将进入休眠) 和 Exit (即将退出Loop) 事件 。当在操作 UI 时，比如改变了 Frame、更新了 UIView/CALayer 的层次时，或者手动调用了 UIView/CALayer 的 setNeedsLayout/setNeedsDisplay方法后，这个 UIView/CALayer 就被标记为待处理，并被提交到一个全局的容器去。当Oberver监听的事件到来时，回调执行函数中会遍历所有待处理的UIView/CAlayer 以执行实际的绘制和调整，并更新 UI 界面。</p>
+
+<p>这个函数内部的调用栈大概是这样的：</p>
+
+<pre><code>_ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
+    QuartzCore:CA::Transaction::observer_callback:
+        CA::Transaction::commit();
+            CA::Context::commit_transaction();
+                CA::Layer::layout_and_display_if_needed();
+                    CA::Layer::layout_if_needed();
+                          [CALayer layoutSublayers];
+                          [UIView layoutSubviews];
+                    CA::Layer::display_if_needed();
+                          [CALayer display];
+                          [UIView drawRect];
+</code></pre>
+
+<h5>CPU 和 GPU渲染</h5>
+
+<p>OpenGL中，GPU屏幕渲染有以下两种方式：</p>
+
+<ul>
+<li>On-Screen Rendering</li>
+</ul>
+
+
+<p>意为当前屏幕渲染，指的是GPU的渲染操作是在当前用于显示的屏幕缓冲区中进行。</p>
+
+<ul>
+<li>Off-Screen Rendering</li>
+</ul>
+
+
+<p>意为离屏渲染，指的是GPU在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作。</p>
+
+<blockquote><p>按照这样的说法，如果将不在GPU的当前屏幕缓冲区中进行的渲染都称为离屏渲染，那么就还有另一种特殊的“离屏渲染”方式：CPU渲染。如果我们重写了drawRect方法，并且使用任何Core Graphics的技术进行了绘制操作，就涉及到了CPU渲染。整个渲染过程由CPU在App内同步地完成，渲染得到的bitmap最后再交由GPU用于显示。</p></blockquote>
+
+<p>相比于当前屏幕渲染，离屏渲染的代价是很高的，主要体现在两个方面：</p>
+
+<pre><code>创建新缓冲区 
+要想进行离屏渲染，首先要创建一个新的缓冲区。
+上下文切换 
+</code></pre>
+
+<p>离屏渲染的整个过程，需要多次切换上下文环境：</p>
+
+<ul>
+<li>先是从当前屏幕（On-Screen）切换到离屏（Off-Screen）</li>
+<li>等到离屏渲染结束以后，将离屏缓冲区的渲染结果显示到屏幕上有需要将上下文环境从离屏切换到当前屏幕</li>
+<li><p>而上下文环境的切换是要付出很大代价的。</p></li>
+<li><p>设置了以下属性时，都会触发离屏绘制：</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>shouldRasterize（光栅化）
+masks（遮罩）
+shadows（阴影）
+edge antialiasing（抗锯齿）
+group opacity（不透明） 
+</code></pre>
+
+<blockquote><p>需要注意的是，如果shouldRasterize被设置成YES，在触发离屏绘制的同时，会将光栅化后的内容缓存起来，如果对应的layer及其sublayers没有发生改变，在下一帧的时候可以直接复用。这将在很大程度上提升渲染性能。</p></blockquote>
+
+<p>而其它属性如果是开启的，就不会有缓存，离屏绘制会在每一帧都发生。
+在开发时需要根据实际情况来选择最优的实现方式，尽量使用On-Screen Rendering。简单的Off-Screen Rendering可以考虑使用Core Graphics让CPU来渲染。</p>
+
+<h5>Core Animation</h5>
+
+<ol>
+<li>隐式动画</li>
+</ol>
+
+
+<p>隐式动画是系统框架自动完成的。Core Animation在每个runloop周期中自动开始一次新的事务，即使你不显式的用[CATransaction begin]开始一次事务，任何在一次runloop循环中属性的改变都会被集中起来，然后做一次0.25秒的动画。</p>
+
+<pre><code>在iOS4中，苹果对UIView添加了一种基于block的动画方法：+animateWithDuration:animations:。 
+</code></pre>
+
+<p>这样写对做一堆的属性动画在语法上会更加简单，但实质上它们都是在做同样的事情。
+CATransaction的+begin和+commit方法在+animateWithDuration:animations:内部自动调用，这样block中所有属性的改变都会被事务所包含。</p>
+
+<p>Core Animation通常对CALayer的所有属性（可动画的属性）做动画，但是UIView是怎么把它关联的图层的这个特性关闭了呢？
+每个UIView对它关联的图层都扮演了一个委托，并且提供了-actionForLayer:forKey的实现方法。当不在一个动画块的实现中，UIView对所有图层行为返回nil，但是在动画block范围之内，它就返回了一个非空值。</p>
+
+<pre><code>@interface ViewController ()
+
+@property (nonatomic, weak) IBOutlet UIView *layerView;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    //test layer action when outside of animation block
+    NSLog(@"Outside: %@", [self.layerView actionForLayer:self.layerView.layer forKey:@"backgroundColor"]);
+    //begin animation block
+    [UIView beginAnimations:nil context:nil];
+    //test layer action when inside of animation block
+    NSLog(@"Inside: %@", [self.layerView actionForLayer:self.layerView.layer forKey:@"backgroundColor"]);
+    //end animation block
+    [UIView commitAnimations];
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>$ LayerTest[21215:c07] Outside: &lt;null&gt;
+$ LayerTest[21215:c07] Inside: &lt;CABasicAnimation: 0x757f090&gt;
+</code></pre>
+
+<ol>
+<li>显式动画</li>
+</ol>
+
+
+<p>Core Animation提供的显式动画类型，既可以直接对退曾属性做动画，也可以覆盖默认的图层行为。</p>
+
+<p>我们经常使用的CABasicAnimation，CAKeyframeAnimation，CATransitionAnimation，CAAnimationGroup等都是显式动画类型，这些CAAnimation类型可以直接提交到CALayer上。</p>
+
+<p>无论是隐式动画还是显式动画，提交到layer后，经过一系列处理，最后都经过上文描述的绘制过程最终被渲染出来。</p>
+
+<h5>Facebook Pop介绍</h5>
+
+<p>在计算机的世界里面，其实并不存在绝对连续的动画，你所看到的屏幕上的动画本质上都是离散的，只是在一秒的时间里面离散的帧多到一定的数量人眼就觉得是连续的了，</p>
+
+<p>在iOS中，最大的帧率是60帧每秒。 iOS提供了Core Animation框架，只需要开发者提供关键帧信息，比如提供某个animatable属性终点的关键帧信息，然后中间的值则通过一定的算法进行插值计算，从而实现补间动画。 Core Aniamtion中进行插值计算所依赖的时间曲线由CAMediaTimingFunction提供。</p>
+
+<blockquote><p>Pop Animation在使用上和Core Animation很相似，都涉及Animation对象以及Animation的载体的概念，不同的是Core Animation的载体只能是CALayer，而Pop Animation可以是任意基于NSObject的对象。当然大多数情况Animation都是界面上显示的可视的效果，所以动画执行的载体一般都直接或者间接是UIView或者CALayer。</p></blockquote>
+
+<p>但是如果你只是想研究Pop Animation的变化曲线，你也完全可以将其应用于一个普通的数据对象。Pop Animation应用于CALayer时，在动画运行的任何时刻，layer和其presentationLayer的相关属性值始终保持一致，而Core Animation做不到。 Pop Animation可以应用任何NSObject的对象，而Core Aniamtion必须是CALayer。</p>
+
+<p>下面这个例子就是自定义Pop readBlock和writeBlock处理自定义的动画属性：</p>
+
+<pre><code>prop = [POPAnimatableProperty propertyWithName:@"com.foo.radio.volume" initializer:^(POPMutableAnimatableProperty *prop) {
+    // read value
+    prop.readBlock = ^(id obj, CGFloat values[]) {
+        values[0] = [obj volume];
+    };
+    // write value
+    prop.writeBlock = ^(id obj, const CGFloat values[]) {
+        [obj setVolume:values[0]];
+    };
+    // dynamics threshold
+    prop.threshold = 0.01;
+}];
+
+POPSpringAnimation *anim = [POPSpringAnimation animation];
+anim.property = prop;
+</code></pre>
+
+<p>Pop实现依赖的核心就是CADisplayLink。</p>
+
+<p>最后附上一篇介绍Facebook Pop如何使用的文章 《Introducing Facebook Pop》</p>
+
+<h5>AsyncDisplay介绍</h5>
+
+<p>阻塞主线程的绘制任务主要是这三大类：</p>
+
+<ul>
+<li><p>Layout计算视图布局文本宽高</p></li>
+<li><p>Rendering文本渲染图片解码图片绘制</p></li>
+<li><p>UIKit对象创建更新释放。</p></li>
+</ul>
+
+
+<p>除了UIKit和CoreAnimation相关操作必须在主线程中进行，其他的都可以挪到后台线程异步执行。</p>
+
+<p>AsyncDisplay通过抽象UIView的关系创建了ASDisplayNode类，ASDisplayNode是线程安全的，它可以在后台线程创建和修改。Node 刚创建时，并不会在内部新建 UIView 和 CALayer，直到第一次在主线程访问 view 或 layer 属性时，它才会在内部生成对应的对象。当它的属性（比如frame/transform）改变后，它并不会立刻同步到其持有的 view 或 layer 去，而是把被改变的属性保存到内部的一个中间变量，稍后在需要时，再通过某个机制一次性设置到内部的 view 或 layer。从而可以实现异步并发操作。</p>
+
+<p>AsyncDisplay实现依赖如同Core Animation在runloop中注册observer事件来触发。
+同样附上一篇介绍AsyncDisplay的好文 《iOS保持界面流畅的技巧和AsyncDisplay介绍》</p>
+
+<hr />
+
+<p>参考文章</p>
+
+<p><a href="https://github.com/ming1016/study/wiki/CFRunLoop">runloop原理</a></p>
+
+<p><a href="http://blog.ibireme.com/2015/05/18/runloop/">深入理解runloop</a></p>
+
+<p><a href="http://objccn.io/issue-2-4/">线程安全类的设计</a></p>
+
+<p><a href="http://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS保持界面流畅的技巧和AsyncDisplay介绍</a></p>
+
+<p><a href="http://foggry.com/blog/2015/05/06/chi-ping-xuan-ran-xue-xi-bi-ji/">离屏渲染</a></p>
+
+<p><a href="https://zsisme.gitbooks.io/ios-/content/index.html">ios核心动画高级技巧</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[UITableView性能优化与卡顿问题]]></title>
+    <link href="http://al1020119.github.io/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/"/>
+    <updated>2015-03-02T00:19:52+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti</id>
+    <content type="html"><![CDATA[<p>引言：</p>
+
+<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
+
+<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
+
+<!--more-->
+
+
+<p>1.最常用的就是cell的重用， 注册重用标识符</p>
+
+<pre><code>如果不重用cell时，每当一个cell显示到屏幕上时，就会重新创建一个新的cell
+如果有很多数据的时候，就会堆积很多cell。如果重用cell，为cell创建一个ID
+每当需要显示cell 的时候，都会先去缓冲池中寻找可循环利用的cell，如果没有再重新创建cell
+设置正确的reuseIdentifer以重用cell
+</code></pre>
+
+<p>2.避免cell的重新布局</p>
+
+<pre><code>cell的布局填充等操作 比较耗时，一般创建时就布局好
+如可以将cell单独放到一个自定义类，初始化时就布局好
+</code></pre>
+
+<p>3.提前计算并缓存cell的属性及内容</p>
+
+<pre><code>在cellForRowAtIndexPath:中尽量做更少的操作。如果需要做一些处理，那么最好做过一次之后，就将结果缓存起来。
+当我们创建cell的数据源方法时，编译器并不是先创建cell 再定cell的高度
+而是先根据内容一次确定每一个cell的高度，高度确定后，再创建要显示的cell，滚动时，每当cell进入凭虚都会计算高度，提前估算高度告诉编译器，编译器知道高度后，紧接着就会创建cell，这时再调用高度的具体计算方法，这样可以方式浪费时间去计算显示以外的cell
+</code></pre>
+
+<p>4.减少cell中控件的数量</p>
+
+<pre><code>尽量使cell得布局大致相同，不同风格的cell可以使用不用的重用标识符，初始化时添加控件，
+不适用的可以先隐藏
+</code></pre>
+
+<p>5.不要使用ClearColor，无背景色，透明度也不要设置为0</p>
+
+<pre><code>渲染耗时比较长
+尽量将view设置为不透明，包括cell本身。
+</code></pre>
+
+<p>6.使用局部更新</p>
+
+<pre><code>如果只是更新某组的话，使用reloadSection进行局部更新
+</code></pre>
+
+<p>7.加载网络数据，下载图片，使用异步加载，并缓存</p>
+
+<pre><code>如果cell显示的内容来此网络，那么确保这些内容是通过异步来获取的
+</code></pre>
+
+<p>8.少使用addView 给cell动态添加view</p>
+
+<p>9.按需加载cell，cell滚动很快时，只加载范围内的cell</p>
+
+<pre><code>注意正确使用懒加载
+</code></pre>
+
+<p>10.不要实现无用的代理方法，tableView只遵守两个协议</p>
+
+<pre><code>非必要的代理或者数据源方法可以省略，比如numberofsention
+</code></pre>
+
+<p>11.缓存行高：</p>
+
+<pre><code>如果row的高度不相同，那么将其缓存下来
+estimatedHeightForRow不能和HeightForRow里面的layoutIfNeed同时存在，这两者同时存在才会出现“窜动”的bug。所以我的建议是：只要是固定行高就写预估行高来减少行高调用次数提升性能。如果是动态行高就不要写预估方法了，用一个行高的缓存字典来减少代码的调用次数即可
+</code></pre>
+
+<p>12.避免渐变，图像缩放以及离屏绘制</p>
+
+<p>13.使用shadowPath来设置阴影。</p>
+
+<p>14.使用适当的数据结构来保存需要的信息。不同的结构会带来不同的操作代价。</p>
+
+<p>15.使用rowHeight, sectionFooterHeight 和 sectionHeaderHeight 来设置一个恒定 高度，而不要从delegate中获取。</p>
+
+<p>16.使用富文本标签代价是很昂贵的</p>
+
+<p>费尽周折用富文本标签，代价太昂贵了。尽可能地避免使用这个。问问你自己是否真的需要这个。如果是的话，尽可能的做缓存。</p>
+
+<hr />
+
+<p>参考：相关性能优化问题</p>
+
+<p><a href="http://www.cocoachina.com/ios/20150408/11501.html">iOS应用性能调优的25个建议和技巧</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[消除警告]]></title>
+    <link href="http://al1020119.github.io/blog/2014/12/02/xiao-chu-jing-gao/"/>
+    <updated>2014-12-02T02:51:46+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/12/02/xiao-chu-jing-gao</id>
+    <content type="html"><![CDATA[<h6>前言：</h6>
+
+<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
+
+<p>本文分为三个部分：</p>
+
+<ul>
+<li>1.简单粗暴的消除警告。</li>
+<li>2.详细科学的消除警告。（包括警告收录）</li>
+<li>3.添加警告。</li>
+</ul>
+
+
+<!--more-->
+
+
+<h4>一、简单粗暴的消除警告</h4>
+
+<p>警告如果是自己项目中的还好直接改了，如果是第三方库，你改了之后，pod下作者更新一下又白改了，所以可以用这种简单粗暴的方法：直接让第三方库的警告不显示</p>
+
+<p> 就是在podfile文件里面加上一行指令 。
+inhibit_all_warnings!
+如果某警告实在无法消除，但是又不想让他显示，可以加入预编译指令</p>
+
+<p>比如我已经知道某行会报上面警告了，我就用这个宏把这几行包住，就不会报引号中-Wunused-variable的警告了</p>
+
+<pre><code>#pragma clang diagnostic push
+#pragma clang diagnostic ignored"-Wunused-variable" //这里是会报警告的代码
+
+#pragma clang diagnostic pop
+</code></pre>
+
+<p>这个-Wunused-variable代表的意思就是 有的东西 你实例化了但是没有使用（同上面第几条）。 但是如何得到一个警告的标示符？</p>
+
+<ol>
+<li><p>如图选择一个警告，点击右键，reveal in log  就能看到右边有个方括号[]里面的东西就是 这个警告对应的标示符</p></li>
+<li><p>如果希望整个项目中都忽略 某种很无聊的警告，就在项目中Build Setting里加上这个标示符，可以连着加的。</p></li>
+<li><p>如果不想整个项目都忽略，只想个别文件忽略，那就找到个别文件加上此指令，这个操作应该使用率不高（一般都是全项目忽略），就不上图了。去Build Phases 里面的 Compile Sources里面改。</p></li>
+</ol>
+
+
+<h4>二、详细科学的消除警告</h4>
+
+<p>其实笔者本意是想把一些第一眼看不懂比较坑的警告收录进来，但是后来发现那基本没几个需要些写了，所以就采用了全收录的方法，遇到的就记录下以后也会不断更新。 可以直接按command+F 在本页面搜索警告</p>
+
+<pre><code>Unused variable 'replyURL'
+</code></pre>
+
+<h6>1.没有使用</h6>
+
+<pre><code>Cannot find protocol definition for 'TencentSessionDelegate'
+</code></pre>
+
+<h6>2.这种明明都能运行还说我没有定义的警告，是因为你这个协议虽然定义了，但是你这个协议可能还遵守了XX协议，然后这个XX协议没有定义导致会报这种警告，所以遇到这种警告要往“父协议”找。 举个栗子，上面这行就是腾讯授权的库里面报的警告，</h6>
+
+<pre><code>@protocol TencentSessionDelegate
+此协议遵守了TencentApiInterfaceDelegate协议，在TencentOAuth.h类中#import "TencentApiInterface.h" 警告可破
+
+
+Null passed to a callee that requires a non-null argument
+</code></pre>
+
+<h6>3.这个警告比较新，是xcode6.3开始 为了让OC也能有swift的？和！的功能，你在声明一个属性的时候加上 <strong>nullable（？可以为空）与</strong>nonnull（！不能为空） 如果放在@property里面的话不用写下划线</h6>
+
+<pre><code>@property (nonatomic, copy, nonnull) NSString * tickets;
+@property (nonatomic, copy) NSString * __nonnull tickets;
+</code></pre>
+
+<p>或者用宏NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END 包住多个属性全部具备nonnull，然后仅对需要nullable的改下就行，有点类似于f-no-objc-arc那种先整体给个路线在单独改个别文件的思想。 此警告就是某属性说好的不能为空，你又在某地方写了XX = nil 所以冲突了。</p>
+
+<pre><code>Auto property synthesis will not synthesize property 'privateCacheDirectory'; it will be implemented by its superclass, use @dynamic to acknowledge intention
+</code></pre>
+
+<h6>4.他说你的父类实现了setget方法，但是如果你什么都不写，就会系统自动生成出最一般的setget方法，请用@dynamic 来承认父类实现的这个getset方法。</h6>
+
+<pre><code>Unsupported Configuration: Scene is unreachable due to lack of entry points and does not have an identifier for runtime access via -instantiateViewControllerWithIdentifier:.
+</code></pre>
+
+<h6>5.一般是storyboard报的警告，简而言之就是你有的页面没有和箭头所指的控制器连起来，导致最终改页面可能无法显示。</h6>
+
+<pre><code>Deprecated: Push segues are deprecated in iOS 8.0 and later
+</code></pre>
+
+<h6>6.iOS8之后呢，不要再用push拖线了，统一用show，他会自己根据你是否有导航栏来判断走push还是走modal</h6>
+
+<pre><code>Unsupported Configuration: Plain Style unsupported in a Navigation Item
+</code></pre>
+
+<h6>7.导航栏的item 不支持用plain ，那就用Bordered呗。</h6>
+
+<pre><code>The launch image set "LaunchImage" has 2 unassigned images.
+The app icon set "AppIcon" has 2 unassigned images.
+</code></pre>
+
+<h6>8.几张图标还是启动图找不到自己的位置，可能是一次导入了全部尺寸图片，但是右边的设置只勾了iOS8的 那iOS7尺寸的图标就会报此警告。删掉，或者对照右边匹配。</h6>
+
+<pre><code>'sizeWithFont:constrainedToSize:lineBreakMode:' is deprecated: first deprecated in iOS 7.0 - Use -boundingRectWithSize:options:attributes:context:
+</code></pre>
+
+<h6>9.方法废除，旧的方法sizeWithFontToSize在iOS7后就废除了取而代之是boundingRectWithSize方法</h6>
+
+<pre><code>Undeclared selector 'historyAction'
+</code></pre>
+
+<h6>10.使用未声明的方法，一般出现在@selector() 括号里写了个不存在的方法或方法名写错了。</h6>
+
+<pre><code>PerformSelector may cause a leak because its selector is unknown
+</code></pre>
+
+<h6>11.这个和上面类似就是直接把上面那个@SEL拿来用会报这个警告</h6>
+
+<pre><code>'strongify' macro redefined
+</code></pre>
+
+<h6>12.这个宏声明重复,删一个吧</h6>
+
+<pre><code>'UITextAttributeFont' is deprecated: first deprecated in iOS 7.0 - Use NSFontAttributeName
+'UITextAttributeTextColor' is deprecated: first deprecated in iOS 7.0 - Use NSForegroundColorAttributeName
+'UITextAttributeTextShadowColor' is deprecated: first deprecated in iOS 7.0 - Use NSShadowAttributeName with an NSShadow instance as the value
+</code></pre>
+
+<h6>13.方法废除,一般一起出现</h6>
+
+<pre><code>Code will never be executed
+</code></pre>
+
+<h6>14.他说这代码永远也轮不到他执行，估计是有几行代码写在了return之后</h6>
+
+<pre><code>Assigning to 'id' from incompatible type 'SXTabViewController *const __strong'
+</code></pre>
+
+<h6>15.一般出现在xxx.delegate = self ，应该在上面遵守协议</h6>
+
+<pre><code>Format specifies type 'unsigned long' but the argument has type 'unsigned int'
+</code></pre>
+
+<h6>16.这个警告一般会出现在NSStringWithFormat里面 前面%d %lu 什么的和后面填进去的参数不匹配就报了警告</h6>
+
+<pre><code>Values of type 'NSInteger' should not be used as format arguments; add an explicit cast to 'long' instead
+</code></pre>
+
+<h6>17.类似于上面，也是format里面前后写的不匹配</h6>
+
+<pre><code>Method 'dealWithURL:andTitle:andKeyword:' in protocol 'SXPostAdDelegate' not implemented
+</code></pre>
+
+<h6>18.经典警告，遵守了协议，但是没有实现协议方法。 也可能你实现了只是又加了个参数或是你写的方法和协议方法名字有点轻微不同</h6>
+
+<pre><code>Using integer absolute value function 'abs' when argument is of floating point type
+</code></pre>
+
+<h6>19.这个可以自动修正，就是说abs适用于整数绝对值，要是float取绝对值要用fabsf</h6>
+
+<pre><code>Attribute Unavailable: Automatic Preferred Max Layout Width is not available on iOS versions prior to 8.0
+</code></pre>
+
+<h6>20.有的方法你用的太落后了，也有的方法你用的太超前了。 说这个最大宽度在iOS8之前的系统是要坑的</h6>
+
+<pre><code>Too many personality routines for compact unwind to encode
+</code></pre>
+
+<h6>21.你可以在otherlink 中加入 -Wl,-no_compact_unwind 去掉该警告，根据苹果的解释，这个是由于某些地方 c/c++/oc/oc++混用会造成编译警告。一般没有什么伤害。</h6>
+
+<pre><code>Property 'ssid' requires method 'ssid' to be defined - use @synthesize, @dynamic or provide a method implementation in this class implementation
+</code></pre>
+
+<h6>22.说这个ssid必须要定义个这个属性的getter方法，如果警告是setSsid就是setter方法， 用@synthesize和@dynamic 都行，一个是让编译器生成getter和setter，一个是自己生成，如果你有模型分发或kvc之类的，选@dynamic就行</h6>
+
+<pre><code>Unknown escape sequence '\)'
+</code></pre>
+
+<h6>23.未知的转义序列。 一般有个斜杠再加个东西他都会以为是转义字符，一看\）不认识就报警告了，一般正则表达式容易报这种警告</h6>
+
+<pre><code>Property 'LoginPort' not found on object of type 'LoginLvsTestTask *'; did you mean to access property loginPort?
+</code></pre>
+
+<h6>24.这种可以点击自动修复，是典型的大小写写错了，他提醒了一下。</h6>
+
+<pre><code>Variable 'type' is used uninitialized whenever switch default is taken
+</code></pre>
+
+<h6>25.这是出现在switch语句中的警告， 一般可能是switch外面定义了个type但是并没有初始化（初始化操作都写在switch的各个分支里），然后在最后return type。 但是switch的有个分支没有对type初始化，他说如果你来到这个分支的话，那还没初始化就要被return。</h6>
+
+<h5>三、添加警告</h5>
+
+<h6>1.首先最常用的就是 普通警告，这也没什么好说的了</h6>
+
+<pre><code>#warning TODO
+</code></pre>
+
+<h6>2.如果是自己写的文件或第三方库，有了新的接口，然后提示旧的接口废除的话需要在方法后加上宏NS_DEPRECATED_IOS和范围</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target NS_DEPRECATED_IOS(2_0, 4_0);
+</code></pre>
+
+<h6>3.如果需要在此方法后加上带信息的警告则需要这么写</h6>
+
+<pre><code>- (void)addTapAction:(SEL)tapAction target:(id)target __attribute((deprecated("这个接口会爆内存 不建议使用")));
+</code></pre>
+
+<p>显示的效果像这样：</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片加载优化深究]]></title>
+    <link href="http://al1020119.github.io/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/"/>
+    <updated>2014-10-05T14:56:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu</id>
+    <content type="html"><![CDATA[<h3>1. 网络图片显示大体步骤:</h3>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
+</ul>
+
+
+<!--more-->
+
+
+<h3>2. 一些优化思路：</h3>
+
+<ul>
+<li>异步下载图片</li>
+<li>image解压缩放到子线程</li>
+<li>使用缓存 (包括内存级别和磁盘级别)</li>
+<li>存储解压缩后的图片，避免下次从磁盘加载的时候再次解压缩</li>
+<li>减少内存级别的拷贝 （针对第5点和第7点）</li>
+<li>良好的接口（比如SDWebImage使用category）</li>
+<li>Core Data vs 文件存储</li>
+<li>图片预下载</li>
+</ul>
+
+
+<h6>2.1 关于异步图片下载:</h6>
+
+<p>fastImageCache主要针对于从磁盘文件读取并展示图片的极端优化，所以并没有集成异步图片下载的功能。这里主要来看看SDWebImage(AFNetWorking的基本类似)的实现方案：</p>
+
+<p>tableView中，异步图片下载任务的管理:</p>
+
+<p>我们知道，tableViewCell是有重用机制的，也就是说，内存中只有当前可见的cell数目的实例，滑动的时候，新显示cell会重用被滑出的cell对象。这样就存在一个问题：</p>
+
+<p>一般情况下在我们会在cellForRow方法里面设置cell的图片数据源，也就是说如果一个cell的imageview对象开启了一个下载任务，这个时候该cell对象发生了重用，新的image数据源会开启另外的一个下载任务，由于他们关联的imageview对象实际上是同一个cell实例的imageview对象，就会发生2个下载任务回调给同一个imageview对象。这个时候就有必要做一些处理，避免回调发生时，错误的image数据源刷新了UI。</p>
+
+<blockquote><p>SDWebImage提供的UIImageView扩展的解决方案：</p></blockquote>
+
+<p>imageView对象会关联一个下载列表（列表是给AnimationImages用的，这个时候会下载多张图片），当tableview滑动，imageView重设数据源（url）时，会cancel掉下载列表中所有的任务，然后开启一个新的下载任务。这样子就保证了只有当前可见的cell对象的imageView对象关联的下载任务能够回调，不会发生image错乱。</p>
+
+<p>同时，SDWebImage管理了一个全局下载队列（在DownloadManager中）,并发量设置为6.也就是说如果可见cell的数目是大于6的，就会有部分下载队列处于等待状态。而且，在添加下载任务到全局的下载队列中去的时候，SDWebImage默认是采取LIFO策略的，具体是在添加下载任务的时候，将上次添加的下载任务添加依赖为新添加的下载任务。</p>
+
+<pre><code>    [wself.downloadQueue addOperation:operation];
+    if (wself.executionOrder == SDWebImageDownloaderLIFOExecutionOrder) {
+        // Emulate LIFO execution order by systematically adding new operations as last operation's dependency
+        [wself.lastAddedOperation addDependency:operation];
+        wself.lastAddedOperation = operation;
+    }
+</code></pre>
+
+<p>另外一种解决方案是：</p>
+
+<p>imageView对象和图片的url相关联，在滑动时，不取消旧的下载任务，而是在下载任务完成回调时，进行url匹配，只有匹配成功的image会刷新imageView对象，而其他的image则只做缓存操作，而不刷新UI。</p>
+
+<p>同时，仍然管理一个执行队列，为了避免占用太多的资源，通常会对执行队列设置一个最大的并发量。此外，为了保证LIFO的下载策略，可以自己维持一个等待队列，每次下载任务开始的时候，将后进入的下载任务插入到等待队列的前面。</p>
+
+<h6>iOS异步任务一般有3种实现方式:</h6>
+
+<ul>
+<li>NSOperationQueue</li>
+<li>GCD</li>
+<li>NSThread</li>
+</ul>
+
+
+<p>这几种方式就不细说了，SDWebImage是通过自定义NSOperation来抽象下载任务的，并结合了GCD来做一些主线程与子线程的切换。具体异步下载的实现，AFNetworking与SDWebImage都是十分优秀的代码，有兴趣的可以深入看看源码。</p>
+
+<h6>2.2 关于图片解压缩:</h6>
+
+<blockquote><p>通用的解压缩方案
+主体的思路是在子线程，将原始的图片渲染成一张的新的可以字节显示的图片，来获取一个解压缩过的图片。
+基本上比较流行的一些开源库都先后支持了在异步线程完成图片的解压缩，并对解压缩过后的图片进行缓存。</p></blockquote>
+
+<p>这么做的优点是在setImage的时候系统省去了上面的第6步，缺点就是图片占用的空间变大。
+比如1张50<em>50像素的图片，在retina的屏幕下所占用的空间为100</em>100*4 ~ 40KB</p>
+
+<p>下面的代码是SDWebImage的解决方案:</p>
+
+<pre><code>+ (UIImage *)decodedImageWithImage:(UIImage *)image {
+    if (image.images) {
+        // Do not decode animated images
+        return image;
+    }
+
+    CGImageRef imageRef = image.CGImage;
+    CGSize imageSize = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
+    CGRect imageRect = (CGRect){.origin = CGPointZero, .size = imageSize};
+
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
+
+    int infoMask = (bitmapInfo &amp; kCGBitmapAlphaInfoMask);
+    BOOL anyNonAlpha = (infoMask == kCGImageAlphaNone ||
+            infoMask == kCGImageAlphaNoneSkipFirst ||
+            infoMask == kCGImageAlphaNoneSkipLast);
+
+    // CGBitmapContextCreate doesn't support kCGImageAlphaNone with RGB.
+    // https://developer.apple.com/library/mac/#qa/qa1037/_index.html
+    if (infoMask == kCGImageAlphaNone &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) &gt; 1) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+
+        // Set noneSkipFirst.
+        bitmapInfo |= kCGImageAlphaNoneSkipFirst;
+    }
+            // Some PNGs tell us they have alpha but only 3 components. Odd.
+    else if (!anyNonAlpha &amp;&amp; CGColorSpaceGetNumberOfComponents(colorSpace) == 3) {
+        // Unset the old alpha info.
+        bitmapInfo &amp;= ~kCGBitmapAlphaInfoMask;
+        bitmapInfo |= kCGImageAlphaPremultipliedFirst;
+    }
+
+    // It calculates the bytes-per-row based on the bitsPerComponent and width arguments.
+    CGContextRef context = CGBitmapContextCreate(NULL,
+            imageSize.width,
+            imageSize.height,
+            CGImageGetBitsPerComponent(imageRef),
+            0,
+            colorSpace,
+            bitmapInfo);
+    CGColorSpaceRelease(colorSpace);
+
+    // If failed, return undecompressed image
+    if (!context) return image;
+
+    CGContextDrawImage(context, imageRect, imageRef);
+    CGImageRef decompressedImageRef = CGBitmapContextCreateImage(context);
+
+    CGContextRelease(context);
+
+    UIImage *decompressedImage = [UIImage imageWithCGImage:decompressedImageRef scale:image.scale orientation:image.imageOrientation];
+    CGImageRelease(decompressedImageRef);
+    return decompressedImage;
+}
+</code></pre>
+
+<h6>2.3 关于字节对齐</h6>
+
+<p>SDWebImage与AFNetworking都没有对第7点做优化，FastImageCache相对与其他的开源库，则对第5点与第7点做了优化。这里我们谈谈第七点，关于图片数据的字节对齐。</p>
+
+<blockquote><p>Core Animation在某些情况下渲染前会先拷贝一份图像数据，通常是在图像数据非字节对齐的情况下会进行拷贝处理，官方文档没有对这次拷贝行为作说明，模拟器和Instrument里有高亮显示“copied images”的功能，但似乎它有bug，即使某张图片没有被高亮显示出渲染时被copy，从调用堆栈上也还是能看到调用了CA::Render::copy_image方法：</p>
+
+<p>那什么是字节对齐呢，按我的理解，为了性能，底层渲染图像时不是一个像素一个像素渲染，而是一块一块渲染，数据是一块块地取，就可能遇到这一块连续的内存数据里结尾的数据不是图像的内容，是内存里其他的数据，可能越界读取导致一些奇怪的东西混入，所以在渲染之前CoreAnimation要把数据拷贝一份进行处理，确保每一块都是图像数据，对于不足一块的数据置空。大致图示：(pixel是图像像素数据，data是内存里其他数据)</p></blockquote>
+
+<hr />
+
+<blockquote><p>块的大小应该是跟CPU cache line有关，ARMv7是32byte，A9是64byte，在A9下CoreAnimation应该是按64byte作为一块数据去读取和渲染，让图像数据对齐64byte就可以避免CoreAnimation再拷贝一份数据进行修补。FastImageCache做的字节对齐就是这个事情。</p></blockquote>
+
+<hr />
+
+<p><img src="/images/tupianyouhua001.png" title="Caption" ></p>
+
+<p>从代码上来看，主要是在创建上图解码的过程中，CGBitmapContextCreate函数的bytesPerRow参数必须传64的倍数。</p>
+
+<p>比较各个开源框架的代码，可以看到SDWebImage与AFNetworking的该参数都传的是0，即让系统自动来计算该值（那为何系统自动计算的时候不让图片数据字节就字节对齐呢？）。</p>
+
+<h6>2.4 关于第3，4点，内存级别拷贝</h6>
+
+<p>以上3个开源库中，FastImageCache对这一点做了很大的优化，其他的2个开源库则未关注这一点。这一块木有深入研究，就引用一下FastImageCache团队对该点的一些说明。有能力的可以去看看原文章(英文):here。</p>
+
+<blockquote><p>内存映射
+平常我们读取磁盘上的一个文件，上层API调用到最后会使用系统方法read()读取数据，内核把磁盘数据读入内核缓冲区，用户再从内核缓冲区读取数据复制到用户内存空间，这里有一次内存拷贝的时间消耗，并且读取后整个文件数据就已经存在于用户内存中，占用了进程的内存空间。
+FastImageCache采用了另一种读写文件的方法，就是用mmap把文件映射到用户空间里的虚拟内存，文件中的位置在虚拟内存中有了对应的地址，可以像操作内存一样操作这个文件，相当于已经把整个文件放入内存，但在真正使用到这些数据前却不会消耗物理内存，也不会有读写磁盘的操作，只有真正使用这些数据时，也就是图像准备渲染在屏幕上时，虚拟内存管理系统VMS才根据缺页加载的机制从磁盘加载对应的数据块到物理内存，再进行渲染。这样的文件读写文件方式少了数据从内核缓存到用户空间的拷贝，效率很高。</p></blockquote>
+
+<h6>2.5 关于第二步图片处理（裁剪，边框等）</h6>
+
+<p>一般情况下，对于下载下来的图片我们可能想要做一些处理，比如说做一些缩放，裁剪，或者添加圆角等等。</p>
+
+<p>对于比较通用的缩放，或者圆角等功能，可以集成到控件本身。不过，提供一个接口出来，让使用者能够有机会对下载下来的图片做一些其他的特殊处理是有必要的。</p>
+
+<pre><code>/** SDWebImage
+ * Allows to transform the image immediately after it has been downloaded and just before to cache it on disk and memory.
+ * NOTE: This method is called from a global queue in order to not to block the main thread.
+ *
+ * @param imageManager The current `SDWebImageManager`
+ * @param image        The image to transform
+ * @param imageURL     The url of the image to transform
+ *
+ * @return The transformed image object.
+ */
+- (UIImage *)imageManager:(SDWebImageManager *)imageManager transformDownloadedImage:(UIImage *)image withURL:(NSURL *)imageURL;
+</code></pre>
+
+<h6>2.6 其他（诸如图片预下载，gif支持等等,下载进度条）</h6>
+
+<p>待补充</p>
+
+<h3>3. 常用的开源库对比</h3>
+
+<table>
+<thead>
+<tr>
+<th>tip    </th>
+<th style="text-align:center;">SDWebImage </th>
+<th style="text-align:right;">AFNetworking   </th>
+<th>FastImageCache</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>异步下载图片</td>
+<td style="text-align:center;">    YES</td>
+<td style="text-align:right;">    YES</td>
+<td>    NO</td>
+</tr>
+<tr>
+<td>子线程解压缩</td>
+<td style="text-align:center;">    YES </td>
+<td style="text-align:right;">YES    </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>子线程图片处理(缩放，圆角等)  </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>存储解压缩后的位图    </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>内存级别缓存 </td>
+<td style="text-align:center;">YES</td>
+<td style="text-align:right;">   YES </td>
+<td>YES</td>
+</tr>
+<tr>
+<td>磁盘级别缓存 </td>
+<td style="text-align:center;">YES    </td>
+<td style="text-align:right;">YES</td>
+<td>   YES</td>
+</tr>
+<tr>
+<td>UIImageView category</td>
+<td style="text-align:center;">  YES </td>
+<td style="text-align:right;">NO </td>
+<td>NO</td>
+</tr>
+<tr>
+<td>减少内存级别的拷贝    </td>
+<td style="text-align:center;">NO </td>
+<td style="text-align:right;">NO</td>
+<td>    YES</td>
+</tr>
+<tr>
+<td>接口易用性    </td>
+<td style="text-align:center;">***</td>
+<td style="text-align:right;">   *** </td>
+<td>*</td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
+  
+</feed>

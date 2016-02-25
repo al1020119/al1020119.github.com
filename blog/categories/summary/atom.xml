@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Summary | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/summary/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[温馨提示]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/24/iCocos/"/>
+    <updated>2016-01-24T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/24/iCocos</id>
+    <content type="html"><![CDATA[<p>引言：</p>
+
+<ul>
+<li>由于过年和公司的原因，近期不会有新的文章推出。</li>
+</ul>
+
+
+<p>而且笔者最近也研究《ios逆向工程第二版》</p>
+
+<p><img src="/images/psbnixiangbook.jpg" title="Caption" ></p>
+
+<h6>所以后期会推出一系列ios逆向相关技术，会根据自己的学习与研究结合《沙梓社/吴航/刘瑾》，念茜等大牛的大作，整理一套相关文章，敬请期待！</h6>
+
+<ul>
+<li><p>文章的大致目录如下（可能会有变动，但是不会很大，结合上面的书进行整理）：</p>
+
+<ul>
+<li><p>1.逆向工程前奏篇－方法与工具介绍</p></li>
+<li><p>2.逆向工程前奏篇－安装包格式总结</p></li>
+<li><p>3.逆向工程准备篇－逆向技术分析</p></li>
+<li><p>4.逆向工程准备篇－常见越狱方法</p></li>
+<li><p>5.逆向工程准备篇－环境简单介绍</p></li>
+<li><p>6.逆向工程实战篇－检测是否越狱</p></li>
+<li><p>7.逆向工程作用篇－反编译和防反编译</p></li>
+<li><p>8.逆向工程初步篇－静态分析及使用</p></li>
+<li><p>9.逆向工程应用篇－资源文件获取</p></li>
+<li><p>10.逆向工程应用篇－简单App实战</p></li>
+<li><p>11.逆向工程总结篇－使用Tweak工程</p></li>
+<li><p>13.逆向工程实战篇－私有API</p></li>
+<li><p>14.逆向工程实战篇－游戏反编译</p></li>
+<li><p>15.逆向工程实战篇－非6S实现3DTouch</p></li>
+<li><p>16.逆向工程总结篇－逆向支付宝</p></li>
+<li><p>17.逆向工程总结篇－驱动开发</p></li>
+<li><p>18.逆向工程总结篇－微信机器人</p></li>
+<li><p>19.逆向工程总结篇－iOS逆向总结</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>最后，听说最近到处都开始下雪了，我的老家（江西-修水），也是白茫茫的一篇，就连广州也带来的百年以来的的第一场雪，广东都能下雪，你觉得还有什么不可能发生呢？</p>
+
+<p>我相信只要你有耐心，有梦想，成功只是时间的问题！</p>
+
+<p>希望各位都注意保暖，多多关爱家人，身体是革命的本钱（这句话，程序🐶最懂了）。</p>
+
+<p>如果你喜欢我的文章，或者有任何问题可以直接联系我<a href="http://al1020119.github.io/icocos/">iCocos</a></p>
+
+<p>相关技术请参照：</p>
+
+<ul>
+<li><p><a href="http://www.kanxue.com/">http://www.kanxue.com/</a></p></li>
+<li><p><a href="http://iosre.com/">http://iosre.com/</a></p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cookie是撒(&session）]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/22/cookie-session/"/>
+    <updated>2016-01-22T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/22/cookie-session</id>
+    <content type="html"><![CDATA[<p>引言：</p>
+
+<ol>
+<li><p>简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。</p></li>
+<li><p>多个应用间默认是不共亨cookie的</p></li>
+<li><p>删除重装应用cookie会被清除</p></li>
+</ol>
+
+
+<h4>一. Cookie介绍</h4>
+
+<p>Cookie是在客户端存储服务器状态的一种机制,Web服务器可以通过Set-Cookie或者Set-Cookie2 HTTP头部设置Cookie。</p>
+
+<p>Cookie可以分为两类</p>
+
+<ul>
+<li>会话Cookie</li>
+<li>持久Cookie</li>
+</ul>
+
+
+<p>会话Cookie是临时Cookie,当前会话结束(浏览器退出)时Cookie会被删除。</p>
+
+<p>持久Cookie会存储在用户的硬盘上,浏览器退出，然后重新启动后Cookie仍然存在。会话Cookie和持久Cookie的区别在于过期时间，如果设置了Discard参数(Cookie 版本1)或者没有设置Expires(Cookie版本0)或Max-Age(Cookie版本1)设置过期时间，则此Cookie为会话Cookie</p>
+
+<p>Cookie有两个版本,一个是版本0(Netscape Cookies)和版本1(RFC 2965),目前大多数服务器使用的Cookie 0。</p>
+
+<h4>二. NSHTTPCookie</h4>
+
+<!--more-->
+
+
+<p>在iOS中使用NSHTTPCookie类封装一条cookie,通过NSHTTPCookie的方法读取到cookie的通用属性。</p>
+
+<pre><code>- (NSUInteger)version;
+- (NSString *)name;
+- (NSString *)value;
+- (NSString *)domain;
+- (NSString *)path;
+- (BOOL)isSessionOnly;
+</code></pre>
+
+<p>等</p>
+
+<p>可以通过手工赋值的方式创建Cookie,如</p>
+
+<pre><code>+ (id)cookieWithProperties:(NSDictionary *)properties;
+- (id)initWithProperties:(NSDictionary *)properties;
+</code></pre>
+
+<p>也可以从Cookie中读取到所有属性。</p>
+
+<pre><code>- (NSDictionary *)properties;
+</code></pre>
+
+<p>使用NSHTTPCookie的类方法可以将NSHTTPCookie实例与HTTP cookie header相互转换.
+根据NSHTTPCookie实例数组生成对应的HTTP cookie header</p>
+
+<pre><code>+ (NSDictionary *)requestHeaderFieldsWithCookies:(NSArray *)cookies;
+</code></pre>
+
+<p>从headerFileds中读取到Cookie相关内容,生成NSHTTPCookie实例对象数组。</p>
+
+<pre><code>+ (NSArray *)cookiesWithResponseHeaderFields:(NSDictionary *)headerFields forURL:(NSURL *)theURL;
+</code></pre>
+
+<p>该方法会忽略headerFileds中与cookie无关的字段，如果headerFileds中的cookie没有指定domain,则使用theURL的domain,如果没有指定path,则使用”/”.</p>
+
+<p>除非NSURLRequest明确指定不使用cookie(HTTPShouldHandleCookies设为NO),否则URL loading system会自动为NSURLRequest发送合适的存储cookie。从NSURLResponse返回的cookie也会根据当前的cookie访问策略(cookie acceptance policy)接收到系统中。</p>
+
+<h4>三.NSHTTPCookieStorage</h4>
+
+<p>NSHTTPCookieStorage单件类提供了管理所有NSHTTPCookie对象的接口，在OS X里,cookie是在所有程序中共享的，而在iOS中,cookie只当当前应用中有效。</p>
+
+<p>通过sharedHTTPCookieStorage方法可获取到共享的NSHTTPCookieStorage单件对象。</p>
+
+<pre><code>+ (NSHTTPCookieStorage *)sharedHTTPCookieStorage；
+</code></pre>
+
+<p>使用NSHTTPCookieStorage单件对象可获取到当前存储的所有cookie</p>
+
+<pre><code>- (NSArray *)cookies
+</code></pre>
+
+<p>或针对特定URL的cookie</p>
+
+<pre><code>- (NSArray *)cookiesForURL:(NSURL *)theURL;
+</code></pre>
+
+<p>还可以添加/删除Cookie</p>
+
+<pre><code>– deleteCookie:
+– setCookie:
+– setCookies:forURL:mainDocumentURL:
+</code></pre>
+
+<p>通过NSHTTPCookieStorage可读取/修改cookie接收策略,默认为NSHTTPCookieAcceptPolicyAlways.</p>
+
+<pre><code>- (NSHTTPCookieAcceptPolicy)cookieAcceptPolicy；
+- (void)setCookieAcceptPolicy:(NSHTTPCookieAcceptPolicy)aPolicy.
+</code></pre>
+
+<p>一共有三种cookie accept policy,</p>
+
+<pre><code>typedef enum {
+   NSHTTPCookieAcceptPolicyAlways,
+   NSHTTPCookieAcceptPolicyNever,
+   NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain
+} NSHTTPCookieAcceptPolicy;
+
+NSHTTPCookieAcceptPolicyAlways:接收所有cookie,默认策略.
+NSHTTPCookieAcceptPolicyNever: 拒绝所有cookie
+NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain:只接收main document domain中的cookie.
+</code></pre>
+
+<h4>四.相关通知</h4>
+
+<pre><code>NSHTTPCookieManagerCookiesChangedNotification
+</code></pre>
+
+<p>当NSHTTPCookieStorage实例中的cookies变化时发出此通知。</p>
+
+<pre><code>NSHTTPCookieManagerAcceptPolicyChangedNotification
+</code></pre>
+
+<p>当NSHTTPCookieStorage实例的cookie acceptance policy变化时发出此通知。</p>
+
+<h4>五：Cookie的三大常见操作</h4>
+
+<h6>1，获取cookie</h6>
+
+<p>获取cookie只能在请求中获取cookie，否则时获取不到的，url就不给出了，大家用自己的url测试一下就行。
+获取到cookie后把cookie进行归档保存到userDefaults里</p>
+
+<pre><code>#pragma mark 获取并保存cookie到userDefaults
+- (void)getAndSaveCookie
+{
+    NSLog(@"=============获取cookie==============");
+    NSString *urlString = @"";
+
+    //请求一个网址，即可分配到cookie
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [AFJSONResponseSerializer new];
+    [manager GET:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+
+        //获取cookie
+        NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+        for (NSHTTPCookie *tempCookie in cookies) {
+            //打印获得的cookie
+            NSLog(@"getCookie: %@", tempCookie);
+        }
+
+        /*
+         * 把cookie进行归档并转换为NSData类型
+         * 注意：cookie不能直接转换为NSData类型，否则会引起崩溃。
+         * 所以先进行归档处理，再转换为Data
+         */
+        NSData *cookiesData = [NSKeyedArchiver archivedDataWithRootObject: [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]];
+
+        //存储归档后的cookie
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        [userDefaults setObject: cookiesData forKey: @"cookie"];
+        NSLog(@"\n");
+
+        [self deleteCookie];
+
+        [self setCoookie];
+
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+
+        nil;
+    }];
+}
+</code></pre>
+
+<h6>2，删除cookie</h6>
+
+<p>把获取到的cookie删除掉，该步骤可以用在注销或者切换账号里。
+当前，我这里删除cookie是为了检测后面的通过本地存储的数据进行设置cookie是否成功</p>
+
+<pre><code>#pragma mark 删除cookie
+- (void)deleteCookie
+{
+    NSLog(@"============删除cookie===============");
+    NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+
+    //删除cookie
+    for (NSHTTPCookie *tempCookie in cookies) {
+        [cookieStorage deleteCookie:tempCookie];
+    }
+
+    //把cookie打印出来，检测是否已经删除
+    NSArray *cookiesAfterDelete = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+    for (NSHTTPCookie *tempCookie in cookiesAfterDelete) {
+        NSLog(@"cookieAfterDelete: %@", tempCookie);
+    }
+    NSLog(@"\n");
+}
+</code></pre>
+
+<h6>3，通过本地存储的数据设置cookie</h6>
+
+<p>把本地的cookie取出并反归档，设置到cookie中，并且检测cookie是否设置成功</p>
+
+<pre><code>#pragma mark 再取出保存的cookie重新设置cookie
+- (void)setCoookie
+{
+    NSLog(@"============再取出保存的cookie重新设置cookie===============");
+    //取出保存的cookie
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+
+    //对取出的cookie进行反归档处理
+    NSArray *cookies = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:@"cookie"]];
+
+    if (cookies) {
+        NSLog(@"有cookie");
+        //设置cookie
+        NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+        for (id cookie in cookies) {
+            [cookieStorage setCookie:(NSHTTPCookie *)cookie];
+        }
+    }else{
+        NSLog(@"无cookie");
+    }
+
+    //打印cookie，检测是否成功设置了cookie
+    NSArray *cookiesA = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+    for (NSHTTPCookie *cookie in cookiesA) {
+        NSLog(@"setCookie: %@", cookie);
+    }
+    NSLog(@"\n");
+}
+</code></pre>
+
+<p>看一下运行截图</p>
+
+<p><img src="/images/cookie001.png" title="Caption" ></p>
+
+<h4>六：Cookie与Session的却别</h4>
+
+<p>具体来说cookie机制采用的是在客户端保持状态的方案，而session机制采用的是在服务器端保持状态的方案。</p>
+
+<pre><code>cookie数据存放在客户的浏览器上，session数据放在服务器上；
+cookie不是很安全，别人可以分析存放在本地的COOKIE并进行COOKIE欺骗，考虑到安全应当使用session；
+session会在一定时间内保存在服务器上。当访问增多，会比较占用你服务器的性能。考虑到减轻服务器性能方面，应当使用COOKIE；
+单个cookie在客户端的限制是3K，就是说一个站点在客户端存放的COOKIE不能超过3K；
+</code></pre>
+
+<p>Cookie和Session的方案虽然分别属于客户端和服务端，但是服务端的session的实现对客户端的cookie有依赖关系的，上面我讲到服务端执行session机制时候会生成session的id值，这个id值会发送给客户端，客户端每次请求都会把这个id值放到http请求的头部发送给服务端，而这个id值在客户端会保存下来，保存的容器就是cookie，因此当我们完全禁掉浏览器的cookie的时候，服务端的session也会不能正常使用（注意：有些资料说ASP解决这个问题，当浏览器的cookie被禁掉，服务端的session任然可以正常使用，ASP我没试验过，但是对于网络上很多用php和jsp编写的网站，我发现禁掉cookie，网站的session都无法正常的访问）。</p>
+
+<h6>Cookie的优缺点：</h6>
+
+<ul>
+<li><p>优点：极高的扩展性和可用性</p>
+
+<ul>
+<li>通过良好的编程，控制保存在cookie中的session对象的大小。
+通过加密和安全传输技术（SSL），减少cookie被破解的可能性。
+只在cookie中存放不敏感数据，即使被盗也不会有重大损失。
+控制cookie的生命期，使之不会永远有效。偷盗者很可能拿到一个过期的cookie。</li>
+</ul>
+</li>
+<li><p>缺点：</p>
+
+<ul>
+<li>Cookie数量和长度的限制。每个domain最多只能有20条cookie，每个cookie长度不能超过4KB，否则会被截掉。
+安全性问题。如果cookie被人拦截了，那人就可以取得所有的session信息。即使加密也与事无补，因为拦截者并不需要知道cookie的意义，他只要原样转发cookie就可以达到目的了。
+有些状态不可能保存在客户端。例如，为了防止重复提交表单，我们需要在服务器端保存一个计数器。如果我们把这个计数器保存在客户端，那么它起不到任何作用。</li>
+</ul>
+</li>
+</ul>
+
+
+<h6>Session的优缺点：</h6>
+
+<ul>
+<li><p>优点</p>
+
+<ul>
+<li><p>如果要在诸多Web页间传递一个变量，那么用Session变量要比通过QueryString传递变量可使问题简化。</p></li>
+<li><p>要使WEb站点具有用户化，可以考虑使用Session变量。你的站点的每位访问者都有用户化的经验，基于此，随着LDAP和诸如MS Site</p></li>
+<li><p>Server等的使用，已不必再将所有用户化过程置入Session变量了，而这个用户化是取决于用户喜好的。</p></li>
+<li><p>你可以在任何想要使用的时候直接使用session变量，而不必事先声明它，这种方式接近于在VB中变量的使用。使用完毕后，也不必考虑将其释放，因为它将自动释放。</p></li>
+</ul>
+</li>
+<li><p>缺点</p>
+
+<ul>
+<li>Session变量和cookies是同一类型的。如果某用户将浏览器设置为不兼容任何cookie，那么该用户就无法使用这个Session变量！</li>
+</ul>
+</li>
+</ul>
+
+
+<p>参考：
+<a href="http://my.oschina.net/xianggao/blog/395675">http://my.oschina.net/xianggao/blog/395675</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Keychain介绍与使用]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/21/keyChain/"/>
+    <updated>2016-01-21T10:05:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/21/keyChain</id>
+    <content type="html"><![CDATA[<h3>介绍</h3>
+
+<p>引言：</p>
+
+<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
+
+<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
+
+<!--more-->
+
+
+<h3>使用</h3>
+
+<p>通常情况下，我们用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。keychain里保存的信息不会因App被删除而丢失，在用户重新安装App后依然有效，数据还在。</p>
+
+<p>使用苹果官方发布的KeychainItemWrapper或者SFHFKeychainUtils很方便，后来看到 iphone使用keychain来存取用户名和密码 一文，觉得对了解keychain有很大的帮助，于是ARC控也尝试了一把。</p>
+
+<p>需要导入Security.framework</p>
+
+<pre><code>@implementation WQKeyChain
++ (NSMutableDictionary *)getKeychainQuery:(NSString *)service {
+return [NSMutableDictionary dictionaryWithObjectsAndKeys:
+        (__bridge_transfer id)kSecClassGenericPassword,(__bridge_transfer id)kSecClass,
+        service, (__bridge_transfer id)kSecAttrService,
+        service, (__bridge_transfer id)kSecAttrAccount,
+        (__bridge_transfer id)kSecAttrAccessibleAfterFirstUnlock,(__bridge_transfer id)kSecAttrAccessible,
+        nil];
+}
+
++ (void)save:(NSString *)service data:(id)data {
+    //Get search dictionary
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    //Delete old item before add new item
+    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
+    //Add new object to search dictionary(Attention:the data format)
+    [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:data] forKey:(__bridge_transfer id)kSecValueData];
+    //Add item to keychain with the search dictionary
+    SecItemAdd((__bridge_retained CFDictionaryRef)keychainQuery, NULL);
+}
+
++ (id)load:(NSString *)service {
+    id ret = nil;
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    //Configure the search setting
+    [keychainQuery setObject:(id)kCFBooleanTrue forKey:(__bridge_transfer id)kSecReturnData];
+    [keychainQuery setObject:(__bridge_transfer id)kSecMatchLimitOne forKey:(__bridge_transfer id)kSecMatchLimit];
+    CFDataRef keyData = NULL;
+    if (SecItemCopyMatching((__bridge_retained CFDictionaryRef)keychainQuery, (CFTypeRef *)&amp;keyData) == noErr) {
+        @try {
+            ret = [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge_transfer NSData *)keyData];
+        } @catch (NSException *e) {
+            NSLog(@"Unarchive of %@ failed: %@", service, e);
+        } @finally {
+        }
+    }
+    return ret;
+}
+
++ (void)delete:(NSString *)service {
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
+    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
+}
+@end
+</code></pre>
+
+<p>比如，保存密码</p>
+
+<pre><code>@interface WQUserDataManager : NSObject
+
+
++(void)savePassWord:(NSString *)password;
+
+
++(id)readPassWord;
+
+
++(void)deletePassWord;
+
+@end
+
+#import "WQUserDataManager.h"
+
+@implementation WQUserDataManager
+
+static NSString * const KEY_IN_KEYCHAIN = @"com.wuqian.app.allinfo";
+static NSString * const KEY_PASSWORD = @"com.wuqian.app.password";
+
++(void)savePassWord:(NSString *)password
+{
+    NSMutableDictionary *usernamepasswordKVPairs = [NSMutableDictionary dictionary];
+    [usernamepasswordKVPairs setObject:password forKey:KEY_PASSWORD];
+    [WQKeyChain save:KEY_IN_KEYCHAIN data:usernamepasswordKVPairs];
+}
+
++(id)readPassWord
+{
+    NSMutableDictionary *usernamepasswordKVPair = (NSMutableDictionary *)[WQKeyChain load:KEY_IN_KEYCHAIN];
+    return [usernamepasswordKVPair objectForKey:KEY_PASSWORD];
+}
+
++(void)deletePassWord
+{
+    [WQKeyChain delete:KEY_IN_KEYCHAIN];
+}
+@end
+</code></pre>
+
+<p>实现一个简单的界面，把设定的密码存起来，然后立即读取显示出来看看效果</p>
+
+<pre><code>-(IBAction)btnAciton:(id)sender
+{
+    [WQUserDataManager savePassWord:self.textfield.text];
+    self.label.text = [WQUserDataManager readPassWord];
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[第三方支付总结]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/18/disanfangzhifu/"/>
+    <updated>2016-01-18T11:35:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/18/disanfangzhifu</id>
+    <content type="html"><![CDATA[<p>引言：
+随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。</p>
+
+<p>本文源码源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>（内集常见支付方案：成支付宝，微信，银联）</p>
+
+<p>目录</p>
+
+<ul>
+<li>常见支付方案</li>
+<li>第三方支付SDK</li>
+<li>苹果官方支付方案</li>
+<li>web支付方案</li>
+</ul>
+
+
+<!--more-->
+
+
+<h2>一:常见支付方案</h2>
+
+<p>先来看一组截图</p>
+
+<p><img src="/images/zhifu001.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu002.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu003.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu004.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>微信支付</p></li>
+<li><p>支付宝支付</p></li>
+<li><p>银联（快捷）支付</p></li>
+<li><p>京东支付</p></li>
+<li><p>百度钱包</p></li>
+<li><p>web支付</p></li>
+<li><p>QQ钱包支付</p></li>
+<li><p>连连支付</p></li>
+</ul>
+
+
+<p>￼￼￼￼
+整理图：</p>
+
+<p><img src="/images/zhifu006.png" title="Caption" ></p>
+
+<h2>二：最常见的三种支付方式</h2>
+
+<ul>
+<li>微信支付SDK</li>
+<li>支付宝支付SDK</li>
+<li>银联快捷支付SDK</li>
+</ul>
+
+
+<h4>微信</h4>
+
+<h5>什么是微信支付</h5>
+
+<p>微信支付是集成在微信客户端的支付功能，用户可以通过手机完成快速的支付流程。微信支付以绑定银行卡的快捷支付为基础，向用户提供安全、快捷、高效的支付服务。</p>
+
+<h5>申请流程：</h5>
+
+<p>第一阶段：</p>
+
+<p><img src="/images/zhifu007.png" title="Caption" ></p>
+
+<p>第二阶段：</p>
+
+<p><img src="/images/zhifu008.png" title="Caption" ></p>
+
+<p>第三阶段：</p>
+
+<p><img src="/images/zhifu009.png" title="Caption" ></p>
+
+<h5>应用场景：</h5>
+
+<p>商户APP调用微信提供的SDK调用微信支付模块，商户APP会跳转到微信中完成支付，支付完后跳回到商户APP内，最后展示支付结果。</p>
+
+<h5>支付流程</h5>
+
+<p>App内提交订单（确认支付）
+商品信息确认（立即支付）
+输入密码（进行支付）
+支付成功</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu010.png" title="Caption" ></p>
+
+<h4>支付宝</h4>
+
+<h5>什么是支付宝支付：</h5>
+
+<p>支付宝移动支付是一种程序式的支付方式，在手机、掌上电脑等无线设备的应用程序内，买家可通过支付宝进行付款购买特定服务或商品，资金即时到账。</p>
+
+<h5>申请流程</h5>
+
+<p><img src="/images/zhifu011.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p>买家再手机应用中购买商品或者服务
+买家选择支付宝方式支付
+进入支付宝收银台进行支付
+支付成功
+交易完成买家可查看交易信息
+返回对应的app界面</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu012.png" title="Caption" ></p>
+
+<h4>银联</h4>
+
+<h5>什么值银联支付</h5>
+
+<p><img src="/images/zhifu013.png" title="Caption" ></p>
+
+<h5>申请流程：</h5>
+
+<p><img src="/images/zhifu014.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p><img src="/images/zhifu015.png" title="Caption" ></p>
+
+<h5>接入流程：</h5>
+
+<p><img src="/images/zhifu016.png" title="Caption" ></p>
+
+<h5>最后整理一下具体步骤：</h5>
+
+<ol>
+<li>首先客户端浏览商品，点击下单，请求到达商户后台。</li>
+<li>商户后台再提交订单信息到银联后台。</li>
+<li>银联后台返回交易流水号。</li>
+<li>商户后台将交易流水号返回给客户端。</li>
+<li>客户端再通过交易流水号启动手机控件开始支付。</li>
+<li>支付控件收集支付信息并请求银联后台，完成支付后银联后台通知商户后台支付结果。</li>
+<li>银联后台通知支付控件支付结果。</li>
+<li>支付控件通知客户端支付结果。</li>
+<li>最后客户端将支付结果展示给用户。</li>
+</ol>
+
+
+<h2>三：苹果官方支付方案</h2>
+
+<ul>
+<li>IPA</li>
+<li>Apple Pay</li>
+</ul>
+
+
+<h3>IPA</h3>
+
+<h5>什么是IPA：</h5>
+
+<p>In App Purchase属于iPhone SDK3.0的新特性，用于在应用程序中购买付费道具，增加新功能，订阅杂志。是应用程序除了植入广告外的另一种取得收益的方式。</p>
+
+<h5>IPA支持的产品类型：</h5>
+
+<p><img src="/images/zhifu017.png" title="Caption" ></p>
+
+<p>IPA两种支付方式：
+方式一：内置产品类型</p>
+
+<p><img src="/images/zhifu018.png" title="Caption" >
+方式二：服务器类型</p>
+
+<p><img src="/images/zhifu019.png" title="Caption" ></p>
+
+<h5>注意事项：</h5>
+
+<ol>
+<li>你必须提供电子类产品和服务。不要使用In App Purchase 去出售实物和实际服务。</li>
+<li>不能提供代表中介货币的物品，因为让用户知晓他们购买的商品和服务是很重要的。</li>
+</ol>
+
+
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序向服务器发送请求，获得一份产品列表。</li>
+<li>服务器返回包含产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>程序从信息中获得数据，并发送至服务器。</li>
+<li>服务器纪录数据，并进行审(我们的)查。</li>
+<li>服务器将数据发给App Store来验证该交易的有效性。</li>
+<li>App Store对收到的数据进行解析，返回该数据和说明其是否有效的标识。</li>
+<li>服务器读取返回的数据，确定用户购买的内容。</li>
+<li>服务器将购买的内容传递给程序。</li>
+</ol>
+
+
+<h3>Apple Pay</h3>
+
+<h5>什么是Apple Pay：</h5>
+
+<p>Apple Pay与诸多传统移动支付系统不同，不但有Touch ID指纹识别技术护航，还能在Apple Watch上运作。</p>
+
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序通过bundle存储的plist文件得到产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>App获取信息并提供内容给用户。</li>
+</ol>
+
+
+<h2>四：web支付方案</h2>
+
+<h5>概述：</h5>
+
+<p>iOS中通过UIWebView展示WAP或HTML5支付页面，从而完成支付功能，无需接入额外第三方SDK。
+UIWebView是iOS SDK中一个最常用的控件，是内置的浏览器控件，我们可以用它来浏览网页、打开文档等等。</p>
+
+<h5>类型界面：</h5>
+
+<p><img src="/images/zhifu020.png" title="Caption" ></p>
+
+<p>总结：</p>
+
+<p>最后本人根据实际开发整理了一份关于支付的源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>，内集成了：支付宝支付，微信支付，银联快捷支付！</p>
+
+<p>你是不是在找接口文档？</p>
+
+<ul>
+<li><a href="https://pay.weixin.qq.com/wiki/doc/api/index.html">微信支付</a></li>
+<li><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218010538&amp;tabId=1#ps-tabinfo-hashhttp://doc.open.alipay.com/doc2/detail?treeId=59&amp;articleId=103563&amp;docType=1">支付宝支付</a></li>
+<li><a href="https://open.unionpay.com/ajweb/index">银联</a></li>
+<li><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218008816https://open.unionpay.com/ajweb/help/file/techFile?productId=66">Web支付</a></li>
+<li><a href="https://developer.apple.com/in-app-purchase/">IAP</a></li>
+<li><a href="https://developer.apple.com/apple-pay/">Apple Pay</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图片处理-异步缓存优化]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/15/tupianyibuhuancun/"/>
+    <updated>2016-01-15T02:35:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/15/tupianyibuhuancun</id>
+    <content type="html"><![CDATA[<ol>
+<li>引言</li>
+</ol>
+
+
+<p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
+
+<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。</p>
+
+<!--more-->
+
+
+<ol>
+<li><p>常用的解决途径</p>
+
+<p> 异步下载图像
+ 处理图像（拉伸，去红眼，去边框）以便展示
+ 写入磁盘
+ 需要时从磁盘读取并展示</p>
+
+<p> // 假设我们有一个 NSURL <em>imageUrl and UIImageView </em>imageView, 我们需要通过NSURL下载图片并在UIImageview上展示</p>
+
+<pre><code> if ([self hasImageDataForURL:imageUrl] {
+     NSData *data = [self imageDataForUrl:imageUrl];
+     UIImage *image = [UIImage imageWithData:imageData];
+     dispatch_async(dispatch_get_main_queue(), ^{
+         imageView.image = image;
+     });
+ } else {
+     [self downloadImageFromURL:imageUrl withCompletion:^(NSData *imageData, …) {
+         [self storeImageData:imageData …];
+         UIImage *image = [UIImage imageWithData:imageData];
+         dispatch_async(dispatch_get_main_queue(), ^{
+             imageView.image = image;
+         });
+     }];
+ }
+</code></pre></li>
+</ol>
+
+
+<p>FPS 简介</p>
+
+<pre><code>UI 渲染理想情况 FPS=60
+60FPS =&gt; 16.7ms 每帧，这就意味着如果任何主线程操作大于 16.7ms，动态 FPS 将会下降，因为 CPU 忙于处理其他事情，而不是渲染 UI。
+</code></pre>
+
+<ol>
+<li><p>常用解决途径的缺点</p>
+
+<p> 从磁盘加载图像或文件时间消耗昂贵（磁盘读取比内存读取慢大概 10-1000 倍，如果是 SSD 硬盘，则可能与内存读取速度更接近（大概慢 10 倍）。参考这里的比较：Introduction to RAM Disks
+ 如果使用 SSD，将获得接近内存的速度（大概比内存访问速度慢十倍），但目前还没有手机和平板集成 SSD 模块。
+ 创建 UIImage 实例将会在内存区生成一个图片的压缩版。但是压缩后的图像太小且无法渲染，如果我们从磁盘加载图像，图像甚至都没有加载到内存。解压图片同样也很消耗资源。
+ 设置 imageView 的 image 属性，这种情况下将会创建一个 CATransaction 并加入主循环中。在下一次循环迭代中，CATransaction 会对任何设置为 layer contents 的图像进行拷贝。</p></li>
+</ol>
+
+
+<p>拷贝图像包含以下过程：</p>
+
+<pre><code>给文件 io 和解压缩分配缓冲区
+读取磁盘数据到内存
+解压图像数据（生成原位图） - 高 CPU 消耗
+CoreAnimation 使用解压数据并渲染
+</code></pre>
+
+<p>字节位没有正确对齐的图像将被 CoreAnimation 拷贝，以修复字节位对齐并使之能被渲染。这一点在 Apple 文档里没有说明，但是使用 Instruments 表明 CA::Render::copy_image 会执行此操作，即使 Core Aniation 即使没有拷贝图像。</p>
+
+<p>从 iOS7 开始，第三方应用不能使用JPEG硬件解码器。这意味着我们只能使用慢很多的软解码器。这一点在 FastImageCache 团队的 GitHub 主页以及 Nick Lockwood 的推文上都有指出。
+4. 一个强大的 iOS 图像缓存需包含以下部分：</p>
+
+<pre><code>异步下载图像，尽可能减少使用主线程队列
+使用后台队列解压图像。这是个复杂的过程，请阅读 Avoiding Image Decompression Sickness
+在内存和磁盘上缓存图像。在磁盘上缓存图像很重要，因为 App 可能因为内存不足而被强行关闭或者需要清理内存。这种情况下，重新从磁盘加载图像比下载会快很多。
+备注：如果使用 NSCache 作为内存缓存，当有内存警告时，NSCache 会清空缓存内容。NSCache 相关细节请查看 nshipster 文章：NSCache
+保存解压过的图片到硬盘以及内存中，以避免再次解压。
+使用 GCD 和 blocks，这将使得代码更加高效和简单，如今 GCD 和 blocks 是异步操作时必需的。
+最好使用 UIImageView 的分类以便集成
+最好在下载后以及存入到缓存前能够处理图像
+</code></pre>
+
+<p>iOS图像优化</p>
+
+<p>更多的成像相关以及 SDK 框架（CoreGraphics, ImageIO, CoreAnimation, CoreImage)工作原理，CPU vs GPU 等，请阅读 @rsebbe 的文章：Advanced Imaging on iOS
+Core Data 是一个好的选择吗？</p>
+
+<p>这有一篇文章&ndash;CoreData 对比 File System，实现图像缓存的基准测试，结果 File System 的表现更好。</p>
+
+<p>看一看上面罗列的观点，自己实现图像缓存不仅复杂，耗时而且痛苦。这也是为什么我倾向于使用开源的图像缓存解决方案，你们大部分已经听说过 SDWebImage 或 new FastImageCache。</p>
+
+<p>为了让你知道哪个开源库最适合你，我做了测试并且分析它们如何满足上述要求。
+5. 基准测试</p>
+
+<p>测试库：</p>
+
+<pre><code>SDWebImage - version 3.5.4
+FastImageCache - version 1.2
+AFNetworking - version 2.2.1
+TMCache - version 1.2.0
+Haneke - version 0.0.5
+</code></pre>
+
+<p>注：AFNetworking 加入对比是由于其自iOS7后在磁盘缓存方面出色的表现（基于 NSURLCache 实现）
+测试场景</p>
+
+<p>对于每个库，我都会使用全新的测试app，然后启动app，等所有图像加载完后，慢慢滑动。然后以不同力度来回滑动（从慢到快）。接着关掉app强制应用从磁盘缓存中加载图像，最后重复以上测试场景。
+关于测试 App 工程</p>
+
+<pre><code>相关 demo 可以在 GitHub 找到并获取，名字是 ImageCachingBenchmark，同时还有本次实验的图表、结果数据表以及更多。
+
+请注意，请注意 GitHub 上的工程和图像缓存库都需要做一些调整，以便能让我们看到每一张缓存的图片都能够被加载出来。由于我不想检查 Cocoapods 源码文件（不是个好习惯），所以需要对 Cocoapods clean 后重新编译工程代码，目前 GitHub 上的版本与我做测试的版本有些差别。
+
+如果你们想重新跑一下测试，你需要编写相同 completionBlock 用于图像加载，所有库得要跟默认的 SDWebImage 一样返回 SDImageCacheType。
+</code></pre>
+
+<p>最快与最慢的设备对比结果</p>
+
+<p>在 GitHub 工程上能看到完整的基准测试结果，由于这些表格很大，我只使用运行最快的设备 iPhone 5s 和运行最慢的 iPhone 4 来测试。</p>
+
+<p>汇总：</p>
+
+<p>表格名词解释：</p>
+
+<pre><code>异步下载：库支持异步下载
+后台解压：通过后台队列或线程执行图像解压
+存储解压：存储解压后的图像版本
+内存/磁盘缓存：支持内存/磁盘缓存
+UIImageView 分类：库中含 UIImageView 类别
+从内存/磁盘：从缓存（内存/磁盘）中读取的平均时间
+</code></pre>
+
+<ol>
+<li><p>结论</p>
+
+<p> 从头开始编写 iOS 图像缓存组件很困难</p>
+
+<p> SDWebImage 和 AFNetworking 是稳定的工程。由于有很多贡献者，这样保证代码能够及时得到维护，FastImageCache 在维护方面更新很快。</p>
+
+<p> 基于以上所有数据，我认为 SDWebImage 在目前是一个很好的解决方案。即使有些工程使用 AFNetworking 或 FastImageCache 更好，但是这些都依赖于项目需求。
+tu</p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>

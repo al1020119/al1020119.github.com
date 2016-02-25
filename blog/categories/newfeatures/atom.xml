@@ -1,0 +1,1293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Newfeatures | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/newfeatures/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-CoreSpotlight]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight/"/>
+    <updated>2015-12-25T13:35:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/25/ios9-corespotlight</id>
+    <content type="html"><![CDATA[<p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
+
+<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
+
+<ul>
+<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
+<li><p>Web Markup，Web内容可被搜索。</p></li>
+<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
+译文如下：</p></li>
+</ul>
+
+
+<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
+
+<h3>三大API</h3>
+
+<!--more-->
+
+
+<h5>NSUserActivity</h5>
+
+<ul>
+<li><p>NSUserActivity是iOS 8专为Handoff推出的API，iOS 9之后得到了提升。现在用户只需提供元数据（metadata）就能搜索不同的activity（活动）了。</p></li>
+<li><p>换言之，Spotlight可以将activity编入索引，而NSUserActivity就好比网页浏览器的历史堆栈（history stack），使用户能在Spotlight上搜到最近的活动。</p></li>
+</ul>
+
+
+<h5>Web Markup</h5>
+
+<ul>
+<li><p>Web Markup在网页上显示App的内容并编入Spotlight索引，如此一来即便没有安装某个App，苹果的索引器也能在网页上搜索特别的标记（markup），在Safari或Spotlight上显示搜索结果。</p></li>
+<li><p>显示未安装App的搜索结果是一大亮点，有望为开发者带来更多潜在用户。公布在搜索API上的App深链接则储存在苹果的cloud index中。更多详情，请参阅苹果的“Web Markup使用指南（Use Web Markup to Make App Content Searchable）”。</p></li>
+</ul>
+
+
+<h5>CoreSpotlight</h5>
+
+<ul>
+<li>NSUserActivity帮助储存用户历史，而全新的Core Spotlight则能将App中的任何内容编入索引，实质是在用户设备上提供基础的Core Spotlight索引渠道，满足用户另外一个需求。</li>
+</ul>
+
+
+<hr />
+
+<p>至于前面两个这里就不过多介绍，这里只介绍iOS9相关新特性，所以就来说我们应该怎么去学习并使用CoreSpotlight。</p>
+
+<blockquote><p>对于CoreSpotlight可以类比NSUserDefault，都是全局的存储空间。不同的是CoreSpotlight是系统的存储空间，每个App都能访问（可能这个访问有限制，目前还没有时间研究），但是NSUserDefault是每个App私有的。另外对于存储的内容CoreSpotlight存储的是item，即CSSearchableItem，而每个CSSearchableItem又有许多属性，这些属性是通过CSSearchableItemAttributeSet进行设置。具体都有神马属性，大家自己去看头文件吧。</p></blockquote>
+
+<p> 下面写一下简单得步骤：</p>
+
+<ul>
+<li><p>1 引入CoreSpotlight.framework</p></li>
+<li><p>2 创建CSSearchableItemAttributeSet、CSSearchableItem</p></li>
+<li><p>3 调用CSSearchableIndex.defaultSearchableIndex()的相关的方法对item进行操作。</p></li>
+</ul>
+
+
+<blockquote><p>由于本人水平有限，只找到了添加、删除itme的操作，并没有找到更新itme的方法，如果谁清楚了，麻烦告知一下。</p></blockquote>
+
+<p> 下面贴出本人测试的一个简单例子的代码：
+    import UIKit</p>
+
+<pre><code>@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    // 从搜索结果点击的时候将会调用这个方法
+    func application(application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: ([AnyObject]?) -&gt; Void) -&gt; Bool {
+        // 这里能够获取到点击搜索结果的identifier 但是不清楚是不是应该这样做
+        let identifier = userActivity.userInfo?["kCSSearchableItemActivityIdentifier"]
+        print("continueUserActivity \(identifier!)")
+        return true
+    }
+
+
+}
+</code></pre>
+
+<hr />
+
+<pre><code>import UIKit
+import CoreSpotlight
+
+class ViewController: UIViewController {
+    let identifier = "com.mxy.test.identifier"
+    var index = 1 // 用于标识添加的itme
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        CSSearchableIndex.defaultSearchableIndex().deleteAllSearchableItemsWithCompletionHandler { (error) -&gt; Void in
+
+        }
+    }
+
+
+    @IBAction func insertItem() {
+        let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+        attributeSet.title = "孟祥月 测试 mxy \(index)"
+        attributeSet.contentDescription = "this 这里写点什么好呢 mxy \(index)"
+        // 设置搜索结果的缩略图 不知道 为何就是不生效 我给应用程序添加了icon后，搜索结果那里显示的是icon
+        attributeSet.thumbnailURL = NSURL(fileURLWithPath: NSBundle.mainBundle().pathForResource("aa", ofType: "png")!)
+        attributeSet.thumbnailData = UIImagePNGRepresentation(UIImage(named: "aa")!)
+        let item = CSSearchableItem(uniqueIdentifier: "\(identifier) \(index)", domainIdentifier: "mxy", attributeSet: attributeSet)
+        let tmpItmes: [CSSearchableItem] = [item]
+        CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+        }
+        index++
+    }
+
+    // 貌似是没有更新操作 所以只好根据identifier先删除，修改后再添加进去。
+    @IBAction func updateItem() {
+        if index &gt; 0 {
+            let tmpIdentifier = "\(identifier) \(index - 1)"
+            CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers([tmpIdentifier], completionHandler: { (error) -&gt; Void in
+
+            })
+
+            let attributeSet = CSSearchableItemAttributeSet(itemContentType: "com.mxy.test")
+            attributeSet.title = "孟祥月 测试 mxy \(index - 1)"
+            attributeSet.contentDescription = "this 这里写点更新后 mxy \(index - 1)"
+            let item = CSSearchableItem(uniqueIdentifier: tmpIdentifier, domainIdentifier: "mxy", attributeSet: attributeSet)
+            let tmpItmes: [CSSearchableItem] = [item]
+            CSSearchableIndex.defaultSearchableIndex().indexSearchableItems(tmpItmes) { (error) -&gt; Void in
+
+            }
+
+        }
+
+    }
+
+    @IBAction func deleteItem() {
+        let identifiers = ["\(identifier) \(index)"]
+        index--
+        if index &lt;= 0 {
+            return
+        }
+        CSSearchableIndex.defaultSearchableIndex().deleteSearchableItemsWithIdentifiers(identifiers) { (error) -&gt; Void in
+
+        }
+    }
+
+}
+</code></pre>
+
+<p>在storyboard中只是添加了三个按钮，关联对应的操作。下面是演示，点击更新的时候会更新最后一个item的内容：</p>
+
+<p><img src="/images/Spotlight001.gif" title="Caption" ></p>
+
+<p>例子代码的下载地址：<a href="http://download.csdn.net/detail/mengxiangyue/8827141">http://download.csdn.net/detail/mengxiangyue/8827141</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-WKWebView+SFSafariViewController]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview/"/>
+    <updated>2015-12-24T19:35:40+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/24/ios9xin-te-xing-wkwebview</id>
+    <content type="html"><![CDATA[<h2>一：WKWebView简单介绍</h2>
+
+<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<p>先来看看WKWebView和UIWebView有什么区别：</p>
+
+<h6>UIWebView：</h6>
+
+<ul>
+<li>始祖级别，支持的iOS版本比较多</li>
+<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
+<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
+<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
+<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
+<li>无法清除本地存储数据（Local Storage）</li>
+<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
+</ul>
+
+
+<h6>WKWebView：</h6>
+
+<ul>
+<li>iOS 8引入的，比较年轻</li>
+<li>在内存和执行效率上要比UIWebView高很多</li>
+<li>开放度较高但据说Bug成吨</li>
+<li>类似UIWebView，UI定制比较麻烦···</li>
+<li>没具体测试使用过，就不继续列举了 L~</li>
+</ul>
+
+
+<!--more-->
+
+
+<h5>第一、WKWebView增加的属性和方法</h5>
+
+<p>类比UIWebView，跟UIWebView的API对比，
+增加的属性：</p>
+
+<pre><code>* 1、estimatedProgress 加载进度条，在IOS8之前我们是通过一个假的进度条来实现
+* 2、backForwardList 表示historyList
+* 3、WKWebViewConfiguration *configuration; 初始化webview的配置
+</code></pre>
+
+<p>增加的方法：</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration 
+</code></pre>
+
+<p>初始化</p>
+
+<pre><code>    - (WKNavigation *)goToBackForwardListItem:(WKBackForwardListItem *)item; 
+</code></pre>
+
+<p>跳到历史的某个页面</p>
+
+<!--more-->
+
+
+<h5>第二、相同的属性和方法</h5>
+
+<ul>
+<li>goBack、</li>
+<li>goForward、</li>
+<li>canGoBack、</li>
+<li>canGoForward、</li>
+<li>stopLoading、</li>
+<li>loadRequest、</li>
+<li>scrollView</li>
+</ul>
+
+
+<h5>第三、被删去的属性和方法：</h5>
+
+<pre><code>- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+</code></pre>
+
+<p>在跟js交互时，我们使用这个API，目前WKWebView完档没有给出实现类似功能的API</p>
+
+<ul>
+<li>无法设置缓存
+在UIWebView，使用NSURLCache缓存，通过setSharedURLCache可以设置成我们自己的缓存，但WKWebView不支持NSURLCache
+
+<h5>第四、delegate方法的不同</h5>
+
+<p>UIWebView支持的代理是UIWebViewDelegate，WKWebView支持的代理是WKNavigationDelegate和
+WKUIDelegate
+WKNavigationDelegate主要实现了涉及到导航跳转方面的回调方法
+WKUIDelegate主要实现了涉及到界面显示的回调方法：如WKWebView的改变和js相关内容
+具体来说WKNavigationDelegate除了有开始加载、加载成功、加载失败的API外，还具有额外的三个代理方法：</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation
+</code></pre>
+
+<p>这个代理是服务器redirect时调用</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler
+</code></pre>
+
+<p>这个代理方法表示当客户端收到服务器的响应头，根据response相关信息，可以决定这次跳转是否可以继续进行。</p>
+
+<pre><code>  -(void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
+</code></pre>
+
+<p>根据webView、navigationAction相关信息决定这次跳转是否可以继续进行,这些信息包含HTTP发送请求，如头部包含User-Agent,Accept</p></li>
+</ul>
+
+
+<hr />
+
+<h2>二、WKWebView新特性</h2>
+
+<ul>
+<li>在性能、稳定性、功能方面有很大提升（最直观的体现就是加载网页是占用的内存，模拟器加载百度与开源中国* 网站时，WKWebView占用23M，而UIWebView占用85M）；</li>
+<li>允许JavaScript的Nitro库加载并使用（UIWebView中限制）；</li>
+<li>支持了更多的HTML5特性；</li>
+<li>高达60fps的滚动刷新率以及内置手势；</li>
+<li>将UIWebViewDelegate与UIWebView重构成了14类与3个协议（查看苹果官方文档）；</li>
+</ul>
+
+
+<hr />
+
+<h2>三：基本使用</h2>
+
+<p>WKWebView相对于UIWebView强大了很多，内存的消耗相对少了，所提供的接口也丰富了。
+现在谈一谈WKWebView的基本使用</p>
+
+<h4>1. navigationDelegate</h4>
+
+<pre><code>- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation { // 类似UIWebView的 -webViewDidStartLoad:  
+    NSLog(@"didStartProvisionalNavigation");  
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;  
+}  
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {  
+    NSLog(@"didCommitNavigation");  
+}  
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation { // 类似 UIWebView 的 －webViewDidFinishLoad:  
+    NSLog(@"didFinishNavigation");  
+    [self resetControl];  
+    if (webView.title.length &gt; 0) {  
+        self.title = webView.title;  
+    }  
+
+}  
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {  
+    // 类似 UIWebView 的- webView:didFailLoadWithError:  
+
+    NSLog(@"didFailProvisionalNavigation");  
+
+}  
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {  
+
+    decisionHandler(WKNavigationResponsePolicyAllow);  
+}  
+
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {  
+    // 类似 UIWebView 的 -webView: shouldStartLoadWithRequest: navigationType:  
+
+    NSLog(@"4.%@",navigationAction.request);  
+
+
+    NSString *url = [navigationAction.request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];  
+
+
+
+    decisionHandler(WKNavigationActionPolicyAllow);  
+
+}  
+- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler {  
+
+}  
+</code></pre>
+
+<h4>2 UIDelegate</h4>
+
+<pre><code>- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {  
+    // 接口的作用是打开新窗口委托  
+    [self createNewWebViewWithURL:webView.URL.absoluteString config:configuration];  
+
+    return currentSubView.webView;  
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)())completionHandler  
+{    // js 里面的alert实现，如果不实现，网页的alert函数无效  
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler();  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler {  
+    //  js 里面的alert实现，如果不实现，网页的alert函数无效  ,   
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:message  
+                                                                             message:nil  
+                                                                      preferredStyle:UIAlertControllerStyleAlert];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"确定"  
+                                                        style:UIAlertActionStyleDefault  
+                                                      handler:^(UIAlertAction *action) {  
+                                                          completionHandler(YES);  
+                                                      }]];  
+    [alertController addAction:[UIAlertAction actionWithTitle:@"取消"  
+                                                        style:UIAlertActionStyleCancel  
+                                                      handler:^(UIAlertAction *action){  
+                                                          completionHandler(NO);  
+                                                      }]];  
+
+    [self presentViewController:alertController animated:YES completion:^{}];  
+
+}  
+
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler {  
+
+    completionHandler(@"Client Not handler");  
+
+}  
+</code></pre>
+
+<h4>3. WKWebView 执行脚本方法</h4>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString completionHandler:(void (^)(id, NSError *))completionHandler;  
+
+completionHandler 拥有两个参数，一个是返回错误，一个可以返回执行脚本后的返回值  
+</code></pre>
+
+<h4>4. WKWebView 的Cookie问题</h4>
+
+<p>UIWebView 中会自动保存Cookie，如果登录了一次，下次再次进入的时候，会记住登录状态
+而在WKWebView中，并不会这样，WKWebView在初始化的时候有一个方法</p>
+
+<pre><code>- (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration  
+</code></pre>
+
+<p>通过这个方法，设置 configuration 让WKWebView知道登录状态，configuration 可以通过已有的Cookie进行设置，也可以通过保存上一次的configuration进行设置</p>
+
+<p>参考 stackoverflow上回答：</p>
+
+<p><a href="http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303">http://stackoverflow.com/questions/26573137/can-i-set-the-cookies-to-be-used-by-a-wkwebview/26577303#26577303</a></p>
+
+<pre><code>WKWebView * webView = /*set up your webView*/  
+NSMutableURLRequest * request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://example.com/index.html"]];  
+[request addValue:@"TeskCookieKey1=TeskCookieValue1;TeskCookieKey2=TeskCookieValue2;" forHTTPHeaderField:@"Cookie"];  
+// use stringWithFormat: in the above line to inject your values programmatically  
+[webView loadRequest:request];  
+
+[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+WKUserContentController* userContentController = WKUserContentController.new;  
+WKUserScript * cookieScript = [[WKUserScript alloc]   
+    initWithSource: @"document.cookie = 'TeskCookieKey1=TeskCookieValue1';document.cookie = 'TeskCookieKey2=TeskCookieValue2';"  
+    injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];  
+// again, use stringWithFormat: in the above line to inject your values programmatically  
+[userContentController addUserScript:cookieScript];  
+WKWebViewConfiguration* webViewConfig = WKWebViewConfiguration.new;  
+webViewConfig.userContentController = userContentController;  
+WKWebView * webView = [[WKWebView alloc] initWithFrame:CGRectMake(/*set your values*/) configuration:webViewConfig];  
+</code></pre>
+
+<hr />
+
+<h2>四：WKWebView与js通信</h2>
+
+<p>iOS 8 引入WKWebView, WKWebView 不支持JavaScriptCore的方式但提供message handler的方式为JavaScript 与Objective-C 通信.
+在Objective-C 中使用WKWebView的以下方法调用JavaScript:</p>
+
+<pre><code>- (void)evaluateJavaScript:(NSString *)javaScriptString
+         completionHandler:(void (^)(id, NSError *))completionHandler
+如果JavaScript 代码出错, 可以在completionHandler 进行处理.
+在Objective-C 中注册 message handler:
+// WKScriptMessageHandler protocol?
+
+- (void)userContentController:(WKUserContentController *)userContentController
+    didReceiveScriptMessage:(WKScriptMessage *)message
+{
+    NSLog(@"Message: %@", message.body);
+}
+
+[userContentController addScriptMessageHandler:handler name:@"myName"];
+在JavaScript 将信息发给Objective-C:
+// window.webkit.messageHandlers.&lt;name&gt;.postMessage();?
+
+function postMyMessage()? {?
+    var message = { 'message' : 'Hello, World!', 'numbers' : [ 1, 2, 3 ] };?
+    window.webkit.messageHandlers.myName.postMessage(message);?
+}
+</code></pre>
+
+<hr />
+
+<h2>五：常见问题：</h2>
+
+<p>32 位的app在使用WKWebView的时候，如果运行在64位的设备上，会出现一下问题：</p>
+
+<ul>
+<li>（1）iOS8.1 系统，部分网页加载白屏，例如 百度，iOS8.3 似乎没问题</li>
+<li>（2）web输入框输入汉字也会出现白屏</li>
+</ul>
+
+
+<p>通过搜索得到问题根源：</p>
+
+<blockquote><p>WKWebView&rsquo;s WebProcess runs out-of-process as a 64-bit process on hardware supporting 64bit. There is a 32bit/64bit marshalling IPC bug for 32 bit apps using the WKWebView client on such hardware. The bug causes the WebProcess to exit, leaving a blank screen.</p></blockquote>
+
+<ul>
+<li>也就是一个进程间通讯的bug引起的。</li>
+</ul>
+
+
+<h6>解决方案，可以使app支持arm64，便不会出现问题。</h6>
+
+<hr />
+
+<h2>六：SFSafariViewController：</h2>
+
+<ul>
+<li>iOS 9引入，更加年轻，意味着是Apple的新菜，总是有什么优势的</li>
+<li>也是用来显示网页内容的</li>
+<li>这是一个特殊的View Controller，而不是一个单独的 View，和前面两个的区别</li>
+<li>在当前App中使用Safari的UI框架展现Web内容，包括相同的地址栏，工具栏等，类似一个内置于App的小型Safari</li>
+<li>共享Safari的一些便利特性，包括：相似的用户体验，和Safari共享Cookie，iCloud Web表单数据，密码、证书自动填充，Safari阅读器（Safari Reader）</li>
+<li>可定制性比较差，甚至连地址栏都是不可编辑的，只能在init的时候，传入一个URL来指定网页的地址</li>
+<li>只能用来展示单个页面，并且有一个完成按钮用来退出</li>
+</ul>
+
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<p>如果你的App需要显示网页，但是又不想自己去定制浏览器界面的话，可以考虑用SFSafariViewController来试试。从好的方面看，SFSafariViewController也去掉了从App中跳转到Safari的撕裂感，不同App之间切换总是让人感觉麻烦和不舒服。</p>
+
+<p>代码例子:</p>
+
+<pre><code>- (IBAction)onButtonClick:(id)sender
+
+{
+
+    NSString *urlString = @"http://www.kdanmobile.com";
+
+    SFSafariViewController *sfViewControllr = [[SFSafariViewController alloc] initWithURL:[NSURL URLWithString:urlString]];
+
+    sfViewControllr.delegate = self;
+
+    [self presentViewController:sfViewControllr animated:YES completion:^{
+
+       //...
+
+    }];
+
+}
+
+
+
+// Done 按钮
+
+- (void)safariViewControllerDidFinish:(nonnull SFSafariViewController *)controller
+
+{
+
+    [controller dismissViewControllerAnimated:YES completion:nil];
+
+}
+</code></pre>
+
+<p>SFSafariViewController 的接口比较少，就不再继续一一列举了。另外一个定制功能在于SFSafariViewControllerDelegate里面的一个方法：</p>
+
+<pre><code>-(NSArray&lt;UIActivity *&gt; *)safariViewController:(SFSafariViewController *)controller activityItemsForURL:(NSURL *)URL title:(nullable NSString *)title;
+</code></pre>
+
+<p>这个代理会在用户点击动作（Action）按钮（底部工具栏中间的按钮）的时候调用，可以传入UIActivity的数组，创建添加一些自定义的各类插件式的服务，比如分享到微信，微博什么的。</p>
+
+<p><img src="/images/safari001.png" title="Caption" ></p>
+
+<blockquote><p>小细节：
+SFSafariViewController有保存Cookies的功能，但是貌似不能和Safari浏览器共享，也可能是Beta版的bug</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9-Unit Test]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/22/ios9-unit-test/"/>
+    <updated>2015-12-22T00:59:07+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/22/ios9-unit-test</id>
+    <content type="html"><![CDATA[<p> XCode7(iOS9)中新增了跟多特性，包括：</p>
+
+<ul>
+<li>WKWebView+SFSafariViewController</li>
+<li>UI Test</li>
+<li>Multitasking</li>
+<li>watchOS 2</li>
+<li>Swift 2</li>
+<li>App Thinning</li>
+<li>人工智能和搜索 API</li>
+<li>HomeKit，CloudKit，HealthKit 等等杂七杂八的框架</li>
+</ul>
+
+
+<p> 前面的文章中我们已经将WKWebView+SFSafariViewController完整的介绍了一遍，现在我们就开始着手探究一下单元测试（后面的文章中我将会集中介绍一下常用功能新特性），敬请关注：<a href="http://al1020119.github.io/">iOS梦工厂</a></p>
+
+<h3>UI Tests是什么？</h3>
+
+<p>UI Tests是一个自动测试UI与交互的Testing组件</p>
+
+<!--more-->
+
+
+<h3>UI Tests有什么用？</h3>
+
+<p>它可以通过编写代码、或者是记录开发者的操作过程并代码化，来实现自动点击某个按钮、视图，或者自动输入文字等功能。</p>
+
+<h3>UI Tests的重要性</h3>
+
+<p>在实际的开发过程中，随着项目越做越大，功能越来越多，仅仅靠人工操作的方式来覆盖所有测试用例是非常困难的，尤其是加入新功能以后，旧的功能也要重新测试一遍，这导致了测试需要花非常多的时间来进行回归测试，这里产生了大量重复的工作，而这些重复的工作有些是可以自动完成的，这时候UI Tests就可以帮助解决这个问题了</p>
+
+<h2>使用方法</h2>
+
+<h6>第一步：添加UI Tests</h6>
+
+<p>如果是新项目，则创建工程的时候可以直接勾选选项，如下图</p>
+
+<p><img src="/images/unittest001.png" title="Caption" ></p>
+
+<p>如果是已有的项目，可以通过添加target的方式添加一个UI Tests，点击xcode的菜单，找到target栏</p>
+
+<p><img src="/images/unittest002.png" title="Caption" ></p>
+
+<p>在Test选项中选择Cocoa Touch UI Testing Bundle</p>
+
+<p><img src="/images/unittest003.png" title="Caption" ></p>
+
+<p>这时候test组件添加成功，它在项目中的位置如下图所示</p>
+
+<p><img src="/images/unittest004.png" title="Caption" ></p>
+
+<h6>第二步：创建测试代码</h6>
+
+<p>手动创建测试代码
+打开测试文件，在testExample()方法中添加测试代码</p>
+
+<p><img src="/images/unittest005.png" title="Caption" ></p>
+
+<p>如果不知道如何写测试代码，则可以参考自动生成的代码样式</p>
+
+<h5>自动生成测试步骤</h5>
+
+<p>选择测试文件后，点击录制按钮</p>
+
+<p><img src="/images/unittest006.png" title="Caption" ></p>
+
+<p>这时候开始进行操作，它会记录你的操作步骤，并生成测试代码
+下图就是在一些操作后自动生成的测试代码</p>
+
+<p><img src="/images/unittest007.png" title="Caption" ></p>
+
+<p>这时候可以分析测试代码的语法，以便你自己手动修改或者手写测试代码</p>
+
+<h6>第三步：开始测试</h6>
+
+<p>点击testExample方法旁边的播放按钮，它就开始进行自动测试了，这时候你会看到app在自动操作</p>
+
+<p><img src="/images/unittest008.png" title="Caption" ></p>
+
+<h6>下面介绍一下测试元素的语法</h6>
+
+<p>XCUIApplication：
+继承XCUIElement，这个类掌管应用程序的生命周期，里面包含两个主要方法</p>
+
+<pre><code>launch():
+</code></pre>
+
+<p>启动程序</p>
+
+<pre><code>terminate():
+</code></pre>
+
+<p>终止程序</p>
+
+<h6>XCUIElement:</h6>
+
+<p>继承NSObject，实现协议XCUIElementAttributes, XCUIElementTypeQueryProvider
+可以表示系统的各种UI元素</p>
+
+<pre><code>exist:
+</code></pre>
+
+<p>可以让你判断当前的UI元素是否存在，如果对一个不存在的元素进行操作，会导致测试组件抛出异常并中断测试</p>
+
+<pre><code>descendantsMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素以及它的子类集合</p>
+
+<pre><code>childrenMatchingType(type:XCUIElementType)-&gt;XCUIElementQuery:
+</code></pre>
+
+<p>取某种类型的元素集合，不包含它的子类</p>
+
+<p>这两个方法的区别在于，你仅使用系统的UIButton时，用childrenMatchingType就可以了，如果你还希望查询自己定义的子Button，就要用descendantsMatchingType</p>
+
+<p>另外UI元素还有一些交互方法</p>
+
+<pre><code>tap():
+</code></pre>
+
+<p>点击</p>
+
+<pre><code>doubleTap():
+</code></pre>
+
+<p>双击</p>
+
+<pre><code>pressForDuration(duration: NSTimeInterval):
+</code></pre>
+
+<p>长按一段时间，在你需要进行延时操作时，这个就派上用场了</p>
+
+<pre><code>swipeUp():
+</code></pre>
+
+<p>这个响应不了pan手势，暂时没发现能用在什么地方，也可能是beta版的bug，先不解释</p>
+
+<pre><code>typeText(text: String):
+</code></pre>
+
+<p>用于textField和textView输入文本时使用，使用前要确保文本框获得输入焦点，可以使用tap()函数使其获得焦点</p>
+
+<h6>XCUIElementAttributes协议</h6>
+
+<p>里面包含了UIAccessibility中的部分属性
+如下图</p>
+
+<p><img src="/images/unittest009.png" title="Caption" ></p>
+
+<p>可以方便你查看当前元素的特征，其中identifier属性可用于直接读取元素，不过该属性在UITextField中有bug，暂时不清楚原因</p>
+
+<p>XCUIElementTypeQueryProvider协议
+里面包含了系统中大部分UI控件的类型，可通过读属性的方式取得某种类型的UI集合
+部分属性截图如下</p>
+
+<p><img src="/images/unittest010.png" title="Caption" ></p>
+
+<h3>创建Demo</h3>
+
+<p>首先创建一个登录页面</p>
+
+<p><img src="/images/unittest011.png" title="Caption" ></p>
+
+<p>点击login按钮进行登录验证，点击clear按钮会清除文本
+登录成功后可以去到个人信息页面</p>
+
+<p>个人信息页面如下</p>
+
+<p><img src="/images/unittest012.png" title="Caption" ></p>
+
+<p>点击modify按钮可以修改个人信息，点击Message按钮可以查看个人消息</p>
+
+<p>最后是消息界面</p>
+
+<p><img src="/images/unittest013.png" title="Caption" ></p>
+
+<h4>登录页面的测试</h4>
+
+<ul>
+<li>输入一个错误的账号</li>
+<li>验证结果</li>
+<li>关闭警告窗</li>
+<li>清除输入记录</li>
+<li>输入一个正确的账号</li>
+<li>验证结果</li>
+<li>进入个人信息页面</li>
+</ul>
+
+
+<p>测试代码如下:</p>
+
+<pre><code>func testLoginView() {
+    let app = XCUIApplication()
+
+    // 由于UITextField的id有问题，所以只能通过label的方式遍历元素来读取
+    let nameField = self.getFieldWithLbl("nameField")
+    if self.canOperateElement(nameField) {
+        nameField!.tap()
+        nameField!.typeText("xiaoming")
+    }
+
+    let psdField = self.getFieldWithLbl("psdField")
+    if self.canOperateElement(psdField) {
+        psdField!.tap()
+        psdField!.typeText("1234321")
+    }
+
+    // 通过UIButton的预设id来读取对应的按钮
+    let loginBtn = app.buttons["Login"]
+    if self.canOperateElement(loginBtn) {
+        loginBtn.tap()
+    }
+
+    // 开始一段延时，由于真实的登录是联网请求，所以不能直接获得结果，demo通过延时的方式来模拟联网请求
+    let window = app.windows.elementAtIndex(0)
+    if self.canOperateElement(window) {
+        // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+        window.pressForDuration(3)
+    }
+
+    // alert的id和labe都用不了，估计还是bug，所以只能通过数量判断
+    if app.alerts.count &gt; 0 {
+        // 登录失败
+        app.alerts.collectionViews.buttons["确定"].tap()
+
+        let clear = app.buttons["Clear"]
+        if self.canOperateElement(clear) {
+            clear.tap()
+
+            if self.canOperateElement(nameField) {
+                nameField!.tap()
+                nameField!.typeText("sun")
+            }
+
+            if self.canOperateElement(psdField) {
+                psdField!.tap()
+                psdField!.typeText("111111")
+            }
+
+            if self.canOperateElement(loginBtn) {
+                loginBtn.tap()
+            }
+            if self.canOperateElement(window) {
+                // 延时3秒, 3秒后如果登录成功，则自动进入信息页面，如果登录失败，则弹出警告窗
+                window.pressForDuration(3)
+            }
+            self.loginSuccess()
+        }
+    } else {
+        // 登录成功
+        self.loginSuccess()
+    }
+}
+</code></pre>
+
+<blockquote><p>这里有几个需要特别注意的点：
+当你的元素不存在时，它仍然可能返回一个元素对象，但这时候不能对其进行操作
+当你要点击的元素被键盘或者UIAlertView遮挡时，执行tap方法会抛异常
+详细实现可参照demo:
+<a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p></blockquote>
+
+<h4>个人信息页测试</h4>
+
+<ul>
+<li>修改性别</li>
+<li>修改年龄</li>
+<li>修改心情</li>
+<li>保存修改</li>
+</ul>
+
+
+<p>测试代码如下：</p>
+
+<pre><code>    func testInfo() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let modifyBtn = app.buttons["modify"];
+        modifyBtn.tap()
+
+        let sexSwitch = app.switches["sex"]
+        sexSwitch.tap()
+
+        let incrementButton = app.buttons["Increment"]
+        incrementButton.tap()
+        incrementButton.tap()
+        incrementButton.tap()
+        app.buttons["Decrement"].tap()
+
+        let textView = app.textViews["feeling"]
+        textView.tap()
+        app.keys["Delete"].tap()
+        app.keys["Delete"].tap()
+        textView.typeText(" abc ")
+
+        // 点击空白区域
+        let clearBtn = app.buttons["clearBtn"]
+        clearBtn.tap()
+
+        // 保存数据
+        modifyBtn.tap()
+        window.pressForDuration(2)
+
+        let messageBtn = app.buttons["message"]
+        messageBtn.tap();
+
+        // 延时1秒, push view需要时间
+        window.pressForDuration(1)
+
+        self.testMessage()
+    }
+</code></pre>
+
+<blockquote><p>这里需要特别注意以下两点：
+textview获取焦点时无法选择焦点的位置
+tap事件的触发位置是view的中心，所以当view的中心被遮挡时，要考虑使用其他view来代替</p></blockquote>
+
+<h4>个人消息界面测试</h4>
+
+<p>单元格的点击
+测试代码如下：</p>
+
+<pre><code>    func testMessage() {
+        let app = XCUIApplication()
+        let window = app.windows.elementAtIndex(0)
+        if self.canOperateElement(window) {
+            // 延时2秒, 加载数据需要时间
+            window.pressForDuration(2)
+        }
+
+        let table = app.tables
+        table.childrenMatchingType(.Cell).elementAtIndex(8).tap()
+        table.childrenMatchingType(.Cell).elementAtIndex(1).tap()
+
+    }
+</code></pre>
+
+<blockquote><p>这里需要注意一点：
+暂时无法获取到tableView的元素指针</p></blockquote>
+
+<h3>总结</h3>
+
+<p>总的来说，UI Tests只能用于一些基础功能的测试，验证app的功能是否可以正常使用，是否存在崩溃问题。但它也有很多不足之处，编写测试用例的过程非常繁琐，自动生成的代码几乎无法运行，功能单一，很多用例无法覆盖，而且bug很多，大大地限制了UI Tests在实际开发中的应用。希望正式版出来的时候能够修复这些问题，并开放更多的功能。</p>
+
+<p>demo地址：</p>
+
+<p><a href="https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo">https://github.com/sunljz/demo/tree/master/iOS9/UITestDemo</a></p>
+
+<p>最后介绍几个常见的第三方测试框架：</p>
+
+<p>Frank， KIF， Subliminal， Apple 的 UIAutomation，我把他们都试了一遍。你要是希望了解更多可以访问我的故障特征测试框架。它不是开发者的失败，而是因为 Apple 对待测试只有有限的开放性。这使得这些框架有一系列的补丁，而在这些补丁之上，这些框架不外乎都成为了一堆破碎的工具。
+没有涉及到的更多细节：</p>
+
+<ul>
+<li>Frank 一直被遗弃。</li>
+<li>KIF 已经与主要的 iOS 修订版本决裂。</li>
+<li>Subliminal 不能在命令行中可靠地运行。</li>
+<li>UIAutomation 是用 JavaScript 和 clunky 写的。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS9+Xcode7总结]]></title>
+    <link href="http://al1020119.github.io/blog/2015/12/20/ios9-plus-xcodezong-jie/"/>
+    <updated>2015-12-20T23:56:09+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/12/20/ios9-plus-xcodezong-jie</id>
+    <content type="html"><![CDATA[<p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+
+<h4>1，默认使用HTTPS请求</h4>
+
+<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
+
+<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+</code></pre>
+
+<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+
+<p>Apple介绍了iOS9中的App Transport Security，它要求所有App在默认情况下使用HTTPS来进行网络请求。由于不是所有的服务器都运行在HTTPS环境下，Apple也提供了相关的方法来禁用ATS。</p>
+
+<ul>
+<li>最后：出于数据安全考虑，在完全禁用ATS的情况下，你也应该为某些重要的站点打开ATS。你可以通过NSExceptionDomainskey来禁用/启用特定的站点的ATS。参照如下图片:</li>
+</ul>
+
+
+<p><img src="/images/ats001.png" title="Caption" ></p>
+
+<ul>
+<li>该plist文件允许用户在HTTP环境下下载文件，但是只能在HTTPS情况下访问"workflow.is"</li>
+</ul>
+
+
+<p>需要提醒的是，ATS的设置只针对当前bundle。这意味着你不仅需要在你主项目的info.plist中添加ATS相关的Key,同时也需要在其他bundle下的info.plist中添加相关配置。</p>
+
+<blockquote><p>关于iOS9的适配，github上有一个中文项目iOS9AdaptationTips可以提供很大的帮助。</p></blockquote>
+
+<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
+
+<p>否则会提示类似如下错误:</p>
+
+<!--more-->
+
+
+<pre><code>    canOpenURL: failed for URL: "mqqopensdkapiV2://qqapp" - error: "This app is not allowed to query for scheme mqqopensdkapiV2”
+</code></pre>
+
+<p>修正方法是，Info.plist文件中添加一个key为LSApplicationQueriesSchemes的数组值，里面包含需要添加白名单的string类型的scheme。特酷吧在项目中使用了qq，微信等分享登录功能，需要添加的值为：</p>
+
+<ul>
+<li>mqqopensdkapiV2</li>
+<li>mqqOpensdkSSoLogin</li>
+<li>mqq</li>
+<li>mqzoneopensdkapiV2</li>
+<li>mqzoneopensdkapi19</li>
+<li>mqzoneopensdkapi</li>
+<li>mqzoneopensdk</li>
+<li>mqzone</li>
+<li>weixin</li>
+<li>wechat
+更多其他适配点后续不断跟进。</li>
+</ul>
+
+
+<h4>3，bitcode</h4>
+
+<p>使用Xcode7编译提示：</p>
+
+<pre><code>XXX does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE), obtain an updated library from the vendor, or disable bitcode for this target. for architecture arm64
+</code></pre>
+
+<p>bitcode是被编译程序的一种中间形式的代码。包含bitcode配置的程序将会在App store上被编译和链接。bitcode允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到App store上。
+Xcode7 默认开启了bitcode，如果App使用的第三方类库不支持bitcode会提示错误，只需要在”Build Settings”->”Enable Bitcode”选项中看关闭bitcode即可。</p>
+
+<blockquote><p>开启Bitcode编译后，编译产生的文件体积会变大 (因为是中间代码，不是用户下载的包)，且dSYM文件不能用来崩溃日志的符号化 (用户下载的包是Apple服务重新编译产生的，有产生新的符号文件)。通过Archive方式上传AppStore的包，可以在 Xcode的Organizer工具中下载对应安装包的新的符号文件。
+转载请注明来自特酷吧,本文地址:www.tekuba.net/program/364/
+ 
+ </p>
+
+<h4>4，使用XCode7链接第三方库提示warning</h4>
+
+<pre><code>Lots of warnings when building with Xcode 7 with 3rd party libraries
+warning: Could not resolve external type c:objc(cs)NSString
+warning: Could not resolve external type c:objc(cs)NSDictionary
+warning: Could not resolve external type c:objc(cs)NSMutableString
+warning: Could not resolve external type c:objc(cs)NSError
+</code></pre>
+
+<p><a href="https://forums.developer.apple.com/thread/17921">https://forums.developer.apple.com/thread/17921</a>
+目前没发现好的解决办法，可以尝试如下:
+I had this problem too.  Here&rsquo;s how I fixed it.</p></blockquote>
+
+<ul>
+<li>1)  Go to Build Settings -> Build Options -> Debug Information Format</li>
+<li>2)  Change the Debug setting from &ldquo;DWARF with dSYM File&rdquo; to &ldquo;DWARF&rdquo;</li>
+<li>3)  Leave the Release setting at &ldquo;DWARF with dSYM File&rdquo;</li>
+</ul>
+
+
+<p>The problem appears to be that Xcode was trying to create dSYM files for Debug builds.  You don&rsquo;t need dSYM files for Debug builds &ndash; it&rsquo;s release builds where you need them. </p>
+
+<hr />
+
+<h6>既然提到了Xcode7，那么Xcode7中也有几个需要注意的地方（Xcode7是随着ios9一起出来的，其实也就是ios9的新特性，只是不是sdk），</h6>
+
+<p>升级到XCode7之后，编译和上传到itunes connect中遇到了一些问题（特酷吧XCode版本7.0.1），在这里总结下：</p>
+
+<h4>1，was built for newer iOS version (9.0) than being linked (7.0)</h4>
+
+<p>解决方法参考：<a href="http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/">http://qaseeker.com/32270491-xcode-7-warning-was-built-for-newer-ios-version-5-1-1-than-being-linked-5-1/</a></p>
+
+<pre><code>the -w flag can be added to Build Settings -&gt; Other Linker Flags
+</code></pre>
+
+<h4>2，Could not resolve external type c:objc(cs)</h4>
+
+<p>解决方法参考：</p>
+
+<pre><code>https://community.pushwoosh.com/questions/2774/lot-of-warnings-with-xcode-70-and-pushwoosh-304
+</code></pre>
+
+<p>It looks like a bug of XCode 7. See the discussion here:</p>
+
+<pre><code>https://forums.developer.apple.com/thread/17921
+</code></pre>
+
+<hr />
+
+<pre><code>To get rid of this warning you need to change debug information from "DWARF + dSYM" to DWARF.
+DWARF seems to be the default setting for new projects created in Xcode 7, but existing projects that are migrating to Xcode 7 probably still have DWARF with dSYM File as the setting.
+</code></pre>
+
+<p>特酷吧亲测发现使用XCode7新建工程的时候，Debug模式默认选择了DWARF。</p>
+
+<h4>3，"The resulting API analysis file is too large. We were unable to validate your API usage prior to delivery</h4>
+
+<p><a href="https://forums.developer.apple.com/thread/18493">https://forums.developer.apple.com/thread/18493</a>
+建议处理</p>
+
+<ul>
+<li>1，export IPA file (after you select Archive from within xCode)</li>
+<li>2，Use Application Loader to upload</li>
+<li>3，de-select Bitcode and Symbols</li>
+</ul>
+
+
+<p>似乎目前对bitcode的支持还不是很好，建议关闭。再上传。</p>
+
+<h4>4.最后就是和swift相关的。</h4>
+
+<p>如果使用了混编技术，也就是说里面涉及到了swift代码，实现了桥接，那么系统会偶尔出现崩溃的现象，这个时候需要修改一个属性</p>
+
+<ul>
+<li>1：选中项目</li>
+<li>2：选中target，在build Setting中搜索swift</li>
+<li><p>3：在出现的embedded content contains swift code选中对应的值</p>
+
+<ul>
+<li>使用了swift就是YES</li>
+<li>没有swift就是NO</li>
+</ul>
+</li>
+</ul>
+
+
+<h4>5.UILayoutGuide与NSLayoutGuide</h4>
+
+<p>在iOS 9.0和 OS X 10.11中，分别有两个新的类：UILayoutGuide 和 NSLayoutGuide。他们可以作为一种类似View的对象，参与到AutoLayout的布局约束中。作为一种新的布局解决方案,这两个类的出现使你无需再创建、显示无关的View了。举个栗子，原本需要一个空的UIView占位的地方，现在只需要用UILayoutGuide去替代它就可以了。</p>
+
+<pre><code>// 创建LayoutGuide
+let layoutGuideA = UILayoutGuide()  
+let layoutGuideB = UILayoutGuide()
+
+// 添加到View上
+let view: UIView = ...  
+view.addLayoutGuide(layoutGuideA)  
+view.addLayoutGuide(layoutGuideB)
+
+// 用UILayoutGuide来添加布局约束
+layoutGuideA.heightAnchor.constraintEqualToAnchor(layoutGuideB.heightAnchor).active = true
+// 设置Identifier，为了方便DEBUG
+
+layoutGuideA.identifier = "layoutGuideA"  
+layoutGuideB.identifier = "layoutGuideB"
+
+// ...然后看看他们的Frame吧
+print("layoutGuideA.layoutFrame -&gt; \(layoutGuideA.layoutFrame)")
+</code></pre>
+
+<h4>NSLayoutAnchor</h4>
+
+<p>iOS9中另一个新增的API是NSLayoutAnchor。它的出现不仅仅是让使用代码添加约束变得简洁明了。通过该类强大的静态检查能力，还提供了额外的约束正确定保证。举个栗子，考虑以下使用NSLayoutConstraintAPI创建的约束会出现什么问题：</p>
+
+<pre><code>NSLayoutConstraint *constraint =  
+    [NSLayoutConstraint constraintWithItem:view1 
+                                 attribute:NSLayoutAttributeLeading 
+                                 relatedBy:NSLayoutRelationEqual 
+                                    toItem:view2 
+                                 attribute:NSLayoutAttributeTop 
+                                multiplier:1.0 
+                                  constant:0.0];
+</code></pre>
+
+<p>这个约束是无效的。因为你将一个X轴上的属性(leading)同一个Y轴属性(top)绑定。然而，这个错误可以毫无警告地通过编译，在运行的时候默默地就失效了，最终留下一个出错的布局。由于这个错误不会产生任何的日志信息，导致极难debug。假如工程里有许多(成千上万)这样的约束代码，那对于维护来说真是一场噩梦。</p>
+
+<p>好在NSLayoutAnchor利用了"泛型"解决了这个问题。"泛型"现在在Swift和Objective-C中都已经得到了支持。UIView中NSLayoutAnchor相关的存取方法，明确指出了需要哪些继承自NSLayoutAnchor的子类。这些子类被分为了三类，X轴，Y轴，和尺寸(宽/高)，一种类型的Anchor只允许绑定约束到另外一个相同类型的Anchor上。通过指定NSLayoutAnchor中参数的类型，这个API可以通过类型检查，来避免创建出例子中无效的约束。</p>
+
+<p>我们回到之前的例子，用NSLayoutAnchor来实现一下这个约束：</p>
+
+<pre><code>NSLayoutConstraint *constraint =  
+        [view1.leadingAnchor constraintEqualToAnchor:view2.topAnchor];
+</code></pre>
+
+<p>相比旧的API，新的API非常明显地提升了代码可读性。并且，当你传入错误的Anchor类型时，新的API会抛出一个"Incompatible pointer type"警告，因为编译器知道这个是两个不同的类。</p>
+
+<blockquote><p>想要了解更多，请查阅NSLayoutAnchor官方文档</p></blockquote>
+
+<h4>Storyboard Reference</h4>
+
+<p>Storyboard真是让人又爱又恨，每个在多人合作项目中使用Storyboard的人，都遇到过Storyboard文件的冲突。类似的冲突解决起来比较棘手，常常是以回滚告终。这一点直接造成了一些团队放弃使用Storyboard开发而推荐纯代码布局。</p>
+
+<p>如果需要使用Storyboard，但又想最大化地避免冲突呢？最好的方法就是将UI划分的更小的、不同的Storyboard文件中。在过去如果想要做到这一点，意味跨Storyboard的跳转方法，需要在代码里完成：</p>
+
+<pre><code>UIStoryboard *destinationStoryboard = [UIStoryboard storyboardWithName:@"StoryboardName" bundle:nil];  
+DestinationViewController *vc = [destinationStoryboard instantiateViewControllerWithIdentifier:@"identifier"];
+//一顿设置
+...
+[self.navigationController pushViewController:vc animated:YES];
+</code></pre>
+
+<p>在Xcode7 和 iOS 9中，只需要用Storyboard Reference就可以用Segue轻松实现跨Storyboard的跳转了。Storyboard Reference的出现，保留了单个Storyboard文件跳转的优点的同时，提供了多Storyboard文件时利于合并的便利。</p>
+
+<p>开始分割你那巨大的Storyboard文件吧。最快的方法是:</p>
+
+<ul>
+<li>缩放Storyboard</li>
+<li>框选一组逻辑相近的scenes</li>
+<li>选择Editor > Refactor to Storyboard&hellip;</li>
+</ul>
+
+
+<p>自动Refactord的故事板文件会为每一个scenes留下一个UIStoryboard Reference，并且在需要的地方自动创建可读性不好的Storyboard ID。所以就个人来说，我更推荐手动复制scenes到新的故事板文件中，然后在源文件中删除这些scenes并手动添加Storyboard Reference。</p>
+
+<blockquote><p>如果你已经有多个故事板文件了，为自己庆祝一下吧——你又可以精简你的代码了！从Object库中拖拽一个UIStoryboard Reference，并配置segue。然后选取你手动跳转的代码，大力地按下删除键吧！</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iBeacon初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan/"/>
+    <updated>2015-11-28T17:42:15+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan</id>
+    <content type="html"><![CDATA[<blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
+当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
+
+<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
+等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+
+<!--more-->
+
+
+<h4>Apple Store 中的 iBeacon 支持</h4>
+
+<h6>特点</h6>
+
+<pre><code>iBeacon 基于低功耗蓝牙技术（Bluetooth Low Energy, BLE）这一开放标准，因此也继承了 BLE 的一些特点。
+</code></pre>
+
+<h6>范围广</h6>
+
+<pre><code>相比于 NFC 的数厘米的识别范围，iBeacon 的识别范围可以达到数十米，并且能够估计距离的远近。
+</code></pre>
+
+<h6>兼容性</h6>
+
+<pre><code>iBeacon 是基于 BLE 做的一个简单封装，因此大部分支持 BLE 的设备都可以兼容。
+例如可以使用一个普通的蓝牙芯片作为信标，使用 Android 设备检测信标的存在。
+</code></pre>
+
+<h6>低能耗</h6>
+
+<pre><code>不少 beacon 实现宣称可以不依赖外部能源独立运行两年。
+</code></pre>
+
+<h6>使用场景</h6>
+
+<pre><code>我们以一个连锁商场的例子来讲解 iBeacon 的一个流程。在一个连锁商场中，店家需要在商场中的不同地方推送不同的优惠信息，比如服装和家居柜台推送的消息就很有可能不同。
+</code></pre>
+
+<p>当消费者走进某个商场时，会扫描到一个 beacon。这个 beacon 有三个标志符，proximityUUID 是一个整个公司（所有连锁商场）统一的值，可以用来标识这个公司，major 值用来标识特定的连锁商场，比如消费者正在走进的商场，minor 值标识了特定的一个位置的 beacon，例如定位到消费者正在门口。</p>
+
+<p>这时商场的 app 会被系统唤醒，app 可以运行一个比较短的时间。在这段时间内，app 可以根据 beacon 的属性查询到用户的地理位置（通过查询服务器或者本地数据），例如在化妆品专柜，之后就可以通过一个 local notification 推送化妆品的促销信息。用户可以点击这次 local notification 来查看更详细的信息，这样一次促销行为就完成了。</p>
+
+<h6>API</h6>
+
+<pre><code>闲话少说，我们来看下 iBeacon 具体怎么使用：
+</code></pre>
+
+<h6>Beacon 的表示</h6>
+
+<pre><code>iBeacon 本质上来说是一个位置（区域）信息，所以 Apple 把 iBeacon 功能集成在了 Core Location 里面。
+</code></pre>
+
+<p>iBeacon 信标在 Core Location 中表现为一个 CLBeacon，它圈定的范围则表现为 CLBeaconRegion，这是一个 CLRegion 的子类。</p>
+
+<p>CLBeaconRegion 主要用三个属性来标识一个 iBeacon，proximityUUID、major 和 minor。
+proximityUUID 是一个 NSUUID，用来标识公司，每个公司、组织使用的 iBeacon 应该拥有同样的 proximityUUID。
+major 用来识别一组相关联的 beacon，例如在连锁超市的场景中，每个分店的 beacon 应该拥有同样的 major。
+minor 则用来区分某个特定的 beacon。</p>
+
+<pre><code>这些属性如果不指定（即 nil），匹配的时候就会忽略这个属性。例如只指定 proximityUUID 的 CLBeaconRegion 可以匹配某公司的所有 beacons。
+</code></pre>
+
+<h6>Monitoring</h6>
+
+<pre><code>Apple 在 iOS 4 中增加了地理围栏 API，可以用来在设备进入/退出某个地理区域时获得通知，这些 API 包括 -startMonitoringForRegion:、-locationManager:didEnterRegion:、-locationManager:didExitRegion: 等。
+</code></pre>
+
+<p>CLBeaconRegion 作为 CLRegion 的子类也可以复用这些 API，这种检测 iBeacon 的方式叫做 monitoring。</p>
+
+<p>使用这种方法可以在程序在后台运行时检测 iBeacon，但是只能同时检测 20 个 region，也不能推测设备与 beacon 的距离。</p>
+
+<h6>Ranging</h6>
+
+<pre><code>除了使用地理围栏 API 的方式，Apple 还在 iOS 7 中新增加了 iBeacon 专用的检测方式，也就是 ranging。
+</code></pre>
+
+<p>通过 CLLocationManager 的 -startRangingBeaconsInRegion: 方法可以开始检测特定的 iBeacon。</p>
+
+<p>当检测到 beacon 的时候，CLLocationManager 的 delegate 方法 -locationManager:didRangeBeacons:inRegion: 会被调用，通知调用者现在被检测到的 beacons。
+这个方法会返回一个 CLBeacon 的数组，根据 CLBeacon 的 proximity 属性就可以判断设备和 beacon 之间的距离。</p>
+
+<blockquote><p>proximity 属性有四个可能的值，unknown、immediate、near 和 far。
+另外 CLBeacon 还有 accuracy 和 rssi 两个属性能提供更详细的距离数据。</p></blockquote>
+
+<h6>使用 iOS 设备作为 iBeacon</h6>
+
+<p>我们可以使用 Core Bluetooth 框架来广播特定的 payload 来让 iOS 设备成为一个 iBeacon。
+这个 payload 可以由 CLBeaconRegion 的 -peripheralDataWithMeasuredPower: 方法来获取。
+之后交给 CBPeripheralManager 广播出去就可以了。</p>
+
+<p>需要注意的是，广播 iBeacon 信息的时候 app 必须在前台运行。</p>
+
+<h6>行为</h6>
+
+<p>iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别是当应用运行在后台时，检测到 beacon 的时间延迟会让开发者难以推测。在做了一些实验和合理的推测后，我们得出了一些</p>
+
+<blockquote><p>结论：
+检测到 beacon 的时间跟设备进行蓝牙扫描的时间间隔有关，每当设备进行扫描的时候，就能发现 iBeacon region 的变化。
+在 ranging 打开的情况下，设备会每秒钟做一次扫描，也就是说状态更新最多延迟一秒。
+程序在后台运行，并且 monitoring 打开的时候，设备可能每隔数分钟做一次扫描。iOS 7 的响应速度较慢，iOS 7.1 有比较大的改善。
+如果存在设置 notifyEntryStateOnDisplay=YES 的 beacon，iOS 会在屏幕点亮的时候（锁屏状态下按下 home 键，或者因为收到推送点亮等）进行一次扫描。
+设备重启并不影响 iBeacon 后台检测的执行。
+iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。</p></blockquote>
+]]></content>
+  </entry>
+  
+</feed>

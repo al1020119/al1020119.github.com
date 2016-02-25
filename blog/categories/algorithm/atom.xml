@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Algorithm | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/algorithm/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[排序算法精髓]]></title>
+    <link href="http://al1020119.github.io/blog/2014/05/20/paixu/"/>
+    <updated>2014-05-20T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/05/20/paixu</id>
+    <content type="html"><![CDATA[<h2>1、序言</h2>
+
+<p>ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题，但是这不是本篇文章讨论的范围。</p>
+
+<p>后面的文章中，我将会给大家详细介绍八大算法。</p>
+
+<!--more-->
+
+
+<h2>2、冒泡排序</h2>
+
+<h5>2.1 引出</h5>
+
+<p>前面的两篇博客里讲的插入排序是基于“逐个记录插入”，选择排序是基于“选择”，那么冒泡排序其实是基于“交换”。每次从第一个记录开始，一、二两个记录比较，大的往后放，二三两个记录比较&hellip;依次类推，这就是一趟冒泡排序。每一趟冒泡排序后，无序序列中值最大的记录冒到序列末尾，所以称之为冒泡排序。</p>
+
+<h5>2.2 代码</h5>
+
+<pre><code>//冒泡排序
+void bubbleSort(int *a,int n)
+{
+    int i,j;
+    for(i=1;i&lt;n;i++)
+        for(j=1;j&lt;n-i+1;j++){
+            if(a[j+1]&lt;a[j]){
+                a[j]=a[j]+a[j+1];
+                a[j+1]=a[j]-a[j+1];
+                a[j]=a[j]-a[j+1];
+            }
+        }
+}
+</code></pre>
+
+<p> 冒泡排序算法：
+冒泡排序代码</p>
+
+<pre><code> static void Main(string[] args)
+        {
+            ////五次比较
+             for (int i = 1; i &lt;= 5; i++)
+            {
+                List&lt;int&gt; list = new List&lt;int&gt;();
+                //插入2k个随机数到数组中
+                for (int j = 0; j &lt; 2000; j++)
+                {
+                    Thread.Sleep(1);
+                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 100000));
+                }
+                Console.WriteLine("\n第" + i + "次比较：");
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                var result = list.OrderBy(single =&gt; single).ToList();
+                watch.Stop();
+                Console.WriteLine("\n快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                watch.Start();
+                result = BubbleSort(list);
+                watch.Stop();
+                Console.WriteLine("\n冒泡排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                Console.ReadKey();
+            }
+
+      }
+
+ //冒泡排序算法
+        private static List&lt;int&gt; BubbleSort(List&lt;int&gt; list)
+        {
+            int temp;
+            //第一层循环： 表明要比较的次数，比如list.count个数，肯定要比较count-1次
+            for (int i = 0; i &lt; list.Count - 1;i++ ) 
+            {
+                //list.count-1：取数据最后一个数下标，47 
+                //j&gt;i: 从后往前的的下标一定大于从前往后的下标，否则就超越了。
+                for (var j = list.Count-1; j &gt; i;j-- )
+                {
+                    //如果前面一个数大于后面一个数则交换
+                    if (list[j - 1] &gt; list[j])
+                    {
+                        temp = list[j - 1];
+                        list[j - 1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+
+            }
+            return list;
+        } 
+</code></pre>
+
+<h5>2.3 效率分析</h5>
+
+<p>相对于简单选择排序，冒泡排序交换次数明显更多。它是通过不断地交换把最大的数冒出来。冒泡排序平均时间和最坏情况下（逆序）时间为o（n<sup>2</sup>）。最佳情况下虽然不用交换，但比较的次数没有减少，时间复杂度仍为o（n<sup>2</sup>）。此外冒泡排序是稳定的。</p>
+
+<h2>3、快速排序</h2>
+
+<h5>3.1 引出</h5>
+
+<pre><code>快速排序是冒泡排序的一种改进，冒泡排序排完一趟是最大值冒出来了，那么可不可以先选定一个值，然后扫描待排序序列，把小于该值的记录和大于该值的记录分成两个单独的序列，然后分别对这两个序列进行上述操作。这就是快速排序，我们把选定的那个值称为枢纽值，如果枢纽值为序列中的最大值，那么一趟快速排序就变成了一趟冒泡排序。
+</code></pre>
+
+<h5>3.2 代码</h5>
+
+<pre><code>两种版本，第一种是参考《数据结构》，在网上这种写法很流行。第二种是参考《算法导论》，实现起来较复杂。
+
+//快速排序（两端交替着向中间扫描）
+void quickSort1(int *a,int low,int high)
+{
+    int pivotkey=a[low];//以a[low]为枢纽值
+    int i=low,j=high;
+    if(low&gt;=high)
+        return;
+    //一趟快速排序
+    while(i&lt;j){//双向扫描
+        while(i &lt; j &amp;&amp; a[j] &gt;= pivotkey)
+            j--;
+        a[i]=a[j];
+        while(i &lt; j &amp;&amp; a[i] &lt;= pivotkey)
+            i++;
+        a[j]=a[i];
+    }
+    a[i]=pivotkey;//放置枢纽值
+    //分别对左边、右边排序
+    quickSort1(a,low,i-1); 
+    quickSort1(a,i+1,high); 
+}
+
+//快速排序（以最后一个记录的值为枢纽值，单向扫描数组）
+void quickSort2(int *a,int low,int high)
+{
+    int pivotkey=a[high];//以a[high]为枢纽值
+    int i=low-1,temp,j;
+    if(low&gt;=high)
+        return;
+    //一趟快速排序
+    for(j=low;j&lt;high;j++){
+        if(a[j]&lt;=pivotkey){
+            i++;
+            temp=a[i];
+            a[i]=a[j];
+            a[j]=temp;
+        }
+    }
+    i++;
+    //放置枢纽值
+    temp=a[i];
+    a[i]=pivotkey;
+    a[high]=temp;
+    //分别对左边、右边排序
+    quickSort2(a,low,i-1); 
+    quickSort2(a,i+1,high); 
+}
+</code></pre>
+
+<p>快速排序算法：</p>
+
+<p>快速排序法</p>
+
+<pre><code> static void Main(string[] args)
+        {
+
+            //5次比较
+            for (int i = 1; i &lt;= 5; i++)
+            {
+                List&lt;int&gt; list = new List&lt;int&gt;();
+                //插入200个随机数到数组中 
+                for (int j = 0; j &lt; 200; j++)
+                {
+                    Thread.Sleep(1);
+                    list.Add(new Random((int)DateTime.Now.Ticks).Next(0, 10000));
+                }
+                Console.WriteLine("\n第" + i + "次比较：");
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                var result = list.OrderBy(single =&gt; single).ToList();
+                watch.Stop();
+                Console.WriteLine("\n系统定义的快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", result.Take(10).ToList()));
+                watch.Start();
+                new QuickSortClass().QuickSort(list, 0, list.Count - 1);
+                watch.Stop();
+                Console.WriteLine("\n俺自己写的快速排序耗费时间：" + watch.ElapsedMilliseconds);
+                Console.WriteLine("输出前是十个数:" + string.Join(",", list.Take(10).ToList()));
+                Console.ReadKey();
+            }
+        }
+
+ public class QuickSortClass
+    {
+
+        ///&lt;summary&gt; 
+        ////// 分割函数 
+        ///&lt;/summary&gt; 
+        //////&lt;param name="list"&gt;待排序的数组&lt;/param&gt; 
+        ///&lt;param name="left"&gt;数组的左下标&lt;/param&gt; 
+        //////&lt;param name="right"&gt;&lt;/param&gt; 
+        ///&lt;returns&gt;&lt;/returns&gt;
+         public int Division(List&lt;int&gt; list, int left, int right) 
+         { 
+             //首先挑选一个基准元素 
+             int baseNum = list[left]; 
+             while (left &lt; right) 
+             { 
+                 //从数组的右端开始向前找，一直找到比base小的数字为止(包括base同等数) 
+                 while (left &lt; right &amp;&amp; list[right] &gt;= baseNum) 
+                     right = right - 1; 
+                 //最终找到了比baseNum小的元素，要做的事情就是此元素放到base的位置 
+                 list[left] = list[right]; 
+                 //从数组的左端开始向后找，一直找到比base大的数字为止（包括base同等数）
+                 while (left &lt; right &amp;&amp; list[left] &lt;= baseNum) 
+                     left = left + 1; 
+                 //最终找到了比baseNum大的元素，要做的事情就是将此元素放到最后的位置 
+                 list[right] = list[left];
+             }
+             //最后就是把baseNum放到该left的位置 
+             list[left] = baseNum;
+             //最终，我们发现left位置的左侧数值部分比left小，left位置右侧数值比left大 
+             //至此，我们完成了第一篇排序 
+             return left;
+         }
+        public void QuickSort(List&lt;int&gt; list, int left, int right)
+        { 
+            //左下标一定小于右下标，否则就超越了 
+            if (left &lt; right) 
+            { 
+                //对数组进行分割，取出下次分割的基准标号 
+                int i = Division(list, left, right);
+                //对“基准标号“左侧的一组数值进行递归的切割，以至于将这些数值完整的排序 
+                QuickSort(list, left, i - 1); 
+                //对“基准标号“右侧的一组数值进行递归的切割，以至于将这些数值完整的排序
+                QuickSort(list, i + 1, right);
+            }
+        }
+    }
+</code></pre>
+
+<h5>3.3 效率分析</h5>
+
+<p> 快速排序时间与划分是否对称有关。快速排序的平均时间复杂度为o（n<em>logn），至于为什么是o（n</em>logn），请参考《算法导论》第7章，书中用递归树的方法阐述了快速排序平均时间。且常数因子很小，所以就平均时间而言，快速排序是很好的内部排序方法。最佳情况下（每次划分都对称）时间复杂度o（n*logn）。最坏情况下（每次划分都不对称，如输入的序列有序或者逆序时）时间复杂度为o(n<sup>2</sup>)，所以在待排序序列有序或逆序时不宜选用快速排序。此外，快速排序是不稳定的。</p>
+
+<p> 最佳情况下，每次划分都是对称的，由于枢纽值不再考虑，所以得到的两个子问题的大小不可能大于n/2，同时一趟快速排序时间为o（n），所以运行时间递归表达式：</p>
+
+<pre><code>T（n）&lt;=2T(n/2)+o(n)。
+</code></pre>
+
+<p>这个递归式的解法请参考下一篇博客中归并排序效率分析。其解为T（n）=o（n*logn）。</p>
+
+<p> 最坏情况下，每次划分都很不对称，T(n)=T(n-1)+o(n),可以用递归树来解，第i层的代价为n-i+1.总共有n层。把每一层代价加起来有n-1个n相加。所以这个递归式的解为T（n）=o（n<sup>2</sup>）,此时就是冒泡排序。</p>
+]]></content>
+  </entry>
+  
+</feed>

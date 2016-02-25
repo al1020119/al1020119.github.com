@@ -1,0 +1,785 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Xcode Menu - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="Xcode Menu ordinal 　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/05/11/xcode-menu/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Xcode Menu</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
+
+<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
+
+<!--more-->
+
+
+<h2>File:</h2>
+
+<p><img src="/images/xcodemenu001.png" title="Caption" ></p>
+
+<pre><code>New : 可以新建tap,窗口，新文件，playground，workspace，target等等。
+
+Add Files to XX: 为这个项目中引入文件
+
+Open ：打开文件
+
+Open Recent  ：打开最近的打开的项目或者工作组
+
+Open Quickly  ：通过搜索文件名快速打开一个文件
+
+Close ：这几个选项的都是关闭操作。
+
+Save ：保存
+
+Duplicate：复制
+
+Revert  to Saved：将此文件的修改直接回退到上次保存时
+
+Unlock ：要对第三方库或系统文件进行修改时解锁
+
+Show in Finder ：在Finder 中展示
+
+Open with External Editor  ：使用外部编辑器打开
+
+Save As Workspace： 另存为工作组
+
+Page Setup ：页面设置，为打印而生
+
+Print… ：用打印机打印当前文件 
+</code></pre>
+
+<h2>Edit:</h2>
+
+<p><img src="/images/xcodemenu002.png" title="Caption" ></p>
+
+<pre><code>Undo: 撤销
+
+Redo ：反撤销
+
+Cut ：剪切
+
+Copy ：拷贝
+
+Paste ：粘贴
+
+Special Paste ：特殊粘贴 ??
+
+Paste and Preserve formatter ：粘贴并匹配样式
+
+Duplicate :复制
+
+Delete :删除
+
+Select All :全选
+
+Filter : 筛选，可以选择在导航栏中筛选和在库中筛选
+
+Sort：排序 (还不知道怎么用)
+
+Format ：格式
+
+          Font ：可以打开字体和颜色的设置框，可以copy样式。
+
+          Text ：可以设置编码的页面左右对齐，显示顶部标尺。
+
+          Spelling and Grammar ：拼写提示和语法提示。
+
+          Substitutions：会出来个仪表盘，提供微操。
+
+          Transformations ：可以将英文转成全大写，全小写，首字母大写。
+
+          Speech ：开始说话结束说话。
+
+Refactor: 重构
+
+          Rename 重命名
+
+          Extract 提取
+
+          Create Superclass  创建超类
+
+          Move Up 上移
+
+          Move Down 下移
+
+Convert：转换成ARC,swift等
+
+Encapsulate 封装
+
+Start Dictation: 开始听写
+
+Emoji &amp; symbols：emoji表情和特殊符号 
+</code></pre>
+
+<h2>View:</h2>
+
+<p><img src="/images/xcodemenu003.png" title="Caption" ></p>
+
+<pre><code>Standard Editor ：标准模块
+
+Assistant Editor ：助理模块
+
+Version Editor： 版本模块
+
+Navigators：里面包含了xcode左边8个导航模块的切换。
+
+Debug Area：中下部的调试框和打印输出框。
+
+Untilities: xcode右边的上面两个选项和下面的四个选项。
+
+          Show File Inspector：显示文件检查
+
+          Show Quick Help Inspector：显示快速帮助
+
+          File Template Library  文件模板库
+
+          Code Snippet Library  代码片段库
+
+          Object Library  对象库
+
+          Media Library  媒体库
+
+          Hide Utilities  隐藏实体工具
+
+Hide Toolbar  隐藏工具栏（XCode顶部）
+
+Hide Tab Bar  隐藏标签栏（用了cmd+T出来的tab切换）
+
+Enter Full Screen：全屏
+</code></pre>
+
+<p> ##Find:</p>
+
+<p><img src="/images/xcodemenu004.png" title="Caption" ></p>
+
+<pre><code>Find in Workspace… 在工作组中查找
+
+Find and Replace in Workspace… 在工作组中查找和替换
+
+...
+
+上面4个是在哪地方查找或替换，中间4个是在你几个选中的文件或组中查找，
+
+再下面4个是查找或替换，然后是替换。
+
+Find Call Hierarchy：查找到调用层级。
+
+Hide Find Bar：隐藏查找栏
+
+Use Selection for Find ：使用选择的地方去查找
+
+Use Selection for Replace：使用选择的地方去替换
+</code></pre>
+
+<h2>Navigate:</h2>
+
+<p><img src="/images/xcodemenu005.png" title="Caption" ></p>
+
+<pre><code>Reveal in Project Navigator ：在项目导航中揭示出此文件
+
+Reveal in Symbol Navigator  ：在符号导航中揭示出某方法
+
+Open in Assistant Editor：用分屏助理打开
+
+Open in ..   你想怎么打开
+
+Move Focus To Next Area  将焦点移动到下一个区域
+
+Move Focus To Editor   将焦点移动到编辑器
+
+Go Forward  前进，相当于两个手指左划右划
+
+Go back  后退
+
+Jump to Selection 跳转到选择
+
+Jump to Definition 跳转到定义
+
+Jump to OriginalSource 跳到源文件
+
+Jump to Next Issue  跳转到下一个问题
+
+Jump to Previous Issue  跳转到上一个问题
+
+Jump to Next Counterpart  ：??
+
+Jump to Previous Counterpart : ??
+
+Jump to Line in xxx.m ：跳到这个文件的第几行。
+
+Jump to Next Placeholder ：??
+
+Jump to Previous Placeholder：??
+</code></pre>
+
+<h2>Editor:(选中文件状态下)</h2>
+
+<p><img src="/images/xcodemenu006.png" title="Caption" ></p>
+
+<pre><code>Show Completions : 显示自动补全
+
+Edit All in Scope: 在当前文件全文修改选中的一个变量或单词
+
+Fix All in Scope: 在当前文件自动处理他能解决的error，相当于点 
+
+Show issue: 展示错误和隐藏错误，相当于点左边的按钮 
+
+Issues: 可以控制展示全部错误警告，还是仅仅展示警告。
+
+Structure: 构造
+
+Balance Delimiter：直接选中光标所在的整个大括号
+
+Re-Indent : 将格式缩进整理一下
+
+这里还有四个，分别是往前或往后移一个tab，往上往下移一行
+
+Code Folding: 提供各种折叠和取消折叠
+
+Focus Follow Selection：高亮聚焦你光标所在的模块
+
+Syntax Coloring: 设置各个语法的高亮配色
+
+Show Invisibles: 显示所有隐藏的东西，比如空格。
+
+Show Blame for Line: 显示选中的行的修改者和log。
+
+Show Code Coverage: 展示代码的覆盖范围
+</code></pre>
+
+<h2>Editor:(选中xib状态下)</h2>
+
+<p><img src="/images/xcodemenu007.png" title="Caption" ></p>
+
+<pre><code>Canvas 画布
+
+          Show Selection Highlights: 显示选中控件的高亮
+
+   Show Resize Knobs：显示约束旁边的小方块
+
+Show Constraints ：显示约束
+
+Show Involved Views For Selected Constraints：显示约束涉及到的视图
+
+          Show Layout Rectangles  布局矩形
+
+Size Class: 屏幕布局相关，相当于点xib下面的按钮
+
+Show Bounds Rectangles  显示边界矩形
+
+Hide Document Outline：隐藏或显示左边的层级图
+
+Reveal in Document Outline：在左边的层级图中揭示出来
+
+Align  对准
+
+          Align Left Edges  左边缘对齐
+
+          Align Right Edges  右边缘对齐
+
+          Align Top Edges  顶部边缘对齐
+
+          Align Bottom Edges  底部边缘对齐
+
+          Align Horizontal Centers  横向中心对齐
+
+          Align Vertical Centers  竖向中心对齐
+
+          Align Baselines  基线对齐
+
+          Align Horizontal Center In Container   对齐容器中的水平中心
+
+          Align Vertical Center In Container   对齐容器中的垂直中心
+
+Arrange : 可以上移下移或移到背景等
+
+Embed ： 嵌入，可以嵌nav，tabbar，scrollView
+
+Unembed   解除嵌入
+
+Size to Fit ：大小以适合
+
+Snap to Guides：让引导线具有吸附功能，让控件靠近就自动对齐
+
+Guides：设置引导标尺线
+
+Add Horizontal Guide ： 添加横向标尺线
+
+Add Vertical Guide ： 添加垂直标尺线
+
+Automatically Refresh Views：自动刷新视图
+
+Refresh All Views：刷新所有视图
+
+Debug Selected Views：调试选中的视图？
+
+Resolve Auto Layout issues：解决自动布局的问题，类似于点 
+
+Refactor to Storyboard：把VC重构成SB？
+</code></pre>
+
+<h2>Product:</h2>
+
+<p><img src="/images/xcodemenu008.png" title="Caption" ></p>
+
+<pre><code>Run：运行
+
+Test：??
+
+Profile：打开instrument之类的
+
+Analyze：进行代码分析，可以检测一些不规范的OC语法
+
+Archive：归档
+
+Build for：和上面的功能相似。
+
+Perform Action：??
+
+Build：编译
+
+Clean：清一下之前编译的缓存
+
+Stop：停止
+</code></pre>
+
+<h2>Debug:</h2>
+
+<p><img src="/images/xcodemenu009.png" title="Caption" ></p>
+
+<pre><code>Pause : 暂停 会 切换成继续
+
+Continue to Current Line：走到你光标选中的这行
+
+Step Over ： 跨越
+
+Step Into ：步入
+
+Step Out ：走出
+
+Step Over Instruction： 跨过指示
+
+Step Over Thread ：单步执行在线程
+
+Step Into Instruction ：步入指示
+
+Step Into Thread ：单步执行线程
+
+Capture GPU Frame: 捕获GPU位置
+
+Simulate Location: 模拟模拟器的位置
+
+Simulate Background Fetch: 让模拟器去后台
+
+iCloud: 苹果云相关
+
+View Debugging: 关于视图的调试
+
+Take Screenshot of Active Device：截图
+
+Capture View Hierarchy: 用3D图 来捕获视图层次
+
+Show View Frame: 在模拟器上显示各个控件的尺寸大小
+
+Show Alignment Rectangles: 显示对齐矩形
+
+Show View Drawing: 显示查看绘图
+
+Show Responsive Scrolling Status: 显示响应滚动状态
+
+Deactivate Breakpoints  停用中断点。
+
+Breakpoints: 相当于左下角的加号，增加各种断点。
+
+Debug Workflow：可以显示内存和清除打印等操作。
+
+Always Show Disassembly: 这要是勾上就只显示堆栈信息不看代码
+
+Attach to Process by PID or Name: 设置权限id或name
+
+Attach to Progress: 附加到进程
+
+Detach: 跳过所有的断点
+</code></pre>
+
+<h4>Source Control:</h4>
+
+<p><img src="/images/xcodemenu0010.png" title="Caption" ></p>
+
+<pre><code>第一行是分支管理，可以创建分支合并分支，配置分支的源等等。
+
+Create Working Copy：项目中如果有地方是引用的那就copy一下。
+
+Checkout：可以选择切换分支。
+
+Commit  ：提交
+
+Push ： 上传代码
+
+Pull ：拉代码
+
+Refresh Status：刷新状态
+
+Discard Changes ：放弃所有修改。
+
+Add Selected Files : 将选中的这些问号文件add一下。
+
+Discard Changes  in selected Files : 将选中的这些文件放弃修改。
+
+Mark Selected  Files as Resolved: 相当于合并或rebase过程中的解决。
+
+History：可以看当前分支的log历史。
+</code></pre>
+
+<h2>Window:</h2>
+
+<p><img src="/images/xcodemenu011.png" title="Caption" ></p>
+
+<pre><code>Minimize: 最小化
+
+Zoom：相当于windows的“还原”
+
+Show next tab: 如果你有两个tab的话这个就是切换tab
+
+Show previous tab: 同上
+
+Documentation and API Reference：打开xcode文档
+
+welcome to xcode: 来到开始页面
+
+Device：硬件，能看到MAC ，模拟器和手机
+
+Organizer：打开可以看到Archives 和 Crashes
+
+Project：查看最近项目，也可以在这里删除Derived Data
+
+Bring all to Front：把所有xcode打开的都置顶。
+</code></pre>
+
+<h2>Help:</h2>
+
+<p><img src="/images/xcodemenu012.png" title="Caption" ></p>
+
+<pre><code>Search : 在目录中搜索功能。
+
+Documentation and API Reference：打开xcode文档
+
+Xcode OverView：打开xcode综述
+
+Release Notes：打开xcode各版本更新迭代的log。
+
+What's New in Xcode：有什么新特性
+
+Quick help for selected Item：快速帮助，相当于按着option点。
+
+Search Documentation for Selected  Text：详细帮 助，直接在文档里找到这个。
+</code></pre>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/tools/'>tools</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/" title="Previous Post: 字典转模型深究">&laquo; 字典转模型深究</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/" title="Next Post: 长链接&amp;短链接">长链接&amp;短链接 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/05/11/xcode-menu/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/05/11/xcode-menu/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

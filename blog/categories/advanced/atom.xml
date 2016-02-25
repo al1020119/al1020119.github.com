@@ -1,0 +1,2133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Advanced | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/advanced/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Metal深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/10/10/metal/"/>
+    <updated>2015-10-10T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/10/10/metal</id>
+    <content type="html"><![CDATA[<p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
+
+<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
+
+<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
+
+<!--more-->
+
+
+<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
+
+<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
+
+<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
+
+<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
+
+<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
+</code></pre>
+
+<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
+
+<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
+
+<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
+
+<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
+
+<p>但是，还是有两个很好的原因来学习Metal：</p>
+
+<ul>
+<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
+<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
+</ul>
+
+
+<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
+
+<h4>Metal vs OpenGL ES</h4>
+
+<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
+
+<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
+
+<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
+
+<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
+
+<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
+
+<p>让我们开始看看一些Metal代码吧！</p>
+
+<p>开头
+Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
+
+<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
+
+<p>有七个步骤来设置metal：</p>
+
+<ul>
+<li>1.创建一个MTLDevice</li>
+<li>2.创建一个CAMetalLayer</li>
+<li>3.创建一个Vertex Buffer</li>
+<li>4.创建一个Vertex Shader</li>
+<li>5.创建一个Fragment Shader</li>
+<li>6.创建一个Render Pipeline</li>
+<li>7.创建一个Command Queue</li>
+</ul>
+
+
+<p>让我们一个个看它们。</p>
+
+<h5>1)创建一个MTLDevice</h5>
+
+<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
+
+<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
+
+<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
+
+<pre><code>import Metal 
+</code></pre>
+
+<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
+
+<pre><code>var device: MTLDevice! = nil 
+</code></pre>
+
+<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
+
+<pre><code>device = MTLCreateSystemDefaultDevice() 
+</code></pre>
+
+<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
+
+<h5>2）创建一个CAMetalLayer</h5>
+
+<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
+
+<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
+
+<p>首先在这个文件的上方添加import语句。</p>
+
+<pre><code>import QuartzCore 
+</code></pre>
+
+<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
+
+<p>然后把新属性添加到类中：</p>
+
+<pre><code>var metalLayer: CAMetalLayer! = nil 
+</code></pre>
+
+<p>这将会存储你新layer的引用。</p>
+
+<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
+
+<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
+ 2 
+ 3 metalLayer.device = device           // 2 
+ 4 
+ 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
+ 6 
+ 7 metalLayer.framebufferOnly = true    // 4 
+ 8 
+ 9 metalLayer.frame = view.layer.frame  // 5 
+10 
+11 view.layer.addSublayer(metalLayer)   // 6 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你创建了一个CAMetalLayer</li>
+<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
+<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
+<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
+<li>e.你把layer的frame设置为view的frame。</li>
+<li>f.你把layer作为view.layer下的子layer添加。</li>
+</ul>
+
+
+<h5>3）创建一个Vertex Buffer</h5>
+
+<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
+
+<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
+
+<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
+
+<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
+
+<pre><code>let vertexData:[Float] = [ 
+  0.0, 1.0, 0.0, 
+  -1.0, -1.0, 0.0, 
+  1.0, -1.0, 0.0] 
+</code></pre>
+
+<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
+
+<p>添加另一个新的属性：</p>
+
+<pre><code>var vertexBuffer: MTLBuffer! = nil 
+然后在 viewDidLoad 方法的最后添加以下代码：
+let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
+vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
+<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
+</ul>
+
+
+<h5>4）创建一个Vertex Shader</h5>
+
+<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
+
+<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
+
+<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
+
+<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
+
+<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
+
+<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
+在Shaders.metal底部添加下列代码：</p>
+
+<pre><code>metalLayer = CAMetalLayer()          // 1 
+
+metalLayer.device = device           // 2 
+
+metalLayer.pixelFormat = .BGRA8Unorm // 3 
+
+metalLayer.framebufferOnly = true    // 4 
+
+metalLayer.frame = view.layer.frame  // 5 
+
+view.layer.addSublayer(metalLayer)   // 6
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
+<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
+<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
+<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
+</ul>
+
+
+<h5>5）创建一个Fragment Shader</h5>
+
+<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
+
+<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
+
+<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
+
+<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
+
+<p>在Shader.metal的底部添加下列代码：</p>
+
+<pre><code>1 fragment half4 basic_fragment() { // 1 
+2 
+3 return half4(1.0);              // 2 
+4 
+5 } 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li><ol type="a">
+<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
+</ol>
+</li>
+<li><ol type="a">
+<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>6）创建一个Render Pipeline</h5>
+
+<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
+
+<ol>
+<li><p>首先在ViewController.swift里添加一个属性：
+var pipelineState: MTLRenderPipelineState! = nil
+这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
+<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
+</ol>
+
+
+<p>// 1</p>
+
+<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
+2 
+3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
+4 
+5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
+</code></pre>
+
+<p>// 2</p>
+
+<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
+
+pipelineStateDescriptor.vertexFunction = vertexProgram 
+
+pipelineStateDescriptor.fragmentFunction = fragmentProgram 
+
+pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
+</code></pre>
+
+<p>//3</p>
+
+<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
+
+if !pipelineState { 
+
+  println("Failed to create pipeline state, error \(pipelineError)") 
+
+}
+</code></pre>
+
+<p>让我们分部分看这些代码：</p>
+
+<ul>
+<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
+<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
+<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
+</ul>
+
+
+<h5>7）创建一个Command Queue</h5>
+
+<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
+
+<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
+
+<p>要创建一个command queue，简单地添加一个属性：</p>
+
+<pre><code>var commandQueue: MTLCommandQueue! = nil 
+</code></pre>
+
+<p>把下面这行添加到 viewDidLoad 的最后：</p>
+
+<pre><code>commandQueue = device.newCommandQueue() 
+</code></pre>
+
+<p>恭喜，你的预设置的代码完成了。</p>
+
+<p>渲染三角形
+现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
+
+<p>它将在五个步骤中被完成：</p>
+
+<ul>
+<li>1.创建一个Display link。</li>
+<li>2.创建一个Render Pass Descriptor</li>
+<li>3.创建一个Command Buffer</li>
+<li>4.创建一个Render Command Encoder</li>
+<li>5.提交你Command Buffer的内容。</li>
+</ul>
+
+
+<p>让我们深入来看！</p>
+
+<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
+
+<h6>1）创建一个Display Link</h6>
+
+<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
+
+<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
+
+<p>为了使用它，在类里添加一个新的属性：</p>
+
+<pre><code> 1 var timer: CADisplayLink! = nil  
+</code></pre>
+
+<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
+
+<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
+
+timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
+</code></pre>
+
+<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
+
+<pre><code>func render() { 
+
+// TODO 
+
+} 
+
+func gameloop() { 
+  autoreleasepool { 
+
+    self.render() 
+
+  } 
+
+} 
+</code></pre>
+
+<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
+
+<h6>2）创建一个Render Pass Descriptor</h6>
+
+<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
+
+<p>简单地在 render 函数里添加以下行：</p>
+
+<pre><code>var drawable = metalLayer.nextDrawable() 
+
+let renderPassDescriptor = MTLRenderPassDescriptor() 
+renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
+
+renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
+
+renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
+</code></pre>
+
+<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
+
+<h6>3）创建一个Command Buffer</h6>
+
+<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
+
+<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
+</code></pre>
+
+<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
+
+<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
+
+<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
+
+<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
+renderEncoder.setRenderPipelineState(pipelineState) 
+
+renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
+
+renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
+
+renderEncoder.endEncoding()
+</code></pre>
+
+<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
+
+<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
+
+<p>当你完成后，你只要调用 endEncoding()。</p>
+
+<h6>5）提交你的Command Buffer</h6>
+
+<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
+
+<pre><code>commandBuffer.presentDrawable(drawable)
+commandBuffer.commit()
+</code></pre>
+
+<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
+
+<p>我见过最赞的三角形！</p>
+
+<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
+
+<p>最后:这是我们教程最终的项目。</p></blockquote>
+
+<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
+</code></pre>
+
+<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Block深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/09/06/blockshen-jiu/"/>
+    <updated>2015-09-06T17:43:24+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/09/06/blockshen-jiu</id>
+    <content type="html"><![CDATA[<h2>目录</h2>
+
+<ul>
+<li><h5>什么是block？</h5>
+
+<ul>
+<li>block编译转换结构</li>
+<li>block实际结构</li>
+</ul>
+</li>
+<li><h5>block的类型</h5>
+
+<ul>
+<li>NSConcreteGlobalBlock和NSConcreteStackBlock</li>
+<li>NSConcreteMallocBlock</li>
+</ul>
+</li>
+<li><h5>捕捉变量对block结构的影响</h5>
+
+<ul>
+<li>局部变量</li>
+<li>全局变量</li>
+<li>局部静态变量</li>
+<li>__block修饰的变量</li>
+<li>self隐式循环引用</li>
+</ul>
+</li>
+<li><h5>不同类型block的复制</h5>
+
+<ul>
+<li>栈block</li>
+<li>堆block</li>
+<li>全局block</li>
+</ul>
+</li>
+<li><h5>block辅助函数</h5>
+
+<ul>
+<li>__block修饰的基本类型的辅助函数</li>
+<li>对象的辅助函数</li>
+</ul>
+</li>
+<li><h5>ARC中block的工作</h5>
+
+<ul>
+<li>block试验</li>
+<li>block作为参数传递</li>
+<li>block作为返回值</li>
+<li>block属性</li>
+</ul>
+</li>
+</ul>
+
+
+<!--more-->
+
+
+<h3>参考博文</h3>
+
+<p>最近看了一些block的资料，并动手做了一些实践，摘录并添加了一些结论。</p>
+
+<h3>什么是block？</h3>
+
+<p>首先，看一个极简的block：</p>
+
+<pre><code>    int main(int argc, const char * argv[]) {
+        @autoreleasepool {
+
+            ^{ };
+        }
+        return 0;
+    }
+</code></pre>
+
+<h5>block编译转换结构</h5>
+
+<p>对其执行clang -rewrite-objc编译转换成C++实现，得到以下代码：</p>
+
+<pre><code>    struct __block_impl {
+        void *isa;
+        int Flags;
+        int Reserved;
+        void *FuncPtr;
+    };
+
+    struct __main_block_impl_0 {
+      struct __block_impl impl;
+      struct __main_block_desc_0* Desc;
+      __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+        impl.isa = &amp;_NSConcreteStackBlock;
+        impl.Flags = flags;
+        impl.FuncPtr = fp;
+        Desc = desc;
+      }
+    };
+    static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+    }
+
+    static struct __main_block_desc_0 {
+      size_t reserved;
+      size_t Block_size;
+    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
+    int main(int argc, const char * argv[]) {
+        /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+            (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
+        }
+        return 0;
+    }
+</code></pre>
+
+<p>不难看出其中的<strong>main_block_impl_0就是block的一个C++的实现(最后面的_0代表是main中的第几个block)，也就是说也是一个结构体。
+其中</strong>block_impl的定义如下：</p>
+
+<pre><code>struct __block_impl {
+  void *isa;
+  int Flags;
+  int Reserved;
+  void *FuncPtr;
+};
+</code></pre>
+
+<p>其结构体成员如下：</p>
+
+<ul>
+<li>isa，指向所属类的指针，也就是block的类型</li>
+<li>flags，标志变量，在实现block的内部操作时会用到</li>
+<li>Reserved，保留变量</li>
+<li>FuncPtr，block执行时调用的函数指针</li>
+<li>可以看出，它包含了isa指针（包含isa指针的皆为对象），也就是说block也是一个对象* (runtime里面，对象和类都是用结构体表示)。</li>
+</ul>
+
+
+<p>__main_block_desc_0的定义如下：</p>
+
+<pre><code>    static struct __main_block_desc_0 {
+      size_t reserved;
+      size_t Block_size;
+    } __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0)};
+</code></pre>
+
+<p>其结构成员含义如下：</p>
+
+<ul>
+<li>reserved：保留字段</li>
+<li>Block_size：block大小(sizeof(struct __main_block_impl_0))</li>
+<li>以上代码在定义<strong>main_block_desc_0结构体时，同时创建了</strong>main_block_desc_0_DATA，并给它赋值，以供在main函数中对__main_block_impl_0进行初始化。</li>
+</ul>
+
+
+<p>__main_block_impl_0定义了显式的构造函数，其函数体如下：</p>
+
+<pre><code>  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+</code></pre>
+
+<p>可以看出，</p>
+
+<ul>
+<li><em>_main_block_impl_0的isa指针指向了</em>NSConcreteStackBlock，</li>
+<li>从main函数中看， <strong>main_block_impl_0的FuncPtr指向了函数</strong>main_block_func_0</li>
+<li><strong>main_block_impl_0的Desc也指向了定义</strong>main_block_desc_0时就创建的__main_block_desc_0_DATA，其中纪录了block结构体大小等信息。</li>
+<li>以上就是根据编译转换的结果，对一个简单block的解析，后面会将block操作不同类型的外部变量，对block结构的影响进行相应的说明。</li>
+</ul>
+
+
+<h5>block实际结构</h5>
+
+<p>接下来观察下Block_private.h文件中对block的相关结构体的真实定义：</p>
+
+<pre><code>/* Revised new layout. */
+struct Block_descriptor {
+    unsigned long int reserved;
+    unsigned long int size;
+    void (*copy)(void *dst, void *src);
+    void (*dispose)(void *);
+};
+
+
+struct Block_layout {
+    void *isa;
+    int flags;
+    int reserved;
+    void (*invoke)(void *, ...);
+    struct Block_descriptor *descriptor;
+    /* Imported variables. */
+};
+</code></pre>
+
+<p>有了上文对编译转换的分析，这里只针对略微不同的成员进行分析：</p>
+
+<p>invoke，同上文的FuncPtr，block执行时调用的函数指针，block定义时内部的执行代码都在这个函数中
+Block_descriptor，block的详细描述</p>
+
+<ul>
+<li>copy/dispose，辅助拷贝/销毁函数，处理block范围外的变量时使用</li>
+<li>总体来说，block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。</li>
+</ul>
+
+
+<h3>block的类型</h3>
+
+<p>block的常见类型有3种：</p>
+
+<ul>
+<li>_NSConcreteGlobalBlock（全局）</li>
+<li>_NSConcreteStackBlock（栈）</li>
+<li>_NSConcreteMallocBlock（堆）</li>
+</ul>
+
+
+<p>附上APUE的进程虚拟内存段分布图：</p>
+
+<p><img src="/images/block001.png" title="Caption" ></p>
+
+<p>进程虚拟内存空间分布</p>
+
+<ul>
+<li>其中前2种在Block.h种声明，后1种在Block_private.h中声明，所以最后1种基本不会在源码中出现。</li>
+<li>由于无法直接创建_NSConcreteMallocBlock类型的block，所以这里只对前面2种进行手动创建分析，最后1种通过源代码分析。</li>
+</ul>
+
+
+<h5>NSConcreteGlobalBlock和NSConcreteStackBlock</h5>
+
+<p>首先，根据前面两种类型，编写以下代码：</p>
+
+<pre><code>void (^globalBlock)() = ^{
+
+};
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        void (^stackBlock1)() = ^{
+
+        };
+    }
+    return 0;
+}
+</code></pre>
+
+<p>对其进行编译转换后得到以下缩略代码：</p>
+
+<pre><code>// globalBlock
+struct __globalBlock_block_impl_0 {
+  struct __block_impl impl;
+  struct __globalBlock_block_desc_0* Desc;
+  __globalBlock_block_impl_0(void *fp, struct __globalBlock_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteGlobalBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+...
+
+// stackBlock
+struct __main_block_impl_0 {
+  struct __block_impl impl;
+  struct __main_block_desc_0* Desc;
+  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+...
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+        void (*stackBlock)() = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA);
+    }
+    return 0;
+}
+</code></pre>
+
+<p>可以看出globalBlock的isa指向了<em>NSConcreteGlobalBlock，即在全局区域创建，编译时具体的代码就已经确定在上图中的代码段中了，block变量存储在全局数据存储区；stackBlock的isa指向了</em>NSConcreteStackBlock，即在栈区创建。</p>
+
+<h5>NSConcreteMallocBlock</h5>
+
+<ul>
+<li><p>接下来是在堆中的block，堆中的block无法直接创建，其需要由<em>NSConcreteStackBlock类型的block拷贝而来(也就是说block需要执行copy之后才能存放到堆中)。由于block的拷贝最终都会调用</em>Block_copy_internal函数，所以观察这个函数就可以知道堆中block是如何被创建的了：</p>
+
+<pre><code>  static void *_Block_copy_internal(const void *arg, const int flags) {
+      struct Block_layout *aBlock;
+      ...
+      aBlock = (struct Block_layout *)arg;
+      ...
+      // Its a stack block.  Make a copy.
+      if (!isGC) {
+          // 申请block的堆内存
+          struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
+          if (!result) return (void *)0;
+          // 拷贝栈中block到刚申请的堆内存中
+          memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
+          // reset refcount
+          result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
+          result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
+          // 改变isa指向_NSConcreteMallocBlock，即堆block类型
+          result-&gt;isa = _NSConcreteMallocBlock;
+          if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+              //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
+              (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
+          }
+          return result;
+      }
+      else {
+          ...
+      }
+  }
+</code></pre>
+
+<p>从以上代码以及注释可以很清楚的看出，函数通过memmove将栈中的block的内容拷贝到了堆中，并使isa指向了_NSConcreteMallocBlock。
+block主要的一些学问就出在栈中block向堆中block的转移过程中了。</p></li>
+</ul>
+
+
+<p>捕捉变量对block结构的影响
+接下来会编译转换捕捉不同变量类型的block，以对比它们的区别。</p>
+
+<h5>局部变量</h5>
+
+<p>前：</p>
+
+<pre><code>- (void)test
+{
+    int a;
+    ^{a;};
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  int a;
+  // a(_a)是构造函数的参数列表初始化形式，相当于a = _a。从_I_Person_test看，传入的就是a
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int _a, int flags=0) : a(_a) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  int a = __cself-&gt;a; // bound by copy
+a;}
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    int a;
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, a);
+}
+</code></pre>
+
+<p>可以看到，block相对于文章开头增加了一个int类型的成员变量，他就是用来存储外部变量a的。可以看出，这次拷贝只是一次值传递。并且当我们想在block中进行以下操作时，将会发生错误</p>
+
+<pre><code>^{a = 10;};
+</code></pre>
+
+<p>编译器会提示</p>
+
+<p><img src="/images/block002.png" title="Caption" ></p>
+
+<p>错误提示
+。因为_I_Person_test函数中的a和Persontest_block_func_0函数中的a并没有在同一个作用域，所以在block对a进行赋值是没有意义的，所以编译器给出了错误。我们可以通过地址传递来消除以上错误：</p>
+
+<pre><code>- (void)test
+{
+    int a = 0;
+    // 利用指针p存储a的地址
+    int *p = &amp;a;
+
+    ^{
+        // 通过a的地址设置a的值
+        *p = 10;
+    };
+}
+</code></pre>
+
+<p>但是变量a的生命周期是和方法test的栈相关联的，当test运行结束，栈随之销毁，那么变量a就会被销毁，p也就成为了野指针。如果block是作为参数或者返回值，这些类型都是跨栈的，也就是说再次调用会造成野指针错误。</p>
+
+<h5>全局变量</h5>
+
+<p>前：</p>
+
+<pre><code>// 全局静态
+static int a;
+// 全局
+int b;
+- (void)test
+{
+
+    ^{
+        a = 10;
+        b = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>static int a;
+int b;
+
+struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int flags=0) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+
+        a = 10;
+        b = 10;
+    }
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA);
+}
+</code></pre>
+
+<p>可以看出，因为全局变量都是在静态数据存储区，在程序结束前不会被销毁，所以block直接访问了对应的变量，而没有在Persontest_block_impl_0结构体中给变量预留位置。</p>
+
+<h5>局部静态变量</h5>
+
+<p>前</p>
+
+<pre><code>- (void)test
+{
+    static int a;
+    ^{
+        a = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  int *a;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, int *_a, int flags=0) : a(_a) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  int *a = __cself-&gt;a; // bound by copy
+        // 这里通过局部静态变量a的地址来对其进行修改
+        (*a) = 10;
+    }
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0)};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    static int a;
+    // 传入a的地址
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, &amp;a);
+}
+</code></pre>
+
+<p>需要注意一点的是静态局部变量是存储在静态数据存储区域的，也就是和程序拥有一样的生命周期，也就是说在程序运行时，都能够保证block访问到一个有效的变量。但是其作用范围还是局限于定义它的函数中，所以只能在block通过静态局部变量的地址来进行访问。
+关于变量的存储我原来的这篇博客有提及：c语言臆想&ndash;全局&mdash;局部变量</p>
+
+<h5>__block修饰的变量</h5>
+
+<p>前：</p>
+
+<pre><code>- (void)test
+{
+   __block int a;
+    ^{
+        a = 10;
+    };
+}
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
+
+struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  __Block_byref_a_0 *a; // by ref
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
+        // 注意，这里的_forwarding用来保证操作的始终是堆中的拷贝a，而不是栈中的a
+        (a-&gt;__forwarding-&gt;a) = 10;
+    }
+static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
+  void (*dispose)(struct __Person__test_block_impl_0*);
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+    // __block将a包装成了一个对象
+   __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
+;
+    (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
+}
+</code></pre>
+
+<p>可以看到，对比上面的结果，明显多了<strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，</strong>Person<strong>test_block_impl_0的拷贝辅助函数</strong>Person<strong>test_block_copy_0会将</strong>Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作。其中<strong>Block_byref_a_0成员指针</strong>forwarding用来指向它在堆中的拷贝，其依据源码如下：</p>
+
+<pre><code>static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
+    struct Block_byref **destp = (struct Block_byref **)dest;
+    struct Block_byref *src = (struct Block_byref *)arg;
+
+    ...
+    // 堆中拷贝的forwarding指向它自己
+    copy-&gt;forwarding = copy; // patch heap copy to point to itself (skip write-barrier)
+    // 栈中的forwarding指向堆中的拷贝
+    src-&gt;forwarding = copy;  // patch stack to point to heap copy
+    ...
+}
+</code></pre>
+
+<p>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
+至于block如何实现对局部变量的拷贝，下面会详细说明。</p>
+
+<h5>self隐式循环引用</h5>
+
+<p>前：</p>
+
+<pre><code>@implementation Person
+{
+    int _a;
+    void (^_block)();
+}
+- (void)test
+{
+  void (^_block)() = ^{
+        _a = 10;
+    };
+}
+
+@end
+</code></pre>
+
+<p>后：</p>
+
+<pre><code>struct __Person__test_block_impl_0 {
+  struct __block_impl impl;
+  struct __Person__test_block_desc_0* Desc;
+  // 可以看到，block强引用了self
+  Person *self;
+  __Person__test_block_impl_0(void *fp, struct __Person__test_block_desc_0 *desc, Person *_self, int flags=0) : self(_self) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  Person *self = __cself-&gt;self; // bound by copy
+
+        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
+    }
+static void __Person__test_block_copy_0(struct __Person__test_block_impl_0*dst, struct __Person__test_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;self, (void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static void __Person__test_block_dispose_0(struct __Person__test_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;self, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static struct __Person__test_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __Person__test_block_impl_0*, struct __Person__test_block_impl_0*);
+  void (*dispose)(struct __Person__test_block_impl_0*);
+} __Person__test_block_desc_0_DATA = { 0, sizeof(struct __Person__test_block_impl_0), __Person__test_block_copy_0, __Person__test_block_dispose_0};
+
+static void _I_Person_test(Person * self, SEL _cmd) {
+  void (*_block)() = (void (*)())&amp;__Person__test_block_impl_0((void *)__Person__test_block_func_0, &amp;__Person__test_block_desc_0_DATA, self, 570425344);
+}
+</code></pre>
+
+<p>如果在编译转换前，将<em>a改成self.a，能很明显地看出是产生了循环引用(self强引用block，block强引用self)。那么使用</em>a呢？经过编译转换后，依然可以在<strong>Person</strong>test_block_impl_0看见self的身影。且在函数<em>I_Person_test中，传入的参数也是self。通过以下语句，可以看出，不管是用什么形式访问实例变量，最终都会转换成self+变量内存偏移的形式。所以在上面例子中使用</em>a也会造成循环引用。</p>
+
+<pre><code>static void __Person__test_block_func_0(struct __Person__test_block_impl_0 *__cself) {
+  Person *self = __cself-&gt;self; // bound by copy
+        // self＋实例变量a的偏移值
+        (*(int *)((char *)self + OBJC_IVAR_$_Person$_a)) = 10;
+    }
+</code></pre>
+
+<h3>不同类型block的复制</h3>
+
+<p>block的复制代码在_Block_copy_internal函数中。</p>
+
+<h5>栈block</h5>
+
+<p>从以下代码可以看出，栈block的复制不仅仅复制了其内容，还添加了一些额外的东西</p>
+
+<pre><code>* 1、往flags中并入了BLOCK_NEEDS_FREE（这个标志表明block需要释放，在release以及再次拷贝时会用到）
+
+* 2、如果有辅助copy函数（BLOCK_HAS_COPY_DISPOSE），那么就调用（这个辅助copy函数是用来拷贝block捕获的变量的）
+
+struct Block_layout *result = malloc(aBlock-&gt;descriptor-&gt;size);
+if (!result) return (void *)0;
+  memmove(result, aBlock, aBlock-&gt;descriptor-&gt;size); // bitcopy first
+// reset refcount
+result-&gt;flags &amp;= ~(BLOCK_REFCOUNT_MASK);    // XXX not needed
+result-&gt;flags |= BLOCK_NEEDS_FREE | 1;
+result-&gt;isa = _NSConcreteMallocBlock;
+if (result-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+      //printf("calling block copy helper %p(%p, %p)...\n", aBlock-&gt;descriptor-&gt;copy, result, aBlock);
+      (*aBlock-&gt;descriptor-&gt;copy)(result, aBlock); // do fixup
+  }
+  return result;
+</code></pre>
+
+<h5>堆block</h5>
+
+<p>从以下代码看出，如果block的flags中有BLOCK_NEEDS_FREE标志（block从栈中拷贝到堆时添加的标志），就执行latching_incr_int操作，其功能就是让block的引用计数加1。所以堆中block的拷贝只是单纯地改变了引用计数</p>
+
+<pre><code>  ...
+  if (aBlock-&gt;flags &amp; BLOCK_NEEDS_FREE) {
+        // latches on high
+        latching_incr_int(&amp;aBlock-&gt;flags);
+        return aBlock;
+    }
+  ...
+</code></pre>
+
+<h5>全局block</h5>
+
+<p>从以下代码看出，对于全局block，函数没有做任何操作，直接返回了传入的block</p>
+
+<pre><code>else if (aBlock-&gt;flags &amp; BLOCK_IS_GLOBAL) {
+      return aBlock;
+}
+</code></pre>
+
+<h3>block辅助函数</h3>
+
+<ul>
+<li>上文提及到了block辅助copy与dispose处理函数，这里分析下这两个函数的内部实现。在捕* 获变量为__block修饰的基本类型，或者为对象时，block才会有这两个辅助函数。</li>
+<li>block捕捉变量拷贝函数为<em>Block_object_assign。在调用复制block的函数</em>Block_copy_internal时，会根据block有无辅助函数来对捕捉变量拷贝函数<em>Block_object_assign进行调用。而在</em>Block_object_assign函数中，也会判断捕捉变量包装而成的对象(Block_byref结构体)是否有辅助函数，来进行调用。</li>
+</ul>
+
+
+<h5>__block修饰的基本类型的辅助函数</h5>
+
+<p>编写以下代码：</p>
+
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __block int a;
+        Block block = ^ {
+            a;
+        };
+}
+</code></pre>
+
+<p>转换成C++代码后：</p>
+
+<pre><code>typedef void(*Block)();
+// __block int a
+struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
+
+// block
+struct __main_block_impl_0 {
+  struct __block_impl impl;
+  struct __main_block_desc_0* Desc;
+  __Block_byref_a_0 *a; // by ref
+  __main_block_impl_0(void *fp, struct __main_block_desc_0 *desc, __Block_byref_a_0 *_a, int flags=0) : a(_a-&gt;__forwarding) {
+    impl.isa = &amp;_NSConcreteStackBlock;
+    impl.Flags = flags;
+    impl.FuncPtr = fp;
+    Desc = desc;
+  }
+};
+
+// block函数体
+static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+  __Block_byref_a_0 *a = __cself-&gt;a; // bound by ref
+
+            (a-&gt;__forwarding-&gt;a);
+        }
+// 辅助copy函数
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+// 辅助dispose函数
+static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+static struct __main_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
+  void (*dispose)(struct __main_block_impl_0*);
+} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0), __main_block_copy_0, __main_block_dispose_0};
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+        // 这里创建了，并将a的flags设置为0
+        __attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 0, sizeof(__Block_byref_a_0)};
+;
+        Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
+    }
+    return 0;
+}
+</code></pre>
+
+<p>从上面代码中，被<strong>block修饰的a变量变为了</strong>Block_byref_a_0类型，根据这个格式，从源码中查看得到相似的定义：</p>
+
+<pre><code>struct Block_byref {
+    void *isa;
+    struct Block_byref *forwarding;
+    int flags; /* refcount; */
+    int size;
+    void (*byref_keep)(struct Block_byref *dst, struct Block_byref *src);
+    void (*byref_destroy)(struct Block_byref *);
+    /* long shared[0]; */
+};
+
+// 做下对比
+struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ int a;
+};
+
+// flags/_flags类型
+enum {
+        /* See function implementation for a more complete description of these fields and combinations */
+        // 是一个对象
+        BLOCK_FIELD_IS_OBJECT   =  3,  /* id, NSObject, __attribute__((NSObject)), block, ... */
+        // 是一个block
+        BLOCK_FIELD_IS_BLOCK    =  7,  /* a block variable */
+        // 被__block修饰的变量
+        BLOCK_FIELD_IS_BYREF    =  8,  /* the on stack structure holding the __block variable */
+        // 被__weak修饰的变量，只能被辅助copy函数使用
+        BLOCK_FIELD_IS_WEAK     = 16,  /* declared __weak, only used in byref copy helpers */
+        // block辅助函数调用（告诉内部实现不要进行retain或者copy）
+        BLOCK_BYREF_CALLER      = 128  /* called from __block (byref) copy/dispose support routines. */
+    };
+</code></pre>
+
+<p>可以看出，__block将原来的基本类型包装成了对象。因为以上两个结构体的前4个成员的类型都是一样的，内存空间排列一致，所以可以进行以下操作：</p>
+
+<pre><code>// 转换成C++代码
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 8/*BLOCK_FIELD_IS_BYREF*/);}
+
+// _Block_object_assign源码
+void _Block_object_assign(void *destAddr, const void *object, const int flags) {
+...
+    else if ((flags &amp; BLOCK_FIELD_IS_BYREF) == BLOCK_FIELD_IS_BYREF)  {
+        // copying a __block reference from the stack Block to the heap
+        // flags will indicate if it holds a __weak reference and needs a special isa
+        _Block_byref_assign_copy(destAddr, object, flags);
+    }
+...
+}
+
+// _Block_byref_assign_copy源码
+static void _Block_byref_assign_copy(void *dest, const void *arg, const int flags) {
+    // 这里因为前面4个成员的内存分布一样，所以直接转换后，使用Block_byref的成员变量名，能访问到__Block_byref_a_0的前面4个成员
+    struct Block_byref **destp = (struct Block_byref **)dest;
+    struct Block_byref *src = (struct Block_byref *)arg;
+...
+    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_REFCOUNT_MASK) == 0) {
+        // 从main函数对__Block_byref_a_0的初始化，可以看到初始化时将flags赋值为0
+        // 这里表示第一次拷贝，会进行复制操作，并修改原来flags的值
+        // static int _Byref_flag_initial_value = BLOCK_NEEDS_FREE | 2;
+        // 可以看出，复制后，会并入BLOCK_NEEDS_FREE，后面的2是block的初始引用计数
+        ...
+        copy-&gt;flags = src-&gt;flags | _Byref_flag_initial_value;
+        ...
+    }
+    // 已经拷贝到堆了，只增加引用计数
+    else if ((src-&gt;forwarding-&gt;flags &amp; BLOCK_NEEDS_FREE) == BLOCK_NEEDS_FREE) {
+        latching_incr_int(&amp;src-&gt;forwarding-&gt;flags);
+    }
+    // 普通的赋值，里面最底层就*destptr = value;这句表达式
+    _Block_assign(src-&gt;forwarding, (void **)destp);
+}
+</code></pre>
+
+<p>主要操作都在代码注释中了，总体来说，__block修饰的基本类型会被包装为对象，并且只在最初block拷贝时复制一次，后面的拷贝只会增加这个捕获变量的引用计数。</p>
+
+<h5>对象的辅助函数</h5>
+
+<p>没有__block修饰</p>
+
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSObject *a = [[NSObject alloc] init];
+        Block block = ^ {
+            a;
+        };
+    }
+    return 0;
+}
+</code></pre>
+
+<p>首先，在没有__block修饰时，对象编译转换的结果如下，删除了一些变化不大的代码：</p>
+
+<pre><code>static void __main_block_func_0(struct __main_block_impl_0 *__cself) {
+  NSObject *a = __cself-&gt;a; // bound by copy
+            a;
+        }
+static void __main_block_copy_0(struct __main_block_impl_0*dst, struct __main_block_impl_0*src) {_Block_object_assign((void*)&amp;dst-&gt;a, (void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static void __main_block_dispose_0(struct __main_block_impl_0*src) {_Block_object_dispose((void*)src-&gt;a, 3/*BLOCK_FIELD_IS_OBJECT*/);}
+
+static struct __main_block_desc_0 {
+  size_t reserved;
+  size_t Block_size;
+  void (*copy)(struct __main_block_impl_0*, struct __main_block_impl_0*);
+  void (*dispose)(struct __main_block_impl_0*);
+} __main_block_desc_0_DATA = { 0, sizeof(struct __main_block_impl_0),
+</code></pre>
+
+<p>对象在没有<strong>block修饰时，并没有产生</strong>Block_byref_a_0结构体，只是将标志位修改为BLOCK_FIELD_IS_OBJECT。而在_Block_object_assign中对应的判断分支代码如下：</p>
+
+<pre><code>else if ((flags &amp; BLOCK_FIELD_IS_OBJECT) == BLOCK_FIELD_IS_OBJECT) {
+    _Block_retain_object(object);
+    _Block_assign((void *)object, destAddr);
+}
+</code></pre>
+
+<p>可以看到，block复制时，会retain捕捉对象，以增加其引用计数。</p>
+
+<p>有__block修饰</p>
+
+<pre><code>typedef void(^Block)();
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        __block NSObject *a = [[NSObject alloc] init];
+        Block block = ^ {
+            a;
+        };
+    }
+    return 0;
+}
+</code></pre>
+
+<p>在这种情况下，编译转换的部分结果如下：</p>
+
+<pre><code>struct __Block_byref_a_0 {
+  void *__isa;
+__Block_byref_a_0 *__forwarding;
+ int __flags;
+ int __size;
+ void (*__Block_byref_id_object_copy)(void*, void*);
+ void (*__Block_byref_id_object_dispose)(void*);
+ NSObject *a;
+};
+int main(int argc, const char * argv[]) {
+    /* @autoreleasepool */ { __AtAutoreleasePool __autoreleasepool;
+attribute__((__blocks__(byref))) __Block_byref_a_0 a = {(void*)0,(__Block_byref_a_0 *)&amp;a, 33554432, sizeof(__Block_byref_a_0), __Block_byref_id_object_copy_131, __Block_byref_id_object_dispose_131,....};
+Block block = (void (*)())&amp;__main_block_impl_0((void *)__main_block_func_0, &amp;__main_block_desc_0_DATA, (__Block_byref_a_0 *)&amp;a, 570425344);
+}
+
+// 以下的40表示__Block_byref_a_0对象a的位移（4个指针(32字节)＋2个int变量(8字节)＝40字节）
+    static void __Block_byref_id_object_copy_131(void *dst, void *src) {
+     _Block_object_assign((char*)dst + 40, *(void * *) ((char*)src + 40), 131);
+    }
+    static void __Block_byref_id_object_dispose_131(void *src) {
+     _Block_object_dispose(*(void * *) ((char*)src + 40), 131);
+    }
+</code></pre>
+
+<ol>
+<li><p>可以看到，对于对象，<strong>Block_byref_a_0另外增加了两个辅助函数</strong>Block_byref_id_object_copy、__Block_byref_id_object_dispose,以实现对对象</p></li>
+<li><p>内存的管理。其中两者的最后一个参数131表示BLOCK_BYREF_CALLER|BLOCK_FIELD_IS_OBJECT，BLOCK_BYREF_CALLER表示在内部实现中不对a对象进行retain或copy；以下为相关源码</p></li>
+</ol>
+
+
+<hr />
+
+<pre><code>if ((flags &amp; BLOCK_BYREF_CALLER) == BLOCK_BYREF_CALLER) {
+    ...
+    else {
+        // do *not* retain or *copy* __block variables whatever they are
+        _Block_assign((void *)object, destAddr);
+    }
+}
+</code></pre>
+
+<p>_Block_byref_assign_copy函数的以下代码会对上面的辅助函数（__Block_byref_id_object_copy_131）进行调用；570425344表示BLOCK_HAS_COPY_DISPOSE|BLOCK_HAS_DESCRIPTOR，所以会执行以下相关源码：</p>
+
+<pre><code>if (src-&gt;flags &amp; BLOCK_HAS_COPY_DISPOSE) {
+    // Trust copy helper to copy everything of interest
+    // If more than one field shows up in a byref block this is wrong XXX
+    copy-&gt;byref_keep = src-&gt;byref_keep;
+    copy-&gt;byref_destroy = src-&gt;byref_destroy;
+    (*src-&gt;byref_keep)(copy, src);
+}
+</code></pre>
+
+<h3>ARC中block的工作</h3>
+
+<p><img src="/images/block003.png" title="Caption" ></p>
+
+<p>苹果说明</p>
+
+<p>苹果文档提及，在ARC模式下，在栈间传递block时，不需要手动copy栈中的block，即可让block正常工作。主要原因是ARC对栈中的block自动执行了copy，将<em>NSConcreteStackBlock类型的block转换成了</em>NSConcreteMallocBlock的block。</p>
+
+<h5>block试验</h5>
+
+<p>下面对block做点实验：</p>
+
+<p>int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        int i = 10;
+        void (^block)() = ^{i;};</p>
+
+<pre><code>    __weak void (^weakBlock)() = ^{i;};
+
+    void (^stackBlock)() = ^{};
+
+    // ARC情况下
+
+    // 创建时，都会在栈中
+    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
+    NSLog(@"%@", ^{i;});
+
+    // 因为stackBlock为strong类型，且捕获了外部变量，所以赋值时，自动进行了copy
+    // &lt;__NSMallocBlock__: 0x100206920&gt;
+    NSLog(@"%@", block);
+
+    // 如果是weak类型的block，依然不会自动进行copy
+    // &lt;__NSStackBlock__: 0x7fff5fbff728&gt;
+    NSLog(@"%@", weakBlock);
+
+    // 如果block是strong类型，并且没有捕获外部变量，那么就会转换成__NSGlobalBlock__
+    // &lt;__NSGlobalBlock__: 0x100001110&gt;
+    NSLog(@"%@", stackBlock);
+
+    // 在非ARC情况下，产生以下输出
+    // &lt;__NSStackBlock__: 0x7fff5fbff6d0&gt;
+    // &lt;__NSStackBlock__: 0x7fff5fbff730&gt;
+    // &lt;__NSStackBlock__: 0x7fff5fbff700&gt;
+    // &lt;__NSGlobalBlock__: 0x1000010d0&gt;
+}
+return 0;
+</code></pre>
+
+<p>}</p>
+
+<p>可以看出，ARC对类型为strong且捕获了外部变量的block进行了copy。并且当block类型为strong，但是创建时没有捕获外部变量，block最终会变成<strong>NSGlobalBlock</strong>类型（这里可能因为block中的代码没有捕获外部变量，所以不需要在栈中开辟变量，也就是说，在编译时，这个block的所有内容已经在代码段中生成了，所以就把block的类型转换为全局类型）</p>
+
+<h5>block作为参数传递</h5>
+
+<p>再来看下使用在栈中的block需要注意的情况：</p>
+
+<pre><code>NSMutableArray *arrayM;
+void myBlock()
+{
+    int a = 5;
+    Block block = ^ {
+        NSLog(@"%d", a);
+    };
+
+    [arrayM addObject:block];
+    NSLog(@"%@", block);
+}
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        arrayM = @[].mutableCopy;
+
+        myBlock();
+
+        Block block = [arrayM firstObject];
+        // 非ARC这里崩溃
+        block();
+ }
+
+// ARC情况下输出
+// &lt;__NSMallocBlock__: 0x100214480&gt;
+
+// 非ARC情况下输出
+// &lt;__NSStackBlock__: 0x7fff5fbff738&gt;
+// 崩溃，野指针错误
+</code></pre>
+
+<p>可以看到，ARC情况下因为自动执行了copy，所以返回类型为<strong>NSMallocBlock</strong>，在函数结束后依然可以访问；而非ARC情况下，需要我们手动调用[block copy]来将block拷贝到堆中，否则因为栈中的block生命周期和函数中的栈生命周期关联，当函数退出后，相应的堆被销毁，block也就不存在了。
+如果把block的以下代码删除：</p>
+
+<pre><code>NSLog(@"%d", a);
+那么block就会变成全局类型，在main中访问也不会出崩溃。
+</code></pre>
+
+<h5>block作为返回值</h5>
+
+<pre><code>在非ARC情况下，如果返回值是block，则一般这样操作：
+
+return [[block copy] autorelease];
+</code></pre>
+
+<p>对于外部要使用的block，更趋向于把它拷贝到堆中，使其脱离栈生命周期的约束。</p>
+
+<h5>block属性</h5>
+
+<p>这里还有一点关于block类型的ARC属性。上文也说明了，ARC会自动帮strong类型且捕获外部变量的block进行copy，所以在定义block类型的属性时也可以使用strong，不一定使用copy。也就是以下代码：</p>
+
+<pre><code>/** 假如有栈block赋给以下两个属性 **/
+
+// 这里因为ARC，当栈block中会捕获外部变量时，这个block会被copy进堆中
+// 如果没有捕获外部变量，这个block会变为全局类型
+// 不管怎么样，它都脱离了栈生命周期的约束
+
+@property (strong, nonatomic) Block *strongBlock;
+
+// 这里都会被copy进堆中
+@property (copy, nonatomic) Block *copyBlock;
+</code></pre>
+
+<p>参考博文
+谈Objective-C Block的实现(<a href="http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/">http://blog.devtang.com/blog/2013/07/28/a-look-inside-blocks/</a>)
+iOS中block实现的探究(<a href="http://blog.csdn.net/jasonblog/article/details/7756763">http://blog.csdn.net/jasonblog/article/details/7756763</a>)
+A look inside blocks: Episode 3
+runtime.c
+Block_private.h</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[KeyChain初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/07/20/keychainchu-tan/"/>
+    <updated>2015-07-20T22:46:16+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/07/20/keychainchu-tan</id>
+    <content type="html"><![CDATA[<p>iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。</p>
+
+<blockquote><p>“yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。</p></blockquote>
+
+<!--more-->
+
+
+<h3>一.基本知识</h3>
+
+<h6>1.方法</h6>
+
+<ul>
+<li>SecItemAdd 增</li>
+<li>SecItemUpdate 改</li>
+<li>SecItemDelete 删</li>
+<li>SecItemCopyMatching 查</li>
+</ul>
+
+
+<h6>2.权限</h6>
+
+<p>文档上说iOS的keyChain是一个相对独立的空间，当程序替换，删除时并不会删除keyChain的内容，这个要比Library/Cache好。刷机，恢复出厂应该就没有了。关于备份，只会备份数据，到那时不会备份设备的密钥，换句话说，即使拿到数据，也没有办法解密里面的内容。有人说似乎破解的手机就能破解keyChain,本人并不清楚，希望有大神能指教。但个人认为，keyChain只是沙盒的升级版，可以存放一些非私密的信息，即使破解也不影响其它用户，只影响那个破解了的设备。（比如针对该设备的一个密钥）。</p>
+
+<p>可访问性一般来说，自己的程序只能访问自己的keychain,相同bundle的程序通过设置group可以互相共享同组的keychain，从而实现程序间可以共同访问一些数据。详细后面介绍一些我测试下来的经验。</p>
+
+<h6>3.如何查询keyChain</h6>
+
+<pre><code>[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+genericPasswordQuery = [[NSMutableDictionary alloc] init];   
+[genericPasswordQuery setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];//1  
+[genericPasswordQuery setObject:identifier forKey:(id)kSecAttrGeneric];//2  
+if (accessGroup != nil){  
+    [genericPasswordQuery setObject:accessGroup forKey:(id)kSecAttrAccessGroup];//3  
+}  
+[genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];//4  
+[genericPasswordQuery setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];//5  
+NSDictionary *tempQuery = [NSDictionary dictionaryWithDictionary:genericPasswordQuery];  
+NSMutableDictionary *outDictionary = nil;      
+if (SecItemCopyMatching((CFDictionaryRef)tempQuery, (CFTypeRef *)&amp;outDictionary) == noErr){//6  
+//found and outDicitionary is not nil  
+}else{  
+//not found  
+}  
+</code></pre>
+
+<ul>
+<li>1.设置Class值，每个Class对应的都有不同的参数类型</li>
+<li>2.用户确定的参数，一般是程序中使用的类别，比如说是"Password"或"Account Info"，作为search的主力条件</li>
+<li>3.设置Group,如果不同程序都拥有这个组，那么不同程序间可以共享这个组的数据</li>
+<li>4.只返回第一个匹配数据，查询方法使用，还有值kSecMatchLimitAll</li>
+<li>5.返回数据为CFDicitionaryRef，查询方法使用</li>
+<li>6.执行查询方法，判断返回值</li>
+</ul>
+
+
+<blockquote><p>eg:这个是none-ARC的代码哦！ARC情况下会有bridge提示。</p></blockquote>
+
+<h6>4.类型转换</h6>
+
+<p>介绍增删改方法调用前，先介绍转换方法，如何将NSDictionary转换成KeyChain方法可以设置的Dicitionary，一般在写程序过程中，应该尽量避免直接访问KeyChain，一般会创建一个NSDictionary来同步对应的数据，所以两者需要做转换。</p>
+
+<pre><code>//data to secItem  
+- (NSMutableDictionary *)dictionaryToSecItemFormat:(NSDictionary *)dictionaryToConvert  
+{  
+    // Create a dictionary to return populated with the attributes and data.  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    //设置kSecClass  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+    //将Dictionary里的kSecValueData(一般就是这个keyChain里主要内容，比如说是password),NSString转换成NSData  
+    NSString *passwordString = [dictionaryToConvert objectForKey:(id)kSecValueData];  
+    [returnDictionary setObject:[passwordString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];  
+    return returnDictionary;  
+}  
+//secItem to data  
+- (NSMutableDictionary *)secItemFormatToDictionary:(NSDictionary *)dictionaryToConvert  
+{  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    // Add the proper search key and class attribute.  
+    [returnDictionary setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+
+    // Acquire the password data from the attributes.  
+    NSData *passwordData = NULL;  
+    if (SecItemCopyMatching((CFDictionaryRef)returnDictionary, (CFTypeRef *)&amp;passwordData) == noErr)  
+    {  
+        // 删除多余的kSecReturnData数据  
+        [returnDictionary removeObjectForKey:(id)kSecReturnData];  
+
+        // 对应前面的步骤，将数据从NSData转成NSString  
+        NSString *password = [[[NSString alloc] initWithBytes:[passwordData bytes] length:[passwordData length]  
+                                                     encoding:NSUTF8StringEncoding] autorelease];  
+        [returnDictionary setObject:password forKey:(id)kSecValueData];  
+    }  
+    else  
+    {  
+        NSAssert(NO, @"Serious error, no matching item found in the keychain.\n");  
+    }  
+    [passwordData release];   
+    return returnDictionary;  
+}  
+</code></pre>
+
+<h6>5.增删改</h6>
+
+<p>用代码来说明</p>
+
+<pre><code>- (void)writeToKeychain  
+{  
+    NSDictionary *attributes = NULL;  
+    NSMutableDictionary *updateItem = NULL;  
+    OSStatus result;  
+    //判断是增还是改  
+    if (SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery, (CFTypeRef *)&amp;attributes) == noErr)  
+    {  
+            // First we need the attributes from the Keychain.  
+            updateItem = [NSMutableDictionary dictionaryWithDictionary:attributes];  
+        // Second we need to add the appropriate search key/values.  
+            [updateItem setObject:[genericPasswordQuery objectForKey:(id)kSecClass] forKey:(id)kSecClass];  
+            // Lastly, we need to set up the updated attribute list being careful to remove the class.  
+            NSMutableDictionary *tempCheck = [self dictionaryToSecItemFormat:keychainItemData];  
+            //删除kSecClass update不能update该字段，否则会报错  
+            [tempCheck removeObjectForKey:(id)kSecClass];  
+        //参数1表示search的，参数2表示需要更新后的值  
+            result = SecItemUpdate((CFDictionaryRef)updateItem, (CFDictionaryRef)tempCheck);  
+    }else{  
+            //增加  
+            result = SecItemAdd((CFDictionaryRef)[self dictionaryToSecItemFormat:keychainItemData], NULL);  
+    }  
+}  
+</code></pre>
+
+<p>删除很简单，就不写注释了</p>
+
+<pre><code>- (void)resetKeychainItem  
+{  
+    OSStatus junk = noErr;  
+    if (!keychainItemData)  
+    {  
+        self.keychainItemData = [[NSMutableDictionary alloc] init];  
+    }  
+    else if (keychainItemData)  
+    {  
+        NSMutableDictionary *tempDictionary = [self dictionaryToSecItemFormat:keychainItemData];  
+        junk = SecItemDelete((CFDictionaryRef)tempDictionary);  
+        NSAssert( junk == noErr || junk == errSecItemNotFound, @"Problem deleting current dictionary." );  
+    }  
+
+    // Default attributes for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrAccount];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrLabel];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrDescription];  
+
+    // Default data for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecValueData];  
+}  
+</code></pre>
+
+<p>二.Group的配置
+配置Target的Code Signing Entitlements.</p>
+
+<p><img src="/images/keyChain001.png" title="Caption" ></p>
+
+<p>配置该文件</p>
+
+<p><img src="/images/keyChain002.png" title="Caption" ></p>
+
+<p><img src="/images/keyChain003.png" title="Caption" ></p>
+
+<p>可以配置一个Array列表，表示该程序可以支持多个group
+这样就可以在创建secItem时候添加kSecAttrAccessGroup了。
+经过测试有以下经验同大家分享：</p>
+
+<ul>
+<li><p>1.相同bundle下生成的程序都可以共享相同group的keyChain.
+相同bundle解释下就是：比如:2个程序分别使用的provision对应bundle是com.jv.key1和com.jv.key2，那你配置文件肯定是{Identifer}.com.jv.{name},其中identifer是苹果生成的随机串号，可以在申请证书时看到，复制过来即可，name可以自己取，程序中指定属于哪个Group即可。</p></li>
+<li><p>2.如果你在 addkey时，没有指定group,则会默认添加你keychain-access-groups里第一个group，如果你没有设置Entitlements,则默认使用对应的程序的bundle name,比如com.jv.key1,表示只能给自己程序使用。</p></li>
+<li><p>3.如果你程序添加的group并不存在你的配置文件中，程序会奔溃，表示无法添加。因此你只能添加你配置文件中支持的keychain。</p></li>
+</ul>
+
+
+<p>三、保存私密信息（工具）
+在应用里使用使用keyChain，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，为减轻咱们程序员的开发，我们可以使用一些已经封装好了的工具类，下面我会简单介绍下我用过的两个工具类：KeychainItemWrapper和SFHFKeychainUtils。</p>
+
+<p>（一）KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，只需要
+把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
+
+<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
+KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
+                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
+
+//保存帐号
+[
+wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
+
+//保存密码
+[
+wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
+
+//从keychain里取出帐号密码
+NSString *password = [wrapper objectForKey:(id)kSecValueData];      
+
+//清空设置
+[
+wrapper resetKeychainItem];
+</code></pre>
+
+<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会崩溃！</p>
+
+<p>（二）SFHFKeychainUtils 提供了在 iOS keychain中安全的存储密码的工具</p>
+
+<p>下载地址<a href="https://github.com/ldandersen/scifihifi-iphone/tree/master/security">https://github.com/ldandersen/scifihifi-iphone/tree/master/security</a></p>
+
+<ul>
+<li><p>1、引入Security.frameWork框架。</p></li>
+<li><p>2、引入头文件：SFHKeychainUtils.h.</p></li>
+<li><p>3、存密码：</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>[SFHFKeychainUtils storeUsername:@"dd" andPassword:@"aa"forServiceName:SERVICE_NAME updateExisting:1 error:nil];
+
+[SFHFKeychainUtils deleteItemForUsername:@"dd" andServiceName:SERVICE_NAME error:nil];
+</code></pre>
+
+<ul>
+<li>4、取密码：</li>
+</ul>
+
+
+<hr />
+
+<pre><code>NSString *passWord =  [SFHFKeychainUtils getPasswordForUsername:@"dd"andServiceName:SERVICE_NAME error:nil];
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Core Image 初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/06/18/core-image-chu-tan/"/>
+    <updated>2015-06-18T10:09:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/06/18/core-image-chu-tan</id>
+    <content type="html"><![CDATA[<blockquote><p>前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。</p>
+
+<ul>
+<li>用途
+
+<ul>
+<li>在照片、视频处理，把滤镜作为最后一步，添加水印</li>
+<li>给照相机提供实时效果</li>
+<li>面部检测，自动滤镜增益,图片分析算法</li>
+<li>更多</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+
+<!--more-->
+
+
+<h2>coreimage framework 组成</h2>
+
+<p>apple 已经帮我们把image的处理分类好，来看看它的结构：</p>
+
+<p><img src="/images/coreimage001.png" title="Caption" ></p>
+
+<p>主要分为三部分：</p>
+
+<h5>定义部分：</h5>
+
+<p> CoreImage 何CoreImageDefines。见名思义，代表了CoreImage 这个框架和它的定义。</p>
+
+<h5>操作部分：</h5>
+
+<pre><code>滤镜（CIFliter）：CIFilter 产生一个CIImage。典型的，接受一到多的图片作为输入，经过一些过滤操作，产生指定输出的图片。
+
+检测（CIDetector）：CIDetector 检测处理图片的特性，如使用来检测图片中人脸的眼睛、嘴巴、等等。
+
+特征（CIFeature）：CIFeature 代表由 detector处理后产生的特征。
+</code></pre>
+
+<h5>图像部分：</h5>
+
+<pre><code>画布（CIContext）：画布类可被用与处理Quartz 2D 或者 OpenGL。可以用它来关联CoreImage类。如滤镜、颜色等渲染处理。
+
+颜色（CIColor）：   图片的关联与画布、图片像素颜色的处理。
+
+向量（CIVector）： 图片的坐标向量等几何方法处理。
+
+图片（CIImage）： 代表一个图像，可代表关联后输出的图像。　　
+</code></pre>
+
+<p><img src="/images/coreimage002.jpg" title="Caption" ></p>
+
+<h2>2.  处理步骤：</h2>
+
+<pre><code>  1）create a ciimage object;
+
+  2) create a cifilter object and set input values
+
+  3)  create a cicontext object.
+
+  4) render the filter output image into a cgimage
+</code></pre>
+
+<p>　　　　</p>
+
+<h2>3.注意</h2>
+
+<p>　　　　a。关注Ciimage 产生的途径：</p>
+
+<p>　　　　　　　　1）通过URL和Data</p>
+
+<p>　　　　　　　　 2）通过其他图片类转换，CGImageRef或其他图片。</p>
+
+<p>　　　　　　　　 3）通过CVpixelBufferRef。</p>
+
+<p>　　　　　　　　 4）一组像素Data。</p>
+
+<p>　　　　b.  图片颜色，KCCImageColorSpace 来重载默认颜色空间。</p>
+
+<p>　　　　c. 图片Metadata。</p>
+
+<p>　　　　</p>
+
+<h2>4. 使用滤镜。</h2>
+
+<p>　　　　CISepiaTone、CiColorControls、CIHueBlendMode。</p>
+
+<p><img src="/images/coreimage003.png" title="Caption" ></p>
+
+<p>处理过程：多个CImage输入 －－ 》 CIHeBlendMode  －－》 CiSepiatone。</p>
+
+<p><img src="/images/coreimage004.jpg" title="Caption" ></p>
+
+<p>渲染输出：</p>
+
+<p><img src="/images/coreimage005.jpg" title="Caption" ></p>
+
+<p>流程： 获取context  －》 转成CIimage －》 渲染成CGImageRef  －》 转换为UIimage －》 释放 CGImageRef －》 使用UIImage。</p>
+
+<h2>5.脸部检测</h2>
+
+<p>　　自动增强： CIRedEyeCorrection  、CIFaceBalance（调整图片来给出更好的皮肤色调）、CIVibrance（在不扭曲皮肤色调的情况下，增加饱和度）、CIToneCurve（调整图片对比）、高亮阴影调整。
+　　
+　　</p>
+
+<hr />
+
+<p>&mdash;-基本使用&mdash;-</p>
+
+<hr />
+
+<h5>Core Image 处理图片的工作流程</h5>
+
+<ul>
+<li>创建新的CIImage</li>
+<li>创建新的CIFilter，通过键-值编码设置输入值，一定要给inputImage加入一个值，这个属性是图像数据源</li>
+<li>从CIFilter中生成输出图片。通过访问CIFilter的outputImage属性，可以得到输出图像，这是一个新的CIImage对象，包含了原始图片的数据以及一个滤镜链。 在得到输出图像后，可以使用滤镜来渲染出最终的效果图像。也可以将其作为一个新滤镜的输入图像，这样会产生出一条滤镜链</li>
+<li>用CIContext 渲染CIImage 对象，这个CIContext 可以是基于CPU的，输出为CGImageRef，通过 LibDispatch（GCD）渲染 ，更加可靠，也更加易用。也可以是基于GPU的，开发者可通过Open ES 2.0 画出来。使用GPU渲染时CPU没有负担，更好地性能，但无法在后台运行</li>
+</ul>
+
+
+<p>使用例子：</p>
+
+<pre><code> CIImage *myCoreImage = [CIImage imageWithCGImage:self.myImageView.image.CGImage options:nil];  
+
+// 创建Filter，@"CISepiaTone"这个名字是系统指定的  
+CIFilter *sepia = [CIFilter filterWithName:@"CISepiaTone"];  
+
+// 设置Filter  
+[sepia setValue:myCoreImage forKey:@"inputImage"];  
+
+NSNumber *intensity = [NSNumber numberWithFloat:.5f];  
+[sepia setValue:intensity forKey:@"inputIntensity"];  
+
+// 生成新的 CIImage  
+CIImage *outputImage = [sepia outputImage];  
+
+// 取出UIImage  
+CGImageRef renderImage = [_imageContext createCGImage:outputImage fromRect:[outputImage extent]];  
+[self.myImageView setImage:[UIImage imageWithCGImage:renderImage]];
+</code></pre>
+
+<blockquote><p>DemoCoreImage 是直接从IOS 核心框架拿过来的。
+CoreImageMySelf 是我自己提取的只为实现优化功能的demo
+提取的功能模块有，filter的使用、自动优化的使用、脸部检测</p></blockquote>
+
+<p>再来看看常见的使用方式</p>
+
+<ul>
+<li>CIImage</li>
+</ul>
+
+
+<p>保存图像数据的类，可以通过UIImage，图像文件或者像素数据来创建，包括未处理的像素数据如：</p>
+
+<pre><code>- imageWithCVPixelBuffer:
+
+- imageWithData:
+</code></pre>
+
+<p>方法等等。</p>
+
+<p>也可以通过图像数据类比如UIImage，CGImageRef等等。</p>
+
+<ul>
+<li>CIFilter</li>
+</ul>
+
+
+<p>滤镜类，这个框架中对图片属性进行细节处理的类。它对所有的像素进行操作，用一些键-值设置来决定具体操作的程度。</p>
+
+<ul>
+<li>CIContext</li>
+</ul>
+
+
+<p>上下文类，如CoreGraphics以及CoreData中的上下文用于处理绘制渲染以及处理托管对象一样，CoreImage的上下文也是实现对图像处理的具体对象。</p>
+
+<p>这里需要注意的是在Context创建的时候，我们需要给它设定为是基于GPU还是CPU。(这里使用GPU)</p>
+
+<blockquote><p>基于GPU的话，处理速度更快，因为利用了GPU硬件的并行优势。但是GPU受限于硬件纹理尺寸，而且如果你的程序在后台继续处理和保存图片的话，那么需要使用CPU，因为当app切换到后台状态时GPU处理会被打断。</p></blockquote>
+
+<h3>使用步骤：</h3>
+
+<h6>0.导入CIImage图片</h6>
+
+<pre><code>CIImage *ciImage = [[CIImage alloc]initWithImage:[UIImage imageNamed:@"test.jpg"]];
+</code></pre>
+
+<h6>1.创建出Filter滤镜</h6>
+
+<pre><code>CIFilter *filterOne = [CIFilter filterWithName:@"CIPixellate"];
+[filterOne setValue:ciImage forKey:kCIInputImageKey];
+[filterOne setDefaults];
+
+CIImage *outImage = [filterOne valueForKey:kCIOutputImageKey];
+</code></pre>
+
+<h6>2.用CIContext将滤镜中的图片渲染出来</h6>
+
+<pre><code>CIContext *context = [CIContext contextWithOptions:nil];
+
+CGImageRef cgImage = [context createCGImage:outImage fromRect:[outImage extent]];
+</code></pre>
+
+<h6>3.导出图片</h6>
+
+<pre><code>UIImage *showImage = [UIImage imageWithCGImage:cgImage];
+CGImageRelease(cgImage);
+</code></pre>
+
+<h6>4.加载图片</h6>
+
+<pre><code> _image.image = showImage;
+</code></pre>
+
+<hr />
+
+<h3>如果要使用组合滤镜</h3>
+
+<h6>在步骤1中设置组合滤镜，只需要将上一个滤镜的输出变为下一个滤镜的输入就行了</h6>
+
+<pre><code>//第一个滤镜
+CIFilter *filterOne = [CIFilter filterWithName:@"CIPixellate"];
+[filterOne setValue:ciImage forKey:kCIInputImageKey];
+[filterOne setDefaults];
+CIImage *outImage = [filterOne valueForKey:kCIOutputImageKey];
+//第二个滤镜
+CIFilter *filterTwo = [CIFilter filterWithName:@"CIHueAdjust"];
+[filterTwo setValue:outImage forKey:kCIInputImageKey];
+[filterTwo setDefaults];
+[filterTwo setValue:@(1.f) forKey:kCIInputAngleKey];
+CIImage *outputImage = [filterTwo valueForKey:kCIOutputImageKey];
+</code></pre>
+
+<h6>记住渲染的时候，步骤2，要将最后输出的CIImage传入</h6>
+
+<pre><code>CIContext *context = [CIContext contextWithOptions:nil];
+
+CGImageRef cgImage = [context createCGImage:outputImage fromRect:[outImage extent]];
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[长链接&amp;短链接]]></title>
+    <link href="http://al1020119.github.io/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/"/>
+    <updated>2015-05-20T21:30:21+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie</id>
+    <content type="html"><![CDATA[<ul>
+<li>HTTP协议与TCP/IP协议的关系</li>
+<li>如何理解HTTP协议是无状态的</li>
+<li>什么是长连接、短连接？
+
+<ul>
+<li> TCP连接</li>
+<li> TCP短连接</li>
+<li> TCP长连接</li>
+</ul>
+</li>
+<li>长连接短连接操作过程</li>
+<li>长连接和短连接的优点和缺点</li>
+<li>什么时候用长连接，短连接？</li>
+</ul>
+
+
+<!--more-->
+
+
+<h3>HTTP协议与TCP/IP协议的关系</h3>
+
+<p>HTTP的长连接和短连接本质上是TCP长连接和短连接。HTTP属于应用层协议，在传输层使用TCP协议，在网络层使用IP协议。IP协议主要解决网络路由和寻址问题，TCP协议主要解决如何在IP层之上可靠的传递数据包，使在网络上的另一端收到发端发出的所有包，并且顺序与发出顺序一致。TCP有可靠，面向连接的特点。</p>
+
+<h3>如何理解HTTP协议是无状态的</h3>
+
+<p>HTTP协议是无状态的，指的是协议对于事务处理没有记忆能力，服务器不知道客户端是什么状态。也就是说，打开一个服务器上的网页和你之前打开这个服务器上的网页之间没有任何联系。HTTP是一个无状态的面向连接的协议，无状态不代表HTTP不能保持TCP连接，更不能代表HTTP使用的是UDP协议（无连接）。</p>
+
+<h3>什么是长连接、短连接？</h3>
+
+<p>在HTTP/1.0中，默认使用的是短连接。也就是说，浏览器和服务器每进行一次HTTP操作，就建立一次连接，但任务结束就中断连接。如果客户端浏览器访问的某个HTML或其他类型的 Web页中包含有其他的Web资源，如JavaScript文件、图像文件、CSS文件等；当浏览器每遇到这样一个Web资源，就会建立一个HTTP会话。</p>
+
+<p>但从 HTTP/1.1起，默认使用长连接，用以保持连接特性。使用长连接的HTTP协议，会在响应头有加入这行代码：</p>
+
+<p>Connection:keep-alive</p>
+
+<p>在使用长连接的情况下，当一个网页打开完成后，客户端和服务器之间用于传输HTTP数据的 TCP连接不会关闭，如果客户端再次访问这个服务器上的网页，会继续使用这一条已经建立的连接。Keep-Alive不会永久保持连接，它有一个保持时间，可以在不同的服务器软件（如Apache）中设定这个时间。实现长连接要客户端和服务端都支持长连接。</p>
+
+<p>HTTP协议的长连接和短连接，实质上是TCP协议的长连接和短连接。</p>
+
+<h5>TCP连接</h5>
+
+<p>当网络通信时采用TCP协议时，在真正的读写操作之前，server与client之间必须建立一个连接，当读写操作完成后，双方不再需要这个连接 时它们可以释放这个连接，连接的建立是需要三次握手的，而释放则需要4次握手，所以说每个连接的建立都是需要资源消耗和时间消耗的</p>
+
+<p>经典的三次握手示意图：</p>
+
+<p>经典的四次握手关闭图：</p>
+
+<h5>TCP短连接</h5>
+
+<p>我们模拟一下TCP短连接的情况，client向server发起连接请求，server接到请求，然后双方建立连接。client向server 发送消息，server回应client，然后一次读写就完成了，这时候双方任何一个都可以发起close操作，不过一般都是client先发起 close操作。为什么呢，一般的server不会回复完client后立即关闭连接的，当然不排除有特殊的情况。从上面的描述看，短连接一般只会在 client/server间传递一次读写操作</p>
+
+<p>短连接的优点是：管理起来比较简单，存在的连接都是有用的连接，不需要额外的控制手段</p>
+
+<h5>TCP长连接</h5>
+
+<p>接下来我们再模拟一下长连接的情况，client向server发起连接，server接受client连接，双方建立连接。Client与server完成一次读写之后，它们之间的连接并不会主动关闭，后续的读写操作会继续使用这个连接。</p>
+
+<p>首先说一下TCP/IP详解上讲到的TCP保活功能，保活功能主要为服务器应用提供，服务器应用希望知道客户主机是否崩溃，从而可以代表客户使用资源。如果客户已经消失，使得服务器上保留一个半开放的连接，而服务器又在等待来自客户端的数据，则服务器将应远等待客户端的数据，保活功能就是试图在服务 器端检测到这种半开放的连接。</p>
+
+<p>如果一个给定的连接在两小时内没有任何的动作，则服务器就向客户发一个探测报文段，客户主机必须处于以下4个状态之一：</p>
+
+<p>客户主机依然正常运行，并从服务器可达。客户的TCP响应正常，而服务器也知道对方是正常的，服务器在两小时后将保活定时器复位。
+客户主机已经崩溃，并且关闭或者正在重新启动。在任何一种情况下，客户的TCP都没有响应。服务端将不能收到对探测的响应，并在75秒后超时。服务器总共发送10个这样的探测 ，每个间隔75秒。如果服务器没有收到一个响应，它就认为客户主机已经关闭并终止连接。
+客户主机崩溃并已经重新启动。服务器将收到一个对其保活探测的响应，这个响应是一个复位，使得服务器终止这个连接。
+客户机正常运行，但是服务器不可达，这种情况与2类似，TCP能发现的就是没有收到探查的响应。</p>
+
+<h5>长连接短连接操作过程</h5>
+
+<p>短连接的操作步骤是：</p>
+
+<p>建立连接——数据传输——关闭连接…建立连接——数据传输——关闭连接</p>
+
+<p>长连接的操作步骤是：</p>
+
+<p>建立连接——数据传输…（保持连接）…数据传输——关闭连接</p>
+
+<h3>长连接和短连接的优点和缺点</h3>
+
+<p>由上可以看出，长连接可以省去较多的TCP建立和关闭的操作，减少浪费，节约时间。对于频繁请求资源的客户来说，较适用长连接。不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。在长连接的应用场景下，client端一般不会主动关闭它们之间的连接，Client与server之间的连接如果一直不关闭的话，会存在一个问题，随着客户端连接越来越多，server早晚有扛不住的时候，这时候server端需要采取一些策略，如关闭一些长时间没有读写事件发生的连接，这样可 以避免一些恶意连接导致server端服务受损；如果条件再允许就可以以客户端机器为颗粒度，限制每个客户端的最大长连接数，这样可以完全避免某个蛋疼的客户端连累后端服务。</p>
+
+<p>短连接对于服务器来说管理较为简单，存在的连接都是有用的连接，不需要额外的控制手段。但如果客户请求频繁，将在TCP的建立和关闭操作上浪费时间和带宽。</p>
+
+<p>长连接和短连接的产生在于client和server采取的关闭策略，具体的应用场景采用具体的策略，没有十全十美的选择，只有合适的选择。</p>
+
+<h3>什么时候用长连接，短连接？</h3>
+
+<p>长连接多用于操作频繁，点对点的通讯，而且连接数不能太多情况，。每个TCP连接都需要三步握手，这需要时间，如果每个操作都是先连接，再操作的话那么处理速度会降低很多，所以每个操作完后都不断开，次处理时直接发送数据包就OK了，不用建立TCP连接。例如：数据库的连接用长连接， 如果用短连接频繁的通信会造成socket错误，而且频繁的socket 创建也是对资源的浪费。</p>
+
+<p>而像WEB网站的http服务一般都用短链接，因为长连接对于服务端来说会耗费一定的资源，而像WEB网站这么频繁的成千上万甚至上亿客户端的连接用短连接会更省一些资源，如果用长连接，而且同时有成千上万的用户，如果每个用户都占用一个连接的话，那可想而知吧。所以并发量大，但每个用户无需频繁操作情况下需用短连好。</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,1937 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Bottom | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/bottom/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-01-24T14:39:43+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[函数&amp;方法的奥秘]]></title>
+    <link href="http://al1020119.github.io/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/"/>
+    <updated>2015-02-08T23:54:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi</id>
+    <content type="html"><![CDATA[<p>首先问个问题，你知道函数与方法的区别吗？</p>
+
+<p>什么？没有区别？那你就out了！</p>
+
+<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
+直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
+
+<h5>初始化函数</h5>
+
+<pre><code>- (void)init
+{
+…
+} 
+…
+</code></pre>
+
+<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
+哦？原来函数跟方法是不一样的。</p>
+
+<h2>函数</h2>
+
+<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
+
+<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
+{
+  // Code here
+}
+一个函数声明与调用的例子：
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+int main (int argc, const char *argv[])
+{
+  int x = 2;
+  int y = 3;
+  // 调用函数
+  int result = plus(x, y);
+
+  return 0;
+}
+</code></pre>
+
+<h2>方法</h2>
+
+<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
+
+<pre><code>@implementation Person
+
+// 实现方法
+- (void)setName:(NSString *)name
+{
+  //code here
+}
+
+@end
+
+int main (int argc, const char *argv[])
+{
+  // 使用对象调用方法
+  [[Person new] setName:@"zhenby"];
+
+  return 0;
+}
+</code></pre>
+
+<hr />
+
+<h1>有什么不同</h1>
+
+<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
+
+<h3>Objective-C中的函数</h3>
+
+<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
+知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
+
+<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
+
+<pre><code>// 函数原型
+int plus(int, int);
+/*
+ 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
+ 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
+ */
+long timestamp(void);
+
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+long timestamp()
+{
+  // 返回当前的时间戳
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+</code></pre>
+
+<h3>Objective-C中的方法</h3>
+
+<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
+
+<pre><code>@implementation Test
+
+- (long)timestamp
+{
+  NSLog(@"in timestamp");
+  // 返回当前时间戳   
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+
+@end
+
+// 调用 timestamp 方法
+Test *test = [Test new];
+[test timestamp];
+[test release];
+
+//----------------------------------------------------------
+
+/*
+ 上面 [test timestamp] 这句代码就相当于以下的函数调用，
+ 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
+ */
+#import &lt;objc/message.h&gt;
+
+objc_msgSend(test, @selector(timestamp));
+</code></pre>
+
+<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[底层开发之越狱开发]]></title>
+    <link href="http://al1020119.github.io/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/"/>
+    <updated>2014-12-29T22:32:50+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/12/29/yue-yu-kai-fa-xiang-jie</id>
+    <content type="html"><![CDATA[<p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
+
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
+
+<!--more-->
+
+
+<ul>
+<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
+<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
+<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
+这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
+</ul>
+
+
+<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
+
+<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
+
+<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
+
+<p>进入正题：</p>
+
+<p>需要的工具和环境：</p>
+
+<ol type="a">
+<li>iPhone or iPad越狱，安装AppSync</li>
+<li>Xcode安装 Command Line Tools</li>
+<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
+</ol>
+
+
+<p>1、修改SDKSettings.plist文件</p>
+
+<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：</p>
+
+<pre><code>/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/
+</code></pre>
+
+<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
+
+<p>执行命令为：</p>
+
+<p>转到目录下</p>
+
+<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+</code></pre>
+
+<p>将原有文件备份</p>
+
+<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
+</code></pre>
+
+<p>对SDKSettings.plist文件进行编辑</p>
+
+<pre><code>sudo vim SDKSettings.plist
+</code></pre>
+
+<p>将下面对应的字段改为NO</p>
+
+<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
+&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
+</code></pre>
+
+<p>此操作参考的路径如下：</p>
+
+<pre><code>http://kqwd.blog.163.com/blog/static/4122344820117191351263/
+</code></pre>
+
+<p>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</p>
+
+<p>新建一个plist文件，命名为entitlements.</p>
+
+<pre><code>![Alt text](/iamges/yueyu001.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu001.png" title="Caption" ></p>
+
+<p>创建一个plist</p>
+
+<pre><code>![Alt text](/iamges/yueyu002.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu002.png" title="Caption" ></p>
+
+<p>将plist文件改为：</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;Install&lt;/string&gt;
+        &lt;string&gt;Browse&lt;/string&gt;
+        &lt;string&gt;Uninstall&lt;/string&gt;
+        &lt;string&gt;Archive&lt;/string&gt;
+        &lt;string&gt;RemoveArchive&lt;/string&gt;
+    &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+
+<p>将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu003.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu003.png" title="Caption" ></p>
+
+<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
+
+<p>3、实现越狱安装的代码：</p>
+
+<pre><code>typedef NSDictionary *(*PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
+NSDictionary *IPAInstalledApps()
+{
+void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
+if (lib)
+{
+    PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
+    if (pMobileInstallationLookup)
+    {
+        NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
+        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
+        NSDictionary *dict = pMobileInstallationLookup(params, NULL);
+#ifdef DEBUG
+        NSLog(@"%@", dict);
+#endif
+        return dict;
+    }
+}
+return nil;
+}
+</code></pre>
+
+<p>所有代码均在之前的github目录中，可以自行查看。</p>
+
+<p>4、编译生成App文件</p>
+
+<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
+
+<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
+
+<pre><code>![Alt text](/iamges/yueyu004.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu004.png" title="Caption" ></p>
+
+<p>5、制作ipa文件</p>
+
+<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
+
+<p>比如在 Download 目录下， sudo -i</p>
+
+<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
+
+<p>然后对之前生成的文件，进行ldid签名</p>
+
+<pre><code>![Alt text](/iamges/yueyu005.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu005.png" title="Caption" ></p>
+
+<ul>
+<li><p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p></li>
+<li><p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p></li>
+</ul>
+
+
+<p>6、生成ipa文件，安装</p>
+
+<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
+
+<p>然后通过itools安装，测试刚刚生成的文件</p>
+
+<pre><code>![Alt text](/iamges/yueyu006.jpg)
+</code></pre>
+
+<p><img src="/images/yueyu006.png" title="Caption" ></p>
+
+<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
+
+<h1>检查iphone时候越狱</h1>
+
+<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
+
+<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
+
+<p>复制代码
+复制代码</p>
+
+<pre><code>/*方法名:
+ *        isJailbroken
+*介绍:
+*        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
+*参数说明:
+*        无
+*        
+*
+*/
+
+#pragma mark utils api
+// 类方法，判断当前设备是否已经越狱
++ (BOOL)isJailbroken;
+// 类方法，判断你的App是否被破解
++ (BOOL)isPirated;
+</code></pre>
+
+<p>apt和Cydia的方式来进行判断的，没看见源码</p>
+
+<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
+
+<h3>apt</h3>
+
+<pre><code>- (BOOL) asAP
+{
+return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/at/"];
+4 }`
+</code></pre>
+
+<h3>system</h3>
+
+<pre><code>`1 - (BOOL) successCallSystem
+2 {
+3 return (system("ls") == 0) ? YES : NO;
+4 }`
+</code></pre>
+
+<h3>示例代码</h3>
+
+<pre><code>static const char* jailbreak_apps[] =
+
+  {
+      "/Applications/Cydia.app",
+      "/Applications/limera1n.app",
+      "/Applications/greenpois0n.app",
+      "/Applications/blackra1n.app",
+      "/Applications/blacksn0w.app",
+      "/Applications/redsn0w.app",
+     "/Applications/Absinthe.app",
+     NULL,
+ };
+
+ - (BOOL) isJailBroken
+ {
+     // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
+     for (int i = 0; jailbreak_apps[i] != NULL; ++i)
+     {
+         if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
+         {
+             //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
+             return YES;
+         }
+     }
+
+               // TODO: Add more checks? This is an arms-race we're bound to lose.
+
+     return NO;
+ }
+</code></pre>
+
+<hr />
+
+<pre><code>@interface UIDevice (Helper)  
+ - (BOOL)isJailbroken;  
+ @end
+</code></pre>
+
+<hr />
+
+<pre><code>@implementation UIDevice (Helper)  
+- (BOOL)isJailbroken {  
+BOOL jailbroken = NO;  
+NSString *cydiaPath = @"/Applications/Cydia.app";  
+NSString *aptPath = @"/private/var/lib/apt/";  
+if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
+ jailbroken = YES;  
+}  
+if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
+ jailbroken = YES;  
+}  
+return jailbroken;  
+}  
+@end
+</code></pre>
+
+<hr />
+
+<p>参考资源链接：</p>
+
+<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
+<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[方法缓存]]></title>
+    <link href="http://al1020119.github.io/blog/2014/11/14/fang-fa-huan-cun/"/>
+    <updated>2014-11-14T17:42:41+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/11/14/fang-fa-huan-cun</id>
+    <content type="html"><![CDATA[<blockquote><p>摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#x6c;&#x74;&#111;&#x3a;&#109;&#97;&#x6a;&#x69;&#x61;&#48;&#x33;&#x40;&#109;&#x65;&#105;&#x74;&#117;&#97;&#x6e;&#46;&#x63;&#x6f;&#109;">&#109;&#x61;&#106;&#x69;&#97;&#x30;&#x33;&#64;&#109;&#101;&#105;&#116;&#117;&#97;&#x6e;&#x2e;&#x63;&#x6f;&#109;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>我们都知道，在Objective-C里调用一个方法是这样的：</p>
+
+<pre><code>[object methodA];
+</code></pre>
+
+<p>这表示我们想去调用object的methodA。
+但是在Objective-C里面调用一个方法到底意味着什么呢，是否和C++一样，任何一个非虚方法都会被编译成一个唯一的符号，在调用的时候去查找符号表，找到这个方法然后调用呢？
+答案是否定的。在Objective-C里面调用一个方法的时候，runtime层会将这个调用翻译成</p>
+
+<pre><code>objc_msgSend(id self, SEL op, ...)
+</code></pre>
+
+<p>而objc_msgSend具体又是如何分发的呢？ 我们来看下runtime层objc_msgSend的源码。
+在objc-msg-arm.s中，objc_msgSend的代码如下：
+（ps：Apple为了高度优化objc_msgSend的性能，这个文件是汇编写成的，不过即使我们不懂汇编，详尽的注释也可以让我们一窥其真面目）</p>
+
+<pre><code>ENTRY objc_msgSend
+# check whether receiver is nil
+teq     a1, #0
+    beq     LMsgSendNilReceiver
+
+# save registers and load receiver's class for CacheLookup
+stmfd   sp!, {a4,v1}
+ldr     v1, [a1, #ISA]
+
+# receiver is non-nil: search the cache
+CacheLookup a2, v1, LMsgSendCacheMiss
+
+# cache hit (imp in ip) and CacheLookup returns with nonstret (eq) set, restore registers and call
+ldmfd   sp!, {a4,v1}
+bx      ip
+
+# cache miss: go search the method lists
+LMsgSendCacheMiss:
+ldmfd sp!, {a4,v1}
+b _objc_msgSend_uncached
+
+LMsgSendNilReceiver:
+    mov     a2, #0
+    bx      lr
+
+LMsgSendExit:
+END_ENTRY objc_msgSend
+
+
+STATIC_ENTRY objc_msgSend_uncached
+
+# Push stack frame
+stmfd sp!, {a1-a4,r7,lr}
+add     r7, sp, #16
+
+# Load class and selector
+ldr a3, [a1, #ISA] /* class = receiver-&gt;isa  */
+/* selector already in a2 */
+/* receiver already in a1 */
+
+# Do the lookup
+MI_CALL_EXTERNAL(__class_lookupMethodAndLoadCache3)
+MOVE    ip, a1
+
+# Prep for forwarding, Pop stack frame and call imp
+teq v1, v1 /* set nonstret (eq) */
+ldmfd sp!, {a1-a4,r7,lr}
+bx ip
+</code></pre>
+
+<p>从上述代码中可以看到，objc_msgSend（就arm平台而言）的消息分发分为以下几个步骤：</p>
+
+<p>判断receiver是否为nil，也就是objc_msgSend的第一个参数self，也就是要调用的那个方法所属对象
+从缓存里寻找，找到了则分发，否则
+利用objc-class.mm中_class_lookupMethodAndLoadCache3（为什么有个这么奇怪的方法。本文末尾会解释）方法去寻找selector</p>
+
+<p>如果支持GC，忽略掉非GC环境的方法（retain等）
+从本class的method list寻找selector，如果找到，填充到缓存中，并返回selector，否则
+寻找父类的method list，并依次往上寻找，直到找到selector，填充到缓存中，并返回selector，否则
+调用_class_resolveMethod，如果可以动态resolve为一个selector，不缓存，方法返回，否则
+转发这个selector，否则
+报错，抛出异常
+缓存为谁而生
+从上面的分析中我们可以看到，当一个方法在比较“上层”的类中，用比较“下层”（继承关系上的上下层）对象去调用的时候，如果没有缓存，那么整个查找链是相当长的。就算方法是在这个类里面，当方法比较多的时候，每次都查找也是费事费力的一件事情。
+考虑下面的一个调用过程：</p>
+
+<pre><code>for ( int i = 0; i &lt; 100000; ++i) {
+    MyClass *myObject = myObjects[i];
+    [myObject methodA];
+}
+</code></pre>
+
+<p>当我们需要去调用一个方法数十万次甚至更多地时候，查找方法的消耗会变的非常显著。
+就算我们平常的非大规模调用，除非一个方法只会调用一次，否则缓存都是有用的。在运行时，那么多对象，那么多方法调用，节省下来的时间也是非常可观的。</p>
+
+<p>追本溯源，何为方法缓存
+本着源码面前，了无秘密的原则，我们看下源码中的方法缓存到底是什么，在objc-cache.mm中，objc_cache的定义如下：</p>
+
+<pre><code>struct objc_cache {
+    uintptr_t mask;            /* total = mask + 1 */
+    uintptr_t occupied;       
+    cache_entry *buckets[1];
+};
+</code></pre>
+
+<p>嗯，objc_cache的定义看起来很简单，它包含了下面三个变量：</p>
+
+<ul>
+<li>1)、mask：可以认为是当前能达到的最大index（从0开始的），所以缓存的size（total）是mask+1</li>
+<li>2)、occupied：被占用的槽位，因为缓存是以散列表的形式存在的，所以会有空槽，而occupied表示当前被占用的数目</li>
+<li>3)、buckets：用数组表示的hash表，cache_entry类型，每一个cache_entry代表一个方法缓存
+(buckets定义在objc_cache的最后，说明这是一个可变长度的数组)</li>
+</ul>
+
+
+<p>而cache_entry的定义如下：</p>
+
+<pre><code>typedef struct {
+    SEL name;     // same layout as struct old_method
+    void *unused;
+    IMP imp;  // same layout as struct old_method
+} cache_entry;
+</code></pre>
+
+<p>cache_entry定义也包含了三个字段，分别是：</p>
+
+<ul>
+<li>1)、name，被缓存的方法名字</li>
+<li>2)、unused，保留字段，还没被使用。</li>
+<li>3)、imp，方法实现</li>
+</ul>
+
+
+<p>缓存和散列
+缓存的存储使用了散列表。
+为什么要用散列表呢？因为散列表检索起来更快，我们来看下是方法缓存如何散列和检索的：</p>
+
+<pre><code>// Scan for the first unused slot and insert there.
+// There is guaranteed to be an empty slot because the 
+// minimum size is 4 and we resized at 3/4 full.
+buckets = (cache_entry **)cache-&gt;buckets;
+for (index = CACHE_HASH(sel, cache-&gt;mask); 
+     buckets[index] != NULL; 
+     index = (index+1) &amp; cache-&gt;mask)
+{
+    // empty
+}
+buckets[index] = entry;
+</code></pre>
+
+<p>这是往方法缓存里存放一个方法的代码片段，我们可以看到sel被散列后找到一个空槽放在buckets中，而CACHE_HASH的定义如下：</p>
+
+<pre><code>#define CACHE_HASH(sel, mask) (((uintptr_t)(sel)&gt;&gt;2) &amp; (mask))
+</code></pre>
+
+<p>这段代码就是利用了sel的指针地址和mask做了一下简单计算得出的。
+而从散列表取缓存则是利用汇编语言写成的（是为了高度优化objc_msgSend而使用汇编的）。我们看objc-msg-arm.mm 里面的CacheLookup方法：</p>
+
+<pre><code>.macro CacheLookup /* selReg, classReg, missLabel */
+
+ MOVE r9, $0, LSR #2          /* index = (sel &gt;&gt; 2) */
+ ldr     a4, [$1, #CACHE]        /* cache = class-&gt;cache */
+ add     a4, a4, #BUCKETS        /* buckets = &amp;cache-&gt;buckets */
+
+/* search the cache */
+/* a1=receiver, a2 or a3=sel, r9=index, a4=buckets, $1=method */
+1:
+ ldr     ip, [a4, #NEGMASK]      /* mask = cache-&gt;mask */
+ and     r9, r9, ip              /* index &amp;= mask           */
+ ldr     $1, [a4, r9, LSL #2]    /* method = buckets[index] */
+ teq     $1, #0                  /* if (method == NULL)     */
+ add     r9, r9, #1              /* index++                 */
+ beq     $2                      /*     goto cacheMissLabel */
+
+ ldr     ip, [$1, #METHOD_NAME]  /* load method-&gt;method_name        */
+ teq     $0, ip                  /* if (method-&gt;method_name != sel) */
+ bne     1b                      /*     retry                       */
+
+/* cache hit, $1 == method triplet address */
+/* Return triplet in $1 and imp in ip      */
+ ldr     ip, [$1, #METHOD_IMP]   /* imp = method-&gt;method_imp */
+
+.endmacro
+</code></pre>
+
+<p>虽然是汇编，但是注释太详尽了，理解起来并不难，还是求hash，去buckets里找，找不到按照hash冲突的规则继续向下，直到最后。</p>
+
+<p>十万个为什么
+了解了方法缓存的定义之后，我们提出几个问题并一一解答</p>
+
+<p>方法缓存存在什么地方？
+让我们去翻看类的定义，在Objective-C 2.0中，Class的定义大致是这样的（见objc-runtime.mm）</p>
+
+<pre><code>  struct _class_t {
+  struct _class_t *isa;
+  struct _class_t *superclass;
+  void *cache;
+  void *vtable;
+  struct _class_ro_t *ro;
+  };
+</code></pre>
+
+<p>我们看到在类的定义里就有cache字段，没错，类的所有缓存都存在metaclass上，所以每个类都只有一份方法缓存，而不是每一个类的object都保存一份。
+父类方法的缓存只存在父类么，还是子类也会缓存父类的方法？
+在第一节对objc_msgSend的追溯中我们可以看到，即便是从父类取到的方法，也会存在类本身的方法缓存里。而当用一个父类对象去调用那个方法的时候，也会在父类的metaclass里缓存一份。
+类的方法缓存大小有没有限制？
+要回答这个问题，我们需要再看一下源码，在objc-cache.mm有一个变量定义如下：</p>
+
+<pre><code>  /* When _class_slow_grow is non-zero, any given cache is actually grown
+   * only on the odd-numbered times it becomes full; on the even-numbered
+   * times, it is simply emptied and re-used.  When this flag is zero,
+   * caches are grown every time. */
+  static const int _class_slow_grow = 1;
+</code></pre>
+
+<p>其实不用再看进一步的代码片段，仅从注释我们就可以看到问题的答案。注释中说明，当<em>class_slow_grow是非0值的时候，只有当方法缓存第奇数次满（使用的槽位超过3/4）的时候，方法缓存的大小才会增长（会清空缓存，否则hash值就不对了）；当第偶数次满的时候，方法缓存会被清空并重新利用。 如果</em>class_slow_grow值为0，那么每一次方法缓存满的时候，其大小都会增长。
+所以单就问题而言，答案是没有限制，虽然这个值被设置为1，方法缓存的大小增速会慢一点，但是确实是没有上限的。
+为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？
+这个问题么，我觉得有以下三个原因：</p>
+
+<p>散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
+list的方法还保存了除了selector和imp之外其他很多属性
+散列表是有空槽的，会浪费空间
+缓存 - 性能优化的万金油？
+非也，就算有了有了Objective-C本身的方法缓存，我们还是有很多调用方法的优化空间，对于这件事情，这篇文章讲的非常详细，大家可以自行移步观摩<a href="http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html">http://www.mulle-kybernetik.com/artikel/Optimization/opti-3-imp-deluxe.html</a> （强烈推荐，虽然我们一般不会遇到需要这么强度优化的地方，但是这种精神和思想是值得我们学习的）</p>
+
+<p>优化，永无止境
+在文章末尾，我们再来回答一下第一节提出的问题：“为什么会有_class_lookupMethodAndLoadCache3这个方法？”
+这个方法的实现如下所示：</p>
+
+<pre><code>/***********************************************************************
+* _class_lookupMethodAndLoadCache.
+* Method lookup for dispatchers ONLY. OTHER CODE SHOULD USE lookUpImp().
+* This lookup avoids optimistic cache scan because the dispatcher
+* already tried that.
+**********************************************************************/
+IMP _class_lookupMethodAndLoadCache3(id obj, SEL sel, Class cls)
+{
+    return lookUpImpOrForward(cls, sel, obj, 
+                              YES/*initialize*/, NO/*cache*/, YES/*resolver*/);
+}
+</code></pre>
+
+<p>如果单纯看方法名，这个方法应该会从缓存和方法列表中查找一个方法，但是如第一节所讲，在调用这个方法之前，我们已经是从缓存无法找到这个方法了，所以这个方法避免了再去扫描缓存查找方法的过程，而是直接从方法列表找起。从Apple代码的注释，我们也完全可以了解这一点。不顾一切地追求完美和性能，是一种品质。</p>
+
+<p>后记
+本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 <a href="http://www.opensource.apple.com/tarballs/">http://www.opensource.apple.com/tarballs/</a> 下载。如有错误，敬请指正。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[玩转运行时]]></title>
+    <link href="http://al1020119.github.io/blog/2014/06/16/runtime/"/>
+    <updated>2014-06-16T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/06/16/runtime</id>
+    <content type="html"><![CDATA[<h2>运行时（Runtime）机制</h2>
+
+<p>本文将会以笔者个人的小小研究为例总结一下关于iOS开发中运行时的使用和常用方法的介绍，关于跟多运行时相关技术请查看笔者之前写的运行时高级用法及相关语法或者查看响应官方文档。</p>
+
+<p>下面就来看看什么是运行时，我们要怎么在iOS开发中去使用它。</p>
+
+<p>官方介绍：</p>
+
+<!--more-->
+
+
+<p><img src="/images/runtime001.png" title="Caption" ></p>
+
+<p><img src="/images/runtime002.png" title="Caption" ></p>
+
+<p>这里我们主要关注的是最后一种！</p>
+
+<p>下面来看看Runtime的相关总结</p>
+
+<p><img src="/images/runtime003.png" title="Caption" ></p>
+
+<h2>术语解释</h2>
+
+<h3>Messages</h3>
+
+<p>如果你是从动态语言如Ruby或Python转过来的，可能知道什么是消息，可以直接跳过进入下一节。那些从其他语言转过来的，继续看。</p>
+
+<p>执行一个方法，有些语言，编译器会执行一些额外的优化和错误检查，因为调用关系很直接也很明显。但对于消息分发来说，就不那么明显了。在发消息前不必知道某个对象是否能够处理消息。你把消息发给它，它可能会处理，也可能转给其他的Object来处理。一个消息不必对应一个方法，一个对象可能实现一个方法来处理多条消息。</p>
+
+<p>在Objective-C中，消息是通过objc_msgSend()这个runtime方法及相近的方法来实现的。这个方法需要一个target，selector，还有一些参数。理论上来说，编译器只是把消息分发变成objc_msgSend来执行。比如下面这两行代码是等价的。</p>
+
+<pre><code>[array insertObject:foo atIndex:5];
+objc_msgSend(array, @selector(insertObject:atIndex:), foo, 5);
+</code></pre>
+
+<hr />
+
+<p>现在我们知道了objects,classes,selectors,IMPs以及消息分发，那么运行时到底能做什么呢？主要有两个作用：</p>
+
+<ul>
+<li>创建、修改、自省classes和objects</li>
+<li>消息分发</li>
+</ul>
+
+
+<p>之前已经提过消息分发，不过这只是一小部分功能。所有的运行时方法都有特定的前缀。下面是一些有意思的方法：</p>
+
+<h3>class</h3>
+
+<p>class开头的方法是用来修改和自省classes。</p>
+
+<ul>
+<li>class_addIvar, class_addMethod, *class_addProperty和class_addProtocol允许重建classes。</li>
+<li>class_copyIvarList, class_copyMethodList, class_copyProtocolList和class_copyPropertyList能拿到一个class的所有内容。</li>
+<li>class_getClassMethod, class_getClassVariable, class_getInstanceMethod, class_getInstanceVariable, class_getMethodImplementation和class_getProperty返回单个内容。</li>
+</ul>
+
+
+<p>也有一些通用的自省方法，如class_conformsToProtocol, class_respondsToSelector, class_getSuperclass。最后，你可以使用class_createInstance来创建一个object。</p>
+
+<h3>ivar</h3>
+
+<p>这些方法能让你得到名字，内存地址和Objective-C type encoding。</p>
+
+<h3>method</h3>
+
+<p>这些方法主要用来自省，比如method_getName, method_getImplementation,  method_getReturnType等等。也有一些修改的方法，包括method_setImplementation和method_exchangeImplementations，这些我们后面会讲到。</p>
+
+<h3>objc</h3>
+
+<p>一旦拿到了object，你就可以对它做一些自省和修改。你可以get/set ivar, 使用object_copy和object_dispose来copy和free object的内存。最NB的不仅是拿到一个class，而是可以使用object_setClass来改变一个object的class。待会就能看到使用场景。</p>
+
+<h3>property</h3>
+
+<p>属性保存了很大一部分信息。除了拿到名字，你还可以使用property_getAttributes来发现property的更多信息，如返回值、是否为atomic、getter/setter名字、是否为dynamic、背后使用的ivar名字、是否为弱引用。</p>
+
+<h3>protocol</h3>
+
+<p>Protocols有点像classes，但是精简版的，运行时的方法是一样的。你可以获取method, property, protocol列表, 检查是否实现了其他的protocol。</p>
+
+<h3>Cache</h3>
+
+<p>在runtime.h中Cache的定义如下：</p>
+
+<pre><code>   typedef struct objc_cache *Cache 
+</code></pre>
+
+<p> Cache为方法调用的性能进行优化，通俗地讲，每当实例对象接收到一个消息时，它不会直接在isa指向的类的方法列表中遍历查找能够响应消息的方法，因为这样效率太低了，而是优先在Cache中查找。Runtime 系统会把被调用的方法存到Cache中（理论上讲一个方法如果被调用，那么它有可能今后还会被调用），下次查找的时候效率更高。这根计算机组成原理中学过的 CPU 绕过主存先访问Cache的道理挺像，而我猜苹果为提高Cache命中率应该也做了努力吧。</p>
+
+<h2>sel</h2>
+
+<p>最后我们有一些方法可以处理 selectors，比如获取名字，注册一个selector等等。</p>
+
+<h3>Methods, Selectors and IMPs</h3>
+
+<p>我们知道了运行时会发消息给对象。我们也知道一个对象的class保存了方法列表。那么这些消息是如何映射到方法的，这些方法又是如何被执行的呢？</p>
+
+<p>第一个问题的答案很简单。class的方法列表其实是一个字典，key为selectors，IMPs为value。一个IMP是指向方法在内存中的实现。很重要的一点是，selector和IMP之间的关系是在运行时才决定的，而不是编译时。这样我们就能玩出些花样。</p>
+
+<p>IMP通常是指向方法的指针，第一个参数是self，类型为id，第二个参数是<em>cmd，类型为SEL，余下的是方法的参数。这也是self和</em>cmd被定义的地方。下面演示了Method和IMP</p>
+
+<blockquote><p>Objective-C是一门简单的语言，95%是C。只是在语言层面上加了些关键字和语法。真正让Objective-C如此强大的是它的运行时。它很小但却很强大。它的核心是消息分发。</p></blockquote>
+
+<h3>Objects, Classes, MetaClasses</h3>
+
+<p>大多数面向对象的语言里有 classes 和 objects 的概念。Objects通过Classes生成。但是在Objective-C中，classes本身也是objects(译者注：这点跟python很像)，也可以处理消息，这也是为什么会有类方法和实例方法。具体来说，Objective-C中的Object是一个结构体(struct)，第一个成员是isa，指向自己的class。这是在objc/objc.h中定义的。</p>
+
+<pre><code>typedef s   truct objc_object {
+    Class isa;
+} *id;
+</code></pre>
+
+<p>object的class保存了方法列表，还有指向父类的指针。但classes也是objects，也会有isa变量，那么它又指向哪儿呢？这里就引出了第三个类型: metaclasses。一个 metaclass被指向class，class被指向object。它保存了所有实现的方法列表，以及父类的metaclass。如果想更清楚地了解objects,classes以及metaclasses是如何一起工作地，可以阅读这篇文章。</p>
+
+<h2>使用方式：</h2>
+
+<h3>pragma mark 获取属性成员</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+unsigned int count = 0;
+
+Ivar *ivars = class_copyIvarList([iCocosObject class], &amp;count);
+
+//    Ivar *ivars = class_copyMethodList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;)
+
+//    Ivar *ivars = class_copyPropertyList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;);
+
+//    Ivar *ivars = class_copyProtocolList(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#unsigned int *outCount#&gt;)
+
+
+
+for (int i = 0; i &lt; count; i++) {
+
+    Ivar ivar = ivars[i];
+
+
+
+    NSString *name = @(ivar_getName(ivar));
+
+    NSLog(@"%@", name);
+
+
+
+    NSLog(@"*****************");
+
+    const char *iv = ivar_getName(ivar);
+
+
+
+
+
+    NSLog(@"%s", iv);
+
+
+
+    NSLog(@"*****************");
+
+    const char *ivs =  ivar_getTypeEncoding(ivar);
+
+
+
+    NSLog(@"%s", ivs);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取方法</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int meth = 0;
+
+Method *met = class_copyMethodList([iCocosObject class], &amp;meth);
+
+for (int i = 0; i &lt; meth; i++) {
+
+    Method m = met[i];
+
+
+
+    SEL sel = method_getName(m);
+
+    NSString *str = NSStringFromSelector(sel);
+
+
+
+    NSLog(@"%@",str);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取协议</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int pro = 0;
+
+Protocol * __unsafe_unretained *proto =  class_copyProtocolList([iCocosObject class], &amp;pro);
+
+for (int i = 0; i &lt; pro; i++) {
+
+    Method p = (__bridge Method)(proto[i]);
+
+
+
+    const char *pr = protocol_getName((__bridge Protocol *)(p));
+
+//        NSString *str = NSStringFromSelector(pr);
+
+
+
+    NSLog(@"%s",pr);
+
+}
+</code></pre>
+
+<h3>pragma mark 获取属性</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+
+ unsigned int xs = 0;
+
+objc_property_t *xsL = class_copyPropertyList([iCocosObject class], &amp;xs);
+
+for (int i = 0; i &lt; xs; i++) {
+
+    objc_property_t xslist = xsL[i];
+
+
+
+    const char *x = property_getName(xslist);
+
+//        NSString *str = NSStringFromSelector(x);
+
+
+
+    NSLog(@"%s",x);
+
+}
+
+
+
+
+
+//    objc_msgSend()
+
+//    objc_getClass(&lt;#const char *name#&gt;);
+
+//    sel_registerName(&lt;#const char *str#&gt;);
+
+
+
+//     iCocosView *view = objc_msgSend(objc_msgSend(objc_getClass("iCocosView"), sel_registerName("alloc")), sel_registerName("init"));
+
+Method one =  class_getClassMethod([iCocosObject class], @selector(iCocosMethos));
+
+Method two =  class_getClassMethod([iCocosObject class], @selector(iCocosMetho));
+
+method_exchangeImplementations(one, two);
+
+
+
+Method o =  class_getInstanceMethod([iCocosObject class], @selector(iCocosMethos));
+
+Method t =  class_getInstanceMethod([iCocosObject class], @selector(iCocosMetho));
+
+method_exchangeImplementations(o, t);
+
+
+
+//    class_getInstanceSize(&lt;#__unsafe_unretained Class cls#&gt;);
+
+//    class_getInstanceVariable(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getMethodImplementation_stret(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;);
+
+
+
+//    class_getClassVariable(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getSuperclass(&lt;#__unsafe_unretained Class cls#&gt;);
+
+
+
+//    class_getProperty(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;);
+
+//    class_getName(&lt;#__unsafe_unretained Class cls#&gt;);
+
+
+
+
+
+
+
+//    class_replaceMethod(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;, &lt;#IMP imp#&gt;, &lt;#const char *types#&gt;);
+</code></pre>
+
+<h3>pragma mark 增加</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+ //    class_addIvar(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;, &lt;#size_t size#&gt;, &lt;#uint8_t alignment#&gt;, &lt;#const char *types#&gt;);
+
+//    class_addMethod(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#SEL name#&gt;, &lt;#IMP imp#&gt;, &lt;#const char *types#&gt;);
+
+//    class_addProperty(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#const char *name#&gt;, &lt;#const objc_property_attribute_t *attributes#&gt;, &lt;#unsigned int attributeCount#&gt;);
+
+//    class_addProtocol(&lt;#__unsafe_unretained Class cls#&gt;, &lt;#Protocol *protocol#&gt;);
+</code></pre>
+
+<h3>pragma mark 替换系统的addObject：（给数组或者其他类型做分类）</h3>
+
+<pre><code>/******************************************************************************
+
+ *                                                                            *
+
+ *                              Inquiry macros                                *
+
+ *                                                                            *
+
+ *                            iCocos--Description                             *
+
+ *                                                                            *
+
+ ******************************************************************************/
+ //在load中实现下面的代码
+
+Method ic =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(iCocosobject:));
+
+Method add =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(addObject:));
+
+method_exchangeImplementations(ic, add);
+
+
+
+
+
+//实现iCocosobject方法:(实现相应的功能，这里只是去掉非空)
+
+//    if (object != nil) {
+
+//        [self iCocosobject:object];
+
+//    }
+</code></pre>
+
+<h2>实战</h2>
+
+<h3>一：关联对象：给某一个类在运行的时候动态的增加一个成员变量</h3>
+
+<pre><code>@interface NSObject(iCocos)
+
+
+
+//头文件中声明一个属性
+
+@property (nonatomic, assign) double height;
+
+
+
+@end
+
+
+
+
+
+@implementation NSObject(iCocos)
+
+
+
+static double heightKey;//用来参考
+
+
+
+-(void)setHeight:(double)height
+
+{
+
+    objc_setAssociatedObject(self, &amp;heightKey, @(height), OBJC_ASSOCIATION_ASSIGN);
+
+}
+
+
+
+-(double)height
+
+{
+
+    return [objc_getAssociatedObject(self, &amp;heightKey) doubleValue];
+
+}
+</code></pre>
+
+<p>@end</p>
+
+<h3>二：归档</h3>
+
+<p><img src="/images/runtimedemo001.png" title="Caption" ></p>
+
+<h3>三：字典转模型：</h3>
+
+<p>之前使用的方法；</p>
+
+<p><img src="/images/runtimedemo002.png" title="Caption" ></p>
+
+<p>使用运行时</p>
+
+<p>注意必须保证字典中的属性名和模型中的属性名一模一样</p>
+
+<p><img src="/images/runtimedemo003.png" title="Caption" ></p>
+
+<p>完善代码：</p>
+
+<pre><code> @implementation NSObject (Model)
+
+
+
++ (instancetype)objcWithDict:(NSDictionary *)dict mapDict:(NSDictionary *)mapDict
+
+{
+
+
+
+
+
+    id objc = [[self alloc] init];
+
+
+
+    unsigned int count = 0;
+
+    Ivar *ivars = class_copyIvarList(self, &amp;count);
+
+
+
+    for (int i = 0; i &lt; count; i++) {
+
+        Ivar ivar = ivars[i];
+
+
+
+        NSString *name = @(ivar_getName(ivar));
+
+
+
+        name = [name substringFromIndex:1];
+
+
+
+        id value = dict[name];
+
+
+
+        if (value == nil) {
+
+
+
+            if (mapDict) {
+
+                NSString *mapName = mapDict[name];
+
+
+
+                value = dict[mapName];
+
+            }
+
+
+
+        }
+
+
+
+        [objc setValue:value forKeyPath:name];
+
+    }
+
+
+
+
+
+    return objc;
+
+}
+
+
+
+@end
+</code></pre>
+
+<h3>全屏返回</h3>
+
+<pre><code>- (void)viewDidLoad {
+
+    [super viewDidLoad];
+    // 获取系统自带滑动手势的target对象
+    id target = self.interactivePopGestureRecognizer.delegate;
+    // 创建全屏滑动手势，调用系统自带滑动手势的target的action方法
+    UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:target action:@selector(handleNavigationTransition:)];
+    // 设置手势代理，拦截手势触发
+    pan.delegate = self;
+    // 给导航控制器的view添加全屏滑动手势
+    [self.view addGestureRecognizer:pan];
+    // 禁止使用系统自带的滑动手势
+    self.interactivePopGestureRecognizer.enabled = NO;
+    }
+    // 什么时候调用：每次触发手势之前都会询问下代理，是否触发。
+    // 作用：拦截手势触发
+    - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+    {
+        // 注意：只有非根控制器才有滑动返回功能，根控制器没有。
+        // 判断导航控制器是否只有一个子控制器，如果只有一个子控制器，肯定是根控制器
+        if (self.childViewControllers.count == 1) {
+        // 表示用户在根控制器界面，就不需要触发滑动手势，
+        return NO;
+    }
+    return YES;
+}
+</code></pre>
+
+<hr />
+
+<p>参考文章：</p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4782532.html">http://www.cnblogs.com/iCocos/p/4782532.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4676679.html">http://www.cnblogs.com/iCocos/p/4676679.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4734687.html">http://www.cnblogs.com/iCocos/p/4734687.html</a></p>
+
+<p><a href="http://www.cnblogs.com/iCocos/p/4761600.html">http://www.cnblogs.com/iCocos/p/4761600.html</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[自己写套缓存机制]]></title>
+    <link href="http://al1020119.github.io/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/"/>
+    <updated>2013-07-07T02:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu</id>
+    <content type="html"><![CDATA[<ul>
+<li>前言</li>
+</ul>
+
+
+<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
+
+<!--more-->
+
+
+<h2>一： 研究UITableView底层实现</h2>
+
+<h5>1.系统UITabelView的简单使用，这里就不考虑分组了，默认为1组。</h5>
+
+<pre><code> 1 // 返回第section组有多少行
+ 2 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+ 3 {
+ 4     NSLog(@"%s",__func__);
+ 5     return 10;
+ 6 }
+ 7  
+ 8 // 返回每一行cell的样子
+ 9 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+10 {
+11     NSLog(@"%s",__func__);
+12     static NSString *ID = @"cell";
+13     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ID];
+14      
+15     if (cell == nil) {
+16          
+17         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ID];
+18     }
+19      
+20     cell.textLabel.text = [NSString stringWithFormat:@"%ld",indexPath.row];
+21      
+22     return cell;
+23 }
+24 // 返回每行cell的高度
+25 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+26 {
+27     NSLog(@"%s--%@",__func__,indexPath);
+28     return 100;
+29 } 
+</code></pre>
+
+<h5>2.验证UITabelView的实现机制。</h5>
+
+<p>如图打印结果:</p>
+
+<p><img src="/images/huancun001.png" title="Caption" ></p>
+
+<ul>
+<li><p>分析：底层先获取有多少cell（10个），在获取每个cell的高度，返回高度的方法一开始调用10次。</p>
+
+<ul>
+<li>目的：确定tableView的滚动范围，一开始计算所有cell的frame,就能计算下tableView的滚动范围。</li>
+</ul>
+</li>
+<li><p>分析：tableView:cellForRowAtIndexPath:方法什么时候调用。</p></li>
+</ul>
+
+
+<p>打印验证，如图：</p>
+
+<p><img src="/images/huancun002.png" title="Caption" ></p>
+
+<p>一开始调用了7次，因为一开始屏幕最多显示7个cell</p>
+
+<pre><code>- 目的：一开始只加载显示出来的cell，等有新的cell出现的时候会继续调用这个方法加载cell。
+</code></pre>
+
+<h5>3.UITableView循环利用思想</h5>
+
+<p>当新的cell出现的时候，首先从缓存池中获取，如果没有获取到，就自己创建cell。</p>
+
+<p>当有cell移除屏幕的时候，把cell放到缓存池中去。</p>
+
+<h2>二、自定义UIScroolView，模仿UITableView循环利用</h2>
+
+<h5>1.提供数据源和代理方法，命名和UITableView一致。</h5>
+
+<pre><code> 1 @class YZTableView;
+ 2 @protocol YZTableViewDataSource
+ 3  
+ 4 @required
+ 5  
+ 6 // 返回有多少行cell
+ 7 - (NSInteger)tableView:(YZTableView *)tableView numberOfRowsInSection:(NSInteger)section;
+ 8  
+ 9  
+10 // 返回每行cell长什么样子
+11 - (UITableViewCell *)tableView:(YZTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+12  
+13 @end
+14  
+15 @protocol YZTableViewDelegate
+16  
+17 // 返回每行cell有多高
+18 - (CGFloat)tableView:(YZTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
+19  
+20 @end 
+</code></pre>
+
+<h5>2.提供代理和数据源属性</h5>
+
+<pre><code>1 @interface YZTableView : UIScrollView
+2  
+3 @property (nonatomic, weak) id dataSource;
+4  
+5 @property (nonatomic, weak) id delegate;
+6  
+7 @end 
+</code></pre>
+
+<p>警告:</p>
+
+<p><img src="/images/huancun003.png" title="Caption" ></p>
+
+<p>解决，在YZTableView.m的实现中声明。</p>
+
+<p><img src="/images/huancun004.png" title="Caption" ></p>
+
+<ul>
+<li><p>原因：有人会问为什么我要定义同名的delegate属性，我主要想模仿系统的tableView，系统tableView也有同名的属性。</p>
+
+<ul>
+<li>思路：这样做，外界在使用设置我的tableView的delegate，就必须遵守的我的代理协议，而不是UIScrollView的代理协议。</li>
+</ul>
+</li>
+</ul>
+
+
+<h5>3.提供刷新方法reloadData，因为tableView通过这个刷新tableView。</h5>
+
+<pre><code> 1 @interface YZTableView : UIScrollView
+ 2  
+ 3 @property (nonatomic, weak) id dataSource;
+ 4  
+ 5 @property (nonatomic, weak) id delegate;
+ 6  
+ 7 // 刷新tableView
+ 8 - (void)reloadData;
+ 9  
+10 @end 
+</code></pre>
+
+<h5>4.实现reloadData方法，刷新表格</h5>
+
+<p>回顾系统如何刷新tableView</p>
+
+<ul>
+<li><p>1).先获取有多少cell,在获取每个cell的高度。因此应该是先计算出每个cell的frame.</p></li>
+<li><p>2).然后再判断当前有多少cell显示在屏幕上，就加载多少</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code> 1 // 刷新tableView
+ 2 - (void)reloadData
+ 3 {
+ 4     // 这里不考虑多组，假设tableView默认只有一组。
+ 5      
+ 6     // 先获取总共有多少cell
+ 7     NSInteger rows = [self.dataSource tableView:self numberOfRowsInSection:0];
+ 8      
+ 9     // 遍历所有cell的高度，计算每行cell的frame
+10     CGRect cellF;
+11     CGFloat cellX = 0;
+12     CGFloat cellY = 0;
+13     CGFloat cellW = self.bounds.size.width;
+14     CGFloat cellH = 0;
+15     CGFloat totalH = 0;
+16      
+17     for (int i = 0; i &lt; rows; i++) {
+18         
+19         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+20         // 注意：这里获取的delegate，是UIScrollView中声明的属性
+21         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+22             cellH = [self.delegate tableView:self heightForRowAtIndexPath:indexPath];
+23         }else{
+24             cellH = 44;
+25         }
+26         cellY = i * cellH;
+27          
+28         cellF = CGRectMake(cellX, cellY, cellW, cellH);
+29          
+30         // 记录每个cell的y值对应的indexPath
+31         self.indexPathDict[@(cellY)] = indexPath;
+32          
+33         // 判断有多少cell显示在屏幕上,只加载显示在屏幕上的cell
+34         if ([self isInScreen:cellF]) { // 当前cell的frame在屏幕上
+35             // 通过数据源获取cell
+36             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
+37              
+38             cell.frame = cellF;
+39              
+40             [self addSubview:cell];
+41              
+42         }
+43          
+44         // 添加分割线
+45         UIView *divideV = [[UIView alloc] initWithFrame:CGRectMake(0, cellY + cellH - 1, cellW, 1)];
+46         divideV.backgroundColor = [UIColor lightGrayColor];
+47         divideV.alpha = 0.3;
+48         [self addSubview:divideV];
+49          
+50         // 添加到cell可见数组中
+51             [self.visibleCells addObject:cell];
+52          
+53         // 计算tableView内容总高度
+54         totalH += cellY + cellH;
+55      
+56     }
+57      
+58     // 设置tableView的滚动范围
+59     self.contentSize = CGSizeMake(self.bounds.size.width, totalH);
+60      
+61 } 
+</code></pre>
+
+<h5>5.如何判断cell显示在屏幕上</h5>
+
+<p>当tableView内容往下走</p>
+
+<p><img src="/images/huancun005.gif" title="Caption" ></p>
+
+<p>当tableView内容往上走</p>
+
+<p><img src="/images/huancun006.gif" title="Caption" ></p>
+
+<pre><code> 1 // 根据cell尺寸判断cell在不在屏幕上
+ 2 - (BOOL)isInScreen:(CGRect)cellF
+ 3 {
+ 4     // tableView能滚动，因此需要加上偏移量判断
+ 5      
+ 6     // 当tableView内容往下走，offsetY会一直增加 ,cell的最大y值 &lt; offsetY偏移量   ,cell移除屏幕
+ 7     // tableView内容往上走 , offsetY会一直减少，屏幕的最大Y值 &lt;  cell的y值 ，Cell移除屏幕
+ 8     // 屏幕最大y值 = 屏幕的高度 + offsetY
+ 9      
+10     // 这里拿屏幕来比较，其实是因为tableView的尺寸我默认等于屏幕的高度，正常应该是tableView的高度。
+11     // cell在屏幕上， cell的最大y值 &gt; offsetY &amp;&amp; cell的y值 &lt; 屏幕的最大Y值(屏幕的高度 + offsetY)
+12      
+13     CGFloat offsetY = self.contentOffset.y;
+14      
+15     return CGRectGetMaxY(cellF) &gt; offsetY &amp;&amp; cellF.origin.y &lt; self.bounds.size.height + offsetY;
+16  
+17     } 
+</code></pre>
+
+<h5>6.在滚动的时候，如果有新的cell出现在屏幕上，先从缓存池中取，没有取到，在创建新的cell.</h5>
+
+<ul>
+<li>分析：</li>
+</ul>
+
+
+<p>需要及时监听tableView的滚动，判断下有没有新的cell出现。</p>
+
+<p>大家都会想到scrollViewDidScroll方法，这个方法只要一滚动scrollView就会调用，但是这个方法有个弊端，就是tableView内部需要作为自身的代理，才能监听，这样不好，有时候外界也需要监听滚动，因此自身类最好不要成为自己的代理。（设计思想）</p>
+
+<ul>
+<li>解决：</li>
+</ul>
+
+
+<p>重写layoutSubviews，判断当前哪些cell显示在屏幕上。</p>
+
+<p>因为只要一滚动，就会修改contentOffset,就会调用layoutSubviews，其实修改contentOffset，内部其实是修改tableView的bounds,而layoutSubviews刚好是父控件尺寸一改就会调用.具体需要了解scrollView底层实现。</p>
+
+<ul>
+<li>思路：</li>
+</ul>
+
+
+<p>判断下，当前tableView内容往上移动，还是往下移动，如何判断，取出显示在屏幕上的第一次cell，当前偏移量 > 第一个cell的y值，往下走。</p>
+
+<p>需要搞个数组记录下，当前有多少cell显示在屏幕上，在一开始的时候记录.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 4  
+ 5 @end
+ 6  
+ 7 @implementation YZTableView
+ 8  
+ 9 @dynamic delegate;
+10  
+11 - (NSMutableArray *)visibleCells
+12 {
+13  
+14     if (_visibleCells == nil) {
+15         _visibleCells = [NSMutableArray array];
+16     }
+17     return _visibleCells;
+18      
+19 }
+20 @end 
+</code></pre>
+
+<h3>往下移动</h3>
+
+<ul>
+<li><p>1.如果已经滚动到tableView内容最底部，就不需要判断新的cell，直接返回.</p></li>
+<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
+<li><p>3.只需要判断下当前可见cell数组中第一个cell有没有离开屏幕</p></li>
+<li><p>4.只需要判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上即可。</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code> 1 // 判断有没有滚动到最底部
+ 2         if (offsetY + self.bounds.size.height &gt; self.contentSize.height) {
+ 3             return;
+ 4         }
+ 5          
+ 6         // 判断下当前可见cell数组中第一个cell有没有离开屏幕
+ 7         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
+ 8             // 从可见cell数组移除
+ 9             [self.visibleCells removeObject:firstCell];
+10              
+11             // 删除第0个从可见的indexPath
+12             [self.visibleIndexPaths removeObjectAtIndex:0];
+13              
+14             // 添加到缓存池中
+15             [self.reuserCells addObject:firstCell];
+16              
+17             // 移除父控件
+18             [firstCell removeFromSuperview];
+19              
+20         }
+21         // 判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上
+22         // 这里需要计算下一个cell的y值，需要获取对应的cell的高度
+23         // 而高度需要根据indexPath，从数据源获取
+24         // 可以数组记录每个可见cell的indexPath的顺序,然后获取对应可见的indexPath的角标，就能获取下一个indexPath.
+25          
+26         // 获取最后一个cell的indexPath
+27         NSIndexPath *indexPath = [self.visibleIndexPaths lastObject];
+28          
+29         // 获取下一个cell的indexPath
+30         NSIndexPath *nextIndexPath = [NSIndexPath indexPathForRow:indexPath.row + 1 inSection:0];
+31          
+32         // 获取cell的高度
+33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:nextIndexPath];
+35         }else{
+36             cellH = 44;
+37         }
+38          
+39         // 计算下一个cell的y值
+40         cellY = lastCellY + cellH;
+41          
+42         // 计算下下一个cell的frame
+43         CGRect nextCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+44          
+45         if ([self isInScreen:nextCellFrame]) { // 如果在屏幕上，就加载
+46              
+47             // 通过数据源获取cell
+48             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:nextIndexPath];
+49              
+50             cell.frame = nextCellFrame;
+51              
+52             [self insertSubview:cell atIndex:0];
+53              
+54             // 添加到cell可见数组中
+55             [self.visibleCells addObject:cell];
+56              
+57             // 添加到可见的indexPaths数组
+58             [self.visibleIndexPaths addObject:nextIndexPath];
+59              
+60              
+61         } 
+</code></pre>
+
+<h3>往上移动</h3>
+
+<ul>
+<li><p>1.如果已经滚动到tableView最顶部，就不需要判断了有没有心的cell，直接返回.</p></li>
+<li><p>2.需要判断之前显示在屏幕cell有没有移除屏幕</p></li>
+<li><p>3.只需要判断下当前可见cell数组中最后一个cell有没有离开屏幕</p></li>
+<li><p>4.只需要判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上即可</p></li>
+</ul>
+
+
+<p>注意点：如果可见cell数组中第一个cell的上一个cell显示到屏幕上，一定要记得是插入到可见数组第0个的位置。</p>
+
+<pre><code> 1 // 判断有没有滚动到最顶部
+ 2         if (offsetY &lt; 0) {
+ 3             return;
+ 4         }
+ 5          
+ 6          
+ 7          
+ 8         // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
+ 9         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
+10             // 从可见cell数组移除
+11             [self.visibleCells removeObject:lastCell];
+12              
+13             // 删除最后一个可见的indexPath
+14             [self.visibleIndexPaths removeLastObject];
+15              
+16             // 添加到缓存池中
+17             [self.reuserCells addObject:lastCell];
+18              
+19             // 移除父控件
+20             [lastCell removeFromSuperview];
+21              
+22         }
+23          
+24         // 判断下可见cell数组中第一个cell的上一个cell显没显示在屏幕上
+25         // 获取第一个cell的indexPath
+26         NSIndexPath *indexPath = self.visibleIndexPaths[0];
+27          
+28          
+29         // 获取下一个cell的indexPath
+30         NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:indexPath.row - 1 inSection:0];
+31          
+32         // 获取cell的高度
+33         if ([self.delegate respondsToSelector:@selector(tableView:heightForRowAtIndexPath:)]) {
+34             cellH = [self.delegate tableView:self heightForRowAtIndexPath:preIndexPath];
+35         }else{
+36             cellH = 44;
+37         }
+38          
+39         // 计算上一个cell的y值
+40         cellY = firstCellY - cellH;
+41          
+42          
+43         // 计算上一个cell的frame
+44         CGRect preCellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+45          
+46         if ([self isInScreen:preCellFrame]) { // 如果在屏幕上，就加载
+47              
+48             // 通过数据源获取cell
+49             UITableViewCell *cell = [self.dataSource tableView:self cellForRowAtIndexPath:preIndexPath];
+50              
+51             cell.frame = preCellFrame;
+52              
+53             [self insertSubview:cell atIndex:0];
+54              
+55             // 添加到cell可见数组中,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
+56             [self.visibleCells insertObject:cell atIndex:0];
+57              
+58             // 添加到可见的indexPaths数组,这里应该用插入，因为这是最上面一个cell,应该插入到数组第0个
+59             [self.visibleIndexPaths insertObject:preIndexPath atIndex:0];
+60              
+61         }
+62          
+63     } 
+</code></pre>
+
+<ul>
+<li>问题1：</li>
+</ul>
+
+
+<p>判断下当前可见cell数组中最后一个cell的下一个cell显没显示在屏幕上</p>
+
+<p>这里需要计算下一个cell的frame,frame就需要计算下一个cell的y值，需要获取对应的cell的高度 cellY = lastCellY + cellH</p>
+
+<p>而高度需要根据indexPath，从数据源获取</p>
+
+<ul>
+<li>解决：</li>
+</ul>
+
+
+<p>可以搞个字典记录每个可见cell的indexPath,然后获取对应可见的indexPath，就能获取下一个indexPath.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 // 屏幕可见数组
+ 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 5  
+ 6 // 缓存池
+ 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
+ 8  
+ 9  
+10 // 记录每个可见cell的indexPaths的顺序
+11 @property (nonatomic, strong) NSMutableDictionary *visibleIndexPaths;
+12  
+13 @end
+14  
+15 - (NSMutableDictionary *)visibleIndexPaths
+16 {
+17     if (_visibleIndexPaths == nil) {
+18         _visibleIndexPaths = [NSMutableDictionary dictionary];
+19     }
+20      
+21     return _visibleIndexPaths;
+22 } 
+</code></pre>
+
+<h5>注意：</h5>
+
+<p>当cell从缓存池中移除，一定要记得从可见数组cell中移除，还有可见cell的indexPath也要移除.</p>
+
+<pre><code> 1 // 判断下当前可见cell数组中第一个cell有没有离开屏幕
+ 2         if ([self isInScreen:firstCell.frame] == NO) { // 如果不在屏幕
+ 3             // 从可见cell数组移除
+ 4             [self.visibleCells removeObject:firstCell];
+ 5              
+ 6             // 删除第0个从可见的indexPath
+ 7             [self.visibleIndexPaths removeObjectAtIndex:0];
+ 8              
+ 9             // 添加到缓存池中
+10             [self.reuserCells addObject:firstCell];
+11              
+12         }
+13          
+14  // 判断下当前可见cell数组中最后一个cell有没有离开屏幕
+15         if ([self isInScreen:lastCell.frame] == NO) { // 如果不在屏幕
+16             // 从可见cell数组移除
+17             [self.visibleCells removeObject:lastCell];
+18              
+19             // 删除最后一个可见的indexPath
+20             [self.visibleIndexPaths removeLastObject];
+21              
+22             // 添加到缓存池中
+23             [self.reuserCells addObject:lastCell];
+24              
+25         } 
+</code></pre>
+
+<h5>7.缓存池搭建，缓存池其实就是一个NSSet集合。</h5>
+
+<p>搞一个NSSet集合充当缓存池.</p>
+
+<p>cell离开屏幕，放进缓存池</p>
+
+<p>提供从缓存池获取方法，从缓存池中获取cell,记住要从NSSet集合移除cell.</p>
+
+<pre><code> 1 @interface YZTableView ()
+ 2  
+ 3 // 屏幕可见数组
+ 4 @property (nonatomic, strong) NSMutableArray *visibleCells;
+ 5  
+ 6 // 缓存池
+ 7 @property (nonatomic, strong) NSMutableSet *reuserCells;
+ 8  
+ 9 // 记录每个cell的y值都对应一个indexPath
+10 @property (nonatomic, strong) NSMutableDictionary *indexPathDict;
+11  
+12 @end
+13 @implementation YZTableView
+14 - (NSMutableSet *)reuserCells
+15 {
+16     if (_reuserCells == nil) {
+17         _reuserCells = [NSMutableSet set];
+18     }
+19     return _reuserCells;
+20 }
+21  
+22 // 从缓存池中获取cell
+23 - (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
+24 {
+25     UITableViewCell *cell = [self.reuserCells anyObject];
+26      
+27     // 能取出cell,并且cell的标示符正确
+28     if (cell &amp;&amp; [cell.reuseIdentifier isEqualToString:identifier]) {     
+29         // 从缓存池中获取
+30         [self.reuserCells removeObject:cell];
+31          
+32         return cell;
+33     }
+34     return nil;
+35 }
+36  
+37 @end 
+</code></pre>
+
+<h5>8.tableView细节处理</h5>
+
+<p>原因：刷新方法经常要调用</p>
+
+<p>解决：每次刷新的时候，先把之前记录的全部清空</p>
+
+<pre><code> 1 // 刷新tableView
+ 2 - (void)reloadData
+ 3 {
+ 4      
+ 5     // 刷新方法经常要调用
+ 6     // 每次刷新的时候，先把之前记录的全部清空
+ 7     // 清空indexPath字典
+ 8     [self.indexPathDict removeAllObjects];
+ 9     // 清空屏幕可见数组
+10     [self.visibleCells removeAllObjects];
+11     ...
+12 } 
+</code></pre>
+
+<!--more-->
+
+]]></content>
+  </entry>
+  
+</feed>

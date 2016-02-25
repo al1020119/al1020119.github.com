@@ -1,0 +1,664 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>粘包&amp;封包&amp;拆包 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="粘包&amp;封包&amp;拆包 ordinal 今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！ 两个简单概念长连接与短连接： 1.长连接 Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">粘包&amp;封包&amp;拆包</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！</p>
+
+<h3>两个简单概念长连接与短连接：</h3>
+
+<h6>1.长连接</h6>
+
+<pre><code>Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。
+</code></pre>
+
+<h6>2.短连接</h6>
+
+<pre><code>Client方与Server每进行一次报文收发交易时才进行通讯连接，交易完毕后立即断开连接。此种方式常用于一点对多点
+</code></pre>
+
+<p>通讯，比如多个Client连接一个Server.</p>
+
+<h3>什么时候需要考虑粘包问题?</h3>
+
+<!--more-->
+
+
+<ul>
+<li>1:如果利用tcp每次发送数据，就与对方建立连接，然后双方发送完一段数据后，就关闭连接，这样就不会出现粘包问题（因为只有一种包结构,类似于http协议）。关闭连接主要要双方都发送close连接（参考tcp关闭协议）。如：A需要发送一段字符串给B，那么A与B建立连接，然后发送双方都默认好的协议字符如"hello give me sth abour yourself"，然后B收到报文后，就将缓冲区数据接收,然后关闭连接，这样粘包问题不用考虑到，因为大家都知道是发送一段字符。</li>
+<li>2：如果发送数据无结构，如文件传输，这样发送方只管发送，接收方只管接收存储就ok，也不用考虑粘包</li>
+<li><p>3：如果双方建立连接，需要在连接后一段时间内发送不同结构数据，如连接后，有好几种结构：</p>
+
+<pre><code>   1)"hello give me sth abour yourself"
+   2)"Don't give me sth abour yourself"
+</code></pre>
+
+<p> 那这样的话，如果发送方连续发送这个两个包出去，接收方一次接收可能会是"hello give me sth abour yourselfDon&rsquo;t give me sth abour yourself" 这样接收方就傻了，到底是要干嘛？不知道，因为协议没有规定这么诡异的字符串，所以要处理把它分包，怎么分也需要双方组织一个比较好的包结构，所以一般可能会在头加一个数据长度之类的包，以确保接收。</p></li>
+</ul>
+
+
+<h3>粘包出现原因：</h3>
+
+<p>在流传输中出现，UDP不会出现粘包，因为它有消息边界(参考Windows 网络编程)</p>
+
+<ul>
+<li>1 发送端需要等缓冲区满才发送出去，造成粘包</li>
+<li>2 接收方不及时接收缓冲区的包，造成多个包接收</li>
+</ul>
+
+
+<h4>解决办法：</h4>
+
+<p>为了避免粘包现象，可采取以下几种措施。一是对于发送方引起的粘包现象，用户可通过编程设置来避免，TCP提供了强制数据立即传送的操作指令push，TCP软件收到该操作指令后，就立即将本段数据发送出去，而不必等待发送缓冲区满；二是对于接收方引起的粘包，则可通过优化程序设计、精简接收进程工作量、提高接收进程优先级等措施，使其及时接收数据，从而尽量避免出现粘包现象；三是由接收方控制，将一包数据按结构字段，人为控制分多次接收，然后合并，通过这种手段来避免粘包。</p>
+
+<blockquote><p>以上提到的三种措施，都有其不足之处。第一种编程设置方法虽然可以避免发送方引起的粘包，但它关闭了优化算法，降低了网络发送效率，影响应用程序的性能，一般不建议使用。第二种方法只能减少出现粘包的可能性，但并不能完全避免粘包，当发送频率较高时，或由于网络突发可能使某个时间段数据包到达接收方较快，接收方还是有可能来不及接收，从而导致粘包。第三种方法虽然避免了粘包，但应用程序的效率较低，对实时应用的场合不适合。</p></blockquote>
+
+<h4>补充：封包和拆包</h4>
+
+<h6>封包:</h6>
+
+<ul>
+<li>封包就是给一段数据加上包头,这样一来数据包就分为包头和包体两部分内容了(以后讲过滤非法包时封包会加入"包尾"内容).包头其实上是个大小固定的结构体,其中有个结构体成员变量表示包体的长度,这是个很重要的变量,其他的结构体成员可根据需要自己定义.根据包头长度固定以及包头中含有包体长度的变量就能正确的拆分出一个完整的数据包.</li>
+</ul>
+
+
+<h6>拆包</h6>
+
+<p>目前我最常用的是以下两种方式.</p>
+
+<ul>
+<li><p>1.动态缓冲区暂存方式.之所以说缓冲区是动态的是因为当需要缓冲的数据长度超出缓冲区的长度时会增大缓冲区长度. 大概过程描述如下:</p>
+
+<ul>
+<li><p>A,为每一个连接动态分配一个缓冲区,同时把此缓冲区和SOCKET关联,常用的是通过结构体关联.</p></li>
+<li><p>B,当接收到数据时首先把此段数据存放在缓冲区中.</p></li>
+<li><p>C,判断缓存区中的数据长度是否够一个包头的长度,如不够,则不进行拆包操作.</p></li>
+<li><p>D,根据包头数据解析出里面代表包体长度的变量.</p></li>
+<li><p>E,判断缓存区中除包头外的数据长度是否够一个包体的长度,如不够,则不进行拆包操作.</p></li>
+<li><p>F,取出整个数据包.这里的"取"的意思是不光从缓冲区中拷贝出数据包,而且要把此数据包从缓存区中删除掉.删除的办法就是把此包后面的数据移动到缓冲区的起始地址.</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>这种方法有两个缺点.</p>
+
+<pre><code>    1. 为每个连接动态分配一个缓冲区增大了内存的使用.
+    2. 有三个地方需要拷贝数据,一个地方是把数据存放在缓冲区,一个地方是把完整的数据包从缓冲区取出来,一个地方是把数据包从缓冲区中删除.
+</code></pre>
+
+<p>这种拆包的改进方法会解决和完善部分缺点.</p>
+
+<ul>
+<li>2.利用底层的缓冲区来进行拆包</li>
+</ul>
+
+
+<p>由于TCP也维护了一个缓冲区,所以我们完全可以利用TCP的缓冲区来缓存我们的数据,这样一来就不需要为每一个连接分配一个缓冲区了.另一方面我们知道recv或者wsarecv都有一个参数,用来表示我们要接收多长长度的数据.利用这两个条件我们就可以对第一种方法进行优化了.</p>
+
+<blockquote><p>对于阻塞SOCKET来说,我们可以利用一个循环来接收包头长度的数据,然后解析出代表包体长度的那个变量,再用一个循环来接收包体长度的数据.</p></blockquote>
+
+<h3>Socket通讯源码！</h3>
+
+<p>客户端：
+导入头文件：</p>
+
+<pre><code>#import &lt;sys/socket.h&gt;
+#import &lt;netinet/in.h&gt;
+#import &lt;arpa/inet.h&gt;
+#import &lt;unistd.h&gt;
+</code></pre>
+
+<p> 创建连接</p>
+
+<pre><code>CFSocketContext sockContext = {0, // 结构体的版本，必须为0
+self,  // 一个任意指针的数据，可以用在创建时CFSocket对象相关联。这个指针被传递给所有的上下文中定义的回调。
+NULL, // 一个定义在上面指针中的retain的回调， 可以为NULL
+NULL, NULL};
+
+CFSocketRef _socket = (kCFAllocatorDefault, // 为新对象分配内存，可以为nil
+PF_INET, // 协议族，如果为0或者负数，则默认为PF_INET
+SOCK_STREAM, // 套接字类型，如果协议族为PF_INET,则它会默认为SOCK_STREAM
+IPPROTO_TCP, // 套接字协议，如果协议族是PF_INET且协议是0或者负数，它会默认为IPPROTO_TCP
+kCFSocketConnectCallBack, // 触发回调函数的socket消息类型，具体见Callback Types
+TCPServerConnectCallBack, // 上面情况下触发的回调函数
+&amp;sockContext // 一个持有CFSocket结构信息的对象，可以为nil
+);
+
+if (_socket != nil) {
+    struct sockaddr_in addr4;   // IPV4
+    memset(&amp;addr4, 0, sizeof(addr4));
+    addr4.sin_len = sizeof(addr4);
+    addr4.sin_family = AF_INET;
+    addr4.sin_port = htons(8888);
+    addr4.sin_addr.s_addr = inet_addr([strAddress UTF8String]);  // 把字符串的地址转换为机器可识别的网络地址
+
+    // 把sockaddr_in结构体中的地址转换为Data
+    CFDataRef address = CFDataCreate(kCFAllocatorDefault, (UInt8 *)&amp;addr4, sizeof(addr4));
+    CFSocketConnectToAddress(_socket, // 连接的socket
+address, // CFDataRef类型的包含上面socket的远程地址的对象
+-1  // 连接超时时间，如果为负，则不尝试连接，而是把连接放在后台进行，如果_socket消息类型为kCFSocketConnectCallBack，将会在连接成功或失败的时候在后台触发回调函数
+);
+
+    CFRunLoopRef cRunRef = CFRunLoopGetCurrent();    // 获取当前线程的循环
+    // 创建一个循环，但并没有真正加如到循环中，需要调用CFRunLoopAddSource
+    CFRunLoopSourceRef sourceRef = CFSocketCreateRunLoopSource(kCFAllocatorDefault, _socket, 0);
+    CFRunLoopAddSource(cRunRef, // 运行循环
+    sourceRef,  // 增加的运行循环源, 它会被retain一次
+    kCFRunLoopCommonModes  // 增加的运行循环源的模式
+    );
+    CFRelease(courceRef);
+}
+</code></pre>
+
+<p> 设置回调函数</p>
+
+<pre><code>// socket回调函数的格式：
+static void TCPServerConnectCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) ｛
+    if (data != NULL) {
+        // 当socket为kCFSocketConnectCallBack时，失败时回调失败会返回一个错误代码指针，其他情况返回NULL
+        NSLog(@"连接失败");
+        return;
+    }
+    TCPClient *client = (TCPClient *)info;
+    // 读取接收的数据
+    [info performSlectorInBackground:@selector(readStream) withObject:nil];
+｝
+</code></pre>
+
+<p>接收发送数据</p>
+
+<pre><code>// 读取接收的数据
+- (void)readStream {
+    char buffer[1024];
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    while (recv(CFSocketGetNative(_socket), //与本机关联的Socket 如果已经失效返回－1:INVALID_SOCKET
+           buffer, sizeof(buffer), 0)) {
+        NSLog(@"%@", [NSString stringWithUTF8String:buffer]);
+    }
+}
+
+// 发送数据
+- (void)sendMessage {
+    NSString *stringTosend = @"你好";
+    char *data = [stringTosend UTF8String];
+    send(SFSocketGetNative(_socket), data, strlen(data) + 1, 0);
+}
+</code></pre>
+
+<p>服务器端：</p>
+
+<pre><code>CFSockteRef _socket;
+CFWriteStreamRef outputStream = NULL;
+
+int setupSocket() {
+    _socket = CFSocketCreate(kCFAllocatorDefault, PF_INET, SOCK_STREAM, IPPROTO_TCP, kCFSocketAcceptCallBack, TCPServerAcceptCallBack, NULL);
+    if (NULL == _socket) {
+        NSLog(@"Cannot create socket!");
+        return 0;
+    }
+
+    int optval = 1;
+    setsockopt(CFSocketGetNative(_socket), SOL_SOCKET, SO_REUSEADDR, // 允许重用本地地址和端口
+(void *)&amp;optval, sizeof(optval));
+
+    struct sockaddr_in addr4;
+    memset(&amp;addr4, 0, sizeof(addr4));
+    addr4.sin_len = sizeof(addr4);
+    addr4.sin_family = AF_INET;
+    addr4.sin_port = htons(port);
+    addr4.sin_addr.s_addr = htonl(INADDR_ANY);
+    CFDataRef address = CFDataCreate(kCFAllocatorDefault, (UInt8 *)&amp;addr4, sizeof(addr4));
+
+    if (kCFSocketSuccess != CFSocketSetAddress(_socket, address)) {
+        NSLog(@"Bind to address failed!");
+        if (_socket)
+             CFRelease(_socket);
+        _socket = NULL;
+        return 0;
+    }
+
+    CFRunLoopRef cfRunLoop = CFRunLoopGetCurrent();
+    CFRunLoopSourceRef source = CFSocketCreateRunLoopSource(kCFAllocatorDefault, _socket, 0);
+    CFRunLoopAddSource(cfRunLoop, source, kCFRunLoopCommonModes);
+    CFRelease(source);
+
+    return 1;
+}
+
+// socket回调函数，同客户端
+void TCPServerAcceptCallBack(CFSocketRef socket, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
+    if (kCFSocketAcceptCallBack == type) {
+        // 本地套接字句柄
+        CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
+        uint8_t name[SOCK_MAXADDRLEN];      
+        socklen_t nameLen = sizeof(name);
+        if (0 != getpeername(nativeSocketHandle, (struct sockaddr *)name, &amp;nameLen)) {
+            NSLog(@"error");
+            exit(1);
+        }
+        NSLog(@"%@ connected.", inet_ntoa( ((struct sockaddr_in *)name)-&gt;sin_addr )):
+
+        CFReadStreamRef iStream;
+        CFWriteStreamRef oStream;
+        // 创建一个可读写的socket连接
+        CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &amp;iStream, &amp;oStream);
+        if (iStream &amp;&amp; oStream) {
+            CFStreamClientContext streamContext = {0, NULL, NULL, NULL};
+            if (!CFReadStreamSetClient(iStream, kCFStreamEventHasBytesAvaiable,
+                                       readStream, // 回调函数，当有可读的数据时调用
+                                       &amp;streamContext)){
+                exit(1);
+            }
+
+            if (!CFReadStreamSetClient(iStream, kCFStreamEventCanAcceptBytes, writeStream, &amp;streamContext)){
+                exit(1);
+            }
+
+            CFReadStreamScheduleWithRunLoop(iStream, CFRunLoopGetCurrent(), kCFRunLoopCommomModes);
+            CFWriteStreamScheduleWithRunLoop(wStream, CFRunLoopGetCurrent(), kCFRunLoopCommomModes);
+            CFReadStreamOpen(iStream);
+            CFWriteStreamOpen(wStream);
+        } else {
+             close(nativeSocketHandle);
+        }
+    }
+}
+
+// 读取数据
+void readStream(CFReadStreamRef stream, CFStreamEventType eventType, void *clientCallBackInfo) {
+    UInt8 buff[255];
+    CFReadStreamRead(stream, buff, 255);
+    printf("received: %s", buff);
+}
+
+void writeStream (CFWriteStreamRef stream, CFStreamEventType eventType, void *clientCallBackInfo) {
+    outputStream = stream;
+}
+
+main {
+    char *str = "nihao";
+
+    if (outputStream != NULL) {
+        CFWriteStreamWrite(outputStream, str, strlen(line) + 1);
+    } else {
+        NSLog(@"Cannot send data!");
+    }
+}
+
+// 开辟一个线程线程函数中
+void runLoopInThread() {
+    int res = setupSocket();
+    if (!res) {
+        exit(1);
+    }
+    CFRunLoopRun();    // 运行当前线程的CFRunLoop对象
+} 
+</code></pre>
+
+<h3>Socket常见问题</h3>
+
+<h6>1.recv不等待是因为你使用的是非阻塞socket，换而你使用阻塞socket一样需要等待。</h6>
+
+<p>recv的recvfrom是可以替换使用的，只是recvfrom多了两个参数，可以用来接收对端的地址信息，这个对于udp这种无连接的，可以很方便地进行回复。
+而换过来如果你在udp当中也使用recv，那么就不知道该回复给谁了，如果你不需要回复的话，也是可以使用的。另外就是对于tcp是已经知道对端的，
+就没必要每次接收还多收一个地址，没有意义，要取地址信息，在accept当中取得就可以加以记录了。</p>
+
+<h6>2.在服务器端不能获取正确的发送方的IP地址</h6>
+
+<p>Q.服务器端代码：</p>
+
+<pre><code>n=recvfrom(sockfd,msg,MAX_MSG_SIZE,0,(structaddr*)&amp;addr,&amp;addrlen);
+</code></pre>
+
+<p>客户端向服务器端发送msg后，服务器端能收到，但是，在服务器端不能获取正确的发送方的IP地址。</p>
+
+<p>A.几经努力，问题终于解决：</p>
+
+<pre><code>n=recvfrom(sockfd,msg,MAX_MSG_SIZE,0,(structaddr*)&amp;addr,&amp;addrlen);
+</code></pre>
+
+<p>在调用recvfrom()之前，加上：addrlen = sizeof(struct sockaddr);即可（之前声明 int addrlen; ）。</p>
+
+<h6>3.标志字符串结束</h6>
+
+<p> 使用java开发socket通信时，当使用输出流的情况输出时，例如：</p>
+
+<pre><code>PrintWriter os=new PrintWriter(socket.getOutputStream());
+os.println(msg);//一定要用println才能标志字符串结束
+os.flush();
+</code></pre>
+
+<p>最后一句不可省略，否则不会刷新缓存，客户端则不能接收到任何数据。若是不用println，用print则字符串不会结束，这样，接收端则会一直等待，直到字符串结束或连接断开才会说明本次字符串已传输完毕，因此在使用这种方法输出时，一定要注意传送字符串传送完毕的标志位。</p>
+
+<p>此外，我在使用perl进行socket通信时，也出现了此类问题。用perl进行socket通信的编程时，发送的消息最后一定要加上\n，也就是换行符，这样，才被认为是通信结束。</p>
+
+<h6>4.Socket中 设置连接超时</h6>
+
+<p>设置connect超时很简单，CSDN上也有人提到过使用select，但却没有一个令人满意与完整的答案。偶所讲的也正是select函数，此函数集成在winsock1.1中，简单点讲，"作用使那些想避免在套接字调用过程中被锁定的应用程序，采取一种有序的方式，同时对多个套接字进行管理"(《Windows网络编程技术》原话)。使用方法与解释请见《Windows网络编程技术》。</p>
+
+<blockquote><p>在使用此函数前，需先将socket设置为非阻塞模式，这样，在connect时，才会立马跳过，同时，通常也会产生一个WSAEWOULDBLOCK错误，这个错误没关系。再执行select则是真正的超时。</p></blockquote>
+
+<h6>5.IOS Socket 如何判断接受完成　　</h6>
+
+<p>　　
+　　发送起始时传递文件的大小信息给接收方，接收方每读取一个数据块就缓存到nsdata或写入到存储器上，当接收块的size小于等于缓存buffer的大小时，说明接收到了最后一个块，把这个快也缓存到nsdata或写入到存储器上，接收就完成了，然后作check，检查接收到的内容（缓存用的nsdata或反复写入的那个临时磁盘文件）是否和发送方开始给过来的文件大小相等，相等就是对的，不相等就是错的，需要向发送端申请复发。ios里建议用asyncSocket类，异步+代理，收到数据块时自动进入事件委托过程。
+　　
+　　</p>
+
+<h6>6.AsyncSocket接收到数据出现粘包问题该如何解决？</h6>
+
+<p>　　发送的包里每个包前边加个长度的字段。 你收到的时候先将这个字段解析出来，然后读入接下来的data内容。 如果data内容过长，那可能是几个包粘在一块儿了，只读入当前包 的内容， 如果不足，证明出现断包的情况，缓存下来，等下次收到包的时候，肯定显示上次收到包的内容了，拼在一块儿解出来。
+tcp的协议中，包的接收顺序就是包发送时候的顺序，你需要处理的就是当出现一个段包时，自己缓存直到这个包长度够了就完成了。完成这个的基础，一般的做法都是自己发送的每个包头添加一个长度字段</p>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/necessary/'>necessary</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/11/28/ibeaconchu-tan/" title="Previous Post: iBeacon初探">&laquo; iBeacon初探</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2015/12/20/ios9-plus-xcodezong-jie/" title="Next Post: iOS9+Xcode7总结">iOS9+Xcode7总结 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>

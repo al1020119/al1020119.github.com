@@ -1,0 +1,549 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>MKNetWorking是撒？ - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="MKNetWorking是撒？ ordinal 常用框架比如： AFNetworking
+ASIHttpRequest
+SDWebImage
+MKNetWorKit等。 iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2014/01/11/mknetworking/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <script>
+function addBlankTargetForLinks () {
+    $('a[href^="http"]').each(function(){
+                              $(this).attr('target', '_blank');
+                              });
+}
+$(document).bind('DOMNodeInserted', function(event) {
+             addBlankTargetForLinks();
+             });
+</script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">首页</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/other">随笔录</a></li>
+  <li><a href="/about">关于</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">MKNetWorking是撒？</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>常用框架比如：</p>
+
+<ul>
+<li>AFNetworking</li>
+<li>ASIHttpRequest</li>
+<li>SDWebImage</li>
+<li>MKNetWorKit等。</li>
+</ul>
+
+
+<p>iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。</p>
+
+<p>现在MKNetWorkKi吸取了ASIHttpRequest与AFNetWorking的优点，并加入了自己特有的功能。</p>
+
+<!--more-->
+
+
+<p>下载：</p>
+
+<pre><code>gitHub地址：https://github.com/MugunthKumar/MKNetworkKit.git
+
+官方使用说明：http://blog.mugunthkumar.com/products/ios-framework-introducing-mknetworkkit/
+</code></pre>
+
+<p>github下载了该项目后，如果想运行其demo，一定要打开MKNetworkKit.xcworkspace该文件，若单独打开，则编译时会提示缺少libMKNetworkKit-iOS.a文件！！！</p>
+
+<h6>安装：</h6>
+
+<p>克隆下来之后把其中的 MKNetworkKit文件夹拖入项目，然后引入3个framework：</p>
+
+<ul>
+<li>CFNetwork.Framework</li>
+<li>SystemConfiguration.framework</li>
+<li><p>Security.framework</p>
+
+<p> <img src="/images/MKNet001.png" title="Caption" ></p></li>
+</ul>
+
+
+<blockquote><p>注意：由于MKNetworkKit支持ARC，我们在项目中要开启ARC，不然会报错</p></blockquote>
+
+<p><img src="/images/MKNet002.png" title="Caption" ></p>
+
+<p>开启ARC自动内存控制机制：(开启ARC之后项目中所有的dealloc 、release 、autorelease都得注释掉)</p>
+
+<p> <img src="/images/MKNet003.png" title="Caption" ></p>
+
+<h6>使用方法：</h6>
+
+<p>  在需要使用的地方导入：#import"MKNetworkKit.h"</p>
+
+<h1>http方式：</h1>
+
+<h3>GET请求：</h3>
+
+<pre><code>MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"192.168.2.176:3000" customHeaderFields:nil];  
+MKNetworkOperation *op = [engine operationWithPath:@"/index" params:nil httpMethod:@"GET" ssl:NO];  
+[op addCompletionHandler:^(MKNetworkOperation *operation) {  
+    NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+}errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+    NSLog(@"MKNetwork request error : %@", [err localizedDescription]);  
+}];  
+[engine enqueueOperation:op];  
+</code></pre>
+
+<h3>POST请求：</h3>
+
+<pre><code>MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"192.168.2.176:3000" customHeaderFields:nil];  
+NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];  
+[dic setValue:@"admin" forKey:@"username"];  
+[dic setValue:@"123" forKey:@"password"];  
+
+MKNetworkOperation *op = [engine operationWithPath:@"/login" params:dic httpMethod:@"POST"];  
+[op addCompletionHandler:^(MKNetworkOperation *operation) {  
+    NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+}errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+    NSLog(@"MKNetwork request error : %@", [err localizedDescription]);  
+}];  
+[engine enqueueOperation:op];  
+</code></pre>
+
+<h1>https方式：</h1>
+
+<pre><code>#define serverHost               @"192.168.1.84:5558"  
+
+- (NSDictionary *)getDataFromURL:(NSString *)Path params:(NSDictionary *)data  
+{  
+    NSLog(@"MKNetwork request URL:  %@%@   \n Data: %@",serverHost,Path,data);  
+
+    __block NSDictionary *responseJSON;  
+    __block NSError *error = nil;  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:serverHost customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithPath:Path  params:data httpMethod:@"POST" ssl:YES];  
+//    在请求中添加证书  
+    op.clientCertificate = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"client.p12"];  
+    op.clientCertificatePassword = @"test";  
+//   当服务器端证书不合法时是否继续访问  
+    op.shouldContinueWithInvalidCertificate=YES;  
+    [op addCompletionHandler:^(MKNetworkOperation *operation) {  
+        NSLog(@"[operation responseData]--&gt;&gt;%@", [operation responseString]);  
+        responseJSON=[NSJSONSerialization JSONObjectWithData:[operation responseData] options:kNilOptions error:&amp;error];  
+        if(error) {  
+            NSLog(@"JSONSerialization failed! - error: %@", error);  
+        };  
+        error=nil;  
+    } errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+        error=err;  
+    }];  
+    [engine enqueueOperation:op];  
+    while(!error&amp;&amp;!responseJSON){}  
+    if (error) {  
+        NSLog(@"MKNetwork request error : %@", error);  
+        return nil;  
+    }  
+    if(responseJSON){  
+        NSLog(@"JSONSerialization successed! - responseJSON: %@", responseJSON);  
+    }  
+    return responseJSON;  
+}  
+
+
+    NSDictionary *params=[NSDictionary dictionaryWithObjectsAndKeys:@"admin",@"userName", @"123",@"password", nil];  
+    NSDictionary *responseDict = [self getDataFromURL:@"/login" params:params];  
+</code></pre>
+
+<h3>下载文件：</h3>
+
+<pre><code>+(MKNetworkOperation*) downloadFatAssFileFrom:(NSString*) remoteURL toFile:(NSString*) filePath {  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"127.0.0.1:5558" customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithURLString:remoteURL  
+                                                   params:nil  
+                                               httpMethod:@"GET"];  
+
+    [op addDownloadStream:[NSOutputStream outputStreamToFileAtPath:filePath  
+                                                            append:YES]];  
+    [engine enqueueOperation:op];  
+    return op;  
+}  
++(void)testDownload{  
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);  
+    NSString *cachesDirectory = [paths objectAtIndex:0];  
+    NSString *downloadPath = [cachesDirectory stringByAppendingPathComponent:@"DownloadedFile.pdf"];  
+
+    MKNetworkOperation *downloadOperation=[HttpManager downloadFatAssFileFrom:@"http://127.0.0.1:5558/QQ"  
+                                                                      toFile:downloadPath];  
+
+    [downloadOperation onDownloadProgressChanged:^(double progress) {  
+        //下载进度  
+        NSLog(@"download progress: %.2f", progress*100.0);  
+    }];  
+    //事件处理  
+    [downloadOperation addCompletionHandler:^(MKNetworkOperation* completedRequest) {  
+        NSLog(@"download file finished!");  
+    }  errorHandler:^(MKNetworkOperation *errorOp, NSError* err) {  
+        NSLog(@"download file error: %@", err);  
+    }];  
+}  
+</code></pre>
+
+<h3>上传文件：</h3>
+
+<pre><code>+(MKNetworkOperation*) uploadImageFromFile:(NSString*) filePath mimeType:(NSString *)fileType{  
+    MKNetworkEngine *engine = [[MKNetworkEngine alloc] initWithHostName:@"127.0.0.1:5558" customHeaderFields:nil];  
+    MKNetworkOperation *op = [engine operationWithPath:@"upload"  
+                                              params:[NSDictionary dictionaryWithObjectsAndKeys:  
+                                                      @"admin", @"username",  
+                                                      @"123", @"password",nil]  
+                                          httpMethod:@"POST"];  
+
+    [op addFile:filePath forKey:@"media" mimeType:fileType];  
+
+    // setFreezable uploads your images after connection is restored!  
+    [op setFreezable:YES];  
+
+    [op addCompletionHandler:^(MKNetworkOperation* completedOperation) {  
+
+        NSString *responseString = [completedOperation responseString];  
+        NSLog(@"server response: %@",responseString);  
+    } errorHandler:^(MKNetworkOperation *errorOp, NSError* err){  
+
+        NSLog(@"Upload file error: %@", err);  
+    }];  
+
+    [engine enqueueOperation:op];  
+
+    return op;  
+}  
+
++(void)testUpload{  
+    NSString *uploadPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SampleImage.jpg"];  
+    //    NSData *myData = [NSData dataWithContentsOfFile:uploadPath];  
+    //    NSLog(@"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;%@",myData);  
+    MKNetworkOperation *uploadOperation = [HttpManager uploadImageFromFile:uploadPath mimeType:@"jpg"];  
+    [uploadOperation onUploadProgressChanged:^(double progress) {  
+        //        上传进度  
+        DLog(@"Upload file progress: %.2f", progress*100.0);  
+    }];  
+}  
+</code></pre>
+
+<h3>上传文件时服务器端程序(Node.Js):</h3>
+
+<pre><code>var express = require('express')  
+    ,fs=require('fs');  
+
+var app = module.exports = express.createServer();  
+// Configuration  
+app.configure(function(){  
+    app.use(express.bodyParser());  
+    app.use(express.methodOverride());  
+    app.use(app.router);  
+});  
+// Routes  
+app.post('/upload', function(req, res) {  
+    console.log(req);  
+    var tmp_path = req.files.media.path; // 获得文件的临时路径  
+    var target_path = './'+req.files.media.name;// 指定文件上传后的目录  
+    fs.rename(tmp_path, target_path, function(err) { // 移动文件  
+        if (err) throw err;  
+        fs.unlink(tmp_path, function() {// 删除临时文件夹文件,  
+            if (err) throw err;  
+            res.send({server:'success'});  
+            res.end();  
+        });  
+    });  
+});  
+app.listen(5558);  
+console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);  
+</code></pre>
+</div>
+
+
+
+
+| <a href="#comments">更多评论</a>
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+
+
+
+
+ <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/advanced/'>advanced</a>
+  
+</span>
+
+
+      
+
+<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
+    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
+        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
+    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
+        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
+        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
+        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
+            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
+        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/01/01/animation/" title="Previous Post: 三维动画初探">&laquo; 三维动画初探</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/01/25/fmdb/" title="Next Post: FMDB你了解多少？">FMDB你了解多少？ &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>最新文章</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2014/01/11/mknetworking/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/01/11/mknetworking/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+<!-- 多说评论 -->
+    
+    <section>
+        <h1>更多评论</h1>
+        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"tianweili"};
+    (function() {
+     var ds = document.createElement('script');
+     ds.type = 'text/javascript';ds.async = true;
+     ds.src = 'http://static.duoshuo.com/embed.js';
+     ds.charset = 'UTF-8';
+     (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+    </script>
+<!-- Duoshuo Comment END --></div>
+    </section>
+    
+    </div>
+  </div>
+  <footer role="contentinfo"><!--<p>-->
+<!--  Copyright &copy; 2016 - iCocos --->
+<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
+<!--</p>-->
+
+
+<p>
+    Copyright &copy; <span>2013</span> - iCocos -
+    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+--->
+
+
+
+</body>
+</html>
