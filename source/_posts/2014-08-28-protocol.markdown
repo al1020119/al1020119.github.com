@@ -1,0 +1,197 @@
+---
+
+layout: post
+title: "不平的条约（协议）"
+date: 2014-08-28 13:53:19 +0800
+comments: true
+categories: Advanced 
+
+--- 
+ 
+
+协议声明类需要实现的的方法，为不同的类提供公用方法，一个类可以有多个协议，但只能有一个父类，即单继承。它类似java中的接口。
+
+正式协议（formal protocol）
+------------------------------------------------------------------------------------
+声明正式协议使用@protocol指令，以@end结尾。
+
+
+
+<!--more-->
+
+
+
+
+	@protocol MyXMLSupport
+	- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
+	- (NSXMLElement *)XMLRepresentation;
+	@end
+可以在协议声明中使用@optional和@required指令来指定协议中的方法是否必须要实现。如果没有为方法指定任何指令，@required是协议中默认的指令。
+
+	@protocol MyProtocol
+	- (void)requiredMethod;
+	@optional
+	- (void)anOptionalMethod;
+	- (void)anotherOptionalMethod;
+	@required
+	- (void)anotherRequiredMethod; 
+	@end
+
+非正式协议（informal protocol）
+------------------------------------------------------------------------------------
+非正式协议通过分类（category）来实现，不过在Mac OS X v10.6+中可以在协议中通过@optional指令来取代这个别扭的方案。
+
+	@interface NSObject ( MyXMLSupport )
+	- initFromXMLRepresentation:(NSXMLElement *)XMLElement;
+	- (NSXMLElement *)XMLRepresentation;
+	@end
+
+协议对象（protocol objects）
+------------------------------------------------------------------------------------
+Objective C中定义了协议对象，通过@protocol指令可以获取protocol实例。
+
+	Protocol *myXMLSupportProtocol = @protocol(MyXMLSupport);
+当类采用（adopt）接口或在代码中通过@protocol（XX）指令时，编译器会创建protocol实例。
+
+协议的使用
+------------------------------------------------------------------------------------
+协议的采用（adopt）和声明父类类似，可以在父类后面用尖括号将要采用的协议括起来，多个协议用逗号（comma）隔开。
+类和分类都可以采用协议。
+
+	@interface ClassName : ItsSuperclass < protocol list >
+	@interface ClassName ( CategoryName ) < protocol list >
+在接口部分不需要重新声明协议中的方法。但在类的实现部分需要实现协议中的@required方法。
+
+是否遵循某协议
+------------------------------------------------------------------------------------
+检查一个类或实例对象是否遵循某协议可以用NSObject类的类方法conformsToProtocol和实例方法conformsToProtocol
+
+	if ( ! [receiver conformsToProtocol:@protocol(MyXMLSupport)]  ) {
+	    // Object does not conform to MyXMLSupport protocol
+	    // If you are expecting receiver to implement methods declared in the
+	    //  MyXMLSupport protocol, this is probably an error
+	}
+
+使用协议进行类型声明
+------------------------------------------------------------------------------------
+声明对象类型时可以在声明中指定协议，这样可以让编译器在编译阶段强制对象遵循某协议。
+
+	- (id <Formatting>)formattingService;
+	id <MyXMLSupport> anObject;
+
+协议的继承
+------------------------------------------------------------------------------------
+协议也可以继承或采用其他的协议，需要采用某协议的类必须实现该协议的required方法和该协议继承的协议中的required方法。
+	@protocol ProtocolName < protocol list >
+
+在协议中使用其它的协议
+------------------------------------------------------------------------------------
+在一个大型的应用中，你可能会遇到如下代码：
+
+	#import "B.h"
+	@protocol A
+	- foo:(id <B>)anObject;
+	@end
+ 
+
+	#import "A.h"
+	@protocol B
+	- bar:(id <A>)anObject;
+	@end
+
+A、B协议在互相引用，如果这里都用import来引入协议文件，编译器会报错。需要改为如下方式：
+
+	@protocol B;
+	@protocol A
+	- foo:(id <B>)anObject;
+	@end
+@protocol B只是简单告诉编译器B是一个协议，不会引入B的文件。
+NScoder  和 NScoding 有将自己定义的类的对象写入磁盘的作用
+NScoding 是一个协议，主要有下面两个方法
+
+ 
+	-(id)initWithCoder:(NSCoder *)coder;//从coder中读取数据，保存到相应的变量中，即反序列化数据
+	-(void)encodeWithCoder:(NSCoder *)coder;// 读取实例变量，并把这些数据写到coder中去。序列化数据
+NSCoder 是一个抽象类，抽象类不能被实例话，只能提供一些想让子类继承的方法。
+
+NSKeyedUnarchiver   从二进制流读取对象。
+NSKeyedArchiver       把对象写到二进制流中去。
+4一个简单的例子
+
+一般是在自己定义的类中需要在.h 文件中加入<NScoding>
+
+在.m 文件众实现他的的两个代理方法，这个代理方法将会被自动调用
+
+	1 - (void)encodeWithCoder:(NSCoder *)aCoder 
+	2 {
+	3     [aCoder encodeObject:self.InsureSolutionID forKey:@"personName"];
+	4     [aCoder encodeObject:self.InsureSolutionName forKey:@"personAge"];
+	5 }
+ 
+
+
+
+encodeWithCoder 可以调用的方法：
+
+1）、如果是类 就用encodeObject: forKey：
+
+2）、如果是普通的数据类型就用   eg、encodeInt： forKey：
+
+ 
+
+	- (id)initWithCoder:(NSCoder *)aDecoder 
+	
+	{
+	    self = [super init];
+	    if (self) 
+	    {
+	        self.InsureSolutionID = [aDecoder decodeObjectForKey:@"personName"];
+	        self.InsureSolutionName = [aDecoder decodeObjectForKey:@"personAge"];
+	    }
+	    return self;
+	}
+ 
+
+initWithCoder 可以调用的方法：
+
+1）、如果是类 就用decodeObjectForKey：
+
+2）、如果是普通的数据类型就用   eg、decodeIntForKey：
+
+ 
+
+以下是对该类序列化和反序列化。
+
+ 
+
+	1 NSData *archiveCarPriceData = [NSKeyedArchiver archivedDataWithRootObject:self.DataArray];
+	2     [[NSUserDefaults standardUserDefaults] setObject:archiveCarPriceData forKey:@"DataArray"];
+	3  
+	4 
+	5  NSData *myEncodedObject = [[NSUserDefaults standardUserDefaults] objectForKey:@"DataArray"];
+	6      self.dataList = [NSKeyedUnarchiver unarchiveObjectWithData: myEncodedObject];
+ 
+
+nscopying协议蛮好用的。
+
+一个方法：
+zone是一个内存区域，通常object，指向指针，所以copywithzone重要。
+
+	- (id)copyWithZone:(NSZone *)zone
+	
+	{
+	
+	    FourLines *copy = [[[self class] allocWithZone:zone] init];
+	
+	    copy.field1 = [self.field1 copyWithZone:zone];
+	
+	    copy.field2 = [self.field2 copyWithZone:zone];
+	
+	    copy.field3 = [self.field3 copyWithZone:zone];
+	
+	    copy.field4 = [self.field4 copyWithZone:zone];
+	
+	    return copy;
+	
+	}
+ 
