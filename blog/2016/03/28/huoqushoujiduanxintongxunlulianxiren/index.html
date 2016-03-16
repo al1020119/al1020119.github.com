@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>获取短信-联系人 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="越狱的 ios 如何 获取 读取 提取 手机上的 短信 通话记录 联系人 等信息 http://willson.sinaapp.com/2011/12/iphone 获取短信脚本.html Iphone获取短信脚本
+http://bbs.9ria.com/thread-209349-1-1. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">获取短信-联系人</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-28T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>越狱的 ios 如何 获取 读取 提取 手机上的 短信 通话记录 联系人 等信息</p>
+
+<p><a href="http://willson.sinaapp.com/2011/12/iphone">http://willson.sinaapp.com/2011/12/iphone</a> 获取短信脚本.html  Iphone获取短信脚本
+<a href="http://bbs.9ria.com/thread-209349-1-1.html">http://bbs.9ria.com/thread-209349-1-1.html</a>          IPhone短信相关部分研究（转载）
+<a href="http://blog.csdn.net/slinloss/article/details/8722806">http://blog.csdn.net/slinloss/article/details/8722806</a>       整理：iOS 短信与电话事件的获取
+<a href="http://308812025-qq-com.iteye.com/blog/1549756">http://308812025-qq-com.iteye.com/blog/1549756</a>              IOS 5 拦截手机短信(需越狱)</p>
+
+<p><a href="http://www.iteye.com/problems/84131">http://www.iteye.com/problems/84131</a>                                IOS 短信截取 监听到了事件缺不能往下执行。。。</p>
+
+<p><a href="http://blog.csdn.net/ceko_wu/article/details/8021133">http://blog.csdn.net/ceko_wu/article/details/8021133</a>     短信数据库分析（一）</p>
+
+<p>一般地，ios只要越狱，整体的文件系统就全部暴漏出来，使用ifunbox 工具连接iphone，即可查看。</p>
+
+<p>短信数据库的存放位置在ios的：    /private/var/mobile/Library/SMS/sms.db</p>
+
+<p>联系人数据库存放的位置在ios的：//private/var/mobile/Library/AddressBook/AddressBook.sqlitedb</p>
+
+<pre><code> 联系人的头像估计存放在这里：//private/var/mobile/Library/AddressBook/AddressBookImages.sqlitedb
+</code></pre>
+
+<p>通话记录数据库的存放路径是：//private/var/wireless/Library/CallHistory/call_history.db</p>
+
+<p>备忘录数据库的存放路径是：//private/var/mobile/Library/Notes/notes.sqlite</p>
+
+<p>safira 浏览器的收藏夹数据库存放路径是：//private/var/mobile/Library/Safari/Bookmarks.db</p>
+
+<p>日历数据库的存放路径是：//private/var/mobile/Library/Calendar/Calendar.sqlitedb</p>
+
+<p>上面的数据库，无论其后缀名是.db也好，.sqlitedb、.sqlite也好，它们的真实面目是，全部都是sqlite数据库。在实际查看这些数据库时，可以将其后缀名统一改成.sqlite，当然也可以不改。查看这些数据库最好的工具是 火狐浏览器上的插件：Sqlite Manager</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-28T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/25/springboardjiemianjiegoufenxi/" title="Previous Post: SpringBoard界面结构分析">&laquo; SpringBoard界面结构分析</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/03/30/youxifanbianyi/" title="Next Post: 游戏反编译">游戏反编译 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>系统文件结构 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="系统文件架构概述 1.IOS是由Mac OS X演化而来，而Mac OS X则是基于UNIX操作系统的，三者有区别，但血脉相连 IOS系统主要的文件目录说明： /Applications : 存放系统的App和来自Cydia 的App，不包括App Store下载的，越狱过程把/ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/02/29/xitongwenjianjiagou/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">系统文件结构</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-29T13:32:08+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>系统文件架构概述</p>
+
+<p>1.IOS是由Mac OS X演化而来，而Mac OS X则是基于UNIX操作系统的，三者有区别，但血脉相连</p>
+
+<ol>
+<li>IOS系统主要的文件目录说明：
+ /Applications : 存放系统的App和来自Cydia 的App，不包括App Store下载的，越狱过程把/Applications变成了一个符号链接，实际指向/var/stash/Applications
+ /Library : 存放系统APP和Cydia App的数据（数据文件、动态链接库等）
+ /Library/MobileSubstrate : 存放所有基于MobileSubstrate的插件，MobileSubstrate是一个提供  hook功能的基础平台，运行在这个平台上的插件通称为tweak <br/>
+/System/Library/Frameworks
+/System/Library/PrivateFrameworks : IOS的共有和私有框架库，路径与模拟器的不同，在使用一些私有函数库时需要指定这样的路径
+/System/Library/CoreServices/SpringBoard.app，也就是桌面管理器，越狱开发时刻用到
+/System/Library/PreferenceBundles : 各种bundle提供了“设置”中得大多数功能，越狱开发可用
+/User 实际指向 /var/mobile ： 存放用户数据（跟用户相关的数据都在此）
+/var/mobile/Application :  一般应用程序安装的目录</li>
+</ol>
+
+
+<p>3.越狱/逆向分析方法：
+    找到需要实现的功能点，可能是一个app、framework、动态库， 对于app先要哪个Reveal找到界面上的触发点，然后class-dump可执行文件或framework  找到对应的函数  然后结合IDA、Hopper汇编分析</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-02-29T13:32:08+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/02/26/changyongxitongwenjianjia/" title="Previous Post: 常用系统文件夹">&laquo; 常用系统文件夹</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/03/02/anzhuangbaogeshi/" title="Next Post: 安装包格式">安装包格式 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/02/29/xitongwenjianjiagou/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/02/29/xitongwenjianjiagou/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

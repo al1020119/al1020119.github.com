@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>分析QQ-微信界面结构 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="使用Reveal分析其他APP（如微信、qq等）的界面结构 特别提醒，现已无需按下面的方式注入libReveal.dlib了，只需把libReveal.dylib上传到设备的/Library/MobileSubstrate/DynamicLibraries，然后同时编辑并上传一个libReveal &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/03/22/fenxiQQweixinjiemianjiegou/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">分析QQ-微信界面结构</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-22T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>使用Reveal分析其他APP（如微信、qq等）的界面结构</p>
+
+<p>特别提醒，现已无需按下面的方式注入libReveal.dlib了，只需把libReveal.dylib上传到设备的/Library/MobileSubstrate/DynamicLibraries，然后同时编辑并上传一个libReveal.plist，格式如下：</p>
+
+<p>nixiang0001</p>
+
+<p> 设定BundleID
+注意，此时是可以指定多个BundleID的，也就是说，你可以同时监控任意多的app；再扩大一步说，如果你愿意，不上传这个libReveal.plist，你可以监控所有app，只要你不觉得机器很慢。。。
+一定确保手机和电脑端处在同一局域网中，不然看不到界面的
+Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对ios7.0以上的应用无效，需要Reveal2.0.4版，但又无法破解目前，2.0.3版本百度云下载
+<a href="http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c">http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c</a></p>
+
+<p>打开XCode创建iOSOpenDev&ndash;》Logos Tweak的工程</p>
+
+<p>创建动态加载Reveal的类RevealUtil：</p>
+
+<pre><code>//
+//  RevealUtil.h
+//  pyu
+//
+//  Created by whe on 6/23/13.
+//
+//
+
+#import
+
+@interface RevealUtil : NSObject {
+    void *_revealLib;
+}
+
+- (void)startReveal;
+- (void)stopReveal;
+
+@end
+
+//
+//  RevealUtil.m
+//  pyu
+//
+//  Created by whe on 6/23/13.
+//
+//
+#import
+#import
+#import "RevealUtil.h"
+
+@implementation RevealUtil
+
+- (void)startReveal {
+    NSString *revealLibName = @"libReveal.dylib";
+    //NSString *revealLibExtension = @"dylib";
+    NSString *bundlePath = [[NSBundle mainBundle] bundlePath];
+   //此处要先将libReveal.dylib通过iTools上传到需要分析的App的Buldle主目录下（即xxx.app目录）
+    NSString *dyLibPath = [NSString stringWithFormat:@"%@/%@",bundlePath,revealLibName];
+    UIAlertView *alert = [[UIAlertView alloc]
+                          initWithTitle:@"Welcome"  message:[NSString stringWithFormat:@"Loading dynamic library: %@", dyLibPath]
+                          delegate:nil cancelButtonTitle:@"Thanks"
+                          otherButtonTitles:nil];
+    [alert show];
+    [alert release];
+
+    void *revealLib = NULL;
+    revealLib = dlopen([dyLibPath cStringUsingEncoding:NSUTF8StringEncoding], RTLD_NOW);
+
+    if (revealLib == NULL)
+    {
+        char *error = dlerror();
+        NSLog(@"dlopen error: %s", error);
+    }else {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"IBARevealRequestStart" object:self];
+    }
+}
+
+- (void)stopReveal {
+    if (_revealLib)
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"IBARevealRequestStop" object:self];
+        if (dlclose(_revealLib) == 0)
+        {
+            NSLog(@"Reveal library unloaded");
+            _revealLib = NULL;
+        }
+        else
+        {
+            char *error = dlerror();
+            NSLog(@"Reveal library could not be unloaded: %s", error);
+        }
+    }
+}
+
+@end
+</code></pre>
+
+<p>修改工程的xm文件内容如下：</p>
+
+<pre><code>#import "RevealUtil.h"
+</code></pre>
+
+<p>%hook MobileAssistAppDelegate //对应分析APP的AppDelegate文件类名，不同的App这个类名可能不同，这可以先通过class-dump  xxx.app这个二进制文件，得出该APP所有的头文件，然后搜索关键字didFinishLaunchingWithOptions，找到对应文件并查看该文件内的类名即是</p>
+
+<pre><code>- (BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
+    %orig;
+
+    RevealUtil *ru = [[RevealUtil alloc] init];
+    [ru startReveal];
+
+    return YES;
+}
+
+%end
+</code></pre>
+
+<p>最终项目结构如下：</p>
+
+<p>nixiang0002</p>
+
+<p>注意那个Filter，其实可以不填，但要填一定要是该app的bundle identifier</p>
+
+<p>附：OpenSSH的使用：
+       ssh <a href="&#109;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#114;&#111;&#111;&#116;&#64;&#x31;&#x39;&#x32;&#46;&#x31;&#54;&#56;&#46;&#50;&#46;&#x35;">&#114;&#x6f;&#111;&#116;&#64;&#x31;&#57;&#50;&#x2e;&#49;&#54;&#x38;&#x2e;&#x32;&#x2e;&#53;</a> 默认密码alpine
+     先通过ssh登录到手机，然后可以通过cycript -p 进程ID   依附在需要分析的应用程序上  ps ax | grep PP</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-22T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/20/siyouapi/" title="Previous Post: 私有API">&laquo; 私有API</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/03/25/springboardjiemianjiegoufenxi/" title="Next Post: SpringBoard界面结构分析">SpringBoard界面结构分析 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/03/22/fenxiQQweixinjiemianjiegou/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/03/22/fenxiQQweixinjiemianjiegou/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

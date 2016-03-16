@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS逆向工程前奏篇－方法与工具介绍 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="之前接触过iOS逆向开发，后来工作中没这方面需求，也就没再看了。最近一段时间由于各种原因又需要逆向某些App来用于学习，所以又重新拾起来。 这里总结一下几种iOS逆向的方法和工具： iOS逆向-静态分析 涉及到的工具有 OpenSSH (用于远程登录ssh和文件传输scp) class-dump( &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/02/25/fangfayugongju/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS逆向工程前奏篇－方法与工具介绍</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-25T13:32:08+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>之前接触过iOS逆向开发，后来工作中没这方面需求，也就没再看了。最近一段时间由于各种原因又需要逆向某些App来用于学习，所以又重新拾起来。</p>
+
+<p>这里总结一下几种iOS逆向的方法和工具：</p>
+
+<h4>iOS逆向-静态分析</h4>
+
+<p>涉及到的工具有</p>
+
+<ul>
+<li> OpenSSH (用于远程登录ssh和文件传输scp)</li>
+<li> class-dump(用于简单分析出工程中的类名和函数名)</li>
+<li> Hopper Disassembler(反编译工具)</li>
+<li> Reveal (对越狱后的设备查看任意app的布局)</li>
+</ul>
+
+
+<p>iOS逆向-动态分析</p>
+
+<p>涉及到的工具有
+    cycript (cycript是一个脚本语言，可以看做Objective-JavaScript，形容 的非常贴切。配合静态调试，可以调用运行中的app内的任意方法)</p>
+
+<p>iOS逆向-内部钩子</p>
+
+<p>主要是编写iOS动态库，加载到越狱手机中，使用iOS的 Method Swizzling(方法调配)来获 得(截断/改变)底层调用的方法。这样我们可以自由的修改或者读取一些想要的东西。</p>
+
+<p>iOS逆向相关:theos和iOSOpenDev搭建越狱开发环境，创建iOS动态链接库(Dylib文件)编写(hook)及测试；</p>
+
+<p>iOS逆向思路进展:使用InspectiveC来查看调用堆栈：</p>
+
+<p>跟踪一个程序，看看这个程序的执行流程是什么样的，以及某个函数的调用参数是什么。</p>
+
+<p>常规的方法是在汇编中寻找objc_msgSend，一层一层跟下去。这是比较笨的办法，而且不能动态查看函数的数。</p>
+
+<p>通过InspectiveC,我们可以动态的查看：</p>
+
+<ul>
+<li>某个类的所有方法调用情况</li>
+<li>某个类的某个方法的调用情况</li>
+<li>某个类的实例对象的所有方法的调用情况</li>
+<li>某个类的实例对象的某个方法的调用情况</li>
+<li>某个方法签名的调用情况</li>
+</ul>
+
+
+<p>跟踪一个程序，看看这个程序的执行流程是什么样的，以及某个函数的调用参数是什么。</p>
+
+<p>常规的方法是在汇编中寻找objc_msgSend，一层一层跟下去。这是比较笨的办法，而且不能动态查看函数的数。</p>
+
+<p>通过InspectiveC,我们可以动态的查看：
+* 某个类的所有方法调用情况
+* 某个类的某个方法的调用情况
+* 某个类的实例对象的所有方法的调用情况
+* 某个类的实例对象的某个方法的调用情况
+* 某个方法签名的调用情况</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-02-25T13:32:08+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/24/iCocos/" title="Previous Post: 温馨提示">&laquo; 温馨提示</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/02/26/changyongxitongwenjianjia/" title="Next Post: 常用系统文件夹">常用系统文件夹 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/02/25/fangfayugongju/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/02/25/fangfayugongju/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

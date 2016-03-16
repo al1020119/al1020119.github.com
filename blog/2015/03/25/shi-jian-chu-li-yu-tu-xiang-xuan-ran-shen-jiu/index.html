@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="事件处理与图像渲染深究 ordinal iOS 事件处理机制与图像渲染过程 iOS RunLoop都干了什么
+  <meta name="description" content="iOS 事件处理机制与图像渲染过程 iOS RunLoop都干了什么
 iOS 为什么必须在主线程中操作UI
 事件响应
 CALayer
@@ -17,7 +17,8 @@ CADisplayLink 和 NSTimer
 iOS 渲染过程
 渲染时机
 CPU 和 GPU渲染
-Core &hellip;">
+Core Animation
+Facebook Pop介绍 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -31,19 +32,13 @@ Core &hellip;">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <script>
-function addBlankTargetForLinks () {
-    $('a[href^="http"]').each(function(){
-                              $(this).attr('target', '_blank');
-                              });
-}
-$(document).bind('DOMNodeInserted', function(event) {
-             addBlankTargetForLinks();
-             });
-</script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
   
 
 </head>
@@ -70,11 +65,8 @@ $(document).bind('DOMNodeInserted', function(event) {
 </form>
   
 <ul class="main-navigation">
-  <li><a href="/">首页</a></li>
-  <li><a href="/blog/archives">归档</a></li>
-  <li><a href="/icocos">iCocos</a></li>
-  <li><a href="/other">随笔录</a></li>
-  <li><a href="/about">关于</a></li>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
 </nav>
@@ -94,11 +86,7 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-03-25T09:47:11+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 am</span></time>
         
       </p>
     
@@ -482,10 +470,6 @@ anim.property = prop;
 </div>
 
 
-
-
-| <a href="#comments">更多评论</a>
-
   <footer>
     <p class="meta">
       
@@ -498,11 +482,7 @@ anim.property = prop;
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-03-25T09:47:11+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 am</span></time>
       
 
 <span class="categories">
@@ -510,19 +490,6 @@ anim.property = prop;
     <a class='category' href='/blog/categories/performance/'>performance</a>
   
 </span>
-
-
-      
-
-<DIV style="font-size:12px;BORDER-BOTTOM: #bbbbbb 1px solid; BORDER-LEFT: #bbbbbb 1px solid; BACKGROUND: #f6f6f6; HEIGHT: 120px; BORDER-TOP: #bbbbbb 1px solid; BORDER-RIGHT: #bbbbbb 1px solid" class=oec2003right>
-    <DIV style="MARGIN-TOP: 10px; FLOAT: left; MARGIN-LEFT: 5px; MARGIN-RIGHT: 10px">
-        <IMG alt="" src="http://images.cnblogs.com/cnblogs_com/iCocos/702252/o_123.jpg" width=80 height=90></DIV>
-    <DIV style="LINE-HEIGHT: 200%; MARGIN-TOP: 10px; COLOR: #000000">
-        作者： <A href="http://al1020119.github.io">曹理鹏</A> <BR>
-        出处： <A href="http://al1020119.github.io">http://al1020119.github.io</A>
-        <BR>本文基于<a target="_blank" title="Creative Commons Attribution 2.5 China Mainland License" href="http://creativecommons.org/licenses/by/2.5/cn/">
-            署名 2.5 中国大陆</a>许可协议发布，欢迎转载，演绎或用于商业目的，但是必须保留本文的署名
-        <a href="http://al1020119.github.io">曹理鹏</a>（包含链接）。 </DIV></DIV>
 
 
     </p>
@@ -563,33 +530,33 @@ anim.property = prop;
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
     </ul>
 </section><section>
-  <h1>最新文章</h1>
+  <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
       </li>
     
   </ul>
@@ -649,37 +616,11 @@ anim.property = prop;
 </aside>
 
 
-<!-- 多说评论 -->
-    
-    <section>
-        <h1>更多评论</h1>
-        <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
-<div class="ds-thread" data-title="Octopress博客的个性化配置"></div>
-<script type="text/javascript">
-    var duoshuoQuery = {short_name:"tianweili"};
-    (function() {
-     var ds = document.createElement('script');
-     ds.type = 'text/javascript';ds.async = true;
-     ds.src = 'http://static.duoshuo.com/embed.js';
-     ds.charset = 'UTF-8';
-     (document.getElementsByTagName('head')[0]
-      || document.getElementsByTagName('body')[0]).appendChild(ds);
-     })();
-    </script>
-<!-- Duoshuo Comment END --></div>
-    </section>
-    
     </div>
   </div>
-  <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2016 - iCocos --->
-<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
-<!--</p>-->
-
-
-<p>
-    Copyright &copy; <span>2013</span> - iCocos -
-    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
@@ -690,8 +631,8 @@ anim.property = prop;
 
 
 
-<!--
---->
+
+
 
 
 

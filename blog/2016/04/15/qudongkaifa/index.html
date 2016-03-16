@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>驱动开发 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="一、系统架构 我们编写的驱动一般运行在i/o Kit框架下。 二、一些记录 开发工具 xcode
+开发语言：c++, c c++用的是嵌入式c++，是标准c++的子集。 所以，stl、异常、多重继承、模板和runtime类型信息 都无法使用。 因为这些东西会导致编译出来的文件很大，且容易导致问题 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/04/15/qudongkaifa/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">驱动开发</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-15T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h4>一、系统架构</h4>
+
+<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+
+<p>我们编写的驱动一般运行在i/o Kit框架下。</p>
+
+<h4>二、一些记录</h4>
+
+<ul>
+<li>开发工具 xcode</li>
+<li>开发语言：c++, c</li>
+</ul>
+
+
+<p>c++用的是嵌入式c++，是标准c++的子集。</p>
+
+<p>所以，stl、异常、多重继承、模板和runtime类型信息  都无法使用。</p>
+
+<p>因为这些东西会导致编译出来的文件很大，且容易导致问题。</p>
+
+<p>c++只能编写基于i/o Kit框架的驱动，而c语言则可以编写任意的驱动。</p>
+
+<p>并且c++的驱动反汇编后很难看。</p>
+
+<blockquote><p>所以写驱动还是用c吧。这一点和微软默认的一样。</p></blockquote>
+
+<h4>三、编写一个驱动例子</h4>
+
+<ol>
+<li>创建工程</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong002.png" title="Caption" ></p>
+
+<p>因为不是设备驱动，只能选择extension；如果是设备驱动，则选择IOKit Driver。</p>
+
+<ol>
+<li>写代码</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong003.png" title="Caption" ></p>
+
+<p>苹果将studio.h这样的c++库换成了自己的libkern.h。</p>
+
+<ol>
+<li>添加引用库
+因为代码中使用了libkern.h，所以要修改工程。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong004.png" title="Caption" ></p>
+
+<ol>
+<li>驱动入口</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong005.png" title="Caption" ></p>
+
+<ol>
+<li><p>编译驱动</p></li>
+<li><p>在xcode的product菜单里点击build就可以编译驱动了。</p></li>
+<li>xcode只是能编辑和编译驱动，无法调试驱动的。</li>
+<li>编译驱动时，你需要有一个开发者账号，否则编译不过。</li>
+<li>我没有账号，所以后面的操作无法进行，只能把书上的翻译过来。</li>
+</ol>
+
+
+<p>6、运行驱动有2种方式：</p>
+
+<ul>
+<li>1、拷贝驱动文件到目录 /system/library/extensions下，重启后自动运行；</li>
+<li><p>2、在terminal中运行命令启动驱动：</p>
+
+<ul>
+<li>sudo chown -R root:wheel 驱动名.kext   // 设置驱动文件的权限，如果有权限，这步可省略。
+sudo kextload 驱动名.kext  // 运行驱动</li>
+</ul>
+</li>
+<li><p>卸载驱动：sudo kextunload 驱动名.kext</p></li>
+<li><p>显示当前系统中的驱动：kextstat</p></li>
+</ul>
+
+
+<p><img src="/images/nixiangqudong006.png" title="Caption" ></p>
+
+<ol>
+<li>查看调试信息
+printf输出的信息是保存在磁盘上的log文件中。通过tail和cat命令就可以查看。log文件在/var/log/kernel.log或者/Applications/Utilities目录下。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong007.png" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-04-15T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/04/10/nixiangzhifubao/" title="Previous Post: 逆向支付宝">&laquo; 逆向支付宝</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/04/20/weixinjiqiren/" title="Next Post: 微信机器人">微信机器人 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/04/15/qudongkaifa/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/04/15/qudongkaifa/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

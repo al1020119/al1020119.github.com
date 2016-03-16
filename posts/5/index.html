@@ -9,12 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="
-HTTP协议与TCP/IP协议的关系
-如何理解HTTP协议是无状态的
-什么是长连接、短连接？ TCP连接 TCP短连接 TCP长连接 长连接短连接操作过程
-长连接和短连接的优点和缺点
-什么时候用长连接，短连接？ ">
+  <meta name="description" content="一：WKWebView简单介绍 webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -28,19 +23,13 @@ HTTP协议与TCP/IP协议的关系
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <script>
-function addBlankTargetForLinks () {
-    $('a[href^="http"]').each(function(){
-                              $(this).attr('target', '_blank');
-                              });
-}
-$(document).bind('DOMNodeInserted', function(event) {
-             addBlankTargetForLinks();
-             });
-</script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
   
 
 </head>
@@ -67,11 +56,8 @@ $(document).bind('DOMNodeInserted', function(event) {
 </form>
   
 <ul class="main-navigation">
-  <li><a href="/">首页</a></li>
-  <li><a href="/blog/archives">归档</a></li>
-  <li><a href="/icocos">iCocos</a></li>
-  <li><a href="/other">随笔录</a></li>
-  <li><a href="/about">关于</a></li>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
 </nav>
@@ -85,7 +71,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/">长链接&amp;短链接</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">iOS9-WKWebView+SFSafariViewController</a></h1>
     
     
       <p class="meta">
@@ -94,153 +80,51 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-12-24T19:35:40+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>7:35 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><ul>
-<li>HTTP协议与TCP/IP协议的关系</li>
-<li>如何理解HTTP协议是无状态的</li>
-<li>什么是长连接、短连接？
+  <div class="entry-content"><h2>一：WKWebView简单介绍</h2>
+
+<p>webkit使用WKWebView来代替IOS的UIWebView和OSX的WebView，并且使用Nitro JavaScript引擎，这意味着所有第三方浏览器运行JavaScript将会跟safari一样快。</p>
+
+<p>先来看看WKWebView和UIWebView有什么区别：</p>
+
+<h6>UIWebView：</h6>
 
 <ul>
-<li> TCP连接</li>
-<li> TCP短连接</li>
-<li> TCP长连接</li>
+<li>始祖级别，支持的iOS版本比较多</li>
+<li>可支持打开URL，包括各种URL模式，例如 Https，FTP等</li>
+<li>可支持打开各种不同文件格式，例如 txt，docx，ppt,，音视频文件等，很多文档阅读器会经常使用这个特性，感兴趣的可以查一下Apple的文档，支持的格式还是挺多，只是不同iOS 版本的支持程度不太一样，使用时请多留意测试确认~</li>
+<li>占用内存比较多，尤其是网页中包含比较多CSS+DIV之类内容时，很容易出现内存警告（Memory Warning）</li>
+<li>效率低，不灵活，尤其是和 JavaScript交互时</li>
+<li>无法清除本地存储数据（Local Storage）</li>
+<li>代理（delegate）之间的回调比较麻烦，提供的内容比较低级，尤其是UI部分。如果想自己定制一个类似 Safari 的内嵌浏览器（Browser），那就坑爹无极限了，例如我们PDF Reader系列中的内嵌Browser，自己* 手动模拟实现Tab切换，底部Tool及各种Menu等，说多了都是泪~~</li>
 </ul>
-</li>
-<li>长连接短连接操作过程</li>
-<li>长连接和短连接的优点和缺点</li>
-<li>什么时候用长连接，短连接？</li>
-</ul>
 
 
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/05/20/chang-lian-jie-and-duan-lian-jie/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/05/11/xcode-menu/">Xcode Menu</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>　　本文调研Xcode的版本是 7.1，基本是探索了菜单的每一个按钮。虽然从xcode4一直用到了xcode7，但是一般都只是用了一些基础的功能，说来也惭愧。在一次偶然的机遇突然发现了“显示调用层级”的选项才知道菜单了的按钮并不都是没有用，而是很有用只是你不知道罢了。 本想这种东西仔细总结了也不一定有价值还耽误时间，但是两个想法最终还是驱动了我仔细弄完，一是xcode7.1才刚更新没多久，这个时效性还行（xcode每年菜单变化都不小）；二是这种文章属于干货性质，自己有时在大项目中不确定或者害怕一下点错了的时候可以来回看一下，并且其他博友也可以查询。</p>
-
-<blockquote><p>下面划了删除线的选项是太基础的选项可以忽略，标红的选项是需要注意的。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/05/11/xcode-menu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/05/11/xcode-menu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/">字典转模型深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>引言：
-在文字开始之前先介绍两个软件：</p></blockquote>
-
-<h5>JSONExport</h5>
-
-<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
-
-<h5>JSON Accelerator</h5>
-
-<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
-
-<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+<h6>WKWebView：</h6>
 
 <ul>
-<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
-<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+<li>iOS 8引入的，比较年轻</li>
+<li>在内存和执行效率上要比UIWebView高很多</li>
+<li>开放度较高但据说Bug成吨</li>
+<li>类似UIWebView，UI定制比较麻烦···</li>
+<li>没具体测试使用过，就不继续列举了 L~</li>
 </ul>
 
 
-<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
-
-<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
-
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/12/24/ios9xin-te-xing-wkwebview/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/#comments">更多评论</a>
 
     </article>
   
@@ -249,7 +133,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/04/20/h5ying-yong-shi-zhan/">H5应用实战</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/22/ios9-unit-test/">iOS9-Unit Test</a></h1>
     
     
       <p class="meta">
@@ -258,133 +142,41 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-12-22T00:59:07+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>12:59 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><blockquote><p>前言:
-ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手而言，其实并不是那么简单明了。</p></blockquote>
-
-<p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p>
-
-<p>这段时间在研究H5相关，由于本人主攻的是ios开发，所以后期主要的任务就是，使用H5+Css+JP编写好的代码在OC中使用，或者相互调用。</p>
-
-<p>这里就给大家介绍一下后面的内容，关于前面的内容后期会陆续更新相关文章与总结。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/04/20/h5ying-yong-shi-zhan/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/04/20/h5ying-yong-shi-zhan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/04/15/h5chu-tan/">H5初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>H5精华</h2>
-
-<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/04/15/h5chu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/04/15/h5chu-tan/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/04/08/nian-tie-shen-jiu/">粘贴深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
-
-<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
+  <div class="entry-content"><p> XCode7(iOS9)中新增了跟多特性，包括：</p>
 
 <ul>
-<li>1、UITextView</li>
-<li>2、UITextField</li>
-<li>3、UIWebView</li>
+<li>WKWebView+SFSafariViewController</li>
+<li>UI Test</li>
+<li>Multitasking</li>
+<li>watchOS 2</li>
+<li>Swift 2</li>
+<li>App Thinning</li>
+<li>人工智能和搜索 API</li>
+<li>HomeKit，CloudKit，HealthKit 等等杂七杂八的框架</li>
 </ul>
 
+
+<p> 前面的文章中我们已经将WKWebView+SFSafariViewController完整的介绍了一遍，现在我们就开始着手探究一下单元测试（后面的文章中我将会集中介绍一下常用功能新特性），敬请关注：<a href="http://al1020119.github.io/">iOS梦工厂</a></p>
+
+<h3>UI Tests是什么？</h3>
+
+<p>UI Tests是一个自动测试UI与交互的Testing组件</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/04/08/nian-tie-shen-jiu/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/12/22/ios9-unit-test/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2015/04/08/nian-tie-shen-jiu/#comments">更多评论</a>
 
     </article>
   
@@ -393,7 +185,7 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode7总结</a></h1>
     
     
       <p class="meta">
@@ -402,175 +194,174 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-12-20T23:56:09+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:56 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
+  <div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+
+<h4>1，默认使用HTTPS请求</h4>
+
+<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
+
+<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+</code></pre>
+
+<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+
+<p>Apple介绍了iOS9中的App Transport Security，它要求所有App在默认情况下使用HTTPS来进行网络请求。由于不是所有的服务器都运行在HTTPS环境下，Apple也提供了相关的方法来禁用ATS。</p>
 
 <ul>
-<li>iOS RunLoop都干了什么</li>
-<li>iOS 为什么必须在主线程中操作UI</li>
-<li>事件响应</li>
-<li>CALayer</li>
-<li>CADisplayLink 和 NSTimer</li>
-<li>iOS 渲染过程</li>
-<li>渲染时机</li>
-<li>CPU 和 GPU渲染</li>
-<li>Core Animation</li>
-<li>Facebook Pop介绍</li>
-<li>AsyncDisplay介绍</li>
-<li>参考文章</li>
+<li>最后：出于数据安全考虑，在完全禁用ATS的情况下，你也应该为某些重要的站点打开ATS。你可以通过NSExceptionDomainskey来禁用/启用特定的站点的ATS。参照如下图片:</li>
 </ul>
 
 
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">玩转定时器</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p> <img src="/images/dingshiqi.png" title="Caption" ></p>
-
-<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
-
-<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/03/09/wan-zheng-ding-shi-qi/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
-
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>蓝牙简单介绍和4.0的基本使用</p>
-
-<p>背景：</p>
+<p><img src="/images/ats001.png" title="Caption" ></p>
 
 <ul>
-<li>iOS的蓝牙不能用来传输文件。</li>
-<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
-<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
+<li>该plist文件允许用户在HTTP环境下下载文件，但是只能在HTTPS情况下访问"workflow.is"</li>
+</ul>
+
+
+<p>需要提醒的是，ATS的设置只针对当前bundle。这意味着你不仅需要在你主项目的info.plist中添加ATS相关的Key,同时也需要在其他bundle下的info.plist中添加相关配置。</p>
+
+<blockquote><p>关于iOS9的适配，github上有一个中文项目iOS9AdaptationTips可以提供很大的帮助。</p></blockquote>
+
+<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
+
+<p>否则会提示类似如下错误:</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/">粘包&amp;封包&amp;拆包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-12-09T18:11:05+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>6:11 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！</p>
+
+<h3>两个简单概念长连接与短连接：</h3>
+
+<h6>1.长连接</h6>
+
+<pre><code>Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。
+</code></pre>
+
+<h6>2.短连接</h6>
+
+<pre><code>Client方与Server每进行一次报文收发交易时才进行通讯连接，交易完毕后立即断开连接。此种方式常用于一点对多点
+</code></pre>
+
+<p>通讯，比如多个Client连接一个Server.</p>
+
+<h3>什么时候需要考虑粘包问题?</h3>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-11-28T17:42:15+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:42 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
+当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
+
+<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
+等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/28/ibeaconchu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/14/watch-os2-chu-tan/">Watch OS2 初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-11-14T17:44:31+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:44 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
+在这个过程中,你会学到:</p></blockquote>
+
+<ul>
+<li>如何为iOS app添加watchOS 2的target</li>
+<li>如何在两个target之间共享数据</li>
+<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
+<li>如何创建WKInterfaceController的子类并连线</li>
 </ul>
 
 
@@ -578,14 +369,182 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/11/14/watch-os2-chu-tan/">阅读全文😘</a>
     </footer>
   
 
 
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/06/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a></h1>
+    
+    
+      <p class="meta">
+        
 
 
-| <a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/#comments">更多评论</a>
+
+
+<time class='entry-date' datetime='2015-11-06T02:51:33+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:51 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言</p>
+
+<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
+
+<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/06/quan-ping-fan-hui-(runtime)/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/10/20/java/">爬虫必备-java抓包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-20T12:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:03 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>希望在开始之前你先看看：<a href="http://al1020119.github.io/blog/2014/02/21/fu-wu-qi-da-jian/">搭建服务器</a>,除非你已经有相应的服务器。</p></blockquote>
+
+<p>前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包</p>
+
+<p>java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包，还能根据自己的喜好选择对应的方式！</p>
+
+<p>我们开始吧！</p>
+
+<p>前提：熟悉java语法（能看懂就行）</p>
+
+<ul>
+<li>准备阶段：从网页中获取html代码</li>
+<li>实战阶段：将对应的html代码使用java语言解析出来，最后保存到plist文件</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/10/20/java/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/10/15/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Python抓包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-15T11:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:03 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>由于最近都在研究网络爬虫技术，自己也总结了一些。借助一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
+
+<h4>准备搭建环境</h4>
+
+<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
+
+<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
+
+<ul>
+<li>1.在终端输入 pip install BeautifulSoup</li>
+<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/10/15/pa-chong-bi-bei-phthonzhua-bao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/10/13/zhengze/">爬虫必备-正则表达式抓包</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-13T10:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:03 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>第一篇我们有介绍到使用青花瓷抓包，也提到了后面会介绍java和python实现，本篇就介绍一下怎么使用正则表达式抓取网络数据。</p>
+
+<p>先来看看网络爬虫的基本原理：</p>
+
+<p>一个通用的网络爬虫的框架如图所示：</p>
+
+<p><img src="/images/zhengze001.png" title="Caption" ></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/10/13/zhengze/">阅读全文😘</a>
+    </footer>
+  
+
 
     </article>
   
@@ -615,33 +574,33 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
     </ul>
 </section><section>
-  <h1>最新文章</h1>
+  <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
       </li>
     
   </ul>
@@ -702,15 +661,9 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 
     </div>
   </div>
-  <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2016 - iCocos --->
-<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
-<!--</p>-->
-
-
-<p>
-    Copyright &copy; <span>2013</span> - iCocos -
-    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
@@ -721,8 +674,8 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 
 
 
-<!--
---->
+
+
 
 
 

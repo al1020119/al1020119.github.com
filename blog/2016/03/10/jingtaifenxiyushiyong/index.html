@@ -1,0 +1,116 @@
+<hr />
+
+<p>layout: post
+title: &ldquo;静态分析与使用&rdquo;
+date: 2016-03-10 13:32:08 +0800
+comments: true</p>
+
+<h2>categories: Summary</h2>
+
+<p>逆向工程－静态分析及使用</p>
+
+<p>看到一篇装逼技术，有机会好好研究一下。。。。。</p>
+
+<p>最近在学习IOS逆向工程，查看网络上的资料也不是太多，边学边总结一下。</p>
+
+<p>首先学习资料：</p>
+
+<p>念茜（大神）的博客： <a href="http://nianxi.net">http://nianxi.net</a></p>
+
+<p>《ios应用逆向工程 分析与实战》</p>
+
+<p>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-凌乱的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
+
+<p>其次讲讲要用到的工具（ios安装工具使用Cydia中搜索安装，有些需要数据源可以自行查找）：</p>
+
+<ul>
+<li><p>已经越狱的IOS设备：这是必须的</p></li>
+<li><p>OpenSSH（数据源：<a href="http://apt.saurik.com%EF%BC%89%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ssh%E5%92%8C%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93scp">http://apt.saurik.com%EF%BC%89%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ssh%E5%92%8C%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93scp</a></p></li>
+<li><p>class-dump-z: 用于简单分析出工程中的类名和函数名</p></li>
+<li><p>IDA：强大的反编译工具</p></li>
+<li><p>Hopper Disassembler：类似IDA 我比较喜欢，能简单转换成OC的功能</p></li>
+<li><p>Reveal:UI层解析工具</p></li>
+<li><p>iFunBox 、 iTools ：两个都是强大的ios设备管理工具，越狱后能轻松读取应用文件等功能</p></li>
+</ul>
+
+
+<p>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-凌乱的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
+
+<p>恩，差不多就这么多了！上面的工具大部分都是收费的，不过都是有试用版的，接下来我们一个个分析：</p>
+
+<p>ios设备越狱，这个我就不讲了吧，不过我要赞@盘古团队一个，目前所有ios系统都可以越狱（包括ios8.x）</p>
+
+<p>在ios设备上下载OpenSSH （数据源：<a href="http://apt.saurik.com%EF%BC%89%EF%BC%8C%E7%84%B6%E5%90%8E%E7%94%A8%E7%94%B5%E8%84%91%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ios%EF%BC%9A">http://apt.saurik.com%EF%BC%89%EF%BC%8C%E7%84%B6%E5%90%8E%E7%94%A8%E7%94%B5%E8%84%91%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ios%EF%BC%9A</a></p>
+
+<p>然后输入密码，@后面是手机的IP号，越狱后默认密码好像是123456.</p>
+
+<p>传输文件的命令是</p>
+
+<pre><code>scp gdbinit root@172.168.1.100:/var/root
+scp root@172.168.1.100:/var/root/123.txt ~/
+</code></pre>
+
+<ol>
+<li>class-dump-z 是一个强大的函数提取工具，非常好用，也是基础工具</li>
+</ol>
+
+
+<p>下载地址：<a href="http://stevenygard.com/projects/class-dump">http://stevenygard.com/projects/class-dump</a></p>
+
+<pre><code>              https://code.google.com/p/networkpx/wiki/class_dump_z
+</code></pre>
+
+<p>可以发到手机里调用，也可以在电脑上调用，要解析的文件是在应用目录下x.app（里面还有用到的所有文件资源）下面的x（x是你要分析的应用名）以唱吧为例，用ifunbox找到应用进入应用目录就可以看到ktv.app了打开包文件就能找到ktv。</p>
+
+<pre><code>$ class-dump-z ktv &gt; ktv.txt       //导出所有内容到文件
+$ class-dump-z -H ktv -o ktvdir/   //导出所有内容目录到文件夹（首先要创建ktvdir文件夹）
+</code></pre>
+
+<p>*这里会有一个问题，就是从app store下载的应用解析出来会是乱码，因为应用被加密了。解决办法</p>
+
+<p><img src="/images/nixiang001.png" title="Caption" ></p>
+
+<p>去渠道上下应用如同步推、91</p>
+
+<p>解密工具 如AppCrackr(源<a href="http://cydia.xsellize.com">http://cydia.xsellize.com</a>)、Crackulous、Clutch</p>
+
+<pre><code>  class-dump 只能解析出类名和函数名，不能看到具体的实现逻辑。但是很直观
+</code></pre>
+
+<p> 4.IDA和Hopper Disassembler差不多，能看到每个函数的具体逻辑（但是-都是汇编）IDA很强大，能在后面标记的oc的函数名，但是我更喜欢Hopper Disassembler，因为他能简单的模拟出oc源码，但是也是非常简单的。两者按空格键都能显示出分支逻辑来。</p>
+
+<pre><code>汇编非常难看懂，我们需要的是耐心+耐心。后面可以加上动态工具联合分析能更有效
+</code></pre>
+
+<p><img src="/images/nixiang002.png" title="Caption" ></p>
+
+<p> 5.Reveal的功能就更强大了，能表明出UI的具体结构来，告诉你每个View的类型是什么，这通常也是我们常用的分析一个app的切入点。</p>
+
+<p>下载地址：<a href="http://revealapp.com">http://revealapp.com</a></p>
+
+<p>下载完后打开reveal在菜单目录中help-show reveal library in finder打开库文件，将两个文件发到手机里</p>
+
+<p><img src="/images/nixiang003.png" title="Caption" ></p>
+
+<p>接下来编辑libReveal.plist文件</p>
+
+<p>在/Library/MobileSubstrate/DynamicLibraries/下创建文件libReveal.plist，指定app的Bundle，可以指定多个</p>
+
+<p>同学们会问了，app 的bundleID怎么查看呢，我们还是用ifunbox工具找到应用目录，在x.app文件夹中会有info.plist文件，打开就能找到。</p>
+
+<p>最后重启设备-打开想分析的应用-电脑打开reveal接口，就可以点击分析了</p>
+
+<p><img src="/images/nixiang004.png" title="Caption" ></p>
+
+<p>总结一下吧，分析一个应用的逻辑是这样的：</p>
+
+<ul>
+<li><p>拿个越狱机-下好工具</p></li>
+<li><p>去越狱平台下个想分析的应用（或者去app store下，用解密工具解密一下）</p></li>
+<li><p>导入reveal分析页面，得到想要的知道的具体视图类或者大致范围</p></li>
+<li><p>分析class-dump中，找到想要的类和函数</p></li>
+<li><p>在IDA中找到具体函数，查看逻辑</p></li>
+</ul>
+
+
+<blockquote><p>单纯的静态分析只能知道个大概，想知道框架和具体内容还需要动态分析（下面分析）的帮助。不过想知道一个应用用到了什么库，界面是什么结构，有什么图片资源，上面的绝对够用了。总之逆向工程是比较枯燥无味的东西，资料又少，需要的是。。。。。加油</p></blockquote>

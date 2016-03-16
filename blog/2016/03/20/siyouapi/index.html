@@ -1,0 +1,434 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>私有API - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="一．基本知识 iPhone中的API除了公开的 API：Published API外（或者叫文档中记录的API：Documented API），还有两类API：私有API：Private API和未公开的API：UnPublished API(或者叫文档中未记录的API：Undocumented &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/03/20/siyouapi/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">私有API</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>一．基本知识</p>
+
+<p>iPhone中的API除了公开的 API：Published API外（或者叫文档中记录的API：Documented API），还有两类API：私有API：Private API和未公开的API：UnPublished API(或者叫文档中未记录的API：Undocumented API)。其中私有API是指放在PrivateFrameworks框架中的API，未公开的API是指虽然放在Frameworks框架中，但是却没有在苹果的官方文档中有使用说明、代码介绍等记录的API。后两种API是有区别的，按苹果的说法，未公开的API是还不够成熟，可能还会变动的API，等完全成型了后会变成公开的API，但是目前不对其提供承诺，就是系统版本升级后可能会失效。而私有API是苹果明确不能使用的API。虽然两者有所区别，但是在具体使用方法上是类似的。</p>
+
+<p>二．具体介绍
+1.导出生成私有API的头文件声明
+使用私有或未公开的API，首先需要导出其对应的头文件，在头文件里有相关函数的声明。
+工具：
+class-dump
+class-dump可以从编译后的Objective-C的二进制文件中提取对应的数据结构及函数等声明。
+使用方法：
+为了能在任意目录下使用class-dump命令，首先建议把class-dump文件拷贝到/user/local/bin/目录下，然后就可以在任意目录下执行以下命令：</p>
+
+<p>class-dump /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator3.0.sdk/System/Library/Frameworks/UIKit.framework/ >UIKit.h</p>
+
+<p>以上命令就可以把 iPhoneSimulator3.0.Sdk中Frameworks框架里的UIKit.Framework框架的数据结构及函数声明等给提取出来，并且放在UIKit.h这个文件中，之后你就可以在这个头文件中找你需要API的声明及其使用方式。以同样的方法，就可以挨个导出你需要那个框架中的API 声明。</p>
+
+<p>也可以用ericasadun写的DumpFrameworks.pl（文件中有部分注释说明）这个文件把私有框架下的API头文件全部提取出来。使用方法也是首先把class-dump文件拷贝到/user/local/bin/目录下，然后在任意一个目录下执行./DumpFrameworks.pl,然后就会在你的家目录下产生一个Headers文件夹，里面罗列了私有框架下的API头文件。</p>
+
+<p>2.使用私有API</p>
+
+<p>导出了私有API的头文件声明后，使用方法就比较简单了，首先在你的工程中包含进头文件，然后导入对应的框架，之后就可以类似提供了静态库的方式在我们的代码中使用这些私有API函数。</p>
+
+<p>三．附加说明</p>
+
+<p>iPhone编程中一些非常精致好玩的API都包含在私有API或未公开的API中，虽然我们可以以这种方式使用这些非常好的API，但是这样做是存在一定风险的，首先为公开的API有变更的可能，这样在每个固件版本中，你的代码都有可能中断。同时，最大的问题是使用了私有API的程序是不能放在App Store上销售的。因此如果我们只是为了好玩体验iPhone中这些精彩的API，那没关系。如果是为了做出程序放在App Store上销售的，那就不要动私有API的主意了。</p>
+
+<hr />
+
+<p>class-dump-x 提取私有库里面的隐藏文件
+class-dump</p>
+
+<p>This is a command-line utility for examining the Objective-C runtime information stored in Mach-O files. It generates declarations for the classes, categories and protocols. This is the same information provided by using &lsquo;otool -ov&rsquo;, but presented as normal Objective-C declarations, so it is much more compact and readable.
+Why use class-dump?</p>
+
+<p>It&rsquo;s a great tool for the curious. You can look at the design of closed source applications, frameworks, and bundles. Watch the interfaces evolve between releases. Experiment with private frameworks, or see what private goodies are hiding in the AppKit. Learn about the plugin API lurking in Mail.app.</p>
+
+<p>If you find class-dump useful, you can donate to help support its development. Thanks!
+Download</p>
+
+<p>Current version: 3.3.3 (Universal, 64 and 32 bit)
+Requires Mac OS X 10.5 or later.</p>
+
+<pre><code>class-dump-3.3.3.dmg
+class-dump-3.3.3.tar.gz
+class-dump-3.3.3.tar.bz2
+</code></pre>
+
+<p>Changes - News
+Contact</p>
+
+<p>You can email questions and bug reports to me at class-dump@codethecode.com, or nygard at gmail.com.
+Usage</p>
+
+<p>class-dump 3.3.3 (64 bit)
+Usage: class-dump [options] <mach-o-file></p>
+
+<p>  where options are:
+        -a             show instance variable offsets
+        -A             show implementation addresses
+        &ndash;arch <arch>  choose a specific architecture from a universal binary (ppc, ppc7400, ppc64, i386, x86_64, etc.)
+        -C <regex>     only display classes matching regular expression
+        -f <str>       find string in method name
+        -H             generate header files in current directory, or directory specified with -o
+        -I             sort classes, categories, and protocols by inheritance (overrides -s)
+        -o <dir>       output directory used for -H
+        -r             recursively expand frameworks and fixed VM shared libraries
+        -s             sort classes and categories by name
+        -S             sort methods by name
+        -t             suppress header in output, for testing
+        &ndash;list-arches  list the arches in the file, then exit
+        &ndash;sdk-root     specify the SDK root path (full path, or 4.1, 4.0, 3.2, 10.6, 10.5, 3.1.3, 3.1.2, 3.1)</p>
+
+<p>License</p>
+
+<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>
+
+<p> class-dump -H  /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator2.1.sdk/System/Library/CoreServices/SpringBoard.app/SpringBoard</p>
+
+<pre><code> -o 
+</code></pre>
+
+<p>~/Desktop/SpringBoard</p>
+
+<p>下载：<a href="http://ericasadun.com/HeaderDumpKit/">http://ericasadun.com/HeaderDumpKit/</a></p>
+
+<p>使用：
+1 将下载好的 class-dump 放入usr/local/bin 下.
+   如果 ‘/usr/local/bin’ 不知道在哪里，可以在terminal 下输入 ‘open -a Finder /usr/local/bin’ 以便打开目录.
+   记着 class-dump 要 使用 chmod 修改下执行权限.   例如：在usr/local/bin 对 class-dump 修改，可以这    样在terminal 切换到 usr/local/bin 目录下: chmod 777 class-dump .
+2 将DumpFrameworks.pl 放入任意目录下.同样需要修改执行权限.</p>
+
+<ol>
+<li>OK..现在所有的准备工作作好了. 我们在 terminal 的任意目录下 输入 ： ./DumpFrameworks.pl
+等待&hellip;
+会有一个Heards 文件夹在你的主目录下. 里面包含了 Frmeworks 和 privateFrameworks 下所有的私有        API,尽情享用吧.!</li>
+</ol>
+
+
+<hr />
+
+<p> 作为 Objective-C / Cocoa Touch 开发者，在经历了呕心沥血十月怀胎终于孕育出了一个代码包，然后踌躇满志准备提交给天杀的 Apple App Review Team  审核之时，别急，我们仍然需要诚惶诚恐的考虑一个问题，我们的代码里是否用到了 Private API ？</p>
+
+<pre><code>什么是 Private API ？简而言之，就是这个 API 真实存在于 Cocoa Touch 中，但它又不是 Public API （有点绕吧…）。那什么是 Public API 呢？Public API 就是苹果通过 Cocoa Touch 向全世界第三方开发者公开的所有 API 。在哪可以查到 Public API ？在你的 Xcode 工程中就能查到。如这幅截图所示， Xcode 中所有 framework 的头文件都是我们可用肉眼查询的 Public API 列表。
+
+
+
+同此同时，民间也流传着一个非官方的 Private API 列表。(iphone-private-frameworks)
+
+于是你说，那问题不就解决了呗，只要我们洁身自好，保证自己的代码里只使用 Cocoa Touch 公布的 API ，我们就肯定不会惹上 Private API 啦。
+
+然而实际情况往往不是这样，当今世界，嗯嗯当今世界，App Store 的竞争越发激烈，每位开发者都希望自己的代码能站在前辈优秀开源代码的基础上高屋建瓴，而不是每新建一个工程就得自己花十天半个月一遍遍 reinvent the wheel 重造车轮。 随手举几个例子， ASIHTTPRequest 、JSON 、Facebook / Three20 、 SFHFKeychainUtils ，这几套知名开源代码包存在于许许多多优秀的 iOS 应用之中。其他名气稍小但是同样流传广泛的开源或者闭源代码包就更数不胜数了。作为开发者，我们不得不频繁面对这样一个问题，我们如何确保这些第三方的代 码报里，不存在 private API ？
+
+苹果提供了几种机器识别方法，比如 string 命令，比如 otool -ov 命令，但都不太好用。江湖上有人做了一套解决方案，名叫 AppScanner ，我老人家决定强烈推荐一下。( 貌似现在用xcode提交项目时会检测一遍是否有私有函数 )
+
+怎么用？很简单，你把AppScanner工程编译好，然后直接将 .app 文件夹整个拖进 AppScanner 窗口里。
+免费的么？几乎是免费的，虽然收费（也才 $2.99 ），但是头 14 天免费。
+是否有人维护？有，而且只要你愿意出 $2.99 支持他们维护。他们还会继续开发下去。
+
+这是一个实例的截屏，头两项 API 可疑度 100% ，说明它们就是来搞破坏的 Private API。
+
+
+
+最后插一则八卦， Facebook / Three20 如雷贯耳，想必很多开发者都使用过。然而要命的事，在 Three20 的第一个版本中，就悄悄的藏着一条因为重名导致的假阳性 Private API 。虽然是假阳性，但那次事故仍然导致了所有使用那个版本 Three20 的 app 被惨拒。当然了，后来他们很快就修正了这个问题。
+</code></pre>
+
+<p>使用私有api开启了iphone的蓝牙。现在把方法分享出来，希望能给大家提供一些思路。</p>
+
+<p>1.首先在/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk/System/Library/PrivateFrameworks路径下找到BluetoothManager.framework（如果我没估计错的话，里面只有一个库文件，没有头文件）
+2. 所需的头文件，手动添加到BluetoothManager.framework中，并建立一个Headers文件夹。
+3.建立一个工程将以上路径下的BluetoothManager.framework添加到工程中
+4.将以下代码添加到工程中。（注意：不需要引入BluetoothManager的头文件，否则会出现编译错误）</p>
+
+<p>-(void)startBluetooth{</p>
+
+<h1>if TARGET_IPHONE_SIMULATOR</h1>
+
+<pre><code>exit( EXIT_SUCCESS ) ;
+</code></pre>
+
+<h1>else</h1>
+
+<pre><code>/* this works in iOS 4.2.3 */
+Class BluetoothManager = objc_getClass( "BluetoothManager" ) ;
+id btCont = [BluetoothManager sharedInstance] ;
+[self performSelector:@selector(toggle:) withObject:btCont afterDelay:1.0f] ;
+</code></pre>
+
+<h1>endif</h1>
+
+<p>}</p>
+
+<h1>if TARGET_IPHONE_SIMULATOR</h1>
+
+<h1>else</h1>
+
+<ul>
+<li>(void)toggle:(id)btCont
+{
+  BOOL currentState = [btCont enabled] ;
+  [btCont setEnabled:!currentState] ;
+  [btCont setPowered:!currentState] ;</li>
+</ul>
+
+
+<p>}</p>
+
+<h1>endif</h1>
+
+<p>5.在真机上编译运行，会发现iphone的蓝牙成功开启。</p>
+
+<p>但是，遗憾的是，目前我研究出来的只有开启蓝牙，关于设备匹配，数据传输方面没什么进展。
+希望有人能再接再厉，在我的基础上研究出设备匹配和数据传输的方法</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/19/shiyongtweakgongcheng/" title="Previous Post: 使用Tweak工程">&laquo; 使用Tweak工程</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/" title="Next Post: 分析QQ-微信界面结构">分析QQ-微信界面结构 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/03/20/siyouapi/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/03/20/siyouapi/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

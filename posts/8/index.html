@@ -9,7 +9,16 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。 更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。 IOS系统中，获取设备唯一标识的方法有很多： 一.UDID(Unique Device &hellip;">
+  <meta name="description" content="iOS 事件处理机制与图像渲染过程 iOS RunLoop都干了什么
+iOS 为什么必须在主线程中操作UI
+事件响应
+CALayer
+CADisplayLink 和 NSTimer
+iOS 渲染过程
+渲染时机
+CPU 和 GPU渲染
+Core Animation
+Facebook Pop介绍 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -23,19 +32,13 @@
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <script>
-function addBlankTargetForLinks () {
-    $('a[href^="http"]').each(function(){
-                              $(this).attr('target', '_blank');
-                              });
-}
-$(document).bind('DOMNodeInserted', function(event) {
-             addBlankTargetForLinks();
-             });
-</script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
   
 
 </head>
@@ -62,11 +65,8 @@ $(document).bind('DOMNodeInserted', function(event) {
 </form>
   
 <ul class="main-navigation">
-  <li><a href="/">首页</a></li>
-  <li><a href="/blog/archives">归档</a></li>
-  <li><a href="/icocos">iCocos</a></li>
-  <li><a href="/other">随笔录</a></li>
-  <li><a href="/about">关于</a></li>
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
 </ul>
 
 </nav>
@@ -80,7 +80,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
     
     
       <p class="meta">
@@ -89,37 +89,39 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-03-25T09:47:11+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
+  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
 
-<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
+<ul>
+<li>iOS RunLoop都干了什么</li>
+<li>iOS 为什么必须在主线程中操作UI</li>
+<li>事件响应</li>
+<li>CALayer</li>
+<li>CADisplayLink 和 NSTimer</li>
+<li>iOS 渲染过程</li>
+<li>渲染时机</li>
+<li>CPU 和 GPU渲染</li>
+<li>Core Animation</li>
+<li>Facebook Pop介绍</li>
+<li>AsyncDisplay介绍</li>
+<li>参考文章</li>
+</ul>
 
-<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
-
-<h5>一.UDID(Unique Device Identifier)</h5>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/08/14/unio/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/08/14/unio/#comments">更多评论</a>
 
     </article>
   
@@ -128,7 +130,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/08/05/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">取消TableView的Header与Footer的黏性效果</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">玩转定时器</a></h1>
     
     
       <p class="meta">
@@ -137,11 +139,45 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
+<time class='entry-date' datetime='2015-03-09T18:17:51+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>6:17 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p> <img src="/images/dingshiqi.png" title="Caption" ></p>
+
+<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
+
+<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
+    
+    
+      <p class="meta">
+        
 
 
 
 
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-03-02T00:19:52+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>12:19 am</span></time>
         
       </p>
     
@@ -150,24 +186,18 @@ $(document).bind('DOMNodeInserted', function(event) {
 
   <div class="entry-content"><p>引言：</p>
 
-<p>最近做一个项目的时候，遇到了一个bug问题，或者说个人能力有限，想了很久没有想到最好的方法去现实。</p>
+<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
 
-<h6>那么是什么问题呢？</h6>
-
-<p>首先当我在tabelView中为没饿过section设置一个header和footer之后，滑动tableView的时候，发现header和footer并不随着tableView中的cell一起滚动，而且会在顶部活着底部停留一段时间，这样的效果虽然好，但是上面就是不需要者也的功能，所以只好自己想办法解决。</p>
+<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/08/05/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/08/05/qu-xiao-tableviewde-headeryu-footerde-nian-xing-xiao-guo/#comments">更多评论</a>
 
     </article>
   
@@ -176,7 +206,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/07/25/netall/">网络开发总结</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">蓝牙开发你知道多少</a></h1>
     
     
       <p class="meta">
@@ -185,32 +215,21 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-03-01T00:38:13+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>12:38 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>一、一个HTTP请求的基本要素</h3>
+  <div class="entry-content"><p>蓝牙简单介绍和4.0的基本使用</p>
 
-<p>1.请求URL：客户端通过哪个路径找到服务器</p>
-
-<p>2.请求参数：客户端发送给服务器的数据</p>
+<p>背景：</p>
 
 <ul>
-<li>比如登录时需要发送的用户名和密码</li>
-</ul>
-
-
-<p>3.返回结果：服务器返回给客户端的数据</p>
-
-<ul>
-<li>一般是JSON数据或者XML数据</li>
+<li>iOS的蓝牙不能用来传输文件。</li>
+<li>iOS与iOS设备之间进行数据通信，使用gameKit.framework</li>
+<li>iOS与其他非iOS设备进行数据通信，使用coreBluetooth.framework</li>
 </ul>
 
 
@@ -218,14 +237,10 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/07/25/netall/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/03/01/lan-ya-kai-fa-ni-zhi-dao-duo-shao/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/07/25/netall/#comments">更多评论</a>
 
     </article>
   
@@ -234,7 +249,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/07/23/netuse/">网络请求初探</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/02/15/xiang-ce-shen-jiu/">相册深究</a></h1>
     
     
       <p class="meta">
@@ -243,33 +258,31 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-02-15T13:38:22+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:38 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>今天来说说关于iOS开发过程中的网络请求。</p>
+  <div class="entry-content"><h3>一. 概要</h3>
 
-<p>关于网络请求的重要性我想不用多说了吧。对于移动客户端来说，网络的重要性不言而喻。常见的网络请求有同步GET， 同步POST， 异步GET， 异步POST。今天来看一下四种网络请求的实现方式。</p>
+<p>在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS 应用发展步伐以及代码设计原则但确实强大的框架，考虑到 iOS7 仍占有不少的渗透率，因此 AssetsLibrary 也是本文重点介绍的部分。而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架，一个可以让应用更好地与设备照片库对接的框架，文末也会介绍一下这个框架。</p>
+
+<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
+
+<h3>二. AssetsLibrary 组成介绍</h3>
+
+<p>AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/07/23/netuse/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/02/15/xiang-ce-shen-jiu/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/07/23/netuse/#comments">更多评论</a>
 
     </article>
   
@@ -278,7 +291,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/07/12/popkeyboard/">你是怎么退出键盘的？</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/">函数&amp;方法的奥秘</a></h1>
     
     
       <p class="meta">
@@ -287,33 +300,153 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-02-08T23:54:30+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:54 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>iOS开发中键盘的退出方法用很多中我们应该在合适的地方使用合适的方法才能更好的提高开发的效率和应用的性能</p>
+  <div class="entry-content"><p>首先问个问题，你知道函数与方法的区别吗？</p>
 
-<p>下面给大家介绍几种最常用的键盘退出方法，基本上iOS开发中的键盘退出方法都是这几种中的一种活着几种。</p>
+<p>什么？没有区别？那你就out了！</p>
 
+<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
+直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
+
+<h5>初始化函数</h5>
+
+<pre><code>- (void)init
+{
+…
+} 
+…
+</code></pre>
+
+<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
+哦？原来函数跟方法是不一样的。</p>
+
+<h2>函数</h2>
+
+<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
+
+<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
+{
+  // Code here
+}
+一个函数声明与调用的例子：
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+int main (int argc, const char *argv[])
+{
+  int x = 2;
+  int y = 3;
+  // 调用函数
+  int result = plus(x, y);
+
+  return 0;
+}
+</code></pre>
+
+<h2>方法</h2>
+
+<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
+
+<pre><code>@implementation Person
+
+// 实现方法
+- (void)setName:(NSString *)name
+{
+  //code here
+}
+
+@end
+
+int main (int argc, const char *argv[])
+{
+  // 使用对象调用方法
+  [[Person new] setName:@"zhenby"];
+
+  return 0;
+}
+</code></pre>
+
+<hr />
+
+<h1>有什么不同</h1>
+
+<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
+
+<h3>Objective-C中的函数</h3>
+
+<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
+知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
+
+<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
+
+<pre><code>// 函数原型
+int plus(int, int);
+/*
+ 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
+ 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
+ */
+long timestamp(void);
+
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+long timestamp()
+{
+  // 返回当前的时间戳
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+</code></pre>
+
+<h3>Objective-C中的方法</h3>
+
+<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
+
+<pre><code>@implementation Test
+
+- (long)timestamp
+{
+  NSLog(@"in timestamp");
+  // 返回当前时间戳   
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+
+@end
+
+// 调用 timestamp 方法
+Test *test = [Test new];
+[test timestamp];
+[test release];
+
+//----------------------------------------------------------
+
+/*
+ 上面 [test timestamp] 这句代码就相当于以下的函数调用，
+ 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
+ */
+#import &lt;objc/message.h&gt;
+
+objc_msgSend(test, @selector(timestamp));
+</code></pre>
+
+<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
 </div>
   
   
-    <footer>
-      <a rel="full-article" href="/blog/2014/07/12/popkeyboard/">阅读全文😘</a>
-    </footer>
-  
 
-
-
-
-| <a href="/blog/2014/07/12/popkeyboard/#comments">更多评论</a>
 
     </article>
   
@@ -322,7 +455,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/06/25/data%20model/">数据与模型</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
     
     
       <p class="meta">
@@ -331,38 +464,28 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-01-28T00:32:20+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:32 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>/******************************************************************************/</p>
+  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
 
-<h3>一:简单plist读取</h3>
+<p>1:移除ruby镜像（天朝的网你们懂的）</p>
 
-<p>1:定义一个数组用来保存读取出来的plist数据</p>
-
-<pre><code> 1 @property (nonatomic, strong) NSArray *shops; 
+<pre><code> $ gem sources --remove https://rubygems.org/ 
 </code></pre>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/06/25/data%20model/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/06/25/data%20model/#comments">更多评论</a>
 
     </article>
   
@@ -371,7 +494,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/06/16/runtime/">玩转运行时</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/">屏幕旋转的奥妙</a></h1>
     
     
       <p class="meta">
@@ -380,37 +503,145 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-01-10T23:51:52+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:51 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h2>运行时（Runtime）机制</h2>
+  <div class="entry-content"><h3>一，决定当前UIViewController显示方向的因素</h3>
 
-<p>本文将会以笔者个人的小小研究为例总结一下关于iOS开发中运行时的使用和常用方法的介绍，关于跟多运行时相关技术请查看笔者之前写的运行时高级用法及相关语法或者查看响应官方文档。</p>
+<h6>1，全局控制</h6>
 
-<p>下面就来看看什么是运行时，我们要怎么在iOS开发中去使用它。</p>
+<p>工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。实际上就是设置工程plist文件的Supported interface orientations属性。</p>
 
-<p>官方介绍：</p>
+<h6>2，配置AppDelegate</h6>
 
+<p>配置AppDelegate的如下方法返回需要用到的全部方向集合，如果要支持多个方向，一般都返回UIInterfaceOrientationMaskAll</p>
+
+<pre><code>- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(nullable UIWindow *)window{
+    return UIInterfaceOrientationMaskAll;
+}
+</code></pre>
+
+<p>似乎该方法默认值为Info.plist中配置的Supported interface orientations项的值。</p>
+
+<h6>3，自定义UIViewController，并实现如下orientation相关的三个方法（iOS6以后）:</h6>
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>//是否支持多方向旋转屏，会考察当前设备方向和支持的方向。一些文档上说shouldAutorotate如果返回NO则不会执行下面两个方法纯属扯淡。  
+-(BOOL)shouldAutorotate  
+{  
+    return YES;  
+}  
+//第二个方法返回支持的旋转方向  
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations  
+{  
+    return [self.viewControllers.lastObject supportedInterfaceOrientations];  
+}  
+</code></pre>
+
+<p>返回最优先显示的屏幕方向，比如同时支持Portrait和Landscape方向，但想优先显示Landscape方向，那软件启动的时候就会先显示Landscape，在手机切换旋转方向的时候仍然可以在Portrait和Landscape之间切换；  </p>
+
+<pre><code>-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
+{  
+    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
+}  
+</code></pre>
+
+<p> 
+以上三个规则在每一个UIViewController中都会得到一个方向的交集集合，就是最终显示的方向。如果交集为空，会抛出UIApplicationInvalidInterfaceOrientationException崩溃异常。</p>
+
+<h3>二，典型的控制方案</h3>
+
+<p>另外一个非常重要的点就是并不是每一个UIViewController都会主动执行以上三个方法，根据特酷吧的实验，发现：</p>
+
+<ul>
+<li>1，当UIViewController是rootViewController（Device Orientation方向变化时会主动执行）</li>
+<li>2，当UIViewController是UINavigationController（Device Orientation方向变化时会主动执行）</li>
+<li>3，当UIViewController以modal模态形式弹出时会主动执行。
+一个典型的方案是，我们就可以在UINavigationController中这样写：</li>
+</ul>
+
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>-(BOOL)shouldAutorotate  
+{  
+    return YES;  
+}  
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations  
+{  
+    return [self.viewControllers.lastObject supportedInterfaceOrientations];//主动调用UIViewController对应的方法，达到在UIViewController中自定义的效果  
+}  
+-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
+{  
+    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
+}  
+</code></pre>
+
+<p> 
+接下来就只需要自定义各自的VC</p>
+
+<pre><code>-(UIInterfaceOrientationMask)supportedInterfaceOrientations{
+    return UIInterfaceOrientationMaskPortrait;//根据需要
+}
+- (BOOL)shouldAutorotate
+{
+    return NO;//根据需要
+}
+-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+{
+    return UIInterfaceOrientationPortrait;//根据需要
+}
+</code></pre>
+
+<p>事实上在作为一个UINavigationController的堆栈系统，普通的UIViewController的orientation方法只是一个配置项，最终决定屏幕方向的还是UINavigationController控制器，也就是UINavigationController拿UIViewController得配置决定当前控制器的方向。</p>
+
+<h3>三，强制屏幕旋转</h3>
+
+<p>如果UIInterfaceOrientation和UIDeviceOrientation方向不一样，想强制将UIInterfaceOrientation旋转成UIDeviceOrientation的方向，可以通过l类方法attemptRotationToDeviceOrientation，但是如果想将interface强制旋转成任一指定方向，就不太好实现了。目前大致有以下几种方式：</p>
+
+<h6>1，使用私有方法</h6>
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>[[UIDevice currentDevice] setOrientation:UIInterfaceOrientationPortrait];  
+</code></pre>
+
+<p>具体可以这样：  </p>
+
+<pre><code>         if ([[UIDevice currentDevice] respondsToSelector:@selector(setOrientation:)]) {  
+        SEL selector = NSSelectorFromString(@"setOrientation:");  
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[UIDevice instanceMethodSignatureForSelector:selector]];  
+        [invocation setSelector:selector];  
+        [invocation setTarget:[UIDevice currentDevice]];  
+        int val = UIInterfaceOrientationLandscapeRight;  
+        [invocation setArgument:&amp;val atIndex:2];  
+        [invocation invoke];  
+    }  
+</code></pre>
+
+<p> </p>
+
+<h6>2，主动触发orientation相关方法</h6>
+
+<p>只要提前设置好想要支持的orientation，然后主动触发orientation机制，使新设置的orientation起作用便能实现将 interface orientation旋转至任意方向的目的。像这样：</p>
+
+<pre><code>UIViewController *vc = [[UIViewController alloc]init]; 
+[self presentModalViewController:vc animated:NO]; 
+[self dismissModalViewControllerAnimated:NO]; 
+</code></pre>
+
+<h6>3、旋转view的transform</h6>
+
+<p>前两种都是试图触发orientation相关方法，第三种可能会造成一些不可预知的风险不推荐。</p>
 </div>
   
   
-    <footer>
-      <a rel="full-article" href="/blog/2014/06/16/runtime/">阅读全文😘</a>
-    </footer>
-  
 
-
-
-
-| <a href="/blog/2014/06/16/runtime/#comments">更多评论</a>
 
     </article>
   
@@ -419,7 +650,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/06/03/data%20cache/">玩转数据持久化</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
     
     
       <p class="meta">
@@ -428,27 +659,19 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2015-01-05T14:53:45+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:53 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>概论</p>
-
-<p>所谓的持久化，就是将数据保存到硬盘中，使得在应用程序或机器重启后可以继续访问之前保存的数据。在iOS开发中，有很多数据持久化的方案，接下来我将尝试着介绍一下5种方案：</p>
+  <div class="entry-content"><h6>一、底层实现</h6>
 
 <ul>
-<li>plist文件（属性列表）</li>
-<li>preference（偏好设置）</li>
-<li>NSKeyedArchiver（归档）</li>
-<li>SQLite 3</li>
-<li>CoreData</li>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
 </ul>
 
 
@@ -456,14 +679,10 @@ $(document).bind('DOMNodeInserted', function(event) {
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/06/03/data%20cache/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/06/03/data%20cache/#comments">更多评论</a>
 
     </article>
   
@@ -472,7 +691,7 @@ $(document).bind('DOMNodeInserted', function(event) {
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/05/20/sign/">签名机制</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
     
     
       <p class="meta">
@@ -481,81 +700,25 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
+<time class='entry-date' datetime='2014-12-29T22:32:50+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:32 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。</p>
+  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
 
-<p>下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。本文的前提是已经对非对称加密有了一定的了解。</p>
-
-<h4>一、数字签名（digital signature）</h4>
+<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/05/20/sign/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">阅读全文😘</a>
     </footer>
   
 
-
-
-
-| <a href="/blog/2014/05/20/sign/#comments">更多评论</a>
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/20/paixu/">排序算法精髓</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
- <time if="if" updated="updated" data-updated="true" endif="endif" itemprop="datePublished dateCreated"> ordinal </time> 
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>1、序言</h2>
-
-<p>ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题，但是这不是本篇文章讨论的范围。</p>
-
-<p>后面的文章中，我将会给大家详细介绍八大算法。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/05/20/paixu/">阅读全文😘</a>
-    </footer>
-  
-
-
-
-
-| <a href="/blog/2014/05/20/paixu/#comments">更多评论</a>
 
     </article>
   
@@ -585,33 +748,33 @@ $(document).bind('DOMNodeInserted', function(event) {
 <li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
 <li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
-<li class='category'><a href='/blog/categories/summary/'>summary (20)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
 <li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
 
     </ul>
 </section><section>
-  <h1>最新文章</h1>
+  <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/01/24/iCocos/">温馨提示</a>
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a>
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a>
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a>
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a>
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
       </li>
     
   </ul>
@@ -672,15 +835,9 @@ $(document).bind('DOMNodeInserted', function(event) {
 
     </div>
   </div>
-  <footer role="contentinfo"><!--<p>-->
-<!--  Copyright &copy; 2016 - iCocos --->
-<!--<span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>-->
-<!--</p>-->
-
-
-<p>
-    Copyright &copy; <span>2013</span> - iCocos -
-    <span class="credit">Preview in <a href="http://al1020119.github.io">[曹#黎]</a></span>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
 </footer>
@@ -691,8 +848,8 @@ $(document).bind('DOMNodeInserted', function(event) {
 
 
 
-<!--
---->
+
+
 
 
 

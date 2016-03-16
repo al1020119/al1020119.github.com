@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>微信机器人 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="基于iOS逆向工程的微信机器人 本文转自猫头鹰团队 推荐序 本文的作者沙梓社和吴航共同编写了《 iOS 应用逆向工程》，文章中介绍的是一些基本的 iOS 领域的安全知识，但是由于普及不够，基本上没有被人们重视，希望本文能让大家重视到 iOS 的源代码安全问题。 另外预告一下， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/04/20/weixinjiqiren/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">微信机器人</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-20T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p> 基于iOS逆向工程的微信机器人</p>
+
+<p>本文转自猫头鹰团队</p>
+
+<p>推荐序</p>
+
+<blockquote><p>本文的作者沙梓社和吴航共同编写了《 iOS 应用逆向工程》，文章中介绍的是一些基本的 iOS 领域的安全知识，但是由于普及不够，基本上没有被人们重视，希望本文能让大家重视到 iOS 的源代码安全问题。</p></blockquote>
+
+<p>另外预告一下，我认识的一个做移动安全的白帽子即将公开一个在非越狱手机上通过 App 绕过 sandbox 的 iOS 漏洞视频，并且计划发布一系列 iOS 系统安全方面的文章。我争取到了授权，并在我的公众号上同步发表这些文章，敬请期待：）</p>
+
+<p>以下是文章正文，略有调整。</p>
+
+<p>讲师介绍-沙梓社</p>
+
+<ul>
+<li>湖北武汉人，《iOS 应用逆向工程》系列图书的作者，在 Cydia（最大的越狱 iOS 商店）上有 11 款独立作品，接受过 CSDN 的专访，书的英文版在 GitHub 上开源后收获了 2600+ stars，是首位在 WWJC 上发表演讲的中国人，以「提升中国 iOS 开发者在国际上的地位」为己任。</li>
+</ul>
+
+
+<p>在很多朋友的眼里，iOS 逆向工程是一个小众、神秘的方向，为什么我会选择这个小众的方向呢？这要从我最喜欢的一首诗说起。第一次，我是在李开复的自传《世界因你不同》里看到这首诗，当时就感觉身心得到了非常强烈的震撼：</p>
+
+<p><img src="/images/nixiangjiqiren001.jpg" title="Caption" ></p>
+
+<p>因为我感觉到自己就是这类人：如果有两条路给我选，我确实会选更少人走的那一条。我发现自己是一个刻意保持自己跟别人不同的人。</p>
+
+<p>在初次读到这首诗时，我还没有开始学习 iOS。在从事 iOS 方面的研究后，又从乔帮主亲自配音的广告中寻找到了灵感，发现苹果跟我的价值观非常一致，就是要追求不同。因此，我更加认定 iOS 就是我的主攻方向。</p>
+
+<p><img src="/images/nixiangjiqiren002.jpg" title="Caption" ></p>
+
+<p>我的成长之路，就是一条与众不同的未选之路：别人都在学「大众情人」Windows 时，我开始学「小众路人」iOS；别人都在学 iOS 正向开发时，我开始学 iOS 逆向工程。正是因为追求不同，我写的《iOS 应用逆向工程》成为了全球唯一一本 iOS 逆向相关书籍，而且有美国和韩国的出版社想要引进本书，打破了中国 iOS 知识产权零输出的尴尬纪录。我用自己的努力代表中国 iOS 开发者在国际上发声，而且为 iOS 主流社区所认可，作为中国人我感到非常自豪。</p>
+
+<p>简单来说，我所研究的，主要是 iOS 应用层的逆向工程，对内核层的逆向工程只是稍有涉猎，没有入门。应用层的逆向工程，我感觉自己玩得差不多了，应用层的所有逆向工程相关问题，都可以用我那本书上介绍过的知识和技术得到解决，我觉得没有太大挑战性了，主要是劳动量问题。到了这个地步，我的规划主要分为 2 个方向：</p>
+
+<p>继续从事内核研究，这个方向的终点是「越狱」（越狱即通过漏洞利用拿到iOS的root权限，代表了iOS技术研究的最高境界）；</p>
+
+<p>换个脑子，用一些非技术能力武装自己，让自己成为一专多能的人才。这个方向的终点就是创业。</p>
+
+<p>当然，很多朋友会问，IT 人员创业的普遍做法，都是去 BAT 这样的互联网公司干 2 年，观察一下他们的玩法，然后拉一个团队出来干。你问啥不这么干呢？主要是碰到了一个很好的项目。大公司一直都在那里，想什么时候去都可以；而好项目却不常有，机会过去就过去了，不等人，所以我在准备并不算充分的情况下选择了创业这条路。</p>
+
+<p>交代完了我的背景，咱们可以进入正题了😁</p>
+
+<p><img src="/images/nixiangjiqiren003.jpg" title="Caption" ></p>
+
+<p>大意是「通过研究现有功能的实现原理，理解并融会贯通，在此基础上实现（甚至增强）这个功能。」也就是说，不是照猫画虎，而是师夷长技，「借刀杀人」。</p>
+
+<p>在我的理解里，逆向工程是一种工程师式的高级思维方式。给你水、面粉、糖、芝麻，让你做烧饼，这是正向工程；给你一个烧饼，让你分析出它是由多少水、多少面粉、多少糖、多少芝麻组成的，这是逆向工程。也就是说，根据图纸制作实物的这个过程是正向工程，而根据实物倒推图纸的这个过程则是逆向工程。乔布斯曾说「Good artists copy; Great artists steal.」逆向工程有异曲同工之妙。</p>
+
+<p>举几个通过逆向工程师夷长技的例子：</p>
+
+<p><img src="/images/nixiangjiqiren004.jpg" title="Caption" ></p>
+
+<p>通过逆向工程分析instagram滤镜算法。一个人可以“steal”一个滤镜算法团队的工作成果；</p>
+
+<p>研究微信的网络传输协议，就像@58沈剑 在博客里说到的那样。就我目前对微信九牛一毛的研究来说，就已经发现了一处可以进一步节省流量的地方，但是估计是因为历史遗留问题，这块代码不好动；</p>
+
+<p>看看1Password做了哪些防护。1Password是专门用于保存密码的，类似于保险柜，安全系数必须很高，它把我们的密码存在了哪里，通过什么方式加密？这些都是值得我们学习借鉴的地方。</p>
+
+<p>除了去学习别人的长处，逆向工程还可以发现自己和别人的短处：</p>
+
+<p><img src="/images/nixiangjiqiren005.jpg" title="Caption" ></p>
+
+<p>这种低级错误，星巴克可以犯，但1Password不能犯；这取决于你的产品定位。这个错误当然是通过逆向工程发现的。</p>
+
+<p>这是某世界500强企业犯的，通过HTTP协议明文传输用户手机和密码的低级错误：</p>
+
+<p><img src="/images/nixiangjiqiren006.jpg" title="Caption" ></p>
+
+<p>这是某突破3亿用户的移动App：</p>
+
+<p><img src="/images/nixiangjiqiren007.jpg" title="Caption" ></p>
+
+<p>把传输协议的密钥硬编码在代码里，有逆向工程基础的朋友可以轻松还原整套网络传输协议。淘宝上一堆堆的这个刷榜那个刷赞，就是这个原理。</p>
+
+<p>阿凹(猫友会吉祥物，一个微信机器人)，是「借刀杀人」最典型的运用之一：</p>
+
+<p><img src="/images/nixiangjiqiren008.jpg" title="Caption" ></p>
+
+<p>阿凹的实现原理，简单说，就是通过逆向工程的方式找出微信iOS客户端的收发信息等私有接口，然后基于自己的逻辑调用这些接口，实现针对特殊事件的自动化应答功能。</p>
+
+<p>我个人最常用的iOS逆向工程工具主要有这些：</p>
+
+<p><img src="/images/nixiangjiqiren009.jpg" title="Caption" ></p>
+
+<ol>
+<li><p>dumpdecrypted：将苹果加过密的App砸壳。通过AppStore处理的App，都是加过密的，不能直接进行二进制分析，需要先解秘，业界称为「砸壳」。它的原理是等App完全加载进内存，得到解密后，再把解密过的内存给dump出来，形成解密后的二进制文件，可以直接分析。</p></li>
+<li><p>class-dump：导出MachO文件里的ObjC类及方法定义。因为ObjC是一门强烈依赖于运行时的语言，它的文件类型是MachO（类比于Windows里的PE文件类型），MachO里存放了大量运行时需要用到的信息，从中可以收集整理，还原出一个App源代码里的ObjC头文件。</p></li>
+<li><p>CydiaSubstrate：将第三方动态库注入进程。它是越狱插件的存在前提。在iOS开机时，会把特定目录下的所有库，给加载到指定的进程里，俗称「hook」或「钩子」。</p></li>
+<li><p>Cycript：用JS语法写ObjC方法。这是Cydia之父Saurik发明的一门语言，我个人主要用它来测试私有函数。</p></li>
+<li><p>Theos：越狱插件开发工具。是我的书序作者DHowett开发的。iOS正向开发用Xcode，逆向开发用Theos。</p></li>
+<li><p>IDA：全平台反汇编、反编译工具。搞技术的一般都听说过这个软件，就不多介绍了。</p></li>
+<li><p>Hopper：OSX反汇编、反编译工具。比IDA便宜了1000倍，但功能跟IDA差不多；主攻苹果系操作系统。</p></li>
+<li><p>debugserver + LLDB：动态调试器。是大名鼎鼎的「苹果版」GDB。</p></li>
+</ol>
+
+
+<p>class-dump的效果，图中显示的是新浪微博App的所有头文件：</p>
+
+<p><img src="/images/nixiangjiqiren010.jpg" title="Caption" ></p>
+
+<p>Cycript的效果，可以看到微信星号密码的明文：</p>
+
+<p><img src="/images/nixiangjiqiren011.jpg" title="Caption" ></p>
+
+<p>Theos开发插件的运行效果：</p>
+
+<p><img src="/images/nixiangjiqiren012.jpg" title="Caption" ></p>
+
+<p>所有进程的[NSDictionary dictionaryWithContentsOfFile:]方法均被「hook」，可以随意篡改。</p>
+
+<p>IDA的效果：</p>
+
+<p><img src="/images/nixiangjiqiren013.jpg" title="Caption" ></p>
+
+<p>对于熟悉汇编语言（图里是ARM汇编）的朋友来说，所有未加密的二进制文件，均等同于开源。这是什么概念，做技术的都懂。</p>
+
+<h6>接下来我简单介绍下阿凹的制作流程：</h6>
+
+<p>核心在于找到收发微信消息的函数，然后加以修改利用：</p>
+
+<p><img src="/images/nixiangjiqiren014.jpg" title="Caption" ></p>
+
+<p>用dumpdecrypted给微信砸壳，解密出的文件近50M：</p>
+
+<p><img src="/images/nixiangjiqiren015.jpg" title="Caption" ></p>
+
+<p>class-dump出微信的所有头文件，近7000个：</p>
+
+<p><img src="/images/nixiangjiqiren016.jpg" title="Caption" ></p>
+
+<ul>
+<li><p>定位到收消息的View，进而定位到V对应的C，找出逻辑层的收消息函数。</p></li>
+<li><p>定位到发消息的按钮（也是一个View），进而定位到对应的C，找出逻辑层的发消息函数（这个过程没法用截图表现出来，所以我只简单描述下）。</p></li>
+</ul>
+
+
+<p>组合收发函数，完成阿凹的逻辑，最后写代码：</p>
+
+<p><img src="/images/nixiangjiqiren017.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-04-20T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/summary/'>summary</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/04/15/qudongkaifa/" title="Previous Post: 驱动开发">&laquo; 驱动开发</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/04/25/nixiangzongjie/" title="Next Post: Nixiangzongjie">Nixiangzongjie &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/advanced/'>advanced (22)</a></li>
+<li class='category'><a href='/blog/categories/algorithm/'>algorithm (1)</a></li>
+<li class='category'><a href='/blog/categories/background/'>background (1)</a></li>
+<li class='category'><a href='/blog/categories/bottom/'>bottom (5)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (7)</a></li>
+<li class='category'><a href='/blog/categories/fore-end/'>fore-end (2)</a></li>
+<li class='category'><a href='/blog/categories/interview/'>interview (1)</a></li>
+<li class='category'><a href='/blog/categories/necessary/'>necessary (5)</a></li>
+<li class='category'><a href='/blog/categories/newfeatures/'>newfeatures (5)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (8)</a></li>
+<li class='category'><a href='/blog/categories/projects/'>projects (27)</a></li>
+<li class='category'><a href='/blog/categories/summary/'>summary (40)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/watchos2/'>watchos2 (1)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/04/25/nixiangzongjie/">Nixiangzongjie</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/20/weixinjiqiren/">微信机器人</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/04/20/weixinjiqiren/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/04/20/weixinjiqiren/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - iCocos -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
