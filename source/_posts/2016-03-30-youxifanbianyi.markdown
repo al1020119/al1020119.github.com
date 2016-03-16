@@ -26,6 +26,15 @@ Mac / Linux :
 用內置的 Terminal 便可
 
 
+
+
+
+<!--more-->
+
+
+
+
+
 没 wifi 用 iPhone Tunnel Suite 3.0
 http://bbs.weiphone.com/read-htm-tid-597149.html
 

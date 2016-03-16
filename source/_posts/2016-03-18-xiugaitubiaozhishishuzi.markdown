@@ -27,6 +27,15 @@ categories: Summary
 	
 	You may have to edit ISOperation.h:
 
+
+
+
+
+<!--more-->
+
+
+
+
 1. Change the #import "NSOperation.h" to #import
 2. Remove the "" in the first part of the interface. 
 3. So you're just left with "id _delegate;"

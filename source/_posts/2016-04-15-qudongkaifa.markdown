@@ -23,6 +23,15 @@ categories: Summary
 c++用的是嵌入式c++，是标准c++的子集。
 
 
+
+
+
+<!--more-->
+
+
+
+
+
 所以，stl、异常、多重继承、模板和runtime类型信息  都无法使用。
 
 

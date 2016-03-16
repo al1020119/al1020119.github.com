@@ -27,6 +27,15 @@ iOS App 的逆向工程: Hacking on Lyft
 原文  https://realm.io/cn/news/conrad-kramer-reverse-engineering-ios-apps-lyft/
 
 
+
+
+
+<!--more-->
+
+
+
+
+
 如果你曾经想要知道某一部分代码如何工作，或者很同情某些人程序里的 Bug，你要是有代码，通常可以看看那部分代码。但是，如果没有代码可怎么办？ 在这个演讲里，Conrad 讲到了很多可以逆向 App 的概念和工具，这些方法和工具可以用来 debug 别人的库和你自己的代码。他还展示了逆向 iOS 版本的 Lyft （译者注：Lyft 是美国 Uber 之外的另一款打车软件），并且成功注入代码，探测网络流量，给我们活灵活现地展示逆向的艺术。通过 Conrad 的逆向技术，你也能成功地把 App Store 里所有的 App 的代码都暴露在你面前。
 
 	Sign up to be notified of new videos — we won’t email you for any other reason, ever.

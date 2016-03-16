@@ -22,6 +22,15 @@ Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对i
 http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&qq-pf-to=pcqq.c2c
 
 
+
+
+
+<!--more-->
+
+
+
+
+
 打开XCode创建iOSOpenDev--》Logos Tweak的工程
 
 创建动态加载Reveal的类RevealUtil：

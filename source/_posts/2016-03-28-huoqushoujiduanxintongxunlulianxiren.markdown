@@ -16,6 +16,15 @@ http://308812025-qq-com.iteye.com/blog/1549756              IOS 5 拦截手机�
 
 http://www.iteye.com/problems/84131                                IOS 短信截取 监听到了事件缺不能往下执行。。。
 
+
+
+
+
+<!--more-->
+
+
+
+
 http://blog.csdn.net/ceko_wu/article/details/8021133     短信数据库分析（一）
 
 一般地，ios只要越狱，整体的文件系统就全部暴漏出来，使用ifunbox 工具连接iphone，即可查看。

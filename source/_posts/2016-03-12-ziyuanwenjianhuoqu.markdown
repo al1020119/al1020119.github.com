@@ -13,6 +13,15 @@ categories: Summary
 
 要提高app制作水平，最好的方法就是学习领先者，用pngcrush反编译ios app 资源文件，步骤很简单
 
+
+
+
+
+<!--more-->
+
+
+
+
 1. 在电脑的itunes中下载你选中的app，下载完成之后，然后在finder里面找到对应的ipa包，也可以在91等市场中直接下载ipa文件
 
 2. ipa文件其实是zip包，重命名为zip后缀文件之后，双击打开

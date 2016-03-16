@@ -16,6 +16,15 @@ categories: Summary
 
 * 第三点——MobileSubstrate。这是越狱必装插件，也是tweak开发的前提。那些让iPhone能拦截黑名单电话的，或者让时间能显示年月日的，或者在状态栏添加个天气图标的程序，基本都依赖与此。
 
+
+
+
+
+<!--more-->
+
+
+
+
 事实上，MobileSubstrate包含了三大组件。
 
     MobileHooker

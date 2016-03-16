@@ -23,6 +23,15 @@ iTunes上传的多媒体文件（例如MP3、MP4等）存放目录，文件没�
 5、 【/private /var/root/Media/EBooks】 
 熊猫看书存放目录
 
+
+
+
+
+<!--more-->
+
+
+
+
 6、 【/Library/Ringtones】 
 系统自带的来电铃声存放目录（用iTunes将文件转换为ACC文件，把后缀名改成.m4r,用iPhone_PC_Suite传到/Library/Ringtones即可）
 

@@ -21,6 +21,15 @@ categories: Summary
 * (3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
 这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。
 
+
+
+
+
+<!--more-->
+
+
+
+
 一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。
 
 上传的demo工程的地址，我的github链接：https://github.com/easonoutlook/IPAInstaller

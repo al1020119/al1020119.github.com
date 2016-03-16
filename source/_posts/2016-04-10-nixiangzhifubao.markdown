@@ -17,6 +17,15 @@ $ sudo cp mac_x86/class-dump-z /usr/bin/
 2.class_dump支付宝app 
 $ class-dump-z Portal > Portal-dump.txt  
  
+
+
+
+
+<!--more-->
+
+
+
+
 @protocol XXEncryptedProtocol_10764b0  
 -(?)XXEncryptedMethod_d109df;  
 -(?)XXEncryptedMethod_d109d3;  

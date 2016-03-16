@@ -13,6 +13,15 @@ categories: Summary
 2. IOS系统主要的文件目录说明：
     /Applications : 存放系统的App和来自Cydia 的App，不包括App Store下载的，越狱过程把/Applications变成了一个符号链接，实际指向/var/stash/Applications
     /Library : 存放系统APP和Cydia App的数据（数据文件、动态链接库等）
+
+
+
+
+<!--more-->
+
+
+
+
     /Library/MobileSubstrate : 存放所有基于MobileSubstrate的插件，MobileSubstrate是一个提供  hook功能的基础平台，运行在这个平台上的插件通称为tweak   
    /System/Library/Frameworks
    /System/Library/PrivateFrameworks : IOS的共有和私有框架库，路径与模拟器的不同，在使用一些私有函数库时需要指定这样的路径

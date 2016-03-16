@@ -21,6 +21,15 @@ categories: Summary
    * Hopper Disassembler(反编译工具)
    * Reveal (对越狱后的设备查看任意app的布局)
 
+
+
+
+
+<!--more-->
+
+
+
+
 iOS逆向-动态分析
 
 涉及到的工具有

@@ -18,4 +18,13 @@ cycript -p 进程ID
   通知栏滑下来时显示SBBulletinWindow
 主要分析下正常状态的window
 
+
+
+
+
+<!--more-->
+
+
+
+
 SpringBoard界面层级结构分析
