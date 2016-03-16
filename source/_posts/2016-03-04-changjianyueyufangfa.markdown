@@ -1,9 +1,11 @@
 ---
+
 layout: post
-title: "温馨提示"
-date: 2016-01-24 13:32:08 +0800
+title: "常见越狱方法"
+date: 2016-03-04 15:32:08 +0800
 comments: true
 categories: Summary
+
 ---
 
 iOS设备的越狱方法

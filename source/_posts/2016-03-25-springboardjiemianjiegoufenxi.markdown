@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "温馨提示"
-date: 2016-01-24 13:32:08 +0800
+title: "SpringBoard界面结构分析"
+date: 2016-03-25 13:32:08 +0800
 comments: true
 categories: Summary
 ---
@@ -19,6 +19,3 @@ cycript -p 进程ID
 主要分析下正常状态的window
 
 SpringBoard界面层级结构分析
-
-
-nixiang0003

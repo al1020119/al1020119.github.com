@@ -1,8 +1,8 @@
 
 ---
 layout: post
-title: "温馨提示"
-date: 2016-01-24 13:32:08 +0800
+title: "检测是否越狱"
+date: 2016-03-05 13:32:08 +0800
 comments: true
 categories: Summary
 ---

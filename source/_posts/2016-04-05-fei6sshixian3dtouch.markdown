@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "温馨提示"
-date: 2016-01-24 13:32:08 +0800
+title: "非6S-实现3D Touch"
+date: 2016-04-05 13:32:08 +0800
 comments: true
 categories: Summary
 ---
