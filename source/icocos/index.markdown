@@ -62,6 +62,12 @@ footer: true
  [http://www.cnblogs.com/iCocos/（博客园）](http://www.cnblogs.com/iCocos/) 
  
  
+ 
+ 
+ <!--more-->
+ 
+ 
+ 
 
  ***
   	
