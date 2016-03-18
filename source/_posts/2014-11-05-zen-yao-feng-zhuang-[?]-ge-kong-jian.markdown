@@ -3,7 +3,11 @@ layout: post
 title: "怎么封装一个控件"
 date: 2014-11-05 17:44:16 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

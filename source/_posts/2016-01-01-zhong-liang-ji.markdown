@@ -3,7 +3,11 @@ layout: post
 title: "重量级-MVC-MVVM-DC"
 date: 2016-01-01 16:21:08 +0800
 comments: true
-categories: Summary
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

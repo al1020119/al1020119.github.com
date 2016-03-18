@@ -3,7 +3,11 @@ layout: post
 title: "Watch OS2 初探"
 date: 2015-11-14 17:44:31 +0800
 comments: true
-categories: WatchOS2
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

@@ -4,7 +4,11 @@ layout: post
 title: "Xcode配置文件"
 date: 2013-11-26 13:53:19 +0800
 comments: true
-categories: Projects 
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 --- 
 一个xcodeproj文件，其实是一个目录，它的格式大体上是这样的： 

@@ -4,6 +4,10 @@ title: "Git+SoureTree实战"
 date: 2015-12-28 12:28:06 +0800
 comments: true
 categories: Tools
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 由于之前一直使用SVN（Cornerstone），最近手痒痒的想弄一下git，听说soureTree不错，就花了一段时间研究了一下，并记录下来！

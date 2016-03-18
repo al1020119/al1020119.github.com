@@ -3,7 +3,11 @@ layout: post
 title: "iOS9-Unit Test"
 date: 2015-12-22 00:59:07 +0800
 comments: true
-categories: Newfeatures 
+categories: News
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+ 
 ---
 
  

@@ -3,7 +3,11 @@ layout: post
 title: "第三方支付总结"
 date: 2016-01-18 11:35:08 +0800
 comments: true
-categories: Summary
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
  
 引言：

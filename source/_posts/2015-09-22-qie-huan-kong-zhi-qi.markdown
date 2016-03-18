@@ -4,7 +4,11 @@ layout: post
 title: "切换控制器"
 date: 2015-09-22 02:51:10 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

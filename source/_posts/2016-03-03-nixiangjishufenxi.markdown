@@ -3,7 +3,11 @@ layout: post
 title: "逆向技术分析"
 date: 2016-03-03 13:32:08 +0800
 comments: true
-categories: Summary
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 iOS App 的逆向工程: Hacking on Lyft
 您的评价: 	

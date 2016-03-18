@@ -3,7 +3,11 @@ layout: post
 title: "iBeacon初探"
 date: 2015-11-28 17:42:15 +0800
 comments: true
-categories: Newfeatures
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
  

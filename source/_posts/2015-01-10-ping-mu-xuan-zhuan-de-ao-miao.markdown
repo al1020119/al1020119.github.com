@@ -3,7 +3,11 @@ layout: post
 title: "屏幕旋转的奥妙"
 date: 2015-01-10 23:51:52 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

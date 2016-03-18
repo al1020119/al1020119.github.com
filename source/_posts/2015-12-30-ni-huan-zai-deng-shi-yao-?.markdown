@@ -3,7 +3,11 @@ layout: post
 title: "你还在等什么？"
 date: 2015-12-30 16:21:08 +0800
 comments: true
-categories: Summary
+categories: Summarize
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

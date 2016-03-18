@@ -4,7 +4,11 @@ layout: post
 title: "取消TableView的Header与Footer的黏性效果"
 date: 2014-08-05 00:24:40 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
  

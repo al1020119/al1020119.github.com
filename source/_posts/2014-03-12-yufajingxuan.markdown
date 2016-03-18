@@ -4,7 +4,11 @@ layout: post
 title: "语法精选"
 date: 2014-03-12 13:53:19 +0800
 comments: true
-categories: Developer 
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 --- 
 

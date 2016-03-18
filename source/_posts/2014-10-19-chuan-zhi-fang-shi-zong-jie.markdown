@@ -4,7 +4,11 @@ layout: post
 title: "传值方式总结"
 date: 2014-10-19 02:32:36 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

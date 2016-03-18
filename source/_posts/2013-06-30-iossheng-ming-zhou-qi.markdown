@@ -4,7 +4,11 @@ layout: post
 title: "iOS生命周期"
 date: 2013-06-30 21:52:15 +0800
 comments: true
-categories: Developer
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

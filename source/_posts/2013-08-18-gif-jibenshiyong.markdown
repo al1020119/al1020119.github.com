@@ -4,7 +4,11 @@ layout: post
 title: "教你怎么显示gif图片"
 date: 2013-08-18 13:53:19 +0800
 comments: true
-categories: Projects 
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 --- 
 

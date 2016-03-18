@@ -4,7 +4,11 @@ layout: post
 title: "cocoaPods简单粗暴"
 date: 2015-01-28 00:32:20 +0800
 comments: true
-categories: Tools
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

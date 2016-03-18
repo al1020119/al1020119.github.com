@@ -4,7 +4,11 @@ layout: post
 title: "XMPP使用总结"
 date: 2014-09-12 00:21:39 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

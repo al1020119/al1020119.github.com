@@ -3,7 +3,11 @@ layout: post
 title: "常用系统文件夹"
 date: 2016-02-26 13:32:08 +0800
 comments: true
-categories: Summary
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 iPhone系统常用文件夹位置

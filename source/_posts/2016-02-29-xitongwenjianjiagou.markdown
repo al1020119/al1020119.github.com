@@ -3,7 +3,11 @@ layout: post
 title: "系统文件结构"
 date: 2016-02-29 13:32:08 +0800
 comments: true
-categories: Summary
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 系统文件架构概述

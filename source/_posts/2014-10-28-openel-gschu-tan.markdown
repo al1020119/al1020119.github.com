@@ -3,7 +3,11 @@ layout: post
 title: "OpenEL GS初探"
 date: 2014-10-28 17:43:44 +0800
 comments: true
-categories: Advanced
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

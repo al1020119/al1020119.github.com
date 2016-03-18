@@ -3,7 +3,11 @@ layout: post
 title: "图片处理-异步缓存优化"
 date: 2016-01-15 02:35:08 +0800
 comments: true
-categories: Summary
+categories: Performance
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

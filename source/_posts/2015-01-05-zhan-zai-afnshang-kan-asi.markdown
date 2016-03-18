@@ -3,7 +3,11 @@ layout: post
 title: "站在AFN上看ASI"
 date: 2015-01-05 14:53:45 +0800
 comments: true
-categories: Summary
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 ######一、底层实现

@@ -5,7 +5,11 @@ layout: post
 title: "字典转模型深究"
 date: 2015-05-01 02:33:18 +0800
 comments: true
-categories: Projects
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 
 ---

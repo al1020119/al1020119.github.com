@@ -3,7 +3,11 @@ layout: post
 title: "iOS9-WKWebView+SFSafariViewController"
 date: 2015-12-24 19:35:40 +0800
 comments: true
-categories: Newfeatures
+categories: News
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 ##一：WKWebView简单介绍##

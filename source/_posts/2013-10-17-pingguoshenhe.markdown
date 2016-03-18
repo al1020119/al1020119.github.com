@@ -4,7 +4,11 @@ layout: post
 title: "苹果审核指南"
 date: 2013-10-17 13:53:19 +0800
 comments: true
-categories: Projects 
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 --- 
 审核指南(修改部分红色字体标出)：

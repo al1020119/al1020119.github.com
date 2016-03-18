@@ -4,7 +4,11 @@ layout: post
 title: "蓝牙开发你知道多少"
 date: 2015-02-29 00:38:13 +0800
 comments: true
-categories: Advanced
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

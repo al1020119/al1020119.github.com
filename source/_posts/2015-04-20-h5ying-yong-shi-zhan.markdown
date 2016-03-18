@@ -3,7 +3,11 @@ layout: post
 title: "H5应用实战"
 date: 2015-04-20 11:03:23 +0800
 comments: true
-categories: Fore-end
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

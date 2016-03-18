@@ -4,7 +4,11 @@ layout: post
 title: "序列化&amp;反序列化深究"
 date: 2015-09-20 09:36:37 +0800
 comments: true
-categories: Summary
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

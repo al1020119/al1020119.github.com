@@ -3,7 +3,7 @@ layout: post
 title: "微信机器人"
 date: 2016-04-20 13:32:08 +0800
 comments: true
-categories: 逆向工程篇
+categories: Reverse
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

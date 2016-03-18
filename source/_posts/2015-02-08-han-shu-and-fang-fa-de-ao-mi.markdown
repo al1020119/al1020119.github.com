@@ -3,7 +3,11 @@ layout: post
 title: "函数&amp;方法的奥秘"
 date: 2015-02-08 23:54:30 +0800
 comments: true
-categories: Bottom
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 

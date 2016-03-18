@@ -3,7 +3,11 @@ layout: post
 title: "iOS9-CoreSpotlight"
 date: 2015-12-25 13:35:30 +0800
 comments: true
-categories: Newfeatures
+categories: News
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。

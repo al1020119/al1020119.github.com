@@ -4,7 +4,11 @@ layout: post
 title: "常见设计模式总结"
 date: 2013-09-25 13:53:19 +0800
 comments: true
-categories: Projects 
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 --- 
 

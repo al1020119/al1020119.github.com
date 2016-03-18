@@ -4,7 +4,11 @@ layout: post
 title: "App卡顿了怎么办？"
 date: 2015-07-16 09:37:46 +0800
 comments: true
-categories: Performance
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 
 ---
 

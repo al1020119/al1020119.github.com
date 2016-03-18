@@ -3,7 +3,11 @@ layout: post
 title: "图片加载优化深究"
 date: 2014-10-05 14:56:39 +0800
 comments: true
-categories: Performance
+categories: Reverse
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
 ---
 
 
