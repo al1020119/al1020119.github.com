@@ -1,0 +1,1970 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Icocos博客 | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/icocosbo-ke/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-03-19T01:45:37+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[驱动开发]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/15/qudongkaifa/"/>
+    <updated>2016-04-15T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/15/qudongkaifa</id>
+    <content type="html"><![CDATA[<h4>一、系统架构</h4>
+
+<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+
+<p>我们编写的驱动一般运行在i/o Kit框架下。</p>
+
+<h4>二、一些记录</h4>
+
+<ul>
+<li>开发工具 xcode</li>
+<li>开发语言：c++, c</li>
+</ul>
+
+
+<p>c++用的是嵌入式c++，是标准c++的子集。</p>
+
+<!--more-->
+
+
+<p>所以，stl、异常、多重继承、模板和runtime类型信息  都无法使用。</p>
+
+<p>因为这些东西会导致编译出来的文件很大，且容易导致问题。</p>
+
+<p>c++只能编写基于i/o Kit框架的驱动，而c语言则可以编写任意的驱动。</p>
+
+<p>并且c++的驱动反汇编后很难看。</p>
+
+<blockquote><p>所以写驱动还是用c吧。这一点和微软默认的一样。</p></blockquote>
+
+<h4>三、编写一个驱动例子</h4>
+
+<ol>
+<li>创建工程</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong002.png" title="Caption" ></p>
+
+<p>因为不是设备驱动，只能选择extension；如果是设备驱动，则选择IOKit Driver。</p>
+
+<ol>
+<li>写代码</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong003.png" title="Caption" ></p>
+
+<p>苹果将studio.h这样的c++库换成了自己的libkern.h。</p>
+
+<ol>
+<li>添加引用库
+因为代码中使用了libkern.h，所以要修改工程。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong004.png" title="Caption" ></p>
+
+<ol>
+<li>驱动入口</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong005.png" title="Caption" ></p>
+
+<ol>
+<li><p>编译驱动</p></li>
+<li><p>在xcode的product菜单里点击build就可以编译驱动了。</p></li>
+<li>xcode只是能编辑和编译驱动，无法调试驱动的。</li>
+<li>编译驱动时，你需要有一个开发者账号，否则编译不过。</li>
+<li>我没有账号，所以后面的操作无法进行，只能把书上的翻译过来。</li>
+</ol>
+
+
+<p>6、运行驱动有2种方式：</p>
+
+<ul>
+<li>1、拷贝驱动文件到目录 /system/library/extensions下，重启后自动运行；</li>
+<li><p>2、在terminal中运行命令启动驱动：</p>
+
+<ul>
+<li>sudo chown -R root:wheel 驱动名.kext   // 设置驱动文件的权限，如果有权限，这步可省略。
+sudo kextload 驱动名.kext  // 运行驱动</li>
+</ul>
+</li>
+<li><p>卸载驱动：sudo kextunload 驱动名.kext</p></li>
+<li><p>显示当前系统中的驱动：kextstat</p></li>
+</ul>
+
+
+<p><img src="/images/nixiangqudong006.png" title="Caption" ></p>
+
+<ol>
+<li>查看调试信息
+printf输出的信息是保存在磁盘上的log文件中。通过tail和cat命令就可以查看。log文件在/var/log/kernel.log或者/Applications/Utilities目录下。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong007.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[逆向支付宝]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/10/nixiangzhifubao/"/>
+    <updated>2016-04-10T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/10/nixiangzhifubao</id>
+    <content type="html"><![CDATA[<p>为了了解支付宝app的源码结构，我们可以使用class-dump-z工具来分析支付宝二进制。
+1.下载配置class_dump_z</p>
+
+<p>前往 <a href="https://code.google.com/p/networkpx/wiki/class_dump_z">https://code.google.com/p/networkpx/wiki/class_dump_z</a> ，下载tar包，然后解压配置到本地环境</p>
+
+<p>$ tar -zxvf class-dump-z_0.2a.tar.gz<br/>
+$ sudo cp mac_x86/class-dump-z /usr/bin/
+2.class_dump支付宝app
+$ class-dump-z Portal > Portal-dump.txt</p>
+
+<!--more-->
+
+
+<p>@protocol XXEncryptedProtocol_10764b0<br/>
+-(?)XXEncryptedMethod_d109df;<br/>
+-(?)XXEncryptedMethod_d109d3;<br/>
+-(?)XXEncryptedMethod_d109c7;<br/>
+-(?)XXEncryptedMethod_d109bf;<br/>
+-(?)XXEncryptedMethod_d109b8;<br/>
+-(?)XXEncryptedMethod_d109a4;<br/>
+-(?)XXEncryptedMethod_d10990;<br/>
+-(?)XXEncryptedMethod_d1097f;<br/>
+-(?)XXEncryptedMethod_d10970;<br/>
+-(?)XXEncryptedMethod_d10968;<br/>
+-(?)XXEncryptedMethod_d10941;<br/>
+-(?)XXEncryptedMethod_d10925;<br/>
+-(?)XXEncryptedMethod_d10914;<br/>
+-(?)XXEncryptedMethod_d1090f;<br/>
+-(?)XXEncryptedMethod_d1090a;<br/>
+-(?)XXEncryptedMethod_d10904;<br/>
+-(?)XXEncryptedMethod_d108f9;<br/>
+-(?)XXEncryptedMethod_d108f4;<br/>
+-(?)XXEncryptedMethod_d108eb;<br/>
+@optional<br/>
+-(?)XXEncryptedMethod_d109eb;<br/>
+@end</p>
+
+<p>查看得到的信息是加过密的，这个加密操作是苹果在部署到app store时做的，所以我们还需要做一步解密操作。
+3.使用Clutch解密支付宝app</p>
+
+<p>1）下载Clutch
+iOS7越狱后的Cydia源里已经下载不到Clutch了，但是我们可以从网上下载好推进iPhone
+地址：Clutch传送门</p>
+
+<p>2）查看可解密的应用列表</p>
+
+<p>root</p>
+
+<h1>./Clutch</h1>
+
+<p>Clutch-1.3.2<br/>
+usage: ./Clutch [flags] [application name] [&hellip;]<br/>
+Applications available: 9P_RetinaWallpapers breadtrip Chiizu CodecademyiPhone FisheyeFree food GirlsCamera IMDb InstaDaily InstaTextFree iOne ItsMe3 linecamera Moldiv MPCamera MYXJ NewsBoard Photo Blur Photo Editor PhotoWonder POCO相机 Portal QQPicShow smashbandits Spark tripcamera Tuding_vITC_01 wantu WaterMarkCamera WeiBo Weibo</p>
+
+<p>3）解密支付宝app</p>
+
+<p>root# ./Clutch Portal</p>
+
+<p>Clutch-1.3.2<br/>
+Cracking Portal&hellip;<br/>
+Creating working directory&hellip;<br/>
+Performing initial analysis&hellip;<br/>
+Performing cracking preflight&hellip;<br/>
+dumping binary: analyzing load commands<br/>
+dumping binary: obtaining ptrace handle<br/>
+dumping binary: forking to begin tracing<br/>
+dumping binary: successfully forked<br/>
+dumping binary: obtaining mach port<br/>
+dumping binary: preparing code resign<br/>
+dumping binary: preparing to dump<br/>
+dumping binary: ASLR enabled, identifying dump location dynamically<br/>
+dumping binary: performing dump<br/>
+dumping binary: patched cryptid<br/>
+dumping binary: writing new checksum<br/>
+Censoring iTunesMetadata.plist&hellip;<br/>
+Packaging IPA file&hellip;</p>
+
+<p>compression level: 0<br/>
+    /var/root/Documents/Cracked/支付宝钱包-v8.0.0-(Clutch-1.3.2).ipa</p>
+
+<p>elapsed time: 7473ms</p>
+
+<p>Applications Cracked: <br/>
+Portal</p>
+
+<p>Applications that Failed:</p>
+
+<p>Total Success: 1 Total Failed: 0</p>
+
+<p>4）导出已解密的支付宝app</p>
+
+<p>从上一步骤得知，已解密的ipa位置为：/var/root/Documents/Cracked/支付宝钱包-v8.0.0-(Clutch-1.3.2).ipa
+将其拷贝到本地去分析</p>
+
+<p>4.class_dump已解密的支付宝app</p>
+
+<p>解压.ipa后，到 支付宝钱包-v8.0.0-(Clutch-1.3.2)/Payload/Portal.app 目录下，class_dump已解密的二进制文件
+1</p>
+
+<p>$ class-dump-z Portal > ~/Portal-classdump.txt</p>
+
+<p>这回就可以得到对应的信息了：</p>
+
+<p>@protocol ALPNumPwdInputViewDelegate <NSObject><br/>
+-(void)onPasswordDidChange:(id)onPassword;<br/>
+@end</p>
+
+<p>@protocol ALPContactBaseTableViewCellDelegate <NSObject><br/>
+-(void)shareClicked:(id)clicked sender:(id)sender;<br/>
+@end</p>
+
+<p>@interface MMPPayWayViewController : XXUnknownSuperclass &lt;SubChannelSelectDelegate, UITableViewDataSource, UITableViewDelegate, CellDelegate, UIAlertViewDelegate> {<br/>
+@private<br/>
+    Item<em> channelSelected;<br/>
+    BOOL <em>bCheck;<br/>
+    BOOL </em>bOpenMiniPay;<br/>
+    BOOL <em>bNeedPwd;<br/>
+    BOOL </em>bSimplePwd;<br/>
+    BOOL <em>bAutopayon;<br/>
+    BOOL </em>bHasSub;<br/>
+    BOOL <em>bFirstChannel;<br/>
+    BOOL </em>bChangeSub;<br/>
+    BOOL _bClickBack;<br/>
+    UITableView</em> <em>channelListTableView;<br/>
+    NSMutableArray* </em>channelListArray;<br/>
+    NSMutableArray<em> _subChanneSelectedlList;<br/>
+    NSMutableArray</em> <em>unCheckArray;<br/>
+    UIButton* </em>saveButton;<br/>
+    UILabel<em> _tipLabel;<br/>
+    MMPPasswordSwichView</em> <em>payWaySwitch;<br/>
+    MMPPopupAlertView* </em>alertView;<br/>
+    UIView<em> <em>setView;<br/>
+    int </em>originalSelectedRow;<br/>
+    int _currentSelectedRow;<br/>
+    NSString</em> <em>statusCode;<br/>
+    ChannelListModel* </em>defaultChannelList;<br/>
+}<br/>
+@property(assign, nonatomic) BOOL bClickBack;<br/>
+@property(retain, nonatomic) ChannelListModel<em> defaultChannelList;<br/>
+@property(retain, nonatomic) NSString</em> statusCode;<br/>
+@property(assign, nonatomic) int currentSelectedRow;<br/>
+@property(assign, nonatomic) int originalSelectedRow;<br/>
+@property(retain, nonatomic) UIView<em> setView;<br/>
+@property(retain, nonatomic) MMPPopupAlertView</em> alertView;<br/>
+@property(retain, nonatomic) MMPPasswordSwichView<em> payWaySwitch;<br/>
+@property(assign, nonatomic, getter=isSubChannelChanged) BOOL bChangeSub;<br/>
+@property(assign, nonatomic) BOOL bFirstChannel;<br/>
+@property(assign, nonatomic) BOOL bHasSub;<br/>
+@property(assign, nonatomic) BOOL bAutopayon;<br/>
+@property(assign, nonatomic) BOOL bSimplePwd;<br/>
+@property(assign, nonatomic) BOOL bNeedPwd;<br/>
+@property(assign, nonatomic) BOOL bOpenMiniPay;<br/>
+@property(assign, nonatomic) BOOL bCheck;<br/>
+@property(retain, nonatomic) UILabel</em> tipLabel;<br/>
+@property(retain, nonatomic) UIButton<em> saveButton;<br/>
+@property(retain, nonatomic) NSMutableArray</em> unCheckArray;<br/>
+@property(retain, nonatomic) NSMutableArray<em> subChanneSelectedlList;<br/>
+@property(retain, nonatomic) NSMutableArray</em> channelListArray;<br/>
+@property(retain, nonatomic) UITableView* channelListTableView;<br/>
+-(void).cxx_destruct;<br/>
+-(void)subChannelDidSelected:(id)subChannel;<br/>
+-(void)switchCheckButtonClicked:(id)clicked;<br/>
+-(void)checkboxButtonClicked:(id)clicked;<br/>
+-(void)onCellClick:(id)click;<br/>
+-(void)showSubChannels;<br/>
+-(void)tableView:(id)view didSelectRowAtIndexPath:(id)indexPath;<br/>
+-(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath;<br/>
+-(int)tableView:(id)view numberOfRowsInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForRowAtIndexPath:(id)indexPath;<br/>
+-(int)numberOfSectionsInTableView:(id)tableView;<br/>
+-(void)setTableViewFootView:(id)view;<br/>
+-(void)setTableViewHeaderView:(id)view;<br/>
+-(id)tableView:(id)view viewForHeaderInSection:(int)section;<br/>
+-(id)tableView:(id)view viewForFooterInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForHeaderInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForFooterInSection:(int)section;<br/>
+-(void)alertView:(id)view clickedButtonAtIndex:(int)index;<br/>
+-(void)clickSave;<br/>
+-(void)netWorkRequestWithPwd:(id)pwd;<br/>
+-(void)setPayWaySwitchStates:(id)states;<br/>
+-(void)changePayWaySwitch:(id)aSwitch;<br/>
+-(void)scrollToSelectedRow;<br/>
+-(void)didReceiveMemoryWarning;<br/>
+-(void)viewDidLoad;<br/>
+-(void)applicationEnterBackground:(id)background;<br/>
+-(void)dealloc;<br/>
+-(void)goBack;<br/>
+-(BOOL)isChannelsSetChanged;<br/>
+-(id)subChannelCode:(int)code;<br/>
+-(id)subChannelDesc:(int)desc;<br/>
+-(id)initWithDefaultData:(id)defaultData;<br/>
+-(id)initWithNibName:(id)nibName bundle:(id)bundle;<br/>
+-(void)commonInit:(id)init;<br/>
+@end
+5.分析支付宝源码片段</p>
+
+<p>1）使用了@private关键字限制成员访问权限
+但是实际上，在Objective-C编程中，使用@private连Keypath访问都拦不住的</p>
+
+<p>2）抛出了冗长的成员对象
+这非常有利分析程序结构
+6.进一步思考</p>
+
+<p>1）如何利用 class-dump 结果，结合 cycript 进行攻击呢？
+2）class-dump-z 如此强大，有什么方法可以减少暴露的信息吗？</p>
+
+<p>接下来的博文将针对上面的思考，继续总结～</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[非6S-实现3D Touch]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/05/fei6sshixian3dtouch/"/>
+    <updated>2016-04-05T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/05/fei6sshixian3dtouch</id>
+    <content type="html"><![CDATA[<p>首先先给我这困难的语言表达能力道个歉哈，真的尽力了。
+本章排版是参照<a href="http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6">http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6</a></p>
+
+<p>最近才接触不久的逆向工程,刷夜,爆肝,把《iOS应用逆向工程》这本书的工具，全部看了一遍，并且尝试了一遍，感觉需要点什么。 那就是实践！  最近6s手机出了3DTouch，无奈手中没有这款机型，恰好最近对逆向小有心得，又听说过已经有插件能实现同样的需求，证明确实有可行性，于是开动。根据点击的判断和出现，初步感觉，这应该不需要多少行代码就能搞定，应该只要添加一个手势，或者是更改一个手势的点击事件，让系统认为发生了3DTouch点击事件，就可以了。</p>
+
+<ul>
+<li>所需工具: cycript，openSSH，class-dump</li>
+<li>测试环境：iOS9.0.2，iPhone5s</li>
+<li>备注：因为自身没有3DTouch，所以需要下载一个插件，让机器拥有3DTouch功能，我使用的是forcy，通过覆盖长按手势，实现</li>
+</ul>
+
+
+<p>通过查阅官方文档，得到关键词  Shortcut Menu peek pop
+这个词将来就是要在找关键方法时刻所要用到的</p>
+
+<!--more-->
+
+
+<h4>现在开始！</h4>
+
+<p>通过ssh连接到手机，然后将cycript注入到SpringBoard</p>
+
+<pre><code>huangjipingde-iPhone:~ root# cycript -p SpringBoard
+</code></pre>
+
+<p>首先 先隆重介绍1个方法，2个函数</p>
+
+<ul>
+<li>1方法 [view recursiveDescription]  该方法可以当做是Reveal的文字版，用来查看当前页面的布局</li>
+<li><p>2函数，原理均是runtime，但是第二个没有怎么看懂。。。</p></li>
+<li><p>printMethods 打印出该类所有的方法，后边接的是实现的地址,在这儿补充一下，如果想对某个方法打断点，但是又不想使用ida查看方法偏移，可以直接在这实现的地址处，添加断点，虽然不知道断在什么地方，但是可以肯定一定是在执行该方法的时候。效果如下图：</p></li>
+</ul>
+
+
+<p>代码:</p>
+
+<pre><code>function printMethods(className){
+var count = new new Type("I");
+var methods = class_copyMethodList(objc_getClass(className),count);
+var methodsArray = [];
+for (var i = 0; i &lt; *count; i++){
+var method = methods[i];
+methodsArray.push({selector:method_getName(method), implentation:method_getImplementation(method)});
+}
+free(methods);
+free(count);
+return methodsArray;
+}
+</code></pre>
+
+<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+
+<ol>
+<li><p>tryPrintIvars打印出对象所有的属性，效果如下图：
+代码:</p>
+
+<p>  function tryPrintIvars(a){
+  var x={};
+  for(i in <em>a){
+  try{
+  x[i] = (</em>a)[i];
+  } catch(e){}
+  }
+   return x;}</p></li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong002.png" title="Caption" ></p>
+
+<p>准备工作都做好了，将两个函数都先输入进去</p>
+
+<p><img src="/images/nixiangqudong003.png" title="Caption" ></p>
+
+<p>因为最后的目标是应用图标，所以，现在我们从主界面开始着手打印它的UI布局
+代码:</p>
+
+<pre><code>[[UIApplication sharedApplication].keyWindow.rootViewController.view recursiveDescription]
+</code></pre>
+
+<p><img src="/images/nixiangqudong004.png" title="Caption" ></p>
+
+<p>然后出来了一大片，红呦呦的代码，看着都眼睛疼，4点钟时看得眼睛都瞎了啊。此时应想，主界面可以滚动，是一个scrollView，是scrollView就得有contentSize，然后一看手机的页面，总共有5页，由于5s机型的宽度是320，所以这时候可以大胆猜测它的contentSize的最大宽度是1600，然后commond+F大法</p>
+
+<p><img src="/images/nixiangqudong005.png" title="Caption" ></p>
+
+<p>准确命中，同时，还注意到，它的contentOffset是960又此时我的页面正是第4页，基本锁定目标，查找frame的坐标是960，0的view，此时可以得到大量信息了，SBRootIconListView，这个就是用来装一页所有图标的View，SBIconListModel这个里边，我猜是装了该view里边的模型信息，注意，11 icons，正好是我们页面所有的图标数，此时再看后边SBIconView的size 62，62  这和图标尺寸的差距只有2个点，基本锁定，它就是我们要找的目标</p>
+
+<p><img src="/images/nixiangqudong006.png" title="Caption" ></p>
+
+<ul>
+<li><p>此时，让我们找到是什么在处理SBIconView的事件，我们所知道的，view一般是用来展示的，事件的发生一般都会交给代理来负责。让我们使用nextResponder，或者寻找他们的代理，来定位到一个controller文件，很幸运，直接一步就找到了，就是它：SBIconController！</p></li>
+<li><p>此时，我们可以class-dump出SpringBoard的头文件了，去查看一下它的里边都有些什么方法和属性，如果想偷懒，去github直接搜索也行。。。
+根据关键词和方法名译的意思大致锁定出来以下几个方法</p></li>
+</ul>
+
+
+<p>ps：  这儿的char 是BOOL类型
+代码:</p>
+
+<pre><code>-(void)_handleShortcutMenuPeek:(id)arg1 ;
+-(SBApplicationShortcutMenu *)presentedShortcutMenu;
+-(char)_canRevealShortcutMenu;
+-(id)_aggregateLoggingAppKeyForShortcutMenu:(id)arg1 ;
+-(void)applicationShortcutMenu:(id)arg1 activateShortcutItem:(id)arg2 index:(int)arg3 ;
+-(void)applicationShortcutMenu:(id)arg1 startEditingForIconView:(id)arg2 ;
+-(void)applicationShortcutMenu:(id)arg1 launchApplicationWithIconView:(id)arg2 ;
+-(void)applicationShortcutMenuDidPresent:(id)arg1 ;
+-(void)_revealMenuForIconView:(id)arg1 presentImmediately:(char)arg2 ;
+</code></pre>
+
+<p>自己写一个tweak，hook所有的这些函数，给他们所有的实现之前加上一个NSLog（），查看调用的顺序，和传进来的值的类型。 以及一次Peek事件所关联到了哪些方法。
+代码:</p>
+
+<pre><code>%hook SBIconController
+
+- (void)_revealMenuForIconView:(id)arg1 presentImmediately:(BOOL)arg2 {
+NSLog(@"ZZT3D _revealMenuForIconView:arg1:%s,%@--arg2:%c",object_getClassName(arg1), arg1, arg2);
+    %orig;
+}
+
+- (void)_handleShortcutMenuPeek:(id)arg1
+{
+NSLog(@"ZZT3D _handleShortcutMenuPeek:%s,%@",object_getClassName(arg1),arg1);
+%orig;
+}
+
+-(char)_canRevealShortcutMenu
+{
+NSLog(@"ZZT3D _canRevealShortcutMenu");
+  return %orig;
+}
+-(id)_aggregateLoggingAppKeyForShortcutMenu:(id)arg1{
+
+ NSLog(@"ZZT3D ggregateLoggingAppKeyForShortcutMenu:%s,%@",object_getClassName(arg1),arg1);
+    return %orig;
+}
+
+-(void)applicationShortcutMenu:(id)arg1 activateShortcutItem:(id)arg2 index:(int)arg3
+{
+NSLog(@"ZZT3D activateShortcutItem:arg1%s,%@—arg2%s,%@--arg3:%d",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2,arg3);
+%orig;
+}
+
+
+-(void)applicationShortcutMenu:(id)arg1 startEditingForIconView:(id)arg2 {
+NSLog(@"ZZT3D startEditingForIconView:arg1%s,%@—arg2%s,%@",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2);
+%orig;
+
+}
+-(void)applicationShortcutMenu:(id)arg1 launchApplicationWithIconView:(id)arg2{
+NSLog(@"ZZT3D launchApplicationWithIconView:arg1%s,%@—arg2%s,%@",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2);
+%orig;
+}
+
+-(void)applicationShortcutMenuDidPresent:(id)arg1{
+NSLog(@"ZZT3D applicationShortcutMenuDidPresent:%s,%@",object_getClassName(arg1),arg1);
+%orig;
+}
+
+%end
+</code></pre>
+
+<p>此时我们拿手机进行一次长按操作，使其弹出ShotcutMenu菜单，然后在openSSH中查看系统日志grep ZZT3D /var/log/syslog查看一下，该事件处理分别使用了那几个方法。</p>
+
+<p><img src="/images/nixiangqudong007.png" title="Caption" ></p>
+
+<p>因为是要欺骗系统，所以方法应该是在前方，初步定位到这3个方法，第一个顾名思义返回值就是能不能显示shotcutMenu，第二个，我们可以看到，这里传进来了一个手势，通过这手势的信息，基本可以推断，这个就是插件作者用来欺骗系统的手势，而该方法，就是手势的target方法，第三个，根据意思可以得知，从XXiconView，是否立即显示。核心就在于这儿了。最后，我们再打印一遍SBIconView的所有属性，用来确认一下</p>
+
+<p><img src="/images/nixiangqudong008.png" title="Caption" ></p>
+
+<p>继续搜索关键词，果然又有大收获_shortcutMenuPeekGesture有一个如此手势，里边的东西的手势。</p>
+
+<p><img src="/images/nixiangqudong009.png" title="Caption" ></p>
+
+<p>猜测得到了极大的肯定，下面就开始编写tweak了
+由于是要给每一个iconView都添加手势，并且只添加一次，所以翻看了iconView头文件，查看他的init方法，选择了在initWithContentType中初始化。
+贴上Tweak.xm的源码
+关于代码的编写，中间也踩过不少坑，比如_revealMenuForIconView中的yes，no的设置，还好一开始猜的时候就全部手动赋值。
+至于手势为什么传值需要如此怪异，因为检测发现原方法只识别长按手势，并不识别轻扫手势，但是因为个人习惯，不想覆盖系统的手势，只想单纯的增加一个功能。耿直的楼主尝试将一个轻扫手势，强行变成长按手势。很多属性都是readonly，但是这个使用kvc轻松搞定，现在轻扫一下手机！出现了意想之中的弹窗！
+代码:</p>
+
+<pre><code>#import "ZZ3DTouch.h"
+
+%hook SBIconView 
+
+- (id)initWithContentType:(id)arg1{
+// 设置3Dtouch手势
+  // 手势传过去的就是手势自己本身,本身拥有所在的view
+  self.shortcutMenuPeekGesture = [[%c(UISwipeGestureRecognizer) alloc] initWithTarget:[%c(SBIconController) sharedInstance] action:@selector(_handleShortcutMenuPeek:)];
+  self.shortcutMenuPeekGesture.direction = UISwipeGestureRecognizerDirectionUp;
+
+  return %orig;
+}
+
+%end
+
+%hook SBIconController
+
+- (void)_revealMenuForIconView:(id)arg1 presentImmediately:(BOOL)arg2 {
+
+  // yes 改为no之后没有显示，或者没有设置也会不显示
+
+  %orig(iconView, YES);
+
+}
+
+- (void)_handleShortcutMenuPeek:(id)arg1
+
+{
+  UISwipeGestureRecognizer *swipe = arg1;
+  UILongPressGestureRecognizer *press = [[UILongPressGestureRecognizer alloc] init];
+  [press setValue:@(UIGestureRecognizerStateBegan) forKey:@"state"];
+  [press setValue:swipe.view forKey:@"view"];
+
+%orig(press);
+
+}
+%end
+</code></pre>
+
+<p><img src="/images/nixiangqudong010.png" title="Caption" ></p>
+
+<p><img src="/images/nixiangqudong011.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[游戏反编译]]></title>
+    <link href="http://al1020119.github.io/blog/2016/03/30/youxifanbianyi/"/>
+    <updated>2016-03-30T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/03/30/youxifanbianyi</id>
+    <content type="html"><![CDATA[<p> ipa游戏反编译
+看不懂的请飘过，不要继续。
+这不是给新手看的，也代表你不需要解决程序的修改问题。
+这些技巧不只用于游戏的修改。</p>
+
+<p>下載 Windows 工具</p>
+
+<p>Windows :
+winscp <a href="http://winscp.net/eng/download.php">http://winscp.net/eng/download.php</a>
+PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.very.rulez.org/latest/x86/putty.exe</a></p>
+
+<p>Mac / Linux :
+用內置的 Terminal 便可</p>
+
+<!--more-->
+
+
+<p>没 wifi 用 iPhone Tunnel Suite 3.0
+<a href="http://bbs.weiphone.com/read-htm-tid-597149.html">http://bbs.weiphone.com/read-htm-tid-597149.html</a></p>
+
+<p>苹果电脑用 iPhoneSSH
+<a href="http://bbs.weiphone.com/read-htm-tid-720564.html">http://bbs.weiphone.com/read-htm-tid-720564.html</a></p>
+
+<p>iPhone/iPod Touch 在 cydia 內安裝 deb 包
+安装这些 deb 包最方便的方法是在 Cydia 内搜索及直接安装，这里提供的下载包及依赖包的链接下载点是方便手工安装时用</p>
+
+<p>OpenSSH (openssh) 及 OpenSSL(openssl) （与iPhone/iPod Touch 终端操作）
+<a href="http://apt.saurik.com/debs/openssh_5.2p1-8_iphoneos-arm.deb">http://apt.saurik.com/debs/openssh_5.2p1-8_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/openssl_0.9.8k-9_iphoneos-arm.deb">http://apt.saurik.com/debs/openssl_0.9.8k-9_iphoneos-arm.deb</a></p>
+
+<p>unzip 及 zip （解压缩及压缩打包工具）
+<a href="http://apt.saurik.com/debs/unzip_5.52-5_iphoneos-arm.deb">http://apt.saurik.com/debs/unzip_5.52-5_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/zip_2.32-5_iphoneos-arm.deb">http://apt.saurik.com/debs/zip_2.32-5_iphoneos-arm.deb</a></p>
+
+<p>vbindiff (iPhone 上的十六进制查看差异及修改器)
+<a href="http://apt.saurik.com/debs/vbindiff_3.0b1-3_iphoneos-arm.deb">http://apt.saurik.com/debs/vbindiff_3.0b1-3_iphoneos-arm.deb</a></p>
+
+<p>Link Identity Editor (ldid) 及 Darwin CC Tools (odcctools)（修改后用 ldid 签名, odcctools 包括 otool, linker , assembler汇编)
+<a href="http://apt.saurik.com/debs/ldid_610-5_iphoneos-arm.deb">http://apt.saurik.com/debs/ldid_610-5_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/odcctools_286-8_iphoneos-arm.deb">http://apt.saurik.com/debs/odcctools_286-8_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/uuid_1.6.0-2_iphoneos-arm.deb">http://apt.saurik.com/debs/uuid_1.6.0-2_iphoneos-arm.deb</a></p>
+
+<p>Diff Utilities (diffutils) (文本差异工具 diff)
+<a href="http://apt.saurik.com/debs/diffutils_2.8.1-6_iphoneos-arm.deb">http://apt.saurik.com/debs/diffutils_2.8.1-6_iphoneos-arm.deb</a></p>
+
+<p>less (文本查看工具)
+<a href="http://apt.saurik.com/debs/less_418-3_iphoneos-arm.deb">http://apt.saurik.com/debs/less_418-3_iphoneos-arm.deb</a></p>
+
+<p>Vi IMproved (vim) 或 nano (文本编辑工具)
+<a href="http://apt.saurik.com/debs/vim_7.1-3_iphoneos-arm.deb">http://apt.saurik.com/debs/vim_7.1-3_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb">http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb</a>
+或
+<a href="http://apt.saurik.com/debs/nano_2.0.7-5_iphoneos-arm.deb">http://apt.saurik.com/debs/nano_2.0.7-5_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb">http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb</a></p>
+
+<p>GNU Debugger (gdb) (程序调试工具) iOS 4.3.x 更新
+<a href="http://apt.saurik.com/debs/gdb_1518-11_iphoneos-arm.deb">http://apt.saurik.com/debs/gdb_1518-11_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb">http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/readline_6.0-7_iphoneos-arm.deb">http://apt.saurik.com/debs/readline_6.0-7_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3_3.5.9-12_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3_3.5.9-12_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3-lib_3.5.9-2_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3-lib_3.5.9-2_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3-dylib_3.5.9-1_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3-dylib_3.5.9-1_iphoneos-arm.deb</a></p>
+
+<p>GNU Debugger (gdb) (程序调试工具)
+<a href="http://apt.saurik.com/debs/gdb_962-5_iphoneos-arm.deb">http://apt.saurik.com/debs/gdb_962-5_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb">http://apt.saurik.com/debs/ncurses_5.7-9_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/readline_6.0-7_iphoneos-arm.deb">http://apt.saurik.com/debs/readline_6.0-7_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3_3.5.9-12_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3_3.5.9-12_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3-lib_3.5.9-1_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3-lib_3.5.9-1_iphoneos-arm.deb</a>
+<a href="http://apt.saurik.com/debs/sqlite3-dylib_3.5.9-1_iphoneos-arm.deb">http://apt.saurik.com/debs/sqlite3-dylib_3.5.9-1_iphoneos-arm.deb</a></p>
+
+<p>adv-cmds (ps 工具)
+<a href="http://apt.saurik.com/debs/adv-cmds_119-5_iphoneos-arm.deb">http://apt.saurik.com/debs/adv-cmds_119-5_iphoneos-arm.deb</a></p>
+
+<p>grep (grep 文本搜索工具)
+<a href="http://apt.saurik.com/debs/grep_2.5.4-3_iphoneos-arm.deb">http://apt.saurik.com/debs/grep_2.5.4-3_iphoneos-arm.deb</a></p>
+
+<p>ARM 参考书籍</p>
+
+<p><a href="http://bbs.weiphone.com/read-htm-tid-363306.html">http://bbs.weiphone.com/read-htm-tid-363306.html</a></p>
+
+<p>ARM指令集及使用方法</p>
+
+<p>ARM System Developer&rsquo;s Guide (主要是看第三章 Chapter 3)</p>
+
+<p>ARM Assembly Language Programming</p>
+
+<p>修改及用 gdb 调试游戏流程</p>
+
+<p>(1) 安装及试玩游戏，每个游戏的修改方法都不同，没有玩过这游戏，怎样知道要修改什么呢？
+这教程用了 Final Fantasy 2 作例子</p>
+
+<p>(2) 用 iTunes 安装 Final Fantasy 2 破解版本 (未破解的不能反汇编)</p>
+
+<p>(3) 用putty / ssh 连接iPhone / iPod Touch，假设你的iPhone / iPod Touch 的IP地址是192.168.1.104</p>
+
+<p>Connection type: 选 SSH
+Port 选 22
+按 Open</p>
+
+<p>PuTTY 连接 192.168.1.104 后</p>
+
+<p>Login 打 root
+Password(假设你没有更改密码) 打 alpine</p>
+
+<p>Mac / Linux Terminal 内打
+ssh <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#114;&#x6f;&#111;&#116;&#x40;&#49;&#x39;&#50;&#46;&#x31;&#54;&#56;&#x2e;&#x31;&#x2e;&#49;&#48;&#x34;">&#x72;&#111;&#x6f;&#x74;&#x40;&#x31;&#x39;&#50;&#x2e;&#49;&#54;&#56;&#x2e;&#49;&#46;&#x31;&#48;&#x34;</a></p>
+
+<p>(4) 进入游戏路径目录内(先决条件是已用 PuTTy / Terminal 连接iPhone / iPod Touch)
+打
+复制代码</p>
+
+<pre><code>cd /var/mobile/Applications/*/FinalFantasy2.app
+</code></pre>
+
+<p>(5) 到上一层路径目录建立 cheat 临时工作路径目录及游戏程式临时修改档
+打
+复制代码</p>
+
+<pre><code>cd ..
+mkdir -p cheat
+cd cheat
+cp -p ../FinalFantasy2.app/FinalFantasy2 FinalFantasy2.original
+</code></pre>
+
+<p>(6) 反汇编原游戏程式
+复制代码</p>
+
+<pre><code>otool -tv FinalFantasy2.original &gt; FinalFantasy2.original.txt
+</code></pre>
+
+<p>(7) 查看反汇编代码分析并找出要修改的地方(每个游戏的修改地方都不同, 这点最难)
+要修改游戏，你会有以下的困难或问题：</p>
+
+<p>(i) 没有高阶源代码，只有反汇编代码
+反汇编代码分析是困难的但绝对不是不可能作分析，你可以找到些不错的ARM Assembly的参考书
+在上面亦已提供了一些很好的 ARM 指令参考
+常见的是以下这些基本的指令及其执行条件码：</p>
+
+<p>MOV 或 MVN 寄存器数值的传送操作
+ADD 或 SUB 加减的算术操作
+CMP 或 CMN 比较操作
+AND、ORR、EOR 逻辑操作
+B、BL、BNE、BGE 分支/跳转指令
+MUL 乘法操作 或 LSL 是 二进制左移，左移一位，即十进制乘2倍
+LDR 或 STR 加载及存储数据</p>
+
+<p>每个指令都可加上执行条件码根据上一个运算、逻辑或比较指令的结果决定是否执行指令</p>
+
+<p>执行条件码 (Condition Codes)：
+① CS 及 CC（Carry）进位条件码，CS＝进位，否则＝CC(不进位).
+② EQ 及 NE （Equal 或 Zero）相等或零条件码，EQ＝运算结果为相等或零时，否则＝NE(不相等).
+③ VS 及 VC（Overflow）溢出条件码。 VS=溢出，否则＝VC(不溢出)。
+④ PL 及 MI 条件码。 PL（Plus/Positive）＝结果为正，MI（Minus/Negative）＝结果为负。</p>
+
+<p>⑤ GT 及 LT 条件码。 GT（Greater Than）＝大于(PL+VC+NE / MI+VS+NE)，LT（Less Than）＝小于(MI+VC / PL+VS)。
+⑥ GE 及 LE 条件码。 GE（Greater Than or Equal）＝大或等于(PL+VC / MI+VS)，LE（Less Than or Equal）＝小或等于(MI+VC / PL+VS / EQ)。
+⑦ HI 及 LO 条件码。 HI（Higher Than）＝无符号数(unsigned)高于(CS+NE)，LO（Lower Than）＝无符号数(unsigned)低于(CC)。
+⑧ HS 及 LS 条件码。 HS（Higher or Same）＝无符号数(unsigned)高于或相等(CS/EQ)，LS（Lower or Same）＝无符号数(unsigned)低于或相等(CC/EQ)。
+⑨ AL 及 NV 条件码。 条件码默认为AL（Always）＝无条件执行，NV（Never）是AL的相反＝不执行。</p>
+
+<p>例子及其注解意思
+复制代码</p>
+
+<p>CMP R0, R1       @寄存器数值 R0 及 R1 的比较
+MOVGT R2, R0     @如果结果 R0 >(大于) R1，则执行MOV R2, R0即 R2＝R0
+MOVLE R2, R1     @如果结果 R0 &lt;=(小或等于) R1，则执行MOV R2, R1即 R2＝R1</p>
+
+<p>复制代码</p>
+
+<p>LDR R1, [R0]     @意思是 R1 = <em>R0，从R0指向的地址处的数据载入到寄存器 R1
+STR R1, [R0]     @意思是 </em>R0 = R1，把寄存器 R1内的数据写到 R0 内指向的地址处</p>
+
+<p>ARM 指令集及使用方法</p>
+
+<p>(ii) 看不懂游戏程式流程，没法分析
+有很多人都喜欢用 IDA Pro Advanced 去做分析， 无疑这软件是个非常好的静态分析工具，它有图形视图显示代码流程作搜索及深层分析。除了可分析反汇编代码外，亦可反汇编一些 otool 不能处理的工作。 但 IDA Pro Advanced 在iPhone 的程式只适合做静态的分析。</p>
+
+<p>你可以在这里下载 IDA Pro Advanced 5.2 及其参考书，建议你使用功能及视图比较强大的 Windows 版本。
+<a href="http://bbs.weiphone.com/read-htm-tid-363306.html">http://bbs.weiphone.com/read-htm-tid-363306.html</a></p>
+
+<p>只看代码是不能作分析，要配合动态调试去了解程式的细节在实际运行时发生的数据及变化。在第15步就有用 gdb 作动态调试的例子去设置断点、继续、跟踪及分析代码。gdb 的参考书可在上面的链接下载。</p>
+
+<p>(iii) 找不到游戏的数据例如金钱，经验值，装备，等级暂存在那？</p>
+
+<p>引用</p>
+
+<p>方法一：在 gdb 设置断点分析
+ARM CPU 有个特性便是一些加减计算要传送到CPU寄存器(register) 进行，因此你会经常看到这些要找的数据会先从内存用LDR 指令载入到寄存器, 经过一些计算(加或减)后及防溢位判断后便用STR 指令存储这寄存器回内存地址。</p>
+
+<p>另外由于这些程式大多是用 Objective C 或 C++ 语言写成，这些程序员会用一些描述性的函数名，例如带有 Money, Price, Gold, Exp, Item, Life, Level 字段等。</p>
+
+<p>利用这两点便可以将程序锁定在某些函数上，再利用 gdb 调试工具暂停在某些点一步一步地单步执行及查看一些寄存器，印证是否与你要找的数据是否有关。</p>
+
+<pre><code>在FinalFantasy2 的这实例中, 是用这方法找到修改点
+用 less 工具去找寻 Money
+putty / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>less FinalFantasy2.original.txt
+
+
+
+在 less 工具內打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>/Money
+
+
+去开始找寻(按 N 键去继续找寻)，便会找到这段代码像是要存储金钱数据(SetMoney)，0007b218是进入这段代码的开始地址
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>__ZN14cFF2GlobalWork19sysGAMEPrm_SetMoneyEj:
+0007b218 e59f300c ldr r3, [pc, #12] ; 0x7b22c
+0007b21c e580120c str r1, [r0, #524]
+0007b220 e1510003 cmp r1, r3
+0007b224 8580320c strhi r3, [r0, #524]
+0007b228 e12fff1e bx lr
+
+
+
+首先在iPhone或iPod Touch 开始Final Fantasy 2 直至游戏已 Resume及进入游戏。
+
+
+① 在PuTTY / Terminal 找FinalFantasy2 的运行中的进程编号(process id)
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>ps ax
+
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>1115   ??  Ss     1:30.86 /var/mobile/Applications/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/FinalFantasy2.app/FinalFantasy2
+
+
+
+找到FinalFantasy2 游戏现时运行中的进程编号是 1115
+
+② 用gdb 进入调试运行中的进程编号1115
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>gdb -p 1115
+
+
+
+此时游戏会暂停，音乐也暂停
+
+③ 用gdb 设定断点breakpoint在十六进制地址0x7b218
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>break *0x7b218
+
+
+
+④ 继续 continue 游戏
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>c
+
+
+
+⑤ 将Final Fantasy 2 游戏进入战斗，战胜后游戏会在十六进制地址0x7b218处停止
+
+⑥ 暂停后，离开这分支__ZN14cFF2GlobalWork19sysGAMEPrm_SetMoneyEj
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>finish
+
+
+
+⑦ 反汇编现时地址上面的代码
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>disassem $pc-28 $pc
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>0x0003baac &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 180&gt;: bl 0x78e30 &lt;_ZN14cFF2GlobalWork8InstanceEv&gt;
+0x0003bab0 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 184&gt;: mov r4, r0
+0x0003bab4 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 188&gt;: bl 0x78e30 &lt;_ZN14cFF2GlobalWork8InstanceEv&gt;
+0x0003bab8 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 192&gt;: bl 0x7b230 &lt;_ZN14cFF2GlobalWork19sysGAMEPrm_GetMoneyEv&gt;
+0x0003babc &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 196&gt;: add r1, r0, r5
+0x0003bac0 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 200&gt;: mov r0, r4
+0x0003bac4 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG 204&gt;: bl 0x7b218 &lt;_ZN14cFF2GlobalWork19sysGAMEPrm_SetMoneyEj&gt;
+
+
+
+这时会发现在_ZN14cFF2GlobalWork19sysGAMEPrm_GetMoneyEv
+</code></pre>
+
+<p>及_ZN14cFF2GlobalWork19sysGAMEPrm_SetMoneyEj
+中间0x0003babc 地址的代码add r1, r0, r5 是最可疑的</p>
+
+<pre><code>⑧ 取消断点1及设定新断点breakpoint在十六进制地址0x0003babc 及重新继续continue 游戏
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>disable 1
+break *0x3babc
+c
+
+
+
+在iPhone或iPod Touch查看现时游戏的金钱例如是4888，将Final Fantasy 2 游戏进入战斗，战胜后游戏会新断点2地址0x3babc处停止
+
+⑨ 当游戏在新断点2暂停时查看寄存器就发现 r0 是当时的金钱余额及 r5 是战胜后得到的金钱
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>i r $r0 $r1 $r5 $pc
+
+
+
+⑩ 假设已找到应修改的地址是 0003babc，便可继续下面第(8)步
+</code></pre>
+
+<p>引用</p>
+
+<p>方法二：在 gdb 搜索内存数据值及设置观察点(watchpoint)</p>
+
+<pre><code>游戏的数据都会暂存在堆(heap)内存, 于游戏退出前储存在 iPhone 或 iPod Touch的闪存记忆体内, 一些经验值或金钱的数字是比较独特，在内存重复出现的机会不多，这些唯一的数字便可用这方法去进行搜索。
+
+这里用了 Zenonia 2 v1.0 作例子，下面的游戏截图便看到用一个独特的经验值数字 672 去开始这方法
+
+
+
+① 在 PuTTY / Terminal 用  ps ax  的指令找到 ZENONIA2 游戏现时运行中的进程编号是 1123
+
+② 使用 gdb 进入运行中的进程编号 1123
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>gdb -p 1123
+
+
+
+此时游戏会暂停，音乐也暂停
+
+③ 用 gdb 输入这些指令包括，内存开始地址(0x800000)、结束地址(0x880000)及要搜索的数字672如下:
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>set $x=0x800000
+while(*++$x!=672 &amp;&amp; $x&lt;0x880000)
+end
+
+
+
+④ 输入 end 之后等候数十秒 ....，待gdb去搜索这段内存地址
+
+⑤ gdb 搜索完毕后
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>p/x $x
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>$1 = 0x85e28c
+</code></pre>
+
+<p>这代表 gdb 已找到在 0x85e28c 的内存地址的存储数字是 672</p>
+
+<pre><code>PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>x/dw 0x85e28c
+
+
+得到确认 0x85e28c 的内存地址的存储数字是 672
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>0x85e28c:    672
+
+
+
+ ⑥ 用 gdb 继续搜索
+PuTTY / Terminal 打 (或按方向键 ↑ 4次，然后回车，免重复输入)
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>while(*++$x!=672 &amp;&amp; $x&lt;0x880000)
+end
+
+
+再等十多秒，gdb 搜索完毕后
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>p/x $x
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>$2 = 0x880000
+</code></pre>
+
+<p>这代表 gdb 已到结束的地址 0x880000，都没有找到。这也表示数字 672 是唯一出现在 0x85e28c 要找的内存范围内。</p>
+
+<pre><code>⑦ 用 gdb 更改内存地址 0x85e28c 的存储数字为 1000
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>set {int}0x85e28c=1000
+
+
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>x/dw 0x85e28c
+
+
+
+得到确认已成功更改数字
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>0x85e28c:    1000
+
+
+
+⑧ 继续 continue 游戏
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>c
+
+
+
+⑨ 在回到游戏里退出 STATUS 画面再进入 STATUS，画面内数据重刷后，确认已成功更改经验值数字为1000
+
+
+留意:由于游戏数据在堆(heap)内存的地址不是固定的，所以每次运行的进程都要再搜索新的内存地址。另外，搜索的内存地址范围也会改变，如果在 0x800000 至 0x880000 范围内找不到的话，就要往后试 0x880000 至 0x900000 新的范围。
+
+     另外：用相同搜索方法也可以找到金钱数字在这次运行进程是在内存地址 0x874c04
+
+⑩ 找到经验值地址后便可设置观察点(watchpoint)于内存地址 0x85e28c
+
+设置观察点的目的是当内存地址值被读或被写时，会显示数据及暂停程序
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>watch *0x85e28c
+
+
+及继续游戏
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>c
+</code></pre>
+
+<p>留意:游戏在观察点(watchpoint) 生效下运行是非常的慢，有些游戏是不能正常运作，有时候手机也要重启，所以下面的步骤是不一定可以进行的</p>
+
+<pre><code>⑪ 将游戏进入战斗打怪后程序便会暂停在 0x9f508 地址，gdb 会显示
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>Hardware watchpoint 1: *8774284
+Old value = 1000
+New value = 1086
+0x0009f508 in CMvPlayer::CheckLevelUp ()
+
+
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>x/14i $pc-16
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>0x9f4f8 &lt;_ZN9CMvPlayer12CheckLevelUpEj+60&gt;:    b.n    0x9f508 &lt;_ZN9CMvPlayer12CheckLevelUpEj+76&gt;
+0x9f4fa &lt;_ZN9CMvPlayer12CheckLevelUpEj+62&gt;:    adds    r0, r4, #0
+0x9f4fc &lt;_ZN9CMvPlayer12CheckLevelUpEj+64&gt;:    movs    r1, #1
+0x9f4fe &lt;_ZN9CMvPlayer12CheckLevelUpEj+66&gt;:    movs    r2, #0
+0x9f500 &lt;_ZN9CMvPlayer12CheckLevelUpEj+68&gt;:    subs    r5, r5, r3
+0x9f502 &lt;_ZN9CMvPlayer12CheckLevelUpEj+70&gt;:    bl    0x9f338 &lt;_ZN9CMvPlayer9OnLevelUpEii&gt;
+0x9f506 &lt;_ZN9CMvPlayer12CheckLevelUpEj+74&gt;:    movs    r3, #1
+0x9f508 &lt;_ZN9CMvPlayer12CheckLevelUpEj+76&gt;:    str    r5, [r4, r6]
+0x9f50a &lt;_ZN9CMvPlayer12CheckLevelUpEj+78&gt;:    cmp    r3, #0
+0x9f50c &lt;_ZN9CMvPlayer12CheckLevelUpEj+80&gt;:    beq.n    0x9f516 &lt;_ZN9CMvPlayer12CheckLevelUpEj+90&gt;
+0x9f50e &lt;_ZN9CMvPlayer12CheckLevelUpEj+82&gt;:    cmp    r5, #0
+0x9f510 &lt;_ZN9CMvPlayer12CheckLevelUpEj+84&gt;:    beq.n    0x9f516 &lt;_ZN9CMvPlayer12CheckLevelUpEj+90&gt;
+0x9f512 &lt;_ZN9CMvPlayer12CheckLevelUpEj+86&gt;:    movs    r5, #0
+0x9f514 &lt;_ZN9CMvPlayer12CheckLevelUpEj+88&gt;:    b.n    0x9f4c6 &lt;_ZN9CMvPlayer12CheckLevelUpEj+10&gt;
+
+
+
+PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>i r $r5 $r4 $r6 $pc
+p/x $r4+$r6
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>r5             0x43E    1086
+r4             0x85DC00    8772608
+r6             0x68c    1676
+pc             0x9f508    652552
+$5 = 0x85e28c
+
+
+
+这时确认了 0x9f508 地址这句代码
+str    r5, [r4, r6]
+的意思是，r4 + r6 = 0x85e28c ，把寄存器 r5 内的数字(1086) 写到 0x85e28c 的地址
+</code></pre>
+
+<p>　
+    程序因要写进这0x85e28c 的地址，所以暂停了，这就是观察点(watchpoint) 的强大功能。</p>
+
+<pre><code>PuTTY / Terminal 打
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>bt
+
+
+得到
+</code></pre>
+
+<p>复制代码</p>
+
+<pre><code>#0  0x0009f508 in CMvPlayer::CheckLevelUp ()
+#1  0x0009ff2e in CMvPlayer::DoUpdate ()
+#2  0x00094744 in CMvObject::Update ()
+#3  0x000969cc in CMvObjectMgr::Update ()
+#4  0x000662e6 in CMvGameState::UpdateGame ()
+
+
+
+这时就可根据上面得到的信息在这段代码的前后范围进行跟踪、设置断点及进一步的分析
+</code></pre>
+
+<p>有新的方法时，再继续更新 &hellip;&hellip;&hellip;&hellip;</p>
+
+<p>(iv) 不知道修改点在那及改为什么？</p>
+
+<p>修改程序是不能插入程序代码，主要原因是移位后的程序是不能运行的。一般的做法是找到要修改的位置在原档案位置修改代码改为你需要的指令。 修改点一定要经过分析代码后再不断地用动态分析确定后，在适当的地方重覆试验及调试验证修改后的结果 。</p>
+
+<ul>
+<li>一些RPG游戏的特性，例如是金钱或经验值是会在战斗后重算及更新，一般都是要找到及修改更新数据前的指令。金钱的修改点也可以修改在买卖装备时的指令。连续升级的修改主要是看该游戏是怎样升级，例如 Inotia 2是根据经验值去升级，只要找到判断经验值的指令代码地址，修改其判断的指令便可。</li>
+</ul>
+
+
+<p>对于游戏来说，一般的指令修改例子如下：</p>
+
+<p>① 修改寄存器的增加数字例如
+    Final Fantasy II 增加战胜后所得金钱
+    地址 0003babc
+    add r1, r0, r5
+    改为
+    add r1, r0, r5, lsl #5</p>
+
+<p>② 修改寄存器减少的数字为零例如
+    Inotia 2 v 1.1.0 不扣技能点
+    地址 00021b9c
+    sub r3, #1
+    改为
+    sub r3, #0</p>
+
+<pre><code>地址 00037b46 
+sub r1, #1 
+改为 
+sub r1, #0 
+</code></pre>
+
+<p>③ 修改比较的寄存器例如
+    花儿朵朵开-v1.0 不死作弊版 (这里 r2 寄存器是花朵已绽放的数量)
+    地址 00004ee8
+    cmp r2, r3
+    改为
+    cmp r2, #1 ; 0x1</p>
+
+<p>④ 修改arm 32 位为两个arm thumb 16 位代码例如
+    Inotia 2 v 1.1.0 roll点全18
+    地址 0005c404
+    bl 0x9914
+    改为
+    mov r0, #9
+    mov r0, #9</p>
+
+<pre><code>地址 0005c404, 0005c40e, 0005c41c, 0005c426 
+bl 0x9914 
+改为 
+mov r0, #9 
+mov r0, #9 
+</code></pre>
+
+<p>⑤ 要删除代码便要用 nop (no operation) 取代
+    thumb 16 bits nop 是 46c0<br/>
+    arm 32 bits nop 是 e1a00000</p>
+
+<p>(8) 在FinalFantasy2 的这实例中，假设已找到应修改的地址是 0003babc，代码是 e0801005
+复制代码</p>
+
+<pre><code>0003bab8        eb00fddc        bl 0x7b230
+0003babc        e0801005        add r1, r0, r5   @意思是 r1 = r0 +r5 ; r0 是当时的金钱余额; r5 是战胜后得到的金钱
+0003bac0        e1a00004        mov r0, r4
+0003bac4        eb00fdd3        bl 0x7b218     @分支到函数名 __ZN14cFF2GlobalWork19sysGAMEPrm_SetMoneyEj 去更新金錢余额
+</code></pre>
+
+<p>(9) 修改目标 : 将所得金钱乘大32倍
+0003babc的应修改目标代码是
+复制代码</p>
+
+<pre><code>add r1, r0, r5, lsl#5 @意思是 r1 = r0 +( r5 二进制左移五位,即十进制乘大32倍)
+</code></pre>
+
+<p>(10) 找新ARM指令代码
+add r1, r0, r5 的ARM指令代码是 e0801005
+修改目标是要找到 add r1, r0, r5, lsl#5 的ARM指令代码 ?</p>
+
+<p>用 vim 或 nano 建立 armtest.s 如下
+复制代码</p>
+
+<pre><code>    .file "armtest.s"
+    .globl _main
+    .code 32
+_main:
+    add r1, r0, r5
+    add r1, r0, r5, lsl #5
+</code></pre>
+
+<p>留意: 一些程式反汇编后是ARM Thumb, ARM Thumb 是16 bits 而ARM 是32 bits. ARM 32 bits 及 ARM Thumb 的分别请找上面 ARM Assembler 的参考(ARM Thumb 的可用指令是比 ARM 32 bits 少)。 如果要找 ARM Thumb 代码要将上面的.code 32改为.code 16 及加上 .thumb_func _main 如下
+复制代码</p>
+
+<pre><code>    .code 16
+    .thumb_func _main
+</code></pre>
+
+<p>汇编 arm 打
+复制代码</p>
+
+<pre><code>as armtest.s -o armtest.o ; otool -tv armtest.o
+</code></pre>
+
+<p>便看到</p>
+
+<p>复制代码</p>
+
+<pre><code>(__TEXT,__text) section
+_main:
+00000000    e0801005    add r1, r0, r5
+00000004    e0801285    add r1, r0, r5, lsl #5
+</code></pre>
+
+<p>及得到add r1, r0, r5, lsl #5 目标ARM指令代码为 e0801285</p>
+
+<p>(11) 建立修改程式第一版FinalFantasy2.v1及用十六进制修改器修改代码</p>
+
+<p>打
+复制代码</p>
+
+<pre><code>cp -p FinalFantasy2.original FinalFantasy2.v1      
+vbindiff FinalFantasy2.v1
+</code></pre>
+
+<p>进入vibindiff 后按G及输入地址3AABC跳到要修改的位置如下</p>
+
+<p>留意: 在第8步时找到的位置是0003Babc，但修改程式的位置要减去十六进制0x1000得到3Aabc
+(0x3babc 减 0x1000 等于 0x3aabc)</p>
+
+<p>按E键开始修改，将
+05 10 80 E0
+改为
+85 12 80 E0</p>
+
+<p>然后按Esc键及Y键确认修改</p>
+
+<p>最后按Q键离开 vbindiff 修改器</p>
+
+<p>如下</p>
+
+<p>留意: 修改器显示的05 10 80 E0与反汇编的代码e0801005的位置顺序是倒的</p>
+
+<p>(12) 反汇编修改程式第一版 v1 及比较原版本 original
+打
+复制代码</p>
+
+<pre><code>otool -tv FinalFantasy2.v1 &gt; FinalFantasy2.v1.txt
+diff FinalFantasy2.original.txt FinalFantasy2.v1.txt
+</code></pre>
+
+<p>也可以用 otool -otV</p>
+
+<p>得到</p>
+
+<p>复制代码</p>
+
+<pre><code>&lt; FinalFantasy2.original:
+---
+&gt; FinalFantasy2.v1:
+59597c59597
+&lt; 0003babc    e0801005    add    r1, r0, r5
+---
+&gt; 0003babc    e0801285    add    r1, r0, r5, lsl #5
+</code></pre>
+
+<p>(13) 对修改程式第一版重新签名
+打
+复制代码</p>
+
+<pre><code>ldid -s FinalFantasy2.v1
+</code></pre>
+
+<p>(14) 将签名后的程式放回程式路径进行测试
+首先备份原程式(留意:要用mv移动不要用cp)
+打
+复制代码</p>
+
+<pre><code>mv ../FinalFantasy2.app/FinalFantasy2 ../FinalFantasy2.app/FinalFantasy2.bak
+</code></pre>
+
+<p>安装修改后的程式及更新权限
+打
+复制代码</p>
+
+<pre><code>cp -p FinalFantasy2.v1 ../FinalFantasy2.app/FinalFantasy2
+chown mobile:mobile ../FinalFantasy2.app/FinalFantasy2
+chmod 0755 ../FinalFantasy2.app/FinalFantasy2
+</code></pre>
+
+<p>(15) 用 gdb 调试游戏</p>
+
+<p>调试是用 gdb，在这里的目的是设置断点使游戏暂停，查看CPU的寄存器，印证修改是否成功。由于游戏占用很多内存，在游戏运行时调试再加ssh 连接很多时候都会崩溃。所以用 iPod Touch 3代 或 iPhone 3GS 做这项工作会有优势。</p>
+
+<p>首先在iPhone或iPod Touch 开始Final Fantasy 2 直至游戏已Resume及进入游戏。</p>
+
+<p>在iPhone或iPod Touch查看现时游戏的金钱例如是 7223</p>
+
+<p>① 在putty / Terminal 找 FinalFantasy2 的运行中的进程编号 (process id)</p>
+
+<p>PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>ps ax
+</code></pre>
+
+<p>得到</p>
+
+<p>复制代码</p>
+
+<pre><code>1115   ??  Ss     1:30.86 /var/mobile/Applications/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/FinalFantasy2.app/FinalFantasy2
+</code></pre>
+
+<p>找到 FinalFantasy2 游戏现时运行中的进程编号是 1115</p>
+
+<p>② 用 gdb 进入调试运行中的进程编号 1115
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>gdb -p 1115
+</code></pre>
+
+<p>此时游戏会暂停，音乐也暂停</p>
+
+<p>③ 用 gdb 设定断点breakpoint在十六进制地址 0x3babc (即在第8步时找到的位置0003babc)
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>break *0x3babc
+</code></pre>
+
+<p>④ 继续 continue 游戏
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>c
+</code></pre>
+
+<p>⑤ 将Final Fantasy 2 游戏进入战斗，战胜后游戏会在十六进制地址 0x3babc处停止</p>
+
+<p>⑥ 暂停后，查看 CPU 寄存器 register (info register 指令)
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>i r $r0 $r1 $r5 $pc
+</code></pre>
+
+<p>得到</p>
+
+<p>复制代码</p>
+
+<pre><code>r0             0x1c37    7223
+r1             0x25    37
+r5             0x25    37
+pc             0x3babc    244412
+</code></pre>
+
+<p>印证了 r0=7223 是现时的金钱
+游戏暂停在 pc=0x3babc</p>
+
+<p>⑦ 查看下一步将要运行的反汇编指令
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>x/i $pc
+</code></pre>
+
+<p>得到 add r1, r0, r5, lsl #5，印证成功修改指令</p>
+
+<p>复制代码</p>
+
+<pre><code>0x3babc &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG+196&gt;:    add    r1, r0, r5, lsl #5
+</code></pre>
+
+<p>⑧ 运行下一步 stepi 指令
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>si
+</code></pre>
+
+<p>查看 CPU 寄存器 register (info register 指令)
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>i r $r0 $r1 $r5 $pc
+</code></pre>
+
+<p>得到
+复制代码</p>
+
+<pre><code>r0             0x1c37    7223
+r1             0x20d7    8407
+r5             0x25    37
+pc             0x3bac0    244416
+</code></pre>
+
+<p>此时印证了 r1 = r0 +( r5 x 32)
+            = 7223 + (27 x 32)
+            = 8407</p>
+
+<p>查看下一步将要运行的反汇编指令
+putty / Terminal 打
+复制代码</p>
+
+<pre><code>x/i $pc
+</code></pre>
+
+<p>得到</p>
+
+<p>复制代码</p>
+
+<pre><code>0x3bac0 &lt;_ZN10FF2cBattle12SENRIHIN_CHKEP12thBATMonsterP6X86REG+200&gt;:    mov    r0, r4
+</code></pre>
+
+<p>⑨ 继续 continue 游戏
+PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>c
+</code></pre>
+
+<p>⑩ Final Fantasy 2 游戏显示战胜后得到37的金钱，但实际金钱余额是 8407，印证修改游戏已成功。</p>
+
+<p>⑪ 离开 gdb</p>
+
+<p>按下Ctrl+C 组合键停止执行进程</p>
+
+<p>PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>quit
+</code></pre>
+
+<p>及按 y 键确认离开 gdb</p>
+
+<p>留意:在上面第⑥步暂停时，你可以输入指令去更改CPU 寄存器 register
+例如打
+set $r5=1000
+去试试增加金钱数目</p>
+
+<p>(16) 假设已调试完成，便可将修改后的程式打包发布</p>
+
+<p>进入游戏路径目录内，打
+复制代码</p>
+
+<pre><code>cd /var/mobile/Applications/*/FinalFantasy2.app
+</code></pre>
+
+<p>到上一层路径目录
+复制代码</p>
+
+<pre><code>cd ..
+</code></pre>
+
+<p>建立 IPA 所要的路径及档案及删除不需要的备份档案</p>
+
+<p>复制代码</p>
+
+<pre><code>rm -fr Payload
+mkdir -p Payload
+cp -pr FinalFantasy2.app Payload/
+rm -fr Payload/FinalFantasy2.app/FinalFantasy2*.bak
+</code></pre>
+
+<p>打包 ipa 为 FinalFantasy2_v1.ipod4g.ipa
+复制代码</p>
+
+<pre><code>zip -r FinalFantasy2_v1.ipod4g.ipa Payload iTunesArtwork
+</code></pre>
+
+<p>找现时的路径
+复制代码</p>
+
+<pre><code>pwd
+</code></pre>
+
+<p>得到</p>
+
+<p>复制代码</p>
+
+<pre><code>/var/mobile/Applications/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+</code></pre>
+
+<p>用 winscp 或Terminal 的 scp 指令传送这档作发布</p>
+
+<p>复制代码</p>
+
+<pre><code>/var/mobile/Applications/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/FinalFantasy2_v1.ipod4g.ipa
+</code></pre>
+
+<p>XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX 是随机路径</p>
+
+<p>(17) 其他有用的技巧</p>
+
+<p>① 由于修改游戏的程式代码是很少量, 相对重覆调试及动态分析工作比较多，此教程便介绍了用iPhone 的工具直接做修改及反汇编。这样对于少量修改程式代码及重覆在iPhone调试是比较要传回PC做修改是更有效率的。</p>
+
+<p>② 调试的工具 gdb 是比较难用，但有些方法是可提高使用 gdb 的效率。</p>
+
+<p>例如：在 gdb 建立宏 macro define
+在 iphone 建立这档案(~/.gdbinit) 内容为
+复制代码</p>
+
+<pre><code>define ascii_char
+set $_c=*(unsigned char *)($arg0)
+if ( $_c &lt; 0x20 || $_c &gt; 0x7E )
+printf "."
+else
+printf "%c", $_c
+end
+end
+document ascii_char
+Print the ASCII value of arg0 or '.' if value is unprintable
+end
+define hex_quad
+printf "%02X %02X %02X %02X  %02X %02X %02X %02X",  \
+*(unsigned char*)($arg0), *(unsigned char*)($arg0 + 1),  \
+*(unsigned char*)($arg0 + 2), *(unsigned char*)($arg0 + 3), \
+*(unsigned char*)($arg0 + 4), *(unsigned char*)($arg0 + 5), \
+*(unsigned char*)($arg0 + 6), *(unsigned char*)($arg0 + 7)
+end
+document hex_quad
+Print eight hexadecimal bytes starting at arg0
+end
+define hexdump
+printf "%08X : ", $arg0
+hex_quad $arg0
+printf " - "
+hex_quad ($arg0+8)
+printf " "
+ascii_char ($arg0)
+ascii_char ($arg0+1)
+ascii_char ($arg0+2)
+ascii_char ($arg0+3)
+ascii_char ($arg0+4)
+ascii_char ($arg0+5)
+ascii_char ($arg0+6)
+ascii_char ($arg0+7)
+ascii_char ($arg0+8)
+ascii_char ($arg0+9)
+ascii_char ($arg0+0xA)
+ascii_char ($arg0+0xB)
+ascii_char ($arg0+0xC)
+ascii_char ($arg0+0xD)
+ascii_char ($arg0+0xE)
+ascii_char ($arg0+0xF)
+printf "\n"
+end
+document hexdump
+Display a 16-byte hex/ASCII dump of arg0
+end
+define hexdump1
+hexdump $arg0
+x/8h $arg0
+printf "\n"
+disassem $arg0 $arg0+16
+printf "\n"
+end
+document hexdump1
+Display a 16-byte hex/ASCII dump and disassembly of arg0
+end
+</code></pre>
+
+<p>在用 gdb 调试时打
+复制代码</p>
+
+<pre><code>hexdump1 $pc
+</code></pre>
+
+<p>便可列出$pc位置后十六位的内容及反汇编的代码</p>
+
+<p>③ 在断点设定一些要自动运行的指令</p>
+
+<p>下面的意思是建立断点１
+及在断点１停止时运行查看一些暂存器(i r $r0 $r1 $r5 $pc)及反汇编下四个指令代码(x/4i $pc)</p>
+
+<p>复制代码</p>
+
+<pre><code>break *0x3babc
+commands 1
+i r $r0 $r1 $r5 $pc
+x/4i $pc
+end
+</code></pre>
+
+<p>④ 在 gdb 断点暂停时，是可改变内存及指令
+FinalFantasy2 的例子，0x0003babc地址的指令是
+打
+复制代码</p>
+
+<pre><code>x/i 0x0003babc
+</code></pre>
+
+<p>得到代码是
+复制代码</p>
+
+<pre><code>add r1, r0, r5
+</code></pre>
+
+<p>打
+复制代码</p>
+
+<pre><code>x/xw 0x0003babc
+</code></pre>
+
+<p>得到代码数值是
+复制代码</p>
+
+<pre><code>0xe0801005
+</code></pre>
+
+<p>改变指令代码数值打
+复制代码</p>
+
+<pre><code>set {int}0x0003babc = 0xe0801285
+</code></pre>
+
+<p>检查改变后的指令打
+复制代码</p>
+
+<pre><code>x/i 0x0003babc
+</code></pre>
+
+<p>得到改变后的指令代码是
+复制代码</p>
+
+<pre><code>add r1, r0, r5, lsl #5
+</code></pre>
+
+<p>这样就不用离开 gdb 即时看到修改代码后的效果</p>
+
+<p>⑤ gdb 执行到程序中其他地址的命令</p>
+
+<pre><code>例子：
+stepi                           单步执行一个机器指令(命令步入函数)
+nexti                           单步执行一个机器指令(命令步过函数)
+nexti 2                        继续执行机器指令的数目为 2 个指令
+finish                          继续执行至当前函数结束后，停止于其调用点
+until *0x7b224            继续执行至特定地址*0x7b224
+jump *0x3baac           跳转至特定地址*0x3baac 执行
+</code></pre>
+
+<p>⑥ gdb 调试记录的命令</p>
+
+<pre><code>例子：
+set logging file ./log1.txt      设定记录档
+set logging on                     开始记录
+set logging off                     停止记录
+</code></pre>
+
+<p>⑦ 学习别人修改程序的方法
+看别人修改程序是最好的学习方法，只要你有原版本及修改后的版本，就可以知道修改的地址及方法
+例如：
+下载花儿朵朵开-v1.0.rar 原版本</p>
+
+<p>下载花儿朵朵开-v1.0.rar 不死作弊修改版</p>
+
+<p>解压后将两个 ipa 文件，用 winscp 传到iPhone 路径 /var/root/flower 内</p>
+
+<p>在 PuTTY / Terminal 连接iPhone / iPod Touch后</p>
+
+<p>打
+复制代码</p>
+
+<pre><code>cd /var/root/flower
+</code></pre>
+
+<p>解压原游戏版本程序
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>unzip *-v1.0.ipa
+mv Payload/FlowerChainCN.app/FlowerChainCN FlowerChainCN.original
+</code></pre>
+
+<p>删除不需要的的路径及档案
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>rm -fr Payload/ iTunesArtwork *.ipa
+</code></pre>
+
+<p>解压不死作弊修改版程序
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>unzip *-v1.0.ipod4g.ipa
+mv Payload/FlowerChainCN.app/FlowerChainCN FlowerChainCN.patched
+</code></pre>
+
+<p>删除不需要的的路径及档案
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>rm -fr Payload/ iTunesArtwork *.ipa
+</code></pre>
+
+<p>反汇编原游戏程式及保存反汇编文本文件为 FlowerChainCN.original.txt
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>otool -tv FlowerChainCN.original &gt; FlowerChainCN.original.txt
+</code></pre>
+
+<p>反汇编不死作弊修改版程式及保存反汇编文本文件为 FlowerChainCN.patched.txt
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>otool -tv FlowerChainCN.patched &gt; FlowerChainCN.patched.txt
+</code></pre>
+
+<p>比较两个版本及找出差异
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>diff FlowerChainCN.original.txt FlowerChainCN.patched.txt
+</code></pre>
+
+<p>得到
+复制代码</p>
+
+<pre><code>&lt; FlowerChainCN.original:
+---
+&gt; FlowerChainCN.patched:
+3060c3060
+&lt; 00004ee8 e1520003 cmp r2, r3
+---
+&gt; 00004ee8 e3520001 cmp r2, #1 ; 0x1
+</code></pre>
+
+<p>原版本列在左边及把差异列在右边并输出差异文本保存为 FlowerChainCN.diff.txt
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>diff -y --left-column FlowerChainCN.original.txt FlowerChainCN.patched.txt &gt; FlowerChainCN.diff.txt
+</code></pre>
+
+<p>用 less 工具打开差异文本 FlowerChainCN.diff.txt
+在 PuTTY / Terminal 打
+复制代码</p>
+
+<pre><code>less FlowerChainCN.diff.txt
+</code></pre>
+
+<p>在 less 工具内搜寻差异分隔字符 |
+在 less 工具内打
+复制代码</p>
+
+<pre><code>/\|
+</code></pre>
+
+<p>得到下面差异的显示去做进一步分析
+复制代码</p>
+
+<pre><code>00004ee8 e1520003 cmp r2, r3 | 00004ee8 e3520001 cmp r2, #1 ; 0x1
+</code></pre>
+
+<p>在 PuTTY / Terminal 打这句也可看到原版本上下的代码
+复制代码</p>
+
+<pre><code>grep -C5 '|' FlowerChainCN.diff.txt
+</code></pre>
+
+<p>或
+复制代码</p>
+
+<pre><code>grep -C5 00004ee8  FlowerChainCN.original.txt
+</code></pre>
+
+<p>⑧ 最后送上我自购破解的一个很实用的iPhone小工具 - 64位计算器
+这小工具除了可以做64位的计算外，还可以输入文字及显示Unicode的代码</p>
+
+<pre><code>64 Bit Calculator
+
+ 64_Bit_Calc-v1.2.ipod4g.ipa (788 K) 下载次数:233 
+
+
+
+
+64 Bit Calculator (iPad)   64_Bit_Calc_iPad-v1.2.ipa (1521 K) 下载次数:116 
+</code></pre>
+
+<p>关于 FinalFantasy2 1.0.4 版本 ldid 签名时出现错误信息 Segmentation fault</p>
+
+<p>初代 iPhone 使用ARMv6 指令集, 直到3GS, iPad, IPhone 4设备苹果开始采用了 ARMv7 指令集</p>
+
+<p>如果你打指令</p>
+
+<p>复制代码</p>
+
+<pre><code>otool -f FinalFantasy2
+</code></pre>
+
+<p>就会看到</p>
+
+<p>复制代码</p>
+
+<pre><code>architecture 0
+    cputype 12
+    cpusubtype 6
+architecture 1
+    cputype 12
+    cpusubtype 9
+</code></pre>
+
+<p>你可以把 FinalFantasy2 切开为 FinalFantasy2V6</p>
+
+<p>复制代码</p>
+
+<pre><code>lipo -thin armv6  FinalFantasy2 -output FinalFantasy2V6
+chmod +x FinalFantasy2V6
+chown mobile:mobile FinalFantasy2V6
+</code></pre>
+
+<p>及切开为 FinalFantasy2V7</p>
+
+<p>复制代码</p>
+
+<pre><code>cp -p FinalFantasy2 FinalFantasy2tmp
+echo -ne "\x09" | dd bs=1 seek=15 conv=notrunc status=noxfer of=FinalFantasy2tmp
+echo -ne "\x06" | dd bs=1 seek=35 conv=notrunc status=noxfer of=FinalFantasy2tmp
+lipo -thin armv6 FinalFantasy2tmp -output FinalFantasy2V7
+rm FinalFantasy2tmp
+chmod +x FinalFantasy2V7
+chown mobile:mobile FinalFantasy2V7
+</code></pre>
+
+<p>但 iPhone 的 otool 不支持反汇编 ARMv7 指令集, 你要用新版本的 IDA Pro 反汇编</p>
+
+<p>在 iPhone 你只可以反汇编 FinalFantasy2V6, 修改及用 ldid 去签名</p>
+
+<p>FinalFantasy2V6 签名后便可替代原版本使用, 游戏来说ARMv6 指令集也可以, 只不过在新的设备上使用时不是最优化.</p>
+
+<p>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[获取短信-联系人]]></title>
+    <link href="http://al1020119.github.io/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/"/>
+    <updated>2016-03-28T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren</id>
+    <content type="html"><![CDATA[<p>越狱的 ios 如何 获取 读取 提取 手机上的 短信 通话记录 联系人 等信息</p>
+
+<p><a href="http://willson.sinaapp.com/2011/12/iphone">http://willson.sinaapp.com/2011/12/iphone</a> 获取短信脚本.html  Iphone获取短信脚本
+<a href="http://bbs.9ria.com/thread-209349-1-1.html">http://bbs.9ria.com/thread-209349-1-1.html</a>          IPhone短信相关部分研究（转载）
+<a href="http://blog.csdn.net/slinloss/article/details/8722806">http://blog.csdn.net/slinloss/article/details/8722806</a>       整理：iOS 短信与电话事件的获取
+<a href="http://308812025-qq-com.iteye.com/blog/1549756">http://308812025-qq-com.iteye.com/blog/1549756</a>              IOS 5 拦截手机短信(需越狱)</p>
+
+<p><a href="http://www.iteye.com/problems/84131">http://www.iteye.com/problems/84131</a>                                IOS 短信截取 监听到了事件缺不能往下执行。。。</p>
+
+<!--more-->
+
+
+<p><a href="http://blog.csdn.net/ceko_wu/article/details/8021133">http://blog.csdn.net/ceko_wu/article/details/8021133</a>     短信数据库分析（一）</p>
+
+<p>一般地，ios只要越狱，整体的文件系统就全部暴漏出来，使用ifunbox 工具连接iphone，即可查看。</p>
+
+<p>短信数据库的存放位置在ios的：    /private/var/mobile/Library/SMS/sms.db</p>
+
+<p>联系人数据库存放的位置在ios的：//private/var/mobile/Library/AddressBook/AddressBook.sqlitedb</p>
+
+<pre><code> 联系人的头像估计存放在这里：//private/var/mobile/Library/AddressBook/AddressBookImages.sqlitedb
+</code></pre>
+
+<p>通话记录数据库的存放路径是：//private/var/wireless/Library/CallHistory/call_history.db</p>
+
+<p>备忘录数据库的存放路径是：//private/var/mobile/Library/Notes/notes.sqlite</p>
+
+<p>safira 浏览器的收藏夹数据库存放路径是：//private/var/mobile/Library/Safari/Bookmarks.db</p>
+
+<p>日历数据库的存放路径是：//private/var/mobile/Library/Calendar/Calendar.sqlitedb</p>
+
+<p>上面的数据库，无论其后缀名是.db也好，.sqlitedb、.sqlite也好，它们的真实面目是，全部都是sqlite数据库。在实际查看这些数据库时，可以将其后缀名统一改成.sqlite，当然也可以不改。查看这些数据库最好的工具是 火狐浏览器上的插件：Sqlite Manager</p>
+]]></content>
+  </entry>
+  
+</feed>
