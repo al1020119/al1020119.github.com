@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Reverse | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/reverse/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-03-19T02:11:48+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[逆向工程总结]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/25/nixiangzongjie/"/>
+    <updated>2016-04-25T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/25/nixiangzongjie</id>
+    <content type="html"><![CDATA[<p>不忍心作结，虽然才刚刚开始，很多东西都没有细细总结，只可惜很多东西并非自己想的那么顺利。</p>
+
+<p>才干了一年多的活，就见证了两个项目的死亡，这个世界远远超过自己想象中的残酷。第一个项目只历经一两个版本，无啥感情可言；第二个项目就完完全全经历了诞生到死亡的全过程，若说无感情的话，那我就是彻头彻尾的混蛋了。虽然终结是必然的，但是比预料中的更快更突然。悲剧往往就是在这种感情的强烈碰撞下诞生的。</p>
+
+<!--more-->
+
+
+<p>祸不单行，我丢了我的iPhone。那一刻我真真实实感觉到，失去自己熟悉的亲密的东西的那种无助。若是人，不敢想象。</p>
+
+<p>好在人有着天生的自愈能力。换了新环境已快两月，感觉以前的那些已经过去很久似的，早已渐渐淡忘。新项目的生活紧张而细致，繁密且高精度的工作会让人无暇关注其它。而且，偶尔偶尔的小波澜，比如说某人被离职了，会在你神经绷得更紧更紧。</p>
+
+<p>不过今天，发现那个当时也凝聚了不少心血的app终于上了AppStore，推迟了足足半年有余，惊讶中夹杂着深深的悲凉。当然这不是最让人伤心的。回想起自己后来去搞了越狱版，于是乎就听到了“我的AppStore版”和“你们的越狱版”之类的言语，似乎这个东西当时几个人搞出来，就算被重构至少还有不少头文件还标记着我的名字的东西，已经被彻头彻尾和我无关了。所以，这个东西上了AppStore，似乎我也没资格感到高兴。不，应该是连感到悲哀的权利都没有。</p>
+
+<p>最后，我没有在Appstore下载它，更别说刷一个五星评论了。这个可能还保留着我那些刚学iOS开发而写出来的无比稚嫩的代码的东西，经历了一次次的延期、需求变更，甚至一度被挂起、拆分，最终上了架，可惜连我都觉得，这东西上不上架，已经无啥意义了。</p>
+
+<p>只是偶尔，即使已经不做越狱版了，我还会到BigBoss的统计页面，看看那个只发了四个版本的越狱版，到底被下载了多少次（BigBoss上的统计是对所有人公开的，其它渠道的下载统计等等数据，对我来说基本不可能拿得到）。看到那个数字居然还在缓慢增长，停止更新后居然还能慢慢多了两万多的下载量，嘴角还是轻轻上扬一下。当然，我知道下载量和日活量是两个完全不同的概念，卸载是个很方便的操作，况且那个支持越狱版通过桌面长按卸载deb的功能还是我做的哩。很二逼的需求，我想，这么一个没啥用户基础的软件，居然还提供快捷卸载方法，二到家了。</p>
+
+<p>说说新项目吧。至少这个长期占据AppStore前100名中一席的app，肯定有其牛逼的原因。果不其然，要融入到这个团队之中，我至少需要先脱层皮，不然拉低整个团队的技术水平和智商水准可是不被容忍的。中途有一段时间没活干，还在内疚着没帮上什么忙，最近接连三个版本两两并行，于是就累得跟狗一样了。效率，以及对工作量的估算，对我来说还是个硬伤。</p>
+
+<p>吐槽了半天，没总结半点和越狱开发相关的东西。可能之后会很少接触这些东西了。以此作结，纪念那段偶尔挺二逼但也挺随意的时光。</p>
+
+<p>改bundleid，启动后改掉取bundleid的方法，让它返回的bundle固定为原来那个，然后重签名就可以了</p>
+
+<p>如果不hook那个取bundleid的方法，登录几次就会提示你用的不是正版，然后让你退出登录</p>
+
+<p>不过要我做盗版或多开监测的话，会加上签名验证</p>
+
+<p>不越狱其实也可以做，二进制文件里有个dylb的map，可以差一条记录上去，挂载你自己的动态库。然后把你自己写的用来hook代码的动态库一起签名放到ipa包里安装就行了。不过略麻烦。</p>
+
+<p>使用load command,在mach o的头里,不过也是需求重新签名</p>
+
+<p>bundleid在二进制中也编译的有吧，仅仅改plots</p>
+
+<p>直接改plist就行</p>
+
+<p>bundleid在二进制中也编译的有吧，仅仅改Plist,好像不行</p>
+
+<p>行的，已验证</p>
+
+<p>这么说ipa重签名是可以的，难道苹果只验证plist文件？</p>
+
+<p>不过为了原有代码里面的判断逻辑啥的正常，最好再didfinishlaunch后hook掉NSBundle 的bundleIdentifier，让其返回原来的。</p>
+
+<p>你改为新的bundleid，然后用你自己的证书签名，苹果就当这个app是你写的了</p>
+
+<p>可以用theos写个tweak，然后用runtime想这么玩就随意你了·</p>
+
+<p>主要还是看能不能分析出原有的逻辑。</p>
+
+<p>用theos就得越狱了吧</p>
+
+<p>噗。。。都在问iOS逆向问题，有没有谁了解Android的防逆向的所谓的『加固』处理，原理是什么呢？各加的加固处理效果如何？</p>
+
+<p>逆向的关键只有一句 找到入口</p>
+
+<p>做过别人 app 的分析,主要 reveal 分析 view 解构，猜测对方怎么做的效果。。。</p>
+
+<p>reveal神器，用越狱的手机+插件来拖界面</p>
+
+<p>然后 dump 二进制文件，可以看别人在一些地方用到了什么库</p>
+
+<p>应该只能逆向出oc的头文件，不能逆向出m文件吧？</p>
+
+<p>另外用 cocoapod 的可以从 dump 的头文件看得出来，因为，每个 pod 都有一个 dummy class[偷笑]一下就知道对方用了什么库了</p>
+
+<p>嗯嗯，是的，不过可以反汇编，其实 hopper 给出来的反汇编代码已经有很大帮助了</p>
+
+<p>reveal只能看到界面相关的东西,分析界面用的,要是想把别人的逻辑都搞清楚还是挺费劲的。了解个大体还行。</p>
+
+<p>全部逻辑搞清楚的话，其实很费劲的。。。</p>
+
+<p>不过找关键逻辑，或者想要的东西的话，还可以了</p>
+
+<p>现在好多https请求是单向验证，一个charles就搞定接口了</p>
+
+<p>之前搞雅虎天气找他们地图图片怎么做的</p>
+
+<p>最无语的是搞金融的都不加双向验证</p>
+
+<p>我们在接口上现在HTTPS+参数加密</p>
+
+<p>不过对于普通抓包还是够了，一开始还用zlib压缩了一层，然后发现安卓会有问题，就放弃zlib只用gzip简单压了一下</p>
+
+<p>大家开发的时候后天接口地址是不是都放在头文件里面？地址都放在.m里面了.不过抓包跟踪一下也差不多能抓出来</p>
+
+<p>我们通信用的ice</p>
+
+<p>reveal感觉用得比较舒服就是调试辅助，例如找别人写的view的名字</p>
+
+<p>用过找别人是用啥控件,唯一设备ID没啥好研究的吧,或者取出指针</p>
+
+<p>哈哈哈，找别人用的控件我也干过。。。Reveal抓出来一看，原来也是用的第三方的View，在github上就找到了。。。</p>
+
+<p>例如一个feed流里一个用户的头像不相似了，想看下用户头像的地址是不是有问题，就直接选中对应imageview，然后看地址，进到xcode里暂停，直接打po [0xxxxxxxxx url] 就好了</p>
+
+<p>url还是sd_url了···忘记了···啊哈哈哈哈哈··反正这个原理···</p>
+
+<p>@飞宇。 有啊，我是做广告相关的。大家拿出去钱砸广告新增用户就是按照这个排重的。idfa可以更改，很多刷榜公司就是靠假良骗钱的。</p>
+
+<p>不是，是反设备清洗,防止一台设备伪造出成千上万设备</p>
+
+<p>这不还有IP可查么</p>
+
+<p>你可能花100w做了100w新增用户，其实是用一台设备搞出来的</p>
+
+<p>ip也可以用vpn自动刷新，没听过刷榜公司么！之前积分墙火的时候，淘宝上一搜一大把。</p>
+
+<p>开发相关的安全问题，除了代码安全，资源文件安全，接口安全，还有什么没？</p>
+
+<p>人员安全？比如别把代码上传到Github里</p>
+
+<p>最主要是别把各种 key 传 github 了，以及自建的 git 的访问权限控制好</p>
+
+<p>别人家的app怎么在xcode里暂停调试呢？之家的···调试别人家的bug干啥···别人家的用lldbserver挂上去，也能断点</p>
+
+<p>因为看到你前面说reveal配合调试imageview了</p>
+
+<p>那个是调试自家的APP时用</p>
+
+<p>ssh+debugserver是能调试 但是不太方便 有没有更好用的工具？iPhoneTunnel</p>
+
+<p>还有一个办法，不过我试了下新版，好像经常卡死，不晓得现在还没好，你可以试试
+给你截图</p>
+
+<p>竟然截不了图了············直接说把，直接用xcode的attach proce</p>
+
+<p>想问一下，从iOS8.4后，还有什么方法可以访问到非越狱机子的Document目录吗？</p>
+
+<p>刚才那个方法想成功attch上，得给个啥东西来着··竟然一时想不起来了···</p>
+
+<p>是不是要给debugserver重签名</p>
+
+<p>给大家再说个大家可能不知道的tips，iOS5后用rvictl可以把iPhone的网卡虚拟到mac上，然后···你懂的···</p>
+
+<p>估计现在在非越狱机子上非常难做到了。 毕竟iOS8.4后对沙盒的权限限制较大</p>
+
+<p>iExplorer可以部分备份指定app，间接访问到document目录</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[微信机器人]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/20/weixinjiqiren/"/>
+    <updated>2016-04-20T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/20/weixinjiqiren</id>
+    <content type="html"><![CDATA[<p> 基于iOS逆向工程的微信机器人</p>
+
+<p>本文转自猫头鹰团队</p>
+
+<p>推荐序</p>
+
+<blockquote><p>本文的作者沙梓社和吴航共同编写了《 iOS 应用逆向工程》，文章中介绍的是一些基本的 iOS 领域的安全知识，但是由于普及不够，基本上没有被人们重视，希望本文能让大家重视到 iOS 的源代码安全问题。</p></blockquote>
+
+<p>另外预告一下，我认识的一个做移动安全的白帽子即将公开一个在非越狱手机上通过 App 绕过 sandbox 的 iOS 漏洞视频，并且计划发布一系列 iOS 系统安全方面的文章。我争取到了授权，并在我的公众号上同步发表这些文章，敬请期待：）</p>
+
+<p>以下是文章正文，略有调整。</p>
+
+<!--more-->
+
+
+<p>讲师介绍-沙梓社</p>
+
+<ul>
+<li>湖北武汉人，《iOS 应用逆向工程》系列图书的作者，在 Cydia（最大的越狱 iOS 商店）上有 11 款独立作品，接受过 CSDN 的专访，书的英文版在 GitHub 上开源后收获了 2600+ stars，是首位在 WWJC 上发表演讲的中国人，以「提升中国 iOS 开发者在国际上的地位」为己任。</li>
+</ul>
+
+
+<p>在很多朋友的眼里，iOS 逆向工程是一个小众、神秘的方向，为什么我会选择这个小众的方向呢？这要从我最喜欢的一首诗说起。第一次，我是在李开复的自传《世界因你不同》里看到这首诗，当时就感觉身心得到了非常强烈的震撼：</p>
+
+<p><img src="/images/nixiangjiqiren001.jpg" title="Caption" ></p>
+
+<p>因为我感觉到自己就是这类人：如果有两条路给我选，我确实会选更少人走的那一条。我发现自己是一个刻意保持自己跟别人不同的人。</p>
+
+<p>在初次读到这首诗时，我还没有开始学习 iOS。在从事 iOS 方面的研究后，又从乔帮主亲自配音的广告中寻找到了灵感，发现苹果跟我的价值观非常一致，就是要追求不同。因此，我更加认定 iOS 就是我的主攻方向。</p>
+
+<p><img src="/images/nixiangjiqiren002.jpg" title="Caption" ></p>
+
+<p>我的成长之路，就是一条与众不同的未选之路：别人都在学「大众情人」Windows 时，我开始学「小众路人」iOS；别人都在学 iOS 正向开发时，我开始学 iOS 逆向工程。正是因为追求不同，我写的《iOS 应用逆向工程》成为了全球唯一一本 iOS 逆向相关书籍，而且有美国和韩国的出版社想要引进本书，打破了中国 iOS 知识产权零输出的尴尬纪录。我用自己的努力代表中国 iOS 开发者在国际上发声，而且为 iOS 主流社区所认可，作为中国人我感到非常自豪。</p>
+
+<p>简单来说，我所研究的，主要是 iOS 应用层的逆向工程，对内核层的逆向工程只是稍有涉猎，没有入门。应用层的逆向工程，我感觉自己玩得差不多了，应用层的所有逆向工程相关问题，都可以用我那本书上介绍过的知识和技术得到解决，我觉得没有太大挑战性了，主要是劳动量问题。到了这个地步，我的规划主要分为 2 个方向：</p>
+
+<p>继续从事内核研究，这个方向的终点是「越狱」（越狱即通过漏洞利用拿到iOS的root权限，代表了iOS技术研究的最高境界）；</p>
+
+<p>换个脑子，用一些非技术能力武装自己，让自己成为一专多能的人才。这个方向的终点就是创业。</p>
+
+<p>当然，很多朋友会问，IT 人员创业的普遍做法，都是去 BAT 这样的互联网公司干 2 年，观察一下他们的玩法，然后拉一个团队出来干。你问啥不这么干呢？主要是碰到了一个很好的项目。大公司一直都在那里，想什么时候去都可以；而好项目却不常有，机会过去就过去了，不等人，所以我在准备并不算充分的情况下选择了创业这条路。</p>
+
+<p>交代完了我的背景，咱们可以进入正题了😁</p>
+
+<p><img src="/images/nixiangjiqiren003.jpg" title="Caption" ></p>
+
+<p>大意是「通过研究现有功能的实现原理，理解并融会贯通，在此基础上实现（甚至增强）这个功能。」也就是说，不是照猫画虎，而是师夷长技，「借刀杀人」。</p>
+
+<p>在我的理解里，逆向工程是一种工程师式的高级思维方式。给你水、面粉、糖、芝麻，让你做烧饼，这是正向工程；给你一个烧饼，让你分析出它是由多少水、多少面粉、多少糖、多少芝麻组成的，这是逆向工程。也就是说，根据图纸制作实物的这个过程是正向工程，而根据实物倒推图纸的这个过程则是逆向工程。乔布斯曾说「Good artists copy; Great artists steal.」逆向工程有异曲同工之妙。</p>
+
+<p>举几个通过逆向工程师夷长技的例子：</p>
+
+<p><img src="/images/nixiangjiqiren004.jpg" title="Caption" ></p>
+
+<p>通过逆向工程分析instagram滤镜算法。一个人可以“steal”一个滤镜算法团队的工作成果；</p>
+
+<p>研究微信的网络传输协议，就像@58沈剑 在博客里说到的那样。就我目前对微信九牛一毛的研究来说，就已经发现了一处可以进一步节省流量的地方，但是估计是因为历史遗留问题，这块代码不好动；</p>
+
+<p>看看1Password做了哪些防护。1Password是专门用于保存密码的，类似于保险柜，安全系数必须很高，它把我们的密码存在了哪里，通过什么方式加密？这些都是值得我们学习借鉴的地方。</p>
+
+<p>除了去学习别人的长处，逆向工程还可以发现自己和别人的短处：</p>
+
+<p><img src="/images/nixiangjiqiren005.jpg" title="Caption" ></p>
+
+<p>这种低级错误，星巴克可以犯，但1Password不能犯；这取决于你的产品定位。这个错误当然是通过逆向工程发现的。</p>
+
+<p>这是某世界500强企业犯的，通过HTTP协议明文传输用户手机和密码的低级错误：</p>
+
+<p><img src="/images/nixiangjiqiren006.jpg" title="Caption" ></p>
+
+<p>这是某突破3亿用户的移动App：</p>
+
+<p><img src="/images/nixiangjiqiren007.jpg" title="Caption" ></p>
+
+<p>把传输协议的密钥硬编码在代码里，有逆向工程基础的朋友可以轻松还原整套网络传输协议。淘宝上一堆堆的这个刷榜那个刷赞，就是这个原理。</p>
+
+<p>阿凹(猫友会吉祥物，一个微信机器人)，是「借刀杀人」最典型的运用之一：</p>
+
+<p><img src="/images/nixiangjiqiren008.jpg" title="Caption" ></p>
+
+<p>阿凹的实现原理，简单说，就是通过逆向工程的方式找出微信iOS客户端的收发信息等私有接口，然后基于自己的逻辑调用这些接口，实现针对特殊事件的自动化应答功能。</p>
+
+<p>我个人最常用的iOS逆向工程工具主要有这些：</p>
+
+<p><img src="/images/nixiangjiqiren009.jpg" title="Caption" ></p>
+
+<ol>
+<li><p>dumpdecrypted：将苹果加过密的App砸壳。通过AppStore处理的App，都是加过密的，不能直接进行二进制分析，需要先解秘，业界称为「砸壳」。它的原理是等App完全加载进内存，得到解密后，再把解密过的内存给dump出来，形成解密后的二进制文件，可以直接分析。</p></li>
+<li><p>class-dump：导出MachO文件里的ObjC类及方法定义。因为ObjC是一门强烈依赖于运行时的语言，它的文件类型是MachO（类比于Windows里的PE文件类型），MachO里存放了大量运行时需要用到的信息，从中可以收集整理，还原出一个App源代码里的ObjC头文件。</p></li>
+<li><p>CydiaSubstrate：将第三方动态库注入进程。它是越狱插件的存在前提。在iOS开机时，会把特定目录下的所有库，给加载到指定的进程里，俗称「hook」或「钩子」。</p></li>
+<li><p>Cycript：用JS语法写ObjC方法。这是Cydia之父Saurik发明的一门语言，我个人主要用它来测试私有函数。</p></li>
+<li><p>Theos：越狱插件开发工具。是我的书序作者DHowett开发的。iOS正向开发用Xcode，逆向开发用Theos。</p></li>
+<li><p>IDA：全平台反汇编、反编译工具。搞技术的一般都听说过这个软件，就不多介绍了。</p></li>
+<li><p>Hopper：OSX反汇编、反编译工具。比IDA便宜了1000倍，但功能跟IDA差不多；主攻苹果系操作系统。</p></li>
+<li><p>debugserver + LLDB：动态调试器。是大名鼎鼎的「苹果版」GDB。</p></li>
+</ol>
+
+
+<p>class-dump的效果，图中显示的是新浪微博App的所有头文件：</p>
+
+<p><img src="/images/nixiangjiqiren010.jpg" title="Caption" ></p>
+
+<p>Cycript的效果，可以看到微信星号密码的明文：</p>
+
+<p><img src="/images/nixiangjiqiren011.jpg" title="Caption" ></p>
+
+<p>Theos开发插件的运行效果：</p>
+
+<p><img src="/images/nixiangjiqiren012.jpg" title="Caption" ></p>
+
+<p>所有进程的[NSDictionary dictionaryWithContentsOfFile:]方法均被「hook」，可以随意篡改。</p>
+
+<p>IDA的效果：</p>
+
+<p><img src="/images/nixiangjiqiren013.jpg" title="Caption" ></p>
+
+<p>对于熟悉汇编语言（图里是ARM汇编）的朋友来说，所有未加密的二进制文件，均等同于开源。这是什么概念，做技术的都懂。</p>
+
+<h6>接下来我简单介绍下阿凹的制作流程：</h6>
+
+<p>核心在于找到收发微信消息的函数，然后加以修改利用：</p>
+
+<p><img src="/images/nixiangjiqiren014.jpg" title="Caption" ></p>
+
+<p>用dumpdecrypted给微信砸壳，解密出的文件近50M：</p>
+
+<p><img src="/images/nixiangjiqiren015.jpg" title="Caption" ></p>
+
+<p>class-dump出微信的所有头文件，近7000个：</p>
+
+<p><img src="/images/nixiangjiqiren016.jpg" title="Caption" ></p>
+
+<ul>
+<li><p>定位到收消息的View，进而定位到V对应的C，找出逻辑层的收消息函数。</p></li>
+<li><p>定位到发消息的按钮（也是一个View），进而定位到对应的C，找出逻辑层的发消息函数（这个过程没法用截图表现出来，所以我只简单描述下）。</p></li>
+</ul>
+
+
+<p>组合收发函数，完成阿凹的逻辑，最后写代码：</p>
+
+<p><img src="/images/nixiangjiqiren017.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[驱动开发]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/15/qudongkaifa/"/>
+    <updated>2016-04-15T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/15/qudongkaifa</id>
+    <content type="html"><![CDATA[<h4>一、系统架构</h4>
+
+<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+
+<p>我们编写的驱动一般运行在i/o Kit框架下。</p>
+
+<h4>二、一些记录</h4>
+
+<ul>
+<li>开发工具 xcode</li>
+<li>开发语言：c++, c</li>
+</ul>
+
+
+<p>c++用的是嵌入式c++，是标准c++的子集。</p>
+
+<!--more-->
+
+
+<p>所以，stl、异常、多重继承、模板和runtime类型信息  都无法使用。</p>
+
+<p>因为这些东西会导致编译出来的文件很大，且容易导致问题。</p>
+
+<p>c++只能编写基于i/o Kit框架的驱动，而c语言则可以编写任意的驱动。</p>
+
+<p>并且c++的驱动反汇编后很难看。</p>
+
+<blockquote><p>所以写驱动还是用c吧。这一点和微软默认的一样。</p></blockquote>
+
+<h4>三、编写一个驱动例子</h4>
+
+<ol>
+<li>创建工程</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong002.png" title="Caption" ></p>
+
+<p>因为不是设备驱动，只能选择extension；如果是设备驱动，则选择IOKit Driver。</p>
+
+<ol>
+<li>写代码</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong003.png" title="Caption" ></p>
+
+<p>苹果将studio.h这样的c++库换成了自己的libkern.h。</p>
+
+<ol>
+<li>添加引用库
+因为代码中使用了libkern.h，所以要修改工程。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong004.png" title="Caption" ></p>
+
+<ol>
+<li>驱动入口</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong005.png" title="Caption" ></p>
+
+<ol>
+<li><p>编译驱动</p></li>
+<li><p>在xcode的product菜单里点击build就可以编译驱动了。</p></li>
+<li>xcode只是能编辑和编译驱动，无法调试驱动的。</li>
+<li>编译驱动时，你需要有一个开发者账号，否则编译不过。</li>
+<li>我没有账号，所以后面的操作无法进行，只能把书上的翻译过来。</li>
+</ol>
+
+
+<p>6、运行驱动有2种方式：</p>
+
+<ul>
+<li>1、拷贝驱动文件到目录 /system/library/extensions下，重启后自动运行；</li>
+<li><p>2、在terminal中运行命令启动驱动：</p>
+
+<ul>
+<li>sudo chown -R root:wheel 驱动名.kext   // 设置驱动文件的权限，如果有权限，这步可省略。
+sudo kextload 驱动名.kext  // 运行驱动</li>
+</ul>
+</li>
+<li><p>卸载驱动：sudo kextunload 驱动名.kext</p></li>
+<li><p>显示当前系统中的驱动：kextstat</p></li>
+</ul>
+
+
+<p><img src="/images/nixiangqudong006.png" title="Caption" ></p>
+
+<ol>
+<li>查看调试信息
+printf输出的信息是保存在磁盘上的log文件中。通过tail和cat命令就可以查看。log文件在/var/log/kernel.log或者/Applications/Utilities目录下。</li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong007.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[逆向支付宝]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/10/nixiangzhifubao/"/>
+    <updated>2016-04-10T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/10/nixiangzhifubao</id>
+    <content type="html"><![CDATA[<p>为了了解支付宝app的源码结构，我们可以使用class-dump-z工具来分析支付宝二进制。
+1.下载配置class_dump_z</p>
+
+<p>前往 <a href="https://code.google.com/p/networkpx/wiki/class_dump_z">https://code.google.com/p/networkpx/wiki/class_dump_z</a> ，下载tar包，然后解压配置到本地环境</p>
+
+<p>$ tar -zxvf class-dump-z_0.2a.tar.gz<br/>
+$ sudo cp mac_x86/class-dump-z /usr/bin/
+2.class_dump支付宝app
+$ class-dump-z Portal > Portal-dump.txt</p>
+
+<!--more-->
+
+
+<p>@protocol XXEncryptedProtocol_10764b0<br/>
+-(?)XXEncryptedMethod_d109df;<br/>
+-(?)XXEncryptedMethod_d109d3;<br/>
+-(?)XXEncryptedMethod_d109c7;<br/>
+-(?)XXEncryptedMethod_d109bf;<br/>
+-(?)XXEncryptedMethod_d109b8;<br/>
+-(?)XXEncryptedMethod_d109a4;<br/>
+-(?)XXEncryptedMethod_d10990;<br/>
+-(?)XXEncryptedMethod_d1097f;<br/>
+-(?)XXEncryptedMethod_d10970;<br/>
+-(?)XXEncryptedMethod_d10968;<br/>
+-(?)XXEncryptedMethod_d10941;<br/>
+-(?)XXEncryptedMethod_d10925;<br/>
+-(?)XXEncryptedMethod_d10914;<br/>
+-(?)XXEncryptedMethod_d1090f;<br/>
+-(?)XXEncryptedMethod_d1090a;<br/>
+-(?)XXEncryptedMethod_d10904;<br/>
+-(?)XXEncryptedMethod_d108f9;<br/>
+-(?)XXEncryptedMethod_d108f4;<br/>
+-(?)XXEncryptedMethod_d108eb;<br/>
+@optional<br/>
+-(?)XXEncryptedMethod_d109eb;<br/>
+@end</p>
+
+<p>查看得到的信息是加过密的，这个加密操作是苹果在部署到app store时做的，所以我们还需要做一步解密操作。
+3.使用Clutch解密支付宝app</p>
+
+<p>1）下载Clutch
+iOS7越狱后的Cydia源里已经下载不到Clutch了，但是我们可以从网上下载好推进iPhone
+地址：Clutch传送门</p>
+
+<p>2）查看可解密的应用列表</p>
+
+<p>root</p>
+
+<h1>./Clutch</h1>
+
+<p>Clutch-1.3.2<br/>
+usage: ./Clutch [flags] [application name] [&hellip;]<br/>
+Applications available: 9P_RetinaWallpapers breadtrip Chiizu CodecademyiPhone FisheyeFree food GirlsCamera IMDb InstaDaily InstaTextFree iOne ItsMe3 linecamera Moldiv MPCamera MYXJ NewsBoard Photo Blur Photo Editor PhotoWonder POCO相机 Portal QQPicShow smashbandits Spark tripcamera Tuding_vITC_01 wantu WaterMarkCamera WeiBo Weibo</p>
+
+<p>3）解密支付宝app</p>
+
+<p>root# ./Clutch Portal</p>
+
+<p>Clutch-1.3.2<br/>
+Cracking Portal&hellip;<br/>
+Creating working directory&hellip;<br/>
+Performing initial analysis&hellip;<br/>
+Performing cracking preflight&hellip;<br/>
+dumping binary: analyzing load commands<br/>
+dumping binary: obtaining ptrace handle<br/>
+dumping binary: forking to begin tracing<br/>
+dumping binary: successfully forked<br/>
+dumping binary: obtaining mach port<br/>
+dumping binary: preparing code resign<br/>
+dumping binary: preparing to dump<br/>
+dumping binary: ASLR enabled, identifying dump location dynamically<br/>
+dumping binary: performing dump<br/>
+dumping binary: patched cryptid<br/>
+dumping binary: writing new checksum<br/>
+Censoring iTunesMetadata.plist&hellip;<br/>
+Packaging IPA file&hellip;</p>
+
+<p>compression level: 0<br/>
+    /var/root/Documents/Cracked/支付宝钱包-v8.0.0-(Clutch-1.3.2).ipa</p>
+
+<p>elapsed time: 7473ms</p>
+
+<p>Applications Cracked: <br/>
+Portal</p>
+
+<p>Applications that Failed:</p>
+
+<p>Total Success: 1 Total Failed: 0</p>
+
+<p>4）导出已解密的支付宝app</p>
+
+<p>从上一步骤得知，已解密的ipa位置为：/var/root/Documents/Cracked/支付宝钱包-v8.0.0-(Clutch-1.3.2).ipa
+将其拷贝到本地去分析</p>
+
+<p>4.class_dump已解密的支付宝app</p>
+
+<p>解压.ipa后，到 支付宝钱包-v8.0.0-(Clutch-1.3.2)/Payload/Portal.app 目录下，class_dump已解密的二进制文件
+1</p>
+
+<p>$ class-dump-z Portal > ~/Portal-classdump.txt</p>
+
+<p>这回就可以得到对应的信息了：</p>
+
+<p>@protocol ALPNumPwdInputViewDelegate <NSObject><br/>
+-(void)onPasswordDidChange:(id)onPassword;<br/>
+@end</p>
+
+<p>@protocol ALPContactBaseTableViewCellDelegate <NSObject><br/>
+-(void)shareClicked:(id)clicked sender:(id)sender;<br/>
+@end</p>
+
+<p>@interface MMPPayWayViewController : XXUnknownSuperclass &lt;SubChannelSelectDelegate, UITableViewDataSource, UITableViewDelegate, CellDelegate, UIAlertViewDelegate> {<br/>
+@private<br/>
+    Item<em> channelSelected;<br/>
+    BOOL <em>bCheck;<br/>
+    BOOL </em>bOpenMiniPay;<br/>
+    BOOL <em>bNeedPwd;<br/>
+    BOOL </em>bSimplePwd;<br/>
+    BOOL <em>bAutopayon;<br/>
+    BOOL </em>bHasSub;<br/>
+    BOOL <em>bFirstChannel;<br/>
+    BOOL </em>bChangeSub;<br/>
+    BOOL _bClickBack;<br/>
+    UITableView</em> <em>channelListTableView;<br/>
+    NSMutableArray* </em>channelListArray;<br/>
+    NSMutableArray<em> _subChanneSelectedlList;<br/>
+    NSMutableArray</em> <em>unCheckArray;<br/>
+    UIButton* </em>saveButton;<br/>
+    UILabel<em> _tipLabel;<br/>
+    MMPPasswordSwichView</em> <em>payWaySwitch;<br/>
+    MMPPopupAlertView* </em>alertView;<br/>
+    UIView<em> <em>setView;<br/>
+    int </em>originalSelectedRow;<br/>
+    int _currentSelectedRow;<br/>
+    NSString</em> <em>statusCode;<br/>
+    ChannelListModel* </em>defaultChannelList;<br/>
+}<br/>
+@property(assign, nonatomic) BOOL bClickBack;<br/>
+@property(retain, nonatomic) ChannelListModel<em> defaultChannelList;<br/>
+@property(retain, nonatomic) NSString</em> statusCode;<br/>
+@property(assign, nonatomic) int currentSelectedRow;<br/>
+@property(assign, nonatomic) int originalSelectedRow;<br/>
+@property(retain, nonatomic) UIView<em> setView;<br/>
+@property(retain, nonatomic) MMPPopupAlertView</em> alertView;<br/>
+@property(retain, nonatomic) MMPPasswordSwichView<em> payWaySwitch;<br/>
+@property(assign, nonatomic, getter=isSubChannelChanged) BOOL bChangeSub;<br/>
+@property(assign, nonatomic) BOOL bFirstChannel;<br/>
+@property(assign, nonatomic) BOOL bHasSub;<br/>
+@property(assign, nonatomic) BOOL bAutopayon;<br/>
+@property(assign, nonatomic) BOOL bSimplePwd;<br/>
+@property(assign, nonatomic) BOOL bNeedPwd;<br/>
+@property(assign, nonatomic) BOOL bOpenMiniPay;<br/>
+@property(assign, nonatomic) BOOL bCheck;<br/>
+@property(retain, nonatomic) UILabel</em> tipLabel;<br/>
+@property(retain, nonatomic) UIButton<em> saveButton;<br/>
+@property(retain, nonatomic) NSMutableArray</em> unCheckArray;<br/>
+@property(retain, nonatomic) NSMutableArray<em> subChanneSelectedlList;<br/>
+@property(retain, nonatomic) NSMutableArray</em> channelListArray;<br/>
+@property(retain, nonatomic) UITableView* channelListTableView;<br/>
+-(void).cxx_destruct;<br/>
+-(void)subChannelDidSelected:(id)subChannel;<br/>
+-(void)switchCheckButtonClicked:(id)clicked;<br/>
+-(void)checkboxButtonClicked:(id)clicked;<br/>
+-(void)onCellClick:(id)click;<br/>
+-(void)showSubChannels;<br/>
+-(void)tableView:(id)view didSelectRowAtIndexPath:(id)indexPath;<br/>
+-(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath;<br/>
+-(int)tableView:(id)view numberOfRowsInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForRowAtIndexPath:(id)indexPath;<br/>
+-(int)numberOfSectionsInTableView:(id)tableView;<br/>
+-(void)setTableViewFootView:(id)view;<br/>
+-(void)setTableViewHeaderView:(id)view;<br/>
+-(id)tableView:(id)view viewForHeaderInSection:(int)section;<br/>
+-(id)tableView:(id)view viewForFooterInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForHeaderInSection:(int)section;<br/>
+-(float)tableView:(id)view heightForFooterInSection:(int)section;<br/>
+-(void)alertView:(id)view clickedButtonAtIndex:(int)index;<br/>
+-(void)clickSave;<br/>
+-(void)netWorkRequestWithPwd:(id)pwd;<br/>
+-(void)setPayWaySwitchStates:(id)states;<br/>
+-(void)changePayWaySwitch:(id)aSwitch;<br/>
+-(void)scrollToSelectedRow;<br/>
+-(void)didReceiveMemoryWarning;<br/>
+-(void)viewDidLoad;<br/>
+-(void)applicationEnterBackground:(id)background;<br/>
+-(void)dealloc;<br/>
+-(void)goBack;<br/>
+-(BOOL)isChannelsSetChanged;<br/>
+-(id)subChannelCode:(int)code;<br/>
+-(id)subChannelDesc:(int)desc;<br/>
+-(id)initWithDefaultData:(id)defaultData;<br/>
+-(id)initWithNibName:(id)nibName bundle:(id)bundle;<br/>
+-(void)commonInit:(id)init;<br/>
+@end
+5.分析支付宝源码片段</p>
+
+<p>1）使用了@private关键字限制成员访问权限
+但是实际上，在Objective-C编程中，使用@private连Keypath访问都拦不住的</p>
+
+<p>2）抛出了冗长的成员对象
+这非常有利分析程序结构
+6.进一步思考</p>
+
+<p>1）如何利用 class-dump 结果，结合 cycript 进行攻击呢？
+2）class-dump-z 如此强大，有什么方法可以减少暴露的信息吗？</p>
+
+<p>接下来的博文将针对上面的思考，继续总结～</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[非6S-实现3D Touch]]></title>
+    <link href="http://al1020119.github.io/blog/2016/04/05/fei6sshixian3dtouch/"/>
+    <updated>2016-04-05T13:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/04/05/fei6sshixian3dtouch</id>
+    <content type="html"><![CDATA[<p>首先先给我这困难的语言表达能力道个歉哈，真的尽力了。
+本章排版是参照<a href="http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6">http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6</a></p>
+
+<p>最近才接触不久的逆向工程,刷夜,爆肝,把《iOS应用逆向工程》这本书的工具，全部看了一遍，并且尝试了一遍，感觉需要点什么。 那就是实践！  最近6s手机出了3DTouch，无奈手中没有这款机型，恰好最近对逆向小有心得，又听说过已经有插件能实现同样的需求，证明确实有可行性，于是开动。根据点击的判断和出现，初步感觉，这应该不需要多少行代码就能搞定，应该只要添加一个手势，或者是更改一个手势的点击事件，让系统认为发生了3DTouch点击事件，就可以了。</p>
+
+<ul>
+<li>所需工具: cycript，openSSH，class-dump</li>
+<li>测试环境：iOS9.0.2，iPhone5s</li>
+<li>备注：因为自身没有3DTouch，所以需要下载一个插件，让机器拥有3DTouch功能，我使用的是forcy，通过覆盖长按手势，实现</li>
+</ul>
+
+
+<p>通过查阅官方文档，得到关键词  Shortcut Menu peek pop
+这个词将来就是要在找关键方法时刻所要用到的</p>
+
+<!--more-->
+
+
+<h4>现在开始！</h4>
+
+<p>通过ssh连接到手机，然后将cycript注入到SpringBoard</p>
+
+<pre><code>huangjipingde-iPhone:~ root# cycript -p SpringBoard
+</code></pre>
+
+<p>首先 先隆重介绍1个方法，2个函数</p>
+
+<ul>
+<li>1方法 [view recursiveDescription]  该方法可以当做是Reveal的文字版，用来查看当前页面的布局</li>
+<li><p>2函数，原理均是runtime，但是第二个没有怎么看懂。。。</p></li>
+<li><p>printMethods 打印出该类所有的方法，后边接的是实现的地址,在这儿补充一下，如果想对某个方法打断点，但是又不想使用ida查看方法偏移，可以直接在这实现的地址处，添加断点，虽然不知道断在什么地方，但是可以肯定一定是在执行该方法的时候。效果如下图：</p></li>
+</ul>
+
+
+<p>代码:</p>
+
+<pre><code>function printMethods(className){
+var count = new new Type("I");
+var methods = class_copyMethodList(objc_getClass(className),count);
+var methodsArray = [];
+for (var i = 0; i &lt; *count; i++){
+var method = methods[i];
+methodsArray.push({selector:method_getName(method), implentation:method_getImplementation(method)});
+}
+free(methods);
+free(count);
+return methodsArray;
+}
+</code></pre>
+
+<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+
+<ol>
+<li><p>tryPrintIvars打印出对象所有的属性，效果如下图：
+代码:</p>
+
+<p>  function tryPrintIvars(a){
+  var x={};
+  for(i in <em>a){
+  try{
+  x[i] = (</em>a)[i];
+  } catch(e){}
+  }
+   return x;}</p></li>
+</ol>
+
+
+<p><img src="/images/nixiangqudong002.png" title="Caption" ></p>
+
+<p>准备工作都做好了，将两个函数都先输入进去</p>
+
+<p><img src="/images/nixiangqudong003.png" title="Caption" ></p>
+
+<p>因为最后的目标是应用图标，所以，现在我们从主界面开始着手打印它的UI布局
+代码:</p>
+
+<pre><code>[[UIApplication sharedApplication].keyWindow.rootViewController.view recursiveDescription]
+</code></pre>
+
+<p><img src="/images/nixiangqudong004.png" title="Caption" ></p>
+
+<p>然后出来了一大片，红呦呦的代码，看着都眼睛疼，4点钟时看得眼睛都瞎了啊。此时应想，主界面可以滚动，是一个scrollView，是scrollView就得有contentSize，然后一看手机的页面，总共有5页，由于5s机型的宽度是320，所以这时候可以大胆猜测它的contentSize的最大宽度是1600，然后commond+F大法</p>
+
+<p><img src="/images/nixiangqudong005.png" title="Caption" ></p>
+
+<p>准确命中，同时，还注意到，它的contentOffset是960又此时我的页面正是第4页，基本锁定目标，查找frame的坐标是960，0的view，此时可以得到大量信息了，SBRootIconListView，这个就是用来装一页所有图标的View，SBIconListModel这个里边，我猜是装了该view里边的模型信息，注意，11 icons，正好是我们页面所有的图标数，此时再看后边SBIconView的size 62，62  这和图标尺寸的差距只有2个点，基本锁定，它就是我们要找的目标</p>
+
+<p><img src="/images/nixiangqudong006.png" title="Caption" ></p>
+
+<ul>
+<li><p>此时，让我们找到是什么在处理SBIconView的事件，我们所知道的，view一般是用来展示的，事件的发生一般都会交给代理来负责。让我们使用nextResponder，或者寻找他们的代理，来定位到一个controller文件，很幸运，直接一步就找到了，就是它：SBIconController！</p></li>
+<li><p>此时，我们可以class-dump出SpringBoard的头文件了，去查看一下它的里边都有些什么方法和属性，如果想偷懒，去github直接搜索也行。。。
+根据关键词和方法名译的意思大致锁定出来以下几个方法</p></li>
+</ul>
+
+
+<p>ps：  这儿的char 是BOOL类型
+代码:</p>
+
+<pre><code>-(void)_handleShortcutMenuPeek:(id)arg1 ;
+-(SBApplicationShortcutMenu *)presentedShortcutMenu;
+-(char)_canRevealShortcutMenu;
+-(id)_aggregateLoggingAppKeyForShortcutMenu:(id)arg1 ;
+-(void)applicationShortcutMenu:(id)arg1 activateShortcutItem:(id)arg2 index:(int)arg3 ;
+-(void)applicationShortcutMenu:(id)arg1 startEditingForIconView:(id)arg2 ;
+-(void)applicationShortcutMenu:(id)arg1 launchApplicationWithIconView:(id)arg2 ;
+-(void)applicationShortcutMenuDidPresent:(id)arg1 ;
+-(void)_revealMenuForIconView:(id)arg1 presentImmediately:(char)arg2 ;
+</code></pre>
+
+<p>自己写一个tweak，hook所有的这些函数，给他们所有的实现之前加上一个NSLog（），查看调用的顺序，和传进来的值的类型。 以及一次Peek事件所关联到了哪些方法。
+代码:</p>
+
+<pre><code>%hook SBIconController
+
+- (void)_revealMenuForIconView:(id)arg1 presentImmediately:(BOOL)arg2 {
+NSLog(@"ZZT3D _revealMenuForIconView:arg1:%s,%@--arg2:%c",object_getClassName(arg1), arg1, arg2);
+    %orig;
+}
+
+- (void)_handleShortcutMenuPeek:(id)arg1
+{
+NSLog(@"ZZT3D _handleShortcutMenuPeek:%s,%@",object_getClassName(arg1),arg1);
+%orig;
+}
+
+-(char)_canRevealShortcutMenu
+{
+NSLog(@"ZZT3D _canRevealShortcutMenu");
+  return %orig;
+}
+-(id)_aggregateLoggingAppKeyForShortcutMenu:(id)arg1{
+
+ NSLog(@"ZZT3D ggregateLoggingAppKeyForShortcutMenu:%s,%@",object_getClassName(arg1),arg1);
+    return %orig;
+}
+
+-(void)applicationShortcutMenu:(id)arg1 activateShortcutItem:(id)arg2 index:(int)arg3
+{
+NSLog(@"ZZT3D activateShortcutItem:arg1%s,%@—arg2%s,%@--arg3:%d",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2,arg3);
+%orig;
+}
+
+
+-(void)applicationShortcutMenu:(id)arg1 startEditingForIconView:(id)arg2 {
+NSLog(@"ZZT3D startEditingForIconView:arg1%s,%@—arg2%s,%@",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2);
+%orig;
+
+}
+-(void)applicationShortcutMenu:(id)arg1 launchApplicationWithIconView:(id)arg2{
+NSLog(@"ZZT3D launchApplicationWithIconView:arg1%s,%@—arg2%s,%@",object_getClassName(arg1),arg1,object_getClassName(arg2),arg2);
+%orig;
+}
+
+-(void)applicationShortcutMenuDidPresent:(id)arg1{
+NSLog(@"ZZT3D applicationShortcutMenuDidPresent:%s,%@",object_getClassName(arg1),arg1);
+%orig;
+}
+
+%end
+</code></pre>
+
+<p>此时我们拿手机进行一次长按操作，使其弹出ShotcutMenu菜单，然后在openSSH中查看系统日志grep ZZT3D /var/log/syslog查看一下，该事件处理分别使用了那几个方法。</p>
+
+<p><img src="/images/nixiangqudong007.png" title="Caption" ></p>
+
+<p>因为是要欺骗系统，所以方法应该是在前方，初步定位到这3个方法，第一个顾名思义返回值就是能不能显示shotcutMenu，第二个，我们可以看到，这里传进来了一个手势，通过这手势的信息，基本可以推断，这个就是插件作者用来欺骗系统的手势，而该方法，就是手势的target方法，第三个，根据意思可以得知，从XXiconView，是否立即显示。核心就在于这儿了。最后，我们再打印一遍SBIconView的所有属性，用来确认一下</p>
+
+<p><img src="/images/nixiangqudong008.png" title="Caption" ></p>
+
+<p>继续搜索关键词，果然又有大收获_shortcutMenuPeekGesture有一个如此手势，里边的东西的手势。</p>
+
+<p><img src="/images/nixiangqudong009.png" title="Caption" ></p>
+
+<p>猜测得到了极大的肯定，下面就开始编写tweak了
+由于是要给每一个iconView都添加手势，并且只添加一次，所以翻看了iconView头文件，查看他的init方法，选择了在initWithContentType中初始化。
+贴上Tweak.xm的源码
+关于代码的编写，中间也踩过不少坑，比如_revealMenuForIconView中的yes，no的设置，还好一开始猜的时候就全部手动赋值。
+至于手势为什么传值需要如此怪异，因为检测发现原方法只识别长按手势，并不识别轻扫手势，但是因为个人习惯，不想覆盖系统的手势，只想单纯的增加一个功能。耿直的楼主尝试将一个轻扫手势，强行变成长按手势。很多属性都是readonly，但是这个使用kvc轻松搞定，现在轻扫一下手机！出现了意想之中的弹窗！
+代码:</p>
+
+<pre><code>#import "ZZ3DTouch.h"
+
+%hook SBIconView 
+
+- (id)initWithContentType:(id)arg1{
+// 设置3Dtouch手势
+  // 手势传过去的就是手势自己本身,本身拥有所在的view
+  self.shortcutMenuPeekGesture = [[%c(UISwipeGestureRecognizer) alloc] initWithTarget:[%c(SBIconController) sharedInstance] action:@selector(_handleShortcutMenuPeek:)];
+  self.shortcutMenuPeekGesture.direction = UISwipeGestureRecognizerDirectionUp;
+
+  return %orig;
+}
+
+%end
+
+%hook SBIconController
+
+- (void)_revealMenuForIconView:(id)arg1 presentImmediately:(BOOL)arg2 {
+
+  // yes 改为no之后没有显示，或者没有设置也会不显示
+
+  %orig(iconView, YES);
+
+}
+
+- (void)_handleShortcutMenuPeek:(id)arg1
+
+{
+  UISwipeGestureRecognizer *swipe = arg1;
+  UILongPressGestureRecognizer *press = [[UILongPressGestureRecognizer alloc] init];
+  [press setValue:@(UIGestureRecognizerStateBegan) forKey:@"state"];
+  [press setValue:swipe.view forKey:@"view"];
+
+%orig(press);
+
+}
+%end
+</code></pre>
+
+<p><img src="/images/nixiangqudong010.png" title="Caption" ></p>
+
+<p><img src="/images/nixiangqudong011.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+</feed>

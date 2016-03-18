@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Developer | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/developer/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-03-19T01:45:37+08:00</updated>
+  <updated>2016-03-19T02:11:48+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -14,919 +14,471 @@
 
   
   <entry>
-    <title type="html"><![CDATA[够逼格的注释习惯]]></title>
-    <link href="http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"/>
-    <updated>2015-09-13T02:59:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de</id>
-    <content type="html"><![CDATA[<p>够逼格的注释习惯总结</p>
+    <title type="html"><![CDATA[第三方支付总结]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/18/disanfangzhifu/"/>
+    <updated>2016-01-18T11:35:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/18/disanfangzhifu</id>
+    <content type="html"><![CDATA[<p>引言：
+随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。</p>
 
-<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+<p>本文源码源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>（内集常见支付方案：成支付宝，微信，银联）</p>
 
-<h6>也许你使用过#warning 警告提示</h6>
-
-<h6>也许你也使用过#pragma marks。</h6>
-
-<p>但是你见过或者使用过下面这个吗？</p>
-
-<pre><code>Comments containing:
-MARK:
-TODO:
-FIXME:
-!!!:
-???:
-</code></pre>
-
-<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
-
-<!--more-->
-
-
-<p> 首先说一下三个最常用的：</p>
+<p>目录</p>
 
 <ul>
-<li>1、TODO</li>
+<li>常见支付方案</li>
+<li>第三方支付SDK</li>
+<li>苹果官方支付方案</li>
+<li>web支付方案</li>
 </ul>
 
 
-<p> 等待实现的功能</p>
+<!--more-->
+
+
+<h2>一:常见支付方案</h2>
+
+<p>先来看一组截图</p>
+
+<p><img src="/images/zhifu001.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu002.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu003.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu004.png" title="Caption" ></p>
+
+<p><img src="/images/zhifu005.png" title="Caption" ></p>
 
 <ul>
-<li>2、FIXME</li>
+<li><p>微信支付</p></li>
+<li><p>支付宝支付</p></li>
+<li><p>银联（快捷）支付</p></li>
+<li><p>京东支付</p></li>
+<li><p>百度钱包</p></li>
+<li><p>web支付</p></li>
+<li><p>QQ钱包支付</p></li>
+<li><p>连连支付</p></li>
 </ul>
 
 
-<p> 需要修正的功能</p>
+<p>￼￼￼￼
+整理图：</p>
+
+<p><img src="/images/zhifu006.png" title="Caption" ></p>
+
+<h2>二：最常见的三种支付方式</h2>
 
 <ul>
-<li>3、！！！</li>
+<li>微信支付SDK</li>
+<li>支付宝支付SDK</li>
+<li>银联快捷支付SDK</li>
 </ul>
 
 
-<p> 需要改进的功能</p>
+<h4>微信</h4>
 
-<p>具体使用</p>
+<h5>什么是微信支付</h5>
 
-<pre><code>// FIXME:sss
-/* FIXME: sss */
+<p>微信支付是集成在微信客户端的支付功能，用户可以通过手机完成快速的支付流程。微信支付以绑定银行卡的快捷支付为基础，向用户提供安全、快捷、高效的支付服务。</p>
+
+<h5>申请流程：</h5>
+
+<p>第一阶段：</p>
+
+<p><img src="/images/zhifu007.png" title="Caption" ></p>
+
+<p>第二阶段：</p>
+
+<p><img src="/images/zhifu008.png" title="Caption" ></p>
+
+<p>第三阶段：</p>
+
+<p><img src="/images/zhifu009.png" title="Caption" ></p>
+
+<h5>应用场景：</h5>
+
+<p>商户APP调用微信提供的SDK调用微信支付模块，商户APP会跳转到微信中完成支付，支付完后跳回到商户APP内，最后展示支付结果。</p>
+
+<h5>支付流程</h5>
+
+<p>App内提交订单（确认支付）
+商品信息确认（立即支付）
+输入密码（进行支付）
+支付成功</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu010.png" title="Caption" ></p>
+
+<h4>支付宝</h4>
+
+<h5>什么是支付宝支付：</h5>
+
+<p>支付宝移动支付是一种程序式的支付方式，在手机、掌上电脑等无线设备的应用程序内，买家可通过支付宝进行付款购买特定服务或商品，资金即时到账。</p>
+
+<h5>申请流程</h5>
+
+<p><img src="/images/zhifu011.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p>买家再手机应用中购买商品或者服务
+买家选择支付宝方式支付
+进入支付宝收银台进行支付
+支付成功
+交易完成买家可查看交易信息
+返回对应的app界面</p>
+
+<h5>App接入步骤</h5>
+
+<p><img src="/images/zhifu012.png" title="Caption" ></p>
+
+<h4>银联</h4>
+
+<h5>什么值银联支付</h5>
+
+<p><img src="/images/zhifu013.png" title="Caption" ></p>
+
+<h5>申请流程：</h5>
+
+<p><img src="/images/zhifu014.png" title="Caption" ></p>
+
+<h5>支付流程：</h5>
+
+<p><img src="/images/zhifu015.png" title="Caption" ></p>
+
+<h5>接入流程：</h5>
+
+<p><img src="/images/zhifu016.png" title="Caption" ></p>
+
+<h5>最后整理一下具体步骤：</h5>
+
+<ol>
+<li>首先客户端浏览商品，点击下单，请求到达商户后台。</li>
+<li>商户后台再提交订单信息到银联后台。</li>
+<li>银联后台返回交易流水号。</li>
+<li>商户后台将交易流水号返回给客户端。</li>
+<li>客户端再通过交易流水号启动手机控件开始支付。</li>
+<li>支付控件收集支付信息并请求银联后台，完成支付后银联后台通知商户后台支付结果。</li>
+<li>银联后台通知支付控件支付结果。</li>
+<li>支付控件通知客户端支付结果。</li>
+<li>最后客户端将支付结果展示给用户。</li>
+</ol>
 
 
-// MARK:sss
-/* MARK:sss */
+<h2>三：苹果官方支付方案</h2>
+
+<ul>
+<li>IPA</li>
+<li>Apple Pay</li>
+</ul>
 
 
-// !!!:sss
-/* !!!: sss */
+<h3>IPA</h3>
+
+<h5>什么是IPA：</h5>
+
+<p>In App Purchase属于iPhone SDK3.0的新特性，用于在应用程序中购买付费道具，增加新功能，订阅杂志。是应用程序除了植入广告外的另一种取得收益的方式。</p>
+
+<h5>IPA支持的产品类型：</h5>
+
+<p><img src="/images/zhifu017.png" title="Caption" ></p>
+
+<p>IPA两种支付方式：
+方式一：内置产品类型</p>
+
+<p><img src="/images/zhifu018.png" title="Caption" >
+方式二：服务器类型</p>
+
+<p><img src="/images/zhifu019.png" title="Caption" ></p>
+
+<h5>注意事项：</h5>
+
+<ol>
+<li>你必须提供电子类产品和服务。不要使用In App Purchase 去出售实物和实际服务。</li>
+<li>不能提供代表中介货币的物品，因为让用户知晓他们购买的商品和服务是很重要的。</li>
+</ol>
 
 
-// ???:sss
-/* ???: sss */
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序向服务器发送请求，获得一份产品列表。</li>
+<li>服务器返回包含产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>程序从信息中获得数据，并发送至服务器。</li>
+<li>服务器纪录数据，并进行审(我们的)查。</li>
+<li>服务器将数据发给App Store来验证该交易的有效性。</li>
+<li>App Store对收到的数据进行解析，返回该数据和说明其是否有效的标识。</li>
+<li>服务器读取返回的数据，确定用户购买的内容。</li>
+<li>服务器将购买的内容传递给程序。</li>
+</ol>
 
 
-// TODO:sss
-/* TODO: sss */
+<h3>Apple Pay</h3>
+
+<h5>什么是Apple Pay：</h5>
+
+<p>Apple Pay与诸多传统移动支付系统不同，不但有Touch ID指纹识别技术护航，还能在Apple Watch上运作。</p>
+
+<h5>相关流程：</h5>
+
+<ol>
+<li>程序通过bundle存储的plist文件得到产品标识符的列表。</li>
+<li>程序向App Store发送请求，得到产品的信息。</li>
+<li>App Store返回产品信息。</li>
+<li>程序把返回的产品信息显示给用户（App的store界面）</li>
+<li>用户选择某个产品</li>
+<li>程序向App Store发送支付请求</li>
+<li>App Store处理支付请求并返回交易完成信息。</li>
+<li>App获取信息并提供内容给用户。</li>
+</ol>
 
 
-// Comments containing: sss
-/* Comments containing: sss */
-</code></pre>
+<h2>四：web支付方案</h2>
 
-<p>注意空格.</p>
+<h5>概述：</h5>
 
-<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+<p>iOS中通过UIWebView展示WAP或HTML5支付页面，从而完成支付功能，无需接入额外第三方SDK。
+UIWebView是iOS SDK中一个最常用的控件，是内置的浏览器控件，我们可以用它来浏览网页、打开文档等等。</p>
 
-<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+<h5>类型界面：</h5>
 
-<!--more-->
+<p><img src="/images/zhifu020.png" title="Caption" ></p>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[网络请求疯（封）装]]></title>
-    <link href="http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/"/>
-    <updated>2015-08-25T09:37:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang</id>
-    <content type="html"><![CDATA[<p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
+<p>总结：</p>
 
-<p>关于XLNetworkApi</p>
+<p>最后本人根据实际开发整理了一份关于支付的源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>，内集成了：支付宝支付，微信支付，银联快捷支付！</p>
 
-<!--more-->
+<p>你是不是在找接口文档？</p>
 
-
-<p>XLNetworkApi的一些功能和说明：</p>
-
-<p>使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。
-以及网络下载、上传文件，以block的形式返回实时的下载、上传进度，上传文件参数通过模型XLFileConfig去存取。
-通过继承于XLDataService来将一些数据处理，模型转化封装起来，于业务逻辑对接返回的是对应的模型，减少Controllor处理数据处理逻辑的压力。
-自定义一些回调的block</p>
-
-<pre><code>/**
-请求成功block
-*/
-typedef void (^requestSuccessBlock)(id responseObj);
-/**
-请求失败block
-*/
-typedef void (^requestFailureBlock) (NSError *error);
-/**
-请求响应block
-*/
-typedef void (^responseBlock)(id dataObj, NSError *error);
-/**
-监听进度响应block
-*/
-typedef void (^progressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
-XLNetworkRequest.m部分实现
-#import "XLNetworkRequest.h"
-#import "AFNetworking.h"
-@implementation XLNetworkRequest
-+ (void)getRequest:(NSString *)url params:(NSDictionary *)params success:(requestSuccessBlock)successHandler failure:(requestFailureBlock)failureHandler {
-//网络不可用
-  if (![self checkNetworkStatus]) {
-      successHandler(nil);
-      failureHandler(nil);
-      return;
-  }
-  AFHTTPRequestOperationManager *manager = [self getRequstManager];
-  [manager GET:url parameters:params success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      successHandler(responseObject);
-  } failure:^(AFHTTPRequestOperation * _Nullable operation, NSError * _Nonnull error) {
-      XLLog(@"------请求失败-------%@",error);
-      failureHandler(error);
-  }];
-}
-</code></pre>
-
-<p>下载部分代码</p>
-
-<pre><code>    //下载文件，监听下载进度
-    + (void)downloadRequest:(NSString *)url successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-      if (![self checkNetworkStatus]) {
-          progressHandler(0, 0, 0);
-          completionHandler(nil, nil);
-          return;
-      }
-      NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
-      AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:sessionConfiguration];
-      NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
-      NSProgress *kProgress = nil;
-      NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:&amp;kProgress destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-          NSURL *documentUrl = [[NSFileManager defaultManager] URLForDirectory :NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
-          return [documentUrl URLByAppendingPathComponent:[response suggestedFilename]];
-      } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nonnull filePath, NSError * _Nonnull error){
-          if (error) {
-              XLLog(@"------下载失败-------%@",error);
-          }
-          completionHandler(response, error);
-      }];
-      [manager setDownloadTaskDidWriteDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDownloadTask * _Nonnull downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
-          progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-      }];
-      [downloadTask resume];
-    }
-</code></pre>
-
-<p>上传部分代码</p>
-
-<pre><code>//上传文件，监听上传进度
-+ (void)updateRequest:(NSString *)url params:(NSDictionary *)params fileConfig:(XLFileConfig *)fileConfig successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
-  if (![self checkNetworkStatus]) {
-      progressHandler(0, 0, 0);
-      completionHandler(nil, nil);
-      return;
-  }
-  NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:url parameters:params constructingBodyWithBlock:^(id  _Nonnull formData) {
-      [formData appendPartWithFileData:fileConfig.fileData name:fileConfig.name fileName:fileConfig.fileName mimeType:fileConfig.mimeType];
-  } error:nil];
-  //获取上传进度
-  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-  [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
-      progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
-  }];
-  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
-      completionHandler(responseObject, nil);
-  } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
-      completionHandler(nil, error);
-      if (error) {
-          XLLog(@"------上传失败-------%@",error);
-      }
-  }];
-  [operation start];
-}
-</code></pre>
-
-<p>XLDataService.m部分实现</p>
-
-<pre><code>+ (void)getWithUrl:(NSString *)url param:(id)param modelClass:(Class)modelClass responseBlock:(responseBlock)responseDataBlock {
-      [XLNetworkRequest getRequest:url params:param success:^(id responseObj) {
-      //数组、字典转化为模型数组
-      dataObj = [self modelTransformationWithResponseObj:responseObj modelClass:modelClass];
-      responseDataBlock(dataObj, nil);
-  } failure:^(NSError *error) {
-      responseDataBlock(nil, error);
-  }];
-}
-</code></pre>
-
-<p>（关键）下面这个方法提供给继承XLDataService的子类重写，将转化为模型的代码写在这里，相似业务的网络数据请求都可以用这个子类去请求数据，直接返回对应的模型数组。
-    /<em>*
-    数组、字典转化为模型
-    </em>/
-    + (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-         return nil;
-    }
-关于离线数据缓存</p>
-
-<p>当用户进入程序的展示页面，有三个情况下可能涉及到数据库存取操作，简单画了个图来理解，思路比较简单，主要是一些存取的细节处理。</p>
-
-<p>进入展示页面</p>
-
-<p><img src="/images/net001.png" title="Caption" ></p>
-
-<p>下拉刷新最新数据</p>
-
-<p><img src="/images/net002.png" title="Caption" ></p>
-
-<p>上拉加载更多数据</p>
-
-<p><img src="/images/net003.png" title="Caption" ></p>
-
-<p>需要注意的是，上拉加载更多的时候，每次从数据库返回一定数量的数据，而不是一次性将数据全部加载，否则会有内存问题，直到数据库中没有更多数据时再发生网络请求，再次将新数据存入数据库。这里存储数据的方式是将服务器返回每组数据的字典归档成二进制作为数据库字段直接存储，这样存储在模型属性比较多的情况下更有好处，避免每一个属性作为一个字段，另外增加了一个idStr字段用来判断数据的唯一性，避免重复存储。
-首先定义一个工具类XLDataBase来做数据库相关的操作，这里用的是第三方的FMDB。</p>
-
-<pre><code>#import "XLDataBase.h"
-#import "FMDatabase.h"
-#import "Item.h"
-#import "MJExtension.h"
-@implementation XLDataBase
-static FMDatabase *_db;
-+ (void)initialize {
-    NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/Data.db",NSHomeDirectory()];
-    _db = [FMDatabase databaseWithPath:path];
-    [_db open];
-    [_db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_item (id integer PRIMARY KEY, itemDict blob NOT NULL, idStr text NOT NULL)"];
-}
-//存入数据库
-+ (void)saveItemDict:(NSDictionary *)itemDict {
-    //此处把字典归档成二进制数据直接存入数据库，避免添加过多的数据库字段
-    NSData *dictData = [NSKeyedArchiver archivedDataWithRootObject:itemDict];
-    [_db executeUpdateWithFormat:@"INSERT INTO t_item (itemDict, idStr) VALUES (%@, %@)",dictData, itemDict[@"id"]];
-}
-//返回全部数据
-+ (NSArray *)list {
-    FMResultSet *set = [_db executeQuery:@"SELECT * FROM t_item"];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        // 获得当前所指向的数据
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//取出某个范围内的数据
-+ (NSArray *)listWithRange:(NSRange)range {
-    NSString *SQL = [NSString stringWithFormat:@"SELECT * FROM t_item LIMIT %lu, %lu",range.location, range.length];
-    FMResultSet *set = [_db executeQuery:SQL];
-    NSMutableArray *list = [NSMutableArray array];
-    while (set.next) {
-        NSData *dictData = [set objectForColumnName:@"itemDict"];
-        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
-        [list addObject:[Item mj_objectWithKeyValues:dict]];
-    }
-    return list;
-}
-//通过一组数据的唯一标识判断数据是否存在
-+ (BOOL)isExistWithId:(NSString *)idStr
-{
-    BOOL isExist = NO;
-    FMResultSet *resultSet= [_db executeQuery:@"SELECT * FROM t_item where idStr = ?",idStr];
-    while ([resultSet next]) {
-        if([resultSet stringForColumn:@"idStr"]) {
-            isExist = YES;
-        }else{
-            isExist = NO;
-        }
-    }
-    return isExist;
-}
-@end
-</code></pre>
-
-<p>一些继承于XLDataService的子类的数据库存储和模型转换的逻辑代码</p>
-
-<pre><code>#import "GetTableViewData.h"
-#import "XLDataBase.h"
-@implementation GetTableViewData
-//重写父类方法
-+ (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
-    NSArray *lists = responseObj[@"data"][@"list"];
-    NSMutableArray *array = [NSMutableArray array];
-    for (NSDictionary *dict in lists) {
-        [modelClass mj_setupReplacedKeyFromPropertyName:^NSDictionary *{
-            return @{ @"ID" : @"id" };
-        }];
-        [array addObject:[modelClass mj_objectWithKeyValues:dict]];
-        //通过idStr先判断数据是否存储过，如果没有，网络请求新数据存入数据库
-        if (![XLDataBase isExistWithId:dict[@"id"]]) {
-            //存数据库
-            NSLog(@"存入数据库");
-            [XLDataBase saveItemDict:dict];
-        }
-    }
-    return array;
-}
-</code></pre>
-
-<p>下面是一些控制器的代码实现：</p>
-
-<pre><code>#import "ViewController.h"
-#import "GetTableViewData.h"
-#import "Item.h"
-#import "XLDataBase.h"
-#import "ItemCell.h"
-#import "MJRefresh.h"
-#define URL_TABLEVIEW @"https://api.108tian.com/mobile/v3/EventList?cityId=1&amp;step=10&amp;theme=0&amp;page=%lu"
-@interface ViewController () {
-    NSMutableArray *_dataArray;
-    UITableView *_tableView;
-    NSInteger _currentPage;//当前数据对应的page
-}
-@end
-@implementation ViewController
-#pragma mark Life cycle
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    [self createTableView];
-    _dataArray = [NSMutableArray array];
-}
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    NSRange range = NSMakeRange(0, 10);
-    //如果数据库有数据则读取，不发送网络请求
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        NSLog(@"从数据库加载");
-    }else{
-        [self getTableViewDataWithPage:0];
-    }
-}
-#pragma mark UI
-- (void)createTableView {
-    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
-    _tableView.delegate = self;
-    _tableView.dataSource = self;
-    _tableView.rowHeight = 100.0;
-    [self.view addSubview:_tableView];
-    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
-        [self loadNewData];
-    }];
-    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
-        [self loadMoreData];
-    }];
-}
-#pragma mark GetDataSoure
-- (void)getTableViewDataWithPage:(NSInteger)page {
-    NSLog(@"发送网络请求！");
-    NSString *url = [NSString stringWithFormat:URL_TABLEVIEW, page];
-    [GetTableViewData getWithUrl:url param:nil modelClass:[Item class] responseBlock:^(id dataObj, NSError *error) {
-        [_dataArray addObjectsFromArray:dataObj];
-        [_tableView reloadData];
-        [_tableView.mj_header endRefreshing];
-        [_tableView.mj_footer endRefreshing];
-    }];
-}
-- (void)loadNewData {
-    NSLog(@"下拉刷新");
-    _currentPage = 0;
-    [_dataArray removeAllObjects];
-    [self getTableViewDataWithPage:_currentPage];
-}
-- (void)loadMoreData {
-    NSLog(@"上拉加载");
-    _currentPage ++;
-    NSRange range = NSMakeRange(_currentPage * 10, 10);
-    if ([[XLDataBase listWithRange:range] count]) {
-        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
-        [_tableView reloadData];
-        [_tableView.mj_footer endRefreshing];
-        NSLog(@"数据库加载%lu条更多数据",[[XLDataBase listWithRange:range] count]);
-    }else{
-        //数据库没更多数据时再网络请求
-        [self getTableViewDataWithPage:_currentPage];
-    }
-}
-#pragma mark UITableViewDataSource
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _dataArray.count;
-}
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    ItemCell *cell = [ItemCell itemCellWithTableView:tableView];
-    cell.item = _dataArray[indexPath.row];
-    return cell;
-}
-@end
-</code></pre>
-
-<p>最后附上代码的下载地址，重要的部分代码中都有相应的注释和文字打印，运行程序可以很直观的表现。</p>
-
-<p><a href="https://github.com/ShelinShelin/OffLineCache.git">Demo</a></p>
-
-<p>希望大家能提出一些意见，很乐意与大家互相交流。</p>
-
-<!--more-->
+<ul>
+<li><a href="https://pay.weixin.qq.com/wiki/doc/api/index.html">微信支付</a></li>
+<li><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218010538&amp;tabId=1#ps-tabinfo-hashhttp://doc.open.alipay.com/doc2/detail?treeId=59&amp;articleId=103563&amp;docType=1">支付宝支付</a></li>
+<li><a href="https://open.unionpay.com/ajweb/index">银联</a></li>
+<li><a href="https://b.alipay.com/order/productDetail.htm?productId=2015110218008816https://open.unionpay.com/ajweb/help/file/techFile?productId=66">Web支付</a></li>
+<li><a href="https://developer.apple.com/in-app-purchase/">IAP</a></li>
+<li><a href="https://developer.apple.com/apple-pay/">Apple Pay</a></li>
+</ul>
 
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[常用关键字汇总]]></title>
-    <link href="http://al1020119.github.io/blog/2014/05/05/keyoc/"/>
-    <updated>2014-05-05T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2014/05/05/keyoc</id>
-    <content type="html"><![CDATA[<p>在做iOS开发中，系统的各个关键字处处都是，但是未必每一个关键字都是那么的明白，所以罗列出一些关键字供大家互相学习，有不完善之处请指正，谢谢</p>
+    <title type="html"><![CDATA[重量级-MVC-MVVM-DC]]></title>
+    <link href="http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji/"/>
+    <updated>2016-01-01T16:21:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/01/01/zhong-liang-ji</id>
+    <content type="html"><![CDATA[<p>首先再这里祝大家新年快乐&hellip;&hellip;.</p>
+
+<p>新的一年来点重量级的东西，那么是什么呢？</p>
+
+<p>相信你既然能看到这篇文章，那么一定听说过MVC，什么没有听过？出门左转找度娘，不送！</p>
+
+<p>如果你听说过MVC，那么或许你听说过MVVM，这里可能很多人对MVVM并不了解，或许只是听过，但是没有用过，有些就算用过还是不清楚里面的关系，只是搬砖而已。</p>
+
+<p>对了，今天我们讨论的就是一个类MVVM的技术，也就是在MVVM上面的一个增强版的开发模式！</p>
+
+<p>MVVM不正是MVC的增强版吗？</p>
+
+<p>好了下面正式开始，新年不能耽误大家太多时间搬砖，，哈哈！</p>
+
+<h2>Model-View-Controller</h2>
 
 <!--more-->
 
 
-<table>
-<thead>
-<tr>
-<th> 关键字 </th>
-<th style="text-align:center;"> 总结</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> atomic    </td>
-<td style="text-align:center;"> atomic是Objc使用的一种线程保护技术，基本上来讲，是防止在写未完成的时候被另外一个线程读取，造成数据错误。而这种机制是耗费系统资源的，所以在iPhone这种小型设备上，如果没有使用多线程间的通讯编程，那么nonatomic是一个非常好的选择。</td>
-</tr>
-<tr>
-<td> super </td>
-<td style="text-align:center;"> 调用父类的方法</td>
-</tr>
-<tr>
-<td> readonly  </td>
-<td style="text-align:center;"> 说明属性是只读的，默认的标记是读写</td>
-</tr>
-<tr>
-<td> readwrite </td>
-<td style="text-align:center;"> 说明属性会被当成读写的，这也是默认属性</td>
-</tr>
-<tr>
-<td> retain    </td>
-<td style="text-align:center;"> 释放旧的对象，将旧对象的值赋予输入对象，再提高输入对象的索引计数为1</td>
-</tr>
-<tr>
-<td> self</td>
-<td style="text-align:center;">     是隐藏参数，指向当前调用方法的类</td>
-</tr>
-<tr>
-<td> setter    </td>
-<td style="text-align:center;"> 设置指定的set方法</td>
-</tr>
-<tr>
-<td> getter    </td>
-<td style="text-align:center;"> 设置指定的get方法</td>
-</tr>
-<tr>
-<td> property</td>
-<td style="text-align:center;">     设置成员变量的属性（有读／写，赋值assign,retain,copy ,以及对多线程的支持 nonatomic）</td>
-</tr>
-<tr>
-<td> end   </td>
-<td style="text-align:center;"> 类的头文件或者实现文件的结束</td>
-</tr>
-<tr>
-<td> copy</td>
-<td style="text-align:center;">     建立一个索引计数为1的对象，然后释放旧对象 </td>
-</tr>
-<tr>
-<td> assign    </td>
-<td style="text-align:center;"> 简单赋值，不更改引用计数</td>
-</tr>
-<tr>
-<td> synthesize    </td>
-<td style="text-align:center;"> 根据@property设置，自动生成成员变量相应的存取方法，从而可以使用点操作符来方便的存取该成员变量</td>
-</tr>
-<tr>
-<td> import    </td>
-<td style="text-align:center;"> 告诉预处理器,将头文件的内容包含到本文件中</td>
-</tr>
-<tr>
-<td> dynamic   </td>
-<td style="text-align:center;"> 告诉编译器由我们自己来实现访问方法</td>
-</tr>
-<tr>
-<td> nonatomic </td>
-<td style="text-align:center;"> 非原子性访问，对属性赋值的时候不加锁，多线程并发访问会提高性能</td>
-</tr>
-<tr>
-<td> implementation</td>
-<td style="text-align:center;">   表明类的实现</td>
-</tr>
-<tr>
-<td> strong    </td>
-<td style="text-align:center;"> 强引用，只要最后一个strong型指针不再指向对象，那么对象就会被释放，同时所有的weak型指针都将会被清除</td>
-</tr>
-<tr>
-<td> weak  </td>
-<td style="text-align:center;"> 弱引用</td>
-</tr>
-<tr>
-<td> __strong  </td>
-<td style="text-align:center;"> 是缺省的关键词</td>
-</tr>
-<tr>
-<td> __weak    </td>
-<td style="text-align:center;"> 声明了一个可以自动nil化的弱引用</td>
-</tr>
-<tr>
-<td> __unsafe_unretained</td>
-<td style="text-align:center;">  声明一个弱应用，但是不会自动nil化，也就是说，如果所指向的内存区域被释放了，这个指针就是一个野指针了</td>
-</tr>
-<tr>
-<td> __autoreleasing   </td>
-<td style="text-align:center;"> 用来修饰一个函数的参数，这个参数会在函数返回的时候被自动释放</td>
-</tr>
-<tr>
-<td> unsafe_unretained 弱引用，容易生成野指针，尽量少用unsafe_unretained关键字</td>
-<td></td>
-</tr>
-<tr>
-<td> synchronized  </td>
-<td style="text-align:center;"> 方法加锁</td>
-</tr>
-</tbody>
-</table>
+<p>首先我们来看看MVC，这里MVC具体细节就不多说了。</p>
 
+<ul>
+<li>Model(M)：模型数据</li>
+<li>View(V)：视图</li>
+<li>Controller&copy;：控制器</li>
+</ul>
+
+
+<p><img src="/images/zhongliangji001.png" title="Caption" ></p>
+
+<h6>有点：</h6>
+
+<ul>
+<li>易学习</li>
+<li>易开发</li>
+<li>同哟欧诺个成熟</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>Massive View Controller</li>
+</ul>
+
+
+<h2>Model-View-ViewModel</h2>
+
+<p>然后来看看现在比较热得话题（架构）MVVM
+* Model（M）:模型
+* View(V）:视图
+* ViewModel（VM）:模型（逻辑）</p>
+
+<p><img src="/images/zhongliangji002.png" title="Caption" ></p>
+
+<h6>View与ViewModule连接可以通过下面的方式</h6>
+
+<ul>
+<li><p>Binding Data：实现数据的传递</p></li>
+<li><p>Command：实现操作的调用</p></li>
+<li><p>AttachBehavior：实现控件加载过程中的操作</p></li>
+</ul>
+
+
+<h5>View没有大量代码逻辑。</h5>
+
+<ul>
+<li><p>结合WPF、Silverlight绑定机制，MVP演变出了MVVM，充分利用了WPF、Silverlight的优势，将大量代码逻辑、状态转到ViewModel，可以说MVVM是专门为WPF、Silverlight打造的。</p></li>
+<li><p>View绑定到ViewModel，然后执行一些命令在向它请求一个动作。而反过来，ViewModel跟Model通讯，告诉它更新来响应UI。这样便使得为应用构建UI非常的容易。往一个应用程序上贴一个界面越容易，外观设计师就越容易使用Blend来创建一个漂亮的界面。同时，当UI和功能越来越松耦合的时候，功能的可测试性就越来越强。</p></li>
+</ul>
+
+
+<h6>优点：</h6>
+
+<ul>
+<li>减轻ViewController的负担</li>
+<li>提高了测试性</li>
+<li>强大的绑定机制</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<ul>
+<li>极高的学习成本和开发成本</li>
+<li>数据绑定是的bug更难调试</li>
+<li>View Model的职责任然很重</li>
+<li>据本人了解，MVVM结合RAC使用能够发挥最大的效率</li>
+</ul>
+
+
+<p>总上我们可以得知：</p>
+
+<ul>
+<li>每个V都有一个对应的VM，V的数据展示盒样式都由其定制</li>
+<li>不引入双想绑定机制或者观察机制，而是通过传统的代理回调或者通知将UI事件传给外界</li>
+<li>VC只负责将VM装配给V，接受UI事件</li>
+</ul>
+
+
+<p>或许细心地能发现下面的好处</p>
+
+<ul>
+<li>View可以完全解耦，只需要确定好ViewModel和回调接口即可</li>
+<li>View Controller层可以尽可能少得和View的具体表现打交道，将这不分职责转给了View Model，减轻了* View Controller的负担</li>
+<li>使用回调的传统回调机制，学习成本低，数据和事件流入和流出易观察而且更易控制，降低维护和回调成本</li>
+</ul>
+
+
+<h2>Model-View-ViewModel-DataController-Model</h2>
+
+<p>好了重量级的东西来了，MVVM-DM（MVVM Without Binding With Data Controller）</p>
+
+<ul>
+<li>Model（M）:模型</li>
+<li>View(V）:视图</li>
+<li>ViewModel（VM）:加工后的数据）</li>
+<li>Data Controller：相关逻辑</li>
+<li>Model：对应Data Controller</li>
+</ul>
+
+
+<p><img src="/images/zhongliangji003.png" title="Caption" ></p>
+
+<p>或许有些人看到上面的文字就能知道我本文的含义了，对没错，就是为了解决MVVM中View Model臃肿情况！</p>
+
+<h6>优点：</h6>
+
+<ul>
+<li>避免了传统的MVVM架构VM层有可能变得臃肿的情况，更加清晰的模块职责</li>
+<li>业务逻辑解耦，数据的加工和处理都放在Data Controller中，View Controiller不用关心数据如何获得，如何处理，Data Controller不用关心界面如何展示，如何交互</li>
+<li>Data Controller与界面无关，所以可以有更好的可测试性和可服用性</li>
+</ul>
+
+
+<h6>缺点：</h6>
+
+<p>暂时没有发现（难度：一下比较难接受）</p>
+
+<h4>具体思路是：</h4>
+
+<ul>
+<li>1.每个Viewcontroller会有一个对应的Data Controller（包含页面的所有相关逻辑：View Related data Controller） ，在View的ViewDidLoad方法中初始化View，layoutSubViews中布局</li>
+<li>2.Viewcongtroller向Data Controller发送请求，Data Controller包含只是纯粹的Model相关逻辑（当然你也可以复用更小的Data Controller）如：网络请求，数据持久（请求），数据加工，其他。</li>
+<li>3.Data Controller将请求到得数据加工返回给View Controller</li>
+<li>4.View Controller将Data Controller返回的加工好的数据生成ViewModel（展示View所需要的数据），</li>
+<li>5.View Controller协调控制并将生成的View Model装配到View（每个View都有一个对应的View Model，可以有子View Model）上面显示，这里相当于使用ViewModel数据来渲染界面</li>
+</ul>
+
+
+<p>综上：</p>
+
+<ul>
+<li>将处理数据和获取数据的职责从传统的MVVM的Vm中抽取出来，成为Data Controller</li>
+<li>VC请求数据和将一些数据修改的事件（可以是UI事件触发）传递给Data Controller</li>
+<li>Data Controller收到VC的请求后，向M获取数据和更新数据，并将加工后的数据返回</li>
+<li>Data Controller还负责网络层和持久化层的逻辑</li>
+</ul>
+
+
+<blockquote><p>总结：</p>
+
+<ul>
+<li>层次清晰，职责明确。</li>
+<li>耦合性低，复用性高</li>
+<li>测试性高</li>
+<li>低学习成本，低开发成本</li>
+<li>高实施性，无需整体重构</li>
+</ul>
+</blockquote>
+
+<p>本文借鉴猿题库客户端架构设计，最后附上<a href="blog.devtang.com">唐巧大V</a>得博客，以表敬意</p>
+
+<p>参考：
+<a href="https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&amp;mid=444322139&amp;idx=1&amp;sn=c7bef4d439f46ee539aa76d612023d43&amp;scene=1&amp;srcid=1230NOb8TaHKmwxS9l8H6ctl&amp;key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&amp;ascene=0&amp;uin=MjMzNjU5MzYyMQ%3D%3D&amp;devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&amp;version=11020201&amp;pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C">猿题库 iOS 客户端架构设计</a></p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[语法精选]]></title>
-    <link href="http://al1020119.github.io/blog/2014/03/12/yufajingxuan/"/>
-    <updated>2014-03-12T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2014/03/12/yufajingxuan</id>
-    <content type="html"><![CDATA[<h4>一、NSSet、NSMutableSet集合的介绍</h4>
+    <title type="html"><![CDATA[iCocos博客重整第一天]]></title>
+    <link href="http://al1020119.github.io/blog/2013/03/01/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/"/>
+    <updated>2013-03-01T11:11:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2013/03/01/icocosbo-ke-zhong-zheng-di-[?]-tian</id>
+    <content type="html"><![CDATA[<p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
 
-<p>1）NSSet、NSMutableSet集合，元素是无序的，不能有重复的值。</p>
+<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
 
-<p>2）用实例方法创建一个不可变集合对象</p>
+<hr />
+
+<p>版权声明：欢迎转载，请贴上源地址</p>
+
+<p> <a href="http://al1020119.github.io">http://al1020119.github.io</a></p>
+
+<p> <a href="http://www.cnblogs.com/iCocos/">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
 
 <!--more-->
 
 
-<p>例如：</p>
+<p>更多精彩请关注</p>
 
-<pre><code>//宏定义
-#define TOBJ(n) [NSNumber numberWithInt:n]
-NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-</code></pre>
-
-<p>2）用类方法创建一个不可变集合对象 例如：</p>
-
-<p>1 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];</p>
-
-<p>3）NSSet 快速遍历方法（无序，所以没有下标）例如：</p>
-
-<pre><code>1  for(id num in set1){
-2     NSLog(@"%@",num);
-3 }
-</code></pre>
-
-<p>4）setSet 用于修改集合内容 例如：[mSet setSet:set1];</p>
-
-<p>5）intersectSet 用于获取两个集合的交集(返回两个集合中相同的元素)。例如：</p>
-
-<pre><code>#define TOBJ(n) [NSNumber numberWithInt:n]
-NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-[mSet intersectSet:set2];
-NSLog(@"intersect:%@",mSet); //结果：2
-</code></pre>
-
-<p>6）unionSet 用于获取两个集合的并集(返回两个集合中所有的元素,如果重复只显示其中一个) 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet *set1=[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-4 [mSet intersectSet:set2];
-5 NSLog(@"intersect:%@",mSet); //结果：123456
-</code></pre>
-
-<p>7）minusSet 用于获取两个集合的差集 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSSet *set2=[NSSet setWithObjects:TOBJ(2),TOBJ(4),TOBJ(6), nil];
-4 [mSet minusSet:set2];
-5 NSLog(@"intersect:%@",mSet); //结果：13456
-</code></pre>
-
-<p>8）allObjects 用于将集合转换为数组 例如：</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 NSArray *array= [mSet allObjects];
-</code></pre>
-
-<p>9）anyObject 取set中任意一个元素（如果set中只有一个元素，取值）</p>
-
-<pre><code>1 #define TOBJ(n) [NSNumber numberWithInt:n]
-2 NSSet * mSet =[[NSSet alloc]initWithObjects:TOBJ(2),TOBJ(3),TOBJ(3),TOBJ(1),TOBJ(5), nil];
-3 id value=[mSet anyObject];
-</code></pre>
-
-<h4>二、NSIndexSet、NSMutableIndexSet 可变索引集合的介绍</h4>
-
-<p>1）索引集合，表示唯一的整数的集合,有可变和不可变之分。</p>
-
-<p>2）initWithIndexesInRange 用指定的范围对应的索引创建索引对象 例如：</p>
-
-<pre><code>1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:
-2 NSMakeRange(2,   3)];//结果 2,3,4
-3）objectsAtIndexes 根据索引集合中的索引取出数组中对应的元素（返回数组） 例如：
-
-1 NSIndexSet *indexSet1=[[NSIndexSet alloc]initWithIndexesInRange:NSMakeRange(2,   3)]; 
-2 NSArray *array=@[@"one",@"two",@"three",@"four",@"five",@"sex"];
-3 NSArray *array2=[array objectsAtIndexes:indexSet1];
-4 NSLog(@"array2:%@",array2); //结果：array2:three four five
-</code></pre>
-
-<p>4）创建一个可变的集合索引(初始化时有一个索引）(可以存储不连续的索引值） 例如：</p>
-
-<pre><code>1 NSMutableIndexSet *indexSet2=[NSMutableIndexSet indexSetWithIndex:2];
-2 [indexSet2 addIndex:4];
-3 [indexSet2 addIndex:1];
-4 [indexSet2 addIndex:2];
-5 NSLog(@"count:%ld",indexSet2.count);//获取个数
-6 NSArray *array3=[array objectsAtIndexes:indexSet2];//结果：two three  five
-</code></pre>
-
-<p>5）NSNull:类表示空, 只有一个类方法[NSNull null]获取空对象，在数组中nil表示元素结束（不能用nil表示空元素</p>
-
-<p>可采用[NSNull null]表示空元素） 例如：</p>
-
-<pre><code>1 NSArray *array5=[NSArray arrayWithObjects:@"red",[NSNull null],@"yellow",@"blue", nil];
-</code></pre>
-
-<h4>三、Category 介绍</h4>
-
-<p>1）Category 意为： 类别、分类、类目</p>
-
-<p>1、可以在不改变类名的情况下，扩充类的功能（给类增加方法）</p>
-
-<p>2、可以将类的功能拆成多个文件编译</p>
-
-<p>3、类别中不能增加成员变量，可以访问原来类中的成员变量</p>
-
-<p>4、类别中可以增加与原来类中同名的方法，调用时优先调用</p>
-
-<p>5、添加文件时选择Objective-C File 那个文件同时注意选择要拓展的类名</p>
-
-<p>2）类别的声明类似于类的声明，@interface要扩充功能的类名（类别名）</p>
-
-<p>1、类别不能实例化对象</p>
-
-<p>2、类别中不能增加成员变量。</p>
-
-<p>3、类别中的方法可以访问原来类中的成员变量</p>
-
-<p>4、类别可以调用原来类中的方法</p>
-
-<p>5、类别中的方法可以被子类继承</p>
-
-<p>6、类别可以添加与原来类中相同的方法，调用时类别中的方法优先调用，一般不建议这样操作（无法再调用原来类中的方法）</p>
-
-<p>3）字符串、NSNumber是簇类，底层是由很多类组成的，不能有子类 ,因为子类调用不了父类中的方法</p>
-
-<p>4）Category 文件名格式为：父类文件名+子类文件名 如：NSMutaleString+Resvrse.h</p>
-
-<p>5）Category .m文件中的方法表现形式： 1 @implementation NSMutableString (Reverse)</p>
-
-<h4>四、Extension 的介绍</h4>
-
-<p>1）extension：相当于未命名的Category，可以扩展类的功能（增加方法），也可以增加成员变量。</p>
-
-<p>2）extension：只有.h文件</p>
-
-<p>3）extension  表现形式 @interface 类名（）例如： 1 @interface Person (){}</p>
-
-<p>4）在.m文件中也可以声明成员变量，不会将其放在接口h文件中暴露给使用者。 例如：</p>
-
-<pre><code>复制代码
-1 @interface Person()
-2 { 
-3     int _num;
-4 }
-5 //将方法声明为私有的
-6 -(void)print2;
-7 @end
-复制代码
-</code></pre>
-
-<h4>五、SEL的介绍</h4>
-
-<p>1）SEL是一种类型，将方法名封装为sel的变量，通过SEL找到方法的地址，调用方法。</p>
-
-<p>2）SEL 封装方法实例代码：</p>
-
-<pre><code>复制代码
-1  //将play方法名封装成SEL类型的数据
-2 SEL sel=@selector(play);
-3  //判断p1所属的类是否实现了sel中的方法
-4 if([p1 respondsToSelector:sel]){
-5  //p1查找sel中方法的地址，再调用对应的方法
-6 [p1 performSelector:sel];
-7  }
-复制代码
-</code></pre>
-
-<p>3）performSelector 用于执行SEL封装的方法 例如： 1 [p1 performSelector:@selector(jump)];</p>
-
-<p>4)SEL 封装带参数的方法实例代码：</p>
-
-<pre><code>1  //将带一个参数的方法封装为SEL的变量，执行，参数是id类型
-2  [p1 performSelector:@selector(print:) withObject:@"hello"];
-</code></pre>
-
-<p>5)NSSelectorFromString 用于将字符串形式的方法名封装成SEL的数据 实例代码：</p>
-
-<pre><code>1  SEL sel2=NSSelectorFromString(@"study");
-2  [p1 performSelector:sel2];
-</code></pre>
-
-<p>6）<em>cmd 表示当前执行的方法 例如： 1NSLog(@&ldquo;*****metheod:%@&rdquo;,NSStringFromSelector(</em>cmd));</p>
-
-<p>7)在C语言中 <strong>func 表示获取当前执行方法 例如： 1 NSLog(@&ldquo;func=%s&rdquo;,</strong>func__);</p>
-
-<pre><code>__DATE__ 表示获取当前系统时间  1 NSLog(@"date=%s",__DATE__); 
-</code></pre>
-
-<p>8）SEL实现数组排序 实例代码：</p>
-
-<pre><code>复制代码
-1 void testSel()
-2 {
-3     Person *p1;
-4     Person *p2;
-5     Person *p3;
-6     NSMutableArray *array1=[[NSMutableArray alloc]initWithObjects:p1,p2,p3, nil];
-7     [array1 sortUsingSelector:@selector(comparePerson:)];
-8     
-9 }
-复制代码
-</code></pre>
-
-<h4>六、构造OC中的二维数组</h4>
-
-<p>实例代码：</p>
-
-<pre><code>复制代码
-//创建一个空的外层数组
- 2         NSMutableArray *bigArray=[NSMutableArray array];
- 3         //创建一个存放4个数据对象的数组
- 4         NSMutableArray *array1=[[NSMutableArray alloc]init];
- 5         for(int i=0;i&lt;4;i++){
- 6             [array1 addObject:[NSNumber numberWithInt:i]];
- 7         }
- 8         //创建一个存放3个字符串的数组
- 9         NSMutableArray *array2=[[NSMutableArray alloc]init];
-10         for(int i=0;i&lt;3;i++){
-11             [array2 addObject:[NSString stringWithFormat:@"str%d",i+1]];
-12         }
-13         //将array1和array2两个数组对象存入外层数组（相当于创建了一个二维数组）
-14         [bigArray addObject:array1];
-15         [bigArray addObject:array2];
-16         
-17         //遍历，显示所有的元素
-18         for(int i=0;i&lt;bigArray.count;i++){
-19             for(int j=0;j&lt;[bigArray[i] count];j++){
-20                 //取出数组中第i行第j列的元素（每行又是一个数组对象）
-21                 if([bigArray[i][j] isKindOfClass:[NSNumber class]]){
-22                     NSLog(@"number:%@",bigArray[i][j]);
-23                 }
-24                 else if ([[[bigArray objectAtIndex:i] objectAtIndex:j] isKindOfClass:[NSString class]]){
-25                     NSLog(@"string:%@",[[bigArray objectAtIndex:i] objectAtIndex:j]);
-26                 }
-27             }
-28         }
-复制代码
-</code></pre>
-
-<h4>七、Class (类)的介绍</h4>
-
-<p>1）类的本质也是一个对象，是Class类型的对象，获取类对象（可以通过实例方法或类方法获取）,</p>
-
-<p>每个类只有一个类对象。</p>
-
-<p>2）load 方法当程序启动时会加载所有的类和分类，调用load方法，先加载父类，再加载子类，然后是分类 例如：</p>
-
-<pre><code>1  +(void)load
-2  {
-3      NSLog(@"Person---load");
-4  }
-</code></pre>
-
-<p>3）initialize方法 当第一次使用类的时候，调用initialize方法，先调用父类的，再调用子类的 例如：</p>
-
-<pre><code>1 +(void)initialize
-2  {
-3     NSLog(@"Person---initialize");
-4  }
-</code></pre>
-
-<p>本博文由博主（iCocos）独立编写或者借鉴别人的好文章进行修改而成，如果不对的地方望指正，谢谢！ 如果您还有看到新浪博客关于IOS梦工厂的博文，麻烦请到这里找更完整更清晰的版本，博主已从<a href="http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD">http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html%E8%BD%AC%E7%A7%BB%E5%88%B0%E5%8D%9A%E5%AE%A2%E5%9B%AD</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[iOS生命周期]]></title>
-    <link href="http://al1020119.github.io/blog/2013/06/30/iossheng-ming-zhou-qi/"/>
-    <updated>2013-06-30T21:52:15+08:00</updated>
-    <id>http://al1020119.github.io/blog/2013/06/30/iossheng-ming-zhou-qi</id>
-    <content type="html"><![CDATA[<h3>控制器（View）生命周期</h3>
-
-<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
-
-<pre><code>1、 alloc                                   创建对象，分配空间
-2、init (initWithNibName) 初始化对象，初始化数据
-3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
-4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
-5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
-6、viewDidAppear               视图已在屏幕上渲染完成
-</code></pre>
+<p><a href="https://github.com/al1020119">https://github.com/al1020119</a></p>
 
 <!--more-->
 
-
-<p>当一个视图被移除屏幕并且销毁的时候的执行顺序，这个顺序差不多和上面的相反</p>
-
-<pre><code>1、viewWillDisappear            视图将被从屏幕上移除之前执行
-2、viewDidDisappear             视图已经被从屏幕上移除，用户看不到这个视图了
-3、dealloc                                 视图被销毁，此处需要对你在init和viewDidLoad中创建的对象进行释放
-</code></pre>
-
-<p>再来看张网上找到的图，结合上面的总结那么久很清晰了！</p>
-
-<p><img src="/images/kongzhiqshengmzhouqi001.jpg" title="Caption" ></p>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>app的启动过程</h3>
-
-<pre><code>1.先执行main函数，main内部会调用UIApplicationMain函数
-
-2.UIApplicationMain函数里面做了什么事情：
-
-    1&gt; 创建UIApplication对象
-    2&gt; 创建UIApplication的delegate对象—–PYAppDelegate
-    3&gt; 开启一个消息循环
-
-每监听到对应的系统事件时，就会通知MJAppDelegate
-
-根据plist文件判断是否需要加载storyBoard
-</code></pre>
-
-<p>如果有storyBoard</p>
-
-<pre><code>加载Info.plist文件，读取最主要storyboard文件的名称
-
-加载最主要的storyboard文件，创建白色箭头所指的控制器对象
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>如果没有storyBoard</p>
-
-<pre><code>在代理的difinishLuaunchWithOPtions中为应用程序创建一个UIWindow对象(继承自UIView)，设置为PYAppDelegate的window属性
-
-并且设置创建的控制器为UIWindow的rootViewController属性(根控制器)
-
-初始化对应的子控件
-</code></pre>
-
-<p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
-
-<h3>App的生命周期</h3>
-
-<p>这里只是简单的总结，关于有些方法我们并没有解除过，所以就略过了。</p>
-
-<pre><code> 1、application didFinishLaunchingWithOptions：当应用程序启动时执行，应用程序启动入口，只在应用程序启动时执行一次。若用户直接启动，lauchOptions内无数据,若通过其他方式启动应用，lauchOptions包含对应方式的内容。
- 2、applicationWillResignActive：在应用程序将要由活动状态切换到非活动状态时候，要执行的委托调用，如 按下 home 按钮，返回主屏幕，或全屏之间切换应用程序等。
-
- 3、applicationDidEnterBackground：在应用程序已进入后台程序时，要执行的委托调用。
-
- 4、applicationWillEnterForeground：在应用程序将要进入前台时(被激活)，要执行的委托调用，刚好与applicationWillResignActive 方法相对应。
-
- 5、applicationDidBecomeActive：在应用程序已被激活后，要执行的委托调用，刚好与applicationDidEnterBackground 方法相对应。
-
- 6、applicationWillTerminate：在应用程序要完全推出的时候，要执行的委托调用，这个需要要设置UIApplicationExitsOnSuspend的键值。
-</code></pre>
 ]]></content>
   </entry>
   
