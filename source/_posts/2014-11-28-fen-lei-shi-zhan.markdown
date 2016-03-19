@@ -3,7 +3,7 @@ layout: post
 title: "Block实战"
 date: 2014-11-28 19:42:57 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

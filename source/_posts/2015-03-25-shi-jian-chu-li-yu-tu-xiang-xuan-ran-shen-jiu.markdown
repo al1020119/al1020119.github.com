@@ -3,7 +3,7 @@ layout: post
 title: "事件处理与图像渲染深究"
 date: 2015-03-25 09:47:11 +0800
 comments: true
-categories: Reverse
+categories: Senior
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

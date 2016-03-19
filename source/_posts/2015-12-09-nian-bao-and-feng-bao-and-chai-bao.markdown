@@ -3,7 +3,7 @@ layout: post
 title: "粘包&amp;封包&amp;拆包"
 date: 2015-12-09 18:11:05 +0800
 comments: true
-categories: Reverse
+categories: Full Stack
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

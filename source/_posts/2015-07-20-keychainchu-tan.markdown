@@ -3,7 +3,7 @@ layout: post
 title: "KeyChain初探"
 date: 2015-07-20 22:46:16 +0800
 comments: true
-categories: Reverse
+categories: Senior
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

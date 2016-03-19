@@ -3,7 +3,7 @@ layout: post
 title: "SVN实战总结"
 date: 2015-07-02 22:44:29 +0800
 comments: true
-categories: Reverse
+categories: Tools
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

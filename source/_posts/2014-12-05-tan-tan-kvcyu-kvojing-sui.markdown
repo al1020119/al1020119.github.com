@@ -3,7 +3,7 @@ layout: post
 title: "谈谈KVC与KVO精髓"
 date: 2014-12-05 23:11:52 +0800
 comments: true
-categories: Reverse
+categories: Low-Level 
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

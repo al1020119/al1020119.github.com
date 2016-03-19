@@ -4,7 +4,7 @@ layout: post
 title: "ScrollView回到顶部复原"
 date: 2015-08-21 02:33:00 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

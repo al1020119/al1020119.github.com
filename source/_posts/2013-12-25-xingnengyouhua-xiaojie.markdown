@@ -4,7 +4,7 @@ layout: post
 title: "性能优化小结"
 date: 2013-12-25 13:53:19 +0800
 comments: true
-categories: Reverse
+categories: Performance
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

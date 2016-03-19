@@ -4,7 +4,7 @@ layout: post
 title: "不借助第三方变量修改两个值（四种方法）"
 date: 2013-11-11 13:53:19 +0800
 comments: true
-categories: Reverse
+categories: Foundation
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

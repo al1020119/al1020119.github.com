@@ -3,7 +3,7 @@ layout: post
 title: "移动端性能优化"
 date: 2014-09-25 14:16:31 +0800
 comments: true
-categories: Reverse
+categories: Performance
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

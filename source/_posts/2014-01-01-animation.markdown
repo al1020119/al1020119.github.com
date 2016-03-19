@@ -4,7 +4,7 @@ layout: post
 title: "三维动画初探"
 date: 2014-01-01 13:53:19 +0800
 comments: true
-categories: Reverse
+categories: Foundation
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

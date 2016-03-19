@@ -4,7 +4,7 @@ layout: post
 title: "网络请求疯（封）装"
 date: 2015-08-25 09:37:30 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

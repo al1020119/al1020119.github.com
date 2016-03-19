@@ -3,7 +3,7 @@ layout: post
 title: "方法缓存"
 date: 2014-11-14 17:42:41 +0800
 comments: true
-categories: Reverse
+categories: Performance
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

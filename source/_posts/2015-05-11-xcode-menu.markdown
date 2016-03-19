@@ -3,7 +3,7 @@ layout: post
 title: "Xcode Menu"
 date: 2015-05-11 14:20:57 +0800
 comments: true
-categories: Reverse
+categories: Tools
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

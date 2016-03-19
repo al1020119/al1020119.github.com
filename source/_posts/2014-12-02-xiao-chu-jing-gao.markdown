@@ -4,7 +4,7 @@ layout: post
 title: "消除警告"
 date: 2014-12-02 02:51:46 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

@@ -4,7 +4,7 @@ layout: post
 title: "长链接&amp;短链接"
 date: 2015-05-20 21:30:21 +0800
 comments: true
-categories: Reverse
+categories: Full Stack 
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

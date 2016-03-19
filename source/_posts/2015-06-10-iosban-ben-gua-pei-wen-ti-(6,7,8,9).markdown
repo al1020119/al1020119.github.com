@@ -4,7 +4,7 @@ layout: post
 title: "iOS版本适配问题（6，7，8，9）"
 date: 2015-06-10 20:52:45 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

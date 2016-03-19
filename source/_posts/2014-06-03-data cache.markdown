@@ -4,7 +4,7 @@ layout: post
 title: "玩转数据持久化"
 date: 2014-06-03 13:53:19 +0800
 comments: true
-categories: Reverse
+categories: Developer
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

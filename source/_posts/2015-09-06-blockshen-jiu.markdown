@@ -3,7 +3,7 @@ layout: post
 title: "Block深究"
 date: 2015-09-06 17:43:24 +0800
 comments: true
-categories: Reverse
+categories: Low-Level
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

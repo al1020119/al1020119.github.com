@@ -4,7 +4,7 @@ layout: post
 title: "全屏返回（Runtime）"
 date: 2015-11-06 02:51:33 +0800
 comments: true
-categories: Reverse
+categories: Low-Level
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 
