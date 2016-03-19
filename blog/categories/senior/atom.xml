@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Senior | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/senior/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-03-19T02:21:30+08:00</updated>
+  <updated>2016-03-19T23:04:36+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -437,6 +437,809 @@ static NSString * const KEY_PASSWORD = @"com.wuqian.app.password";
     [WQUserDataManager savePassWord:self.textfield.text];
     self.label.text = [WQUserDataManager readPassWord];
 }
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iBeacon初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan/"/>
+    <updated>2015-11-28T17:42:15+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan</id>
+    <content type="html"><![CDATA[<blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
+当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
+
+<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
+等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+
+<!--more-->
+
+
+<h4>Apple Store 中的 iBeacon 支持</h4>
+
+<h6>特点</h6>
+
+<pre><code>iBeacon 基于低功耗蓝牙技术（Bluetooth Low Energy, BLE）这一开放标准，因此也继承了 BLE 的一些特点。
+</code></pre>
+
+<h6>范围广</h6>
+
+<pre><code>相比于 NFC 的数厘米的识别范围，iBeacon 的识别范围可以达到数十米，并且能够估计距离的远近。
+</code></pre>
+
+<h6>兼容性</h6>
+
+<pre><code>iBeacon 是基于 BLE 做的一个简单封装，因此大部分支持 BLE 的设备都可以兼容。
+例如可以使用一个普通的蓝牙芯片作为信标，使用 Android 设备检测信标的存在。
+</code></pre>
+
+<h6>低能耗</h6>
+
+<pre><code>不少 beacon 实现宣称可以不依赖外部能源独立运行两年。
+</code></pre>
+
+<h6>使用场景</h6>
+
+<pre><code>我们以一个连锁商场的例子来讲解 iBeacon 的一个流程。在一个连锁商场中，店家需要在商场中的不同地方推送不同的优惠信息，比如服装和家居柜台推送的消息就很有可能不同。
+</code></pre>
+
+<p>当消费者走进某个商场时，会扫描到一个 beacon。这个 beacon 有三个标志符，proximityUUID 是一个整个公司（所有连锁商场）统一的值，可以用来标识这个公司，major 值用来标识特定的连锁商场，比如消费者正在走进的商场，minor 值标识了特定的一个位置的 beacon，例如定位到消费者正在门口。</p>
+
+<p>这时商场的 app 会被系统唤醒，app 可以运行一个比较短的时间。在这段时间内，app 可以根据 beacon 的属性查询到用户的地理位置（通过查询服务器或者本地数据），例如在化妆品专柜，之后就可以通过一个 local notification 推送化妆品的促销信息。用户可以点击这次 local notification 来查看更详细的信息，这样一次促销行为就完成了。</p>
+
+<h6>API</h6>
+
+<pre><code>闲话少说，我们来看下 iBeacon 具体怎么使用：
+</code></pre>
+
+<h6>Beacon 的表示</h6>
+
+<pre><code>iBeacon 本质上来说是一个位置（区域）信息，所以 Apple 把 iBeacon 功能集成在了 Core Location 里面。
+</code></pre>
+
+<p>iBeacon 信标在 Core Location 中表现为一个 CLBeacon，它圈定的范围则表现为 CLBeaconRegion，这是一个 CLRegion 的子类。</p>
+
+<p>CLBeaconRegion 主要用三个属性来标识一个 iBeacon，proximityUUID、major 和 minor。
+proximityUUID 是一个 NSUUID，用来标识公司，每个公司、组织使用的 iBeacon 应该拥有同样的 proximityUUID。
+major 用来识别一组相关联的 beacon，例如在连锁超市的场景中，每个分店的 beacon 应该拥有同样的 major。
+minor 则用来区分某个特定的 beacon。</p>
+
+<pre><code>这些属性如果不指定（即 nil），匹配的时候就会忽略这个属性。例如只指定 proximityUUID 的 CLBeaconRegion 可以匹配某公司的所有 beacons。
+</code></pre>
+
+<h6>Monitoring</h6>
+
+<pre><code>Apple 在 iOS 4 中增加了地理围栏 API，可以用来在设备进入/退出某个地理区域时获得通知，这些 API 包括 -startMonitoringForRegion:、-locationManager:didEnterRegion:、-locationManager:didExitRegion: 等。
+</code></pre>
+
+<p>CLBeaconRegion 作为 CLRegion 的子类也可以复用这些 API，这种检测 iBeacon 的方式叫做 monitoring。</p>
+
+<p>使用这种方法可以在程序在后台运行时检测 iBeacon，但是只能同时检测 20 个 region，也不能推测设备与 beacon 的距离。</p>
+
+<h6>Ranging</h6>
+
+<pre><code>除了使用地理围栏 API 的方式，Apple 还在 iOS 7 中新增加了 iBeacon 专用的检测方式，也就是 ranging。
+</code></pre>
+
+<p>通过 CLLocationManager 的 -startRangingBeaconsInRegion: 方法可以开始检测特定的 iBeacon。</p>
+
+<p>当检测到 beacon 的时候，CLLocationManager 的 delegate 方法 -locationManager:didRangeBeacons:inRegion: 会被调用，通知调用者现在被检测到的 beacons。
+这个方法会返回一个 CLBeacon 的数组，根据 CLBeacon 的 proximity 属性就可以判断设备和 beacon 之间的距离。</p>
+
+<blockquote><p>proximity 属性有四个可能的值，unknown、immediate、near 和 far。
+另外 CLBeacon 还有 accuracy 和 rssi 两个属性能提供更详细的距离数据。</p></blockquote>
+
+<h6>使用 iOS 设备作为 iBeacon</h6>
+
+<p>我们可以使用 Core Bluetooth 框架来广播特定的 payload 来让 iOS 设备成为一个 iBeacon。
+这个 payload 可以由 CLBeaconRegion 的 -peripheralDataWithMeasuredPower: 方法来获取。
+之后交给 CBPeripheralManager 广播出去就可以了。</p>
+
+<p>需要注意的是，广播 iBeacon 信息的时候 app 必须在前台运行。</p>
+
+<h6>行为</h6>
+
+<p>iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别是当应用运行在后台时，检测到 beacon 的时间延迟会让开发者难以推测。在做了一些实验和合理的推测后，我们得出了一些</p>
+
+<blockquote><p>结论：
+检测到 beacon 的时间跟设备进行蓝牙扫描的时间间隔有关，每当设备进行扫描的时候，就能发现 iBeacon region 的变化。
+在 ranging 打开的情况下，设备会每秒钟做一次扫描，也就是说状态更新最多延迟一秒。
+程序在后台运行，并且 monitoring 打开的时候，设备可能每隔数分钟做一次扫描。iOS 7 的响应速度较慢，iOS 7.1 有比较大的改善。
+如果存在设置 notifyEntryStateOnDisplay=YES 的 beacon，iOS 会在屏幕点亮的时候（锁屏状态下按下 home 键，或者因为收到推送点亮等）进行一次扫描。
+设备重启并不影响 iBeacon 后台检测的执行。
+iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Metal深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/10/10/metal/"/>
+    <updated>2015-10-10T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/10/10/metal</id>
+    <content type="html"><![CDATA[<p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
+
+<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
+
+<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
+
+<!--more-->
+
+
+<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
+
+<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
+
+<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
+
+<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
+
+<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
+</code></pre>
+
+<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
+
+<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
+
+<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
+
+<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
+
+<p>但是，还是有两个很好的原因来学习Metal：</p>
+
+<ul>
+<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
+<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
+</ul>
+
+
+<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
+
+<h4>Metal vs OpenGL ES</h4>
+
+<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
+
+<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
+
+<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
+
+<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
+
+<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
+
+<p>让我们开始看看一些Metal代码吧！</p>
+
+<p>开头
+Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
+
+<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
+
+<p>有七个步骤来设置metal：</p>
+
+<ul>
+<li>1.创建一个MTLDevice</li>
+<li>2.创建一个CAMetalLayer</li>
+<li>3.创建一个Vertex Buffer</li>
+<li>4.创建一个Vertex Shader</li>
+<li>5.创建一个Fragment Shader</li>
+<li>6.创建一个Render Pipeline</li>
+<li>7.创建一个Command Queue</li>
+</ul>
+
+
+<p>让我们一个个看它们。</p>
+
+<h5>1)创建一个MTLDevice</h5>
+
+<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
+
+<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
+
+<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
+
+<pre><code>import Metal 
+</code></pre>
+
+<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
+
+<pre><code>var device: MTLDevice! = nil 
+</code></pre>
+
+<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
+
+<pre><code>device = MTLCreateSystemDefaultDevice() 
+</code></pre>
+
+<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
+
+<h5>2）创建一个CAMetalLayer</h5>
+
+<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
+
+<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
+
+<p>首先在这个文件的上方添加import语句。</p>
+
+<pre><code>import QuartzCore 
+</code></pre>
+
+<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
+
+<p>然后把新属性添加到类中：</p>
+
+<pre><code>var metalLayer: CAMetalLayer! = nil 
+</code></pre>
+
+<p>这将会存储你新layer的引用。</p>
+
+<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
+
+<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
+ 2 
+ 3 metalLayer.device = device           // 2 
+ 4 
+ 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
+ 6 
+ 7 metalLayer.framebufferOnly = true    // 4 
+ 8 
+ 9 metalLayer.frame = view.layer.frame  // 5 
+10 
+11 view.layer.addSublayer(metalLayer)   // 6 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你创建了一个CAMetalLayer</li>
+<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
+<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
+<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
+<li>e.你把layer的frame设置为view的frame。</li>
+<li>f.你把layer作为view.layer下的子layer添加。</li>
+</ul>
+
+
+<h5>3）创建一个Vertex Buffer</h5>
+
+<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
+
+<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
+
+<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
+
+<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
+
+<pre><code>let vertexData:[Float] = [ 
+  0.0, 1.0, 0.0, 
+  -1.0, -1.0, 0.0, 
+  1.0, -1.0, 0.0] 
+</code></pre>
+
+<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
+
+<p>添加另一个新的属性：</p>
+
+<pre><code>var vertexBuffer: MTLBuffer! = nil 
+然后在 viewDidLoad 方法的最后添加以下代码：
+let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
+vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
+<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
+</ul>
+
+
+<h5>4）创建一个Vertex Shader</h5>
+
+<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
+
+<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
+
+<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
+
+<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
+
+<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
+
+<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
+在Shaders.metal底部添加下列代码：</p>
+
+<pre><code>metalLayer = CAMetalLayer()          // 1 
+
+metalLayer.device = device           // 2 
+
+metalLayer.pixelFormat = .BGRA8Unorm // 3 
+
+metalLayer.framebufferOnly = true    // 4 
+
+metalLayer.frame = view.layer.frame  // 5 
+
+view.layer.addSublayer(metalLayer)   // 6
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
+<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
+<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
+<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
+</ul>
+
+
+<h5>5）创建一个Fragment Shader</h5>
+
+<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
+
+<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
+
+<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
+
+<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
+
+<p>在Shader.metal的底部添加下列代码：</p>
+
+<pre><code>1 fragment half4 basic_fragment() { // 1 
+2 
+3 return half4(1.0);              // 2 
+4 
+5 } 
+</code></pre>
+
+<p>让我们一行行来看：</p>
+
+<ul>
+<li><ol type="a">
+<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
+</ol>
+</li>
+<li><ol type="a">
+<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
+</ol>
+</li>
+</ul>
+
+
+<h5>6）创建一个Render Pipeline</h5>
+
+<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
+
+<ol>
+<li><p>首先在ViewController.swift里添加一个属性：
+var pipelineState: MTLRenderPipelineState! = nil
+这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
+<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
+</ol>
+
+
+<p>// 1</p>
+
+<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
+2 
+3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
+4 
+5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
+</code></pre>
+
+<p>// 2</p>
+
+<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
+
+pipelineStateDescriptor.vertexFunction = vertexProgram 
+
+pipelineStateDescriptor.fragmentFunction = fragmentProgram 
+
+pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
+</code></pre>
+
+<p>//3</p>
+
+<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
+
+if !pipelineState { 
+
+  println("Failed to create pipeline state, error \(pipelineError)") 
+
+}
+</code></pre>
+
+<p>让我们分部分看这些代码：</p>
+
+<ul>
+<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
+<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
+<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
+</ul>
+
+
+<h5>7）创建一个Command Queue</h5>
+
+<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
+
+<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
+
+<p>要创建一个command queue，简单地添加一个属性：</p>
+
+<pre><code>var commandQueue: MTLCommandQueue! = nil 
+</code></pre>
+
+<p>把下面这行添加到 viewDidLoad 的最后：</p>
+
+<pre><code>commandQueue = device.newCommandQueue() 
+</code></pre>
+
+<p>恭喜，你的预设置的代码完成了。</p>
+
+<p>渲染三角形
+现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
+
+<p>它将在五个步骤中被完成：</p>
+
+<ul>
+<li>1.创建一个Display link。</li>
+<li>2.创建一个Render Pass Descriptor</li>
+<li>3.创建一个Command Buffer</li>
+<li>4.创建一个Render Command Encoder</li>
+<li>5.提交你Command Buffer的内容。</li>
+</ul>
+
+
+<p>让我们深入来看！</p>
+
+<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
+
+<h6>1）创建一个Display Link</h6>
+
+<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
+
+<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
+
+<p>为了使用它，在类里添加一个新的属性：</p>
+
+<pre><code> 1 var timer: CADisplayLink! = nil  
+</code></pre>
+
+<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
+
+<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
+
+timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
+</code></pre>
+
+<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
+
+<pre><code>func render() { 
+
+// TODO 
+
+} 
+
+func gameloop() { 
+  autoreleasepool { 
+
+    self.render() 
+
+  } 
+
+} 
+</code></pre>
+
+<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
+
+<h6>2）创建一个Render Pass Descriptor</h6>
+
+<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
+
+<p>简单地在 render 函数里添加以下行：</p>
+
+<pre><code>var drawable = metalLayer.nextDrawable() 
+
+let renderPassDescriptor = MTLRenderPassDescriptor() 
+renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
+
+renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
+
+renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
+</code></pre>
+
+<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
+
+<h6>3）创建一个Command Buffer</h6>
+
+<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
+
+<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
+</code></pre>
+
+<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
+
+<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
+
+<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
+
+<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
+renderEncoder.setRenderPipelineState(pipelineState) 
+
+renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
+
+renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
+
+renderEncoder.endEncoding()
+</code></pre>
+
+<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
+
+<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
+
+<p>当你完成后，你只要调用 endEncoding()。</p>
+
+<h6>5）提交你的Command Buffer</h6>
+
+<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
+
+<pre><code>commandBuffer.presentDrawable(drawable)
+commandBuffer.commit()
+</code></pre>
+
+<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
+
+<p>我见过最赞的三角形！</p>
+
+<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
+
+<p>最后:这是我们教程最终的项目。</p></blockquote>
+
+<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
+</code></pre>
+
+<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[KeyChain初探]]></title>
+    <link href="http://al1020119.github.io/blog/2015/07/20/keychainchu-tan/"/>
+    <updated>2015-07-20T22:46:16+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/07/20/keychainchu-tan</id>
+    <content type="html"><![CDATA[<p>iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。</p>
+
+<blockquote><p>“yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。</p></blockquote>
+
+<!--more-->
+
+
+<h3>一.基本知识</h3>
+
+<h6>1.方法</h6>
+
+<ul>
+<li>SecItemAdd 增</li>
+<li>SecItemUpdate 改</li>
+<li>SecItemDelete 删</li>
+<li>SecItemCopyMatching 查</li>
+</ul>
+
+
+<h6>2.权限</h6>
+
+<p>文档上说iOS的keyChain是一个相对独立的空间，当程序替换，删除时并不会删除keyChain的内容，这个要比Library/Cache好。刷机，恢复出厂应该就没有了。关于备份，只会备份数据，到那时不会备份设备的密钥，换句话说，即使拿到数据，也没有办法解密里面的内容。有人说似乎破解的手机就能破解keyChain,本人并不清楚，希望有大神能指教。但个人认为，keyChain只是沙盒的升级版，可以存放一些非私密的信息，即使破解也不影响其它用户，只影响那个破解了的设备。（比如针对该设备的一个密钥）。</p>
+
+<p>可访问性一般来说，自己的程序只能访问自己的keychain,相同bundle的程序通过设置group可以互相共享同组的keychain，从而实现程序间可以共同访问一些数据。详细后面介绍一些我测试下来的经验。</p>
+
+<h6>3.如何查询keyChain</h6>
+
+<pre><code>[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
+genericPasswordQuery = [[NSMutableDictionary alloc] init];   
+[genericPasswordQuery setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];//1  
+[genericPasswordQuery setObject:identifier forKey:(id)kSecAttrGeneric];//2  
+if (accessGroup != nil){  
+    [genericPasswordQuery setObject:accessGroup forKey:(id)kSecAttrAccessGroup];//3  
+}  
+[genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];//4  
+[genericPasswordQuery setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];//5  
+NSDictionary *tempQuery = [NSDictionary dictionaryWithDictionary:genericPasswordQuery];  
+NSMutableDictionary *outDictionary = nil;      
+if (SecItemCopyMatching((CFDictionaryRef)tempQuery, (CFTypeRef *)&amp;outDictionary) == noErr){//6  
+//found and outDicitionary is not nil  
+}else{  
+//not found  
+}  
+</code></pre>
+
+<ul>
+<li>1.设置Class值，每个Class对应的都有不同的参数类型</li>
+<li>2.用户确定的参数，一般是程序中使用的类别，比如说是"Password"或"Account Info"，作为search的主力条件</li>
+<li>3.设置Group,如果不同程序都拥有这个组，那么不同程序间可以共享这个组的数据</li>
+<li>4.只返回第一个匹配数据，查询方法使用，还有值kSecMatchLimitAll</li>
+<li>5.返回数据为CFDicitionaryRef，查询方法使用</li>
+<li>6.执行查询方法，判断返回值</li>
+</ul>
+
+
+<blockquote><p>eg:这个是none-ARC的代码哦！ARC情况下会有bridge提示。</p></blockquote>
+
+<h6>4.类型转换</h6>
+
+<p>介绍增删改方法调用前，先介绍转换方法，如何将NSDictionary转换成KeyChain方法可以设置的Dicitionary，一般在写程序过程中，应该尽量避免直接访问KeyChain，一般会创建一个NSDictionary来同步对应的数据，所以两者需要做转换。</p>
+
+<pre><code>//data to secItem  
+- (NSMutableDictionary *)dictionaryToSecItemFormat:(NSDictionary *)dictionaryToConvert  
+{  
+    // Create a dictionary to return populated with the attributes and data.  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    //设置kSecClass  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+    //将Dictionary里的kSecValueData(一般就是这个keyChain里主要内容，比如说是password),NSString转换成NSData  
+    NSString *passwordString = [dictionaryToConvert objectForKey:(id)kSecValueData];  
+    [returnDictionary setObject:[passwordString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];  
+    return returnDictionary;  
+}  
+//secItem to data  
+- (NSMutableDictionary *)secItemFormatToDictionary:(NSDictionary *)dictionaryToConvert  
+{  
+    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+
+    // Add the proper search key and class attribute.  
+    [returnDictionary setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];  
+    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+
+    // Acquire the password data from the attributes.  
+    NSData *passwordData = NULL;  
+    if (SecItemCopyMatching((CFDictionaryRef)returnDictionary, (CFTypeRef *)&amp;passwordData) == noErr)  
+    {  
+        // 删除多余的kSecReturnData数据  
+        [returnDictionary removeObjectForKey:(id)kSecReturnData];  
+
+        // 对应前面的步骤，将数据从NSData转成NSString  
+        NSString *password = [[[NSString alloc] initWithBytes:[passwordData bytes] length:[passwordData length]  
+                                                     encoding:NSUTF8StringEncoding] autorelease];  
+        [returnDictionary setObject:password forKey:(id)kSecValueData];  
+    }  
+    else  
+    {  
+        NSAssert(NO, @"Serious error, no matching item found in the keychain.\n");  
+    }  
+    [passwordData release];   
+    return returnDictionary;  
+}  
+</code></pre>
+
+<h6>5.增删改</h6>
+
+<p>用代码来说明</p>
+
+<pre><code>- (void)writeToKeychain  
+{  
+    NSDictionary *attributes = NULL;  
+    NSMutableDictionary *updateItem = NULL;  
+    OSStatus result;  
+    //判断是增还是改  
+    if (SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery, (CFTypeRef *)&amp;attributes) == noErr)  
+    {  
+            // First we need the attributes from the Keychain.  
+            updateItem = [NSMutableDictionary dictionaryWithDictionary:attributes];  
+        // Second we need to add the appropriate search key/values.  
+            [updateItem setObject:[genericPasswordQuery objectForKey:(id)kSecClass] forKey:(id)kSecClass];  
+            // Lastly, we need to set up the updated attribute list being careful to remove the class.  
+            NSMutableDictionary *tempCheck = [self dictionaryToSecItemFormat:keychainItemData];  
+            //删除kSecClass update不能update该字段，否则会报错  
+            [tempCheck removeObjectForKey:(id)kSecClass];  
+        //参数1表示search的，参数2表示需要更新后的值  
+            result = SecItemUpdate((CFDictionaryRef)updateItem, (CFDictionaryRef)tempCheck);  
+    }else{  
+            //增加  
+            result = SecItemAdd((CFDictionaryRef)[self dictionaryToSecItemFormat:keychainItemData], NULL);  
+    }  
+}  
+</code></pre>
+
+<p>删除很简单，就不写注释了</p>
+
+<pre><code>- (void)resetKeychainItem  
+{  
+    OSStatus junk = noErr;  
+    if (!keychainItemData)  
+    {  
+        self.keychainItemData = [[NSMutableDictionary alloc] init];  
+    }  
+    else if (keychainItemData)  
+    {  
+        NSMutableDictionary *tempDictionary = [self dictionaryToSecItemFormat:keychainItemData];  
+        junk = SecItemDelete((CFDictionaryRef)tempDictionary);  
+        NSAssert( junk == noErr || junk == errSecItemNotFound, @"Problem deleting current dictionary." );  
+    }  
+
+    // Default attributes for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrAccount];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrLabel];  
+    [keychainItemData setObject:@"" forKey:(id)kSecAttrDescription];  
+
+    // Default data for keychain item.  
+    [keychainItemData setObject:@"" forKey:(id)kSecValueData];  
+}  
+</code></pre>
+
+<p>二.Group的配置
+配置Target的Code Signing Entitlements.</p>
+
+<p><img src="/images/keyChain001.png" title="Caption" ></p>
+
+<p>配置该文件</p>
+
+<p><img src="/images/keyChain002.png" title="Caption" ></p>
+
+<p><img src="/images/keyChain003.png" title="Caption" ></p>
+
+<p>可以配置一个Array列表，表示该程序可以支持多个group
+这样就可以在创建secItem时候添加kSecAttrAccessGroup了。
+经过测试有以下经验同大家分享：</p>
+
+<ul>
+<li><p>1.相同bundle下生成的程序都可以共享相同group的keyChain.
+相同bundle解释下就是：比如:2个程序分别使用的provision对应bundle是com.jv.key1和com.jv.key2，那你配置文件肯定是{Identifer}.com.jv.{name},其中identifer是苹果生成的随机串号，可以在申请证书时看到，复制过来即可，name可以自己取，程序中指定属于哪个Group即可。</p></li>
+<li><p>2.如果你在 addkey时，没有指定group,则会默认添加你keychain-access-groups里第一个group，如果你没有设置Entitlements,则默认使用对应的程序的bundle name,比如com.jv.key1,表示只能给自己程序使用。</p></li>
+<li><p>3.如果你程序添加的group并不存在你的配置文件中，程序会奔溃，表示无法添加。因此你只能添加你配置文件中支持的keychain。</p></li>
+</ul>
+
+
+<p>三、保存私密信息（工具）
+在应用里使用使用keyChain，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，为减轻咱们程序员的开发，我们可以使用一些已经封装好了的工具类，下面我会简单介绍下我用过的两个工具类：KeychainItemWrapper和SFHFKeychainUtils。</p>
+
+<p>（一）KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，只需要
+把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
+
+<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
+KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
+                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
+
+//保存帐号
+[
+wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
+
+//保存密码
+[
+wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
+
+//从keychain里取出帐号密码
+NSString *password = [wrapper objectForKey:(id)kSecValueData];      
+
+//清空设置
+[
+wrapper resetKeychainItem];
+</code></pre>
+
+<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会崩溃！</p>
+
+<p>（二）SFHFKeychainUtils 提供了在 iOS keychain中安全的存储密码的工具</p>
+
+<p>下载地址<a href="https://github.com/ldandersen/scifihifi-iphone/tree/master/security">https://github.com/ldandersen/scifihifi-iphone/tree/master/security</a></p>
+
+<ul>
+<li><p>1、引入Security.frameWork框架。</p></li>
+<li><p>2、引入头文件：SFHKeychainUtils.h.</p></li>
+<li><p>3、存密码：</p></li>
+</ul>
+
+
+<hr />
+
+<pre><code>[SFHFKeychainUtils storeUsername:@"dd" andPassword:@"aa"forServiceName:SERVICE_NAME updateExisting:1 error:nil];
+
+[SFHFKeychainUtils deleteItemForUsername:@"dd" andServiceName:SERVICE_NAME error:nil];
+</code></pre>
+
+<ul>
+<li>4、取密码：</li>
+</ul>
+
+
+<hr />
+
+<pre><code>NSString *passWord =  [SFHFKeychainUtils getPasswordForUsername:@"dd"andServiceName:SERVICE_NAME error:nil];
 </code></pre>
 ]]></content>
   </entry>

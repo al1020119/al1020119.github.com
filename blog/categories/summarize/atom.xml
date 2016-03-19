@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Summarize | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/summarize/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-03-19T02:21:30+08:00</updated>
+  <updated>2016-03-19T23:04:36+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -1250,6 +1250,1156 @@ NSURLCache一般用于UIWebView，只对异步请求有效，程序中只有一�
 <br>
 <br>
 <br></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[XMPP使用总结]]></title>
+    <link href="http://al1020119.github.io/blog/2014/09/12/xmppshi-yong-zong-jie/"/>
+    <updated>2014-09-12T00:21:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/09/12/xmppshi-yong-zong-jie</id>
+    <content type="html"><![CDATA[<p>引言：
+最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
+
+<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
+
+<!--more-->
+
+
+<h6>##XMPPFramework是一个OS X/iOS平台的开源项目，使用Objective-C实现了XMPP协议（RFC-3920），同时还提供了用于读写XML的工具，大大简化了基于XMPP的通信应用的开发。</h6>
+
+<h3>关于连接的</h3>
+
+<pre><code>//此方法在stream开始连接服务器的时候调用
+ - (void)xmppStreamDidConnect:(XMPPStream *)sender
+ //此方法在stream连接断开的时候调用
+ - (void)xmppStreamDidDisconnect:(XMPPStream *)sender withError:(NSError *)error;
+</code></pre>
+
+<h3>关于验证的</h3>
+
+<pre><code>//验证失败后调用
+ - (void)xmppStream:(XMPPStream *)sender didNotAuthenticate:(NSXMLElement *)error
+//验证成功后调用
+ - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
+</code></pre>
+
+<h3>关于通信的</h3>
+
+<pre><code>//收到消息后调用
+- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+//接受到好友状态更新
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<h4>简单实战</h4>
+
+<h6>登录和好友上下线</h6>
+
+<h5>XMPP中常用对象们</h5>
+
+<pre><code>XMPPStream：xmpp基础服务类
+XMPPRoster：好友列表类
+XMPPRosterCoreDataStorage：好友列表（用户账号）在core data中的操作类
+XMPPvCardCoreDataStorage：好友名片（昵称，签名，性别，年龄等信息）在core data中的操作类
+XMPPvCardTemp：好友名片实体类，从数据库里取出来的都是它
+xmppvCardAvatarModule：好友头像
+XMPPReconnect：如果失去连接,自动重连
+XMPPRoom：提供多用户聊天支持
+</code></pre>
+
+<p>XMPPPubSub：发布订阅</p>
+
+<h5>登录操作，也就是连接xmpp服务器</h5>
+
+<pre><code>- (void)connect {
+    if (self.xmppStream == nil) {
+        self.xmppStream = [[XMPPStream alloc] init];
+        [self.xmppStream addDelegate:self delegateQueue:dispatch_get_main_queue()];
+    }
+    if (![self.xmppStream isConnected]) {
+        NSString *username = [[NSUserDefaults standardUserDefaults] objectForKey:@"username"];
+        XMPPJID *jid = [XMPPJID jidWithUser:username domain:@"lizhen" resource:@"Ework"];
+        [self.xmppStream setMyJID:jid];
+        [self.xmppStream setHostName:@"10.4.125.113"];
+        NSError *error = nil;
+        if (![self.xmppStream connect:&amp;error]) {
+            NSLog(@"Connect Error: %@", [[error userInfo] description]);
+        }
+    }
+}
+</code></pre>
+
+<p>connect成功之后会依次调用XMPPStreamDelegate的方法，首先调用</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender socketDidConnect:(GCDAsyncSocket *)socket
+</code></pre>
+
+<p>&hellip;
+然后</p>
+
+<ul>
+<li><p>(void)xmppStreamDidConnect:(XMPPStream *)sender
+在该方法下面需要使用xmppStream 的authenticateWithPassword方法进行密码验证，成功的话会响应delegate的方法，就是下面这个</p></li>
+<li><p>(void)xmppStreamDidAuthenticate:(XMPPStream *)sender</p></li>
+</ul>
+
+
+<h5>上线</h5>
+
+<p>实现 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender 委托方法</p>
+
+<pre><code>- (void)xmppStreamDidAuthenticate:(XMPPStream *)sender {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"available"];
+    [self.xmppStream sendElement:presence];
+ }
+</code></pre>
+
+<h5>退出并断开连接</h5>
+
+<pre><code> - (void)disconnect {
+     XMPPPresence *presence = [XMPPPresence presenceWithType:@"unavailable"];
+    [self.xmppStream sendElement:presence];
+
+      [self.xmppStream disconnect];
+  }
+</code></pre>
+
+<h5>好友状态</h5>
+
+<p>获取好友状态，通过实现</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence
+</code></pre>
+
+<p>&hellip;
+方法，当接收到 presence 标签的内容时，XMPPFramework 框架回调该方法</p>
+
+<pre><code>presence 的状态：
+available 上线
+away 离开
+do not disturb 忙碌
+unavailable 下线
+
+- (void)xmppStream:(XMPPStream *)sender didReceivePresence:(XMPPPresence *)presence {
+    NSString *presenceType = [presence type];
+    NSString *presenceFromUser = [[presence from] user];
+    if (![presenceFromUser isEqualToString:[[sender myJID] user]]) {
+        if ([presenceType isEqualToString:@"available"]) {
+            //
+        } else if ([presenceType isEqualToString:@"unavailable"]) {
+            //
+        }
+    }
+}
+</code></pre>
+
+<h3>接收消息和发送消息</h3>
+
+<h5>接收消息</h5>
+
+<p>通过实现</p>
+
+<ul>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message;
+当接收到 message 标签的内容时，XMPPFramework 框架回调该方法
+根据 XMPP 协议，消息体的内容存储在标签 body 内</p></li>
+<li><p>(void)xmppStream:(XMPPStream <em>)sender didReceiveMessage:(XMPPMessage </em>)message {
+  NSString *messageBody = [[message elementForName:@&ldquo;body&rdquo;] stringValue];
+}</p></li>
+</ul>
+
+
+<h5>发送消息</h5>
+
+<p>发送消息，我们需要根据 XMPP 协议，将数据放到标签内</p>
+
+<pre><code>- (void)sendMessage:(NSString *) message toUser:(NSString *) user {
+    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
+    [body setStringValue:message];
+    NSXMLElement *message = [NSXMLElement elementWithName:@"message"];
+    [message addAttributeWithName:@"type" stringValue:@"chat"];
+    NSString *to = [NSString stringWithFormat:@"%@@example.com", user];
+    [message addAttributeWithName:@"to" stringValue:to];
+    [message addChild:body];
+    [self.xmppStream sendElement:message];
+}
+</code></pre>
+
+<h3>获取好友信息和删除好友</h3>
+
+<h5>好友列表和好友名片</h5>
+
+<pre><code>[_xmppRoster fetchRoster];//获取好友列表
+//获取到一个好友节点
+- (void)xmppRoster:(XMPPRoster *)sender didRecieveRosterItem:(NSXMLElement *)item
+//获取完好友列表
+- (void)xmppRosterDidEndPopulating:(XMPPRoster *)sender
+//到服务器上请求联系人名片信息
+- (void)fetchvCardTempForJID:(XMPPJID *)jid;
+//请求联系人的名片，如果数据库有就不请求，没有就发送名片请求
+- (void)fetchvCardTempForJID:(XMPPJID *)jid ignoreStorage:(BOOL)ignoreStorage;
+//获取联系人的名片，如果数据库有就返回，没有返回空，并到服务器上抓取
+- (XMPPvCardTemp *)vCardTempForJID:(XMPPJID *)jid shouldFetch:(BOOL)shouldFetch;
+//更新自己的名片信息
+- (void)updateMyvCardTemp:(XMPPvCardTemp *)vCardTemp;
+//获取到一盒联系人的名片信息的回调
+- (void)xmppvCardTempModule:(XMPPvCardTempModule *)vCardTempModule
+        didReceivevCardTemp:(XMPPvCardTemp *)vCardTemp
+                     forJID:(XMPPJID *)jid
+</code></pre>
+
+<h5>添加好友</h5>
+
+<pre><code>//name为用户账号
+    - (void)XMPPAddFriendSubscribe:(NSString *)name
+    {
+        //XMPPHOST 就是服务器名，  主机名
+        XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];
+        //[presence addAttributeWithName:@"subscription" stringValue:@"好友"];
+        [xmppRoster subscribePresenceToUser:jid];
+
+    }
+</code></pre>
+
+<h5>收到添加好友的请求</h5>
+
+<pre><code>- (void)xmppRoster:(XMPPRoster *)sender didReceivePresenceSubscriptionRequest:(XMPPPresence *)presence
+    {
+        //取得好友状态
+        NSString *presenceType = [NSString stringWithFormat:@"%@", [presence type]]; //online/offline
+        //请求的用户
+        NSString *presenceFromUser =[NSString stringWithFormat:@"%@", [[presence from] user]];
+        NSLog(@"presenceType:%@",presenceType);
+
+        NSLog(@"presence2:%@  sender2:%@",presence,sender);
+
+        XMPPJID *jid = [XMPPJID jidWithString:presenceFromUser];
+        //接收添加好友请求
+        [xmppRoster acceptPresenceSubscriptionRequestFrom:jid andAddToRoster:YES];
+
+    }
+</code></pre>
+
+<h5>删除好友</h5>
+
+<pre><code>//删除好友，name为好友账号
+- (void)removeBuddy:(NSString *)name  
+{  
+    XMPPJID *jid = [XMPPJID jidWithString:[NSString stringWithFormat:@"%@@%@",name,XMPPHOST]];  
+
+    [self xmppRoster] removeUser:jid];  
+}
+</code></pre>
+
+<h5>聊天室</h5>
+
+<p>初始化聊天室</p>
+
+<pre><code>     XMPPJID *roomJID = [XMPPJID jidWithString:ROOM_JID];
+
+    xmppRoom = [[XMPPRoom alloc] initWithRoomStorage:self jid:roomJID];
+
+    [xmppRoom activate:xmppStream];
+     [xmppRoom addDelegate:self delegateQueue:dispatch_get_main_queue()];
+</code></pre>
+
+<p>创建聊天室成功</p>
+
+<pre><code>`- (void)xmppRoomDidCreate:(XMPPRoom *)sender
+{
+    DDLogInfo(@"%@: %@", THIS_FILE, THIS_METHOD);
+}`
+</code></pre>
+
+<p>加入聊天室，使用昵称</p>
+
+<pre><code>[xmppRoom joinRoomUsingNickname:@"quack" history:nil];
+</code></pre>
+
+<p>获取聊天室信息</p>
+
+<pre><code>- (void)xmppRoomDidJoin:(XMPPRoom *)sender
+    {
+        [xmppRoom fetchConfigurationForm];
+        [xmppRoom fetchBanList];
+        [xmppRoom fetchMembersList];
+        [xmppRoom fetchModeratorsList];
+    }
+</code></pre>
+
+<p>如果房间存在，会调用委托</p>
+
+<pre><code>    // 收到禁止名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchBanList:(NSArray *)items;
+    // 收到好友名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchMembersList:(NSArray *)items;
+    // 收到主持人名单列表
+
+    - (void)xmppRoom:(XMPPRoom *)sender didFetchModeratorsList:(NSArray *)items;
+房间不存在，调用委托
+
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchBanList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchMembersList:(XMPPIQ *)iqError;
+    - (void)xmppRoom:(XMPPRoom *)sender didNotFetchModeratorsList:(XMPPIQ *)iqError;
+</code></pre>
+
+<p>离开房间</p>
+
+<pre><code>[xmppRoom deactivate:xmppStream];
+</code></pre>
+
+<p>XMPPRoomDelegate的其他代理方法:</p>
+
+<p>离开聊天室</p>
+
+<pre><code>    - (void)xmppRoomDidLeave:(XMPPRoom *)sender
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>新人加入群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidJoin:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人退出群聊</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender occupantDidLeave:(XMPPJID *)occupantJID
+    {
+        DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<p>有人在群里发言</p>
+
+<pre><code>    - (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID
+     {
+         DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    }
+</code></pre>
+
+<h5>消息回执</h5>
+
+<p>这个是XEP－0184协议的内容
+发送消息时附加回执请求
+代码实现</p>
+
+<pre><code>NSString *siID = [XMPPStream generateUUID];
+    //发送消息
+    XMPPMessage *message = [XMPPMessage messageWithType:@"chat" to:jid elementID:siID];
+    NSXMLElement *receipt = [NSXMLElement elementWithName:@"request" xmlns:@"urn:xmpp:receipts"];
+    [message addChild:receipt];
+    [message addBody:@"测试"];
+    [self.xmppStream sendElement:message];
+</code></pre>
+
+<p>收到回执请求的消息，发送回执</p>
+
+<pre><code>- (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
+    {
+        //回执判断
+        NSXMLElement *request = [message elementForName:@"request"];
+        if (request)
+        {
+            if ([request.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+            {
+                //组装消息回执
+                XMPPMessage *msg = [XMPPMessage messageWithType:[message attributeStringValueForName:@"type"] to:message.from elementID:[message attributeStringValueForName:@"id"]];
+                NSXMLElement *recieved = [NSXMLElement elementWithName:@"received" xmlns:@"urn:xmpp:receipts"];
+                [msg addChild:recieved];
+
+                //发送回执
+                [self.xmppStream sendElement:msg];
+            }
+        }else
+        {
+            NSXMLElement *received = [message elementForName:@"received"];
+            if (received)
+            {
+                if ([received.xmlns isEqualToString:@"urn:xmpp:receipts"])//消息回执
+                {
+                    //发送成功
+                    NSLog(@"message send success!");
+                }  
+            }  
+        }  
+
+        //消息处理  
+        //...  
+    }
+</code></pre>
+
+<h5>添加AutoPing</h5>
+
+<p>为 了监听服务器是否有效，增加心跳监听。用XEP-0199协议，在XMPPFrameWork框架下，封装了 XMPPAutoPing 和 XMPPPing两个类都可以使用，因为XMPPAutoPing已经组合进了XMPPPing类，所以XMPPAutoPing使用起来更方便。</p>
+
+<pre><code>//初始化并启动ping
+-(void)autoPingProxyServer:(NSString*)strProxyServer
+{
+    _xmppAutoPing = [[XMPPAutoPingalloc] init];
+    [_xmppAutoPingactivate:_xmppStream];
+    [_xmppAutoPingaddDelegate:selfdelegateQueue:  dispatch_get_main_queue()];
+    _xmppAutoPing.respondsToQueries = YES;
+    _xmppAutoPing.pingInterval=2;//ping 间隔时间
+    if (nil != strProxyServer)
+    {
+       _xmppAutoPing.targetJID = [XMPPJID jidWithString: strProxyServer ];//设置ping目标服务器，如果为nil,则监听socketstream当前连接上的那个服务器
+    }
+}
+//卸载监听
+ [_xmppAutoPing   deactivate];
+  [_xmppAutoPing   removeDelegate:self];
+   _xmppAutoPing = nil;
+//ping XMPPAutoPingDelegate的委托方法:
+- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidSendPing:(XMPPAutoPing *)sender");
+}
+- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidReceivePong:(XMPPAutoPing *)sender");
+}
+
+- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender
+{
+    NSLog(@"- (void)xmppAutoPingDidTimeout:(XMPPAutoPing *)sender");
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[网络开发总结]]></title>
+    <link href="http://al1020119.github.io/blog/2014/07/25/netall/"/>
+    <updated>2014-07-25T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/07/25/netall</id>
+    <content type="html"><![CDATA[<h3>一、一个HTTP请求的基本要素</h3>
+
+<p>1.请求URL：客户端通过哪个路径找到服务器</p>
+
+<p>2.请求参数：客户端发送给服务器的数据</p>
+
+<ul>
+<li>比如登录时需要发送的用户名和密码</li>
+</ul>
+
+
+<p>3.返回结果：服务器返回给客户端的数据</p>
+
+<ul>
+<li>一般是JSON数据或者XML数据</li>
+</ul>
+
+
+<!--more-->
+
+
+<h3>二、基本的HTTP请求的步骤（移动客户端）</h3>
+
+<p>1.拼接"请求URL" + &ldquo;?&rdquo; + &ldquo;请求参数&rdquo;</p>
+
+<ul>
+<li>请求参数的格式：参数名=参数值</li>
+<li>多个请求参数之间用&amp;隔开：参数名1=参数值1&amp;参数名2=参数值2</li>
+<li>比如：<a href="http://localhost:8080/MJServer/login?username=123&amp;pwd=456">http://localhost:8080/MJServer/login?username=123&amp;pwd=456</a></li>
+</ul>
+
+
+<p>2.发送请求</p>
+
+<p>3.解析服务器返回的数据</p>
+
+<h3>三、JSON解析</h3>
+
+<p>1.利用NSJSONSerialization类解析</p>
+
+<ul>
+<li>JSON数据（NSData） &ndash;> Foundation-OC对象（NSDictionary、NSArray、NSString、NSNumber）</li>
+<li>(id)JSONObjectWithData:(NSData *)data options:(NSJSONReadingOptions)opt error:(NSError **)error;</li>
+</ul>
+
+
+<p>2.JSON解析规律</p>
+
+<ul>
+<li>{ } &ndash;> NSDictionary @{ }</li>
+<li>[ ] &ndash;> NSArray @[ ]</li>
+<li>&ldquo; &rdquo; &ndash;> NSString @&ldquo; &rdquo;</li>
+<li>10 &ndash;> NSNumber @10</li>
+</ul>
+
+
+<h3>四、NSURLConnection</h3>
+
+<p>1.发布异步请求01&ndash;block回调</p>
+
+<pre><code>+ (void)sendAsynchronousRequest:(NSURLRequest*) request
+    queue:(NSOperationQueue*) queue
+    completionHandler:(void (^)(NSURLResponse* response, NSData* data, NSError* connectionError)) handler
+</code></pre>
+
+<ul>
+<li>request : 需要发送的请求</li>
+<li>queue : 一般用主队列，存放handler这个任务</li>
+<li>handler : 当请求完毕后，会自动调用这个block</li>
+</ul>
+
+
+<p>2.利用NSURLConnection发送请求的基本步骤
+1> 创建URL</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://4234324/5345345"];
+</code></pre>
+
+<p>2> 创建request</p>
+
+<pre><code>NSURLRequest *request = [NSURLRequest requestWithURL:url];
+</code></pre>
+
+<p>3> 发送请求</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:
+ ^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+4&gt; 处理服务器返回的数据
+
+ }];
+</code></pre>
+
+<h3>五、XML</h3>
+
+<p>1.语法
+1> 文档声明</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+</code></pre>
+
+<p>2> 元素
+3> 属性</p>
+
+<pre><code>&lt;videos&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+    &lt;video name="小黄人 第01部" length="10"/&gt;
+&lt;/videos&gt;
+</code></pre>
+
+<ul>
+<li>videos和video是元素（节点）</li>
+<li>name和length叫做元素的属性</li>
+<li>video元素是videos元素的子元素</li>
+</ul>
+
+
+<p>2.解析
+1> SAX解析：逐个元素往下解析，适合大文件</p>
+
+<ul>
+<li>NSXMLParser</li>
+</ul>
+
+
+<p>2> DOM解析：一口气将整个XML文档加载进内存，适合小文件，使用最简单</p>
+
+<ul>
+<li>GDataXML</li>
+</ul>
+
+
+<h3>六、HTTP的通信过程</h3>
+
+<p>1.请求
+1> 请求行 : 请求方法、请求路径、HTTP协议的版本</p>
+
+<pre><code>GET /MJServer/resources/images/1.jpg HTTP/1.1
+</code></pre>
+
+<p>2> 请求头 : 客户端的一些描述信息</p>
+
+<ul>
+<li>User-Agent : 客户端的环境（软件环境）</li>
+</ul>
+
+
+<p>3> 请求体 : POST请求才有这个东西</p>
+
+<ul>
+<li>请求参数，发给服务器的数据</li>
+</ul>
+
+
+<p>2.响应
+1> 状态行（响应行）: HTTP协议的版本、响应状态码、响应状态描述</p>
+
+<p>HTTP/1.1 200 OK</p>
+
+<p>2> 响应头：服务器的一些描述信息</p>
+
+<ul>
+<li>Content-Type : 服务器返回给客户端的内容类型</li>
+<li>Content-Length : 服务器返回给客户端的内容的长度（比如文件的大小）</li>
+</ul>
+
+
+<p>3> 实体内容（响应体）</p>
+
+<ul>
+<li>服务器返回给客户端具体的数据，比如文件数据</li>
+</ul>
+
+
+<p>七、HTTP的请求方法
+1.GET
+1> 特点</p>
+
+<ul>
+<li>所有请求参数都拼接在url后面</li>
+</ul>
+
+
+<p>2> 缺点</p>
+
+<ul>
+<li>在url中暴露了所有的请求数据，不太安全</li>
+<li>url的长度有限制，不能发送太多的参数</li>
+</ul>
+
+
+<p>3> 使用场合</p>
+
+<ul>
+<li>如果仅仅是向服务器索要数据，一般用GET请求</li>
+</ul>
+
+
+<p>4> 如何发送一个GET请求</p>
+
+<pre><code>* 默认就是GET请求
+// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://www.baidu.com"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.发送请求
+
+[NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.POST
+1> 特点</p>
+
+<ul>
+<li>把所有请求参数放在请求体（HTTPBody）中</li>
+<li>理论上讲，发给服务器的数据的大小是没有限制</li>
+</ul>
+
+
+<p>2> 使用场合</p>
+
+<ul>
+<li>除开向服务器索要数据以外的请求，都可以用POST请求</li>
+<li>如果发给服务器的数据是一些隐私、敏感的数据，绝对要用POST请求</li>
+</ul>
+
+
+<p>3> 如何发送一个POST请求
+    // 1.创建一个URL ： 请求路径</p>
+
+<pre><code>NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login"];
+
+// 2.创建一个请求
+
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+// 设置请求方法
+request.HTTPMethod = @"POST";
+// 设置请求体 : 请求参数
+NSString *param = [NSString stringWithFormat:@"username=%@&amp;pwd=%@", usernameText, pwdText];
+// NSString --&gt; NSData
+request.HTTPBody = [param dataUsingEncoding:NSUTF8StringEncoding];
+</code></pre>
+
+<h3>八、NSMutableURLRequest的常用方法</h3>
+
+<p>1.设置超时
+    request.timeoutInterval = 5;
+    // NSURLRequest是不能设置超时的，因为这个对象是不可变的</p>
+
+<h3>九、URL转码</h3>
+
+<p>1.URL中不能包含中文，得对中文进行转码(加上一堆的%)</p>
+
+<pre><code>NSString *urlStr = [NSString stringWithFormat:@"http://localhost/login?username=喝喝&amp;pwd=123"];
+urlStr = [urlStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+// urlStr == @"http://localhost/login?username=%E5%96%9D%E5%96%9D&amp;pwd=123"
+</code></pre>
+
+<h3>十、数据安全</h3>
+
+<p>1.网络数据加密
+1> 加密对象：隐私数据，比如密码、银行信息
+2> 加密方案</p>
+
+<ul>
+<li>提交隐私数据，必须用POST请求</li>
+<li><p>使用加密算法对隐私数据进行加密，比如MD5
+3> 加密增强：为了加大破解的难度</p></li>
+<li><p>对明文进行2次MD5 ： MD5(MD5($pass))</p></li>
+<li>先对明文撒盐，再进行MD5 ： MD5($pass.$salt)</li>
+</ul>
+
+
+<p>2.本地存储加密</p>
+
+<p>1> 加密对象：重要的数据，比如游戏数据</p>
+
+<p>3.代码安全问题</p>
+
+<p>1> 现在已经有工具和技术能反编译出源代码：逆向工程</p>
+
+<ul>
+<li>反编译出来的都是纯C语言的，可读性不高</li>
+<li>最起码能知道源代码里面用的是哪些框架</li>
+</ul>
+
+
+<p>2> 参考书籍：《iOS逆向工程》</p>
+
+<p>3> 解决方案：发布之前对代码进行混淆</p>
+
+<p> 混淆之前</p>
+
+<pre><code>@interface iCocosPerson :NSObject
+- (void)run;
+- (void)eat;
+@end
+</code></pre>
+
+<p> 混淆之后</p>
+
+<pre><code>@interface A :NSObject
+- (void)a;
+- (void)b;
+@end
+</code></pre>
+
+<p>十一、监测网络状态</p>
+
+<p>1.主动监测监测网络状态</p>
+
+<pre><code>// 是否WIFI
+
++ (BOOL)isEnableWIFI {
+    return ([[Reachability reachabilityForLocalWiFi] currentReachabilityStatus] != NotReachable);
+}
+
+
+// 是否3G
+
++ (BOOL)isEnable3G {
+    return ([[Reachability reachabilityForInternetConnection] currentReachabilityStatus] != NotReachable);
+}
+</code></pre>
+
+<p>2.监控网络状态</p>
+
+<p>1> 监听通知</p>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkStateChange) name:kReachabilityChangedNotification object:nil];
+</code></pre>
+
+<p>2> 开始监听网络状态</p>
+
+<pre><code>// 获得Reachability对象
+self.reachability = [Reachability reachabilityForInternetConnection];
+// 开始监控网络
+[self.reachability startNotifier];
+</code></pre>
+
+<p>3> 移除监听</p>
+
+<pre><code>[self.reachability stopNotifier];
+[[NSNotificationCenter defaultCenter] removeObserver:self];
+</code></pre>
+
+<p>————————————————————————————————————————————————————————————————————————————————————————</p>
+
+<h3>一、大文件下载</h3>
+
+<p>1.方案：利用NSURLConnection和它的代理方法
+1> 发送一个请求</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/resources/videos.zip"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<p>2> 在代理方法中处理服务器返回的数据</p>
+
+<pre><code>/**
+ 在接收到服务器的响应时：
+ 1.创建一个空的文件
+ 2.用一个句柄对象关联这个空的文件，目的是：方便后面用句柄对象往文件后面写数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+
+{
+
+    // 文件路径
+
+    NSString *caches = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+
+    NSString *filepath = [caches stringByAppendingPathComponent:@"videos.zip"];
+
+
+
+    // 创建一个空的文件 到 沙盒中
+
+    NSFileManager *mgr = [NSFileManager defaultManager];
+
+    [mgr createFileAtPath:filepath contents:nil attributes:nil];
+
+
+
+    // 创建一个用来写数据的文件句柄
+
+    self.writeHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
+
+}
+
+
+/**
+ 在接收到服务器返回的文件数据时，利用句柄对象往文件的最后面追加数据
+ */
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+
+{
+
+    // 移动到文件的最后面
+
+    [self.writeHandle seekToEndOfFile];
+
+
+
+    // 将数据写入沙盒
+
+    [self.writeHandle writeData:data];
+
+}
+
+
+/**
+ 在所有数据接收完毕时，关闭句柄对象
+ */
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+
+{
+
+    // 关闭文件
+
+    [self.writeHandle closeFile];
+
+    self.writeHandle = nil;
+
+}
+</code></pre>
+
+<p>2.注意点：千万不能用NSMutableData来拼接服务器返回的数据</p>
+
+<h3>二、NSURLConnection发送异步请求的方法</h3>
+
+<p>1.block形式 - 除开大文件下载以外的操作，都可以用这种形式</p>
+
+<pre><code>[NSURLConnection sendAsynchronousRequest:&lt;#(NSURLRequest *)#&gt; queue:&lt;#(NSOperationQueue *)#&gt; completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+}];
+</code></pre>
+
+<p>2.代理形式 - 一般用在大文件下载</p>
+
+<pre><code>// 1.URL
+
+NSURL *url = [NSURL URLWithString:@"http://localhost:8080/MJServer/login?username=123&amp;pwd=123"];
+// 2.请求
+
+NSURLRequest *request = [NSURLRequest requestWithURL:url];
+// 3.下载(创建完conn对象后，会自动发起一个异步请求)
+
+[NSURLConnection connectionWithRequest:request delegate:self];
+</code></pre>
+
+<h3>三、NSURLSession</h3>
+
+<p>1.使用步骤</p>
+
+<p>1> 获得NSURLSession对象
+2> 利用NSURLSession对象创建对应的任务（Task）
+3> 开始任务（[task resume]）</p>
+
+<p>2.获得NSURLSession对象</p>
+
+<p>1> [NSURLSession sharedSession]</p>
+
+<p>2></p>
+
+<pre><code>NSURLSessionConfiguration *cfg = [NSURLSessionConfiguration defaultSessionConfiguration];
+self.session = [NSURLSession sessionWithConfiguration:cfg delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+</code></pre>
+
+<p>3.任务类型</p>
+
+<h6>1> NSURLSessionDataTask</h6>
+
+<p>用途：用于非文件下载的GET\POST请求</p>
+
+<pre><code>NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url];
+NSURLSessionDataTask *task = [self.session dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+}];
+</code></pre>
+
+<h6>2> NSURLSessionDownloadTask</h6>
+
+<p>用途：用于文件下载（小文件、大文件）</p>
+
+<pre><code>NSURLSessionDownloadTask *task = [self.session downloadTaskWithRequest:request];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url];
+NSURLSessionDownloadTask *task = [self.session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {   
+}];
+</code></pre>
+
+<p> ————————————————————————————————————————————————————————————————</p>
+
+<h2>AFN与ASI的区别（面试用）</h2>
+
+<h3>一、底层实现</h3>
+
+<p>1> AFN的底层基于OC的NSURLConnection和NSURLSession
+2> ASI的底层基于纯C语言的CFNetwork框架
+3> ASI的运行性能 高于 AFN</p>
+
+<h3>二、对服务器返回的数据处理</h3>
+
+<p>1> ASI没有直接提供对服务器数据处理的方式，直接返回data\string
+2> AFN提供了多种对服务器数据处理的方式</p>
+
+<ul>
+<li>JSON处理</li>
+<li>XML处理</li>
+<li>其他处理</li>
+</ul>
+
+
+<h3>三、监听请求的过程</h3>
+
+<p>1> AFN提供了success和failure两个block来监听请求的过程（只能监听成功和失败）</p>
+
+<ul>
+<li>success : 请求成功后调用</li>
+<li>failure : 请求失败后调用</li>
+</ul>
+
+
+<p>2> ASI提供了3套方案，每一套方案都能监听请求的完整过程
+（监听请求开始、接收到响应头信息、接受到具体数据、接受完毕、请求失败）</p>
+
+<ul>
+<li>成为代理，遵守协议，实现协议中的代理方法</li>
+<li>成为代理，不遵守协议，自定义代理方法</li>
+<li>设置block</li>
+</ul>
+
+
+<h3>四、在文件下载和文件上传的使用难易度</h3>
+
+<p>1> AFN</p>
+
+<ul>
+<li>不容易监听下载进度和上传进度</li>
+<li>不容易实现断点续传</li>
+<li>一般只用来下载不大的文件</li>
+</ul>
+
+
+<p>2> ASI</p>
+
+<ul>
+<li>非常容易实现下载和上传</li>
+<li>非常容易监听下载进度和上传进度</li>
+<li>非常容易实现断点续传</li>
+<li>下载或大或小的文件都行</li>
+</ul>
+
+
+<h3>五、ASI提供了更多的实用功能</h3>
+
+<p>1> 控制圈圈要不要在请求过程中转
+2> 可以轻松地设置请求之间的依赖：每一个请求都是一个NSOperation对象
+3> 可以统一管理所有请求（还专门提供了一个叫做ASINetworkQueue来管理所有的请求对象）</p>
+
+<ul>
+<li>暂停\恢复\取消所有的请求</li>
+<li>监听整个队列中所有请求的下载进度和上传进度</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[多线程总结]]></title>
+    <link href="http://al1020119.github.io/blog/2014/04/01/duoxianchenghuizong/"/>
+    <updated>2014-04-01T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2014/04/01/duoxianchenghuizong</id>
+    <content type="html"><![CDATA[<h3>一、进程和线程</h3>
+
+<h5>1.什么是进程</h5>
+
+<p>进程是指在系统中正在运行的一个应用程序</p>
+
+<p>每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内</p>
+
+<ul>
+<li><p>比如同时打开QQ、Xcode，系统就会分别启动2个进程</p></li>
+<li><p>通过“活动监视器”可以查看Mac系统中所开启的进程</p></li>
+</ul>
+
+
+<!--more-->
+
+
+<h5>2.什么是线程</h5>
+
+<p>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）</p>
+
+<p>线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行</p>
+
+<p>比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行</p>
+
+<h5>3.线程的串行</h5>
+
+<p>1个线程中任务的执行是串行的</p>
+
+<p>如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务</p>
+
+<p>也就是说，在同一时间内，1个线程只能执行1个任务</p>
+
+<p>比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）</p>
+
+<h3>二、多线程</h3>
+
+<h5>1.什么是多线程</h5>
+
+<p>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务</p>
+
+<p>进程 ->车间，线程->车间工人</p>
+
+<p>多线程技术可以提高程序的执行效率</p>
+
+<p>比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）</p>
+
+<h5>2.多线程的原理</h5>
+
+<p>同一时间，CPU只能处理1条线程，只有1条线程在工作（执行）
+多线程并发（同时）执行，其实是CPU快速地在多条线程之间调度（切换）
+如果CPU调度线程的时间足够快，就造成了多线程并发执行的假象
+思考：如果线程非常非常多，会发生什么情况？
+CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
+每条线程被调度执行的频次会降低（线程的执行效率降低）</p>
+
+<h5>3.多线程的优缺点</h5>
+
+<ul>
+<li>多线程的优点</li>
+</ul>
+
+
+<p>能适当提高程序的执行效率</p>
+
+<p>能适当提高资源利用率（CPU、内存利用率）</p>
+
+<ul>
+<li>多线程的缺点</li>
+</ul>
+
+
+<p>开启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能</p>
+
+<p>线程越多，CPU在调度线程上的开销就越大</p>
+
+<p>程序设计更加复杂：比如线程之间的通信、多线程的数据共享</p>
+
+<h5>4.多线程在iOS开发中的应用</h5>
+
+<p>主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”</p>
+
+<p>主线程的主要作用</p>
+
+<p>显示\刷新UI界面</p>
+
+<p>处理UI事件（比如点击事件、滚动事件、拖拽事件等）</p>
+
+<p>主线程的使用注意:别将比较耗时的操作放到主线程中。</p>
+
+<p>耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验</p>
+
+<h5>5.代码示例</h5>
+
+<pre><code>//  YYViewController.m
+//  01-阻塞主线程
+//
+//  Created by apple on 14-6-23.
+//  Copyright (c) 2014年 itcase. All rights reserved.
+//
+
+#import "YYViewController.h"
+
+@interface YYViewController ()
+- (IBAction)btnClick;
+@end
+
+
+@implementation YYViewController
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+}
+
+
+//按钮的点击事件
+- (IBAction)btnClick {
+    //1.获取当前线程
+    NSThread *current=[NSThread currentThread];
+    //2.使用for循环执行一些耗时操作
+    for (int i=0; i&lt;10000; i++) {
+        //3.输出线程
+        NSLog(@"btnClick---%d---%@",i,current);
+    }
+}
+
+@end
+</code></pre>
+
+<blockquote><p>说明：当点击执行的时候，textView点击无响应。</p></blockquote>
+
+<p>执行分析：等待主线程串行执行。</p>
+
+<p>开启子线程。</p>
 ]]></content>
   </entry>
   

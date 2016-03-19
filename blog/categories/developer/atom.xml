@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Developer | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/developer/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-03-19T02:21:30+08:00</updated>
+  <updated>2016-03-19T23:04:36+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -454,31 +454,666 @@ UIWebView是iOS SDK中一个最常用的控件，是内置的浏览器控件，�
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[iCocos博客重整第一天]]></title>
-    <link href="http://al1020119.github.io/blog/2013/03/01/icocosbo-ke-zhong-zheng-di-%5B%3F%5D-tian/"/>
-    <updated>2013-03-01T11:11:30+08:00</updated>
-    <id>http://al1020119.github.io/blog/2013/03/01/icocosbo-ke-zhong-zheng-di-[?]-tian</id>
-    <content type="html"><![CDATA[<p>由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在<a href="http://www.cnblogs.com/iCocos/">博客园</a>的所有经典文章将会转移到这里。</p>
+    <title type="html"><![CDATA[网络请求疯（封）装]]></title>
+    <link href="http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang/"/>
+    <updated>2015-08-25T09:37:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/08/25/wang-shang-qing-qiu-feng-(feng-)zhuang</id>
+    <content type="html"><![CDATA[<p>一直想总结一下关于iOS的离线数据缓存的方面的问题，然后最近也简单的对AFN进行了再次封装，所有想把这两个结合起来写一下。数据展示型的页面做离线缓存可以有更好的用户体验，用户在离线环境下仍然可以获取一些数据，这里的数据缓存首选肯定是SQLite，轻量级，对数据的存储读取相对于其他几种方式有优势，这里对AFN的封装没有涉及太多业务逻辑层面的需求，主要还是对一些方法再次封装方便使用，解除项目对第三方的耦合性，能够简单的快速的更换底层使用的网络请求代码。这篇主要写离线缓存思路，对AFN的封装只做简单的介绍。</p>
 
-<p>后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。</p>
-
-<hr />
-
-<p>版权声明：欢迎转载，请贴上源地址</p>
-
-<p> <a href="http://al1020119.github.io">http://al1020119.github.io</a></p>
-
-<p> <a href="http://www.cnblogs.com/iCocos/">http://www.cnblogs.com/iCocos/（iOS梦工厂）</a></p>
+<p>关于XLNetworkApi</p>
 
 <!--more-->
 
 
-<p>更多精彩请关注</p>
+<p>XLNetworkApi的一些功能和说明：</p>
 
-<p><a href="https://github.com/al1020119">https://github.com/al1020119</a></p>
+<p>使用XLNetworkRequest做一些GET、POST、PUT、DELETE请求，与业务逻辑对接部分直接以数组或者字典的形式返回。
+以及网络下载、上传文件，以block的形式返回实时的下载、上传进度，上传文件参数通过模型XLFileConfig去存取。
+通过继承于XLDataService来将一些数据处理，模型转化封装起来，于业务逻辑对接返回的是对应的模型，减少Controllor处理数据处理逻辑的压力。
+自定义一些回调的block</p>
+
+<pre><code>/**
+请求成功block
+*/
+typedef void (^requestSuccessBlock)(id responseObj);
+/**
+请求失败block
+*/
+typedef void (^requestFailureBlock) (NSError *error);
+/**
+请求响应block
+*/
+typedef void (^responseBlock)(id dataObj, NSError *error);
+/**
+监听进度响应block
+*/
+typedef void (^progressBlock)(int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite);
+XLNetworkRequest.m部分实现
+#import "XLNetworkRequest.h"
+#import "AFNetworking.h"
+@implementation XLNetworkRequest
++ (void)getRequest:(NSString *)url params:(NSDictionary *)params success:(requestSuccessBlock)successHandler failure:(requestFailureBlock)failureHandler {
+//网络不可用
+  if (![self checkNetworkStatus]) {
+      successHandler(nil);
+      failureHandler(nil);
+      return;
+  }
+  AFHTTPRequestOperationManager *manager = [self getRequstManager];
+  [manager GET:url parameters:params success:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+      successHandler(responseObject);
+  } failure:^(AFHTTPRequestOperation * _Nullable operation, NSError * _Nonnull error) {
+      XLLog(@"------请求失败-------%@",error);
+      failureHandler(error);
+  }];
+}
+</code></pre>
+
+<p>下载部分代码</p>
+
+<pre><code>    //下载文件，监听下载进度
+    + (void)downloadRequest:(NSString *)url successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
+      if (![self checkNetworkStatus]) {
+          progressHandler(0, 0, 0);
+          completionHandler(nil, nil);
+          return;
+      }
+      NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+      AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:sessionConfiguration];
+      NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+      NSProgress *kProgress = nil;
+      NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:&amp;kProgress destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+          NSURL *documentUrl = [[NSFileManager defaultManager] URLForDirectory :NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+          return [documentUrl URLByAppendingPathComponent:[response suggestedFilename]];
+      } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nonnull filePath, NSError * _Nonnull error){
+          if (error) {
+              XLLog(@"------下载失败-------%@",error);
+          }
+          completionHandler(response, error);
+      }];
+      [manager setDownloadTaskDidWriteDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDownloadTask * _Nonnull downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite) {
+          progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+      }];
+      [downloadTask resume];
+    }
+</code></pre>
+
+<p>上传部分代码</p>
+
+<pre><code>//上传文件，监听上传进度
++ (void)updateRequest:(NSString *)url params:(NSDictionary *)params fileConfig:(XLFileConfig *)fileConfig successAndProgress:(progressBlock)progressHandler complete:(responseBlock)completionHandler {
+  if (![self checkNetworkStatus]) {
+      progressHandler(0, 0, 0);
+      completionHandler(nil, nil);
+      return;
+  }
+  NSMutableURLRequest *request = [[AFHTTPRequestSerializer serializer] multipartFormRequestWithMethod:@"POST" URLString:url parameters:params constructingBodyWithBlock:^(id  _Nonnull formData) {
+      [formData appendPartWithFileData:fileConfig.fileData name:fileConfig.name fileName:fileConfig.fileName mimeType:fileConfig.mimeType];
+  } error:nil];
+  //获取上传进度
+  AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+  [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
+      progressHandler(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+  }];
+  [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation * _Nonnull operation, id  _Nonnull responseObject) {
+      completionHandler(responseObject, nil);
+  } failure:^(AFHTTPRequestOperation * _Nonnull operation, NSError * _Nonnull error) {
+      completionHandler(nil, error);
+      if (error) {
+          XLLog(@"------上传失败-------%@",error);
+      }
+  }];
+  [operation start];
+}
+</code></pre>
+
+<p>XLDataService.m部分实现</p>
+
+<pre><code>+ (void)getWithUrl:(NSString *)url param:(id)param modelClass:(Class)modelClass responseBlock:(responseBlock)responseDataBlock {
+      [XLNetworkRequest getRequest:url params:param success:^(id responseObj) {
+      //数组、字典转化为模型数组
+      dataObj = [self modelTransformationWithResponseObj:responseObj modelClass:modelClass];
+      responseDataBlock(dataObj, nil);
+  } failure:^(NSError *error) {
+      responseDataBlock(nil, error);
+  }];
+}
+</code></pre>
+
+<p>（关键）下面这个方法提供给继承XLDataService的子类重写，将转化为模型的代码写在这里，相似业务的网络数据请求都可以用这个子类去请求数据，直接返回对应的模型数组。
+    /<em>*
+    数组、字典转化为模型
+    </em>/
+    + (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
+         return nil;
+    }
+关于离线数据缓存</p>
+
+<p>当用户进入程序的展示页面，有三个情况下可能涉及到数据库存取操作，简单画了个图来理解，思路比较简单，主要是一些存取的细节处理。</p>
+
+<p>进入展示页面</p>
+
+<p><img src="/images/net001.png" title="Caption" ></p>
+
+<p>下拉刷新最新数据</p>
+
+<p><img src="/images/net002.png" title="Caption" ></p>
+
+<p>上拉加载更多数据</p>
+
+<p><img src="/images/net003.png" title="Caption" ></p>
+
+<p>需要注意的是，上拉加载更多的时候，每次从数据库返回一定数量的数据，而不是一次性将数据全部加载，否则会有内存问题，直到数据库中没有更多数据时再发生网络请求，再次将新数据存入数据库。这里存储数据的方式是将服务器返回每组数据的字典归档成二进制作为数据库字段直接存储，这样存储在模型属性比较多的情况下更有好处，避免每一个属性作为一个字段，另外增加了一个idStr字段用来判断数据的唯一性，避免重复存储。
+首先定义一个工具类XLDataBase来做数据库相关的操作，这里用的是第三方的FMDB。</p>
+
+<pre><code>#import "XLDataBase.h"
+#import "FMDatabase.h"
+#import "Item.h"
+#import "MJExtension.h"
+@implementation XLDataBase
+static FMDatabase *_db;
++ (void)initialize {
+    NSString *path = [NSString stringWithFormat:@"%@/Library/Caches/Data.db",NSHomeDirectory()];
+    _db = [FMDatabase databaseWithPath:path];
+    [_db open];
+    [_db executeUpdate:@"CREATE TABLE IF NOT EXISTS t_item (id integer PRIMARY KEY, itemDict blob NOT NULL, idStr text NOT NULL)"];
+}
+//存入数据库
++ (void)saveItemDict:(NSDictionary *)itemDict {
+    //此处把字典归档成二进制数据直接存入数据库，避免添加过多的数据库字段
+    NSData *dictData = [NSKeyedArchiver archivedDataWithRootObject:itemDict];
+    [_db executeUpdateWithFormat:@"INSERT INTO t_item (itemDict, idStr) VALUES (%@, %@)",dictData, itemDict[@"id"]];
+}
+//返回全部数据
++ (NSArray *)list {
+    FMResultSet *set = [_db executeQuery:@"SELECT * FROM t_item"];
+    NSMutableArray *list = [NSMutableArray array];
+    while (set.next) {
+        // 获得当前所指向的数据
+        NSData *dictData = [set objectForColumnName:@"itemDict"];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
+        [list addObject:[Item mj_objectWithKeyValues:dict]];
+    }
+    return list;
+}
+//取出某个范围内的数据
++ (NSArray *)listWithRange:(NSRange)range {
+    NSString *SQL = [NSString stringWithFormat:@"SELECT * FROM t_item LIMIT %lu, %lu",range.location, range.length];
+    FMResultSet *set = [_db executeQuery:SQL];
+    NSMutableArray *list = [NSMutableArray array];
+    while (set.next) {
+        NSData *dictData = [set objectForColumnName:@"itemDict"];
+        NSDictionary *dict = [NSKeyedUnarchiver unarchiveObjectWithData:dictData];
+        [list addObject:[Item mj_objectWithKeyValues:dict]];
+    }
+    return list;
+}
+//通过一组数据的唯一标识判断数据是否存在
++ (BOOL)isExistWithId:(NSString *)idStr
+{
+    BOOL isExist = NO;
+    FMResultSet *resultSet= [_db executeQuery:@"SELECT * FROM t_item where idStr = ?",idStr];
+    while ([resultSet next]) {
+        if([resultSet stringForColumn:@"idStr"]) {
+            isExist = YES;
+        }else{
+            isExist = NO;
+        }
+    }
+    return isExist;
+}
+@end
+</code></pre>
+
+<p>一些继承于XLDataService的子类的数据库存储和模型转换的逻辑代码</p>
+
+<pre><code>#import "GetTableViewData.h"
+#import "XLDataBase.h"
+@implementation GetTableViewData
+//重写父类方法
++ (id)modelTransformationWithResponseObj:(id)responseObj modelClass:(Class)modelClass {
+    NSArray *lists = responseObj[@"data"][@"list"];
+    NSMutableArray *array = [NSMutableArray array];
+    for (NSDictionary *dict in lists) {
+        [modelClass mj_setupReplacedKeyFromPropertyName:^NSDictionary *{
+            return @{ @"ID" : @"id" };
+        }];
+        [array addObject:[modelClass mj_objectWithKeyValues:dict]];
+        //通过idStr先判断数据是否存储过，如果没有，网络请求新数据存入数据库
+        if (![XLDataBase isExistWithId:dict[@"id"]]) {
+            //存数据库
+            NSLog(@"存入数据库");
+            [XLDataBase saveItemDict:dict];
+        }
+    }
+    return array;
+}
+</code></pre>
+
+<p>下面是一些控制器的代码实现：</p>
+
+<pre><code>#import "ViewController.h"
+#import "GetTableViewData.h"
+#import "Item.h"
+#import "XLDataBase.h"
+#import "ItemCell.h"
+#import "MJRefresh.h"
+#define URL_TABLEVIEW @"https://api.108tian.com/mobile/v3/EventList?cityId=1&amp;step=10&amp;theme=0&amp;page=%lu"
+@interface ViewController () {
+    NSMutableArray *_dataArray;
+    UITableView *_tableView;
+    NSInteger _currentPage;//当前数据对应的page
+}
+@end
+@implementation ViewController
+#pragma mark Life cycle
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    [self createTableView];
+    _dataArray = [NSMutableArray array];
+}
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    NSRange range = NSMakeRange(0, 10);
+    //如果数据库有数据则读取，不发送网络请求
+    if ([[XLDataBase listWithRange:range] count]) {
+        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
+        NSLog(@"从数据库加载");
+    }else{
+        [self getTableViewDataWithPage:0];
+    }
+}
+#pragma mark UI
+- (void)createTableView {
+    _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    _tableView.rowHeight = 100.0;
+    [self.view addSubview:_tableView];
+    _tableView.mj_header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        [self loadNewData];
+    }];
+    _tableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+        [self loadMoreData];
+    }];
+}
+#pragma mark GetDataSoure
+- (void)getTableViewDataWithPage:(NSInteger)page {
+    NSLog(@"发送网络请求！");
+    NSString *url = [NSString stringWithFormat:URL_TABLEVIEW, page];
+    [GetTableViewData getWithUrl:url param:nil modelClass:[Item class] responseBlock:^(id dataObj, NSError *error) {
+        [_dataArray addObjectsFromArray:dataObj];
+        [_tableView reloadData];
+        [_tableView.mj_header endRefreshing];
+        [_tableView.mj_footer endRefreshing];
+    }];
+}
+- (void)loadNewData {
+    NSLog(@"下拉刷新");
+    _currentPage = 0;
+    [_dataArray removeAllObjects];
+    [self getTableViewDataWithPage:_currentPage];
+}
+- (void)loadMoreData {
+    NSLog(@"上拉加载");
+    _currentPage ++;
+    NSRange range = NSMakeRange(_currentPage * 10, 10);
+    if ([[XLDataBase listWithRange:range] count]) {
+        [_dataArray addObjectsFromArray:[XLDataBase listWithRange:range]];
+        [_tableView reloadData];
+        [_tableView.mj_footer endRefreshing];
+        NSLog(@"数据库加载%lu条更多数据",[[XLDataBase listWithRange:range] count]);
+    }else{
+        //数据库没更多数据时再网络请求
+        [self getTableViewDataWithPage:_currentPage];
+    }
+}
+#pragma mark UITableViewDataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _dataArray.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    ItemCell *cell = [ItemCell itemCellWithTableView:tableView];
+    cell.item = _dataArray[indexPath.row];
+    return cell;
+}
+@end
+</code></pre>
+
+<p>最后附上代码的下载地址，重要的部分代码中都有相应的注释和文字打印，运行程序可以很直观的表现。</p>
+
+<p><a href="https://github.com/ShelinShelin/OffLineCache.git">Demo</a></p>
+
+<p>希望大家能提出一些意见，很乐意与大家互相交流。</p>
 
 <!--more-->
 
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[ScrollView回到顶部复原]]></title>
+    <link href="http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/"/>
+    <updated>2015-08-21T02:33:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan</id>
+    <content type="html"><![CDATA[<p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
+
+<!--more-->
+
+
+<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
+
+<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
+
+<ul>
+<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
+</ul>
+
+
+<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
+
+<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
+
+<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
+
+<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
+
+<ul>
+<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
+<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
+<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
+<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
+</ul>
+
+
+<h4>Swift的代码</h4>
+
+<pre><code>import UIKit
+class TopWindow: UIWindow {
+    private static let window_: UIWindow = UIWindow()
+    ///  类初始化方法,保证window_只被创建一次
+    override class func initialize() {
+        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
+        window_.windowLevel = UIWindowLevelAlert
+        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
+    }
+    class func topWindowClick() {
+        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
+        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
+    }
+    private class func searchAllowScrollViewInView(superView: UIView) {
+        for subview: UIView in superView.subviews as! [UIView] {
+            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
+                // 拿到scrollView的contentOffset
+                var offest = (subview as! UIScrollView).contentOffset
+                // 将offest的y轴还原成最开始的值
+                offest.y = -(subview as! UIScrollView).contentInset.top
+                // 重新设置scrollView的内容
+                (subview as! UIScrollView).setContentOffset(offest, animated: true)
+            }
+            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
+            searchAllowScrollViewInView(subview)
+        }
+    }
+    ///  添加topWindow,使手势生效
+    class func showTopWindow() {
+        window_.hidden = false
+    }
+    ///  隐藏topWindow,移除手势
+    class func hiddenTopWindow() {
+        window_.hidden = true
+    }
+}
+///  对UIView的一个扩展
+extension UIView {
+    ///  判断调用方法的view是否在keyWindow中
+    func viewIsInKeyWindow() -&gt; Bool {
+        let keyWindow = UIApplication.sharedApplication().keyWindow!
+        // 将当前view的坐标系转换到window.bounds
+        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
+        let keyWindowBounds = keyWindow.bounds
+        // 判断当前view是否在keyWindow的范围内
+        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
+        // 判断是否满足所有条件
+        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
+    }   
+}
+</code></pre>
+
+<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
+
+<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
+      // 添加顶部的window
+      TopWindow.showTopWindow()
+      return true
+  }
+</code></pre>
+
+<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
+
+<h4>Objective-C代码</h4>
+
+<p>.h文件只暴露显示和隐藏方法</p>
+
+<pre><code>#import @interface WNXTopWindow : NSObject
++ (void)show;
++ (void)hide;
+@end
+</code></pre>
+
+<p>.m文件</p>
+
+<pre><code>#import "WNXTopWindow.h"
+@implementation WNXTopWindow
+static UIWindow *window_;
+//初始化window
++ (void)initialize {
+  window_ = [[UIWindow alloc] init];
+  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
+  window_.windowLevel = UIWindowLevelAlert;
+  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
+}  
++ (void)show {
+  window_.hidden = NO;
+}
++ (void)hide {
+  window_.hidden = YES;
+}
+// 监听窗口点击
++ (void)windowClick {
+  UIWindow *window = [UIApplication sharedApplication].keyWindow;
+  [self searchScrollViewInView:window];
+}
++ (void)searchScrollViewInView:(UIView *)superview {
+  for (UIScrollView *subview in superview.subviews) {
+      // 如果是scrollview, 滚动最顶部
+      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
+          CGPoint offset = subview.contentOffset;
+          offset.y = - subview.contentInset.top;
+          [subview setContentOffset:offset animated:YES];
+      }
+      // 递归继续查找子控件
+      [self searchScrollViewInView:subview];
+  }
+}
++ (BOOL)isShowingOnKeyWindow:(UIView *)view {
+  // 主窗口
+  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+  // 以主窗口左上角为坐标原点, 计算self的矩形框
+  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
+  CGRect winBounds = keyWindow.bounds;
+  // 主窗口的bounds 和 self的矩形框 是否有重叠
+  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
+  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
+}
+@end
+</code></pre>
+
+<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
+  [WNXTopWindow show];
+  return YES;
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[自定义相册删除复活的实现]]></title>
+    <link href="http://al1020119.github.io/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/"/>
+    <updated>2015-06-29T00:22:52+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian</id>
+    <content type="html"><![CDATA[<p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
+
+
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
+
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+
+<!--more-->
+
+
+<p>先来看看咱们取得相册中的相片</p>
+
+<pre><code>- (void)getAllPhotos
+{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    // 遍历所有的文件夹, 一个ALAssetsGroup对象就代表一个文件夹
+    [library enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+        // 遍历文件夹内的所有多媒体文件（图片、视频）, 一个ALAsset对象就代表一张图片
+        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+            // 缩略图
+            XMGLog(@"%@", [UIImage imageWithCGImage:result.thumbnail]);
+            // 获得原始图片
+            //            XMGLog(@"%@", [UIImage imageWithCGImage:result.defaultRepresentation.fullResolutionImage]);
+        }];
+
+   } failureBlock:nil];
+}
+</code></pre>
+
+<p>下面我们看看代码具体的实现</p>
+
+<p>一：首先定义一个属性涌来记录并且实现其他一些功能</p>
+
+<pre><code> /** 相册库 */
+@property (nonatomic, strong) ALAssetsLibrary *library;
+</code></pre>
+
+<p>二：然后就懒加载这个属性</p>
+
+<pre><code>- (ALAssetsLibrary *)library
+{
+    if (!_library) {
+        _library = [[ALAssetsLibrary alloc] init];
+    }
+    return _library;
+}
+</code></pre>
+
+<p>三：点击保存按钮的实现</p>
+
+<pre><code>- (IBAction)save
+{
+// 获得文件夹的名字
+__block NSString *groupName = [self groupName];
+
+// self的弱引用
+XMGWeakSelf;
+
+// 图片库
+__weak ALAssetsLibrary *weakLibrary = self.library;
+
+// 创建文件夹
+[weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+    if (group) { // 新创建的文件夹
+        // 添加图片到文件夹中
+        [weakSelf addImageToGroup:group];
+    } else { // 文件夹已经存在
+        [weakLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
+            if ([name isEqualToString:groupName]) { // 是自己创建的文件夹
+                // 添加图片到文件夹中
+
+                [weakSelf addImageToGroup:group];
+
+                *stop = YES; // 停止遍历
+            } else if ([name isEqualToString:@"Camera Roll"]) {
+                // 文件夹被用户强制删除了
+                groupName = [groupName stringByAppendingString:@" "];
+                // 存储新的名字
+                [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                // 创建新的文件夹
+                [weakLibrary addAssetsGroupAlbumWithName:groupName resultBlock:^(ALAssetsGroup *group) {
+                    // 添加图片到文件夹中
+                    [weakSelf addImageToGroup:group];
+                } failureBlock:nil];
+            }
+        } failureBlock:nil];
+    }
+
+    } failureBlock:nil];
+    }
+</code></pre>
+
+<p>四：添加图片</p>
+
+<pre><code>/**
+ * 添加一张图片到某个文件夹中
+ */
+- (void)addImageToGroup:(ALAssetsGroup *)group
+{
+__weak ALAssetsLibrary *weakLibrary = self.library;
+// 需要保存的图片
+
+CGImageRef image = self.imageView.image.CGImage;
+
+// 添加图片到【相机胶卷】
+[weakLibrary writeImageToSavedPhotosAlbum:image metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+    [weakLibrary assetForURL:assetURL resultBlock:^(ALAsset *asset) {
+        // 添加一张图片到自定义的文件夹中
+        [group addAsset:asset];
+        [SVProgressHUD showSuccessWithStatus:@"保存成功!"];
+    } failureBlock:nil];
+}];
+}
+</code></pre>
+
+<p>五：关于沙河中的组名</p>
+
+<p>先定义一个用于保存名字用的key和一个需要保存的名字</p>
+
+<pre><code>static NSString * const iCocosGroupNameKey = @"iCocosGroupNameKey";
+static NSString * const iCocosDefaultGroupName = @"iCocos";
+</code></pre>
+
+<p>实现祖名的存取</p>
+
+<pre><code>- (NSString *)groupName
+{
+    // 先从沙盒中取得名字
+
+    NSString *groupName = [[NSUserDefaults standardUserDefaults] stringForKey:XMGGroupNameKey];
+    if (groupName == nil) { // 沙盒中没有存储任何文件夹的名字
+   groupName = XMGDefaultGroupName;
+
+    // 存储名字到沙盒中
+    [[NSUserDefaults standardUserDefaults] setObject:groupName forKey:XMGGroupNameKey];
+ [[NSUserDefaults standardUserDefaults] synchronize];
+}
+return groupName;
+}
+</code></pre>
 ]]></content>
   </entry>
   

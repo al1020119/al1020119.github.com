@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Foundation | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/foundation/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-03-19T02:21:30+08:00</updated>
+  <updated>2016-03-19T23:04:36+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -65,6 +65,1283 @@
 
 
 <blockquote><p>总而言之，Swift开源是大大前进了一步。而超越Swift开源本身，当今编程语言的发展趋势也值得我们认真思考。如果从完全理性的角度看待编程语言，那么编程语言无非就是一门编程语言：“选择好适合自己的编程语言就是了”。但问题就在于如何选择合适的编程语言呢？语言的魅力也许就像盲人摸象，你无法做到足够理性，或者这世界就没有银弹，编程语言的比较和纷争，将是一个永恒的话题，热度无限&hellip;&hellip;</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[切换控制器]]></title>
+    <link href="http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi/"/>
+    <updated>2015-09-22T02:51:10+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/09/22/qie-huan-kong-zhi-qi</id>
+    <content type="html"><![CDATA[<p>从一个视图控制器切换到另一个视图控制器的几种方式</p>
+
+<!--more-->
+
+
+<h4>1,模态(modal)画面的显示方法：</h4>
+
+<p>例如iphone通讯录管理程序中，追加新的通讯纪录时，就是使用这种模态画面
+例：点击一个按钮，进入另一个界面
+    - (IBAction)pressAbout:(id)sender {</p>
+
+<pre><code>iCocosViewController *iCocos=[[[iCocosViewController alloc] initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
+
+[self presentModalViewController:aboutanimated:YES];//显示模态画面
+
+关闭模态画面的方法：
+
+[self dissmissModalViewControllerAnimationed:YES];
+</code></pre>
+
+<h4>2,SwitchViewController中有2个控制器的属性：BviewController,CViewController</h4>
+
+<ul>
+<li>使用方法：insertSubview: atIndex:
+这种画面跳转方法并非最佳的跳转方法：</li>
+<li>实际上并非真的实现了两个画面间的跳转，而是同时启动了2个画面，控制其中哪一个画面显示在前台，哪一个画面显示在后台而已。</li>
+<li>这种画面跳转方式有一个很大的缺点，即当画面数量增加时，画面跳转的实现代码将月来越复杂，而且各个画面间不可避免的有相互依赖关系。</li>
+</ul>
+
+
+<h4>3,UITabBarController实现并列画面跳转（这里其实就是window的切花）</h4>
+
+<pre><code>//将5个viewController实例放入TabBar的viewcontrollers属性中    
+
+self.tabBarController.viewControllers = @[navFrist, navSecond,navThird,navFourth,navFifth];   
+
+self.window.rootViewController = self.tabBarController;
+
+[self.window addSubview:self.tabBarController.view];//将根控制器的视图加到应用程序主窗口
+</code></pre>
+
+<h4>4,UINavigationController实现多层画面跳转，在导航控制器中，载入有层级关系的界面</h4>
+
+<pre><code>- (IBAction)addRightAction:(id)sender
+{
+    iCocosViewController *iCocos=[[[iCocosViewController alloc]initWithNibName:@"iCocosViewController" bundle:nil] autorelease];
+
+[self.navigationController pushViewController:aiCocos animated:YES];
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[序列化&amp;反序列化深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/09/20/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu/"/>
+    <updated>2015-09-20T09:36:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/09/20/xu-lie-hua-and-fan-xu-lie-hua-shen-jiu</id>
+    <content type="html"><![CDATA[<blockquote><p>摘要
+序列化和反序列化几乎是工程师们每天都要面对的事情，但是要精确掌握这两个概念并不容易：一方面，它们往往作为框架的一部分出现而湮没在框架之中；另一方面，它们会以其他更容易理解的概念出现，例如加密、持久化。然而，序列化和反序列化的选型却是系统设计或重构一个重要的环节，在分布式、大数据量系统设计里面更为显著。恰当的序列化协议不仅可以提高系统的通用性、强健性、安全性、优化系统性能，而且会让系统更加易于调试、便于扩展。本文从多个角度去分析和讲解“序列化和反序列化”，并对比了当前流行的几种序列化协议，期望对读者做序列化选型有所帮助。</p></blockquote>
+
+<!--more-->
+
+
+<h2>简介</h2>
+
+<p>文章作者服务于美团推荐与个性化组，该组致力于为美团用户提供每天billion级别的高质量个性化推荐以及排序服务。从Terabyte级别的用户行为数据，到Gigabyte级别的Deal/Poi数据；从对实时性要求毫秒以内的用户实时地理位置数据，到定期后台job数据，推荐与重排序系统需要多种类型的数据服务。推荐与重排序系统客户包括各种内部服务、美团客户端、美团网站。为了提供高质量的数据服务，为了实现与上下游各系统进行良好的对接，序列化和反序列化的选型往往是我们做系统设计的一个重要考虑因素。</p>
+
+<p>本文内容按如下方式组织：</p>
+
+<ul>
+<li>第一部分给出了序列化和反序列化的定义，以及其在通讯协议中所处的位置。</li>
+<li>第二部分从使用者的角度探讨了序列化协议的一些特性。</li>
+<li>第三部分描述在具体的实施过程中典型的序列化组件，并与数据库组建进行了类比。</li>
+<li>第四部分分别讲解了目前常见的几种序列化协议的特性，应用场景，并对相关组件进行举例。</li>
+<li>最后一部分，基于各种协议的特性，以及相关benchmark数据，给出了作者的技术选型建议。</li>
+</ul>
+
+
+<h4>一、定义以及相关概念</h4>
+
+<p>互联网的产生带来了机器间通讯的需求，而互联通讯的双方需要采用约定的协议，序列化和反序列化属于通讯协议的一部分。通讯协议往往采用分层模型，不同模型每层的功能定义以及颗粒度不同，例如：TCP/IP协议是一个四层协议，而OSI模型却是七层协议模型。在OSI七层协议模型中展现层（Presentation Layer）的主要功能是把应用层的对象转换成一段连续的二进制串，或者反过来，把二进制串转换成应用层的对象&ndash;这两个功能就是序列化和反序列化。一般而言，TCP/IP协议的应用层对应与OSI七层协议模型的应用层，展示层和会话层，所以序列化协议属于TCP/IP协议应用层的一部分。本文对序列化协议的讲解主要基于OSI七层协议模型。</p>
+
+<ul>
+<li>序列化： 将数据结构或对象转换成二进制串的过程</li>
+<li>反序列化：将在序列化过程中所生成的二进制串转换成数据结构或者对象的过程</li>
+</ul>
+
+
+<p>数据结构、对象与二进制串
+不同的计算机语言中，数据结构，对象以及二进制串的表示方式并不相同。</p>
+
+<p>数据结构和对象：对于类似Java这种完全面向对象的语言，工程师所操作的一切都是对象（Object），来自于类的实例化。在Java语言中最接近数据结构的概念，就是POJO（Plain Old Java Object）或者Javabean－－那些只有setter/getter方法的类。而在C++这种半面向对象的语言中，数据结构和struct对应，对象和class对应。</p>
+
+<p>二进制串：序列化所生成的二进制串指的是存储在内存中的一块数据。C++语言具有内存操作符，所以二进制串的概念容易理解，例如，C++语言的字符串可以直接被传输层使用，因为其本质上就是以'\0'结尾的存储在内存中的二进制串。在Java语言里面，二进制串的概念容易和String混淆。实际上String 是Java的一等公民，是一种特殊对象（Object）。对于跨语言间的通讯，序列化后的数据当然不能是某种语言的特殊数据类型。二进制串在Java里面所指的是byte[]，byte是Java的8中原生数据类型之一（Primitive data types）。</p>
+
+<h4>二、序列化协议特性</h4>
+
+<p>每种序列化协议都有优点和缺点，它们在设计之初有自己独特的应用场景。在系统设计的过程中，需要考虑序列化需求的方方面面，综合对比各种序列化协议的特性，最终给出一个折衷的方案。</p>
+
+<h6>通用性有两个层面的意义：</h6>
+
+<ul>
+<li>第一、技术层面，序列化协议是否支持跨平台、跨语言。如果不支持，在技术层面上的通用性就大大降低了。</li>
+<li>第二、流行程度，序列化和反序列化需要多方参与，很少人使用的协议往往意味着昂贵的学习成本；另一方面，流行度低的协议，往往缺乏稳定而成熟的跨语言、跨平台的公共包。</li>
+</ul>
+
+
+<p>强健性/鲁棒性
+以下两个方面的原因会导致协议不够强健：</p>
+
+<ul>
+<li>第一、成熟度不够，一个协议从制定到实施，到最后成熟往往是一个漫长的阶段。协议的强健性依赖于大量而全面的测试，对于致力于提供高质量服务的系统，采用处于测试阶段的序列化协议会带来很高的风险。</li>
+<li>第二、语言/平台的不公平性。为了支持跨语言、跨平台的功能，序列化协议的制定者需要做大量的工作；但是，当所支持的语言或者平台之间存在难以调和的特性的时候，协议制定者需要做一个艰难的决定&ndash;支持更多人使用的语言/平台，亦或支持更多的语言/平台而放弃某个特性。当协议的制定者决定为某种语言或平台提供更多支持的时候，对于使用者而言，协议的强健性就被牺牲了。</li>
+</ul>
+
+
+<p>可调试性/可读性
+序列化和反序列化的数据正确性和业务正确性的调试往往需要很长的时间，良好的调试机制会大大提高开发效率。序列化后的二进制串往往不具备人眼可读性，为了验证序列化结果的正确性，写入方不得同时撰写反序列化程序，或提供一个查询平台&ndash;这比较费时；另一方面，如果读取方未能成功实现反序列化，这将给问题查找带来了很大的挑战&ndash;难以定位是由于自身的反序列化程序的bug所导致还是由于写入方序列化后的错误数据所导致。对于跨公司间的调试，由于以下原因，问题会显得更严重：</p>
+
+<ul>
+<li>第一、支持不到位，跨公司调试在问题出现后可能得不到及时的支持，这大大延长了调试周期。</li>
+<li>第二、访问限制，调试阶段的查询平台未必对外公开，这增加了读取方的验证难度。</li>
+</ul>
+
+
+<p>如果序列化后的数据人眼可读，这将大大提高调试效率， XML和JSON就具有人眼可读的优点。</p>
+
+<h6>性能包括两个方面，时间复杂度和空间复杂度：</h6>
+
+<ul>
+<li>第一、空间开销（Verbosity）， 序列化需要在原有的数据上加上描述字段，以为反序列化解析之用。如果序列化过程引入的额外开销过高，可能会导致过大的网络，磁盘等各方面的压力。对于海量分布式存储系统，数据量往往以TB为单位，巨大的的额外空间开销意味着高昂的成本。</li>
+<li>第二、时间开销（Complexity），复杂的序列化协议会导致较长的解析时间，这可能会使得序列化和反序列化阶段成为整个系统的瓶颈。</li>
+</ul>
+
+
+<p>可扩展性/兼容性
+移动互联时代，业务系统需求的更新周期变得更快，新的需求不断涌现，而老的系统还是需要继续维护。如果序列化协议具有良好的可扩展性，支持自动增加新的业务字段，而不影响老的服务，这将大大提供系统的灵活度。</p>
+
+<p>安全性/访问限制
+在序列化选型的过程中，安全性的考虑往往发生在跨局域网访问的场景。当通讯发生在公司之间或者跨机房的时候，出于安全的考虑，对于跨局域网的访问往往被限制为基于HTTP/HTTPS的80和443端口。如果使用的序列化协议没有兼容而成熟的HTTP传输层框架支持，可能会导致以下三种结果之一：</p>
+
+<ul>
+<li>第一、因为访问限制而降低服务可用性。</li>
+<li>第二、被迫重新实现安全协议而导致实施成本大大提高。</li>
+<li>第三、开放更多的防火墙端口和协议访问，而牺牲安全性。</li>
+</ul>
+
+
+<h4>三、序列化和反序列化的组件</h4>
+
+<p>典型的序列化和反序列化过程往往需要如下组件：</p>
+
+<ul>
+<li>IDL（Interface description language）文件：参与通讯的各方需要对通讯的内容需要做相关的约定（Specifications）。为了建立一个与语言和平台无关的约定，这个约定需要采用与具体开发语言、平台无关的语言来进行描述。这种语言被称为接口描述语言（IDL），采用IDL撰写的协议约定称之为IDL文件。</li>
+<li>IDL Compiler：IDL文件中约定的内容为了在各语言和平台可见，需要有一个编译器，将IDL文件转换成各语言对应的动态库。</li>
+<li>Stub/Skeleton Lib：负责序列化和反序列化的工作代码。Stub是一段部署在分布式系统客户端的代码，一方面接收应用层的参数，并对其序列化后通过底层协议栈发送到服务端，另一方面接收服务端序列化后的结果数据，反序列化后交给客户端应用层；Skeleton部署在服务端，其功能与Stub相反，从传输层接收序列化参数，反序列化后交给服务端应用层，并将应用层的执行结果序列化后最终传送给客户端Stub。</li>
+<li>Client/Server：指的是应用层程序代码，他们面对的是IDL所生存的特定语言的class或struct。
+底层协议栈和互联网：序列化之后的数据通过底层的传输层、网络层、链路层以及物理层协议转换成数字信号在互联网中传递。
+序列化组件</li>
+</ul>
+
+
+<p>序列化组件与数据库访问组件的对比
+数据库访问对于很多工程师来说相对熟悉，所用到的组件也相对容易理解。下表类比了序列化过程中用到的部分组件和数据库访问组件的对应关系，以便于大家更好的把握序列化相关组件的概念。</p>
+
+<table>
+<thead>
+<tr>
+<th> 序列化组件         </th>
+<th style="text-align:center;"> 数据库组件          </th>
+<th style="text-align:right;"> 说明  </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> IDL           </td>
+<td style="text-align:center;">   DDL              </td>
+<td style="text-align:right;"> 用于建表或者模型的语言</td>
+</tr>
+<tr>
+<td> DL            </td>
+<td style="text-align:center;"> file DB Schema    </td>
+<td style="text-align:right;"> 表创建文件或模型文件</td>
+</tr>
+<tr>
+<td> Stub/Skeleton </td>
+<td style="text-align:center;">  lib  O/R mapping </td>
+<td style="text-align:right;">   将class和Table或者数据模型进行映射</td>
+</tr>
+</tbody>
+</table>
+
+
+<h4>四、几种常见的序列化和反序列化协议</h4>
+
+<p>互联网早期的序列化协议主要有COM和CORBA。</p>
+
+<p>COM主要用于Windows平台，并没有真正实现跨平台，另外COM的序列化的原理利用了编译器中虚表，使得其学习成本巨大（想一下这个场景， 工程师需要是简单的序列化协议，但却要先掌握语言编译器）。由于序列化的数据与编译器紧耦合，扩展属性非常麻烦。</p>
+
+<p>CORBA是早期比较好的实现了跨平台，跨语言的序列化协议。COBRA的主要问题是参与方过多带来的版本过多，版本之间兼容性较差，以及使用复杂晦涩。这些政治经济，技术实现以及早期设计不成熟的问题，最终导致COBRA的渐渐消亡。J2SE 1.3之后的版本提供了基于CORBA协议的RMI-IIOP技术，这使得Java开发者可以采用纯粹的Java语言进行CORBA的开发。</p>
+
+<p>这里主要介绍和对比几种当下比较流行的序列化协议，包括XML、JSON、Protobuf、Thrift和Avro。</p>
+
+<p>一个例子
+如前所述，序列化和反序列化的出现往往晦涩而隐蔽，与其他概念之间往往相互包容。为了更好了让大家理解序列化和反序列化的相关概念在每种协议里面的具体实现，我们将一个例子穿插在各种序列化协议讲解中。在该例子中，我们希望将一个用户信息在多个系统里面进行传递；在应用层，如果采用Java语言，所面对的类对象如下所示：</p>
+
+<pre><code>class Address
+{
+    private String city;
+    private String postcode;
+    private String street;
+}
+public class UserInfo
+{
+    private Integer userid;
+    private String name;
+    private List&lt;Address&gt; address;
+}
+</code></pre>
+
+<h6>XML&amp;SOAP</h6>
+
+<ul>
+<li><p>XML是一种常用的序列化和反序列化协议，具有跨机器，跨语言等优点。 XML历史悠久，其1.0版本早在1998年就形成标准，并被广泛使用至今。XML的最初产生目标是对互联网文档（Document）进行标记，所以它的设计理念中就包含了对于人和机器都具备可读性。 但是，当这种标记文档的设计被用来序列化对象的时候，就显得冗长而复杂（Verbose and Complex）。 XML本质上是一种描述语言，并且具有自我描述（Self-describing）的属性，所以XML自身就被用于XML序列化的IDL。 标准的XML描述格式有两种：DTD（Document Type Definition）和XSD（XML Schema Definition）。作为一种人眼可读（Human-readable）的描述语言，XML被广泛使用在配置文件中，例如O/R mapping、 Spring Bean Configuration File 等。</p></li>
+<li><p>SOAP（Simple Object Access protocol） 是一种被广泛应用的，基于XML为序列化和反序列化协议的结构化消息传递协议。SOAP在互联网影响如此大，以至于我们给基于SOAP的解决方案一个特定的名称&ndash;Web service。SOAP虽然可以支持多种传输层协议，不过SOAP最常见的使用方式还是XML+HTTP。SOAP协议的主要接口描述语言（IDL）是WSDL（Web Service Description Language）。SOAP具有安全、可扩展、跨语言、跨平台并支持多种传输层协议。如果不考虑跨平台和跨语言的需求，XML的在某些语言里面具有非常简单易用的序列化使用方法，无需IDL文件和第三方编译器， 例如Java＋XStream。</p></li>
+</ul>
+
+
+<p>自我描述与递归
+SOAP是一种采用XML进行序列化和反序列化的协议，它的IDL是WSDL. 而WSDL的描述文件是XSD，而XSD自身是一种XML文件。 这里产生了一种有趣的在数学上称之为“递归”的问题，这种现象往往发生在一些具有自我属性（Self-description）的事物上。</p>
+
+<p>IDL文件举例
+采用WSDL描述上述用户基本信息的例子如下：</p>
+
+<pre><code>&lt;xsd:complexType name='Address'&gt;
+     &lt;xsd:attribute name='city' type='xsd:string' /&gt;
+     &lt;xsd:attribute name='postcode' type='xsd:string' /&gt;
+     &lt;xsd:attribute name='street' type='xsd:string' /&gt;
+&lt;/xsd:complexType&gt;
+&lt;xsd:complexType name='UserInfo'&gt;
+     &lt;xsd:sequence&gt;
+     &lt;xsd:element name='address' type='tns:Address'/&gt;
+     &lt;xsd:element name='address1' type='tns:Address'/&gt; 
+     &lt;/xsd:sequence&gt;
+     &lt;xsd:attribute name='userid' type='xsd:int' /&gt;
+     &lt;xsd:attribute name='name' type='xsd:string' /&gt; 
+&lt;/xsd:complexType&gt;
+</code></pre>
+
+<p>典型应用场景和非应用场景
+SOAP协议具有广泛的群众基础，基于HTTP的传输协议使得其在穿越防火墙时具有良好安全特性，XML所具有的人眼可读（Human-readable）特性使得其具有出众的可调试性，互联网带宽的日益剧增也大大弥补了其空间开销大（Verbose）的缺点。对于在公司之间传输数据量相对小或者实时性要求相对低（例如秒级别）的服务是一个好的选择。</p>
+
+<p>由于XML的额外空间开销大，序列化之后的数据量剧增，对于数据量巨大序列持久化应用常景，这意味着巨大的内存和磁盘开销，不太适合XML。另外，XML的序列化和反序列化的空间和时间开销都比较大，对于对性能要求在ms级别的服务，不推荐使用。WSDL虽然具备了描述对象的能力，SOAP的S代表的也是simple，但是SOAP的使用绝对不简单。对于习惯于面向对象编程的用户，WSDL文件不直观。</p>
+
+<p>JSON（Javascript Object Notation）
+JSON起源于弱类型语言Javascript， 它的产生来自于一种称之为"Associative array"的概念，其本质是就是采用"Attribute－value"的方式来描述对象。实际上在Javascript和PHP等弱类型语言中，类的描述方式就是Associative array。JSON的如下优点，使得它快速成为最广泛使用的序列化协议之一：</p>
+
+<ul>
+<li>1、这种Associative array格式非常符合工程师对对象的理解。</li>
+<li>2、它保持了XML的人眼可读（Human-readable）的优点。</li>
+<li>3、相对于XML而言，序列化后的数据更加简洁。 来自于的以下链接的研究表明：XML所产生序列化之后文件的大小接近JSON的两倍。<a href="http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity">http://www.codeproject.com/Articles/604720/JSON-vs-XML-Some-hard-numbers-about-verbosity</a></li>
+<li>4、它具备Javascript的先天性支持，所以被广泛应用于Web browser的应用常景中，是Ajax的事实标准协议。</li>
+<li>5、与XML相比，其协议比较简单，解析速度比较快。</li>
+<li>6、松散的Associative array使得其具有良好的可扩展性和兼容性。</li>
+</ul>
+
+
+<p>IDL悖论
+JSON实在是太简单了，或者说太像各种语言里面的类了，所以采用JSON进行序列化不需要IDL。这实在是太神奇了，存在一种天然的序列化协议，自身就实现了跨语言和跨平台。然而事实没有那么神奇，之所以产生这种假象，来自于两个原因：</p>
+
+<h6>第一</h6>
+
+<p>Associative array在弱类型语言里面就是类的概念，在PHP和Javascript里面Associative array就是其class的实际实现方式，所以在这些弱类型语言里面，JSON得到了非常良好的支持。</p>
+
+<h6>第二</h6>
+
+<p>IDL的目的是撰写IDL文件，而IDL文件被IDL Compiler编译后能够产生一些代码（Stub/Skeleton），而这些代码是真正负责相应的序列化和反序列化工作的组件。 但是由于Associative array和一般语言里面的class太像了，他们之间形成了一一对应关系，这就使得我们可以采用一套标准的代码进行相应的转化。对于自身支持Associative array的弱类型语言，语言自身就具备操作JSON序列化后的数据的能力；对于Java这强类型语言，可以采用反射的方式统一解决，例如Google提供的Gson。</p>
+
+<p>典型应用场景和非应用场景
+JSON在很多应用场景中可以替代XML，更简洁并且解析速度更快。典型应用场景包括：</p>
+
+<ul>
+<li>1、公司之间传输数据量相对小，实时性要求相对低（例如秒级别）的服务。</li>
+<li>2、基于Web browser的Ajax请求。</li>
+<li>3、由于JSON具有非常强的前后兼容性，对于接口经常发生变化，并对可调式性要求高的场景，例如Mobile app与服务端的通讯。</li>
+<li>4、由于JSON的典型应用场景是JSON＋HTTP，适合跨防火墙访问。</li>
+</ul>
+
+
+<p>总的来说，采用JSON进行序列化的额外空间开销比较大，对于大数据量服务或持久化，这意味着巨大的内存和磁盘开销，这种场景不适合。没有统一可用的IDL降低了对参与方的约束，实际操作中往往只能采用文档方式来进行约定，这可能会给调试带来一些不便，延长开发周期。 由于JSON在一些语言中的序列化和反序列化需要采用反射机制，所以在性能要求为ms级别，不建议使用。</p>
+
+<p>IDL文件举例
+以下是UserInfo序列化之后的一个例子：</p>
+
+<pre><code>{"userid":1,"name":"messi","address":[{"city":"北京","postcode":"1000000","street":"wangjingdonglu"}]}
+</code></pre>
+
+<p>Thrift
+Thrift是Facebook开源提供的一个高性能，轻量级RPC服务框架，其产生正是为了满足当前大数据量、分布式、跨语言、跨平台数据通讯的需求。 但是，Thrift并不仅仅是序列化协议，而是一个RPC框架。相对于JSON和XML而言，Thrift在空间开销和解析性能上有了比较大的提升，对于对性能要求比较高的分布式系统，它是一个优秀的RPC解决方案；但是由于Thrift的序列化被嵌入到Thrift框架里面，Thrift框架本身并没有透出序列化和反序列化接口，这导致其很难和其他传输层协议共同使用（例如HTTP）。</p>
+
+<p>典型应用场景和非应用场景
+对于需求为高性能，分布式的RPC服务，Thrift是一个优秀的解决方案。它支持众多语言和丰富的数据类型，并对于数据字段的增删具有较强的兼容性。所以非常适用于作为公司内部的面向服务构建（SOA）的标准RPC框架。</p>
+
+<p>不过Thrift的文档相对比较缺乏，目前使用的群众基础相对较少。另外由于其Server是基于自身的Socket服务，所以在跨防火墙访问时，安全是一个顾虑，所以在公司间进行通讯时需要谨慎。 另外Thrift序列化之后的数据是Binary数组，不具有可读性，调试代码时相对困难。最后，由于Thrift的序列化和框架紧耦合，无法支持向持久层直接读写数据，所以不适合做数据持久化序列化协议。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>struct Address
+{ 
+    1: required string city;
+    2: optional string postcode;
+    3: optional string street;
+} 
+struct UserInfo
+{ 
+    1: required string userid;
+    2: required i32 name;
+    3: optional list&lt;Address&gt; address;
+}
+</code></pre>
+
+<p>Protobuf
+Protobuf具备了优秀的序列化协议的所需的众多典型特征：</p>
+
+<ul>
+<li>1、标准的IDL和IDL编译器，这使得其对工程师非常友好。</li>
+<li>2、序列化数据非常简洁，紧凑，与XML相比，其序列化之后的数据量约为1/3到1/10。</li>
+<li>3、解析速度非常快，比对应的XML快约20-100倍。</li>
+<li>4、提供了非常友好的动态库，使用非常简介，反序列化只需要一行代码。</li>
+</ul>
+
+
+<p>Protobuf是一个纯粹的展示层协议，可以和各种传输层协议一起使用；Protobuf的文档也非常完善。 但是由于Protobuf产生于Google，所以目前其仅仅支持Java、C++、Python三种语言。另外Protobuf支持的数据类型相对较少，不支持常量类型。由于其设计的理念是纯粹的展现层协议（Presentation Layer），目前并没有一个专门支持Protobuf的RPC框架。</p>
+
+<p>典型应用场景和非应用场景
+Protobuf具有广泛的用户基础，空间开销小以及高解析性能是其亮点，非常适合于公司内部的对性能要求高的RPC调用。由于Protobuf提供了标准的IDL以及对应的编译器，其IDL文件是参与各方的非常强的业务约束，另外，Protobuf与传输层无关，采用HTTP具有良好的跨防火墙的访问属性，所以Protobuf也适用于公司间对性能要求比较高的场景。由于其解析性能高，序列化后数据量相对少，非常适合应用层对象的持久化场景。</p>
+
+<p>它的主要问题在于其所支持的语言相对较少，另外由于没有绑定的标准底层传输层协议，在公司间进行传输层协议的调试工作相对麻烦。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>message Address
+{
+    required string city=1;
+        optional string postcode=2;
+        optional string street=3;
+}
+message UserInfo
+{
+    required string userid=1;
+    required string name=2;
+    repeated Address address=3;
+}
+</code></pre>
+
+<p>Avro</p>
+
+<pre><code>Avro的产生解决了JSON的冗长和没有IDL的问题，Avro属于Apache Hadoop的一个子项目。 Avro提供两种序列化格式：JSON格式或者Binary格式。Binary格式在空间开销和解析性能方面可以和Protobuf媲美，JSON格式方便测试阶段的调试。 Avro支持的数据类型非常丰富，包括C++语言里面的union类型。Avro支持JSON格式的IDL和类似于Thrift和Protobuf的IDL（实验阶段），这两者之间可以互转。Schema可以在传输数据的同时发送，加上JSON的自我描述属性，这使得Avro非常适合动态类型语言。 Avro在做文件持久化的时候，一般会和Schema一起存储，所以Avro序列化文件自身具有自我描述属性，所以非常适合于做Hive、Pig和MapReduce的持久化数据格式。对于不同版本的Schema，在进行RPC调用的时候，服务端和客户端可以在握手阶段对Schema进行互相确认，大大提高了最终的数据解析速度。
+</code></pre>
+
+<p>典型应用场景和非应用场景
+Avro解析性能高并且序列化之后的数据非常简洁，比较适合于高性能的序列化服务。</p>
+
+<p>由于Avro目前非JSON格式的IDL处于实验阶段，而JSON格式的IDL对于习惯于静态类型语言的工程师来说不直观。</p>
+
+<p>IDL文件举例</p>
+
+<pre><code>protocol Userservice {
+  record Address {
+   string city;
+   string postcode;
+   string street;
+  }  
+  record UserInfo {
+   string name;
+   int userid;
+   array&lt;Address&gt; address = [];
+  }
+}
+</code></pre>
+
+<p>所对应的JSON Schema格式如下：</p>
+
+<pre><code>{
+  "protocol" : "Userservice",
+  "namespace" : "org.apache.avro.ipc.specific",
+  "version" : "1.0.5",
+  "types" : [ {
+    "type" : "record",
+    "name" : "Address",
+    "fields" : [ {
+      "name" : "city",
+      "type" : "string"
+    }, {
+      "name" : "postcode",
+      "type" : "string"
+    }, {
+      "name" : "street",
+      "type" : "string"
+    } ]
+  }, {
+    "type" : "record",
+    "name" : "UserInfo",
+    "fields" : [ {
+      "name" : "name",
+      "type" : "string"
+    }, {
+      "name" : "userid",
+      "type" : "int"
+    }, {
+      "name" : "address",
+      "type" : {
+        "type" : "array",
+        "items" : "Address"
+      },
+      "default" : [ ]
+    } ]
+  } ],
+  "messages" : { }
+}
+</code></pre>
+
+<h4>五、Benchmark以及选型建议</h4>
+
+<p>Benchmark
+以下数据来自<a href="https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking">https://code.google.com/p/thrift-protobuf-compare/wiki/Benchmarking</a></p>
+
+<ul>
+<li>解析性能</li>
+<li>序列化之空间开销</li>
+<li>序列化大小</li>
+</ul>
+
+
+<p>从上图可得出如下结论：</p>
+
+<ul>
+<li>1、XML序列化（Xstream）无论在性能和简洁性上比较差。</li>
+<li>2、Thrift与Protobuf相比在时空开销方面都有一定的劣势。</li>
+<li>3、Protobuf和Avro在两方面表现都非常优越。</li>
+</ul>
+
+
+<p>选型建议</p>
+
+<pre><code>以上描述的五种序列化和反序列化协议都各自具有相应的特点，适用于不同的场景：
+1、对于公司间的系统调用，如果性能要求在100ms以上的服务，基于XML的SOAP协议是一个值得考虑的方案。
+2、基于Web browser的Ajax，以及Mobile app与服务端之间的通讯，JSON协议是首选。对于性能要求不太高，或者以动态类型语言为主，或者传输数据载荷很小的的运用场景，JSON也是非常不错的选择。
+3、对于调试环境比较恶劣的场景，采用JSON或XML能够极大的提高调试效率，降低系统开发成本。
+4、当对性能和简洁性有极高要求的场景，Protobuf，Thrift，Avro之间具有一定的竞争关系。
+5、对于T级别的数据的持久化应用场景，Protobuf和Avro是首要选择。如果持久化后的数据存储在Hadoop子项目里，Avro会是更好的选择。
+6、由于Avro的设计理念偏向于动态类型语言，对于动态语言为主的应用场景，Avro是更好的选择。
+7、对于持久层非Hadoop项目，以静态类型语言为主的应用场景，Protobuf会更符合静态类型语言工程师的开发习惯。
+8、如果需要提供一个完整的RPC解决方案，Thrift是一个好的选择。
+9、如果序列化之后需要支持不同的传输层协议，或者需要跨防火墙访问的高性能场景，Protobuf可以优先考虑。
+</code></pre>
+
+<!--more-->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[够逼格的注释习惯]]></title>
+    <link href="http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de/"/>
+    <updated>2015-09-13T02:59:30+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/09/13/you-xiu-cheng-xu-yuan-shi-zen-yao-xie-zhu-shi-de</id>
+    <content type="html"><![CDATA[<p>够逼格的注释习惯总结</p>
+
+<p>首先关于注意这里就不说什么VVDocument了，来点新鲜的！</p>
+
+<h6>也许你使用过#warning 警告提示</h6>
+
+<h6>也许你也使用过#pragma marks。</h6>
+
+<p>但是你见过或者使用过下面这个吗？</p>
+
+<pre><code>Comments containing:
+MARK:
+TODO:
+FIXME:
+!!!:
+???:
+</code></pre>
+
+<p>没有，那么你就快速的看看下面的内容，非常好用，也非常简单，不过具体使用看个人</p>
+
+<!--more-->
+
+
+<p> 首先说一下三个最常用的：</p>
+
+<ul>
+<li>1、TODO</li>
+</ul>
+
+
+<p> 等待实现的功能</p>
+
+<ul>
+<li>2、FIXME</li>
+</ul>
+
+
+<p> 需要修正的功能</p>
+
+<ul>
+<li>3、！！！</li>
+</ul>
+
+
+<p> 需要改进的功能</p>
+
+<p>具体使用</p>
+
+<pre><code>// FIXME:sss
+/* FIXME: sss */
+
+
+// MARK:sss
+/* MARK:sss */
+
+
+// !!!:sss
+/* !!!: sss */
+
+
+// ???:sss
+/* ???: sss */
+
+
+// TODO:sss
+/* TODO: sss */
+
+
+// Comments containing: sss
+/* Comments containing: sss */
+</code></pre>
+
+<p>注意空格.</p>
+
+<p> 最后你会发现下面的效果，虽然和#pragma marks没有什么区别，但是这就是装逼原因</p>
+
+<p>关于最后一个/<em> Comments containing: sss </em>/，笔者还没照发对应的使用方法，如果你知道可以联系我哦！</p>
+
+<!--more-->
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[字典转模型深究]]></title>
+    <link href="http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/"/>
+    <updated>2015-05-01T02:33:18+08:00</updated>
+    <id>http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu</id>
+    <content type="html"><![CDATA[<blockquote><p>引言：
+在文字开始之前先介绍两个软件：</p></blockquote>
+
+<h5>JSONExport</h5>
+
+<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
+
+<h5>JSON Accelerator</h5>
+
+<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
+
+<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
+
+<ul>
+<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
+<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
+</ul>
+
+
+<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
+
+<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
+
+<!--more-->
+
+
+<h2>一：直接加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
+
+<pre><code>定义一个数组属性 
+@property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>获取Plist文件</h6>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载Plsit中的数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    NSDictionary *dic = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+    */
+     icon.image = [UIImage imageNamed:dic[@"icon"]];
+
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = dic[@"label"];
+
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
+
+    [view addSubview:btn];
+</code></pre>
+
+<h2>二：使用简单的模型加载Plist数据</h2>
+
+<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
+
+<pre><code> 1 //定义一个数组属性
+
+  2 @property (nonatomic, assign) NSArray *apps; 
+</code></pre>
+
+<h6>在模型中定义模型对应的属性</h6>
+
+<pre><code>@property (nonatomic, copy) NSString *icon;
+
+
+@property (nonatomic, copy) NSString *label;
+
+
+@property (nonatomic, copy) NSString *btn;
+</code></pre>
+
+<h6>模型方法</h6>
+
+<pre><code>/**
+ 模型数据方法
+ */
++(instancetype)messageWithDict:(NSDictionary *)dict;
+
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>模型的实现文件</h6>
+
+<pre><code>/**
+ 模型数据方法的实现
+ */
+
++ (instancetype)messageWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>实用模型加载Plist文件</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            appsModel *model = [[appsModel alloc] init];
+            model.label = dic[@"label"];
+            model.btn = dic[@"btn"];
+            model.icon = dic[@"icon"];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>加载模型中对应的plist数据</h6>
+
+<pre><code>    //取出数组中对应的数据放到一个字典里面
+    appsModel *app = self.apps[i];
+
+
+    //创建一个UIImageView
+    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
+    /**
+     取出字典中的icon
+     */
+    icon.image = [UIImage imageNamed:app.icon];
+    [view addSubview:icon];
+
+
+
+    //创建一个Label
+    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
+    /**
+     取出字典中的label
+     */
+    l.text = app.label;
+    [view addSubview:l];
+
+
+
+    //创建一个按钮
+    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
+    /**
+     取出字典中的btn
+     */
+    [btn setTitle:app.btn forState:UIControlStateNormal];
+    [view addSubview:btn];
+</code></pre>
+
+<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
+
+<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
+{
+self = [super init];
+if (self) {
+    self.label = dict[@"label"];
+    self.btn = dict[@"btn"];
+    self.icon = dict[@"icon"];
+
+//[self setValue:dict[@"label"] forKeyPath:@"label"];
+
+    //封装
+    [self setValuesForKeysWithDictionary:dict];
+}
+
+return self;
+}
+</code></pre>
+
+<p>/<em>*
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ </em>/</p>
+
+<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSMutableArray *)apps
+{
+    if (_apps == nil) {
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+//            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+        }
+        _apps = arrayApps;
+    }
+    return _apps;
+}
+</code></pre>
+
+<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
+
+<p>在模型中定义并且实现一个模型封装的方法</p>
+
+<pre><code>+(NSArray *)appList
+{
+        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
+
+        NSMutableArray *arrayApps = [NSMutableArray array];
+
+        for (NSDictionary *dic in array) {
+            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
+            appsModel *model = [appsModel appsWithDict:dic];
+
+            [arrayApps addObject:model];
+    }
+    return arrayApps;
+
+}
+</code></pre>
+
+<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
+
+<pre><code>/**
+ 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
+ */
+//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
+-(NSArray *)apps
+{
+    if (_apps == nil) {
+
+        _apps = [appsModel appList];
+    }
+    return _apps;
+}
+</code></pre>
+
+<h2>三：复杂Plist转模型</h2>
+
+<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
+
+<p>比如Plist中海油一个friends这歌子模型</p>
+
+<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
+
+<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
+
+<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
+
+<pre><code>/**
+ 根据plist里面存在的子列中的数据再创建一个模型数据
+ */
+
+/**
+ 设置子模型数据的属性
+ */
+
+@property (nonatomic, assign) NSString *icon;
+
+@property (nonatomic, assign) NSString *intro;
+
+@property (nonatomic, assign) NSString *name;
+
+@property (nonatomic, assign, getter=isVip)BOOL vip;
+
+
+/**
+ 子模型数据的方法
+ */
++ (instancetype)friendWithDict:(NSDictionary *)dict;
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>子模型的实现</h6>
+
+<pre><code>/**
+ 子模型数据的方法de实现
+ */
+
++ (instancetype)friendWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+    }
+    return self;
+}
+</code></pre>
+
+<h6>然后就是根模型</h6>
+
+<pre><code>/**
+ 根据plist中的数据创建一个模型数据
+ */
+
+/**
+ 设置模型数据的中的属性
+ */
+
+@property (nonatomic, assign) NSArray *friends;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSNumber *online;
+
+/**
+ 模型数据的方法
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict;
+
+
+- (instancetype)initWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
+
+<pre><code>/**
+ 模型数据的方法的实现
+ */
+
++ (instancetype)groupWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+
+- (instancetype)initWithDict:(NSDictionary *)dict
+{
+    if (self = [super init]) {
+        [self setValuesForKeysWithDictionary:dict];
+
+        NSMutableArray *friendArray = [NSMutableArray array];
+        for (NSDictionary *dict in self.friends) {
+            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
+            [friendArray addObject:friend];
+        }
+        self.friends = friendArray;
+    }
+    return self;
+}
+</code></pre>
+
+<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
+
+<pre><code>/**
+ 加载模型数据的方法
+ */
+
+- (NSArray *)groups
+{
+    if (_groups == nil) {
+        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
+
+        NSMutableArray *groupArray = [NSMutableArray array];
+        for (NSDictionary *dict in dictArray) {
+            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
+            [groupArray addObject:group];
+        }
+
+        _groups = groupArray;
+    }
+    return _groups;
+}
+</code></pre>
+
+<h2>四：使用第三份库</h2>
+
+<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
+
+<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
+
+<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
+
+<p>下载好了之后直接讲MJExtension拖到你的项目</p>
+
+<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
+
+<h6>首先根据plist数据新建对应的模型数据</h6>
+
+<p>这里我一新浪微博中的小部分做测试</p>
+
+<pre><code>#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  微博文本内容
+ */
+@property (copy, nonatomic) NSString *text;
+
+/**
+ *  微博作者
+ */
+@property (strong, nonatomic) User *user;
+
+/**
+ *  转发的微博
+ */
+@property (strong, nonatomic) Status *retweetedStatus;
+/**
+ *  存放着某一页微博数据（里面都是Status模型）
+ */
+@property (strong, nonatomic) NSMutableArray *statuses;
+
+/**
+ *  总数
+ */
+@property (assign, nonatomic) NSNumber *totalNumber;
+
+/**
+ *  上一页的游标
+ */
+@property (assign, nonatomic) long long previousCursor;
+
+/**
+ *  下一页的游标
+ */
+@property (assign, nonatomic) long long nextCursor;
+/**
+ *  名称
+ */
+@property (copy, nonatomic) NSString *name;
+
+/**
+ *  头像
+ */
+@property (copy, nonatomic) NSString *icon;
+</code></pre>
+
+<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
+
+<pre><code>/**
+ MJ友情提醒：
+ 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
+ 2.MJExtension能完成的功能
+ * 字典 --&gt; 模型
+ * 模型 --&gt; 字典
+ * 字典数组 --&gt; 模型数组
+ * 模型数组 --&gt; 字典数组
+ 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
+ 4.希望各位大神能用得爽
+ */
+
+#import &lt;Foundation/Foundation.h&gt;
+#import "MJExtension.h"
+#import "User.h"
+#import "Status.h"
+#import "StatusResult.h"
+
+/**
+ *  简单的字典 -&gt; 模型
+ */
+void keyValues2object()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"name" : @"Jack",
+                           @"icon" : @"lufy.png",
+                           };
+
+    // 2.将字典转为User模型
+    User *user = [User objectWithKeyValues:dict];
+
+    // 3.打印User模型的属性
+    NSLog(@"name=%@, icon=%@", user.name, user.icon);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
+ */
+void keyValues2object2()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"text" : @"是啊，今天天气确实不错！",
+
+                           @"user" : @{
+                                   @"name" : @"Jack",
+                                   @"icon" : @"lufy.png"
+                                   },
+
+                           @"retweetedStatus" : @{
+                                   @"text" : @"今天天气真不错！",
+
+                                   @"user" : @{
+                                           @"name" : @"Rose",
+                                           @"icon" : @"nami.png"
+                                           }
+                                   }
+                           };
+
+    // 2.将字典转为Status模型
+    Status *status = [Status objectWithKeyValues:dict];
+
+    // 3.打印status的属性
+    NSString *text = status.text;
+    NSString *name = status.user.name;
+    NSString *icon = status.user.icon;
+    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+
+    // 4.打印status.retweetedStatus的属性
+    NSString *text2 = status.retweetedStatus.text;
+    NSString *name2 = status.retweetedStatus.user.name;
+    NSString *icon2 = status.retweetedStatus.user.icon;
+    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
+}
+
+/**
+ *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+ */
+void keyValues2object3()
+{
+    // 1.定义一个字典
+    NSDictionary *dict = @{
+                           @"statuses" : @[
+                                   @{
+                                       @"text" : @"今天天气真不错！",
+
+                                       @"user" : @{
+                                               @"name" : @"Rose",
+                                               @"icon" : @"nami.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"明天去旅游了",
+
+                                       @"user" : @{
+                                               @"name" : @"Jack",
+                                               @"icon" : @"lufy.png"
+                                               }
+                                       },
+
+                                   @{
+                                       @"text" : @"嘿嘿，这东西不错哦！",
+
+                                       @"user" : @{
+                                               @"name" : @"Jim",
+                                               @"icon" : @"zero.png"
+                                               }
+                                       }
+
+                                   ],
+
+                           @"totalNumber" : @"2014",
+
+                           @"previousCursor" : @"13476589",
+
+                           @"nextCursor" : @"13476599"
+                           };
+
+    // 2.将字典转为StatusResult模型
+    StatusResult *result = [StatusResult objectWithKeyValues:dict];
+
+    // 3.打印StatusResult模型的简单属性
+    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
+
+    // 4.打印statuses数组中的模型属性
+    for (Status *status in result.statuses) {
+        NSString *text = status.text;
+        NSString *name = status.user.name;
+        NSString *icon = status.user.icon;
+        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
+    }
+}
+
+/**
+ *  字典数组 -&gt; 模型数组
+ */
+void keyValuesArray2objectArray()
+{
+    // 1.定义一个字典数组
+    NSArray *dictArray = @[
+                           @{
+                               @"name" : @"Jack",
+                               @"icon" : @"lufy.png",
+                               },
+
+                           @{
+                               @"name" : @"Rose",
+                               @"icon" : @"nami.png",
+                               },
+
+                           @{
+                               @"name" : @"Jim",
+                               @"icon" : @"zero.png",
+                               }
+                           ];
+
+    // 2.将字典数组转为User模型数组
+    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
+
+    // 3.打印userArray数组中的User模型属性
+    for (User *user in userArray) {
+        NSLog(@"name=%@, icon=%@", user.name, user.icon);
+    }
+}
+
+/**
+ *  模型 -&gt; 字典
+ */
+void object2keyValues()
+{
+    // 1.新建模型
+    User *user = [[User alloc] init];
+    user.name = @"Jack";
+    user.icon = @"lufy.png";
+
+    Status *status = [[Status alloc] init];
+    status.user = user;
+    status.text = @"今天的心情不错！";
+
+    // 2.将模型转为字典
+    //    NSDictionary *dict = [status keyValues];
+    NSDictionary *dict = status.keyValues;
+    NSLog(@"%@", dict);
+}
+
+/**
+ *  模型数组 -&gt; 字典数组
+ */
+void objectArray2keyValuesArray()
+{
+    // 1.新建模型数组
+    User *user1 = [[User alloc] init];
+    user1.name = @"Jack";
+    user1.icon = @"lufy.png";
+
+    User *user2 = [[User alloc] init];
+    user2.name = @"Rose";
+    user2.icon = @"nami.png";
+
+    User *user3 = [[User alloc] init];
+    user3.name = @"Jim";
+    user3.icon = @"zero.png";
+
+    NSArray *userArray = @[user1, user2, user3];
+
+    // 2.将模型数组转为字典数组
+    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
+    NSLog(@"%@", dictArray);
+}
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        // 简单的字典 -&gt; 模型
+        keyValues2object();
+
+        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
+        keyValues2object2();
+
+        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
+        keyValues2object3();
+
+        // 字典数组 -&gt; 模型数组
+        keyValuesArray2objectArray();
+
+        // 模型转字典
+        object2keyValues();
+
+        // 模型数组 -&gt; 字典数组
+        objectArray2keyValuesArray();
+    }
+    return 0;
+}
+</code></pre>
 ]]></content>
   </entry>
   
