@@ -30,29 +30,29 @@ $ class-dump-z Portal > Portal-dump.txt
 
 
 
-@protocol XXEncryptedProtocol_10764b0  
--(?)XXEncryptedMethod_d109df;  
--(?)XXEncryptedMethod_d109d3;  
--(?)XXEncryptedMethod_d109c7;  
--(?)XXEncryptedMethod_d109bf;  
--(?)XXEncryptedMethod_d109b8;  
--(?)XXEncryptedMethod_d109a4;  
--(?)XXEncryptedMethod_d10990;  
--(?)XXEncryptedMethod_d1097f;  
--(?)XXEncryptedMethod_d10970;  
--(?)XXEncryptedMethod_d10968;  
--(?)XXEncryptedMethod_d10941;  
--(?)XXEncryptedMethod_d10925;  
--(?)XXEncryptedMethod_d10914;  
--(?)XXEncryptedMethod_d1090f;  
--(?)XXEncryptedMethod_d1090a;  
--(?)XXEncryptedMethod_d10904;  
--(?)XXEncryptedMethod_d108f9;  
--(?)XXEncryptedMethod_d108f4;  
--(?)XXEncryptedMethod_d108eb;  
-@optional  
--(?)XXEncryptedMethod_d109eb;  
-@end
+	@protocol XXEncryptedProtocol_10764b0  
+	-(?)XXEncryptedMethod_d109df;  
+	-(?)XXEncryptedMethod_d109d3;  
+	-(?)XXEncryptedMethod_d109c7;  
+	-(?)XXEncryptedMethod_d109bf;  
+	-(?)XXEncryptedMethod_d109b8;  
+	-(?)XXEncryptedMethod_d109a4;  
+	-(?)XXEncryptedMethod_d10990;  
+	-(?)XXEncryptedMethod_d1097f;  
+	-(?)XXEncryptedMethod_d10970;  
+	-(?)XXEncryptedMethod_d10968;  
+	-(?)XXEncryptedMethod_d10941;  
+	-(?)XXEncryptedMethod_d10925;  
+	-(?)XXEncryptedMethod_d10914;  
+	-(?)XXEncryptedMethod_d1090f;  
+	-(?)XXEncryptedMethod_d1090a;  
+	-(?)XXEncryptedMethod_d10904;  
+	-(?)XXEncryptedMethod_d108f9;  
+	-(?)XXEncryptedMethod_d108f4;  
+	-(?)XXEncryptedMethod_d108eb;  
+	@optional  
+	-(?)XXEncryptedMethod_d109eb;  
+	@end
 
 查看得到的信息是加过密的，这个加密操作是苹果在部署到app store时做的，所以我们还需要做一步解密操作。
 3.使用Clutch解密支付宝app

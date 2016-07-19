@@ -8,9 +8,9 @@ categories: Foundation
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 
-
-
 --- 
+
+
 
 ####1、UIScreen可以获取设备屏幕的大小。
  

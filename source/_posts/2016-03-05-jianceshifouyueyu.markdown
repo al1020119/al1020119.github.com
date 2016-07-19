@@ -1,4 +1,3 @@
-
 ---
 layout: post
 title: "检测是否越狱"
@@ -8,8 +7,8 @@ categories: Reverse
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 
-
 ---
+
 
 底层开发之越狱开发第二篇
 
