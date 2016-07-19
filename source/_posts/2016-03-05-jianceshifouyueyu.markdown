@@ -24,10 +24,6 @@ Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直�
 
 <!--more-->
 
-
-
-
-复制代码
 复制代码
 
 	/*方法名:
@@ -46,7 +42,7 @@ Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直�
 	// 类方法，判断你的App是否被破解
 	+ (BOOL)isPirated;
 复制代码
-复制代码
+
 apt和Cydia的方式来进行判断的，没看见源码
 
  
@@ -55,12 +51,17 @@ apt和Cydia的方式来进行判断的，没看见源码
 
 1. apt
 
-	1 - (BOOL) hasAPT
-	2 {
-	3 return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/apt/"];
-	4 }
+---
+
+	 - (BOOL) hasAPT
+	 {
+	 return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/apt/"];
+	 }
 
 2. system
+
+---
+
 
 	1 - (BOOL) successCallSystem
 	2 {
@@ -70,7 +71,6 @@ apt和Cydia的方式来进行判断的，没看见源码
 
 3.示例代码
 
-复制代码
 
 	 1 static const char* jailbreak_apps[] =
 	 2 
@@ -121,5 +121,5 @@ apt和Cydia的方式来进行判断的，没看见源码
 	47   return jailbroken;  
 	48 }  
 	49 @end
-复制代码
+
   
