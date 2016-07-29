@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-07-19T15:12:24+08:00</updated>
+  <updated>2016-07-29T15:14:03+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,228 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[福利：抢红包神器就是这么来的]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/01/weixinhongbao/"/>
+    <updated>2016-05-01T21:52:15+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/01/weixinhongbao</id>
+    <content type="html"><![CDATA[<p>微信红包</p>
+
+<p><img src="http://al1020119.github.io/images/weixinhongbao0001.jpg" title="Caption" ></p>
+
+<pre><code>前言：最近笔者在研究iOS逆向工程，顺便拿微信来练手，在非越狱手机上实现了微信自动抢红包的功能。
+</code></pre>
+
+<p>题外话：此教程是一篇严肃的学术探讨类文章，仅仅用于学习研究，也请读者不要用于商业或其他非法途径上，笔者一概不负责哟~~</p>
+
+<p>好了，接下来可以进入正题了！</p>
+
+<h2>此教程所需要的工具/文件</h2>
+
+<pre><code>yololib
+class-dump
+dumpdecrypted
+iOSOpenDev
+iTools
+OpenSSH(Cydia)
+iFile(Cydia)
+Cycript(Cydia)
+Command Line Tools
+Xcode
+苹果开发者证书或企业证书
+一台越狱的iPhone
+</code></pre>
+
+<p>是的，想要实现在非越狱iPhone上达到自动抢红包的目的，工具用的可能是有点多（工欲善其事必先利其器^_^）。不过，没关系，大家可以按照教程的步骤一步一步来执行，不清楚的步骤可以重复实验，毕竟天上不会掉馅饼嘛。</p>
+
+<h1>解密微信可执行文件(Mach-O)</h1>
+
+<p>因为从Appstore下载安装的应用都是加密过的，所以我们需要用一些工具来为下载的App解密，俗称砸壳。这样才能便于后面分析App的代码结构。</p>
+
+<p>首先我们需要一台已经越狱的iPhone手机(现在市面上越狱已经很成熟，具体越狱方法这里就不介绍了)。然后进入Cydia，安装OpenSSH、Cycript、iFile(调试程序时可以方便地查看日志文件)这三款软件。</p>
+
+<pre><code>PS：笔者的手机是iPhone 6Plus，系统版本为iOS9.1。
+</code></pre>
+
+<p>在电脑上用iTunes上下载一个最新的微信，笔者当时下载的微信版本为6.3.13。下载完后，iTunes上会显示出已下载的app。</p>
+
+<p>itnues</p>
+
+<p><img src="http://al1020119.github.io/images/weixinhongbao0002.jpg" title="Caption" ></p>
+
+<p>连上iPhone，用iTunes装上刚刚下载的微信应用。</p>
+
+<p>打开Mac的终端，用ssh进入连上的iPhone(确保iPhone和Mac在同一个网段，笔者iPhone的IP地址为192.168.8.54)。OpenSSH的root密码默认为alpine。</p>
+
+<p>ssh
+<img src="http://al1020119.github.io/images/weixinhongbao0003.jpg" title="Caption" ></p>
+
+<p>接下来就是需要找到微信的Bundle id了，，这里笔者有一个小技巧，我们可以把iPhone上的所有App都关掉，唯独保留微信，然后输入命令 ps -e</p>
+
+<p>微信bundle id
+<img src="http://al1020119.github.io/images/weixinhongbao0004.jpg" title="Caption" ><br/>
+这样我们就找到了微信的可执行文件Wechat的具体路径了。接下来我们需要用Cycript找出微信的Documents的路径，输入命令cycript -p WeChat</p>
+
+<p>cycript
+<img src="http://al1020119.github.io/images/weixinhongbao0005.jpg" title="Caption" ></p>
+
+<pre><code>编译dumpdecrypted
+先记下刚刚我们获取到的两个路径(Bundle和Documents)，这时候我们就要开始用dumpdecrypted来为微信二进制文件(WeChat)砸壳了。
+确保我们从Github上下载了最新的dumpdecrypted源码，进入dumpdecrypted源码的目录，编译dumpdecrypted.dylib，命令如下:
+</code></pre>
+
+<p>dumpdecrypted.dylib
+<img src="http://al1020119.github.io/images/weixinhongbao0006.jpg" title="Caption" ><br/>
+这样我们可以看到dumpdecrypted目录下生成了一个dumpdecrypted.dylib的文件。</p>
+
+<pre><code>scp
+拷贝dumpdecrypted.dylib到iPhone上，这里我们用到scp命令.
+scp 源文件路径 目标文件路径 。具体如下：
+</code></pre>
+
+<p>scp
+<img src="http://al1020119.github.io/images/weixinhongbao0007.jpg" title="Caption" ><br/>
+    开始砸壳
+    dumpdecrypted.dylib的具体用法是：DYLD_INSERT_LIBRARIES=/PathFrom/dumpdecrypted.dylib /PathTo</p>
+
+<p>dumpdecrypted
+<img src="http://al1020119.github.io/images/weixinhongbao0008.jpg" title="Caption" ><br/>
+这样就代表砸壳成功了，当前目录下会生成砸壳后的文件，即WeChat.decrypted。同样用scp命令把WeChat.decrypted文件拷贝到电脑上,接下来我们要正式的dump微信的可执行文件了。</p>
+
+<h1>dump微信可执行文件</h1>
+
+<pre><code>从Github上下载最新的class-dump源代码，然后用Xcode编译即可生成class-dump(这里比较简单，笔者就不详细说明了)。
+
+导出微信的头文件
+使用class-dump命令,把刚刚砸壳后的WeChat.decrypted,导出其中的头文件。./class-dump -s -S -H ./WeChat.decrypted -o ./header6.3-arm64
+</code></pre>
+
+<p>导出的头文件
+<img src="http://al1020119.github.io/images/weixinhongbao0009.jpg" title="Caption" ><br/>
+这里我们可以新建一个Xcode项目，把刚刚导出的头文件加到新建的项目中，这样便于查找微信的相关代码。</p>
+
+<p>微信的头文件
+<img src="http://al1020119.github.io/images/weixinhongbao0010.jpg" title="Caption" ><br/>
+找到CMessageMgr.h和WCRedEnvelopesLogicMgr.h这两文件，其中我们注意到有这两个方法：- (void)AsyncOnAddMsg:(id)arg1 MsgWrap:(id)arg2; ，- (void)OpenRedEnvelopesRequest:(id)arg1;。没错，接下来我们就是要利用这两个方法来实现微信自动抢红包功能。其实现原理是，通过hook微信的新消息函数，我们判断是否为红包消息，如果是，我们就调用微信的打开红包方法。这样就能达到自动抢红包的目的了。哈哈，是不是很简单，我们一起来看看具体是怎么实现的吧。</p>
+
+<pre><code>新建一个dylib工程，因为Xcode默认不支持生成dylib，所以我们需要下载iOSOpenDev，安装完成后(Xcode7环境会提示安装iOSOpenDev失败，请参考iOSOpenDev安装问题)，重新打开Xcode，在新建项目的选项中即可看到iOSOpenDev选项了。
+</code></pre>
+
+<p>iOSOpenDev
+<img src="http://al1020119.github.io/images/weixinhongbao0011.jpg" title="Caption" ><br/>
+    dylib代码
+    选择Cocoa Touch Library，这样我们就新建了一个dylib工程了，我们命名为autoGetRedEnv。</p>
+
+<pre><code>删除autoGetRedEnv.h文件，修改autoGetRedEnv.m为autoGetRedEnv.mm，然后在项目中加入CaptainHook.h
+
+因为微信不会主动来加载我们的hook代码，所以我们需要把hook逻辑写到构造函数中。
+
+__attribute__((constructor)) static void entry()
+{
+  //具体hook方法
+}
+
+hook微信的AsyncOnAddMsg: MsgWrap:方法，实现方法如下：
+
+//声明CMessageMgr类
+CHDeclareClass(CMessageMgr);
+CHMethod(2, void, CMessageMgr, AsyncOnAddMsg, id, arg1, MsgWrap, id, arg2)
+{
+  //调用原来的AsyncOnAddMsg:MsgWrap:方法
+  CHSuper(2, CMessageMgr, AsyncOnAddMsg, arg1, MsgWrap, arg2);
+  //具体抢红包逻辑
+  //...
+  //调用原生的打开红包的方法
+  //注意这里必须为给objc_msgSend的第三个参数声明为NSMutableDictionary,不然调用objc_msgSend时，不会触发打开红包的方法
+  ((void (*)(id, SEL, NSMutableDictionary*))objc_msgSend)(logicMgr, @selector(OpenRedEnvelopesRequest:), params);
+}
+__attribute__((constructor)) static void entry()
+{
+  //加载CMessageMgr类
+  CHLoadLateClass(CMessageMgr);
+  //hook AsyncOnAddMsg:MsgWrap:方法
+  CHClassHook(2, CMessageMgr, AsyncOnAddMsg, MsgWrap);
+}
+
+    项目的全部代码，笔者已放入Github中。
+
+完成好具体实现逻辑后，就可以顺利生成dylib了。
+</code></pre>
+
+<h1>重新打包微信App</h1>
+
+<pre><code>为微信可执行文件注入dylib
+要想微信应用运行后，能执行我们的代码，首先需要微信加入我们的dylib，这里我们用到一个dylib注入神器:yololib，从网上下载源代码，编译后得到yololib。
+
+使用yololib简单的执行下面一句就可以成功完成注入。注入之前我们先把之前保存的WeChat.decrypted重命名为WeChat，即已砸完壳的可执行文件。
+./yololib 目标可执行文件 需注入的dylib
+注入成功后即可见到如下信息：
+
+dylib注入
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/weixinhongbao0012.jpg" title="Caption" ><br/>
+    新建Entitlements.plist</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;application-identifier&lt;/key&gt;
+  &lt;string&gt;123456.com.autogetredenv.demo&lt;/string&gt;
+  &lt;key&gt;com.apple.developer.team-identifier&lt;/key&gt;
+  &lt;string&gt;123456&lt;/string&gt;
+  &lt;key&gt;get-task-allow&lt;/key&gt;
+  &lt;true/&gt;
+  &lt;key&gt;keychain-access-groups&lt;/key&gt;
+  &lt;array&gt;
+      &lt;string&gt;123456.com.autogetredenv.demo&lt;/string&gt;
+  &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+
+这里大家也许不清楚自己的证书Teamid及其他信息，没关系，笔者这里有一个小窍门，大家可以找到之前用开发者证书或企业证书打包过的App(例如叫Demo)，然后在终端中输入以下命令即可找到相关信息，命令如下：
+./ldid -e ./Demo.app/demo
+
+给微信重新签名
+接下来把我们生成的dylib(libautoGetRedEnv.dylib)、刚刚注入dylib的WeChat、以及embedded.mobileprovision文件(可以在之前打包过的App中找到)拷贝到WeChat.app中。
+
+命令格式：codesign -f -s 证书名字 目标文件
+
+    PS:证书名字可以在钥匙串中找到
+
+分别用codesign命令来为微信中的相关文件签名,具体实现如下：
+
+重新签名
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/weixinhongbao0013.jpg" title="Caption" ><br/>
+    打包成ipa
+    给微信重新签名后，我们就可以用xcrun来生成ipa了，具体实现如下：
+    xcrun -sdk iphoneos PackageApplication -v WeChat.app  -o ~/WeChat.ipa</p>
+
+<h1>安装拥有抢红包功能的微信</h1>
+
+<p>以上步骤如果都成功实现的话，那么真的就是万事俱备，只欠东风了~~~</p>
+
+<p>我们可以使用iTools工具，来为iPhone(此iPhone Device id需加入证书中)安装改良过的微信了。</p>
+
+<p>iTools
+<img src="http://al1020119.github.io/images/weixinhongbao0014.jpg" title="Caption" ></p>
+
+<h1>大工告成！！</h1>
+
+<p>好了，我们可以看看hook过的微信抢红包效果了~</p>
+
+<p>自动抢红包
+<img src="http://al1020119.github.io/images/weixinhongbao0015.gif" title="Caption" ><br/>
+哈哈，是不是觉得很爽啊，"妈妈再也不用担心我抢红包了。"。大家如果有兴趣可以继续hook微信的其他函数，这样既加强了学习，又满足了自己的特(zhuang)殊(bi)需求嘛。</p>
+
+<p>教程中所涉及到的工具及源代码笔者都上传到Github上。
+Github地址</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[逆向工程总结]]></title>
@@ -971,7 +1193,7 @@ Port 选 22
 Password(假设你没有更改密码) 打 alpine</p>
 
 <p>Mac / Linux Terminal 内打
-ssh <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#114;&#x6f;&#x6f;&#x74;&#x40;&#x31;&#57;&#50;&#46;&#49;&#x36;&#56;&#46;&#x31;&#46;&#x31;&#x30;&#x34;">&#x72;&#x6f;&#x6f;&#116;&#x40;&#49;&#x39;&#50;&#x2e;&#x31;&#54;&#56;&#x2e;&#x31;&#46;&#x31;&#48;&#x34;</a></p>
+ssh <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#114;&#x6f;&#x6f;&#116;&#x40;&#49;&#57;&#50;&#x2e;&#x31;&#x36;&#56;&#x2e;&#x31;&#x2e;&#x31;&#48;&#x34;">&#114;&#x6f;&#111;&#116;&#64;&#x31;&#57;&#50;&#46;&#x31;&#x36;&#x38;&#46;&#x31;&#46;&#x31;&#x30;&#52;</a></p>
 
 <p>(4) 进入游戏路径目录内(先决条件是已用 PuTTy / Terminal 连接iPhone / iPod Touch)
 打
@@ -2412,7 +2634,7 @@ Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对i
 <p>注意那个Filter，其实可以不填，但要填一定要是该app的bundle identifier</p>
 
 <p>附：OpenSSH的使用：
-       ssh <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#x72;&#x6f;&#111;&#116;&#64;&#49;&#57;&#x32;&#46;&#49;&#x36;&#x38;&#x2e;&#50;&#46;&#x35;">&#x72;&#111;&#111;&#x74;&#64;&#49;&#57;&#x32;&#x2e;&#x31;&#54;&#56;&#46;&#50;&#46;&#x35;</a> 默认密码alpine
+       ssh <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#x72;&#x6f;&#x6f;&#x74;&#64;&#x31;&#x39;&#50;&#46;&#x31;&#54;&#56;&#46;&#50;&#46;&#53;">&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#x39;&#50;&#x2e;&#49;&#x36;&#56;&#x2e;&#50;&#x2e;&#53;</a> 默认密码alpine
      先通过ssh登录到手机，然后可以通过cycript -p 进程ID   依附在需要分析的应用程序上  ps ax | grep PP</p>
 ]]></content>
   </entry>
@@ -3701,160 +3923,6 @@ return 0 ;//，没有越狱，返回-1，</p>
 <p>struct stat s
 stat(“/etc/fstab”,&amp;s);
 return s.st_size</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[逆向技术分析]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/03/nixiangjishufenxi/"/>
-    <updated>2016-03-03T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/03/nixiangjishufenxi</id>
-    <content type="html"><![CDATA[<p>iOS App 的逆向工程: Hacking on Lyft
-您的评价:</p>
-
-<p> 收藏该经验</p>
-
-<p>阅读目录</p>
-
-<ol>
-<li>介绍(0:00)</li>
-<li>逆向 Lyft(1:44)</li>
-<li>窥视 Lyft(2:48)</li>
-<li>探测网络流量 - Charles 演示(4:08)</li>
-<li>向 Lyft 里注入代码 - Cycript 演示(7:44)</li>
-<li>解密可执行文件 - dumpdecrypted 演示(11:28)</li>
-<li>分析可执行文件 - IDA 演示(13:47)</li>
-<li>寻找 Lyft 的 URL Scheme(18:23)</li>
-<li>Q&amp;A(22:50)</li>
-</ol>
-
-
-<p>原文  <a href="https://realm.io/cn/news/conrad-kramer-reverse-engineering-ios-apps-lyft/">https://realm.io/cn/news/conrad-kramer-reverse-engineering-ios-apps-lyft/</a></p>
-
-<!--more-->
-
-
-<p>如果你曾经想要知道某一部分代码如何工作，或者很同情某些人程序里的 Bug，你要是有代码，通常可以看看那部分代码。但是，如果没有代码可怎么办？ 在这个演讲里，Conrad 讲到了很多可以逆向 App 的概念和工具，这些方法和工具可以用来 debug 别人的库和你自己的代码。他还展示了逆向 iOS 版本的 Lyft （译者注：Lyft 是美国 Uber 之外的另一款打车软件），并且成功注入代码，探测网络流量，给我们活灵活现地展示逆向的艺术。通过 Conrad 的逆向技术，你也能成功地把 App Store 里所有的 App 的代码都暴露在你面前。</p>
-
-<pre><code>Sign up to be notified of new videos — we won’t email you for any other reason, ever.
-</code></pre>
-
-<h4>介绍(0:00)</h4>
-
-<p>我是 Conrad Kramer ，工作在 Workflow 的一枚 iOS 工程师，今天要跟大家聊聊 iOS Apps 逆向工程那些事儿。通常来说，逆向工程就是试图只通过最终产物来了解它背后工作原理的过程。在 iOS app 的世界里，这意味着你在没有源代码的前提下，只通过从 App Store 下载的 .app 来发现你想要的信息。</p>
-
-<p>在做逆向工程的时候，会遇到两个痛点：</p>
-
-<pre><code>使用的工具 通常很难用，因为这些工具本身就缺乏文档，而且很不出名。他们总是崩溃出错，而且没人去修复这些错误。另外，花时间找到他们以及用好他们都很难。
-一旦你开始用这些工具了，清楚自己的目标也很重要，因为有太多事情可以干了。此外，你还能用工具去逆向苹果自己的框架，尽管他是闭源的。我们可以用这些技术来探索 UIKit 的某个 bug，或者某个 app 里的 bug。
-</code></pre>
-
-<p>所以逆向的第一步是像自己发问：“为什么这个 bug 会发生？他们在 UI 里用了哪些组件？” 比如，如果你很好奇一个 app 里是否用了 collection view 或者 table view”，你其实很容易回答这个问题，看一眼就好了。但是如果你问：“他们的 REST API 是什么结构的？”，这个时候逆向工程就能帮你一探究竟。
-逆向 Lyft(1:44)</p>
-
-<p>我决定通过一个项目来开始这个主题，目标是： Lyft’s iOS app ，它整个都是用 Swift 完成的。首先要做的事是我们了解我们感兴趣的点。假设我对 REST API 很感兴趣，比如我想要在另一个平台或者在 web 上写一个 Lyft 客户端，我可以看看他们的 API 然后产生好奇：“他们的 URL scheme 是什么样子的？”，当你想对 Lyft 做深度链接的时候，你就不得不解决这个问题。对 Workflow 来说，相关性就更高了，因为 Workflow 就是一个自动工具，我们集成了很多不同的 app。我总是需要做些类似的事情，来发现一些不公开的私有 URL scheme。</p>
-
-<h4>窥视 Lyft(2:48)</h4>
-
-<p>从 iTunes 下载下来的 Lyft 是一个 .IPA 文件（其实就是 zip 格式的）。它有很多的元数据，像 Info.plist 文件，资源文件，图片，本地化的字符串以及很多类似的文件。这里面也包含一些可执行文件，那些被编译了的代码就在里面。另外，因为 Lyft 是用 swift 写的，所以还包含很多附加的框架。</p>
-
-<p>Lyft 现在看来是一个完完全全的黑盒子。我们不能直接的看透它，但我们依然有能力从特定的一些角度窥视到。一种方法就是通过监测网络流量来观察他的 API, 同时还能看到有哪些信息被它发送到了 Lyft 的服务器，这些通常对 App 而言是没有什么伤害的。</p>
-
-<p>然后，我们还能 注入代码 ，真的非常爽。当 app 运行的时候，你可以打探打探这些 app 里被实例化而且存活的对象。当停止运行的时候，我们可以尝试去研究下 .app 是如何被组织的，同时通过特定的视角来看这些代码。</p>
-
-<h4>探测网络流量 - Charles 演示(4:08)</h4>
-
-<p>Charles 是一个 HTTPS 代理工具，它可以让流量在发往服务器前拦截网络流量。我们可以用这个工具来观察所有从 Lyft app 流向服务器的请求。</p>
-
-<p>Lyft 事实上通过 SSL 加密了它的所有流量。但这些都很好破，通过 中间人攻击 的方法来解决这个问题。其实就是替换了加密证书。</p>
-
-<p>当你在用 Lyft 的时候，Lyft 不断的把你的地理位置发给 Lyft 的服务器。 对车辆的请求和取消等操作会以格式化后的 JSON 在 Charles 中呈现出来。用 Charles，你会看到 app 里和网络交互的所有内容。</p>
-
-<h4>向 Lyft 里注入代码 - Cycript 演示(7:44)</h4>
-
-<p>下一个工具真的很赞，叫 Cycript 。使用这个工具的时候需要一个越狱设备，注入代码到 app 里。Cycript 可以让你看到别人的代码，当然你自己写的 app 也逃不过。这个工具是 Objective-C 和 Javascript 的混合 app，只用输入 Objective-C 的代码到控制台里，就能在 app 运行这些代码。它的交互编程环境（REPL）比 LLDB 的要好很多。尽管它不能中断，设置断点等等，但他对运行时代码非常友好。你可以直接输入下面的代码，基本上都是 Objective-C ：</p>
-
-<pre><code>var application = [UIApplication sharedApplication];
-[application openURL:[NSURL URLWithString:@"https://google.com"]];
-</code></pre>
-
-<p>我 SSH 进入我的破解过的 iPhone 6 以后，打开 Lyft，运行 Cycript，我可以通过选择功能来获取一个运行时的类实例，比如 view controller 的，或者统计类的实例。作为开发者，要确定设置 ACL 来防止特定 api key 的权限问题。如果 app 能拿到这些 key，那 Cycript 也一定能拿到。</p>
-
-<p>你也可以修改 app 里的 views。比如，用 UIApp.keyWindow.recursiveDescription 通过内存寻址，把 “呼叫车辆” 的按钮变成绿色。</p>
-
-<pre><code>var b = new Instance (ADDRESS)
-b.backgroundColor = [UIColor greenColor]
-</code></pre>
-
-<p>Cycript 甚至还支持 tab 智能提示。这个功能不但对于逆向很有用，你还可以来测试你自己的 app，比如快速换个颜色测试测试效果什么的。
-Q: 用 Crcript 测试自己的 app 的时候，设备一定需要越狱么？</p>
-
-<p>Conrad: 对你自己的 app 的话，并不需要。在 cycript.org 官网上，提供了一些如何把这个工具嵌入到你自己的 app 的文档。</p>
-
-<h4>解密可执行文件 - dumpdecrypted 演示(11:28)</h4>
-
-<p>接下来，我们就要来感受下 app 运行时真正的代码了。这个稍微有些复杂，而且需要设备越狱，我们的演示会比较简单。因为有能力重签名我们的设备，所以苹果会加密商店里所有的 app，防止 app 被大家共享。然而，对于一个越狱设备来说，所有的这些加密的 app 都是可以被解密的。我从其他人那里 fork 了一个 repo，叫 dumpdecrypted ，原作者写这个是为了导出一个 app 的资源，我 fork 了一份，是为了让它能够支持所有的框架，毕竟现在很多 app 都含有 frameworks。</p>
-
-<p>用它的时候，你只要简单的 clone 到本地，然后执行make，再在你越狱后的设备上对 app 执行一下。我对 Lyft 的 app 执行了这个，很快就解密了所有的文件。你看这些文件的时候，会发现所有的 framework 都以.decrypted后缀结尾。比较有意思的一些模块是 Lyft，LyftKit 和 LyftSDK，但是我们还发现了它还用了 SocketRocket，Stripe，Pusher，Mixpanel 等等的库。</p>
-
-<h4>分析可执行文件 - IDA 演示(13:47)</h4>
-
-<p>要分析我们导出的文件，查看源代码，我们要到 IDA ，和 Hopper 及 class-dump 类似的一个工具。当在编译一个 app 的时候，XCode 会创建一个由汇编组成的可执行文件。IDA 能很漂亮的输出这些可执行文件里的汇编代码，并且相互连接起来，你因此会看到一个由汇编代码组成的图。尽管 IDA 很贵，但是它的 免费版本 已经够用了。除了 64 位以外，基本都有。</p>
-
-<p>要找到 Lyft 的 URL scheme，我们可以在 IDA 里执行一个简单的搜索，关键字是openURL，在类似的反编译工具中，Objective-C 是相对友好和容易的，因为它对于工作原理是相对透明的，Swift 就相对较差，很多工具还没有很好的支持 Swift，Swift 的汇编代码也更混乱，它的类信息很难被提取出来，不过，多练习练习，看看这些汇编，你会发现一些技巧来捕获你所想找的信息。</p>
-
-<p>使用 IDA 的图表视野，我们发现了<em>TZFV4Lyft15DeepLinkManager13handleOpenURLfMS0_FCSo5NSURLSb，看起来是个很乱的字符串，然而我们依然可以发现LyftDeepLinkManager,handleOpenURL, 和NSURL这几个关键词。这些看似随机的字符串其实是有解释的，虽然没有文档来说明。如果想要了解这些字符串的含义，可以看看 Mike Ash 的博客里一篇叫做 Friday Q&amp;A 的文章，这些模糊的东西都有解释。比如</em>T意思是这是一个 Swift 的符号，F意思是这是一个函数，4Lyft是一个模块名称，等等。</p>
-
-<h4>寻找 Lyft 的 URL Scheme(18:23)</h4>
-
-<p>想要从我们所见之中发现 URL scheme，我们就要用开发者的思维来思考。</p>
-
-<p>一个 URL scheme 结构大概是这样的：</p>
-
-<pre><code>lyft://action?parameter=value 
-</code></pre>
-
-<p>我们现在要去找到action是什么，parameter可能会是哪些。我首先找到了DeepLinkAbleSwift 协议，了解了深度链接的工作原理。通过搜索DeepLinkAble关键字，我在一个类里发现了诸如ride，help，invite，profile的请求对象。</p>
-
-<p>我们对如何开始一次打车很好奇，我们可以看一下 Lyft 的DeepLinkToRide类，看看他是如何工作的。想要看这些，你甚至不需要了解汇编，你只需知道如何搜索和扫描汇编中你需要的信息即可。就好比你即使不会法语，却经常看见到法语，看的足够多次后，你总是能悟出些东西来。很多时候 IDA 展示给我们的完全就是一种外语，其实我第一次尝试逆向 Swift 的时候，就是这样一种感受。</p>
-
-<p>通过大致浏览DeepLinkToRide的图。我发现了一些不同的字符串，比如 “pickup”，“［latitude］”，“［longtitude］”，“destination” 等等。IDA 还展显示了 ”ridetype“，后面经过测试发现这是个 action，通过查看 “ridetype”，我们发现了 “lyft”, “lyft_line”, “lyft_plus”, 和 “access”，这些都是出行方式。</p>
-
-<p>构造这些不同的 URL 部分，然后测试请求。我发现请求一个出行的 scheme 方式如下：</p>
-
-<pre><code>lyft://ridetype
-  ?id=lyft_line
-  &amp;pickup[latitude]=0
-  &amp;pickup[longitude]=0
-  &amp;destination[latitude]=0
-  &amp;destination[longitude]=0
-</code></pre>
-
-<p>现在，我明白了 Lyft 是如何工作的了，我可以集成到 Workflow 里了。这个过程其实就是二进制分析。尽管这些看起来很复杂，但事实上，只要像个开发者一样思考，其实也那么的难。
-Q&amp;A(22:50)
-Q: 证书绑定（pinning certificates）能否防止中间人攻击？</p>
-
-<p>Conrad：证书绑定是一个用来防止中间人攻击的方法，在实践中确实很有用，前提是你的手机未越狱。比如 Twitter 就在用证书绑定技术。然而，用逆向工具 Cycript 能够轻松破解。 AFNetworking 支持证书绑定，只要设置一下SSLPinningMode这个属性。然而… 我们可以用 Cycript，再把它修改成none，如果你的 iPhone 越狱了，或者被人控制了。所以，并没有一种方案能够彻底防止你的流量被检测，如果没有越狱，倒是一种很好的保护方法。
-Q: 是否推荐类似 cocoapods-keys 这样的工具来混淆字符串？</p>
-
-<p>Conrad: 字符串混淆有以下的好处：</p>
-
-<p>－ 如果你用苹果框架里的私有 API，能很容易的躲避过苹果审查的自动扫描工具。－ 如果那个人并没有一部越狱的 iPhone，或者它不知道如何解析混淆，他可能很难找到 app 里的字符串。</p>
-
-<p>然而，你无法永远的把字符串藏起来。比如，在 Cycript 中，你可以轻易地解开混淆。所以字符串混淆也不是没法破的保护方案。</p>
-
-<p>Q: class-dump 和 dumpdecryped 的区别是啥？</p>
-
-<p>Conrad: 他们事实上是不同的工具。 dumpecrypted 能将一个 App Store 加密的工具解密。而 class-dump 能将一个解密后得二进制文件去除他的 Objective-C 接口文件，跟 IDA 有点像，不过很遗憾的是：它不支持 Swift。
-Q: 导出 Apple framework 的库，比如： this one ，是不是也是用的 class-dump？</p>
-
-<p>Conrad: 是的，苹果的框架没有加密，可以被轻易地导出所有的class。这意味着那些把苹果的私有interface 放到GitHub上的，你可以轻易地搞定他们。
-Q: 逆向工程是否存在法律问题？Lyft 会不会不同意调用他们的私有代码和 api？</p>
-
-<p>Conrad: 从法律上讲，我觉得没有太多问题。我们通常会跟所有的合作伙伴去聊到我们在做的事情。比如：我刚刚发现的这些东西我都会和 Lyft 讨论一下，在他们允许后集成到 Workflow 里。这些技术其实也有很多道德上的考虑。不过话说回来，这些技术也能阻止开发者们胡乱搞，就比如之前逆向 Twitter 发现他们上传用户手机里装的 App 列表到他们的服务器上。所以凡事总有两面，逆向工程只是个工具，善用就好了。
-Q: 如何查看苹果框架的反汇编代码？</p>
-
-<p>Conrad: 这个的过程跟我之前展示的一个很像，只不过你不再需要一个越狱后的设备。当你把线插到设备上的时候，iTunes 实际上获取到了设备的符号，你可以在 Xcode 里找到一个大概叫 “device symbol” 文件夹，在 IDA 或者 class-dump 里打开 Apple 的 frameworks，然后展开分析。这些都是没加密的，而且可以直接拿来用。在修复一些 beta 版本的 UIKit 的 bug 的时候很好使。</p>
 ]]></content>
   </entry>
   

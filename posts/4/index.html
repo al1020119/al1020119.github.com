@@ -9,8 +9,14 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！ 图片资源使用png还是jpg格式
-如何选择图片加载方式imageNamed&amp; &hellip;">
+  <meta name="description" content="主要针对问题 图片文件比较大
+图片文件比较多 网络图片显示大体步骤: 下载图片
+图片处理（裁剪，边框等)
+写入磁盘
+从磁盘读取数据到内核缓冲区
+从内核缓冲区复制到用户空间(内存级别拷贝)
+解压缩为位图（耗cpu较高）
+如果位图数据不是字节对齐的， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +76,61 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化-总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-15T01:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:21 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>主要针对问题</p>
+
+<ul>
+<li><p>图片文件比较大</p></li>
+<li><p>图片文件比较多</p></li>
+</ul>
+
+
+<h4>网络图片显示大体步骤:</h4>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -527,54 +588,6 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/25/ios9-corespotlight/">iOS9-CoreSpotlight</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-12-25T13:35:30+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:35 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS9 Day-by-Day是作者Chris Grant新开的一个系列博客，覆盖了iOS开发者必须知道的关于iOS 9的新技术与API，并且还进行了实际操作演练，每篇文章中相关的代码Chris都会将其托管到GitHub。</p>
-
-<p>在第一篇文章中，Chris介绍了iOS 9的三种搜索API，分别为：</p>
-
-<ul>
-<li><p>NSUserActivity，索引用户活动以及App的状态。</p></li>
-<li><p>Web Markup，Web内容可被搜索。</p></li>
-<li><p>iOS 9新增的CoreSpotlight.framework提供了增、删、改、查等搜索API，可以索引App的内容。
-译文如下：</p></li>
-</ul>
-
-
-<p>在苹果发布iOS 9之前，你只能在Spotlight中输入名称来寻找App，而随着苹果发布了一套全新的iOS 9 Search APIs之后，开发者不但可以自由选择App的部分内容编入索引，还能对Spotlight上的搜索结果以及点击不同结果显示的内容进行设置。</p>
-
-<h3>三大API</h3>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/25/ios9-corespotlight/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -593,7 +606,7 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
         <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
 <li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
 <li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
-<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
 <li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
 <li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
 <li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
@@ -611,6 +624,10 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/05/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/04/25/nixiangzongjie/">逆向工程总结</a>
       </li>
     
@@ -624,10 +641,6 @@ UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
     
       <li class="post">
         <a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a>
       </li>
     
   </ul>

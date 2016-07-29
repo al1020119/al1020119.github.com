@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Foundation | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/foundation/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-07-19T15:12:24+08:00</updated>
+  <updated>2016-07-29T15:14:03+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,228 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[福利：抢红包神器就是这么来的]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/01/weixinhongbao/"/>
+    <updated>2016-05-01T21:52:15+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/01/weixinhongbao</id>
+    <content type="html"><![CDATA[<p>微信红包</p>
+
+<p><img src="/images/weixinhongbao0001.jpg" title="Caption" ></p>
+
+<pre><code>前言：最近笔者在研究iOS逆向工程，顺便拿微信来练手，在非越狱手机上实现了微信自动抢红包的功能。
+</code></pre>
+
+<p>题外话：此教程是一篇严肃的学术探讨类文章，仅仅用于学习研究，也请读者不要用于商业或其他非法途径上，笔者一概不负责哟~~</p>
+
+<p>好了，接下来可以进入正题了！</p>
+
+<h2>此教程所需要的工具/文件</h2>
+
+<pre><code>yololib
+class-dump
+dumpdecrypted
+iOSOpenDev
+iTools
+OpenSSH(Cydia)
+iFile(Cydia)
+Cycript(Cydia)
+Command Line Tools
+Xcode
+苹果开发者证书或企业证书
+一台越狱的iPhone
+</code></pre>
+
+<p>是的，想要实现在非越狱iPhone上达到自动抢红包的目的，工具用的可能是有点多（工欲善其事必先利其器^_^）。不过，没关系，大家可以按照教程的步骤一步一步来执行，不清楚的步骤可以重复实验，毕竟天上不会掉馅饼嘛。</p>
+
+<h1>解密微信可执行文件(Mach-O)</h1>
+
+<p>因为从Appstore下载安装的应用都是加密过的，所以我们需要用一些工具来为下载的App解密，俗称砸壳。这样才能便于后面分析App的代码结构。</p>
+
+<p>首先我们需要一台已经越狱的iPhone手机(现在市面上越狱已经很成熟，具体越狱方法这里就不介绍了)。然后进入Cydia，安装OpenSSH、Cycript、iFile(调试程序时可以方便地查看日志文件)这三款软件。</p>
+
+<pre><code>PS：笔者的手机是iPhone 6Plus，系统版本为iOS9.1。
+</code></pre>
+
+<p>在电脑上用iTunes上下载一个最新的微信，笔者当时下载的微信版本为6.3.13。下载完后，iTunes上会显示出已下载的app。</p>
+
+<p>itnues</p>
+
+<p><img src="/images/weixinhongbao0002.jpg" title="Caption" ></p>
+
+<p>连上iPhone，用iTunes装上刚刚下载的微信应用。</p>
+
+<p>打开Mac的终端，用ssh进入连上的iPhone(确保iPhone和Mac在同一个网段，笔者iPhone的IP地址为192.168.8.54)。OpenSSH的root密码默认为alpine。</p>
+
+<p>ssh
+<img src="/images/weixinhongbao0003.jpg" title="Caption" ></p>
+
+<p>接下来就是需要找到微信的Bundle id了，，这里笔者有一个小技巧，我们可以把iPhone上的所有App都关掉，唯独保留微信，然后输入命令 ps -e</p>
+
+<p>微信bundle id
+<img src="/images/weixinhongbao0004.jpg" title="Caption" ><br/>
+这样我们就找到了微信的可执行文件Wechat的具体路径了。接下来我们需要用Cycript找出微信的Documents的路径，输入命令cycript -p WeChat</p>
+
+<p>cycript
+<img src="/images/weixinhongbao0005.jpg" title="Caption" ></p>
+
+<pre><code>编译dumpdecrypted
+先记下刚刚我们获取到的两个路径(Bundle和Documents)，这时候我们就要开始用dumpdecrypted来为微信二进制文件(WeChat)砸壳了。
+确保我们从Github上下载了最新的dumpdecrypted源码，进入dumpdecrypted源码的目录，编译dumpdecrypted.dylib，命令如下:
+</code></pre>
+
+<p>dumpdecrypted.dylib
+<img src="/images/weixinhongbao0006.jpg" title="Caption" ><br/>
+这样我们可以看到dumpdecrypted目录下生成了一个dumpdecrypted.dylib的文件。</p>
+
+<pre><code>scp
+拷贝dumpdecrypted.dylib到iPhone上，这里我们用到scp命令.
+scp 源文件路径 目标文件路径 。具体如下：
+</code></pre>
+
+<p>scp
+<img src="/images/weixinhongbao0007.jpg" title="Caption" ><br/>
+    开始砸壳
+    dumpdecrypted.dylib的具体用法是：DYLD_INSERT_LIBRARIES=/PathFrom/dumpdecrypted.dylib /PathTo</p>
+
+<p>dumpdecrypted
+<img src="/images/weixinhongbao0008.jpg" title="Caption" ><br/>
+这样就代表砸壳成功了，当前目录下会生成砸壳后的文件，即WeChat.decrypted。同样用scp命令把WeChat.decrypted文件拷贝到电脑上,接下来我们要正式的dump微信的可执行文件了。</p>
+
+<h1>dump微信可执行文件</h1>
+
+<pre><code>从Github上下载最新的class-dump源代码，然后用Xcode编译即可生成class-dump(这里比较简单，笔者就不详细说明了)。
+
+导出微信的头文件
+使用class-dump命令,把刚刚砸壳后的WeChat.decrypted,导出其中的头文件。./class-dump -s -S -H ./WeChat.decrypted -o ./header6.3-arm64
+</code></pre>
+
+<p>导出的头文件
+<img src="/images/weixinhongbao0009.jpg" title="Caption" ><br/>
+这里我们可以新建一个Xcode项目，把刚刚导出的头文件加到新建的项目中，这样便于查找微信的相关代码。</p>
+
+<p>微信的头文件
+<img src="/images/weixinhongbao0010.jpg" title="Caption" ><br/>
+找到CMessageMgr.h和WCRedEnvelopesLogicMgr.h这两文件，其中我们注意到有这两个方法：- (void)AsyncOnAddMsg:(id)arg1 MsgWrap:(id)arg2; ，- (void)OpenRedEnvelopesRequest:(id)arg1;。没错，接下来我们就是要利用这两个方法来实现微信自动抢红包功能。其实现原理是，通过hook微信的新消息函数，我们判断是否为红包消息，如果是，我们就调用微信的打开红包方法。这样就能达到自动抢红包的目的了。哈哈，是不是很简单，我们一起来看看具体是怎么实现的吧。</p>
+
+<pre><code>新建一个dylib工程，因为Xcode默认不支持生成dylib，所以我们需要下载iOSOpenDev，安装完成后(Xcode7环境会提示安装iOSOpenDev失败，请参考iOSOpenDev安装问题)，重新打开Xcode，在新建项目的选项中即可看到iOSOpenDev选项了。
+</code></pre>
+
+<p>iOSOpenDev
+<img src="/images/weixinhongbao0011.jpg" title="Caption" ><br/>
+    dylib代码
+    选择Cocoa Touch Library，这样我们就新建了一个dylib工程了，我们命名为autoGetRedEnv。</p>
+
+<pre><code>删除autoGetRedEnv.h文件，修改autoGetRedEnv.m为autoGetRedEnv.mm，然后在项目中加入CaptainHook.h
+
+因为微信不会主动来加载我们的hook代码，所以我们需要把hook逻辑写到构造函数中。
+
+__attribute__((constructor)) static void entry()
+{
+  //具体hook方法
+}
+
+hook微信的AsyncOnAddMsg: MsgWrap:方法，实现方法如下：
+
+//声明CMessageMgr类
+CHDeclareClass(CMessageMgr);
+CHMethod(2, void, CMessageMgr, AsyncOnAddMsg, id, arg1, MsgWrap, id, arg2)
+{
+  //调用原来的AsyncOnAddMsg:MsgWrap:方法
+  CHSuper(2, CMessageMgr, AsyncOnAddMsg, arg1, MsgWrap, arg2);
+  //具体抢红包逻辑
+  //...
+  //调用原生的打开红包的方法
+  //注意这里必须为给objc_msgSend的第三个参数声明为NSMutableDictionary,不然调用objc_msgSend时，不会触发打开红包的方法
+  ((void (*)(id, SEL, NSMutableDictionary*))objc_msgSend)(logicMgr, @selector(OpenRedEnvelopesRequest:), params);
+}
+__attribute__((constructor)) static void entry()
+{
+  //加载CMessageMgr类
+  CHLoadLateClass(CMessageMgr);
+  //hook AsyncOnAddMsg:MsgWrap:方法
+  CHClassHook(2, CMessageMgr, AsyncOnAddMsg, MsgWrap);
+}
+
+    项目的全部代码，笔者已放入Github中。
+
+完成好具体实现逻辑后，就可以顺利生成dylib了。
+</code></pre>
+
+<h1>重新打包微信App</h1>
+
+<pre><code>为微信可执行文件注入dylib
+要想微信应用运行后，能执行我们的代码，首先需要微信加入我们的dylib，这里我们用到一个dylib注入神器:yololib，从网上下载源代码，编译后得到yololib。
+
+使用yololib简单的执行下面一句就可以成功完成注入。注入之前我们先把之前保存的WeChat.decrypted重命名为WeChat，即已砸完壳的可执行文件。
+./yololib 目标可执行文件 需注入的dylib
+注入成功后即可见到如下信息：
+
+dylib注入
+</code></pre>
+
+<p><img src="/images/weixinhongbao0012.jpg" title="Caption" ><br/>
+    新建Entitlements.plist</p>
+
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+  &lt;key&gt;application-identifier&lt;/key&gt;
+  &lt;string&gt;123456.com.autogetredenv.demo&lt;/string&gt;
+  &lt;key&gt;com.apple.developer.team-identifier&lt;/key&gt;
+  &lt;string&gt;123456&lt;/string&gt;
+  &lt;key&gt;get-task-allow&lt;/key&gt;
+  &lt;true/&gt;
+  &lt;key&gt;keychain-access-groups&lt;/key&gt;
+  &lt;array&gt;
+      &lt;string&gt;123456.com.autogetredenv.demo&lt;/string&gt;
+  &lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+
+这里大家也许不清楚自己的证书Teamid及其他信息，没关系，笔者这里有一个小窍门，大家可以找到之前用开发者证书或企业证书打包过的App(例如叫Demo)，然后在终端中输入以下命令即可找到相关信息，命令如下：
+./ldid -e ./Demo.app/demo
+
+给微信重新签名
+接下来把我们生成的dylib(libautoGetRedEnv.dylib)、刚刚注入dylib的WeChat、以及embedded.mobileprovision文件(可以在之前打包过的App中找到)拷贝到WeChat.app中。
+
+命令格式：codesign -f -s 证书名字 目标文件
+
+    PS:证书名字可以在钥匙串中找到
+
+分别用codesign命令来为微信中的相关文件签名,具体实现如下：
+
+重新签名
+</code></pre>
+
+<p><img src="/images/weixinhongbao0013.jpg" title="Caption" ><br/>
+    打包成ipa
+    给微信重新签名后，我们就可以用xcrun来生成ipa了，具体实现如下：
+    xcrun -sdk iphoneos PackageApplication -v WeChat.app  -o ~/WeChat.ipa</p>
+
+<h1>安装拥有抢红包功能的微信</h1>
+
+<p>以上步骤如果都成功实现的话，那么真的就是万事俱备，只欠东风了~~~</p>
+
+<p>我们可以使用iTools工具，来为iPhone(此iPhone Device id需加入证书中)安装改良过的微信了。</p>
+
+<p>iTools
+<img src="/images/weixinhongbao0014.jpg" title="Caption" ></p>
+
+<h1>大工告成！！</h1>
+
+<p>好了，我们可以看看hook过的微信抢红包效果了~</p>
+
+<p>自动抢红包
+<img src="/images/weixinhongbao0015.gif" title="Caption" ><br/>
+哈哈，是不是觉得很爽啊，"妈妈再也不用担心我抢红包了。"。大家如果有兴趣可以继续hook微信的其他函数，这样既加强了学习，又满足了自己的特(zhuang)殊(bi)需求嘛。</p>
+
+<p>教程中所涉及到的工具及源代码笔者都上传到Github上。
+Github地址</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Swift开源总结]]></title>
@@ -621,727 +843,6 @@ FIXME:
 
 <!--more-->
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[字典转模型深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu/"/>
-    <updated>2015-05-01T02:33:18+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/05/01/zi-dian-zhuan-mo-xing-shen-jiu</id>
-    <content type="html"><![CDATA[<blockquote><p>引言：
-在文字开始之前先介绍两个软件：</p></blockquote>
-
-<h5>JSONExport</h5>
-
-<p><img src="/images/zidianzhuanmoxin005.png" title="Caption" ></p>
-
-<h5>JSON Accelerator</h5>
-
-<p><img src="/images/zidianzhuanmoxin006.png" title="Caption" ></p>
-
-<blockquote><p>关于模型类的两个神器，我也是刚接触不久，但是感觉非常有用，基本上可以节省你在模型类上的99%的时间。</p></blockquote>
-
-<ul>
-<li>如果你觉得自己对应本文后面的内容非常了解，那么请直接下载上面的软件试试。</li>
-<li>如果你并不是很熟练，那么轻认真看完后面的内容，相信对你有好处，再去下载对应的软件。</li>
-</ul>
-
-
-<p>关于Plist转模型在iOS开发中是非常常见的，每开一一个项目或者实现一个功能都要用到它，所以今天就给大家讲讲Plist怎么转成模型数据，</p>
-
-<blockquote><p>前提：必须有一个Plist文件或者通过一定的方式返回的plist数据</p></blockquote>
-
-<!--more-->
-
-
-<h2>一：直接加载Plist数据</h2>
-
-<p><img src="/images/zidianzhuanmoxin001.png" title="Caption" ></p>
-
-<pre><code>定义一个数组属性 
-@property (nonatomic, assign) NSArray *apps; 
-</code></pre>
-
-<h6>获取Plist文件</h6>
-
-<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSArray *)apps
-{
-    if (_apps == nil) {
-        _apps = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>加载Plsit中的数据</h6>
-
-<pre><code>    //取出数组中对应的数据放到一个字典里面
-    NSDictionary *dic = self.apps[i];
-
-
-    //创建一个UIImageView
-    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
-    /**
-     取出字典中的icon
-    */
-     icon.image = [UIImage imageNamed:dic[@"icon"]];
-
-    [view addSubview:icon];
-
-
-
-    //创建一个Label
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
-    /**
-     取出字典中的label
-     */
-    l.text = dic[@"label"];
-
-    [view addSubview:l];
-
-
-
-    //创建一个按钮
-    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
-    /**
-     取出字典中的btn
-     */
-    [btn setTitle:dic[@"btn"] forState:UIControlStateNormal];
-
-    [view addSubview:btn];
-</code></pre>
-
-<h2>二：使用简单的模型加载Plist数据</h2>
-
-<p><img src="/images/zidianzhuanmoxin002.png" title="Caption" ></p>
-
-<pre><code> 1 //定义一个数组属性
-
-  2 @property (nonatomic, assign) NSArray *apps; 
-</code></pre>
-
-<h6>在模型中定义模型对应的属性</h6>
-
-<pre><code>@property (nonatomic, copy) NSString *icon;
-
-
-@property (nonatomic, copy) NSString *label;
-
-
-@property (nonatomic, copy) NSString *btn;
-</code></pre>
-
-<h6>模型方法</h6>
-
-<pre><code>/**
- 模型数据方法
- */
-+(instancetype)messageWithDict:(NSDictionary *)dict;
-
-
--(instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>模型的实现文件</h6>
-
-<pre><code>/**
- 模型数据方法的实现
- */
-
-+ (instancetype)messageWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-    }
-    return self;
-}
-</code></pre>
-
-<h6>实用模型加载Plist文件</h6>
-
-<pre><code>/**
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- */
-//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSMutableArray *)apps
-{
-    if (_apps == nil) {
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-            appsModel *model = [[appsModel alloc] init];
-            model.label = dic[@"label"];
-            model.btn = dic[@"btn"];
-            model.icon = dic[@"icon"];
-
-            [arrayApps addObject:model];
-        }
-        _apps = arrayApps;
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>加载模型中对应的plist数据</h6>
-
-<pre><code>    //取出数组中对应的数据放到一个字典里面
-    appsModel *app = self.apps[i];
-
-
-    //创建一个UIImageView
-    UIImageView *icon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, iW, 50)];
-    /**
-     取出字典中的icon
-     */
-    icon.image = [UIImage imageNamed:app.icon];
-    [view addSubview:icon];
-
-
-
-    //创建一个Label
-    UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(icon.frame), iW, 20)];
-    /**
-     取出字典中的label
-     */
-    l.text = app.label;
-    [view addSubview:l];
-
-
-
-    //创建一个按钮
-    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(l.frame), iW, 20)];
-    /**
-     取出字典中的btn
-     */
-    [btn setTitle:app.btn forState:UIControlStateNormal];
-    [view addSubview:btn];
-</code></pre>
-
-<h5>注：上面是plist中的属性和模型中定义的属性一一对应的时候的，如果不是一一对应我们就要将模型一个一个的赋值与实现</h5>
-
-<pre><code>- (instancetype)initWithDict:(NSDictionary *)dict
-{
-self = [super init];
-if (self) {
-    self.label = dict[@"label"];
-    self.btn = dict[@"btn"];
-    self.icon = dict[@"icon"];
-
-//[self setValue:dict[@"label"] forKeyPath:@"label"];
-
-    //封装
-    [self setValuesForKeysWithDictionary:dict];
-}
-
-return self;
-}
-</code></pre>
-
-<p>/<em>*
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- </em>/</p>
-
-<pre><code>//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSMutableArray *)apps
-{
-    if (_apps == nil) {
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-//            appsModel *model = [[appsModel alloc] initWithDict:dic];
-            appsModel *model = [appsModel appsWithDict:dic];
-
-            [arrayApps addObject:model];
-        }
-        _apps = arrayApps;
-    }
-    return _apps;
-}
-</code></pre>
-
-<h6>我们也可以讲加载模型的代码进行封装，这样更加简单的实现模式数据的的使用</h6>
-
-<p>在模型中定义并且实现一个模型封装的方法</p>
-
-<pre><code>+(NSArray *)appList
-{
-        NSArray *array = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"iCocos.plist" ofType:nil]];
-
-        NSMutableArray *arrayApps = [NSMutableArray array];
-
-        for (NSDictionary *dic in array) {
-            //            appsModel *model = [[appsModel alloc] initWithDict:dic];
-            appsModel *model = [appsModel appsWithDict:dic];
-
-            [arrayApps addObject:model];
-    }
-    return arrayApps;
-
-}
-</code></pre>
-
-<h6>实用的时候只要直接使用封装好的模型方法就可以：</h6>
-
-<pre><code>/**
- 模型数据的加载，返回arry以后我们就只要使用array就能使用这个模型类里面的数据也就是使用plist数据
- */
-//懒加载plist文件，返回一个apps数据，后面直接使用旧可以
--(NSArray *)apps
-{
-    if (_apps == nil) {
-
-        _apps = [appsModel appList];
-    }
-    return _apps;
-}
-</code></pre>
-
-<h2>三：复杂Plist转模型</h2>
-
-<p>有的时候我们会遇到Plist中还有更小一级的节点和属性这个时候我们就需要更复杂的模型来加载，但是实用起来并不复杂</p>
-
-<p>比如Plist中海油一个friends这歌子模型</p>
-
-<p><img src="/images/zidianzhuanmoxin003.png" title="Caption" ></p>
-
-<h6>那么我转模型的时候就可以根据plist中的数据进行处理，</h6>
-
-<h6>首先我们一一般都是从子模型开始，我们就先定义子模型</h6>
-
-<pre><code>/**
- 根据plist里面存在的子列中的数据再创建一个模型数据
- */
-
-/**
- 设置子模型数据的属性
- */
-
-@property (nonatomic, assign) NSString *icon;
-
-@property (nonatomic, assign) NSString *intro;
-
-@property (nonatomic, assign) NSString *name;
-
-@property (nonatomic, assign, getter=isVip)BOOL vip;
-
-
-/**
- 子模型数据的方法
- */
-+ (instancetype)friendWithDict:(NSDictionary *)dict;
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>子模型的实现</h6>
-
-<pre><code>/**
- 子模型数据的方法de实现
- */
-
-+ (instancetype)friendWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-    }
-    return self;
-}
-</code></pre>
-
-<h6>然后就是根模型</h6>
-
-<pre><code>/**
- 根据plist中的数据创建一个模型数据
- */
-
-/**
- 设置模型数据的中的属性
- */
-
-@property (nonatomic, assign) NSArray *friends;
-
-@property (nonatomic, copy) NSString *name;
-
-@property (nonatomic, assign) NSNumber *online;
-
-/**
- 模型数据的方法
- */
-
-+ (instancetype)groupWithDict:(NSDictionary *)dict;
-
-
-- (instancetype)initWithDict:(NSDictionary *)dict;
-</code></pre>
-
-<h6>根模型的实现，这里只需要在根模型加载需要实现的子模型酒可以</h6>
-
-<pre><code>/**
- 模型数据的方法的实现
- */
-
-+ (instancetype)groupWithDict:(NSDictionary *)dict
-{
-    return [[self alloc] initWithDict:dict];
-}
-
-- (instancetype)initWithDict:(NSDictionary *)dict
-{
-    if (self = [super init]) {
-        [self setValuesForKeysWithDictionary:dict];
-
-        NSMutableArray *friendArray = [NSMutableArray array];
-        for (NSDictionary *dict in self.friends) {
-            FriendsPlistChildren *friend = [FriendsPlistChildren friendWithDict:dict];
-            [friendArray addObject:friend];
-        }
-        self.friends = friendArray;
-    }
-    return self;
-}
-</code></pre>
-
-<h6>使用模型数据，方法还是和之前一样的，不需要去处理子模型，因为我们在跟模型里面已经处理好了</h6>
-
-<pre><code>/**
- 加载模型数据的方法
- */
-
-- (NSArray *)groups
-{
-    if (_groups == nil) {
-        NSArray *dictArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"friends.plist" ofType:nil]];
-
-        NSMutableArray *groupArray = [NSMutableArray array];
-        for (NSDictionary *dict in dictArray) {
-            FirendsPlistRoot *group = [FirendsPlistRoot groupWithDict:dict];
-            [groupArray addObject:group];
-        }
-
-        _groups = groupArray;
-    }
-    return _groups;
-}
-</code></pre>
-
-<h2>四：使用第三份库</h2>
-
-<p>在iOS届有一个神人不知道大家知不知道————他叫李明杰，他（MJ）不仅技术牛逼，而且对天朝iOS界的贡献也是无法用语言来形容的，如果你是老一辈的iOS开发者倒是很正常，如果你只是刚开始学习iOS或者学习iOS不久你都不知道或者没有听过这个名字那么就可以说明你真的out了，甚至说你你根本没有用心在学，关于这个神人我就不做多介绍了，如果你想知道更多，请点击www.520it.com</p>
-
-<p>今天我就使用他的一个NB的框架来实现plist转模型数据，这个框架使用起来非常简单，一行代码就可以搞定你想的功能，</p>
-
-<p>首先你需要去github上面下载这个框架：<a href="https://github.com/CoderMJLee/MJExtension">MJExtension</a></p>
-
-<p>下载好了之后直接讲MJExtension拖到你的项目</p>
-
-<p><img src="/images/zidianzhuanmoxin004.png" title="Caption" ></p>
-
-<h6>首先根据plist数据新建对应的模型数据</h6>
-
-<p>这里我一新浪微博中的小部分做测试</p>
-
-<pre><code>#import "User.h"
-#import "Status.h"
-#import "StatusResult.h"
-
-/**
- *  微博文本内容
- */
-@property (copy, nonatomic) NSString *text;
-
-/**
- *  微博作者
- */
-@property (strong, nonatomic) User *user;
-
-/**
- *  转发的微博
- */
-@property (strong, nonatomic) Status *retweetedStatus;
-/**
- *  存放着某一页微博数据（里面都是Status模型）
- */
-@property (strong, nonatomic) NSMutableArray *statuses;
-
-/**
- *  总数
- */
-@property (assign, nonatomic) NSNumber *totalNumber;
-
-/**
- *  上一页的游标
- */
-@property (assign, nonatomic) long long previousCursor;
-
-/**
- *  下一页的游标
- */
-@property (assign, nonatomic) long long nextCursor;
-/**
- *  名称
- */
-@property (copy, nonatomic) NSString *name;
-
-/**
- *  头像
- */
-@property (copy, nonatomic) NSString *icon;
-</code></pre>
-
-<h6>下面就是证明去使用这个框架实现你想要的功能了，这里介绍了几乎你开发中需要用到的所有方法和例子，</h6>
-
-<pre><code>/**
- MJ友情提醒：
- 1.MJExtension是一套“字典和模型之间互相转换”的轻量级框架
- 2.MJExtension能完成的功能
- * 字典 --&gt; 模型
- * 模型 --&gt; 字典
- * 字典数组 --&gt; 模型数组
- * 模型数组 --&gt; 字典数组
- 3.具体用法主要参考 main.m中各个函数 以及 "NSObject+MJKeyValue.h"
- 4.希望各位大神能用得爽
- */
-
-#import &lt;Foundation/Foundation.h&gt;
-#import "MJExtension.h"
-#import "User.h"
-#import "Status.h"
-#import "StatusResult.h"
-
-/**
- *  简单的字典 -&gt; 模型
- */
-void keyValues2object()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"name" : @"Jack",
-                           @"icon" : @"lufy.png",
-                           };
-
-    // 2.将字典转为User模型
-    User *user = [User objectWithKeyValues:dict];
-
-    // 3.打印User模型的属性
-    NSLog(@"name=%@, icon=%@", user.name, user.icon);
-}
-
-/**
- *  复杂的字典 -&gt; 模型 (模型里面包含了模型)
- */
-void keyValues2object2()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"text" : @"是啊，今天天气确实不错！",
-
-                           @"user" : @{
-                                   @"name" : @"Jack",
-                                   @"icon" : @"lufy.png"
-                                   },
-
-                           @"retweetedStatus" : @{
-                                   @"text" : @"今天天气真不错！",
-
-                                   @"user" : @{
-                                           @"name" : @"Rose",
-                                           @"icon" : @"nami.png"
-                                           }
-                                   }
-                           };
-
-    // 2.将字典转为Status模型
-    Status *status = [Status objectWithKeyValues:dict];
-
-    // 3.打印status的属性
-    NSString *text = status.text;
-    NSString *name = status.user.name;
-    NSString *icon = status.user.icon;
-    NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-
-    // 4.打印status.retweetedStatus的属性
-    NSString *text2 = status.retweetedStatus.text;
-    NSString *name2 = status.retweetedStatus.user.name;
-    NSString *icon2 = status.retweetedStatus.user.icon;
-    NSLog(@"text2=%@, name2=%@, icon2=%@", text2, name2, icon2);
-}
-
-/**
- *  复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
- */
-void keyValues2object3()
-{
-    // 1.定义一个字典
-    NSDictionary *dict = @{
-                           @"statuses" : @[
-                                   @{
-                                       @"text" : @"今天天气真不错！",
-
-                                       @"user" : @{
-                                               @"name" : @"Rose",
-                                               @"icon" : @"nami.png"
-                                               }
-                                       },
-
-                                   @{
-                                       @"text" : @"明天去旅游了",
-
-                                       @"user" : @{
-                                               @"name" : @"Jack",
-                                               @"icon" : @"lufy.png"
-                                               }
-                                       },
-
-                                   @{
-                                       @"text" : @"嘿嘿，这东西不错哦！",
-
-                                       @"user" : @{
-                                               @"name" : @"Jim",
-                                               @"icon" : @"zero.png"
-                                               }
-                                       }
-
-                                   ],
-
-                           @"totalNumber" : @"2014",
-
-                           @"previousCursor" : @"13476589",
-
-                           @"nextCursor" : @"13476599"
-                           };
-
-    // 2.将字典转为StatusResult模型
-    StatusResult *result = [StatusResult objectWithKeyValues:dict];
-
-    // 3.打印StatusResult模型的简单属性
-    NSLog(@"totalNumber=%d, previousCursor=%lld, nextCursor=%lld", result.totalNumber, result.previousCursor, result.nextCursor);
-
-    // 4.打印statuses数组中的模型属性
-    for (Status *status in result.statuses) {
-        NSString *text = status.text;
-        NSString *name = status.user.name;
-        NSString *icon = status.user.icon;
-        NSLog(@"text=%@, name=%@, icon=%@", text, name, icon);
-    }
-}
-
-/**
- *  字典数组 -&gt; 模型数组
- */
-void keyValuesArray2objectArray()
-{
-    // 1.定义一个字典数组
-    NSArray *dictArray = @[
-                           @{
-                               @"name" : @"Jack",
-                               @"icon" : @"lufy.png",
-                               },
-
-                           @{
-                               @"name" : @"Rose",
-                               @"icon" : @"nami.png",
-                               },
-
-                           @{
-                               @"name" : @"Jim",
-                               @"icon" : @"zero.png",
-                               }
-                           ];
-
-    // 2.将字典数组转为User模型数组
-    NSArray *userArray = [User objectArrayWithKeyValuesArray:dictArray];
-
-    // 3.打印userArray数组中的User模型属性
-    for (User *user in userArray) {
-        NSLog(@"name=%@, icon=%@", user.name, user.icon);
-    }
-}
-
-/**
- *  模型 -&gt; 字典
- */
-void object2keyValues()
-{
-    // 1.新建模型
-    User *user = [[User alloc] init];
-    user.name = @"Jack";
-    user.icon = @"lufy.png";
-
-    Status *status = [[Status alloc] init];
-    status.user = user;
-    status.text = @"今天的心情不错！";
-
-    // 2.将模型转为字典
-    //    NSDictionary *dict = [status keyValues];
-    NSDictionary *dict = status.keyValues;
-    NSLog(@"%@", dict);
-}
-
-/**
- *  模型数组 -&gt; 字典数组
- */
-void objectArray2keyValuesArray()
-{
-    // 1.新建模型数组
-    User *user1 = [[User alloc] init];
-    user1.name = @"Jack";
-    user1.icon = @"lufy.png";
-
-    User *user2 = [[User alloc] init];
-    user2.name = @"Rose";
-    user2.icon = @"nami.png";
-
-    User *user3 = [[User alloc] init];
-    user3.name = @"Jim";
-    user3.icon = @"zero.png";
-
-    NSArray *userArray = @[user1, user2, user3];
-
-    // 2.将模型数组转为字典数组
-    NSArray *dictArray = [User keyValuesArrayWithObjectArray:userArray];
-    NSLog(@"%@", dictArray);
-}
-
-int main(int argc, const char * argv[])
-{
-    @autoreleasepool {
-        // 简单的字典 -&gt; 模型
-        keyValues2object();
-
-        // 复杂的字典 -&gt; 模型 (模型里面包含了模型)
-        keyValues2object2();
-
-        // 复杂的字典 -&gt; 模型 (模型的数组属性里面又装着模型)
-        keyValues2object3();
-
-        // 字典数组 -&gt; 模型数组
-        keyValuesArray2objectArray();
-
-        // 模型转字典
-        object2keyValues();
-
-        // 模型数组 -&gt; 字典数组
-        objectArray2keyValuesArray();
-    }
-    return 0;
-}
-</code></pre>
 ]]></content>
   </entry>
   
