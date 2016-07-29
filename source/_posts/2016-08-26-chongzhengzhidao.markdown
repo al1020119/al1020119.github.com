@@ -1,0 +1,919 @@
+---
+
+layout: post
+title: "重整之道（面试+技术+底层+高级）"
+date: 2016-08-26 13:53:19 +0800
+comments: true
+categories: Senior
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+
+
+---  
+
+<!--more-->
+
+
+重整之道（面试+技术+底层+高级）
+
+
+不要问我为什么写这篇文章。
+
+我，就是这么有尿性。。。。。。。。。。
+
+前面三部分已经基本上完成，后面部分会陆续更新，敬请期待。但是光靠一篇这么短的文章想将通这些事不可能的，这里主要正对面试族，或者健忘族，亦或者是装逼族。好了废话不多说，我们开始吧！
+
+
+* 运行时（底层）
+* RunLoop（底层）
+* 多线程（底层与安全）
+
+---
+
+* 网络（底层与安全）
+* 数据持久化（各种使用与区别）（CoreData、SQLite）
+* Block（底层/__Block）
+* 音视频
+* 直播
+* 安全
+* 优化（性能、卡顿）
+* 常见错误
+* 常用技术
+* 全栈相关
+* 算法（常用、排序）
+* 数据结构
+* 设计模式（32中）
+* 架构设计
+* 逆向工程
+* 实战应用
+
+
+###运行时（底层）
+
+######介绍
+runtime是一个c和汇编写的动态库(感谢Lision的指正)，是一套比较底层的C语言API，属于一个C语言库，平时我们所写的OC代码，最终都会转成runtime的C语言代码去执行。
+
+这个系统主要做两件事 ：
+
+1. 封装C语言的结构体和函数，让开发者在运行时创建、检查或者修改类、对象和方法等等。
+2. 传递消息，找出方法的最终执行代码。
+
+######常用关键字
+要想全面了解 Runtime 机制，我们必须先了解 Runtime 的一些术语，他们都对应着数据结构。
+
+SEL
+
+    它是selector在 Objc 中的表示(Swift 中是 Selector 类)。selector 是方法选择器，其实作用就和名字一样，日常生活中，我们通过人名辨别谁是谁，注意 Objc 在相同的类中不会有命名相同的两个方法。selector 对方法名进行包装，以便找到对应的方法实现。它的数据结构是：
+
+    typedef struct objc_selector *SEL;
+    
+    我们可以看出它是个映射到方法的 C 字符串，你可以通过 Objc 编译器器命令@selector() 或者 Runtime 系统的 sel_registerName 函数来获取一个 SEL 类型的方法选择器。
+
+    注意：
+    不同类中相同名字的方法所对应的 selector 是相同的，由于变量的类型不同，所以不会导致它们调用方法实现混乱。
+
+id
+
+    id 是一个参数类型，它是指向某个类的实例的指针。定义如下：
+
+    以上定义，看到 objc_object 结构体包含一个 isa 指针，根据 isa 指针就可以找到对象所属的类。
+
+    注意：
+    isa 指针在代码运行时并不总指向实例对象所属的类型，所以不能依靠它来确定类型，要想确定类型还是需要用对象的 -class 方法。
+
+    PS:KVO 的实现机理就是将被观察对象的 isa 指针指向一个中间类而不是真实类型，详见:KVO章节。
+
+Class
+
+	typedef struct objc_class *Class;
+	
+	Class 其实是指向 objc_class 结构体的指针。
+	
+	一个运行时类中关联了它的父类指针、类名、成员变量、方法、缓存以及附属的协议。
+	
+	
+	由此可见，我们可以动态修改 *methodList 的值来添加成员方法，这也是 Category 实现的原理，同样解释了 Category 不能添加属性的原因。这里可以参考下美团技术团队的文章：深入理解 Objective-C: Category。
+	
+	objc_ivar_list 结构体用来存储成员变量的列表，而 objc_ivar 则是存储了单个成员变量的信息；同理，objc_method_list 结构体存储着方法数组的列表，而单个方法的信息则由 objc_method 结构体存储。
+	
+	值得注意的时，objc_class 中也有一个 isa 指针，这说明 Objc 类本身也是一个对象。为了处理类和对象的关系，Runtime 库创建了一种叫做 Meta Class(元类) 的东西，类对象所属的类就叫做元类。Meta Class 表述了类对象本身所具备的元数据。
+	
+	我们所熟悉的类方法，就源自于 Meta Class。我们可以理解为类方法就是类对象的实例方法。每个类仅有一个类对象，而每个类对象仅有一个与之相关的元类。
+	
+	当你发出一个类似 [NSObject alloc](类方法) 的消息时，实际上，这个消息被发送给了一个类对象(Class Object)，这个类对象必须是一个元类的实例，而这个元类同时也是一个根元类(Root Meta Class)的实例。所有元类的 isa 指针最终都指向根元类。
+	
+	所以当 [NSObject alloc] 这条消息发送给类对象的时候，运行时代码 objc_msgSend() 会去它元类中查找能够响应消息的方法实现，如果找到了，就会对这个类对象执行方法调用。
+	
+	 
+	
+	super_class 指针，虚线时 isa 指针。而根元类的父类是 NSObject，isa指向了自己。而 NSObject 没有父类。
+	
+	最后 objc_class 中还有一个 objc_cache ，缓存，它的作用很重要，后面会提到。
+Method
+	
+	Method 代表类中某个方法的类型
+	
+	typedef struct objc_method *Method;
+	
+	objc_method 存储了方法名，方法类型和方法实现：
+
+    方法名类型为 SEL
+    方法类型 method_types 是个 char 指针，存储方法的参数类型和返回值类型
+    method_imp 指向了方法的实现，本质是一个函数指针
+
+Ivar
+
+	Ivar 是表示成员变量的类型。
+	
+	typedef struct objc_ivar *Ivar;
+	
+	
+	其中 ivar_offset 是基地址偏移字节
+IMP
+
+	IMP在objc.h中的定义是：
+	
+	typedef id (*IMP)(id, SEL, ...);
+	
+	它就是一个函数指针，这是由编译器生成的。当你发起一个 ObjC 消息之后，最终它会执行的那段代码，就是由这个函数指针指定的。而 IMP 这个函数指针就指向了这个方法的实现。
+	
+	如果得到了执行某个实例某个方法的入口，我们就可以绕开消息传递阶段，直接执行方法，这在后面 Cache 中会提到。
+	
+	你会发现 IMP 指向的方法与 objc_msgSend 函数类型相同，参数都包含 id 和 SEL 类型。每个方法名都对应一个 SEL 类型的方法选择器，而每个实例对象中的 SEL 对应的方法实现肯定是唯一的，通过一组 id和 SEL 参数就能确定唯一的方法实现地址。
+	
+	而一个确定的方法也只有唯一的一组 id 和 SEL 参数。
+Cache
+
+	typedef struct objc_cache *Cache
+	
+	Cache 为方法调用的性能进行优化，每当实例对象接收到一个消息时，它不会直接在 isa 指针指向的类的方法列表中遍历查找能够响应的方法，因为每次都要查找效率太低了，而是优先在 Cache 中查找。
+	
+	Runtime 系统会把被调用的方法存到 Cache 中，如果一个方法被调用，那么它有可能今后还会被调用，下次查找的时候就会效率更高。就像计算机组成原理中 CPU 绕过主存先访问 Cache 一样。
+
+Property
+	typedef struct objc_property *objc_property_t;//这个更常用
+	
+	可以通过class_copyPropertyList 和 protocol_copyPropertyList 方法获取类和协议中的属性：
+
+    注意：
+    返回的是属性列表，列表中每个元素都是一个 objc_property_t 指针
+
+
+
+######动态特性
+
+    Objective-C具有相当多的动态特性，基本的，也是经常被提到和用到的有
+    
+        动态类型（Dynamic typing）
+        动态绑定（Dynamic binding）
+        动态加载（Dynamic loading）
+    
+    动态类型：程序直到执行时才能确定所属的类。
+    
+    id 数据类型，id 通用的对象类型，可以存储任意类型的对象，id后面没有号，它本身就是个指针，类似于void ，但只可以指向对象类型
+    
+    静态类型与动态类型
+    
+        编译期检查与运行时检查
+        静态类型在编译期就能检查出错误
+        静态类型声明代码可读性好
+        动态类型只有在运行时才能发现错误
+    
+    动态绑定：程序直到执行时才能确定实际要调用的方法。
+    
+    动态绑定所做的，即是在实例所属类确定后，将某些属性和相应的方法绑定到实例上。
+    
+    说明：objective-c 中的BOOL实际上是一种对带符号的字符类型（signed char）的类型定义（typedef），它使用8位的存储空间。通过#define指令把YES定义为1，NO定义为0。
+    
+    动态加载：根据需求加载所需要的资源
+    
+    这点很容易理解，对于iOS开发来说，基本就是根据不同的机型做适配。最经典的例子就是在Retina设备上加载@2x的图片，而在老一些的普通屏设备上加载原图。随着Retina iPad的推出，和之后可能的Retina Mac的出现，这个特性相信会被越来越多地使用。
+    多态的出现时为了让不同的类能使用同名的方法。这个让程序的可读性大大提高，也降低了编程难度。
+    
+    动态类型与动态绑定是为了解决随多态的便利而引起的弊端，有了动态类型与动态绑定，不用去考虑输出中的方法是哪个类型的方法，会自动判定。
+    
+    而id类型的出现就是为了更好的承接动态类型与动态方法出来的返回值。
+
+
+######常用方法
+
+Ivar *ivars = class_copyIvarList([iCocosObject class], &count);
+Method *met = class_copyMethodList([iCocosObject class], &meth);
+objc_property_t *xsL = class_copyPropertyList([iCocosObject class], &xs);
+Method ic =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(iCocosobject:));
+Method add =  class_getInstanceMethod(NSClassFromString(@"_NSArrayM"), @selector(addObject:));
+
+    objc_msgSend : 给对象发送消息
+    class_copyMethodList : 遍历某个类所有的方法
+    class_copyIvarList : 遍历某个类所有的成员变量
+    class_..... 这是我们学习runtime必须知道的函数！
+
+######属性与成员变量
+Ivar: 实例变量类型，是一个指向objc_ivar结构体的指针。objc_property_t：声明的属性的类型，是一个指向objc_property结构体的指针
+
+1. 属性变量 是已经设置了 setter getter方法的 OC已经自己给设置了
+2. 属性变量 你每次调用 self.属性变量 的时候 都要调用getter或者setter方法 
+封装
+
+如果成员变量是private，程序中的其它对象很难直接访问该成员变量。如果是属性，相对更容易用父类方法读写属性。
+
+
+性能
+
+	成员变量地址可以根据实例的内存地址偏移寻址。而属性的读写都需要函数调用，相对更慢。
+非基础类型
+
+	对于复杂的C++类型，往往设为成员变量更合适，也许这种类型不支持copy，或者完全复制很麻烦。
+多线程
+
+	多线程环境下，为保证数据一致性，在需要同步执行的代码段更应该使用成员变量。如果对需要同步更新的数据用getter/setter 方法，数据更新效率低，会带来更多的获取锁请求失败。
+程序正确性
+
+	成员变量可以做直观的内存管理。属性可以一层层继承，还可以复写。容易出错。
+二进制文件的体积
+
+	默认用属性，会生成不必要的getter/setter 方法，程序体积会变大。
+
+1.如果只是单纯的private变量，最好声明在implementation里.
+2.如果是类的public属性，就用property写在.h文件里
+3.如果自己内部需要setter和getter来实现一些东西，就在.m文件的类目里用property来声明
+
+######消息机制消息机制
+
+    [obj makeText];==objc_msgSend(obj, @selector (makeText));
+     
+
+    首先通过obj的isa指针找到obj对应的class。
+    
+    首先检测这个 selector 是不是要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数。
+    检测这个 selector 的 target 是不是 nil，Objc 允许我们对一个 nil 对象执行任何方法不会 Crash，因为运行时会被忽略掉。
+    如果上面两步都通过了，那么就开始查找这个类的实现 IMP，
+    在Class中先去cache中 通过SEL查找对应函数method，找到就执行对应的实现。
+    若cache中未找到，再去methodList中查找，找到就执行对应的实现。
+    若methodlist中未找到，则取superClass中查找（重复执行以上两个步骤），直到找到最根的类为止。
+    若任何一部能找到，则将method加 入到cache中，以方便下次查找，并通过method中的函数指针跳转到对应的函数中去执行。
+    如果以上都不能找到，则会开始进行消息转发
+
+
+
+######消息转发
+    1.动态方法解析：向当前类发送 resolveInstanceMethod: 信号，检查是否动态向该类添加了方法。（迷茫请搜索：@dynamic）
+    2.快速消息转发：检查该类是否实现了 forwardingTargetForSelector: 方法，若实现了则调用这个方法。若该方法返回值对象非nil或非self，则向该返回对象重新发送消息。
+    3.标准消息转发：runtime发送methodSignatureForSelector:消息获取Selector对应的方法签名。返回值非空则通过forwardInvocation:转发消息，返回值为空则向当前对象发送doesNotRecognizeSelector:消息，程序崩溃退出
+    
+    总结就是：
+    在一个函数找不到时，OC提供了三种方式去补救：
+    1、调用resolveInstanceMethod给个机会让类添加这个实现这个函数
+    2、调用forwardingTargetForSelector让别的对象去执行这个函数
+    3、调用forwardInvocation（函数执行器）灵活的将目标函数以其他形式执行。
+    如果都不中，调用doesNotRecognizeSelector抛出异常。
+
+######常见用途
+* 增加，删除，修改一个类，属性，成员变量，方法
+
+######实际应用
+* 关联对象
+* 方法混淆
+* NSCoding(归档和解档, 利用runtime遍历模型对象的所有属性)
+* 字典 --> 模型 (利用runtime遍历模型对象的所有属性, 根据属性名从字典中取出对应的值, 设置到模型的属性上)
+* KVO(利用runtime动态产生一个类)
+* 用于封装框架(想怎么改就怎么改) 这就是我们runtime机制的只要运用方向
+
+
+
+
+
+###RunLoop（底层）
+
+######RunLoop 的简单概述
+RunLoop:
+
+
+       Runloop是事件接收和分发机制的一个实现。
+
+       Runloop提供了一种异步执行代码的机制，不能并行执行任务。
+
+       在主队列中，Main RunLoop直接配合任务的执行，负责处理UI事件、定时器以及其他内核相关事件。
+
+
+主要目的：
+
+
+       保证程序执行的线程不会被系统终止。   
+
+
+使用Runloop ？
+
+
+       当需要和该线程进行交互的时候才会使用Runloop.
+
+
+       每一个线程都有其对应的RunLoop，但是默认非主线程的RunLoop是没有运行的，需要为RunLoop添加至少一个事件源，然后去run它。
+
+
+       一般情况下我们是没有必要去启用线程的RunLoop的，除非你在一个单独的线程中需要长久的检测某个事件。
+
+
+      
+主线程默认有Runloop。当自己启动一个线程，如果只是用于处理单一的事件，则该线程在执行完之后就退出了。所以当我们需要让该线程监听某项事务
+时，就得让线程一直不退出，runloop就是这么一个循环，没有事件的时候，一直卡着，有事件来临了，执行其对应的函数。
+
+
+       RunLoop,正如其名所示,是线程进入和被线程用来相应事件以及调用事件处理函数的地方.需要在代码中使用控制语句实现RunLoop的循环,也就是说,需要代码提供while或者for循环来驱动RunLoop.
+
+
+       在这个循环中,使用一个runLoop对象[NSRunloop currentRunloop]执行接收消息,调用对应的处理函数.
+
+
+        Runloop接收两种源事件:input sources和timer sources。
+
+
+       input sources 传递异步事件，通常是来自其他线程和不同的程序中的消息；
+
+
+       timer sources(定时器) 传递同步事件（重复执行或者在特定时间上触发）。
+
+
+       除了处理input sources，Runloop
+也会产生一些关于本身行为的notificaiton。注册成为Runloop的observer，可以接收到这些notification，做一些额外
+的处理。（使用CoreFoundation来成为runloop的observer）。
+
+
+
+
+Runloop工作的特点:
+
+
+       1>当有时间发生时,Runloop会根据具体的事件类型通知应用程序作出相应;
+
+
+       2>当没有事件发生时,Runloop会进入休眠状态,从而达到省电的目的;
+
+
+       3>当事件再次发生时,Runloop会被重新唤醒,处理事件.
+
+
+提示:一般在开发中很少会主动创建Runloop,而通常会把事件添加到Runloop中.
+
+苹果提供了两个途径来获取分别是Cocoe里面定义的NSRunLoop以及CoreFoundation里面定义的CFRunLoopRef。
+
+    CFRunLoopRef提供了纯C函数的API，所有这些API都是线程安全的。
+    NSRunLoop提供了面向对象的API，但这些API不是线程安全的。
+
+######RunLoop 与线程的关系
+iOS 开发中能遇到两个线程对象: pthread_t 和 NSThread。过去苹果有份文档标明了 NSThread 只是 pthread_t 的封装，但那份文档已经失效了，现在它们也有可能都是直接包装自最底层的 mach thread。苹果并没有提供这两个对象相互转换的接口，但不管怎么样，可以肯定的是 pthread_t 和 NSThread 是一一对应的。比如，你可以通过 pthread_main_np() 或 [NSThread mainThread] 来获取主线程；也可以通过 pthread_self() 或 [NSThread currentThread] 来获取当前线程。CFRunLoop 是基于 pthread 来管理的。
+
+苹果不允许直接创建 RunLoop，它只提供了两个自动获取的函数：CFRunLoopGetMain() 和 CFRunLoopGetCurrent()。
+
+线程和 RunLoop 之间是一一对应的，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。
+
+######RunLoop 的 Mode
+1. kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。
+
+2. UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。
+
+3. UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。
+
+4. GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。
+
+5. kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。
+
+你可以在这里看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。
+
+一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source/Timer/Observer。每次调用 RunLoop 的主函数时，只能指定其中一个 Mode，这个Mode被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source/Timer/Observer，让其互不影响。
+######RunLoop 的底层实现(内部逻辑)
+RunLoop 的核心是基于 mach port 的，其进入休眠时调用的函数是 mach_msg()
+
+RunLoop 的核心就是一个 mach_msg() (见上面代码的第7步)，RunLoop 调用这个函数去接收消息，如果没有别人发送 port 消息过来，内核会将线程置于等待状态。例如你在模拟器里跑起一个 iOS 的 App，然后在 App 静止时点击暂停，你会看到主线程调用栈是停留在 mach_msg_trap() 这个地方。
+
+######应用
+
+* AutoreleasePool
+
+* 事件响应
+
+* 手势识别
+
+* 界面更新
+        
+* 定时器
+
+* PerformSelecter
+
+* 关于GCD
+
+* 关于网络请求
+
+* AFNetworking
+
+* AsyncDisplayKit
+
+
+
+
+
+
+
+
+###多线程（底层与安全）
+
+线程：1个进程要想执行任务，必须得有线程.线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行
+
+底层：Mach是第一个以多线程方式处理任务的系统，因此多线程的底层实现机制是基于Mach的线程。
+
+     1》C语言的POSIX接口：#include<pthread.h>POSIX线程（POSIX threads），简称Pthreads，是线程的POSIX标准。该标准定义了创建和操纵线程的一整套API。在类Unix操作系统（Unix、Linux、Mac OS X等）中，都使用Pthreads作为操作系统的线程
+     2》OC的NSThread
+     3》 C语言的GCD接口（性能最好，代码更精简）  
+     4》  OC的NSOperation和NSOperationQueue（基于GCD）
+
+好处：
+
+	1、使用线程可以把程序中占据时间长的任务放到后台去处理，如图片、视频的下载
+	
+	2、发挥多核处理器的优势，并发执行让系统运行的更快、更流畅，用户体验更好
+
+缺点：
+
+	1、大量的线程降低代码的可读性，
+	
+	2、更多的线程需要更多的内存空间
+	
+	3、当多个线程对同一个资源出现争夺的时候要注意线程安全的问题。
+
+
+GCD内部怎么实现的
+
+	  1》 iOS和OSX的核心是XNU内核（苹果电脑发展的操作系统内核），GCD是基于XNU内核实现的。
+	  2》GCD的API全部在libdispatch库中
+	  3》GCD的底层实现主要有：Dispatch Queue和Dispatch Source
+	    Dispatch Queue :管理block操作
+	    Dispatch Source：处理事件（比如说线程间的通信）
+	    
+6.GCD和NSOperationQueue
+	
+	   1》GCD是纯C语言的API，NSOperationQueue是基于GCD的OC版本的封装
+	   2》GCD只支持FIFO的队列，NSOperationQueue可以很方便的调整执行顺序，可以添加依赖设置最大并发数量。
+	   3》GCD的执行速度比NSOperationQueue快
+	   4》NSOperationQueue支持KVO，可以检测Operation是否正在执行，是否结束，是否取消。
+
+如何进行选择？
+任务之间不太相互依赖，选用GCD；
+任务之间有依赖，或者要监听任务的执行情况：NSOperationQueue
+
+一、前言
+ 	 1》只在主线程刷新访问UI
+     2》如果要防止资源抢夺，得用synchronize进行加锁保护。
+     3》如果异步操作要保证线程安全等问题，尽量使用GCD。（GCD有些函数默认就是安全的）
+     
+     
+前段时间看了几个开源项目，发现他们保持线程同步的方式各不相同，有@synchronized、NSLock、dispatch_semaphore、NSCondition、pthread_mutex、OSSpinLock。后来网上查了一下，发现他们的实现机制各不相同，性能也各不一样。不好意思，我们平常使用最多的@synchronized是性能最差的。下面我们先分别介绍每个加锁方式的使用，在使用一个案例来对他们进行性能对比。
+
+二、介绍与使用
+
+2.1、@synchronized
+	
+	NSObject *obj = [[NSObject alloc] init];
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    @synchronized(obj) {
+	       NSLog(@"需要线程同步的操作1 开始");
+	       sleep(3);
+	       NSLog(@"需要线程同步的操作1 结束");
+	    }
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    sleep(1);
+	    @synchronized(obj) {
+	       NSLog(@"需要线程同步的操作2");
+	    }
+	});
+
+@synchronized(obj)指令使用的obj为该锁的唯一标识，只有当标识相同时，才为满足互斥，如果线程2中的@synchronized(obj)改为@synchronized(self),刚线程2就不会被阻塞，@synchronized指令实现锁的优点就是我们不需要在代码中显式的创建锁对象，便可以实现锁的机制，但作为一种预防措施，@synchronized块会隐式的添加一个异常处理例程来保护代码，该处理例程会在异常抛出的时候自动的释放互斥锁。所以如果不想让隐式的异常处理例程带来额外的开销，你可以考虑使用锁对象。
+
+2.2、dispatch_semaphore
+
+	dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+	dispatch_time_t overTime = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    dispatch_semaphore_wait(signal, overTime);
+	            NSLog(@"需要线程同步的操作1 开始");
+	            sleep(2);
+	            NSLog(@"需要线程同步的操作1 结束");
+	        dispatch_semaphore_signal(signal);
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	        sleep(1);
+	        dispatch_semaphore_wait(signal, overTime);
+	            NSLog(@"需要线程同步的操作2");
+	        dispatch_semaphore_signal(signal);
+	});
+
+dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三个函数，分别是dispatch_semaphore_create，dispatch_semaphore_signal，dispatch_semaphore_wait。
+
+（1）dispatch_semaphore_create的声明为：
+	
+dispatch_semaphore_t dispatch_semaphore_create(long value);
+
+传入的参数为long，输出一个dispatch_semaphore_t类型且值为value的信号量。
+
+值得注意的是，这里的传入的参数value必须大于或等于0，否则dispatch_semaphore_create会返回NULL。
+
+（2）dispatch_semaphore_signal的声明为：
+	
+long dispatch_semaphore_signal(dispatch_semaphore_t dsema);
+
+这个函数会使传入的信号量dsema的值加1；
+
+(3) dispatch_semaphore_wait的声明为：
+	
+long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);
+
+这个函数会使传入的信号量dsema的值减1；这个函数的作用是这样的，如果dsema信号量的值大于0，该函数所处线程就继续执行下面的语句，并且将信号量的值减1；如果desema的值为0，那么这个函数就阻塞当前线程等待timeout（注意timeout的类型为dispatch_time_t，不能直接传入整形或float型数），如果等待的期间desema的值被dispatch_semaphore_signal函数加1了，且该函数（即dispatch_semaphore_wait）所处线程获得了信号量，那么就继续向下执行并将信号量减1。如果等待期间没有获取到信号量或者信号量的值一直为0，那么等到timeout时，其所处线程自动执行其后语句。
+
+dispatch_semaphore 是信号量，但当信号总量设为 1 时也可以当作锁来。在没有等待情况出现时，它的性能比 pthread_mutex 还要高，但一旦有等待情况出现时，性能就会下降许多。相对于 OSSpinLock 来说，它的优势在于等待时不会消耗 CPU 资源。
+
+如上的代码，如果超时时间overTime设置成>2，可完成同步操作。如果overTime<2的话，在线程1还没有执行完成的情况下，此时超时了，将自动执行下面的代码。
+
+2.3、NSLock
+
+	NSLock *lock = [[NSLock alloc] init];
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    //[lock lock];
+	    [lock lockBeforeDate:[NSDate date]];
+	    NSLog(@"需要线程同步的操作1 开始");
+	    sleep(2);
+	    NSLog(@"需要线程同步的操作1 结束");
+	    [lock unlock];
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    sleep(1);
+	    if ([lock tryLock]) {//尝试获取锁，如果获取不到返回NO，不会阻塞该线程
+	        NSLog(@"锁可用的操作");
+	        [lock unlock];
+	    }else{
+	        NSLog(@"锁不可用的操作");
+	    }
+	    NSDate *date = [[NSDate alloc] initWithTimeIntervalSinceNow:3];
+	    if ([lock lockBeforeDate:date]) {//尝试在未来的3s内获取锁，并阻塞该线程，如果3s内获取不到恢复线程, 返回NO,不会阻塞该线程
+	        NSLog(@"没有超时，获得锁");
+	        [lock unlock];
+	    }else{
+	        NSLog(@"超时，没有获得锁");
+	    }
+	});
+
+NSLock是Cocoa提供给我们最基本的锁对象，这也是我们经常所使用的，除lock和unlock方法外，NSLock还提供了tryLock和lockBeforeDate:两个方法，前一个方法会尝试加锁，如果锁不可用(已经被锁住)，刚并不会阻塞线程，并返回NO。lockBeforeDate:方法会在所指定Date之前尝试加锁，如果在指定时间之前都不能加锁，则返回NO。
+
+	@protocol NSLocking
+	- (void)lock;
+	- (void)unlock;
+	@end
+	@interface NSLock : NSObject  {
+	@private
+	    void *_priv;
+	}
+	- (BOOL)tryLock;
+	- (BOOL)lockBeforeDate:(NSDate *)limit;
+	@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+	@end
+
+2.4、NSRecursiveLock递归锁
+
+	//NSLock *lock = [[NSLock alloc] init];
+	NSRecursiveLock *lock = [[NSRecursiveLock alloc] init];
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	       static void (^RecursiveMethod)(int);
+	       RecursiveMethod = ^(int value) {
+	       [lock lock];
+	         if (value > 0) {
+	                NSLog(@"value = %d", value);
+	                sleep(1);
+	                RecursiveMethod(value - 1);
+	          }
+	         [lock unlock];
+	     };
+	     RecursiveMethod(5);
+	});
+
+NSRecursiveLock实际上定义的是一个递归锁，这个锁可以被同一线程多次请求，而不会引起死锁。这主要是用在循环或递归操作中。
+
+这段代码是一个典型的死锁情况。在我们的线程中，RecursiveMethod是递归调用的。所以每次进入这个block时，都会去加一次锁，而从第二次开始，由于锁已经被使用了且没有解锁，所以它需要等待锁被解除，这样就导致了死锁，线程被阻塞住了。调试器中会输出如下信息：
+
+在这种情况下，我们就可以使用NSRecursiveLock。它可以允许同一线程多次加锁，而不会造成死锁。递归锁会跟踪它被lock的次数。每次成功的lock都必须平衡调用unlock操作。只有所有达到这种平衡，锁最后才能被释放，以供其它线程使用。
+
+如果我们将NSLock代替为NSRecursiveLock，上面代码则会正确执行。
+
+如果需要其他功能，源码定义如下：
+	
+	@interface NSRecursiveLock : NSObject  {
+	@private
+	    void *_priv;
+	}
+	- (BOOL)tryLock;
+	- (BOOL)lockBeforeDate:(NSDate *)limit;
+	@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+	@end
+
+2.5、NSConditionLock条件锁
+
+	NSMutableArray *products = [NSMutableArray array];
+	NSInteger HAS_DATA = 1;
+	NSInteger NO_DATA = 0;
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    while (1) {
+	        [lock lockWhenCondition:NO_DATA];
+	        [products addObject:[[NSObject alloc] init]];
+	        NSLog(@"produce a product,总量:%zi",products.count);
+	        [lock unlockWithCondition:HAS_DATA];
+	        sleep(1);
+	    }
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    while (1) {
+	       NSLog(@"wait for product");
+	        [lock lockWhenCondition:HAS_DATA];
+	       [products removeObjectAtIndex:0];
+	       NSLog(@"custome a product");
+	       [lock unlockWithCondition:NO_DATA];
+	    }
+	});
+
+当我们在使用多线程的时候，有时一把只会lock和unlock的锁未必就能完全满足我们的使用。因为普通的锁只能关心锁与不锁，而不在乎用什么钥匙才能开锁，而我们在处理资源共享的时候，多数情况是只有满足一定条件的情况下才能打开这把锁：
+
+在线程1中的加锁使用了lock，所以是不需要条件的，所以顺利的就锁住了，但在unlock的使用了一个整型的条件，它可以开启其它线程中正在等待这把钥匙的临界地，而线程2则需要一把被标识为2的钥匙，所以当线程1循环到最后一次的时候，才最终打开了线程2中的阻塞。但即便如此，NSConditionLock也跟其它的锁一样，是需要lock与unlock对应的，只是lock,lockWhenCondition:与unlock，unlockWithCondition:是可以随意组合的，当然这是与你的需求相关的。
+
+如果你需要其他功能，源码定义如下：
+
+	@interface NSConditionLock : NSObject  {
+	@private
+	    void *_priv;
+	}
+	- (instancetype)initWithCondition:(NSInteger)condition NS_DESIGNATED_INITIALIZER;
+	@property (readonly) NSInteger condition;
+	- (void)lockWhenCondition:(NSInteger)condition;
+	- (BOOL)tryLock;
+	- (BOOL)tryLockWhenCondition:(NSInteger)condition;
+	- (void)unlockWithCondition:(NSInteger)condition;
+	- (BOOL)lockBeforeDate:(NSDate *)limit;
+	- (BOOL)lockWhenCondition:(NSInteger)condition beforeDate:(NSDate *)limit;
+	@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+	@end
+
+2.6、NSCondition
+
+	NSCondition *condition = [[NSCondition alloc] init];
+	NSMutableArray *products = [NSMutableArray array];
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	        while (1) {
+	            [condition lock];
+	            if ([products count] == 0) {
+	                NSLog(@"wait for product");
+	                [condition wait];
+	            }
+	            [products removeObjectAtIndex:0];
+	            NSLog(@"custome a product");
+	            [condition unlock];
+	        }
+	    });
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	        while (1) {
+	            [condition lock];
+	            [products addObject:[[NSObject alloc] init]];
+	            NSLog(@"produce a product,总量:%zi",products.count);
+	            [condition signal];
+	            [condition unlock];
+	            sleep(1);
+	        }
+	});
+
+一种最基本的条件锁。手动控制线程wait和signal。
+
+[condition lock];一般用于多线程同时访问、修改同一个数据源，保证在同一时间内数据源只被访问、修改一次，其他线程的命令需要在lock 外等待，只到unlock ，才可访问
+
+[condition unlock];与lock 同时使用
+
+[condition wait];让当前线程处于等待状态
+
+[condition signal];CPU发信号告诉线程不用在等待，可以继续执行
+
+2.7、pthread_mutex
+	
+	__block pthread_mutex_t theLock;
+	pthread_mutex_init(&theLock, NULL);
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	        pthread_mutex_lock(&theLock);
+	        NSLog(@"需要线程同步的操作1 开始");
+	        sleep(3);
+	        NSLog(@"需要线程同步的操作1 结束");
+	        pthread_mutex_unlock(&theLock);
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	        sleep(1);
+	        pthread_mutex_lock(&theLock);
+	        NSLog(@"需要线程同步的操作2");
+	        pthread_mutex_unlock(&theLock);
+	});
+
+c语言定义下多线程加锁方式。
+
+1：pthread_mutex_init(pthread_mutex_t mutex,const pthread_mutexattr_t attr);
+
+初始化锁变量mutex。attr为锁属性，NULL值为默认属性。
+
+2：pthread_mutex_lock(pthread_mutex_t mutex);加锁
+
+3：pthread_mutex_tylock(*pthread_mutex_t *mutex);加锁，但是与2不一样的是当锁已经在使用的时候，返回为EBUSY，而不是挂起等待。
+
+4：pthread_mutex_unlock(pthread_mutex_t *mutex);释放锁
+
+5：pthread_mutex_destroy(pthread_mutex_t* mutex);使用完后释放
+
+代码执行操作结果如下：
+
+2.8、pthread_mutex(recursive)
+
+	 __block pthread_mutex_t theLock;
+	//pthread_mutex_init(&theLock, NULL);
+	pthread_mutexattr_t attr;
+	pthread_mutexattr_init(&attr);
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&lock, &attr);
+	pthread_mutexattr_destroy(&attr);
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    static void (^RecursiveMethod)(int);
+	    RecursiveMethod = ^(int value) {
+	            pthread_mutex_lock(&theLock);
+	            if (value > 0) {
+	                NSLog(@"value = %d", value);
+	                sleep(1);
+	                RecursiveMethod(value - 1);
+	            }
+	            pthread_mutex_unlock(&theLock);
+	     };
+	    RecursiveMethod(5);
+	});
+
+这是pthread_mutex为了防止在递归的情况下出现死锁而出现的递归锁。作用和NSRecursiveLock递归锁类似。
+
+如果使用pthread_mutex_init(&theLock, NULL);初始化锁的话，上面的代码会出现死锁现象。如果使用递归锁的形式，则没有问题。
+
+2.9、OSSpinLock
+
+	__block OSSpinLock theLock = OS_SPINLOCK_INIT;
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    OSSpinLockLock(&theLock);
+	    NSLog(@"需要线程同步的操作1 开始");
+	    sleep(3);
+	    NSLog(@"需要线程同步的操作1 结束");
+	    OSSpinLockUnlock(&theLock);
+	});
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+	    OSSpinLockLock(&theLock);
+	    sleep(1);
+	    NSLog(@"需要线程同步的操作2");
+	    OSSpinLockUnlock(&theLock);
+	});
+
+OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do while 忙等。它的缺点是当等待时会消耗大量 CPU 资源，所以它不适用于较长时间的任务。 不过最近YY大神在自己的博客不再安全的 OSSpinLock中说明了OSSpinLock已经不再安全，请大家谨慎使用。
+
+三、性能对比
+	
+	OSSpinLock和dispatch_semaphore的效率远远高于其他。
+	
+	@synchronized和NSConditionLock效率较差。
+	
+	鉴于OSSpinLock的不安全，所以我们在开发中如果考虑性能的话，建议使用dispatch_semaphore。
+	
+	如果不考虑性能，只是图个方便的话，那就使用@synchronized。
+
+
+
+###网络（底层与安全）
+
+
+###数据持久化（各种使用与区别）（CoreData、SQLite）
+
+
+
+###Block（底层/__Block）
+
+
+
+###音视频
+
+
+
+###直播
+
+
+###安全
+
+
+
+###优化（性能、卡顿）
+
+
+
+###常见错误
+
+
+
+
+
+###常用技术
+
+
+KVC
+
+	KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa-swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据
+	一个对象在调用setValue的时候，（1）首先根据方法名找到运行方法的时候所需要的环境参数。（2）他会从自己isa指针结合环境参数，找到具体的方法实现的接口。（3）再直接查找得来的具体的方法实现。
+
+KVO
+
+	观察者为一个对象的属性进行了注册，被观察对象的isa指针被修改的时候，isa指针就会指向一个中间类（setter/getter方法），而不是真实的类。所以isa指针其实不需要指向实例对象真实的类。所以我们的程序最好不要依赖于isa指针。在调用类的方法的时候，最好要明确对象实例的类名。
+	熟悉KVO的朋友都知道，只有当我们调用KVC去访问key值的时候KVO才会起作用。所以肯定确定的是，KVO是基于KVC实现的。其实看了上面我们的分析以后，关系KVO的架构的构思也就水到渠成了。
+
+
+
+
+
+
+任何工程产品（注意是任何工程产品）都可以使用以下两种方法之一进行测试。
+黑盒测试：已知产品的功能设计规格，可以进行测试证明每个实现了的功能是否符合要求。
+白盒测试：已知产品的内部工作过程，可以通过测试证明每种内部操作是否符合设计规格要求，所有内部成分是否以经过检查。
+
+#####黑盒测试
+软件的黑盒测试意味着测试要在软件的接口处进行。这种方法是把测试对象看做一个黑盒子，测试人员完全不考虑程序内部的逻辑结构和内部特性，只依据程序的需求规格说明书，检查程序的功能是否符合它的功能说明。因此黑盒测试又叫功能测试或数据驱动测试。
+
+	黑盒测试主要是为了发现以下几类错误：
+	1、是否有不正确或遗漏的功能？
+	2、在接口上，输入是否能正确的接受？能否输出正确的结果？
+	3、是否有数据结构错误或外部信息（例如数据文件）访问错误？
+	4、性能上是否能够满足要求？
+	5、是否有初始化或终止性错误？
+
+#####白盒测试
+软件的白盒测试是对软件的过程性细节做细致的检查。这种方法是把测试对象看做一个打开的盒子，它允许测试人员利用程序内部的逻辑结构及有关信息，设计或选择测试用例，对程序所有逻辑路径进行测试。通过在不同点检查程序状态，确定实际状态是否与预期的状态一致。因此白盒测试又称为结构测试或逻辑驱动测试。
+
+	白盒测试主要是想对程序模块进行如下检查：
+	1、对程序模块的所有独立的执行路径至少测试一遍。
+	2、对所有的逻辑判定，取“真”与取“假”的两种情况都能至少测一遍。
+	3、在循环的边界和运行的界限内执行循环体。
+	4、测试内部数据结构的有效性，等等。
+
+以上事实说明，软件测试有一个致命的缺陷，即测试的不完全、不彻底性。由于任何程序只能进行少量（相对于穷举的巨大数量而言）的有限的测试，在未发现错误时，不能说明程序中没有错误。
+
+#####灰盒测试
+灰盒测试，是介于白盒测试与黑盒测试之间的，可以这样理解，灰盒测试关注输出对于输入的正确性，同时也关注内部表现，但这种关注不象白盒那样详细、完整，只是通过一些表征性的现象、事件、标志来判断内部的运行状态，有时候输出是正确的，但内部其实已经错误了，这种情况非常多，如果每次都通过白盒测试来操作，效率会很低，因此需要采取这样的一种灰盒的方法。 
+
+
+###全栈相关
+
+
+
+###算法（常用、排序）
+
+
+
+###数据结构
+
+
+
+###设计模式（32中）
+
+
+
+###架构设计
+
+
+
+###逆向工程
+
+
+
+###实战应用
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
