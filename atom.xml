@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-07-29T16:52:01+08:00</updated>
+  <updated>2016-07-29T17:11:13+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -1951,6 +1951,260 @@ CC_MD5(str,strlen(str), r);，改成了     CC_MD5(str, (CC_LONG)strlen(str), r)
   </entry>
   
   <entry>
+    <title type="html"><![CDATA[环信高级篇-透传和拓展]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/20/huanxingaojipian/"/>
+    <updated>2016-05-20T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/20/huanxingaojipian</id>
+    <content type="html"><![CDATA[<p>由于App开发中遇到了：送花和打赏，但是我们使用的即时通讯是环信，并没有直接的接口实现，而是需要我们使用里面比较特殊的技术：拓展和透传</p>
+
+<p>透传：传递用户头像和昵称
+拓展：实现非正常消息（打赏，送花，送礼物）</p>
+
+<!--more-->
+
+
+<p>环信高级篇-透传和拓展</p>
+
+<p>////////////////////////////////////////////////////////////////////////////////////////////////////
+  透传
+////////////////////////////////////////////////////////////////////////////////////////////////////</p>
+
+<p>方法一 从APP服务器获取昵称和头像</p>
+
+<pre><code>昵称和头像的获取：当收到一条消息（群消息）时，得到发送者的用户ID，然后查找手机本地数据库是否有此用户ID的昵称和头像，如没有则调用APP服务器接口通过用户ID查询出昵称和头像，然后保存到本地数据库和缓存，下次此用户发来信息即可直接查询缓存或者本地数据库，不需要再次向APP服务器发起请求
+
+昵称和头像的更新：当点击发送者头像时加载用户详情时从APP服务器查询此用户的具体信息然后更新本地数据库和缓存。当用户自己更新昵称或头像时，也可以发送一条透传消息到其他用户和用户所在的群，来更新该用户的昵称和头像。
+</code></pre>
+
+<p>方法二 从消息扩展中获取昵称和头像</p>
+
+<pre><code>昵称和头像的获取：把用户基本的昵称和头像的URL放到消息的扩展中，通过消息传递给接收方，当收到一条消息时，则能通过消息的扩展得到发送者的昵称和头像URL，然后保存到本地数据库和缓存。当显示昵称和头像时，请从本地或者缓存中读取，不要直接从消息中把赋值拿给界面（否则当用户昵称改变后，同一个人会显示不同的昵称）。
+
+昵称和头像的更新：当扩展消息中的昵称和头像URI与当前本地数据库和缓存中的相应数据不同的时候，需要把新的昵称保存到本地数据库和缓存，并下载新的头像并保存到本地数据库和缓存。
+</code></pre>
+
+<p>透传的实现</p>
+
+<pre><code>- (void)sendTouChuanMessage:(int)count
+{
+
+    GiFHUD *gif = [[GiFHUD alloc] init];
+
+    //Setup GiFHUD image
+    [gif setGifWithImageName:@"pika.gif"];
+    [gif showWithOverlay];
+
+    // dismiss after 2 seconds
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [gif dismiss];
+
+
+
+        //                    EMChatCommand *cmdChat = [[EMChatCommand alloc] init];
+        //                    cmdChat.cmd = @"{"type":1, @"data":"{"count":count}"}";
+        //                    EMCommandMessageBody *body = [[EMCommandMessageBody alloc] initWithChatObject:cmdChat];
+        //                    // 生成message
+        //                    EMMessage *message = [[EMMessage alloc] initWithReceiver:@"6001" bodies:@[body]];
+        //                    message.messageType = eMessageTypeChat; // 设置为单聊消息
+        //                    //message.messageType = eConversationTypeGroupChat;// 设置为群聊消息
+        //                    //message.messageType = eConversationTypeChatRoom;// 设置为聊天室消息
+
+
+        //通过透传发送当前位置信息给领导
+
+        EMChatCommand *shareCommand = [[EMChatCommand alloc] init];
+
+        shareCommand.cmd = @"ResponseLocation";            // 当前cmd消息的关键字
+
+        EMCommandMessageBody *lovesMsgBody = [[EMCommandMessageBody alloc] initWithChatObject:shareCommand];
+
+        //设置要发给谁, fromToken是环信用户username或者群聊groupid
+
+        EMMessage *lovesMsg = [[EMMessage alloc] initWithReceiver:self.uid bodies:@[lovesMsgBody]];
+
+        lovesMsg.messageType = eMessageTypeChat;   // 单聊或者群聊
+
+
+        //                    //IM透传消息格式
+        //
+        //                    {"type":1 "data":""}
+        //                    //type 消息类型，1送花
+        //                    //data 根据消息类型的不同，消息的数据体
+        //
+        //                    1 送花
+        //                    data数据：{"count":99} //count 送出花的个数
+        lovesMsg.ext = @{
+                         @"type":@(1),
+                         @"data":@{@"count":@(count)},
+
+                         };
+        [[EaseMob sharedInstance].chatManager asyncSendMessage:lovesMsg progress:nil];
+    });
+}
+
+- (void)didReceiveCmdMessage:(EMMessage *)cmdMessage
+{
+    /**
+     *  {"messageId":"177936556470829584","messageType":0,"from":"47","bodies":["{\"type\":\"cmd\",\"action\":\"ResponseLocation\"}"],"ext":{"type":1,"data":{"count":1}},"isAcked":false,"to":"57","timestamp":1458993883065,"requireEncryption":false}
+     */
+    NSString *type = [cmdMessage.ext objectForKey:@"type"];
+    NSString *count = [[cmdMessage.ext objectForKey:@"data"] objectForKey:@"count"];
+
+}
+
+- (void)ReciveMessageExtension
+{
+
+}
+</code></pre>
+
+<p>//////////////////////////////////////////////////////////////////////////////////////////////////////
+//  自定义消息扩展
+//////////////////////////////////////////////////////////////////////////////////////////////////////</p>
+
+<pre><code>环信官方的解释： 当 SDK 提供的消息类型不满足需求时，开发者可以通过扩展自 SDK 提供的文本、语音、图片、位置等消息类型，从而生成自己需要的消息类型。 
+
+
+- (void)SendMessageExtension:(int)count
+{
+
+    GiFHUD *gif = [[GiFHUD alloc] init];
+
+    //Setup GiFHUD image
+    [gif setGifWithImageName:@"pika.gif"];
+    [gif showWithOverlay];
+
+    // dismiss after 2 seconds
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        [gif dismiss];
+
+        NSDictionary *dict = @{@"type":@(1),@"data":@{@"count":@(count)}};
+        NSError *error = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict
+                                                           options:NSJSONWritingPrettyPrinted
+                                                             error:&amp;error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData
+                                                     encoding:NSUTF8StringEncoding];
+
+
+        // 创建一个聊天文本对象
+        EMChatText *chatText = [[EMChatText alloc] initWithText:jsonString];
+        //#warning 不同的消息类型对应不同的消息体
+        // 创建文本消息体
+        EMTextMessageBody *body = [[EMTextMessageBody alloc] initWithChatObject:chatText];
+
+        // 创建消息对象
+        EMMessage *msgObj = [[EMMessage alloc] initWithReceiver:self.buddy.username bodies:@[body]];
+
+        msgObj.messageType = eMessageTypeChat; // 设置为单聊消息
+        msgObj.deliveryState = eMessageDeliveryState_Delivered;
+//        msgObj.ext = @{@"1":@(count)};
+        msgObj.ext = @{@"msg_type":@(1)};
+        // 发消息
+        [[EaseMob sharedInstance].chatManager asyncSendMessage:msgObj progress:nil prepare:^(EMMessage *message, EMError *error) {
+            NSLog(@"准备发送消息");
+        } onQueue:nil completion:^(EMMessage *message, EMError *error) {
+            if (!error) {
+                NSLog(@"消息发送成功");
+            }else{
+                NSLog(@"消息发送失败");
+                iCocosLog(@"%@=====================", error);
+            }
+        } onQueue:nil];
+
+        iCocosLog(@"%@", msgObj.ext);
+
+
+        // 把发送的消息添加到数据源,显示
+        //    [self.dataSources addObject:msgObj];
+        [self addMessageToDataSource:msgObj];
+        [self.tableView reloadData];
+        [self scrollToBottom];
+    });
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[随笔记录，你懂得！]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/05/suibinidongde/"/>
+    <updated>2016-05-05T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/05/suibinidongde</id>
+    <content type="html"><![CDATA[<p>平时在开发中喜欢写一些随笔记录，可能是个人习惯问题，虽然不一定有用。</p>
+
+<p>哈哈</p>
+
+<!--more-->
+
+
+<ol>
+<li><p>FPS=60帧，用户体验最好。</p></li>
+<li><p>加载Cell之后将数据的渲染写在 if(self.tableView.dragging==NO&amp;&amp;self.tableView.decelerating==NO)中。</p></li>
+<li><p>阴影圆角计算在GPU中进行</p></li>
+<li><p>注意设置alpha=1</p></li>
+<li><p>圆角使用layer的shouldRasterize而不是clipToBounds</p></li>
+<li><p>本身不透明设置opaque=YES</p></li>
+<li><p>加密方式：base64，MD5，DES（分组，堆成），SSKeychain，Cookie</p></li>
+</ol>
+
+
+<p>对称：加密和解密使用同一个算法
+不对称：加密和解密使用两个不同的算法</p>
+
+<p>8.tableViewCell分割线</p>
+
+<pre><code>[self.tableView setTableFooterView:[[UIView alloc] init]];//FooterView
+self.tableView.separatorStyle = UITableViewCellSelectionStyleNone;
+</code></pre>
+
+<p>9.tableView左边间距问题</p>
+
+<pre><code>- (void)_leftLine {
+    if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
+        [self.tableView setSeparatorInset:UIEdgeInsetsZero];
+    } if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
+        [self.tableView setLayoutMargins:UIEdgeInsetsZero];
+    }
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+        [cell setSeparatorInset:UIEdgeInsetsZero];
+    } if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+        [cell setLayoutMargins:UIEdgeInsetsZero];
+    }
+
+}
+</code></pre>
+
+<ol>
+<li><p>AVPlayer 最多只能创建16个</p></li>
+<li><p>安全</p>
+
+<ul>
+<li>App代码安全，包括代码混淆，加密或者app加壳。</li>
+<li>App数据存储安全，主要指在磁盘做数据持久化的时候所做的加密。</li>
+<li>App网络传输安全，指对数据从客户端传输到Server中间过程的加密，防止网络世界当中其他节点对数据的窃听。</li>
+</ul>
+</li>
+<li><p>算法安全</p>
+
+<ul>
+<li>对称加密算法，代表算法AES</li>
+<li>非对称加密算法，代表算法RSA，ECC</li>
+<li>电子签名，用于确认消息发送方的身份</li>
+<li>消息摘要生成算法，MD5，SHA，用于检测消息是否被第三方修改过</li>
+</ul>
+</li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[反编译App小菜篇]]></title>
     <link href="http://al1020119.github.io/blog/2016/05/01/fanbianyixiaocaipain/"/>
     <updated>2016-05-01T13:53:19+08:00</updated>
@@ -2972,7 +3226,7 @@ Port 选 22
 Password(假设你没有更改密码) 打 alpine</p>
 
 <p>Mac / Linux Terminal 内打
-ssh <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#114;&#x6f;&#111;&#x74;&#64;&#49;&#x39;&#50;&#46;&#x31;&#54;&#56;&#x2e;&#49;&#x2e;&#x31;&#x30;&#52;">&#x72;&#111;&#x6f;&#x74;&#x40;&#x31;&#x39;&#50;&#x2e;&#49;&#54;&#56;&#x2e;&#49;&#x2e;&#x31;&#x30;&#x34;</a></p>
+ssh <a href="&#109;&#x61;&#x69;&#108;&#116;&#x6f;&#58;&#114;&#111;&#111;&#x74;&#x40;&#49;&#57;&#50;&#46;&#x31;&#x36;&#x38;&#x2e;&#x31;&#46;&#49;&#48;&#x34;">&#114;&#x6f;&#111;&#x74;&#64;&#x31;&#x39;&#x32;&#46;&#49;&#54;&#x38;&#46;&#49;&#x2e;&#49;&#x30;&#52;</a></p>
 
 <p>(4) 进入游戏路径目录内(先决条件是已用 PuTTy / Terminal 连接iPhone / iPod Touch)
 打
@@ -4413,7 +4667,7 @@ Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对i
 <p>注意那个Filter，其实可以不填，但要填一定要是该app的bundle identifier</p>
 
 <p>附：OpenSSH的使用：
-       ssh <a href="&#x6d;&#x61;&#105;&#108;&#116;&#x6f;&#58;&#x72;&#111;&#111;&#x74;&#x40;&#49;&#x39;&#x32;&#46;&#49;&#54;&#x38;&#x2e;&#50;&#46;&#x35;">&#114;&#x6f;&#111;&#116;&#64;&#49;&#x39;&#50;&#x2e;&#49;&#54;&#x38;&#x2e;&#x32;&#x2e;&#53;</a> 默认密码alpine
+       ssh <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#x72;&#111;&#111;&#116;&#64;&#x31;&#57;&#x32;&#46;&#x31;&#54;&#56;&#46;&#50;&#x2e;&#x35;">&#114;&#x6f;&#x6f;&#x74;&#64;&#49;&#x39;&#50;&#x2e;&#x31;&#54;&#56;&#x2e;&#x32;&#x2e;&#53;</a> 默认密码alpine
      先通过ssh登录到手机，然后可以通过cycript -p 进程ID   依附在需要分析的应用程序上  ps ax | grep PP</p>
 ]]></content>
   </entry>
@@ -4980,238 +5234,6 @@ You may have to edit ISOperation.h:
 [sbadge run];
 [sbadge release];
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[简单App实战]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/14/jiandanappshizhan/"/>
-    <updated>2016-03-14T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/14/jiandanappshizhan</id>
-    <content type="html"><![CDATA[<p>底层开发之越狱开发第一篇</p>
-
-<p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
-
-<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
-
-<ul>
-<li>(1)主要涉及到越狱市场的建立，在App内部实现ipa的安装和卸载以及更新。参照的对象就是91助手，25pp，同步推那样的应用。建立一个盗版的App Store.当然了，如果通过299刀的企业证书的话，是不需要通过Cydia的，直接通过网页链接就可以实现app的推广，有一定的风险。这里面涉及到一些协议，后面会进行介绍。</li>
-<li>(2)在App内部实现壁纸和铃声的替换。这个过程涉及到的东西很多，特别是铃声的替换，iPhone里面非常麻烦；</li>
-<li>(3)一些越狱插件的开发，通过里面有些插件非常好用，合理，而且非常美观漂亮。
-这里先从App内部安装ipa包开始讲，后面逐步把上面提到的3点全部讲完。</li>
-</ul>
-
-
-<!--more-->
-
-
-<p>一般情况下安装91助手，同步推这样的应用需要手机越狱，同时安装AppSync，这样才能使用，所以进行开发的必备条件也是如此。</p>
-
-<p>上传的demo工程的地址，我的github链接：<a href="https://github.com/easonoutlook/IPAInstaller">https://github.com/easonoutlook/IPAInstaller</a></p>
-
-<p>之前一直在fork别人的东西，也没做什么贡献，从现在开始，为开发为开源，做一点自己的贡献。</p>
-
-<p>进入正题：</p>
-
-<p>需要的工具和环境：</p>
-
-<ul>
-<li><ol type="a">
-<li>iPhone or iPad越狱，安装AppSync</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>Xcode安装 Command Line Tools</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>下载最新版本的ldid <a href="https://github.com/downloads/rpetrich/ldid/ldid.zip">https://github.com/downloads/rpetrich/ldid/ldid.zip</a></li>
-</ol>
-</li>
-</ul>
-
-
-<h4>1、修改SDKSettings.plist文件</h4>
-
-<p>我用的是Xcode4.6.3版本，iPhone的版本是6.1.2, 路径为：/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/</p>
-
-<p>将这个目录下的 SDKSettings.plist里面的CODE_SIGNING_REQUIRED置为NO</p>
-
-<p>执行命令为：</p>
-
-<p>转到目录下</p>
-
-<pre><code>cd /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
-</code></pre>
-
-<p>将原有文件备份</p>
-
-<pre><code>sudo cp SDKSettings.plist SDKSettings.plist.orig
-</code></pre>
-
-<p>对SDKSettings.plist文件进行编辑</p>
-
-<pre><code>sudo vim SDKSettings.plist
-</code></pre>
-
-<p>将下面对应的字段改为NO</p>
-
-<pre><code>&lt;key&gt;CODE_SIGNING_REQUIRED&lt;/key&gt;
-&lt;string&gt;YES&lt;/string&gt;  // 默认为YES, 需要改为NO
-</code></pre>
-
-<p>此操作参考的路径如下：<a href="http://kqwd.blog.163.com/blog/static/4122344820117191351263/">http://kqwd.blog.163.com/blog/static/4122344820117191351263/</a></p>
-
-<h4>2、给工程添加相应的权限，iOS6里面需要赋予权限才可以，iOS5之前不需要此操作</h4>
-
-<p>新建一个plist文件，命名为entitlements.</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang005.png" title="Caption" ></p>
-
-<p>创建一个plist</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang006.png" title="Caption" ></p>
-
-<p>将plist文件改为：</p>
-
-<p>复制代码
-复制代码</p>
-
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-    &lt;dict&gt;
-        &lt;key&gt;com.apple.private.mobileinstall.allowedSPI&lt;/key&gt;
-        &lt;array&gt;
-            &lt;string&gt;Install&lt;/string&gt;
-            &lt;string&gt;Browse&lt;/string&gt;
-            &lt;string&gt;Uninstall&lt;/string&gt;
-            &lt;string&gt;Archive&lt;/string&gt;
-            &lt;string&gt;RemoveArchive&lt;/string&gt;
-        &lt;/array&gt;
-    &lt;/dict&gt;
-&lt;/plist&gt;
-</code></pre>
-
-<p>复制代码
-复制代码
-将Code Signing 的Code Signing Entilements设置为刚刚创建的entitlements.plist文件</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang007.png" title="Caption" ></p>
-
-<p>后面还需要一个手续，将生产的app文件用ldid签名。后面再介绍。</p>
-
-<p>3、实现越狱安装的代码：</p>
-
-<p>复制代码
-复制代码</p>
-
-<pre><code>typedef NSDictionary *(*    PMobileInstallationLookup)(NSDictionary *params, id callback_unknown_usage);
-NSDictionary *IPAInstalledApps()
-{
-    void *lib = dlopen("/System/Library/PrivateFrameworks/MobileInstallation.framework/MobileInstallation", RTLD_LAZY);
-    if (lib)
-    {
-        PMobileInstallationLookup pMobileInstallationLookup = (PMobileInstallationLookup)dlsym(lib, "MobileInstallationLookup");
-        if (pMobileInstallationLookup)
-        {
-            NSArray *wanted = nil;//[NSArray arrayWithObjects:@"com.celeware.IPADeploy",@"com.celeware.celedial",nil]; Lookup specified only
-            NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:@"User", @"ApplicationType", wanted, @"BundleIDs",nil];
-            NSDictionary *dict = pMobileInstallationLookup(params, NULL);
-#ifdef DEBUG
-            NSLog(@"%@", dict);
-#endif
-            return dict;
-        }
-    }
-    return nil;
-}
-</code></pre>
-
-<p>复制代码
-复制代码
-所有代码均在之前的github目录中，可以自行查看。</p>
-
-<p>4、编译生成App文件</p>
-
-<p>因为需要给APP签名加权限，所以不要生成IPA文件，而是生成APP文件。等把签名与权限加好后，再手动用APP制作IPA文件。</p>
-
-<p> 在Xcode中选择设备（IOS Device）（图3），编译（Build）（图4）。编译完成后，在工程的Products文件夹中可以看到刚刚编译好的APP文件，右键Show in Finder（图5），就可以在文件夹中显示。将APP复制到一个别的文件夹中，什么地方都可以，后面需要用到。</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang008.png" title="Caption" ></p>
-
-<p>5、制作ipa文件</p>
-
-<p>将之前提到的ldid下载好后，将ldid文件放到/usr/bin中。</p>
-
-<p>比如在 Download 目录下， sudo -i</p>
-
-<p>然后 cp ldid /usr/bin/即可将文件拷贝到/usr/bin中。</p>
-
-<p>然后对之前生成的文件，进行ldid签名</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang009.png" title="Caption" ></p>
-
-<p>这个命令中“ldid -S” ，“ldid”与“-S”之间有一个空格。“-S”与“entitlements.xml”之间没有空格。“entitlements.xml”就是上面说到的XML文件，如果你的XML不是这个名，请将命令修改为你的XML文件名即可。</p>
-
-<p>“-Sentitlements.xm”与“ipainstall.app”之间有一个空格。“ipainstall”是刚刚生成的APP文件，如果你的名字不一样，请修改为你的名字。“/“后面和APP的名字是一样的。  如果没有输出错误信息或是卡住（就是敲回车后没反应）就是添加权限成功了。</p>
-
-<p>6、生成ipa文件，安装</p>
-
-<p>新建一个文件夹，命名为“Payload”。将刚刚添加好权限的APP文件放到这个文件夹中。右键“压缩Payload”，得到一个“.zip”文件，将这个ZIP文件的后缀名改为“.ipa”。好了，IPA文件就制作完成了。</p>
-
-<p>然后通过itools安装，测试刚刚生成的文件</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang010.png" title="Caption" ></p>
-
-<p>整合了很多资源，有些地方弄的比较凌乱，后面加以完善</p>
-
-<p>参考资源链接：</p>
-
-<p><a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
-<a href="http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html">http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html</a>
-<a href="http://kqwd.blog.163.com/blog/static/4122344820117191351263/">http://kqwd.blog.163.com/blog/static/4122344820117191351263/</a>
-<a href="http://blog.csdn.net/linkai5696/article/details/5924356">http://blog.csdn.net/linkai5696/article/details/5924356</a>
-<a href="http://www.yonsm.net/post/553">http://www.yonsm.net/post/553</a>
-<a href="http://stackoverflow.com/questions/14871748/how-do-i-change-my-applications-entitlements-to-com-apple-backboard-client">http://stackoverflow.com/questions/14871748/how-do-i-change-my-applications-entitlements-to-com-apple-backboard-client</a>
-<a href="http://stackoverflow.com/questions/13817569/how-to-programatically-install-a-ipa-file-in-ios-6/15062538#15062538">http://stackoverflow.com/questions/13817569/how-to-programatically-install-a-ipa-file-in-ios-6/15062538#15062538</a>
-<a href="http://since2006.com/blog/240/ios6-mobileinstallationinstall">http://since2006.com/blog/240/ios6-mobileinstallationinstall</a>
-<a href="http://hi.baidu.com/prognostic/item/831b622202b2dd0f72863e9c">http://hi.baidu.com/prognostic/item/831b622202b2dd0f72863e9c</a>
-<a href="http://www.vsyo.com/a/t/89895554d4043c5a">http://www.vsyo.com/a/t/89895554d4043c5a</a>
-<a href="http://mobile.dotblogs.com.tw/cmd4shell/archive/2013/03/26/98967.aspx">http://mobile.dotblogs.com.tw/cmd4shell/archive/2013/03/26/98967.aspx</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[资源文件夹获取]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/12/ziyuanwenjianhuoqu/"/>
-    <updated>2016-03-12T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/12/ziyuanwenjianhuoqu</id>
-    <content type="html"><![CDATA[<p>用pngcrush反编译ios app 资源文件</p>
-
-<p>时间：2012-12-27 11:56:45 类别：ios开发 访问: 3705 次</p>
-
-<p>要提高app制作水平，最好的方法就是学习领先者，用pngcrush反编译ios app 资源文件，步骤很简单</p>
-
-<!--more-->
-
-
-<ol>
-<li><p>在电脑的itunes中下载你选中的app，下载完成之后，然后在finder里面找到对应的ipa包，也可以在91等市场中直接下载ipa文件</p></li>
-<li><p>ipa文件其实是zip包，重命名为zip后缀文件之后，双击打开
-找到 xxx.app 文件，这其实是个目录，点击右键，在菜单中选中“查看包内容”，就可以进入目录，然后看到大量的资源文件，这些png文件都直接放在app的根目录，你可以在finder中直接浏览</p></li>
-<li><p>但是这些png文件都是打包过程中被压缩过的，photoshop无法正确识别 （ 注：打包app的时候，你可以在xcode project选项中选择对png文件不压缩）</p></li>
-<li><p>要把这些png文件还原，可以通过一个名叫 pngcrush 的开源软件，你可以到 sourceforge 下载，实际上ios的sdk也提供了这个程序（xcode就是利用它压缩png的）xcrun -sdk iphoneos -find pngcrush 可以获得 pngcrush的安装目录，然后直接使用，或者在你的$PATH目录里面做一个符号链接，这样可以在console窗口直接敲pngcrush</p></li>
-</ol>
-
-
-<p>进入资源文件存放目录，打开对应的命令行窗口，执行下面的命令即可</p>
-
-<pre><code>pngcrush -d xxx reverted -revert-iphone-optimizations -q *.png
-pngcrush -e xxx reverted -revert-iphone-optimizations -q *.png
-</code></pre>
-
-<p>上面提到的方法都是在mac操作系统下面，如果是windows/linux也可以用，pngcrush也提供了对应的版本</p>
 ]]></content>
   </entry>
   
