@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-07-29T15:57:00+08:00</updated>
+  <updated>2016-07-29T16:52:01+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -15,16 +15,16 @@
   
   <entry>
     <title type="html"><![CDATA[福利：抢红包神器就是这么来的]]></title>
-    <link href="http://al1020119.github.io/blog/2016/05/01/weixinhongbao/"/>
-    <updated>2016-05-01T21:52:15+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/05/01/weixinhongbao</id>
+    <link href="http://al1020119.github.io/blog/2016/09/01/weixinhongbao/"/>
+    <updated>2016-09-01T21:52:15+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/01/weixinhongbao</id>
     <content type="html"><![CDATA[<p>微信红包</p>
 
 <p><img src="http://al1020119.github.io/images/weixinhongbao0001.jpg" title="Caption" ></p>
 
 <p>别告诉我你对红包不感兴趣，如果真的是这样，那么请绕道，哈哈。</p>
 
-<p>现在由于微信和QQ的普及，几乎所有用户都会使用红包这个功能，但是对应一个程序员来说，没看到一个好的功能都会努力试着研究一下，哪怕不能成功，由于看到了一篇比较看的文件，所以就专门话时间去搞一顿，结果大吃一惊。</p>
+<p>现在由于微信和QQ的普及，几乎所有用户都会使用红包这个功能，但是对于一个程序员来说，每看到一个好的功能都会努力试着研究一下，哪怕不能成功，由于看到了一篇比较看的文章，所以就专门花时间去搞一顿，结果大吃一惊。</p>
 
 <p>最近有不少朋友找我要红包尾数的功能，我也不知道他们为什么要这个，可能是笔者太年轻了。但是我觉得这个可能不简单，而且这样的功能做好了也不能外漏，不然笔者的程序员职业生涯估计就到头了！</p>
 
@@ -241,6 +241,1776 @@ dylib注入
 
 <p>教程中所涉及到的工具及源代码笔者都上传到Github上。
 Github地址</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[重整之道（面试+技术+底层+高级）]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao/"/>
+    <updated>2016-08-26T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao</id>
+    <content type="html"><![CDATA[<!--more-->
+
+
+<p>重整之道（面试+技术+底层+高级）</p>
+
+<p>不要问我为什么写这篇文章。</p>
+
+<p>我，就是这么有尿性。。。。。。。。。。</p>
+
+<p>前面三部分已经基本上完成，后面部分会陆续更新，敬请期待。但是光靠一篇这么短的文章想将通这些事不可能的，这里主要正对面试族，或者健忘族，亦或者是装逼族。好了废话不多说，我们开始吧！</p>
+
+<ul>
+<li>运行时（底层）</li>
+<li>RunLoop（底层）</li>
+<li>多线程（底层与安全）</li>
+</ul>
+
+
+<hr />
+
+<ul>
+<li>网络（底层与安全）</li>
+<li>数据持久化（各种使用与区别）（CoreData、SQLite）</li>
+<li>Block（底层/__Block）</li>
+<li>音视频</li>
+<li>直播</li>
+<li>安全</li>
+<li>优化（性能、卡顿）</li>
+<li>常见错误</li>
+<li>常用技术</li>
+<li>全栈相关</li>
+<li>算法（常用、排序）</li>
+<li>数据结构</li>
+<li>设计模式（32中）</li>
+<li>架构设计</li>
+<li>逆向工程</li>
+<li>实战应用</li>
+</ul>
+
+
+<h3>运行时（底层）</h3>
+
+<h6>介绍</h6>
+
+<p>runtime是一个c和汇编写的动态库(感谢Lision的指正)，是一套比较底层的C语言API，属于一个C语言库，平时我们所写的OC代码，最终都会转成runtime的C语言代码去执行。</p>
+
+<p>这个系统主要做两件事 ：</p>
+
+<ol>
+<li>封装C语言的结构体和函数，让开发者在运行时创建、检查或者修改类、对象和方法等等。</li>
+<li>传递消息，找出方法的最终执行代码。</li>
+</ol>
+
+
+<h6>常用关键字</h6>
+
+<p>要想全面了解 Runtime 机制，我们必须先了解 Runtime 的一些术语，他们都对应着数据结构。</p>
+
+<p>SEL</p>
+
+<pre><code>它是selector在 Objc 中的表示(Swift 中是 Selector 类)。selector 是方法选择器，其实作用就和名字一样，日常生活中，我们通过人名辨别谁是谁，注意 Objc 在相同的类中不会有命名相同的两个方法。selector 对方法名进行包装，以便找到对应的方法实现。它的数据结构是：
+
+typedef struct objc_selector *SEL;
+
+我们可以看出它是个映射到方法的 C 字符串，你可以通过 Objc 编译器器命令@selector() 或者 Runtime 系统的 sel_registerName 函数来获取一个 SEL 类型的方法选择器。
+
+注意：
+不同类中相同名字的方法所对应的 selector 是相同的，由于变量的类型不同，所以不会导致它们调用方法实现混乱。
+</code></pre>
+
+<p>id</p>
+
+<pre><code>id 是一个参数类型，它是指向某个类的实例的指针。定义如下：
+
+以上定义，看到 objc_object 结构体包含一个 isa 指针，根据 isa 指针就可以找到对象所属的类。
+
+注意：
+isa 指针在代码运行时并不总指向实例对象所属的类型，所以不能依靠它来确定类型，要想确定类型还是需要用对象的 -class 方法。
+
+PS:KVO 的实现机理就是将被观察对象的 isa 指针指向一个中间类而不是真实类型，详见:KVO章节。
+</code></pre>
+
+<p>Class</p>
+
+<pre><code>typedef struct objc_class *Class;
+
+Class 其实是指向 objc_class 结构体的指针。
+
+一个运行时类中关联了它的父类指针、类名、成员变量、方法、缓存以及附属的协议。
+
+
+由此可见，我们可以动态修改 *methodList 的值来添加成员方法，这也是 Category 实现的原理，同样解释了 Category 不能添加属性的原因。这里可以参考下美团技术团队的文章：深入理解 Objective-C: Category。
+
+objc_ivar_list 结构体用来存储成员变量的列表，而 objc_ivar 则是存储了单个成员变量的信息；同理，objc_method_list 结构体存储着方法数组的列表，而单个方法的信息则由 objc_method 结构体存储。
+
+值得注意的时，objc_class 中也有一个 isa 指针，这说明 Objc 类本身也是一个对象。为了处理类和对象的关系，Runtime 库创建了一种叫做 Meta Class(元类) 的东西，类对象所属的类就叫做元类。Meta Class 表述了类对象本身所具备的元数据。
+
+我们所熟悉的类方法，就源自于 Meta Class。我们可以理解为类方法就是类对象的实例方法。每个类仅有一个类对象，而每个类对象仅有一个与之相关的元类。
+
+当你发出一个类似 [NSObject alloc](类方法) 的消息时，实际上，这个消息被发送给了一个类对象(Class Object)，这个类对象必须是一个元类的实例，而这个元类同时也是一个根元类(Root Meta Class)的实例。所有元类的 isa 指针最终都指向根元类。
+
+所以当 [NSObject alloc] 这条消息发送给类对象的时候，运行时代码 objc_msgSend() 会去它元类中查找能够响应消息的方法实现，如果找到了，就会对这个类对象执行方法调用。
+
+
+
+super_class 指针，虚线时 isa 指针。而根元类的父类是 NSObject，isa指向了自己。而 NSObject 没有父类。
+
+最后 objc_class 中还有一个 objc_cache ，缓存，它的作用很重要，后面会提到。
+</code></pre>
+
+<p>Method</p>
+
+<pre><code>Method 代表类中某个方法的类型
+
+typedef struct objc_method *Method;
+
+objc_method 存储了方法名，方法类型和方法实现：
+
+方法名类型为 SEL
+方法类型 method_types 是个 char 指针，存储方法的参数类型和返回值类型
+method_imp 指向了方法的实现，本质是一个函数指针
+</code></pre>
+
+<p>Ivar</p>
+
+<pre><code>Ivar 是表示成员变量的类型。
+
+typedef struct objc_ivar *Ivar;
+
+
+其中 ivar_offset 是基地址偏移字节
+</code></pre>
+
+<p>IMP</p>
+
+<pre><code>IMP在objc.h中的定义是：
+
+typedef id (*IMP)(id, SEL, ...);
+
+它就是一个函数指针，这是由编译器生成的。当你发起一个 ObjC 消息之后，最终它会执行的那段代码，就是由这个函数指针指定的。而 IMP 这个函数指针就指向了这个方法的实现。
+
+如果得到了执行某个实例某个方法的入口，我们就可以绕开消息传递阶段，直接执行方法，这在后面 Cache 中会提到。
+
+你会发现 IMP 指向的方法与 objc_msgSend 函数类型相同，参数都包含 id 和 SEL 类型。每个方法名都对应一个 SEL 类型的方法选择器，而每个实例对象中的 SEL 对应的方法实现肯定是唯一的，通过一组 id和 SEL 参数就能确定唯一的方法实现地址。
+
+而一个确定的方法也只有唯一的一组 id 和 SEL 参数。
+</code></pre>
+
+<p>Cache</p>
+
+<pre><code>typedef struct objc_cache *Cache
+
+Cache 为方法调用的性能进行优化，每当实例对象接收到一个消息时，它不会直接在 isa 指针指向的类的方法列表中遍历查找能够响应的方法，因为每次都要查找效率太低了，而是优先在 Cache 中查找。
+
+Runtime 系统会把被调用的方法存到 Cache 中，如果一个方法被调用，那么它有可能今后还会被调用，下次查找的时候就会效率更高。就像计算机组成原理中 CPU 绕过主存先访问 Cache 一样。
+</code></pre>
+
+<p>Property
+    typedef struct objc_property *objc_property_t;//这个更常用</p>
+
+<pre><code>可以通过class_copyPropertyList 和 protocol_copyPropertyList 方法获取类和协议中的属性：
+
+注意：
+返回的是属性列表，列表中每个元素都是一个 objc_property_t 指针
+</code></pre>
+
+<h6>动态特性</h6>
+
+<pre><code>Objective-C具有相当多的动态特性，基本的，也是经常被提到和用到的有
+
+    动态类型（Dynamic typing）
+    动态绑定（Dynamic binding）
+    动态加载（Dynamic loading）
+
+动态类型：程序直到执行时才能确定所属的类。
+
+id 数据类型，id 通用的对象类型，可以存储任意类型的对象，id后面没有号，它本身就是个指针，类似于void ，但只可以指向对象类型
+
+静态类型与动态类型
+
+    编译期检查与运行时检查
+    静态类型在编译期就能检查出错误
+    静态类型声明代码可读性好
+    动态类型只有在运行时才能发现错误
+
+动态绑定：程序直到执行时才能确定实际要调用的方法。
+
+动态绑定所做的，即是在实例所属类确定后，将某些属性和相应的方法绑定到实例上。
+
+说明：objective-c 中的BOOL实际上是一种对带符号的字符类型（signed char）的类型定义（typedef），它使用8位的存储空间。通过#define指令把YES定义为1，NO定义为0。
+
+动态加载：根据需求加载所需要的资源
+
+这点很容易理解，对于iOS开发来说，基本就是根据不同的机型做适配。最经典的例子就是在Retina设备上加载@2x的图片，而在老一些的普通屏设备上加载原图。随着Retina iPad的推出，和之后可能的Retina Mac的出现，这个特性相信会被越来越多地使用。
+多态的出现时为了让不同的类能使用同名的方法。这个让程序的可读性大大提高，也降低了编程难度。
+
+动态类型与动态绑定是为了解决随多态的便利而引起的弊端，有了动态类型与动态绑定，不用去考虑输出中的方法是哪个类型的方法，会自动判定。
+
+而id类型的出现就是为了更好的承接动态类型与动态方法出来的返回值。
+</code></pre>
+
+<h6>常用方法</h6>
+
+<p>Ivar <em>ivars = class_copyIvarList([iCocosObject class], &amp;count);
+Method </em>met = class_copyMethodList([iCocosObject class], &amp;meth);
+objc_property_t *xsL = class_copyPropertyList([iCocosObject class], &amp;xs);
+Method ic =  class_getInstanceMethod(NSClassFromString(@&ldquo;<em>NSArrayM&rdquo;), @selector(iCocosobject:));
+Method add =  class_getInstanceMethod(NSClassFromString(@&ldquo;</em>NSArrayM&rdquo;), @selector(addObject:));</p>
+
+<pre><code>objc_msgSend : 给对象发送消息
+class_copyMethodList : 遍历某个类所有的方法
+class_copyIvarList : 遍历某个类所有的成员变量
+class_..... 这是我们学习runtime必须知道的函数！
+</code></pre>
+
+<h6>属性与成员变量</h6>
+
+<p>Ivar: 实例变量类型，是一个指向objc_ivar结构体的指针。objc_property_t：声明的属性的类型，是一个指向objc_property结构体的指针</p>
+
+<ol>
+<li>属性变量 是已经设置了 setter getter方法的 OC已经自己给设置了</li>
+<li>属性变量 你每次调用 self.属性变量 的时候 都要调用getter或者setter方法
+封装</li>
+</ol>
+
+
+<p>如果成员变量是private，程序中的其它对象很难直接访问该成员变量。如果是属性，相对更容易用父类方法读写属性。</p>
+
+<p>性能</p>
+
+<pre><code>成员变量地址可以根据实例的内存地址偏移寻址。而属性的读写都需要函数调用，相对更慢。
+</code></pre>
+
+<p>非基础类型</p>
+
+<pre><code>对于复杂的C++类型，往往设为成员变量更合适，也许这种类型不支持copy，或者完全复制很麻烦。
+</code></pre>
+
+<p>多线程</p>
+
+<pre><code>多线程环境下，为保证数据一致性，在需要同步执行的代码段更应该使用成员变量。如果对需要同步更新的数据用getter/setter 方法，数据更新效率低，会带来更多的获取锁请求失败。
+</code></pre>
+
+<p>程序正确性</p>
+
+<pre><code>成员变量可以做直观的内存管理。属性可以一层层继承，还可以复写。容易出错。
+</code></pre>
+
+<p>二进制文件的体积</p>
+
+<pre><code>默认用属性，会生成不必要的getter/setter 方法，程序体积会变大。
+</code></pre>
+
+<p>1.如果只是单纯的private变量，最好声明在implementation里.
+2.如果是类的public属性，就用property写在.h文件里
+3.如果自己内部需要setter和getter来实现一些东西，就在.m文件的类目里用property来声明</p>
+
+<h6>消息机制消息机制</h6>
+
+<pre><code>[obj makeText];==objc_msgSend(obj, @selector (makeText));
+
+
+首先通过obj的isa指针找到obj对应的class。
+
+首先检测这个 selector 是不是要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数。
+检测这个 selector 的 target 是不是 nil，Objc 允许我们对一个 nil 对象执行任何方法不会 Crash，因为运行时会被忽略掉。
+如果上面两步都通过了，那么就开始查找这个类的实现 IMP，
+在Class中先去cache中 通过SEL查找对应函数method，找到就执行对应的实现。
+若cache中未找到，再去methodList中查找，找到就执行对应的实现。
+若methodlist中未找到，则取superClass中查找（重复执行以上两个步骤），直到找到最根的类为止。
+若任何一部能找到，则将method加 入到cache中，以方便下次查找，并通过method中的函数指针跳转到对应的函数中去执行。
+如果以上都不能找到，则会开始进行消息转发
+</code></pre>
+
+<h6>消息转发</h6>
+
+<pre><code>1.动态方法解析：向当前类发送 resolveInstanceMethod: 信号，检查是否动态向该类添加了方法。（迷茫请搜索：@dynamic）
+2.快速消息转发：检查该类是否实现了 forwardingTargetForSelector: 方法，若实现了则调用这个方法。若该方法返回值对象非nil或非self，则向该返回对象重新发送消息。
+3.标准消息转发：runtime发送methodSignatureForSelector:消息获取Selector对应的方法签名。返回值非空则通过forwardInvocation:转发消息，返回值为空则向当前对象发送doesNotRecognizeSelector:消息，程序崩溃退出
+
+总结就是：
+在一个函数找不到时，OC提供了三种方式去补救：
+1、调用resolveInstanceMethod给个机会让类添加这个实现这个函数
+2、调用forwardingTargetForSelector让别的对象去执行这个函数
+3、调用forwardInvocation（函数执行器）灵活的将目标函数以其他形式执行。
+如果都不中，调用doesNotRecognizeSelector抛出异常。
+</code></pre>
+
+<h6>常见用途</h6>
+
+<ul>
+<li>增加，删除，修改一个类，属性，成员变量，方法</li>
+</ul>
+
+
+<h6>实际应用</h6>
+
+<ul>
+<li>关联对象</li>
+<li>方法混淆</li>
+<li>NSCoding(归档和解档, 利用runtime遍历模型对象的所有属性)</li>
+<li>字典 &ndash;> 模型 (利用runtime遍历模型对象的所有属性, 根据属性名从字典中取出对应的值, 设置到模型的属性上)</li>
+<li>KVO(利用runtime动态产生一个类)</li>
+<li>用于封装框架(想怎么改就怎么改) 这就是我们runtime机制的只要运用方向</li>
+</ul>
+
+
+<h3>RunLoop（底层）</h3>
+
+<h6>RunLoop 的简单概述</h6>
+
+<p>RunLoop:</p>
+
+<pre><code>   Runloop是事件接收和分发机制的一个实现。
+
+   Runloop提供了一种异步执行代码的机制，不能并行执行任务。
+
+   在主队列中，Main RunLoop直接配合任务的执行，负责处理UI事件、定时器以及其他内核相关事件。
+</code></pre>
+
+<p>主要目的：</p>
+
+<pre><code>   保证程序执行的线程不会被系统终止。   
+</code></pre>
+
+<p>使用Runloop ？</p>
+
+<pre><code>   当需要和该线程进行交互的时候才会使用Runloop.
+
+
+   每一个线程都有其对应的RunLoop，但是默认非主线程的RunLoop是没有运行的，需要为RunLoop添加至少一个事件源，然后去run它。
+
+
+   一般情况下我们是没有必要去启用线程的RunLoop的，除非你在一个单独的线程中需要长久的检测某个事件。
+</code></pre>
+
+<p>主线程默认有Runloop。当自己启动一个线程，如果只是用于处理单一的事件，则该线程在执行完之后就退出了。所以当我们需要让该线程监听某项事务
+时，就得让线程一直不退出，runloop就是这么一个循环，没有事件的时候，一直卡着，有事件来临了，执行其对应的函数。</p>
+
+<pre><code>   RunLoop,正如其名所示,是线程进入和被线程用来相应事件以及调用事件处理函数的地方.需要在代码中使用控制语句实现RunLoop的循环,也就是说,需要代码提供while或者for循环来驱动RunLoop.
+
+
+   在这个循环中,使用一个runLoop对象[NSRunloop currentRunloop]执行接收消息,调用对应的处理函数.
+
+
+    Runloop接收两种源事件:input sources和timer sources。
+
+
+   input sources 传递异步事件，通常是来自其他线程和不同的程序中的消息；
+
+
+   timer sources(定时器) 传递同步事件（重复执行或者在特定时间上触发）。
+
+
+   除了处理input sources，Runloop
+</code></pre>
+
+<p>也会产生一些关于本身行为的notificaiton。注册成为Runloop的observer，可以接收到这些notification，做一些额外
+的处理。（使用CoreFoundation来成为runloop的observer）。</p>
+
+<p>Runloop工作的特点:</p>
+
+<pre><code>   1&gt;当有时间发生时,Runloop会根据具体的事件类型通知应用程序作出相应;
+
+
+   2&gt;当没有事件发生时,Runloop会进入休眠状态,从而达到省电的目的;
+
+
+   3&gt;当事件再次发生时,Runloop会被重新唤醒,处理事件.
+</code></pre>
+
+<p>提示:一般在开发中很少会主动创建Runloop,而通常会把事件添加到Runloop中.</p>
+
+<p>苹果提供了两个途径来获取分别是Cocoe里面定义的NSRunLoop以及CoreFoundation里面定义的CFRunLoopRef。</p>
+
+<pre><code>CFRunLoopRef提供了纯C函数的API，所有这些API都是线程安全的。
+NSRunLoop提供了面向对象的API，但这些API不是线程安全的。
+</code></pre>
+
+<h6>RunLoop 与线程的关系</h6>
+
+<p>iOS 开发中能遇到两个线程对象: pthread_t 和 NSThread。过去苹果有份文档标明了 NSThread 只是 pthread_t 的封装，但那份文档已经失效了，现在它们也有可能都是直接包装自最底层的 mach thread。苹果并没有提供这两个对象相互转换的接口，但不管怎么样，可以肯定的是 pthread_t 和 NSThread 是一一对应的。比如，你可以通过 pthread_main_np() 或 [NSThread mainThread] 来获取主线程；也可以通过 pthread_self() 或 [NSThread currentThread] 来获取当前线程。CFRunLoop 是基于 pthread 来管理的。</p>
+
+<p>苹果不允许直接创建 RunLoop，它只提供了两个自动获取的函数：CFRunLoopGetMain() 和 CFRunLoopGetCurrent()。</p>
+
+<p>线程和 RunLoop 之间是一一对应的，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。</p>
+
+<h6>RunLoop 的 Mode</h6>
+
+<ol>
+<li><p>kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。</p></li>
+<li><p>UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。</p></li>
+<li><p>UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。</p></li>
+<li><p>GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。</p></li>
+<li><p>kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</p></li>
+</ol>
+
+
+<p>你可以在这里看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。</p>
+
+<p>一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source/Timer/Observer。每次调用 RunLoop 的主函数时，只能指定其中一个 Mode，这个Mode被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source/Timer/Observer，让其互不影响。</p>
+
+<h6>RunLoop 的底层实现(内部逻辑)</h6>
+
+<p>RunLoop 的核心是基于 mach port 的，其进入休眠时调用的函数是 mach_msg()</p>
+
+<p>RunLoop 的核心就是一个 mach_msg() (见上面代码的第7步)，RunLoop 调用这个函数去接收消息，如果没有别人发送 port 消息过来，内核会将线程置于等待状态。例如你在模拟器里跑起一个 iOS 的 App，然后在 App 静止时点击暂停，你会看到主线程调用栈是停留在 mach_msg_trap() 这个地方。</p>
+
+<h6>应用</h6>
+
+<ul>
+<li><p>AutoreleasePool</p></li>
+<li><p>事件响应</p></li>
+<li><p>手势识别</p></li>
+<li><p>界面更新</p></li>
+<li><p>定时器</p></li>
+<li><p>PerformSelecter</p></li>
+<li><p>关于GCD</p></li>
+<li><p>关于网络请求</p></li>
+<li><p>AFNetworking</p></li>
+<li><p>AsyncDisplayKit</p></li>
+</ul>
+
+
+<h3>多线程（底层与安全）</h3>
+
+<p>线程：1个进程要想执行任务，必须得有线程.线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行</p>
+
+<p>底层：Mach是第一个以多线程方式处理任务的系统，因此多线程的底层实现机制是基于Mach的线程。</p>
+
+<pre><code> 1》C语言的POSIX接口：#include&lt;pthread.h&gt;POSIX线程（POSIX threads），简称Pthreads，是线程的POSIX标准。该标准定义了创建和操纵线程的一整套API。在类Unix操作系统（Unix、Linux、Mac OS X等）中，都使用Pthreads作为操作系统的线程
+ 2》OC的NSThread
+ 3》 C语言的GCD接口（性能最好，代码更精简）  
+ 4》  OC的NSOperation和NSOperationQueue（基于GCD）
+</code></pre>
+
+<p>好处：</p>
+
+<pre><code>1、使用线程可以把程序中占据时间长的任务放到后台去处理，如图片、视频的下载
+
+2、发挥多核处理器的优势，并发执行让系统运行的更快、更流畅，用户体验更好
+</code></pre>
+
+<p>缺点：</p>
+
+<pre><code>1、大量的线程降低代码的可读性，
+
+2、更多的线程需要更多的内存空间
+
+3、当多个线程对同一个资源出现争夺的时候要注意线程安全的问题。
+</code></pre>
+
+<p>GCD内部怎么实现的</p>
+
+<pre><code>  1》 iOS和OSX的核心是XNU内核（苹果电脑发展的操作系统内核），GCD是基于XNU内核实现的。
+  2》GCD的API全部在libdispatch库中
+  3》GCD的底层实现主要有：Dispatch Queue和Dispatch Source
+    Dispatch Queue :管理block操作
+    Dispatch Source：处理事件（比如说线程间的通信）
+</code></pre>
+
+<p>6.GCD和NSOperationQueue</p>
+
+<pre><code>   1》GCD是纯C语言的API，NSOperationQueue是基于GCD的OC版本的封装
+   2》GCD只支持FIFO的队列，NSOperationQueue可以很方便的调整执行顺序，可以添加依赖设置最大并发数量。
+   3》GCD的执行速度比NSOperationQueue快
+   4》NSOperationQueue支持KVO，可以检测Operation是否正在执行，是否结束，是否取消。
+</code></pre>
+
+<p>如何进行选择？
+任务之间不太相互依赖，选用GCD；
+任务之间有依赖，或者要监听任务的执行情况：NSOperationQueue</p>
+
+<p>一、前言
+     1》只在主线程刷新访问UI
+     2》如果要防止资源抢夺，得用synchronize进行加锁保护。
+     3》如果异步操作要保证线程安全等问题，尽量使用GCD。（GCD有些函数默认就是安全的）</p>
+
+<p>前段时间看了几个开源项目，发现他们保持线程同步的方式各不相同，有@synchronized、NSLock、dispatch_semaphore、NSCondition、pthread_mutex、OSSpinLock。后来网上查了一下，发现他们的实现机制各不相同，性能也各不一样。不好意思，我们平常使用最多的@synchronized是性能最差的。下面我们先分别介绍每个加锁方式的使用，在使用一个案例来对他们进行性能对比。</p>
+
+<p>二、介绍与使用</p>
+
+<p>2.1、@synchronized</p>
+
+<pre><code>NSObject *obj = [[NSObject alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    @synchronized(obj) {
+       NSLog(@"需要线程同步的操作1 开始");
+       sleep(3);
+       NSLog(@"需要线程同步的操作1 结束");
+    }
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    sleep(1);
+    @synchronized(obj) {
+       NSLog(@"需要线程同步的操作2");
+    }
+});
+</code></pre>
+
+<p>@synchronized(obj)指令使用的obj为该锁的唯一标识，只有当标识相同时，才为满足互斥，如果线程2中的@synchronized(obj)改为@synchronized(self),刚线程2就不会被阻塞，@synchronized指令实现锁的优点就是我们不需要在代码中显式的创建锁对象，便可以实现锁的机制，但作为一种预防措施，@synchronized块会隐式的添加一个异常处理例程来保护代码，该处理例程会在异常抛出的时候自动的释放互斥锁。所以如果不想让隐式的异常处理例程带来额外的开销，你可以考虑使用锁对象。</p>
+
+<p>2.2、dispatch_semaphore</p>
+
+<pre><code>dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+dispatch_time_t overTime = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_semaphore_wait(signal, overTime);
+            NSLog(@"需要线程同步的操作1 开始");
+            sleep(2);
+            NSLog(@"需要线程同步的操作1 结束");
+        dispatch_semaphore_signal(signal);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        sleep(1);
+        dispatch_semaphore_wait(signal, overTime);
+            NSLog(@"需要线程同步的操作2");
+        dispatch_semaphore_signal(signal);
+});
+</code></pre>
+
+<p>dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三个函数，分别是dispatch_semaphore_create，dispatch_semaphore_signal，dispatch_semaphore_wait。</p>
+
+<p>（1）dispatch_semaphore_create的声明为：</p>
+
+<p>dispatch_semaphore_t dispatch_semaphore_create(long value);</p>
+
+<p>传入的参数为long，输出一个dispatch_semaphore_t类型且值为value的信号量。</p>
+
+<p>值得注意的是，这里的传入的参数value必须大于或等于0，否则dispatch_semaphore_create会返回NULL。</p>
+
+<p>（2）dispatch_semaphore_signal的声明为：</p>
+
+<p>long dispatch_semaphore_signal(dispatch_semaphore_t dsema);</p>
+
+<p>这个函数会使传入的信号量dsema的值加1；</p>
+
+<p>(3) dispatch_semaphore_wait的声明为：</p>
+
+<p>long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);</p>
+
+<p>这个函数会使传入的信号量dsema的值减1；这个函数的作用是这样的，如果dsema信号量的值大于0，该函数所处线程就继续执行下面的语句，并且将信号量的值减1；如果desema的值为0，那么这个函数就阻塞当前线程等待timeout（注意timeout的类型为dispatch_time_t，不能直接传入整形或float型数），如果等待的期间desema的值被dispatch_semaphore_signal函数加1了，且该函数（即dispatch_semaphore_wait）所处线程获得了信号量，那么就继续向下执行并将信号量减1。如果等待期间没有获取到信号量或者信号量的值一直为0，那么等到timeout时，其所处线程自动执行其后语句。</p>
+
+<p>dispatch_semaphore 是信号量，但当信号总量设为 1 时也可以当作锁来。在没有等待情况出现时，它的性能比 pthread_mutex 还要高，但一旦有等待情况出现时，性能就会下降许多。相对于 OSSpinLock 来说，它的优势在于等待时不会消耗 CPU 资源。</p>
+
+<p>如上的代码，如果超时时间overTime设置成>2，可完成同步操作。如果overTime&lt;2的话，在线程1还没有执行完成的情况下，此时超时了，将自动执行下面的代码。</p>
+
+<p>2.3、NSLock</p>
+
+<pre><code>NSLock *lock = [[NSLock alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //[lock lock];
+    [lock lockBeforeDate:[NSDate date]];
+    NSLog(@"需要线程同步的操作1 开始");
+    sleep(2);
+    NSLog(@"需要线程同步的操作1 结束");
+    [lock unlock];
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    sleep(1);
+    if ([lock tryLock]) {//尝试获取锁，如果获取不到返回NO，不会阻塞该线程
+        NSLog(@"锁可用的操作");
+        [lock unlock];
+    }else{
+        NSLog(@"锁不可用的操作");
+    }
+    NSDate *date = [[NSDate alloc] initWithTimeIntervalSinceNow:3];
+    if ([lock lockBeforeDate:date]) {//尝试在未来的3s内获取锁，并阻塞该线程，如果3s内获取不到恢复线程, 返回NO,不会阻塞该线程
+        NSLog(@"没有超时，获得锁");
+        [lock unlock];
+    }else{
+        NSLog(@"超时，没有获得锁");
+    }
+});
+</code></pre>
+
+<p>NSLock是Cocoa提供给我们最基本的锁对象，这也是我们经常所使用的，除lock和unlock方法外，NSLock还提供了tryLock和lockBeforeDate:两个方法，前一个方法会尝试加锁，如果锁不可用(已经被锁住)，刚并不会阻塞线程，并返回NO。lockBeforeDate:方法会在所指定Date之前尝试加锁，如果在指定时间之前都不能加锁，则返回NO。</p>
+
+<pre><code>@protocol NSLocking
+- (void)lock;
+- (void)unlock;
+@end
+@interface NSLock : NSObject  {
+@private
+    void *_priv;
+}
+- (BOOL)tryLock;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
+</code></pre>
+
+<p>2.4、NSRecursiveLock递归锁</p>
+
+<pre><code>//NSLock *lock = [[NSLock alloc] init];
+NSRecursiveLock *lock = [[NSRecursiveLock alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+       static void (^RecursiveMethod)(int);
+       RecursiveMethod = ^(int value) {
+       [lock lock];
+         if (value &gt; 0) {
+                NSLog(@"value = %d", value);
+                sleep(1);
+                RecursiveMethod(value - 1);
+          }
+         [lock unlock];
+     };
+     RecursiveMethod(5);
+});
+</code></pre>
+
+<p>NSRecursiveLock实际上定义的是一个递归锁，这个锁可以被同一线程多次请求，而不会引起死锁。这主要是用在循环或递归操作中。</p>
+
+<p>这段代码是一个典型的死锁情况。在我们的线程中，RecursiveMethod是递归调用的。所以每次进入这个block时，都会去加一次锁，而从第二次开始，由于锁已经被使用了且没有解锁，所以它需要等待锁被解除，这样就导致了死锁，线程被阻塞住了。调试器中会输出如下信息：</p>
+
+<p>在这种情况下，我们就可以使用NSRecursiveLock。它可以允许同一线程多次加锁，而不会造成死锁。递归锁会跟踪它被lock的次数。每次成功的lock都必须平衡调用unlock操作。只有所有达到这种平衡，锁最后才能被释放，以供其它线程使用。</p>
+
+<p>如果我们将NSLock代替为NSRecursiveLock，上面代码则会正确执行。</p>
+
+<p>如果需要其他功能，源码定义如下：</p>
+
+<pre><code>@interface NSRecursiveLock : NSObject  {
+@private
+    void *_priv;
+}
+- (BOOL)tryLock;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
+</code></pre>
+
+<p>2.5、NSConditionLock条件锁</p>
+
+<pre><code>NSMutableArray *products = [NSMutableArray array];
+NSInteger HAS_DATA = 1;
+NSInteger NO_DATA = 0;
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    while (1) {
+        [lock lockWhenCondition:NO_DATA];
+        [products addObject:[[NSObject alloc] init]];
+        NSLog(@"produce a product,总量:%zi",products.count);
+        [lock unlockWithCondition:HAS_DATA];
+        sleep(1);
+    }
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    while (1) {
+       NSLog(@"wait for product");
+        [lock lockWhenCondition:HAS_DATA];
+       [products removeObjectAtIndex:0];
+       NSLog(@"custome a product");
+       [lock unlockWithCondition:NO_DATA];
+    }
+});
+</code></pre>
+
+<p>当我们在使用多线程的时候，有时一把只会lock和unlock的锁未必就能完全满足我们的使用。因为普通的锁只能关心锁与不锁，而不在乎用什么钥匙才能开锁，而我们在处理资源共享的时候，多数情况是只有满足一定条件的情况下才能打开这把锁：</p>
+
+<p>在线程1中的加锁使用了lock，所以是不需要条件的，所以顺利的就锁住了，但在unlock的使用了一个整型的条件，它可以开启其它线程中正在等待这把钥匙的临界地，而线程2则需要一把被标识为2的钥匙，所以当线程1循环到最后一次的时候，才最终打开了线程2中的阻塞。但即便如此，NSConditionLock也跟其它的锁一样，是需要lock与unlock对应的，只是lock,lockWhenCondition:与unlock，unlockWithCondition:是可以随意组合的，当然这是与你的需求相关的。</p>
+
+<p>如果你需要其他功能，源码定义如下：</p>
+
+<pre><code>@interface NSConditionLock : NSObject  {
+@private
+    void *_priv;
+}
+- (instancetype)initWithCondition:(NSInteger)condition NS_DESIGNATED_INITIALIZER;
+@property (readonly) NSInteger condition;
+- (void)lockWhenCondition:(NSInteger)condition;
+- (BOOL)tryLock;
+- (BOOL)tryLockWhenCondition:(NSInteger)condition;
+- (void)unlockWithCondition:(NSInteger)condition;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+- (BOOL)lockWhenCondition:(NSInteger)condition beforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
+</code></pre>
+
+<p>2.6、NSCondition</p>
+
+<pre><code>NSCondition *condition = [[NSCondition alloc] init];
+NSMutableArray *products = [NSMutableArray array];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while (1) {
+            [condition lock];
+            if ([products count] == 0) {
+                NSLog(@"wait for product");
+                [condition wait];
+            }
+            [products removeObjectAtIndex:0];
+            NSLog(@"custome a product");
+            [condition unlock];
+        }
+    });
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while (1) {
+            [condition lock];
+            [products addObject:[[NSObject alloc] init]];
+            NSLog(@"produce a product,总量:%zi",products.count);
+            [condition signal];
+            [condition unlock];
+            sleep(1);
+        }
+});
+</code></pre>
+
+<p>一种最基本的条件锁。手动控制线程wait和signal。</p>
+
+<p>[condition lock];一般用于多线程同时访问、修改同一个数据源，保证在同一时间内数据源只被访问、修改一次，其他线程的命令需要在lock 外等待，只到unlock ，才可访问</p>
+
+<p>[condition unlock];与lock 同时使用</p>
+
+<p>[condition wait];让当前线程处于等待状态</p>
+
+<p>[condition signal];CPU发信号告诉线程不用在等待，可以继续执行</p>
+
+<p>2.7、pthread_mutex</p>
+
+<pre><code>__block pthread_mutex_t theLock;
+pthread_mutex_init(&amp;theLock, NULL);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        pthread_mutex_lock(&amp;theLock);
+        NSLog(@"需要线程同步的操作1 开始");
+        sleep(3);
+        NSLog(@"需要线程同步的操作1 结束");
+        pthread_mutex_unlock(&amp;theLock);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        sleep(1);
+        pthread_mutex_lock(&amp;theLock);
+        NSLog(@"需要线程同步的操作2");
+        pthread_mutex_unlock(&amp;theLock);
+});
+</code></pre>
+
+<p>c语言定义下多线程加锁方式。</p>
+
+<p>1：pthread_mutex_init(pthread_mutex_t mutex,const pthread_mutexattr_t attr);</p>
+
+<p>初始化锁变量mutex。attr为锁属性，NULL值为默认属性。</p>
+
+<p>2：pthread_mutex_lock(pthread_mutex_t mutex);加锁</p>
+
+<p>3：pthread_mutex_tylock(<em>pthread_mutex_t </em>mutex);加锁，但是与2不一样的是当锁已经在使用的时候，返回为EBUSY，而不是挂起等待。</p>
+
+<p>4：pthread_mutex_unlock(pthread_mutex_t *mutex);释放锁</p>
+
+<p>5：pthread_mutex_destroy(pthread_mutex_t* mutex);使用完后释放</p>
+
+<p>代码执行操作结果如下：</p>
+
+<p>2.8、pthread_mutex(recursive)</p>
+
+<pre><code> __block pthread_mutex_t theLock;
+//pthread_mutex_init(&amp;theLock, NULL);
+pthread_mutexattr_t attr;
+pthread_mutexattr_init(&amp;attr);
+pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_RECURSIVE);
+pthread_mutex_init(&amp;lock, &amp;attr);
+pthread_mutexattr_destroy(&amp;attr);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    static void (^RecursiveMethod)(int);
+    RecursiveMethod = ^(int value) {
+            pthread_mutex_lock(&amp;theLock);
+            if (value &gt; 0) {
+                NSLog(@"value = %d", value);
+                sleep(1);
+                RecursiveMethod(value - 1);
+            }
+            pthread_mutex_unlock(&amp;theLock);
+     };
+    RecursiveMethod(5);
+});
+</code></pre>
+
+<p>这是pthread_mutex为了防止在递归的情况下出现死锁而出现的递归锁。作用和NSRecursiveLock递归锁类似。</p>
+
+<p>如果使用pthread_mutex_init(&amp;theLock, NULL);初始化锁的话，上面的代码会出现死锁现象。如果使用递归锁的形式，则没有问题。</p>
+
+<p>2.9、OSSpinLock</p>
+
+<pre><code>__block OSSpinLock theLock = OS_SPINLOCK_INIT;
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    OSSpinLockLock(&amp;theLock);
+    NSLog(@"需要线程同步的操作1 开始");
+    sleep(3);
+    NSLog(@"需要线程同步的操作1 结束");
+    OSSpinLockUnlock(&amp;theLock);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    OSSpinLockLock(&amp;theLock);
+    sleep(1);
+    NSLog(@"需要线程同步的操作2");
+    OSSpinLockUnlock(&amp;theLock);
+});
+</code></pre>
+
+<p>OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do while 忙等。它的缺点是当等待时会消耗大量 CPU 资源，所以它不适用于较长时间的任务。 不过最近YY大神在自己的博客不再安全的 OSSpinLock中说明了OSSpinLock已经不再安全，请大家谨慎使用。</p>
+
+<p>三、性能对比</p>
+
+<pre><code>OSSpinLock和dispatch_semaphore的效率远远高于其他。
+
+@synchronized和NSConditionLock效率较差。
+
+鉴于OSSpinLock的不安全，所以我们在开发中如果考虑性能的话，建议使用dispatch_semaphore。
+
+如果不考虑性能，只是图个方便的话，那就使用@synchronized。
+</code></pre>
+
+<h3>网络（底层与安全）</h3>
+
+<h3>数据持久化（各种使用与区别）（CoreData、SQLite）</h3>
+
+<h3>Block（底层/__Block）</h3>
+
+<h3>音视频</h3>
+
+<h3>直播</h3>
+
+<h3>安全</h3>
+
+<h3>优化（性能、卡顿）</h3>
+
+<h3>常见错误</h3>
+
+<h3>常用技术</h3>
+
+<p>KVC</p>
+
+<pre><code>KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa-swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据
+一个对象在调用setValue的时候，（1）首先根据方法名找到运行方法的时候所需要的环境参数。（2）他会从自己isa指针结合环境参数，找到具体的方法实现的接口。（3）再直接查找得来的具体的方法实现。
+</code></pre>
+
+<p>KVO</p>
+
+<pre><code>观察者为一个对象的属性进行了注册，被观察对象的isa指针被修改的时候，isa指针就会指向一个中间类（setter/getter方法），而不是真实的类。所以isa指针其实不需要指向实例对象真实的类。所以我们的程序最好不要依赖于isa指针。在调用类的方法的时候，最好要明确对象实例的类名。
+熟悉KVO的朋友都知道，只有当我们调用KVC去访问key值的时候KVO才会起作用。所以肯定确定的是，KVO是基于KVC实现的。其实看了上面我们的分析以后，关系KVO的架构的构思也就水到渠成了。
+</code></pre>
+
+<p>任何工程产品（注意是任何工程产品）都可以使用以下两种方法之一进行测试。
+黑盒测试：已知产品的功能设计规格，可以进行测试证明每个实现了的功能是否符合要求。
+白盒测试：已知产品的内部工作过程，可以通过测试证明每种内部操作是否符合设计规格要求，所有内部成分是否以经过检查。</p>
+
+<h5>黑盒测试</h5>
+
+<p>软件的黑盒测试意味着测试要在软件的接口处进行。这种方法是把测试对象看做一个黑盒子，测试人员完全不考虑程序内部的逻辑结构和内部特性，只依据程序的需求规格说明书，检查程序的功能是否符合它的功能说明。因此黑盒测试又叫功能测试或数据驱动测试。</p>
+
+<pre><code>黑盒测试主要是为了发现以下几类错误：
+1、是否有不正确或遗漏的功能？
+2、在接口上，输入是否能正确的接受？能否输出正确的结果？
+3、是否有数据结构错误或外部信息（例如数据文件）访问错误？
+4、性能上是否能够满足要求？
+5、是否有初始化或终止性错误？
+</code></pre>
+
+<h5>白盒测试</h5>
+
+<p>软件的白盒测试是对软件的过程性细节做细致的检查。这种方法是把测试对象看做一个打开的盒子，它允许测试人员利用程序内部的逻辑结构及有关信息，设计或选择测试用例，对程序所有逻辑路径进行测试。通过在不同点检查程序状态，确定实际状态是否与预期的状态一致。因此白盒测试又称为结构测试或逻辑驱动测试。</p>
+
+<pre><code>白盒测试主要是想对程序模块进行如下检查：
+1、对程序模块的所有独立的执行路径至少测试一遍。
+2、对所有的逻辑判定，取“真”与取“假”的两种情况都能至少测一遍。
+3、在循环的边界和运行的界限内执行循环体。
+4、测试内部数据结构的有效性，等等。
+</code></pre>
+
+<p>以上事实说明，软件测试有一个致命的缺陷，即测试的不完全、不彻底性。由于任何程序只能进行少量（相对于穷举的巨大数量而言）的有限的测试，在未发现错误时，不能说明程序中没有错误。</p>
+
+<h5>灰盒测试</h5>
+
+<p>灰盒测试，是介于白盒测试与黑盒测试之间的，可以这样理解，灰盒测试关注输出对于输入的正确性，同时也关注内部表现，但这种关注不象白盒那样详细、完整，只是通过一些表征性的现象、事件、标志来判断内部的运行状态，有时候输出是正确的，但内部其实已经错误了，这种情况非常多，如果每次都通过白盒测试来操作，效率会很低，因此需要采取这样的一种灰盒的方法。</p>
+
+<h3>全栈相关</h3>
+
+<h3>算法（常用、排序）</h3>
+
+<h3>数据结构</h3>
+
+<h3>设计模式（32中）</h3>
+
+<h3>架构设计</h3>
+
+<h3>逆向工程</h3>
+
+<h3>实战应用</h3>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Cell重用数据混乱]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi/"/>
+    <updated>2016-06-15T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi</id>
+    <content type="html"><![CDATA[<p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
+
+<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
+
+<!--more-->
+
+
+<p>这样配置的话超过页面显示的内容会重复出现</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过唯一标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
+}
+</code></pre>
+
+<p>通过以下3方案可以解决</p>
+
+<p>方案一  取消cell的重用机制，通过indexPath来创建cell 将可以解决重复显示问题 不过这样做相对于大数据来说内存就比较吃紧了</p>
+
+<p>通过不让他重用cell 来解决重复显示</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过indexPath创建cell实例 每一个cell都是单独的
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
+}
+</code></pre>
+
+<p>方案二  让每个cell都拥有一个对应的标识 这样做也会让cell无法重用 所以也就不会是重复显示了 显示内容比较多时内存占用也是比较多的和方案一类似
+同样通过不让他重用cell 来解决重复显示 不同的是每个cell对应一个标</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义cell标识  每个cell对应一个自己的标识
+    NSString *CellIdentifier = [NSString stringWithFormat:@"cell%ld%ld",indexPath.section,indexPath.row];
+    // 通过不同标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
+}
+</code></pre>
+
+<p>方案三 只要最后一个显示的cell内容不为空，然后把它的子视图全部删除，等同于把这个cell单独出来了 然后跟新数据就可以解决重复显示</p>
+
+<p> 当页面拉动需要显示新数据的时候，把最后一个cell进行删除 就有可以自定义cell 此方案即可避免重复显示，又重用了cell相对内存管理来说是最好的方案 前两者相对比较消耗内存</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过唯一标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    else//当页面拉动的时候 当cell存在并且最后一个存在 把它进行删除就出来一个独特的cell我们在进行数据配置即可避免
+    {
+        while ([cell.contentView.subviews lastObject] != nil) {
+            [(UIView *)[cell.contentView.subviews lastObject] removeFromSuperview];
+        }
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
+}
+</code></pre>
+
+<p>以上都是个人理解，本人也是菜鸟，有理解不对的地方希望大家指出，同时也希望能对大家起到一定的帮助！！ Thank you！</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[我知道你在找什么？]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm/"/>
+    <updated>2016-06-06T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm</id>
+    <content type="html"><![CDATA[<p>不喜欢废话。。。。。来，直接上（不是上我。。。。）</p>
+
+<!--more-->
+
+
+<p>一：源代码实例</p>
+
+<p>1:快速搭建项目源代码</p>
+
+<p>地址：<a href="https://github.com/wujunyang/MobileProject">https://github.com/wujunyang/MobileProject</a></p>
+
+<p>2:高仿美团iOS版</p>
+
+<p>地址：<a href="https://github.com/lookingstars/meituan">https://github.com/lookingstars/meituan</a></p>
+
+<p>3:模仿网易新闻做的精仿网易新闻</p>
+
+<p>地址：<a href="https://github.com/dsxNiubility/SXNews">https://github.com/dsxNiubility/SXNews</a></p>
+
+<p>4:支付宝高仿版</p>
+
+<p>地址：<a href="https://github.com/gsdios/GSD_ZHIFUBAO">https://github.com/gsdios/GSD_ZHIFUBAO</a></p>
+
+<p>5:高仿百度传课iOS版</p>
+
+<p>地址：<a href="https://github.com/lookingstars/chuanke">https://github.com/lookingstars/chuanke</a></p>
+
+<p>6：模仿一元云购</p>
+
+<p>地址：<a href="https://github.com/JxbSir/YiYuanYunGou">https://github.com/JxbSir/YiYuanYunGou</a></p>
+
+<p>7：wordpress源代码</p>
+
+<p>地址：<a href="https://github.com/wordpress-mobile/WordPress-iOS">https://github.com/wordpress-mobile/WordPress-iOS</a></p>
+
+<p>8：v2ex源代码（文章类型，若报SVProgressHUD错，则把Podfile中的SVProgressHUD移除）</p>
+
+<p>地址：<a href="https://github.com/singro/v2ex">https://github.com/singro/v2ex</a></p>
+
+<p>9:PHPHub客户端(IOS8.0以上)</p>
+
+<p>地址：<a href="https://github.com/Aufree/phphub-ios">https://github.com/Aufree/phphub-ios</a></p>
+
+<p>10:Coding.net客户端</p>
+
+<p>地址：<a href="https://coding.net/u/coding/p/Coding-iOS/git">https://coding.net/u/coding/p/Coding-iOS/git</a></p>
+
+<p>11：如何优化UITableView中Cell加载图片的实例</p>
+
+<p>地址：<a href="https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad">https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad</a></p>
+
+<p>12:开源的IOS代码集合</p>
+
+<p>地址：<a href="https://github.com/dkhamsing/open-source-ios-apps">https://github.com/dkhamsing/open-source-ios-apps</a></p>
+
+<p>二：辅助软件</p>
+
+<p>1：XCODE文档注解插件VVDocumenter</p>
+
+<p>地址：<a href="https://github.com/onevcat/VVDocumenter-Xcode">https://github.com/onevcat/VVDocumenter-Xcode</a></p>
+
+<p>2：将JSON格式化输出为模型的属性</p>
+
+<p>地址：<a href="https://github.com/EnjoySR/ESJsonFormat-Xcode">https://github.com/EnjoySR/ESJsonFormat-Xcode</a></p>
+
+<p>3：图片提示插件</p>
+
+<p>地址：<a href="https://github.com/ksuther/KSImageNamed-Xcode">https://github.com/ksuther/KSImageNamed-Xcode</a></p>
+
+<p>4：图片转换插件</p>
+
+<p>地址：<a href="https://github.com/rickytan/RTImageAssets">https://github.com/rickytan/RTImageAssets</a></p>
+
+<p>5:测试模拟苹果通知</p>
+
+<p>地址：<a href="https://github.com/KnuffApp/Knuff">https://github.com/KnuffApp/Knuff</a></p>
+
+<p>6: HOStringSense可以在弹出框写NSString，所见及所得</p>
+
+<p>地址：<a href="https://github.com/holtwick/HOStringSense-for-Xcode">https://github.com/holtwick/HOStringSense-for-Xcode</a></p>
+
+<p>7：cocoapods-xcode-plugin  pod相关的操作可以在xcode菜单进行</p>
+
+<p>地址：<a href="https://github.com/kattrali/cocoapods-xcode-plugin">https://github.com/kattrali/cocoapods-xcode-plugin</a></p>
+
+<p>8：switch枚举的时候会自动生成代码</p>
+
+<p>地址：<a href="https://github.com/stefanceriu/SCXcodeSwitchExpander">https://github.com/stefanceriu/SCXcodeSwitchExpander</a></p>
+
+<p>9：git中关于各个语言的gitignore</p>
+
+<p>地址：<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a></p>
+
+<p>10：FLEX（Flipboard Explorer）是Flipboard官方发布的一组专门用于iOS开发的应用内调试工具</p>
+
+<p>地址：<a href="https://github.com/Flipboard/FLEX">https://github.com/Flipboard/FLEX</a></p>
+
+<p>11：ponyDebugger是一个远程调试工具包，通过使用Chrome开发者工具来调试iOS应用的网络流量和数据存储</p>
+
+<p>地址：<a href="https://github.com/square/PonyDebugger">https://github.com/square/PonyDebugger</a></p>
+
+<p>12: OC编码风格规范</p>
+
+<p>地址：<a href="https://github.com/NYTimes/objective-c-style-guide">https://github.com/NYTimes/objective-c-style-guide</a></p>
+
+<p>13:FBMemoryProfiler：Facebook出品的一个实时监测内存使用的库。相比于Xcode自带的Instruments</p>
+
+<p>地址：<a href="https://github.com/facebook/FBMemoryProfiler">https://github.com/facebook/FBMemoryProfiler</a></p>
+
+<p>14:app卡顿问题检测&ndash;KMCGeigerCounter(实例可以网上搜索)</p>
+
+<p>地址：<a href="https://github.com/kconner/KMCGeigerCounter/">https://github.com/kconner/KMCGeigerCounter/</a></p>
+
+<p>15:生成类的关系图KSHObjcUML</p>
+
+<p>地址：<a href="https://github.com/kimsungwhee/KSHObjcUML">https://github.com/kimsungwhee/KSHObjcUML</a></p>
+
+<p>16:realm-cocoa实体映射数据库，有自个的数据库（可以替换SQLITE，速度比较快）</p>
+
+<p>地址：<a href="https://github.com/realm/realm-cocoa">https://github.com/realm/realm-cocoa</a></p>
+
+<p>17:创建文档API，可以快速让APP先调用，并行开发</p>
+
+<p>地址：<a href="https://apiary.io/">https://apiary.io/</a></p>
+
+<p>18:直接查看虚拟器上的沙盒路径simpholders</p>
+
+<p>地址：<a href="http://www.maczapp.com/simpholders">http://www.maczapp.com/simpholders</a></p>
+
+<p>19:FastStub实现了类似的功能，能自动解析出某个类头文件，父类，所有protocol里面还没有被实现的方法(ctrl+cmd+k)</p>
+
+<p>地址：<a href="https://github.com/music4kid/FastStub-Xcode">https://github.com/music4kid/FastStub-Xcode</a></p>
+
+<p>三：第三方插件</p>
+
+<p>1:基于响应式编程思想的oc</p>
+
+<p>地址：<a href="https://github.com/ReactiveCocoa/ReactiveCocoa">https://github.com/ReactiveCocoa/ReactiveCocoa</a></p>
+
+<p>2：hud提示框</p>
+
+<p>地址：<a href="https://github.com/jdg/MBProgressHUD">https://github.com/jdg/MBProgressHUD</a></p>
+
+<p>3：XML/HTML解析</p>
+
+<p>地址：<a href="https://github.com/topfunky/hpple">https://github.com/topfunky/hpple</a></p>
+
+<p>4：有文字输入时，能根据键盘是否弹出来调整自身显示内容的位置</p>
+
+<p>地址：<a href="https://github.com/michaeltyson/TPKeyboardAvoiding">https://github.com/michaeltyson/TPKeyboardAvoiding</a></p>
+
+<p>5：状态栏提示框</p>
+
+<p>地址：<a href="https://github.com/jaydee3/JDStatusBarNotification">https://github.com/jaydee3/JDStatusBarNotification</a></p>
+
+<p>6：block工具包。将很多需要用delegate实现的方法整合成了block的形式</p>
+
+<p>地址：<a href="https://github.com/zwaldowski/BlocksKit">https://github.com/zwaldowski/BlocksKit</a></p>
+
+<p>7：图片加载</p>
+
+<p>地址：<a href="https://github.com/rs/SDWebImage">https://github.com/rs/SDWebImage</a></p>
+
+<p>8：正则表达式</p>
+
+<p>地址：<a href="https://github.com/wezm/RegexKitLite">https://github.com/wezm/RegexKitLite</a></p>
+
+<p>9：Masonry代码布局</p>
+
+<p>地址：<a href="https://github.com/SnapKit/Masonry">https://github.com/SnapKit/Masonry</a></p>
+
+<p>10：弹出窗</p>
+
+<p>地址：<a href="https://github.com/sberrevoets/SDCAlertView">https://github.com/sberrevoets/SDCAlertView</a></p>
+
+<p>11:Button的样式</p>
+
+<p>地址：<a href="https://github.com/mattlawer/BButton">https://github.com/mattlawer/BButton</a></p>
+
+<p>12：验证网络连接状态</p>
+
+<p>地址：<a href="https://github.com/tonymillion/Reachability">https://github.com/tonymillion/Reachability</a></p>
+
+<p>13：自动计算表格行高</p>
+
+<p>地址：<a href="https://github.com/forkingdog/UITableView-FDTemplateLayoutCell">https://github.com/forkingdog/UITableView-FDTemplateLayoutCell</a></p>
+
+<p>14：关键帧基础动画框架,如动画效果的启动页</p>
+
+<p>地址：<a href="https://github.com/IFTTT/JazzHands">https://github.com/IFTTT/JazzHands</a></p>
+
+<p>15：iOS快速简单集成国内三大平台分享</p>
+
+<p>地址：<a href="https://github.com/xumeng/XMShareModule">https://github.com/xumeng/XMShareModule</a></p>
+
+<p>16：五项能力值展示的五边形</p>
+
+<p>地址：<a href="https://github.com/dsxNiubility/SXFiveScoreShow">https://github.com/dsxNiubility/SXFiveScoreShow</a></p>
+
+<p>17：自动识别网址号码邮箱和表情的label</p>
+
+<p>地址：<a href="https://github.com/molon/MLEmojiLabel">https://github.com/molon/MLEmojiLabel</a></p>
+
+<p>18：IM对话功能的封装</p>
+
+<p>地址：<a href="https://github.com/ZhipingYang/UUChatTableView">https://github.com/ZhipingYang/UUChatTableView</a></p>
+
+<p>19：字典转模型框架</p>
+
+<p>地址：<a href="https://github.com/CoderMJLee/MJExtension">https://github.com/CoderMJLee/MJExtension</a></p>
+
+<p>20：下拉上拉刷数据</p>
+
+<p>地址：<a href="https://github.com/CoderMJLee/MJRefresh">https://github.com/CoderMJLee/MJRefresh</a></p>
+
+<p>21：表格行左右划动菜单</p>
+
+<p>地址：<a href="https://github.com/MortimerGoro/MGSwipeTableCell">https://github.com/MortimerGoro/MGSwipeTableCell</a></p>
+
+<p>22:图文混搭</p>
+
+<p>地址:<a href="https://github.com/zhouande/TLAttributedLabel">https://github.com/zhouande/TLAttributedLabel</a></p>
+
+<p>23:可以简单展示在UINavigationBar下方，类似Music app的播放列表视图，弹出菜单视图</p>
+
+<p>地址：<a href="https://github.com/DrummerB/BFNavigationBarDrawer">https://github.com/DrummerB/BFNavigationBarDrawer</a></p>
+
+<p>24：比如筛选、模糊、优化、蒙版、调整大小、旋转以及保存等等。同时还提供了一个UIImageView子类从URL异步加载图片，并在下载完毕时展示图片。</p>
+
+<p>地址：<a href="https://github.com/Nyx0uf/NYXImagesKit">https://github.com/Nyx0uf/NYXImagesKit</a></p>
+
+<p>25：底部TabBar</p>
+
+<p>地址：<a href="https://github.com/robbdimitrov/RDVTabBarController">https://github.com/robbdimitrov/RDVTabBarController</a></p>
+
+<p>26:表情面版</p>
+
+<p>地址：<a href="https://github.com/ayushgoel/AGEmojiKeyboard">https://github.com/ayushgoel/AGEmojiKeyboard</a></p>
+
+<p>27:记录框架</p>
+
+<p>地址：<a href="https://github.com/CocoaLumberjack/CocoaLumberjack">https://github.com/CocoaLumberjack/CocoaLumberjack</a></p>
+
+<p>28：IOS与javascript交互</p>
+
+<p>地址：<a href="https://github.com/marcuswestin/WebViewJavascriptBridge">https://github.com/marcuswestin/WebViewJavascriptBridge</a></p>
+
+<p>29：图表统计展示</p>
+
+<p>地址：<a href="https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89">https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89</a></p>
+
+<p>30:appStore评分</p>
+
+<p>地址：<a href="https://github.com/arashpayan/appirater">https://github.com/arashpayan/appirater</a></p>
+
+<p>31：iOS-Categories扩展类大全</p>
+
+<p>地址：<a href="https://github.com/shaojiankui/IOS-Categories">https://github.com/shaojiankui/IOS-Categories</a></p>
+
+<p>32：扫描二维码，仿微信效果，带有扫描条</p>
+
+<p>地址：<a href="https://github.com/JxbSir/JxbScanQR">https://github.com/JxbSir/JxbScanQR</a></p>
+
+<p>33:动效弹出视图(弹出窗里面为文字，可以定义弹出的方向，及显示的时间)&ndash;AMPopTip</p>
+
+<p>地址：<a href="https://github.com/andreamazz/AMPopTip">https://github.com/andreamazz/AMPopTip</a></p>
+
+<p>34:基于Masonry自动计算行高扩展</p>
+
+<p>地址：<a href="https://github.com/632840804/HYBMasonryAutoCellHeight">https://github.com/632840804/HYBMasonryAutoCellHeight</a></p>
+
+<p>35:模仿新浪微博弹出菜单</p>
+
+<p>地址：<a href="https://github.com/wwdc14/HyPopMenuView">https://github.com/wwdc14/HyPopMenuView</a></p>
+
+<p>36:搜索历史标签</p>
+
+<p>地址：<a href="https://github.com/zhiwupei/SearchHistory">https://github.com/zhiwupei/SearchHistory</a></p>
+
+<p>37：快速集成新手引导的类库</p>
+
+<p>地址：<a href="https://github.com/StrongX/XSportLight">https://github.com/StrongX/XSportLight</a></p>
+
+<p>38：设置页面的封装</p>
+
+<p>地址：<a href="https://github.com/renzifeng/ZFSetting">https://github.com/renzifeng/ZFSetting</a></p>
+
+<p>39：带箭头的弹出视图插件</p>
+
+<p>地址：<a href="https://github.com/xiekw2010/DXPopover">https://github.com/xiekw2010/DXPopover</a></p>
+
+<p>40：下拉菜单插件</p>
+
+<p>地址：<a href="https://github.com/dopcn/DOPDropDownMenu/">https://github.com/dopcn/DOPDropDownMenu/</a></p>
+
+<p>41：表格空白提示插件</p>
+
+<p>地址：<a href="https://github.com/dzenbot/DZNEmptyDataSet">https://github.com/dzenbot/DZNEmptyDataSet</a></p>
+
+<p>42:给任意UIView视图四条边框加上阴影，可以自定义阴影的颜色、粗细程度、透明程度以及位置（上下左右边框）</p>
+
+<p>地址：<a href="https://github.com/Seitk/UIView-Shadow-Maker">https://github.com/Seitk/UIView-Shadow-Maker</a></p>
+
+<p>43:不错的日期时间插件</p>
+
+<p>地址：<a href="https://github.com/CoderXL/UUDatePicker">https://github.com/CoderXL/UUDatePicker</a></p>
+
+<p>44:底部弹出选择</p>
+
+<p>地址：<a href="https://github.com/skywinder/ActionSheetPicker-3.0">https://github.com/skywinder/ActionSheetPicker-3.0</a></p>
+
+<p>45:比较不错的引导页面插件</p>
+
+<p>地址：<a href="https://github.com/ealeksandrov/EAIntroView">https://github.com/ealeksandrov/EAIntroView</a></p>
+
+<p>46:两个APP跳转的插件</p>
+
+<p>地址：<a href="https://github.com/usebutton/DeepLinkKit">https://github.com/usebutton/DeepLinkKit</a></p>
+
+<p>47:本地存取NSUserDefaults插件</p>
+
+<p>地址：<a href="https://github.com/gangverk/GVUserDefaults">https://github.com/gangverk/GVUserDefaults</a></p>
+
+<p>48:NSArray和NSDictionary关于LINQ的操作方式，封装一些常用的操作</p>
+
+<p>地址：<a href="https://github.com/ColinEberhardt/LinqToObjectiveC">https://github.com/ColinEberhardt/LinqToObjectiveC</a></p>
+
+<p>49:可以监控网络请求的内容</p>
+
+<p>地址：<a href="https://github.com/coderyi/NetworkEye">https://github.com/coderyi/NetworkEye</a></p>
+
+<p>50：时间帮助插件，可以快速获取时间，比较，增加等操作</p>
+
+<p>地址：<a href="https://github.com/MatthewYork/DateTools">https://github.com/MatthewYork/DateTools</a></p>
+
+<p>51:不错的链式动作</p>
+
+<p>地址：<a href="https://github.com/jhurray/JHChainableAnimations">https://github.com/jhurray/JHChainableAnimations</a></p>
+
+<p>52:弹出层视图，背景效果（可以自定义视图的内容）</p>
+
+<p>地址：<a href="https://github.com/HJaycee/JCAlertView">https://github.com/HJaycee/JCAlertView</a></p>
+
+<p>53:圆形进度条的显示，中间可显示值</p>
+
+<p>地址：<a href="https://github.com/mdinacci/MDRadialProgress">https://github.com/mdinacci/MDRadialProgress</a></p>
+
+<p>54:很帅的数据加载动画（可以用于数据列表加载的展现）</p>
+
+<p>地址：<a href="https://github.com/NghiaTranUIT/FeSpinner">https://github.com/NghiaTranUIT/FeSpinner</a></p>
+
+<p>55:一个开源的AFnetworking上层的封装（猿题库等运用）</p>
+
+<p>地址：<a href="https://github.com/yuantiku/YTKNetwork">https://github.com/yuantiku/YTKNetwork</a></p>
+
+<p>56:CBStoreHouseRefreshControl：一个效果很酷炫的下拉刷新控件</p>
+
+<p>地址：<a href="https://github.com/coolbeet/CBStoreHouseRefreshControl">https://github.com/coolbeet/CBStoreHouseRefreshControl</a></p>
+
+<p>57:AFNetworking-RACExtensions:针对ReactiveCocoa的AF封装</p>
+
+<p>地址：<a href="https://github.com/CodaFi/AFNetworking-RACExtensions">https://github.com/CodaFi/AFNetworking-RACExtensions</a></p>
+
+<p>58:模糊效果（毛玻璃）</p>
+
+<p>地址：<a href="https://github.com/nicklockwood/FXBlurView">https://github.com/nicklockwood/FXBlurView</a></p>
+
+<p>59:UITableView展开效果的插件</p>
+
+<p>地址：<a href="https://github.com/sakkaras/SKSTableView">https://github.com/sakkaras/SKSTableView</a></p>
+
+<p>60:ZIP压缩及解压插件ZipArchive</p>
+
+<p>地址：<a href="https://github.com/ZipArchive/ZipArchive">https://github.com/ZipArchive/ZipArchive</a></p>
+
+<p>61:自定义UIAlertView</p>
+
+<p>地址：<a href="https://github.com/lmcd/LMAlertView">https://github.com/lmcd/LMAlertView</a></p>
+
+<p>62:Facebook开源的动画库Pop</p>
+
+<p>地址：<a href="https://github.com/facebook/pop">https://github.com/facebook/pop</a></p>
+
+<p>63:关于使用facebook动画库的实例集合</p>
+
+<p>地址：<a href="https://github.com/schneiderandre/popping">https://github.com/schneiderandre/popping</a></p>
+
+<p>64:iOS应用视图上添加简单闪烁效果Shimmer</p>
+
+<p>地址：<a href="https://github.com/facebook/Shimmer">https://github.com/facebook/Shimmer</a></p>
+
+<p>65:ios数据持久化插件，使得Core Data使用起来更加的便捷容易</p>
+
+<p>地址：<a href="https://github.com/magicalpanda/MagicalRecord">https://github.com/magicalpanda/MagicalRecord</a></p>
+
+<p>66:创建缩合的iOS应用程序标题栏</p>
+
+<p>地址：<a href="https://github.com/bryankeller/BLKFlexibleHeightBar">https://github.com/bryankeller/BLKFlexibleHeightBar</a></p>
+
+<p>67:PDF阅读器核心库</p>
+
+<p>地址：<a href="https://github.com/vfr/Reader">https://github.com/vfr/Reader</a></p>
+
+<p>68:STPopup使弹出框也有UINavigationController的效果</p>
+
+<p>地址：<a href="https://github.com/kevin0571/STPopup">https://github.com/kevin0571/STPopup</a></p>
+
+<p>69:基于核心音频,有助于进行实时，低延迟音频处理和可视化的iOS和OSX音频可视化框架</p>
+
+<p>地址：<a href="https://github.com/syedhali/EZAudio">https://github.com/syedhali/EZAudio</a></p>
+
+<p>70:一个不错的弹出Sheet,可以前进跟后退，适合多个页面</p>
+
+<p>地址：<a href="https://github.com/m1entus/MZFormSheetController">https://github.com/m1entus/MZFormSheetController</a></p>
+
+<p>71:Aspect库是对面向切面编程的实现，里面封装了Runtime的方法</p>
+
+<p>地址：<a href="https://github.com/steipete/Aspects">https://github.com/steipete/Aspects</a></p>
+
+<p>72：一个不错在无输入源的输入框，如UITableViewCell等</p>
+
+<p>地址：<a href="https://github.com/slackhq/SlackTextViewController">https://github.com/slackhq/SlackTextViewController</a></p>
+
+<p>73:小红点插件，用于提示未读效果</p>
+
+<p>地址：<a href="https://github.com/weng1250/WZLBadge">https://github.com/weng1250/WZLBadge</a></p>
+
+<p>74:不错的照片选择器，视频选择器，支持单多选</p>
+
+<p>地址：<a href="https://github.com/mwaterfall/MWPhotoBrowser">https://github.com/mwaterfall/MWPhotoBrowser</a></p>
+
+<p>75:含10多种的转场动画效果</p>
+
+<p>地址：<a href="https://github.com/ColinEberhardt/VCTransitionsLibrary">https://github.com/ColinEberhardt/VCTransitionsLibrary</a></p>
+
+<p>76:左右菜单显示（类似QQ导航）</p>
+
+<p>地址：<a href="https://github.com/romaonthego/RESideMenu">https://github.com/romaonthego/RESideMenu</a></p>
+
+<p>77:很赞的等待指示动画（比系统自带的帅）</p>
+
+<p>地址：<a href="https://github.com/ninjaprox/DGActivityIndicatorView">https://github.com/ninjaprox/DGActivityIndicatorView</a></p>
+
+<p>78:KVOController一个简单安全的KVO(Key-value Observing,键-值观察)工具,提供简单方便、线程安全的API, Facebook的开源项目之一</p>
+
+<p>地址：<a href="https://github.com/facebook/KVOController">https://github.com/facebook/KVOController</a></p>
+
+<p>79：FormatterKit收集了很多构思优秀的NSFormatter子类</p>
+
+<p>地址：<a href="https://github.com/mattt/FormatterKit">https://github.com/mattt/FormatterKit</a></p>
+
+<p>80:自定义的UIPageControl(可以设置每个的样式)</p>
+
+<p>地址：<a href="https://github.com/Spaceman-Labs/SMPageControl">https://github.com/Spaceman-Labs/SMPageControl</a></p>
+
+<p>81:使用NJKWebViewProgress做webview进度条（解决先前无法获得进度的问题）</p>
+
+<p>地址：<a href="https://github.com/ninjinkun/NJKWebViewProgress">https://github.com/ninjinkun/NJKWebViewProgress</a></p>
+
+<p>82:修改NavigationBar的显示效果</p>
+
+<p>地址：<a href="https://github.com/ltebean/LTNavigationBar/">https://github.com/ltebean/LTNavigationBar/</a></p>
+
+<p>83:FCUUID获得设备号的替代方式</p>
+
+<p>地址：<a href="https://github.com/fabiocaccamo/FCUUID">https://github.com/fabiocaccamo/FCUUID</a></p>
+
+<p>84:多主题色或者白天黑夜模式的运用</p>
+
+<p>地址：<a href="https://github.com/Draveness/DKNightVersion">https://github.com/Draveness/DKNightVersion</a></p>
+
+<p>85:GPUImage是一个基于GPU图像和视频处理的开源框架,提供各种各样的图像处理滤镜</p>
+
+<p>地址：<a href="https://github.com/BradLarson/GPUImage">https://github.com/BradLarson/GPUImage</a></p>
+
+<p>86:YY图片加载插件，可以支持动态，网络本地，渐进式图片加载等</p>
+
+<p>地址：<a href="https://github.com/ibireme/YYWebImage">https://github.com/ibireme/YYWebImage</a></p>
+
+<p>87:封装后的蓝牙帮助库</p>
+
+<p>地址：<a href="https://github.com/coolnameismy/BabyBluetooth">https://github.com/coolnameismy/BabyBluetooth</a></p>
+
+<p>88:一个很通用的需求就是引导教程</p>
+
+<p>地址：<a href="https://github.com/bubudrc/MPCoachMarks">https://github.com/bubudrc/MPCoachMarks</a></p>
+
+<p>89:基于MPMoviePlayerController播放器KRVideoPlayer</p>
+
+<p>地址：<a href="https://github.com/36Kr-Mobile/KRVideoPlayer">https://github.com/36Kr-Mobile/KRVideoPlayer</a></p>
+
+<p>90:UICollection左对齐跟右对齐</p>
+
+<p>地址：<a href="https://github.com/mokagio/UICollectionViewLeftAlignedLayout">https://github.com/mokagio/UICollectionViewLeftAlignedLayout</a></p>
+
+<p>地址：<a href="https://github.com/mokagio/UICollectionViewRightAlignedLayout">https://github.com/mokagio/UICollectionViewRightAlignedLayout</a></p>
+
+<p>91:自定义弹出对话窗，类似系统又可以自定义视图DQAlertView或MMPopupView</p>
+
+<p>地址：<a href="https://github.com/dinhquan/DQAlertView">https://github.com/dinhquan/DQAlertView</a></p>
+
+<p>地址：<a href="https://github.com/adad184/MMPopupView">https://github.com/adad184/MMPopupView</a></p>
+
+<p>92:输入框在焦点获得时会有一个小标题JVFloatLabeledTextField</p>
+
+<p>地址：<a href="https://github.com/jverdi/JVFloatLabeledTextField">https://github.com/jverdi/JVFloatLabeledTextField</a></p>
+
+<p>93:针对一些UI进行显示优化，可以设置一些不同的背景色等</p>
+
+<p>地址：<a href="https://github.com/Grouper/FlatUIKit">https://github.com/Grouper/FlatUIKit</a></p>
+
+<p>94:色彩插件，如果没有设计师又想一些漂亮的色彩就可以运用Chameleon</p>
+
+<p>地址：<a href="https://github.com/ViccAlexander/Chameleon">https://github.com/ViccAlexander/Chameleon</a></p>
+
+<p>95:两个不错的侧边栏显示插件ECSlidingViewController，SWRevealViewController</p>
+
+<p>地址：<a href="https://github.com/ECSlidingViewController/">https://github.com/ECSlidingViewController/</a></p>
+
+<p>ECSlidingViewController</p>
+
+<p>地址：<a href="https://github.com/John-Lluch/SWRevealViewController">https://github.com/John-Lluch/SWRevealViewController</a></p>
+
+<p>96：各式各样的进度条，可以放在不同地方NAV或者图片或者扇形M13ProgressSuite</p>
+
+<p>地址：<a href="https://github.com/Marxon13/M13ProgressSuite">https://github.com/Marxon13/M13ProgressSuite</a></p>
+
+<p>97：拉动UITableView时CELL有一摇动的效果AMWaveTransition</p>
+
+<p>地址：<a href="https://github.com/andreamazz/AMWaveTransition">https://github.com/andreamazz/AMWaveTransition</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[警告与实战]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/"/>
+    <updated>2016-06-03T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli</id>
+    <content type="html"><![CDATA[<p>App实战中遇到的警告问题及处理方式</p>
+
+<!--more-->
+
+
+<p>Xcode 升级后，常常遇到的遇到的警告、错误，解决方法</p>
+
+<h5>警告：“xoxoxoxo”  is deprecated</h5>
+
+<pre><code>解决办法：查看xoxoxoxo的这个方法的文档，替换掉这个方法即可。
+</code></pre>
+
+<h5>警告：Declaration of &ldquo;struct sockaddr&rdquo; will not be visible outside of this function</h5>
+
+<pre><code>解决办法：在你的开源.m文件中添加 #import &lt;netinet/in.h&gt;
+</code></pre>
+
+<h5>警告：Implicit conversion from enumeration type &lsquo;UIInterfaceOrientation&rsquo; to different enumeration type &lsquo;UIDeviceOrientation&rsquo;</h5>
+
+<pre><code>解决办法：类型不匹配。跳到出错的那一行，UIInterfaceOrientation强制转换为UIDeviceOrientation就行了。
+</code></pre>
+
+<h5>警告：incompatible pointer types assigning to &lsquo;MyArrayList*'from 'NSMutableArray&rsquo;</h5>
+
+<pre><code>解决办法：加入强制转换(MyArrayList*)
+</code></pre>
+
+<h5>警告：'&amp;&amp;&lsquo; within &rsquo;||'</h5>
+
+<p>问题出处：
+    if (exists &amp;&amp; !isDirectory || !exists)………</p>
+
+<pre><code>  解决办法： if ((exists &amp;&amp; !isDirectory) || !exists)………
+</code></pre>
+
+<h5>警告：Warning：The Copy Bundle Resources build phase contains this target&rsquo;s Info.plist file</h5>
+
+<pre><code>解决办法：将Info.plist文件移到Resources目录下，而不要直接放在target下。
+</code></pre>
+
+<h5>警告：在使用ASIHttp…第三方库的，运行报错。</h5>
+
+<pre><code>解决办法：看你的项目中是否添加CFNetwork.framework、SystemConfiguration.framework, MobileCoreServices.framework,
+</code></pre>
+
+<p>CoreGraphics.framework和libz.1.2.3.dylib，如果是sdk5.0以上，改添加libz.1.2.5.dylib</p>
+
+<h5>警告：xxxooo，missing required architecture i386 in file</h5>
+
+<pre><code>解决办法：如果是错误信息的话：Target-&gt;Build Settings-&gt;Search Paths, 删除FrameworkSearch Paths 里面内容就可以了。
+</code></pre>
+
+<p>要只是一个警告的话，真机调试可以过。具体解决方法待大神出现。</p>
+
+<h5>警告：</h5>
+
+<p>clang: error: no such file or directory: &lsquo;/demo2/控件代码/13/Recorder/Recorder_Prefix.pch&rsquo;
+clang: error: no input files
+Command /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/clang failed with exit code 1</p>
+
+<pre><code>解决办法： 在你的主工程文件 target搜素，pch ，找到Prefix Header    把它后面的值，都删除，再运行就解决了。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>“ARC forbids synthesizing a property of an Objective-C object with unspecified ownership or storage attribute</p>
+
+<pre><code>解决办法：如果定义了ARC有效，那么必须要有所有者属性的定义;所以代码改成下面这样
+@property (nonatomic, strong, readonly) NSString *ss;
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>io6一下的xib系统均没有自动选择Use Autolayout， Supporting iOS 5 and below with xib of iOS 6</p>
+
+<pre><code>解决办法：Just un-select “Use Autolayout” in the file inspector of the xib’s view and we are back to the familiar autosizing in size inspector and boom, it supports iOS 5 and below.
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Warning: Multiple build commands for output file xxx.png</p>
+
+<pre><code>解决办法：找到项目里xxx.png重复，删除重复的资源。
+</code></pre>
+
+<p>//以下是升级到 xcode 5.0.1 之后使用遇到的警告</p>
+
+<h5>警告：</h5>
+
+<p> “iOS 模拟器”未能安装此应用程序。</p>
+
+<pre><code>解决办法：删除模拟器上当前要运行那个APP，重新运行项目。就ok
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>SpringBoard无法启动应用程序 错误:-3</p>
+
+<pre><code>解决办法：退出模拟器，重新运行这个项目。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>The server certificate failed to verify.</p>
+
+<pre><code>解决办法：
+1、打开终端（实用工具 --&gt;终端），在终端中输入如下命令：
+svn ls https://192.100.1.11?0/svn/xxxxxx（注意下面的url更换成你自己的url地址）
+然后直接输入 “ p ”  确认，就可以重新连接了。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Bitmasking for introspection of Objective-C object pointers is strongly discouraged.</p>
+
+<pre><code>解决办法：
+某数字&amp; 0x1的时候是代表要取最低位是否为1，改成了  if(JK_EXPECT_F(((NSUInteger)object)%2))即可。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Implicit conversion loses integer precision: &lsquo;unsigned long&rsquo; to &lsquo;CC_LONG&rsquo; (aka &lsquo;unsigned int&rsquo;).</p>
+
+<pre><code>解决办法：
+CC_MD5(str,strlen(str), r);，改成了     CC_MD5(str, (CC_LONG)strlen(str), r);即可。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: failed to launch &lsquo;/private/var/mobile/Applications/xxxxx&rsquo; &ndash; failed to get the task for process 11140.</p>
+
+<pre><code>解决办法：
+    重启你的开发手机即可，还有一种可能是你的开发者证书与发布证书搞错了，检查在xcode中证书是否一直 。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: ignoring filxxxxxx/libBaiduMobStat.a, missing required architecture x86_64 in filexxxx/libBaiduMobStat.a</p>
+
+<pre><code>解决办法：
+    targets -&gt;build setting 下的  architectures 设置为 standard architetures(armv7,armv7s)   vaild architectures 设置为armv7,armv7s。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: Directory not found for option &lsquo;-L/Users/joryoubonxx/BaiduStatistic</p>
+
+<pre><code>解决办法：
+  删除  targets -&gt;build setting 下的  library search path不正确的地址,如果还不行，重新添加第三库、clean ,重启Xcode.即可。
+</code></pre>
+
+<p>遇到相关的警告，一般编译器都会提供解决方案，所以，作为新手，我们应该看懂编译器给我们的提示，这样我们解决问题就会事半功倍。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[反编译App小菜篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/01/fanbianyixiaocaipain/"/>
+    <updated>2016-05-01T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/01/fanbianyixiaocaipain</id>
+    <content type="html"><![CDATA[<p>前面介绍了那么多关于反编译的问题，也没有真正实战几下，这里简单的教你装一下13，希望大鸟看到不要笑。</p>
+
+<p>纯属个人即时玩玩，但是对于小菜还有有点用的，或者没有接触过的人！</p>
+
+<!--more-->
+
+
+<h3>获取App所有.h文件</h3>
+
+<p>第一步安装class-dump（class-dump可以提取.ipa中的.h文件）。
+安装：
+1. 下载地址 <a href="http://stevenygard.com/projects/class-dump/">http://stevenygard.com/projects/class-dump/</a>
+2. 终端中输入open /usr/bin
+3. 将解压出来的class-dump放入刚打开的目录。   <br/>
+4. 更改class-dump权限     sudo chmod 777 /usr/bin/class-dump</p>
+
+<h5>线下版</h5>
+
+<p>1.新建一个App修改里面相关代码运行。</p>
+
+<p>2.打开Products文件夹下的DecompilingTest.app所在目录</p>
+
+<p>3.显示包内容，拿到二进制文件。</p>
+
+<p>4.复制到桌面，执行以下命令，即可拿到工程中的.h文件</p>
+
+<blockquote><p>class-dump -H Name</p></blockquote>
+
+<h5>线上版</h5>
+
+<p>举例：
+1.首先下载一个.ipa文件。</p>
+
+<p>2.将文件名改为.zip结尾</p>
+
+<p>3.然后在解压出对应的文件夹</p>
+
+<p>4.在该文件夹中找到</p>
+
+<p>这个就是目标文件。</p>
+
+<p>最后终端进入到纯在该文件的路径 ，运行class-dump -H Flap.app -o Flap就可以得到一个，这个文件夹中就是flappy中的所有头文件。</p>
+
+<p>但是你可能会发现只有一个.h文件CDStructures.h，而且里面撒野没有，这里就证明苹果进行了加壳。</p>
+
+<p>后面我们就开始怎么先处理这一层壳</p>
+
+<blockquote><p>class-dump 命令的参数可以在终端中运行 class-dump &ndash;help查看</p></blockquote>
+
+<h3>取方法的实现</h3>
+
+<p>安装Hopper Disassembler（这里就不用说了，不像class-dump，傻瓜式操作）</p>
+
+<p>用法很简单，只要将二进制文件拖进去就行了</p>
+
+<p>。。。。。</p>
 ]]></content>
   </entry>
   
@@ -1202,7 +2972,7 @@ Port 选 22
 Password(假设你没有更改密码) 打 alpine</p>
 
 <p>Mac / Linux Terminal 内打
-ssh <a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#114;&#x6f;&#x6f;&#116;&#64;&#x31;&#57;&#50;&#46;&#x31;&#54;&#x38;&#x2e;&#49;&#46;&#x31;&#48;&#52;">&#114;&#111;&#111;&#x74;&#x40;&#49;&#x39;&#x32;&#46;&#x31;&#x36;&#56;&#46;&#x31;&#x2e;&#x31;&#x30;&#x34;</a></p>
+ssh <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#114;&#x6f;&#111;&#x74;&#64;&#49;&#x39;&#50;&#46;&#x31;&#54;&#56;&#x2e;&#49;&#x2e;&#x31;&#x30;&#52;">&#x72;&#111;&#x6f;&#x74;&#x40;&#x31;&#x39;&#50;&#x2e;&#49;&#54;&#56;&#x2e;&#49;&#x2e;&#x31;&#x30;&#x34;</a></p>
 
 <p>(4) 进入游戏路径目录内(先决条件是已用 PuTTy / Terminal 连接iPhone / iPod Touch)
 打
@@ -2643,7 +4413,7 @@ Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对i
 <p>注意那个Filter，其实可以不填，但要填一定要是该app的bundle identifier</p>
 
 <p>附：OpenSSH的使用：
-       ssh <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x72;&#x6f;&#x6f;&#116;&#x40;&#49;&#57;&#x32;&#x2e;&#x31;&#54;&#56;&#x2e;&#x32;&#46;&#53;">&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#x39;&#x32;&#x2e;&#x31;&#x36;&#56;&#46;&#x32;&#x2e;&#x35;</a> 默认密码alpine
+       ssh <a href="&#x6d;&#x61;&#105;&#108;&#116;&#x6f;&#58;&#x72;&#111;&#111;&#x74;&#x40;&#49;&#x39;&#x32;&#46;&#49;&#54;&#x38;&#x2e;&#50;&#46;&#x35;">&#114;&#x6f;&#111;&#116;&#64;&#49;&#x39;&#50;&#x2e;&#49;&#54;&#x38;&#x2e;&#x32;&#x2e;&#53;</a> 默认密码alpine
      先通过ssh登录到手机，然后可以通过cycript -p 进程ID   依附在需要分析的应用程序上  ps ax | grep PP</p>
 ]]></content>
   </entry>
@@ -3442,496 +5212,6 @@ pngcrush -e xxx reverted -revert-iphone-optimizations -q *.png
 </code></pre>
 
 <p>上面提到的方法都是在mac操作系统下面，如果是windows/linux也可以用，pngcrush也提供了对应的版本</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[静态分析与使用]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/10/jingtaifenxiyushiyong/"/>
-    <updated>2016-03-10T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/10/jingtaifenxiyushiyong</id>
-    <content type="html"><![CDATA[<p>逆向工程－静态分析及使用</p>
-
-<p>看到一篇装逼技术，有机会好好研究一下。。。。。</p>
-
-<p>最近在学习IOS逆向工程，查看网络上的资料也不是太多，边学边总结一下。</p>
-
-<p>首先学习资料：</p>
-
-<p>念茜（大神）的博客： <a href="http://nianxi.net">http://nianxi.net</a></p>
-
-<p>《ios应用逆向工程 分析与实战》</p>
-
-<!--more-->
-
-
-<p>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-凌乱的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
-
-<p>其次讲讲要用到的工具（ios安装工具使用Cydia中搜索安装，有些需要数据源可以自行查找）：</p>
-
-<ul>
-<li><p>已经越狱的IOS设备：这是必须的</p></li>
-<li><p>OpenSSH（数据源：<a href="http://apt.saurik.com%EF%BC%89%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ssh%E5%92%8C%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93scp">http://apt.saurik.com%EF%BC%89%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ssh%E5%92%8C%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93scp</a></p></li>
-<li><p>class-dump-z: 用于简单分析出工程中的类名和函数名</p></li>
-<li><p>IDA：强大的反编译工具</p></li>
-<li><p>Hopper Disassembler：类似IDA 我比较喜欢，能简单转换成OC的功能</p></li>
-<li><p>Reveal:UI层解析工具</p></li>
-<li><p>iFunBox 、 iTools ：两个都是强大的ios设备管理工具，越狱后能轻松读取应用文件等功能</p></li>
-</ul>
-
-
-<p>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-凌乱的分割线&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</p>
-
-<p>恩，差不多就这么多了！上面的工具大部分都是收费的，不过都是有试用版的，接下来我们一个个分析：</p>
-
-<p>ios设备越狱，这个我就不讲了吧，不过我要赞@盘古团队一个，目前所有ios系统都可以越狱（包括ios8.x）</p>
-
-<p>在ios设备上下载OpenSSH （数据源：<a href="http://apt.saurik.com%EF%BC%89%EF%BC%8C%E7%84%B6%E5%90%8E%E7%94%A8%E7%94%B5%E8%84%91%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ios%EF%BC%9A">http://apt.saurik.com%EF%BC%89%EF%BC%8C%E7%84%B6%E5%90%8E%E7%94%A8%E7%94%B5%E8%84%91%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95ios%EF%BC%9A</a></p>
-
-<p>然后输入密码，@后面是手机的IP号，越狱后默认密码好像是123456.</p>
-
-<p>传输文件的命令是</p>
-
-<pre><code>scp gdbinit root@172.168.1.100:/var/root
-scp root@172.168.1.100:/var/root/123.txt ~/
-</code></pre>
-
-<ol>
-<li>class-dump-z 是一个强大的函数提取工具，非常好用，也是基础工具</li>
-</ol>
-
-
-<p>下载地址：<a href="http://stevenygard.com/projects/class-dump">http://stevenygard.com/projects/class-dump</a></p>
-
-<pre><code>              https://code.google.com/p/networkpx/wiki/class_dump_z
-</code></pre>
-
-<p>可以发到手机里调用，也可以在电脑上调用，要解析的文件是在应用目录下x.app（里面还有用到的所有文件资源）下面的x（x是你要分析的应用名）以唱吧为例，用ifunbox找到应用进入应用目录就可以看到ktv.app了打开包文件就能找到ktv。</p>
-
-<pre><code>$ class-dump-z ktv &gt; ktv.txt       //导出所有内容到文件
-$ class-dump-z -H ktv -o ktvdir/   //导出所有内容目录到文件夹（首先要创建ktvdir文件夹）
-</code></pre>
-
-<p>*这里会有一个问题，就是从app store下载的应用解析出来会是乱码，因为应用被加密了。解决办法</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang001.png" title="Caption" ></p>
-
-<p>去渠道上下应用如同步推、91</p>
-
-<p>解密工具 如AppCrackr(源<a href="http://cydia.xsellize.com">http://cydia.xsellize.com</a>)、Crackulous、Clutch</p>
-
-<pre><code>  class-dump 只能解析出类名和函数名，不能看到具体的实现逻辑。但是很直观
-</code></pre>
-
-<p> 4.IDA和Hopper Disassembler差不多，能看到每个函数的具体逻辑（但是-都是汇编）IDA很强大，能在后面标记的oc的函数名，但是我更喜欢Hopper Disassembler，因为他能简单的模拟出oc源码，但是也是非常简单的。两者按空格键都能显示出分支逻辑来。</p>
-
-<pre><code>汇编非常难看懂，我们需要的是耐心+耐心。后面可以加上动态工具联合分析能更有效
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/nixiang002.png" title="Caption" ></p>
-
-<p> 5.Reveal的功能就更强大了，能表明出UI的具体结构来，告诉你每个View的类型是什么，这通常也是我们常用的分析一个app的切入点。</p>
-
-<p>下载地址：<a href="http://revealapp.com">http://revealapp.com</a></p>
-
-<p>下载完后打开reveal在菜单目录中help-show reveal library in finder打开库文件，将两个文件发到手机里</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang003.png" title="Caption" ></p>
-
-<p>接下来编辑libReveal.plist文件</p>
-
-<p>在/Library/MobileSubstrate/DynamicLibraries/下创建文件libReveal.plist，指定app的Bundle，可以指定多个</p>
-
-<p>同学们会问了，app 的bundleID怎么查看呢，我们还是用ifunbox工具找到应用目录，在x.app文件夹中会有info.plist文件，打开就能找到。</p>
-
-<p>最后重启设备-打开想分析的应用-电脑打开reveal接口，就可以点击分析了</p>
-
-<p><img src="http://al1020119.github.io/images/nixiang004.png" title="Caption" ></p>
-
-<p>总结一下吧，分析一个应用的逻辑是这样的：</p>
-
-<ul>
-<li><p>拿个越狱机-下好工具</p></li>
-<li><p>去越狱平台下个想分析的应用（或者去app store下，用解密工具解密一下）</p></li>
-<li><p>导入reveal分析页面，得到想要的知道的具体视图类或者大致范围</p></li>
-<li><p>分析class-dump中，找到想要的类和函数</p></li>
-<li><p>在IDA中找到具体函数，查看逻辑</p></li>
-</ul>
-
-
-<blockquote><p>单纯的静态分析只能知道个大概，想知道框架和具体内容还需要动态分析（下面分析）的帮助。不过想知道一个应用用到了什么库，界面是什么结构，有什么图片资源，上面的绝对够用了。总之逆向工程是比较枯燥无味的东西，资料又少，需要的是。。。。。加油</p></blockquote>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[反编译和防反编译]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/08/fanbianyihefangfanbianyi/"/>
-    <updated>2016-03-08T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/08/fanbianyihefangfanbianyi</id>
-    <content type="html"><![CDATA[<p>关于反编译和防止反编译</p>
-
-<h3>反编译</h3>
-
-<ul>
-<li><p>内购破解</p>
-
-<ul>
-<li>iOS应用需防反编译风险之一：插件法（仅越狱）、iTools工具替换文件法（常见为存档破解）、八门神器修改</li>
-</ul>
-</li>
-<li><p>网络安全风险</p>
-
-<ul>
-<li>iOS应用需防反编译风险之二：截获网络请求，破解通信协议并模拟客户端登录，伪造用户行为，对用户数据造成危害</li>
-</ul>
-</li>
-</ul>
-
-
-<!--more-->
-
-
-<ul>
-<li><p>应用程序函数PATCH破解</p>
-
-<ul>
-<li>iOS应用需防反编译风险之三：利用FLEX 补丁软件通过派遣返回值来对应用进行patch破解</li>
-</ul>
-</li>
-<li><p>源代码安全风险</p>
-
-<ul>
-<li>iOS应用需防反编译风险之四：通过使用ida等反汇编工具对ipa进行逆向汇编代码，导致核心代码逻辑泄漏与被修改，影响应用安全</li>
-</ul>
-</li>
-<li><p>面对这些iOS应用存在的风险，iOS应用如何防止被反编译，下面看下iOS应用加密技术</p></li>
-</ul>
-
-
-<h3>iOS应用加密防反编译技术</h3>
-
-<ul>
-<li><p>本地数据加密</p>
-
-<ul>
-<li>iOS应用防反编译加密技术之一：对NSUserDefaults，sqlite存储文件数据加密，保护帐号和关键信息</li>
-</ul>
-</li>
-<li><p>URL编码加密</p>
-
-<ul>
-<li>iOS应用防反编译加密技术之二：对程序中出现的URL进行编码加密，防止URL被静态分析</li>
-</ul>
-</li>
-<li><p>网络传输数据加密</p>
-
-<ul>
-<li>iOS应用防反编译加密技术之三：对客户端传输数据提供加密方案，有效防止通过网络接口的拦截获取数据</li>
-</ul>
-</li>
-<li><p>方法体，方法名高级混淆</p>
-
-<ul>
-<li>iOS应用防反编译加密技术之四：对应用程序的方法名和方法体进行混淆，保证源码被逆向后无法解析代码</li>
-</ul>
-</li>
-<li><p>程序结构混排加密</p>
-
-<ul>
-<li>iOS应用防反编译加密技术之五：对应用程序逻辑结构进行打乱混排，保证源码可读性降到最低</li>
-</ul>
-</li>
-</ul>
-
-
-<h3>下面是iOS应用加密防反编译前后对比</h3>
-
-<p>iOS应用防反编译总结</p>
-
-<ul>
-<li><p>通过以上研究，iOS应用开发者必须要注意iOS应用反编译技术研究了，不要让iOS应用重蹈Android应用的覆辙，iOS应用防反编译！</p></li>
-<li><p>反编译的流程，就是虚拟一个执行环境，看程序执行了那些指令，翻译成相应的语句一般的流程是先把程序调入到数据段， 虚拟运行环境，一般这分配文件头部，从纪录指令程序数据段，载入到虚拟环境中，纪录指令，遇到跳转指令，压入栈，形成树结构（看数据结构），遍历每个节点 的指令。形成完整程序</p></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[简单环境介]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/05/jiandanhuanjinjieshao/"/>
-    <updated>2016-03-05T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/05/jiandanhuanjinjieshao</id>
-    <content type="html"><![CDATA[<h3>知识点准备</h3>
-
-<h6>越狱的三点</h6>
-
-<ul>
-<li><p>第一点——越狱开放了iOS的文件系统，使得用户一下子获得了root权限，获得了整个iOS系统的掌控大权。越狱之后用iFunBox等工具可以可简单地看到iOS的整个文件系统，因此也可以修改系统UI、铃声，或者当U盘用。同样的，越狱之后安装的一些程序，也同样突破了沙盒的限制，甚至获得root权限，程序的行为可以不受用户和系统的限制。权利和责任的对等的，获得了root权限的用户就必须对这个系统对安全和完整性负责。可惜的是很多人越狱了，但又抱怨iPhone出现的耗电、卡机、白苹果等等现象。目测很多Android和越狱用户，确实没这个能力去负起这个责任。</p></li>
-<li><p>第二点——cydia。基本所有人都把它当作越狱的显性标志。cydia表面上看来就是一个AppStore，实际上利用了另外一套软件管理系统——“Debian Package ”，也就是常说的dpkg，使用的安装包是deb，在Ubuntn上很是常见。deb的安装和卸载依靠的是一套完整的脚本，用control作为软件的标识信息，数据用tar压缩。另外，cydia还有软件源这个机制，由于我没搭过源服务器，完全不懂其中原理。</p></li>
-<li><p>第三点——MobileSubstrate。这是越狱必装插件，也是tweak开发的前提。那些让iPhone能拦截黑名单电话的，或者让时间能显示年月日的，或者在状态栏添加个天气图标的程序，基本都依赖与此。</p></li>
-</ul>
-
-
-<!--more-->
-
-
-<p>事实上，MobileSubstrate包含了三大组件。</p>
-
-<pre><code>MobileHooker
-</code></pre>
-
-<p>俗称钩子。这把存在于内存里的钩子能钩住任何想钩住的系统方法，并替换成自己的实现方法。举例而言，黑名单的电话能被挂断，是因为在接通的那个系统方法里，并替换掉且不执行原有的方法，所以接通电话的事件也就被中断了。当然，那些奇怪问题诸如白苹果等事件基本都是由这个引起的。</p>
-
-<pre><code>MobileLoader
-</code></pre>
-
-<p>钩子能够加载进内存并动态替换内存，靠的就是这个。其中编写.plist文件来限制加载范围必不可少。</p>
-
-<pre><code>Safe mode
-</code></pre>
-
-<p>越狱后的机子基本都经历过安全模式，当SpringBoard崩溃时会自动进入安全模式，靠的就时这个的功劳，不然，这世界上不知又要多了多少部白苹果。</p>
-
-<p>若想了解更多MobileSubstrate，可以点这里</p>
-
-<p>何为越狱已经结束，为何越狱也就明朗起来了。</p>
-
-<pre><code>想掌握iOS的整个文件系统，把iPhone当U盘使。
-为了获得更好等功能，如电话增强功能、flash等
-搞一些修改系统的行为，如更换UI、铃声、图标，等等
-工作需要（比如说我）
-安装免费软件（我故意放到最后的）
-</code></pre>
-
-<p>最后提醒一句，在非越狱机上，AppStore上的那些来电归属地，透视镜，指纹锁，基本都是假的，看完这篇文章，原因读者大概也能略知一二了。而那些省电、清内存之类的，反正我是不用，这些东西交给系统就行了，反正我上没见过iPhone4或4s会卡到游戏玩不了需要硬启动的。用户程序要操心这些东西，说真的，有心无力。有钱的话，买买几个正版的单机游戏，购买一次还提供永久的免费升级，也挺值了。</p>
-
-<h3>环境准备</h3>
-
-<p>曾经在cocoachina看过有人评论，越狱开发，只要找个稍微懂UNIX和Objective-C的开发人员就行了。看见这话真是无比痛心。AppStore开发者即使再痛恨越狱，但也没必要用如此言语贬低越狱开发人员。越狱开发可能想象中很是简单，但绝不是简单到用几个Private API或者在搞个重启关机等等事情（说实话重启手机还真不是一句代码能实现的）。越狱开发混了几个月，发现自己知识面完全不行。从我不成熟的眼光看来，越狱开发需要以下的几个素质：</p>
-
-<pre><code>Objective-C以及iOS开发
-</code></pre>
-
-<p>这一点算是囊括了AppStore开发的东西。没有公司会愿意开发一个没有用户界面的东西。相比于AppStore开发，越狱开发的好处是可以使用Private API，但同时需要忍受无文档，以及一堆数据类型为id的变量带来的痛苦。</p>
-
-<pre><code>UNIX
-</code></pre>
-
-<p>权限、脚本、进程管理，等等，哪一个不会都可能成为开发中的软肋。对于操作系统没好好学过的我，可怜了我的肋骨哟。</p>
-
-<pre><code>iOS的特性
-</code></pre>
-
-<p>这一点抽象到连我自己也说不清。iOS作为一个类UNIX系统，肯定有一套属于自己的特性。掌握它的特性的人，需要是一个拥有理性头脑的果粉（可惜我不是）。对iOS特性的掌握可以快速找到各种奇奇怪怪的需求的解决方案，以及解决各种无log无法调试无稳定重现路径的bug甚至崩溃甚至白苹果。说个最近遇到的，某天发现了我的未接来电无法显示在通知栏了，于是我在某个文件夹里翻到了某张plist打开阅读之后果断删了，重启SpringBoard后一切正常，这能说成是一种敏感么？ 扯远了。</p>
-
-<p>说说越狱的开发环境。其实作为一个不太入流的领域，不能指望哪个大公司某天推出一套越狱开发工具。不过，多亏了国外几位越狱大神，越狱开发才逐渐模板化。刚接触越狱开发时，最有名的莫过于theos了，模板多且编译简单。不过，今年二月发布的iOSOpenDev则集合了theos的所有优势，同时集合到Xcode之中，还能实现简单的deb打包，算是贴心尽意了。 安装iOSOpenDev之前，可先确认：</p>
-
-<pre><code>Xcode4.0及以上
-dpkg已安装。利用的是dpkg相关的东西，打包这些东西避免不了。推荐使用macports安装
-git已安装。利用的是git相关的东西，很多开源项目都托管在git上
-thoes已安装。很多旧的开源项目都是可不是由iOSOpenDev创建的，使用theos可以快速编译他们，同时iOSOpenDev的Logos模板是依托于theos的，而Logos模板，在我看来是tweak开发最优秀的模板，没有之一
-</code></pre>
-
-<p>接下来就可以安装iOSOpenDev。一直确定下去，假如不需要打包功能，则不需要填写IP等东西。事实上除了学习之外，基本可以忽略打包功能，脚本打包才是王道。 更详细的东西，可以看这里。 安装完毕，打开Xcode，新建工程，发现有iOSOpenDev一项，还有大量模板可选时，说明环境搭建已成功。Enjoy it！</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[检测是否越狱]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/05/jianceshifouyueyu/"/>
-    <updated>2016-03-05T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/05/jianceshifouyueyu</id>
-    <content type="html"><![CDATA[<p>底层开发之越狱开发第二篇</p>
-
-<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
-
-<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
-
-<!--more-->
-
-
-<p>复制代码</p>
-
-<pre><code>/*方法名:
- *        isJailbroken
- *介绍:
- *        类方法，判断设备是否越狱，判断方法根据 apt和Cydia.app的path来判断
- *参数说明:
- *        无
- *        
- *
- */
-
-#pragma mark utils api
-// 类方法，判断当前设备是否已经越狱
-+ (BOOL)isJailbroken;
-// 类方法，判断你的App是否被破解
-+ (BOOL)isPirated;
-</code></pre>
-
-<p>复制代码</p>
-
-<p>apt和Cydia的方式来进行判断的，没看见源码</p>
-
-<p>然后再介绍两种方法来查看是否已经越狱，知其然知其所以然、、、</p>
-
-<ol>
-<li>apt</li>
-</ol>
-
-
-<hr />
-
-<pre><code> - (BOOL) hasAPT
- {
- return [[NSFileManager defaultManager] fileExistsAtPath:@"/private/var/lib/apt/"];
- }
-</code></pre>
-
-<ol>
-<li>system</li>
-</ol>
-
-
-<hr />
-
-<pre><code>1 - (BOOL) successCallSystem
-2 {
-3 return (system("ls") == 0) ? YES : NO;
-4 }
-</code></pre>
-
-<p>3.示例代码</p>
-
-<pre><code> 1 static const char* jailbreak_apps[] =
- 2 
- 3     {
- 4         "/Applications/Cydia.app",
- 5         "/Applications/limera1n.app",
- 6         "/Applications/greenpois0n.app",
- 7         "/Applications/blackra1n.app",
- 8         "/Applications/blacksn0w.app",
- 9         "/Applications/redsn0w.app",
-10         "/Applications/Absinthe.app",
-11         NULL,
-12     };
-13      
-14     - (BOOL) isJailBroken
-15     {
-16         // Now check for known jailbreak apps. If we encounter one, the device is jailbroken.
-17         for (int i = 0; jailbreak_apps[i] != NULL; ++i)
-18         {
-19             if ([[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithUTF8String:jailbreak_apps[i]]])
-20             {
-21                 //NSLog(@"isjailbroken: %s", jailbreak_apps[i]);
-22                 return YES;
-23             }
-24         }
-25          
-26         // TODO: Add more checks? This is an arms-race we're bound to lose.
-27          
-28         return NO;
-29     }
-30  
-31 
-32 @interface UIDevice (Helper)  
-33 - (BOOL)isJailbroken;  
-34 @end
-35 
-36 @implementation UIDevice (Helper)  
-37 - (BOOL)isJailbroken {  
-38   BOOL jailbroken = NO;  
-39   NSString *cydiaPath = @"/Applications/Cydia.app";  
-40   NSString *aptPath = @"/private/var/lib/apt/";  
-41   if ([[NSFileManager defaultManager] fileExistsAtPath:cydiaPath]) {  
-42     jailbroken = YES;  
-43   }  
-44   if ([[NSFileManager defaultManager] fileExistsAtPath:aptPath]) {  
-45     jailbroken = YES;  
-46   }  
-47   return jailbroken;  
-48 }  
-49 @end
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[常见越狱方法]]></title>
-    <link href="http://al1020119.github.io/blog/2016/03/04/changjianyueyufangfa/"/>
-    <updated>2016-03-04T15:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/03/04/changjianyueyufangfa</id>
-    <content type="html"><![CDATA[<p>iOS设备的越狱方法</p>
-
-<p>最近公司的事情很忙，在开发一个类似于微信的App，经常加班，所以也没有时间去更新微信公众账号的内容了。iOSJailbreak, 申请这个账号大概有一个多月了吧，发布的内容不多，更多是针对开发者的内容，针对普通iPhone &amp; iPad用户的内容几乎没有，有收听的朋友经常发问，怎样去越狱，怎样去开发越狱的插件或者app。后面都会细细道来。</p>
-
-<h3>一、先说iPhone 5S 和 iPhone5C吧</h3>
-
-<p>最新的iPhone又要出来了，大概是9月21号左右美国和香港应该是可以购买的。新的iOS7应该是在9月16号发布。5C有5个颜色，配截图。</p>
-
-<blockquote><p>其实我是大概在今年3月底4月初的时候听 富士康那边的朋友说的，有一款中端版本的iPhone5C, 价格大概在3000左右，估计香港，美国那边的更便宜，应该是2000+的样子。等待新机的到来，其实iPhone5的感觉就是轻，拿着很舒服。估计5C应该也差不多。</p></blockquote>
-
-<!--more-->
-
-
-<h3>二、怎么越狱</h3>
-
-<p>越狱有很多种方法和工具，红雪的 (redsn0w)  ， 绿毒的(greenp0ison)，Absinthe， evasi0n等等， 还有一些其他的，不怎么知名，当然也比不上上面的了，就不过多介绍了。
-我在网上找了相关的越狱教程，因为涉及到的系统版本，设备型号太多了，无法逐一验证。找了一个靠谱的链接，绝不是广告哦，我亲测过。
-这个网站上几乎针对每种系统，每种机型都可以越狱。</p>
-
-<ul>
-<li><p>链接一、在这个链接里面选择对应的设备类型，比如iPhone5， iPad mini等等。
-<a href="http://jb.appvv.com/shebei/">http://jb.appvv.com/shebei/</a></p></li>
-<li><p>链接二、选择对应的设备之后，进入到选择设备对应的系统版本页面，不同的机型有差别，比如这个是4s的
-<a href="http://jb.appvv.com/shebei/iphone4s/">http://jb.appvv.com/shebei/iphone4s/</a></p></li>
-</ul>
-
-
-<p>链接三、在选择对应的设备和系统版本之后，就可以自己开始越狱了，严格按照教程操作，比如4s的, iOS6.1.2的版本就可以按照如下链接操作
-<a href="http://jb.appvv.com/news/19806.shtml">http://jb.appvv.com/news/19806.shtml</a></p>
-
-<p>有时间可以多看下网站上的内容。</p>
-
-<h3>三、关于越狱的安全性等问题</h3>
-
-<p>很多人说，越狱的iPhone存在着安全性问题，从一个方面来讲，确实存在这样的问题。但是这并不是iOS系统的问题，包括Windows, Android系统都存在问题。同样的前提下，iOS的安全性绝对要高的多。听说过Windows系统下，Android系统下用户的账号被盗用，卡被盗刷的情况，但是iOS系统下的我没听说过类似的情况，包括越狱的iOS系统，安全性依然很高。</p>
-
-<p>手机本来就是用来玩儿，越狱之后有很多好用的插件，还可以免费装各种应用，还有输入法，黑名单等等，一系列的“好处”吧。但是越狱之后，手机的安全性还是值得警惕，涉及到银行转账和交易的时候最好双方确认好，避免被骗。
-总之越狱之后可玩儿性更高一些。对于越狱我保持中立吧，有些人拿着手机就打打电话，发发微信，不想折腾。喜欢玩儿的人，可以去试试。</p>
-
-<blockquote><p>PS：之前我越狱了自己的iPad，把微信的打飞机刷了200多万分，天天爱消除刷了180W分，越狱之后用插件弄的。我推测了一下，手工打的话，打飞机不会超过160W分，后面太难了，大飞机太多了。爱消除我只用了40S刷了180W分，后面都没管了。大家可以自己试试。</p></blockquote>
-
-<h4>实例方案</h4>
-
-<p>办法1.</p>
-
-<p>int xx=fork() //这个函数从这里起，程序被分为两个进程，父和子，子进程，返回0，父进程返回子进程ID，如果执行fork成功，说明沙盒被破坏，说明越狱了
-if(!xx)。//子进程，关闭他
-{
-     exit(0);
-}
-if(xx>=0)父进程，说明越狱
-{
-return 1;
-}
-return 0 ;//，没有越狱，返回-1，</p>
-
-<p>办法2
-检测cydia.app是否存在
-    struct stat s;
-    int is_jailbroken=stat(&ldquo;/Applications/Cydia.app&rdquo;, &amp;s);
-    NSLog(@&ldquo;&mdash;&ndash;is_jailbroken=%d&mdash;-&rdquo;,is_jailbroken);//返回为0说明有Cydia.app，否则-1
-或者
-   struct stat s;
-    int is_jailbroken=stat(&ldquo;/Library/MobileSubstrate/DynamicLibraries/MobileSubstrate.dylib&rdquo;, &amp;s);
-    NSLog(@&ldquo;&mdash;&ndash;is_jailbroken=%d&mdash;-&rdquo;,is_jailbroken);</p>
-
-<p>办法3.判断文件大小</p>
-
-<p>struct stat s
-stat(“/etc/fstab”,&amp;s);
-return s.st_size</p>
 ]]></content>
   </entry>
   

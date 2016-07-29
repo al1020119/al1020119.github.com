@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>警告与实战 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">警告与实战</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-03T13:53:19+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>App实战中遇到的警告问题及处理方式</p>
+
+<!--more-->
+
+
+<p>Xcode 升级后，常常遇到的遇到的警告、错误，解决方法</p>
+
+<h5>警告：“xoxoxoxo”  is deprecated</h5>
+
+<pre><code>解决办法：查看xoxoxoxo的这个方法的文档，替换掉这个方法即可。
+</code></pre>
+
+<h5>警告：Declaration of &ldquo;struct sockaddr&rdquo; will not be visible outside of this function</h5>
+
+<pre><code>解决办法：在你的开源.m文件中添加 #import &lt;netinet/in.h&gt;
+</code></pre>
+
+<h5>警告：Implicit conversion from enumeration type &lsquo;UIInterfaceOrientation&rsquo; to different enumeration type &lsquo;UIDeviceOrientation&rsquo;</h5>
+
+<pre><code>解决办法：类型不匹配。跳到出错的那一行，UIInterfaceOrientation强制转换为UIDeviceOrientation就行了。
+</code></pre>
+
+<h5>警告：incompatible pointer types assigning to &lsquo;MyArrayList*'from 'NSMutableArray&rsquo;</h5>
+
+<pre><code>解决办法：加入强制转换(MyArrayList*)
+</code></pre>
+
+<h5>警告：'&amp;&amp;&lsquo; within &rsquo;||'</h5>
+
+<p>问题出处：
+    if (exists &amp;&amp; !isDirectory || !exists)………</p>
+
+<pre><code>  解决办法： if ((exists &amp;&amp; !isDirectory) || !exists)………
+</code></pre>
+
+<h5>警告：Warning：The Copy Bundle Resources build phase contains this target&rsquo;s Info.plist file</h5>
+
+<pre><code>解决办法：将Info.plist文件移到Resources目录下，而不要直接放在target下。
+</code></pre>
+
+<h5>警告：在使用ASIHttp…第三方库的，运行报错。</h5>
+
+<pre><code>解决办法：看你的项目中是否添加CFNetwork.framework、SystemConfiguration.framework, MobileCoreServices.framework,
+</code></pre>
+
+<p>CoreGraphics.framework和libz.1.2.3.dylib，如果是sdk5.0以上，改添加libz.1.2.5.dylib</p>
+
+<h5>警告：xxxooo，missing required architecture i386 in file</h5>
+
+<pre><code>解决办法：如果是错误信息的话：Target-&gt;Build Settings-&gt;Search Paths, 删除FrameworkSearch Paths 里面内容就可以了。
+</code></pre>
+
+<p>要只是一个警告的话，真机调试可以过。具体解决方法待大神出现。</p>
+
+<h5>警告：</h5>
+
+<p>clang: error: no such file or directory: &lsquo;/demo2/控件代码/13/Recorder/Recorder_Prefix.pch&rsquo;
+clang: error: no input files
+Command /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/clang failed with exit code 1</p>
+
+<pre><code>解决办法： 在你的主工程文件 target搜素，pch ，找到Prefix Header    把它后面的值，都删除，再运行就解决了。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>“ARC forbids synthesizing a property of an Objective-C object with unspecified ownership or storage attribute</p>
+
+<pre><code>解决办法：如果定义了ARC有效，那么必须要有所有者属性的定义;所以代码改成下面这样
+@property (nonatomic, strong, readonly) NSString *ss;
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>io6一下的xib系统均没有自动选择Use Autolayout， Supporting iOS 5 and below with xib of iOS 6</p>
+
+<pre><code>解决办法：Just un-select “Use Autolayout” in the file inspector of the xib’s view and we are back to the familiar autosizing in size inspector and boom, it supports iOS 5 and below.
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Warning: Multiple build commands for output file xxx.png</p>
+
+<pre><code>解决办法：找到项目里xxx.png重复，删除重复的资源。
+</code></pre>
+
+<p>//以下是升级到 xcode 5.0.1 之后使用遇到的警告</p>
+
+<h5>警告：</h5>
+
+<p> “iOS 模拟器”未能安装此应用程序。</p>
+
+<pre><code>解决办法：删除模拟器上当前要运行那个APP，重新运行项目。就ok
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>SpringBoard无法启动应用程序 错误:-3</p>
+
+<pre><code>解决办法：退出模拟器，重新运行这个项目。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>The server certificate failed to verify.</p>
+
+<pre><code>解决办法：
+1、打开终端（实用工具 --&gt;终端），在终端中输入如下命令：
+svn ls https://192.100.1.11?0/svn/xxxxxx（注意下面的url更换成你自己的url地址）
+然后直接输入 “ p ”  确认，就可以重新连接了。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Bitmasking for introspection of Objective-C object pointers is strongly discouraged.</p>
+
+<pre><code>解决办法：
+某数字&amp; 0x1的时候是代表要取最低位是否为1，改成了  if(JK_EXPECT_F(((NSUInteger)object)%2))即可。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>Implicit conversion loses integer precision: &lsquo;unsigned long&rsquo; to &lsquo;CC_LONG&rsquo; (aka &lsquo;unsigned int&rsquo;).</p>
+
+<pre><code>解决办法：
+CC_MD5(str,strlen(str), r);，改成了     CC_MD5(str, (CC_LONG)strlen(str), r);即可。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: failed to launch &lsquo;/private/var/mobile/Applications/xxxxx&rsquo; &ndash; failed to get the task for process 11140.</p>
+
+<pre><code>解决办法：
+    重启你的开发手机即可，还有一种可能是你的开发者证书与发布证书搞错了，检查在xcode中证书是否一直 。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: ignoring filxxxxxx/libBaiduMobStat.a, missing required architecture x86_64 in filexxxx/libBaiduMobStat.a</p>
+
+<pre><code>解决办法：
+    targets -&gt;build setting 下的  architectures 设置为 standard architetures(armv7,armv7s)   vaild architectures 设置为armv7,armv7s。
+</code></pre>
+
+<h5>警告：</h5>
+
+<p>error: Directory not found for option &lsquo;-L/Users/joryoubonxx/BaiduStatistic</p>
+
+<pre><code>解决办法：
+  删除  targets -&gt;build setting 下的  library search path不正确的地址,如果还不行，重新添加第三库、clean ,重启Xcode.即可。
+</code></pre>
+
+<p>遇到相关的警告，一般编译器都会提供解决方案，所以，作为新手，我们应该看懂编译器给我们的提示，这样我们解决问题就会事半功倍。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-06-03T13:53:19+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/05/01/fanbianyixiaocaipain/" title="Previous Post: 反编译App小菜篇">&laquo; 反编译App小菜篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/06/06/wpzhidapnizaizhaosm/" title="Next Post: 我知道你在找什么？">我知道你在找什么？ &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (24)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/06/wpzhidapnizaizhaosm/">我知道你在找什么？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/06/03/appjinggaoshizhanchuli/">警告与实战</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Senior | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/senior/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-07-29T15:57:00+08:00</updated>
+  <updated>2016-07-29T16:52:01+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -14,1233 +14,1772 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Cookie是撒(&session）]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/22/cookie-session/"/>
-    <updated>2016-01-22T13:32:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/22/cookie-session</id>
-    <content type="html"><![CDATA[<p>引言：</p>
-
-<ol>
-<li><p>简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。</p></li>
-<li><p>多个应用间默认是不共亨cookie的</p></li>
-<li><p>删除重装应用cookie会被清除</p></li>
-</ol>
+    <title type="html"><![CDATA[重整之道（面试+技术+底层+高级）]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao/"/>
+    <updated>2016-08-26T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao</id>
+    <content type="html"><![CDATA[<!--more-->
 
 
-<h4>一. Cookie介绍</h4>
+<p>重整之道（面试+技术+底层+高级）</p>
 
-<p>Cookie是在客户端存储服务器状态的一种机制,Web服务器可以通过Set-Cookie或者Set-Cookie2 HTTP头部设置Cookie。</p>
+<p>不要问我为什么写这篇文章。</p>
 
-<p>Cookie可以分为两类</p>
+<p>我，就是这么有尿性。。。。。。。。。。</p>
+
+<p>前面三部分已经基本上完成，后面部分会陆续更新，敬请期待。但是光靠一篇这么短的文章想将通这些事不可能的，这里主要正对面试族，或者健忘族，亦或者是装逼族。好了废话不多说，我们开始吧！</p>
 
 <ul>
-<li>会话Cookie</li>
-<li>持久Cookie</li>
+<li>运行时（底层）</li>
+<li>RunLoop（底层）</li>
+<li>多线程（底层与安全）</li>
 </ul>
 
 
-<p>会话Cookie是临时Cookie,当前会话结束(浏览器退出)时Cookie会被删除。</p>
+<hr />
 
-<p>持久Cookie会存储在用户的硬盘上,浏览器退出，然后重新启动后Cookie仍然存在。会话Cookie和持久Cookie的区别在于过期时间，如果设置了Discard参数(Cookie 版本1)或者没有设置Expires(Cookie版本0)或Max-Age(Cookie版本1)设置过期时间，则此Cookie为会话Cookie</p>
+<ul>
+<li>网络（底层与安全）</li>
+<li>数据持久化（各种使用与区别）（CoreData、SQLite）</li>
+<li>Block（底层/__Block）</li>
+<li>音视频</li>
+<li>直播</li>
+<li>安全</li>
+<li>优化（性能、卡顿）</li>
+<li>常见错误</li>
+<li>常用技术</li>
+<li>全栈相关</li>
+<li>算法（常用、排序）</li>
+<li>数据结构</li>
+<li>设计模式（32中）</li>
+<li>架构设计</li>
+<li>逆向工程</li>
+<li>实战应用</li>
+</ul>
 
-<p>Cookie有两个版本,一个是版本0(Netscape Cookies)和版本1(RFC 2965),目前大多数服务器使用的Cookie 0。</p>
 
-<h4>二. NSHTTPCookie</h4>
+<h3>运行时（底层）</h3>
 
-<!--more-->
+<h6>介绍</h6>
+
+<p>runtime是一个c和汇编写的动态库(感谢Lision的指正)，是一套比较底层的C语言API，属于一个C语言库，平时我们所写的OC代码，最终都会转成runtime的C语言代码去执行。</p>
+
+<p>这个系统主要做两件事 ：</p>
+
+<ol>
+<li>封装C语言的结构体和函数，让开发者在运行时创建、检查或者修改类、对象和方法等等。</li>
+<li>传递消息，找出方法的最终执行代码。</li>
+</ol>
 
 
-<p>在iOS中使用NSHTTPCookie类封装一条cookie,通过NSHTTPCookie的方法读取到cookie的通用属性。</p>
+<h6>常用关键字</h6>
 
-<pre><code>- (NSUInteger)version;
-- (NSString *)name;
-- (NSString *)value;
-- (NSString *)domain;
-- (NSString *)path;
-- (BOOL)isSessionOnly;
+<p>要想全面了解 Runtime 机制，我们必须先了解 Runtime 的一些术语，他们都对应着数据结构。</p>
+
+<p>SEL</p>
+
+<pre><code>它是selector在 Objc 中的表示(Swift 中是 Selector 类)。selector 是方法选择器，其实作用就和名字一样，日常生活中，我们通过人名辨别谁是谁，注意 Objc 在相同的类中不会有命名相同的两个方法。selector 对方法名进行包装，以便找到对应的方法实现。它的数据结构是：
+
+typedef struct objc_selector *SEL;
+
+我们可以看出它是个映射到方法的 C 字符串，你可以通过 Objc 编译器器命令@selector() 或者 Runtime 系统的 sel_registerName 函数来获取一个 SEL 类型的方法选择器。
+
+注意：
+不同类中相同名字的方法所对应的 selector 是相同的，由于变量的类型不同，所以不会导致它们调用方法实现混乱。
 </code></pre>
 
-<p>等</p>
+<p>id</p>
 
-<p>可以通过手工赋值的方式创建Cookie,如</p>
+<pre><code>id 是一个参数类型，它是指向某个类的实例的指针。定义如下：
 
-<pre><code>+ (id)cookieWithProperties:(NSDictionary *)properties;
-- (id)initWithProperties:(NSDictionary *)properties;
+以上定义，看到 objc_object 结构体包含一个 isa 指针，根据 isa 指针就可以找到对象所属的类。
+
+注意：
+isa 指针在代码运行时并不总指向实例对象所属的类型，所以不能依靠它来确定类型，要想确定类型还是需要用对象的 -class 方法。
+
+PS:KVO 的实现机理就是将被观察对象的 isa 指针指向一个中间类而不是真实类型，详见:KVO章节。
 </code></pre>
 
-<p>也可以从Cookie中读取到所有属性。</p>
+<p>Class</p>
 
-<pre><code>- (NSDictionary *)properties;
+<pre><code>typedef struct objc_class *Class;
+
+Class 其实是指向 objc_class 结构体的指针。
+
+一个运行时类中关联了它的父类指针、类名、成员变量、方法、缓存以及附属的协议。
+
+
+由此可见，我们可以动态修改 *methodList 的值来添加成员方法，这也是 Category 实现的原理，同样解释了 Category 不能添加属性的原因。这里可以参考下美团技术团队的文章：深入理解 Objective-C: Category。
+
+objc_ivar_list 结构体用来存储成员变量的列表，而 objc_ivar 则是存储了单个成员变量的信息；同理，objc_method_list 结构体存储着方法数组的列表，而单个方法的信息则由 objc_method 结构体存储。
+
+值得注意的时，objc_class 中也有一个 isa 指针，这说明 Objc 类本身也是一个对象。为了处理类和对象的关系，Runtime 库创建了一种叫做 Meta Class(元类) 的东西，类对象所属的类就叫做元类。Meta Class 表述了类对象本身所具备的元数据。
+
+我们所熟悉的类方法，就源自于 Meta Class。我们可以理解为类方法就是类对象的实例方法。每个类仅有一个类对象，而每个类对象仅有一个与之相关的元类。
+
+当你发出一个类似 [NSObject alloc](类方法) 的消息时，实际上，这个消息被发送给了一个类对象(Class Object)，这个类对象必须是一个元类的实例，而这个元类同时也是一个根元类(Root Meta Class)的实例。所有元类的 isa 指针最终都指向根元类。
+
+所以当 [NSObject alloc] 这条消息发送给类对象的时候，运行时代码 objc_msgSend() 会去它元类中查找能够响应消息的方法实现，如果找到了，就会对这个类对象执行方法调用。
+
+
+
+super_class 指针，虚线时 isa 指针。而根元类的父类是 NSObject，isa指向了自己。而 NSObject 没有父类。
+
+最后 objc_class 中还有一个 objc_cache ，缓存，它的作用很重要，后面会提到。
 </code></pre>
 
-<p>使用NSHTTPCookie的类方法可以将NSHTTPCookie实例与HTTP cookie header相互转换.
-根据NSHTTPCookie实例数组生成对应的HTTP cookie header</p>
+<p>Method</p>
 
-<pre><code>+ (NSDictionary *)requestHeaderFieldsWithCookies:(NSArray *)cookies;
+<pre><code>Method 代表类中某个方法的类型
+
+typedef struct objc_method *Method;
+
+objc_method 存储了方法名，方法类型和方法实现：
+
+方法名类型为 SEL
+方法类型 method_types 是个 char 指针，存储方法的参数类型和返回值类型
+method_imp 指向了方法的实现，本质是一个函数指针
 </code></pre>
 
-<p>从headerFileds中读取到Cookie相关内容,生成NSHTTPCookie实例对象数组。</p>
+<p>Ivar</p>
 
-<pre><code>+ (NSArray *)cookiesWithResponseHeaderFields:(NSDictionary *)headerFields forURL:(NSURL *)theURL;
+<pre><code>Ivar 是表示成员变量的类型。
+
+typedef struct objc_ivar *Ivar;
+
+
+其中 ivar_offset 是基地址偏移字节
 </code></pre>
 
-<p>该方法会忽略headerFileds中与cookie无关的字段，如果headerFileds中的cookie没有指定domain,则使用theURL的domain,如果没有指定path,则使用”/”.</p>
+<p>IMP</p>
 
-<p>除非NSURLRequest明确指定不使用cookie(HTTPShouldHandleCookies设为NO),否则URL loading system会自动为NSURLRequest发送合适的存储cookie。从NSURLResponse返回的cookie也会根据当前的cookie访问策略(cookie acceptance policy)接收到系统中。</p>
+<pre><code>IMP在objc.h中的定义是：
 
-<h4>三.NSHTTPCookieStorage</h4>
+typedef id (*IMP)(id, SEL, ...);
 
-<p>NSHTTPCookieStorage单件类提供了管理所有NSHTTPCookie对象的接口，在OS X里,cookie是在所有程序中共享的，而在iOS中,cookie只当当前应用中有效。</p>
+它就是一个函数指针，这是由编译器生成的。当你发起一个 ObjC 消息之后，最终它会执行的那段代码，就是由这个函数指针指定的。而 IMP 这个函数指针就指向了这个方法的实现。
 
-<p>通过sharedHTTPCookieStorage方法可获取到共享的NSHTTPCookieStorage单件对象。</p>
+如果得到了执行某个实例某个方法的入口，我们就可以绕开消息传递阶段，直接执行方法，这在后面 Cache 中会提到。
 
-<pre><code>+ (NSHTTPCookieStorage *)sharedHTTPCookieStorage；
+你会发现 IMP 指向的方法与 objc_msgSend 函数类型相同，参数都包含 id 和 SEL 类型。每个方法名都对应一个 SEL 类型的方法选择器，而每个实例对象中的 SEL 对应的方法实现肯定是唯一的，通过一组 id和 SEL 参数就能确定唯一的方法实现地址。
+
+而一个确定的方法也只有唯一的一组 id 和 SEL 参数。
 </code></pre>
 
-<p>使用NSHTTPCookieStorage单件对象可获取到当前存储的所有cookie</p>
+<p>Cache</p>
 
-<pre><code>- (NSArray *)cookies
+<pre><code>typedef struct objc_cache *Cache
+
+Cache 为方法调用的性能进行优化，每当实例对象接收到一个消息时，它不会直接在 isa 指针指向的类的方法列表中遍历查找能够响应的方法，因为每次都要查找效率太低了，而是优先在 Cache 中查找。
+
+Runtime 系统会把被调用的方法存到 Cache 中，如果一个方法被调用，那么它有可能今后还会被调用，下次查找的时候就会效率更高。就像计算机组成原理中 CPU 绕过主存先访问 Cache 一样。
 </code></pre>
 
-<p>或针对特定URL的cookie</p>
+<p>Property
+    typedef struct objc_property *objc_property_t;//这个更常用</p>
 
-<pre><code>- (NSArray *)cookiesForURL:(NSURL *)theURL;
+<pre><code>可以通过class_copyPropertyList 和 protocol_copyPropertyList 方法获取类和协议中的属性：
+
+注意：
+返回的是属性列表，列表中每个元素都是一个 objc_property_t 指针
 </code></pre>
 
-<p>还可以添加/删除Cookie</p>
+<h6>动态特性</h6>
 
-<pre><code>– deleteCookie:
-– setCookie:
-– setCookies:forURL:mainDocumentURL:
+<pre><code>Objective-C具有相当多的动态特性，基本的，也是经常被提到和用到的有
+
+    动态类型（Dynamic typing）
+    动态绑定（Dynamic binding）
+    动态加载（Dynamic loading）
+
+动态类型：程序直到执行时才能确定所属的类。
+
+id 数据类型，id 通用的对象类型，可以存储任意类型的对象，id后面没有号，它本身就是个指针，类似于void ，但只可以指向对象类型
+
+静态类型与动态类型
+
+    编译期检查与运行时检查
+    静态类型在编译期就能检查出错误
+    静态类型声明代码可读性好
+    动态类型只有在运行时才能发现错误
+
+动态绑定：程序直到执行时才能确定实际要调用的方法。
+
+动态绑定所做的，即是在实例所属类确定后，将某些属性和相应的方法绑定到实例上。
+
+说明：objective-c 中的BOOL实际上是一种对带符号的字符类型（signed char）的类型定义（typedef），它使用8位的存储空间。通过#define指令把YES定义为1，NO定义为0。
+
+动态加载：根据需求加载所需要的资源
+
+这点很容易理解，对于iOS开发来说，基本就是根据不同的机型做适配。最经典的例子就是在Retina设备上加载@2x的图片，而在老一些的普通屏设备上加载原图。随着Retina iPad的推出，和之后可能的Retina Mac的出现，这个特性相信会被越来越多地使用。
+多态的出现时为了让不同的类能使用同名的方法。这个让程序的可读性大大提高，也降低了编程难度。
+
+动态类型与动态绑定是为了解决随多态的便利而引起的弊端，有了动态类型与动态绑定，不用去考虑输出中的方法是哪个类型的方法，会自动判定。
+
+而id类型的出现就是为了更好的承接动态类型与动态方法出来的返回值。
 </code></pre>
 
-<p>通过NSHTTPCookieStorage可读取/修改cookie接收策略,默认为NSHTTPCookieAcceptPolicyAlways.</p>
+<h6>常用方法</h6>
 
-<pre><code>- (NSHTTPCookieAcceptPolicy)cookieAcceptPolicy；
-- (void)setCookieAcceptPolicy:(NSHTTPCookieAcceptPolicy)aPolicy.
+<p>Ivar <em>ivars = class_copyIvarList([iCocosObject class], &amp;count);
+Method </em>met = class_copyMethodList([iCocosObject class], &amp;meth);
+objc_property_t *xsL = class_copyPropertyList([iCocosObject class], &amp;xs);
+Method ic =  class_getInstanceMethod(NSClassFromString(@&ldquo;<em>NSArrayM&rdquo;), @selector(iCocosobject:));
+Method add =  class_getInstanceMethod(NSClassFromString(@&ldquo;</em>NSArrayM&rdquo;), @selector(addObject:));</p>
+
+<pre><code>objc_msgSend : 给对象发送消息
+class_copyMethodList : 遍历某个类所有的方法
+class_copyIvarList : 遍历某个类所有的成员变量
+class_..... 这是我们学习runtime必须知道的函数！
 </code></pre>
 
-<p>一共有三种cookie accept policy,</p>
+<h6>属性与成员变量</h6>
 
-<pre><code>typedef enum {
-   NSHTTPCookieAcceptPolicyAlways,
-   NSHTTPCookieAcceptPolicyNever,
-   NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain
-} NSHTTPCookieAcceptPolicy;
+<p>Ivar: 实例变量类型，是一个指向objc_ivar结构体的指针。objc_property_t：声明的属性的类型，是一个指向objc_property结构体的指针</p>
 
-NSHTTPCookieAcceptPolicyAlways:接收所有cookie,默认策略.
-NSHTTPCookieAcceptPolicyNever: 拒绝所有cookie
-NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain:只接收main document domain中的cookie.
+<ol>
+<li>属性变量 是已经设置了 setter getter方法的 OC已经自己给设置了</li>
+<li>属性变量 你每次调用 self.属性变量 的时候 都要调用getter或者setter方法
+封装</li>
+</ol>
+
+
+<p>如果成员变量是private，程序中的其它对象很难直接访问该成员变量。如果是属性，相对更容易用父类方法读写属性。</p>
+
+<p>性能</p>
+
+<pre><code>成员变量地址可以根据实例的内存地址偏移寻址。而属性的读写都需要函数调用，相对更慢。
 </code></pre>
 
-<h4>四.相关通知</h4>
+<p>非基础类型</p>
 
-<pre><code>NSHTTPCookieManagerCookiesChangedNotification
+<pre><code>对于复杂的C++类型，往往设为成员变量更合适，也许这种类型不支持copy，或者完全复制很麻烦。
 </code></pre>
 
-<p>当NSHTTPCookieStorage实例中的cookies变化时发出此通知。</p>
+<p>多线程</p>
 
-<pre><code>NSHTTPCookieManagerAcceptPolicyChangedNotification
+<pre><code>多线程环境下，为保证数据一致性，在需要同步执行的代码段更应该使用成员变量。如果对需要同步更新的数据用getter/setter 方法，数据更新效率低，会带来更多的获取锁请求失败。
 </code></pre>
 
-<p>当NSHTTPCookieStorage实例的cookie acceptance policy变化时发出此通知。</p>
+<p>程序正确性</p>
 
-<h4>五：Cookie的三大常见操作</h4>
-
-<h6>1，获取cookie</h6>
-
-<p>获取cookie只能在请求中获取cookie，否则时获取不到的，url就不给出了，大家用自己的url测试一下就行。
-获取到cookie后把cookie进行归档保存到userDefaults里</p>
-
-<pre><code>#pragma mark 获取并保存cookie到userDefaults
-- (void)getAndSaveCookie
-{
-    NSLog(@"=============获取cookie==============");
-    NSString *urlString = @"";
-
-    //请求一个网址，即可分配到cookie
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    manager.responseSerializer = [AFJSONResponseSerializer new];
-    [manager GET:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
-        //获取cookie
-        NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
-        for (NSHTTPCookie *tempCookie in cookies) {
-            //打印获得的cookie
-            NSLog(@"getCookie: %@", tempCookie);
-        }
-
-        /*
-         * 把cookie进行归档并转换为NSData类型
-         * 注意：cookie不能直接转换为NSData类型，否则会引起崩溃。
-         * 所以先进行归档处理，再转换为Data
-         */
-        NSData *cookiesData = [NSKeyedArchiver archivedDataWithRootObject: [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies]];
-
-        //存储归档后的cookie
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        [userDefaults setObject: cookiesData forKey: @"cookie"];
-        NSLog(@"\n");
-
-        [self deleteCookie];
-
-        [self setCoookie];
-
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-
-        nil;
-    }];
-}
+<pre><code>成员变量可以做直观的内存管理。属性可以一层层继承，还可以复写。容易出错。
 </code></pre>
 
-<h6>2，删除cookie</h6>
+<p>二进制文件的体积</p>
 
-<p>把获取到的cookie删除掉，该步骤可以用在注销或者切换账号里。
-当前，我这里删除cookie是为了检测后面的通过本地存储的数据进行设置cookie是否成功</p>
+<pre><code>默认用属性，会生成不必要的getter/setter 方法，程序体积会变大。
+</code></pre>
 
-<pre><code>#pragma mark 删除cookie
-- (void)deleteCookie
-{
-    NSLog(@"============删除cookie===============");
-    NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-    NSArray *cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
+<p>1.如果只是单纯的private变量，最好声明在implementation里.
+2.如果是类的public属性，就用property写在.h文件里
+3.如果自己内部需要setter和getter来实现一些东西，就在.m文件的类目里用property来声明</p>
 
-    //删除cookie
-    for (NSHTTPCookie *tempCookie in cookies) {
-        [cookieStorage deleteCookie:tempCookie];
+<h6>消息机制消息机制</h6>
+
+<pre><code>[obj makeText];==objc_msgSend(obj, @selector (makeText));
+
+
+首先通过obj的isa指针找到obj对应的class。
+
+首先检测这个 selector 是不是要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数。
+检测这个 selector 的 target 是不是 nil，Objc 允许我们对一个 nil 对象执行任何方法不会 Crash，因为运行时会被忽略掉。
+如果上面两步都通过了，那么就开始查找这个类的实现 IMP，
+在Class中先去cache中 通过SEL查找对应函数method，找到就执行对应的实现。
+若cache中未找到，再去methodList中查找，找到就执行对应的实现。
+若methodlist中未找到，则取superClass中查找（重复执行以上两个步骤），直到找到最根的类为止。
+若任何一部能找到，则将method加 入到cache中，以方便下次查找，并通过method中的函数指针跳转到对应的函数中去执行。
+如果以上都不能找到，则会开始进行消息转发
+</code></pre>
+
+<h6>消息转发</h6>
+
+<pre><code>1.动态方法解析：向当前类发送 resolveInstanceMethod: 信号，检查是否动态向该类添加了方法。（迷茫请搜索：@dynamic）
+2.快速消息转发：检查该类是否实现了 forwardingTargetForSelector: 方法，若实现了则调用这个方法。若该方法返回值对象非nil或非self，则向该返回对象重新发送消息。
+3.标准消息转发：runtime发送methodSignatureForSelector:消息获取Selector对应的方法签名。返回值非空则通过forwardInvocation:转发消息，返回值为空则向当前对象发送doesNotRecognizeSelector:消息，程序崩溃退出
+
+总结就是：
+在一个函数找不到时，OC提供了三种方式去补救：
+1、调用resolveInstanceMethod给个机会让类添加这个实现这个函数
+2、调用forwardingTargetForSelector让别的对象去执行这个函数
+3、调用forwardInvocation（函数执行器）灵活的将目标函数以其他形式执行。
+如果都不中，调用doesNotRecognizeSelector抛出异常。
+</code></pre>
+
+<h6>常见用途</h6>
+
+<ul>
+<li>增加，删除，修改一个类，属性，成员变量，方法</li>
+</ul>
+
+
+<h6>实际应用</h6>
+
+<ul>
+<li>关联对象</li>
+<li>方法混淆</li>
+<li>NSCoding(归档和解档, 利用runtime遍历模型对象的所有属性)</li>
+<li>字典 &ndash;> 模型 (利用runtime遍历模型对象的所有属性, 根据属性名从字典中取出对应的值, 设置到模型的属性上)</li>
+<li>KVO(利用runtime动态产生一个类)</li>
+<li>用于封装框架(想怎么改就怎么改) 这就是我们runtime机制的只要运用方向</li>
+</ul>
+
+
+<h3>RunLoop（底层）</h3>
+
+<h6>RunLoop 的简单概述</h6>
+
+<p>RunLoop:</p>
+
+<pre><code>   Runloop是事件接收和分发机制的一个实现。
+
+   Runloop提供了一种异步执行代码的机制，不能并行执行任务。
+
+   在主队列中，Main RunLoop直接配合任务的执行，负责处理UI事件、定时器以及其他内核相关事件。
+</code></pre>
+
+<p>主要目的：</p>
+
+<pre><code>   保证程序执行的线程不会被系统终止。   
+</code></pre>
+
+<p>使用Runloop ？</p>
+
+<pre><code>   当需要和该线程进行交互的时候才会使用Runloop.
+
+
+   每一个线程都有其对应的RunLoop，但是默认非主线程的RunLoop是没有运行的，需要为RunLoop添加至少一个事件源，然后去run它。
+
+
+   一般情况下我们是没有必要去启用线程的RunLoop的，除非你在一个单独的线程中需要长久的检测某个事件。
+</code></pre>
+
+<p>主线程默认有Runloop。当自己启动一个线程，如果只是用于处理单一的事件，则该线程在执行完之后就退出了。所以当我们需要让该线程监听某项事务
+时，就得让线程一直不退出，runloop就是这么一个循环，没有事件的时候，一直卡着，有事件来临了，执行其对应的函数。</p>
+
+<pre><code>   RunLoop,正如其名所示,是线程进入和被线程用来相应事件以及调用事件处理函数的地方.需要在代码中使用控制语句实现RunLoop的循环,也就是说,需要代码提供while或者for循环来驱动RunLoop.
+
+
+   在这个循环中,使用一个runLoop对象[NSRunloop currentRunloop]执行接收消息,调用对应的处理函数.
+
+
+    Runloop接收两种源事件:input sources和timer sources。
+
+
+   input sources 传递异步事件，通常是来自其他线程和不同的程序中的消息；
+
+
+   timer sources(定时器) 传递同步事件（重复执行或者在特定时间上触发）。
+
+
+   除了处理input sources，Runloop
+</code></pre>
+
+<p>也会产生一些关于本身行为的notificaiton。注册成为Runloop的observer，可以接收到这些notification，做一些额外
+的处理。（使用CoreFoundation来成为runloop的observer）。</p>
+
+<p>Runloop工作的特点:</p>
+
+<pre><code>   1&gt;当有时间发生时,Runloop会根据具体的事件类型通知应用程序作出相应;
+
+
+   2&gt;当没有事件发生时,Runloop会进入休眠状态,从而达到省电的目的;
+
+
+   3&gt;当事件再次发生时,Runloop会被重新唤醒,处理事件.
+</code></pre>
+
+<p>提示:一般在开发中很少会主动创建Runloop,而通常会把事件添加到Runloop中.</p>
+
+<p>苹果提供了两个途径来获取分别是Cocoe里面定义的NSRunLoop以及CoreFoundation里面定义的CFRunLoopRef。</p>
+
+<pre><code>CFRunLoopRef提供了纯C函数的API，所有这些API都是线程安全的。
+NSRunLoop提供了面向对象的API，但这些API不是线程安全的。
+</code></pre>
+
+<h6>RunLoop 与线程的关系</h6>
+
+<p>iOS 开发中能遇到两个线程对象: pthread_t 和 NSThread。过去苹果有份文档标明了 NSThread 只是 pthread_t 的封装，但那份文档已经失效了，现在它们也有可能都是直接包装自最底层的 mach thread。苹果并没有提供这两个对象相互转换的接口，但不管怎么样，可以肯定的是 pthread_t 和 NSThread 是一一对应的。比如，你可以通过 pthread_main_np() 或 [NSThread mainThread] 来获取主线程；也可以通过 pthread_self() 或 [NSThread currentThread] 来获取当前线程。CFRunLoop 是基于 pthread 来管理的。</p>
+
+<p>苹果不允许直接创建 RunLoop，它只提供了两个自动获取的函数：CFRunLoopGetMain() 和 CFRunLoopGetCurrent()。</p>
+
+<p>线程和 RunLoop 之间是一一对应的，其关系是保存在一个全局的 Dictionary 里。线程刚创建时并没有 RunLoop，如果你不主动获取，那它一直都不会有。RunLoop 的创建是发生在第一次获取时，RunLoop 的销毁是发生在线程结束时。你只能在一个线程的内部获取其 RunLoop（主线程除外）。</p>
+
+<h6>RunLoop 的 Mode</h6>
+
+<ol>
+<li><p>kCFRunLoopDefaultMode: App的默认 Mode，通常主线程是在这个 Mode 下运行的。</p></li>
+<li><p>UITrackingRunLoopMode: 界面跟踪 Mode，用于 ScrollView 追踪触摸滑动，保证界面滑动时不受其他 Mode 影响。</p></li>
+<li><p>UIInitializationRunLoopMode: 在刚启动 App 时第进入的第一个 Mode，启动完成后就不再使用。</p></li>
+<li><p>GSEventReceiveRunLoopMode: 接受系统事件的内部 Mode，通常用不到。</p></li>
+<li><p>kCFRunLoopCommonModes: 这是一个占位的 Mode，没有实际作用。</p></li>
+</ol>
+
+
+<p>你可以在这里看到更多的苹果内部的 Mode，但那些 Mode 在开发中就很难遇到了。</p>
+
+<p>一个 RunLoop 包含若干个 Mode，每个 Mode 又包含若干个 Source/Timer/Observer。每次调用 RunLoop 的主函数时，只能指定其中一个 Mode，这个Mode被称作 CurrentMode。如果需要切换 Mode，只能退出 Loop，再重新指定一个 Mode 进入。这样做主要是为了分隔开不同组的 Source/Timer/Observer，让其互不影响。</p>
+
+<h6>RunLoop 的底层实现(内部逻辑)</h6>
+
+<p>RunLoop 的核心是基于 mach port 的，其进入休眠时调用的函数是 mach_msg()</p>
+
+<p>RunLoop 的核心就是一个 mach_msg() (见上面代码的第7步)，RunLoop 调用这个函数去接收消息，如果没有别人发送 port 消息过来，内核会将线程置于等待状态。例如你在模拟器里跑起一个 iOS 的 App，然后在 App 静止时点击暂停，你会看到主线程调用栈是停留在 mach_msg_trap() 这个地方。</p>
+
+<h6>应用</h6>
+
+<ul>
+<li><p>AutoreleasePool</p></li>
+<li><p>事件响应</p></li>
+<li><p>手势识别</p></li>
+<li><p>界面更新</p></li>
+<li><p>定时器</p></li>
+<li><p>PerformSelecter</p></li>
+<li><p>关于GCD</p></li>
+<li><p>关于网络请求</p></li>
+<li><p>AFNetworking</p></li>
+<li><p>AsyncDisplayKit</p></li>
+</ul>
+
+
+<h3>多线程（底层与安全）</h3>
+
+<p>线程：1个进程要想执行任务，必须得有线程.线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行</p>
+
+<p>底层：Mach是第一个以多线程方式处理任务的系统，因此多线程的底层实现机制是基于Mach的线程。</p>
+
+<pre><code> 1》C语言的POSIX接口：#include&lt;pthread.h&gt;POSIX线程（POSIX threads），简称Pthreads，是线程的POSIX标准。该标准定义了创建和操纵线程的一整套API。在类Unix操作系统（Unix、Linux、Mac OS X等）中，都使用Pthreads作为操作系统的线程
+ 2》OC的NSThread
+ 3》 C语言的GCD接口（性能最好，代码更精简）  
+ 4》  OC的NSOperation和NSOperationQueue（基于GCD）
+</code></pre>
+
+<p>好处：</p>
+
+<pre><code>1、使用线程可以把程序中占据时间长的任务放到后台去处理，如图片、视频的下载
+
+2、发挥多核处理器的优势，并发执行让系统运行的更快、更流畅，用户体验更好
+</code></pre>
+
+<p>缺点：</p>
+
+<pre><code>1、大量的线程降低代码的可读性，
+
+2、更多的线程需要更多的内存空间
+
+3、当多个线程对同一个资源出现争夺的时候要注意线程安全的问题。
+</code></pre>
+
+<p>GCD内部怎么实现的</p>
+
+<pre><code>  1》 iOS和OSX的核心是XNU内核（苹果电脑发展的操作系统内核），GCD是基于XNU内核实现的。
+  2》GCD的API全部在libdispatch库中
+  3》GCD的底层实现主要有：Dispatch Queue和Dispatch Source
+    Dispatch Queue :管理block操作
+    Dispatch Source：处理事件（比如说线程间的通信）
+</code></pre>
+
+<p>6.GCD和NSOperationQueue</p>
+
+<pre><code>   1》GCD是纯C语言的API，NSOperationQueue是基于GCD的OC版本的封装
+   2》GCD只支持FIFO的队列，NSOperationQueue可以很方便的调整执行顺序，可以添加依赖设置最大并发数量。
+   3》GCD的执行速度比NSOperationQueue快
+   4》NSOperationQueue支持KVO，可以检测Operation是否正在执行，是否结束，是否取消。
+</code></pre>
+
+<p>如何进行选择？
+任务之间不太相互依赖，选用GCD；
+任务之间有依赖，或者要监听任务的执行情况：NSOperationQueue</p>
+
+<p>一、前言
+     1》只在主线程刷新访问UI
+     2》如果要防止资源抢夺，得用synchronize进行加锁保护。
+     3》如果异步操作要保证线程安全等问题，尽量使用GCD。（GCD有些函数默认就是安全的）</p>
+
+<p>前段时间看了几个开源项目，发现他们保持线程同步的方式各不相同，有@synchronized、NSLock、dispatch_semaphore、NSCondition、pthread_mutex、OSSpinLock。后来网上查了一下，发现他们的实现机制各不相同，性能也各不一样。不好意思，我们平常使用最多的@synchronized是性能最差的。下面我们先分别介绍每个加锁方式的使用，在使用一个案例来对他们进行性能对比。</p>
+
+<p>二、介绍与使用</p>
+
+<p>2.1、@synchronized</p>
+
+<pre><code>NSObject *obj = [[NSObject alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    @synchronized(obj) {
+       NSLog(@"需要线程同步的操作1 开始");
+       sleep(3);
+       NSLog(@"需要线程同步的操作1 结束");
     }
-
-    //把cookie打印出来，检测是否已经删除
-    NSArray *cookiesAfterDelete = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
-    for (NSHTTPCookie *tempCookie in cookiesAfterDelete) {
-        NSLog(@"cookieAfterDelete: %@", tempCookie);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    sleep(1);
+    @synchronized(obj) {
+       NSLog(@"需要线程同步的操作2");
     }
-    NSLog(@"\n");
-}
+});
 </code></pre>
 
-<h6>3，通过本地存储的数据设置cookie</h6>
+<p>@synchronized(obj)指令使用的obj为该锁的唯一标识，只有当标识相同时，才为满足互斥，如果线程2中的@synchronized(obj)改为@synchronized(self),刚线程2就不会被阻塞，@synchronized指令实现锁的优点就是我们不需要在代码中显式的创建锁对象，便可以实现锁的机制，但作为一种预防措施，@synchronized块会隐式的添加一个异常处理例程来保护代码，该处理例程会在异常抛出的时候自动的释放互斥锁。所以如果不想让隐式的异常处理例程带来额外的开销，你可以考虑使用锁对象。</p>
 
-<p>把本地的cookie取出并反归档，设置到cookie中，并且检测cookie是否设置成功</p>
+<p>2.2、dispatch_semaphore</p>
 
-<pre><code>#pragma mark 再取出保存的cookie重新设置cookie
-- (void)setCoookie
-{
-    NSLog(@"============再取出保存的cookie重新设置cookie===============");
-    //取出保存的cookie
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+<pre><code>dispatch_semaphore_t signal = dispatch_semaphore_create(1);
+dispatch_time_t overTime = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_semaphore_wait(signal, overTime);
+            NSLog(@"需要线程同步的操作1 开始");
+            sleep(2);
+            NSLog(@"需要线程同步的操作1 结束");
+        dispatch_semaphore_signal(signal);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        sleep(1);
+        dispatch_semaphore_wait(signal, overTime);
+            NSLog(@"需要线程同步的操作2");
+        dispatch_semaphore_signal(signal);
+});
+</code></pre>
 
-    //对取出的cookie进行反归档处理
-    NSArray *cookies = [NSKeyedUnarchiver unarchiveObjectWithData:[userDefaults objectForKey:@"cookie"]];
+<p>dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三个函数，分别是dispatch_semaphore_create，dispatch_semaphore_signal，dispatch_semaphore_wait。</p>
 
-    if (cookies) {
-        NSLog(@"有cookie");
-        //设置cookie
-        NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-        for (id cookie in cookies) {
-            [cookieStorage setCookie:(NSHTTPCookie *)cookie];
-        }
+<p>（1）dispatch_semaphore_create的声明为：</p>
+
+<p>dispatch_semaphore_t dispatch_semaphore_create(long value);</p>
+
+<p>传入的参数为long，输出一个dispatch_semaphore_t类型且值为value的信号量。</p>
+
+<p>值得注意的是，这里的传入的参数value必须大于或等于0，否则dispatch_semaphore_create会返回NULL。</p>
+
+<p>（2）dispatch_semaphore_signal的声明为：</p>
+
+<p>long dispatch_semaphore_signal(dispatch_semaphore_t dsema);</p>
+
+<p>这个函数会使传入的信号量dsema的值加1；</p>
+
+<p>(3) dispatch_semaphore_wait的声明为：</p>
+
+<p>long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);</p>
+
+<p>这个函数会使传入的信号量dsema的值减1；这个函数的作用是这样的，如果dsema信号量的值大于0，该函数所处线程就继续执行下面的语句，并且将信号量的值减1；如果desema的值为0，那么这个函数就阻塞当前线程等待timeout（注意timeout的类型为dispatch_time_t，不能直接传入整形或float型数），如果等待的期间desema的值被dispatch_semaphore_signal函数加1了，且该函数（即dispatch_semaphore_wait）所处线程获得了信号量，那么就继续向下执行并将信号量减1。如果等待期间没有获取到信号量或者信号量的值一直为0，那么等到timeout时，其所处线程自动执行其后语句。</p>
+
+<p>dispatch_semaphore 是信号量，但当信号总量设为 1 时也可以当作锁来。在没有等待情况出现时，它的性能比 pthread_mutex 还要高，但一旦有等待情况出现时，性能就会下降许多。相对于 OSSpinLock 来说，它的优势在于等待时不会消耗 CPU 资源。</p>
+
+<p>如上的代码，如果超时时间overTime设置成>2，可完成同步操作。如果overTime&lt;2的话，在线程1还没有执行完成的情况下，此时超时了，将自动执行下面的代码。</p>
+
+<p>2.3、NSLock</p>
+
+<pre><code>NSLock *lock = [[NSLock alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //[lock lock];
+    [lock lockBeforeDate:[NSDate date]];
+    NSLog(@"需要线程同步的操作1 开始");
+    sleep(2);
+    NSLog(@"需要线程同步的操作1 结束");
+    [lock unlock];
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    sleep(1);
+    if ([lock tryLock]) {//尝试获取锁，如果获取不到返回NO，不会阻塞该线程
+        NSLog(@"锁可用的操作");
+        [lock unlock];
     }else{
-        NSLog(@"无cookie");
+        NSLog(@"锁不可用的操作");
     }
+    NSDate *date = [[NSDate alloc] initWithTimeIntervalSinceNow:3];
+    if ([lock lockBeforeDate:date]) {//尝试在未来的3s内获取锁，并阻塞该线程，如果3s内获取不到恢复线程, 返回NO,不会阻塞该线程
+        NSLog(@"没有超时，获得锁");
+        [lock unlock];
+    }else{
+        NSLog(@"超时，没有获得锁");
+    }
+});
+</code></pre>
 
-    //打印cookie，检测是否成功设置了cookie
-    NSArray *cookiesA = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookies];
-    for (NSHTTPCookie *cookie in cookiesA) {
-        NSLog(@"setCookie: %@", cookie);
-    }
-    NSLog(@"\n");
+<p>NSLock是Cocoa提供给我们最基本的锁对象，这也是我们经常所使用的，除lock和unlock方法外，NSLock还提供了tryLock和lockBeforeDate:两个方法，前一个方法会尝试加锁，如果锁不可用(已经被锁住)，刚并不会阻塞线程，并返回NO。lockBeforeDate:方法会在所指定Date之前尝试加锁，如果在指定时间之前都不能加锁，则返回NO。</p>
+
+<pre><code>@protocol NSLocking
+- (void)lock;
+- (void)unlock;
+@end
+@interface NSLock : NSObject  {
+@private
+    void *_priv;
 }
+- (BOOL)tryLock;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
 </code></pre>
 
-<p>看一下运行截图</p>
+<p>2.4、NSRecursiveLock递归锁</p>
 
-<p><img src="/images/cookie001.png" title="Caption" ></p>
-
-<h4>六：Cookie与Session的却别</h4>
-
-<p>具体来说cookie机制采用的是在客户端保持状态的方案，而session机制采用的是在服务器端保持状态的方案。</p>
-
-<pre><code>cookie数据存放在客户的浏览器上，session数据放在服务器上；
-cookie不是很安全，别人可以分析存放在本地的COOKIE并进行COOKIE欺骗，考虑到安全应当使用session；
-session会在一定时间内保存在服务器上。当访问增多，会比较占用你服务器的性能。考虑到减轻服务器性能方面，应当使用COOKIE；
-单个cookie在客户端的限制是3K，就是说一个站点在客户端存放的COOKIE不能超过3K；
+<pre><code>//NSLock *lock = [[NSLock alloc] init];
+NSRecursiveLock *lock = [[NSRecursiveLock alloc] init];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+       static void (^RecursiveMethod)(int);
+       RecursiveMethod = ^(int value) {
+       [lock lock];
+         if (value &gt; 0) {
+                NSLog(@"value = %d", value);
+                sleep(1);
+                RecursiveMethod(value - 1);
+          }
+         [lock unlock];
+     };
+     RecursiveMethod(5);
+});
 </code></pre>
 
-<p>Cookie和Session的方案虽然分别属于客户端和服务端，但是服务端的session的实现对客户端的cookie有依赖关系的，上面我讲到服务端执行session机制时候会生成session的id值，这个id值会发送给客户端，客户端每次请求都会把这个id值放到http请求的头部发送给服务端，而这个id值在客户端会保存下来，保存的容器就是cookie，因此当我们完全禁掉浏览器的cookie的时候，服务端的session也会不能正常使用（注意：有些资料说ASP解决这个问题，当浏览器的cookie被禁掉，服务端的session任然可以正常使用，ASP我没试验过，但是对于网络上很多用php和jsp编写的网站，我发现禁掉cookie，网站的session都无法正常的访问）。</p>
+<p>NSRecursiveLock实际上定义的是一个递归锁，这个锁可以被同一线程多次请求，而不会引起死锁。这主要是用在循环或递归操作中。</p>
 
-<h6>Cookie的优缺点：</h6>
+<p>这段代码是一个典型的死锁情况。在我们的线程中，RecursiveMethod是递归调用的。所以每次进入这个block时，都会去加一次锁，而从第二次开始，由于锁已经被使用了且没有解锁，所以它需要等待锁被解除，这样就导致了死锁，线程被阻塞住了。调试器中会输出如下信息：</p>
 
-<ul>
-<li><p>优点：极高的扩展性和可用性</p>
+<p>在这种情况下，我们就可以使用NSRecursiveLock。它可以允许同一线程多次加锁，而不会造成死锁。递归锁会跟踪它被lock的次数。每次成功的lock都必须平衡调用unlock操作。只有所有达到这种平衡，锁最后才能被释放，以供其它线程使用。</p>
 
-<ul>
-<li>通过良好的编程，控制保存在cookie中的session对象的大小。
-通过加密和安全传输技术（SSL），减少cookie被破解的可能性。
-只在cookie中存放不敏感数据，即使被盗也不会有重大损失。
-控制cookie的生命期，使之不会永远有效。偷盗者很可能拿到一个过期的cookie。</li>
-</ul>
-</li>
-<li><p>缺点：</p>
+<p>如果我们将NSLock代替为NSRecursiveLock，上面代码则会正确执行。</p>
 
-<ul>
-<li>Cookie数量和长度的限制。每个domain最多只能有20条cookie，每个cookie长度不能超过4KB，否则会被截掉。
-安全性问题。如果cookie被人拦截了，那人就可以取得所有的session信息。即使加密也与事无补，因为拦截者并不需要知道cookie的意义，他只要原样转发cookie就可以达到目的了。
-有些状态不可能保存在客户端。例如，为了防止重复提交表单，我们需要在服务器端保存一个计数器。如果我们把这个计数器保存在客户端，那么它起不到任何作用。</li>
-</ul>
-</li>
-</ul>
+<p>如果需要其他功能，源码定义如下：</p>
 
+<pre><code>@interface NSRecursiveLock : NSObject  {
+@private
+    void *_priv;
+}
+- (BOOL)tryLock;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
+</code></pre>
 
-<h6>Session的优缺点：</h6>
+<p>2.5、NSConditionLock条件锁</p>
 
-<ul>
-<li><p>优点</p>
+<pre><code>NSMutableArray *products = [NSMutableArray array];
+NSInteger HAS_DATA = 1;
+NSInteger NO_DATA = 0;
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    while (1) {
+        [lock lockWhenCondition:NO_DATA];
+        [products addObject:[[NSObject alloc] init]];
+        NSLog(@"produce a product,总量:%zi",products.count);
+        [lock unlockWithCondition:HAS_DATA];
+        sleep(1);
+    }
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    while (1) {
+       NSLog(@"wait for product");
+        [lock lockWhenCondition:HAS_DATA];
+       [products removeObjectAtIndex:0];
+       NSLog(@"custome a product");
+       [lock unlockWithCondition:NO_DATA];
+    }
+});
+</code></pre>
 
-<ul>
-<li><p>如果要在诸多Web页间传递一个变量，那么用Session变量要比通过QueryString传递变量可使问题简化。</p></li>
-<li><p>要使WEb站点具有用户化，可以考虑使用Session变量。你的站点的每位访问者都有用户化的经验，基于此，随着LDAP和诸如MS Site</p></li>
-<li><p>Server等的使用，已不必再将所有用户化过程置入Session变量了，而这个用户化是取决于用户喜好的。</p></li>
-<li><p>你可以在任何想要使用的时候直接使用session变量，而不必事先声明它，这种方式接近于在VB中变量的使用。使用完毕后，也不必考虑将其释放，因为它将自动释放。</p></li>
-</ul>
-</li>
-<li><p>缺点</p>
+<p>当我们在使用多线程的时候，有时一把只会lock和unlock的锁未必就能完全满足我们的使用。因为普通的锁只能关心锁与不锁，而不在乎用什么钥匙才能开锁，而我们在处理资源共享的时候，多数情况是只有满足一定条件的情况下才能打开这把锁：</p>
 
-<ul>
-<li>Session变量和cookies是同一类型的。如果某用户将浏览器设置为不兼容任何cookie，那么该用户就无法使用这个Session变量！</li>
-</ul>
-</li>
-</ul>
+<p>在线程1中的加锁使用了lock，所以是不需要条件的，所以顺利的就锁住了，但在unlock的使用了一个整型的条件，它可以开启其它线程中正在等待这把钥匙的临界地，而线程2则需要一把被标识为2的钥匙，所以当线程1循环到最后一次的时候，才最终打开了线程2中的阻塞。但即便如此，NSConditionLock也跟其它的锁一样，是需要lock与unlock对应的，只是lock,lockWhenCondition:与unlock，unlockWithCondition:是可以随意组合的，当然这是与你的需求相关的。</p>
 
+<p>如果你需要其他功能，源码定义如下：</p>
 
-<p>参考：
-<a href="http://my.oschina.net/xianggao/blog/395675">http://my.oschina.net/xianggao/blog/395675</a></p>
+<pre><code>@interface NSConditionLock : NSObject  {
+@private
+    void *_priv;
+}
+- (instancetype)initWithCondition:(NSInteger)condition NS_DESIGNATED_INITIALIZER;
+@property (readonly) NSInteger condition;
+- (void)lockWhenCondition:(NSInteger)condition;
+- (BOOL)tryLock;
+- (BOOL)tryLockWhenCondition:(NSInteger)condition;
+- (void)unlockWithCondition:(NSInteger)condition;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+- (BOOL)lockWhenCondition:(NSInteger)condition beforeDate:(NSDate *)limit;
+@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
+@end
+</code></pre>
+
+<p>2.6、NSCondition</p>
+
+<pre><code>NSCondition *condition = [[NSCondition alloc] init];
+NSMutableArray *products = [NSMutableArray array];
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while (1) {
+            [condition lock];
+            if ([products count] == 0) {
+                NSLog(@"wait for product");
+                [condition wait];
+            }
+            [products removeObjectAtIndex:0];
+            NSLog(@"custome a product");
+            [condition unlock];
+        }
+    });
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while (1) {
+            [condition lock];
+            [products addObject:[[NSObject alloc] init]];
+            NSLog(@"produce a product,总量:%zi",products.count);
+            [condition signal];
+            [condition unlock];
+            sleep(1);
+        }
+});
+</code></pre>
+
+<p>一种最基本的条件锁。手动控制线程wait和signal。</p>
+
+<p>[condition lock];一般用于多线程同时访问、修改同一个数据源，保证在同一时间内数据源只被访问、修改一次，其他线程的命令需要在lock 外等待，只到unlock ，才可访问</p>
+
+<p>[condition unlock];与lock 同时使用</p>
+
+<p>[condition wait];让当前线程处于等待状态</p>
+
+<p>[condition signal];CPU发信号告诉线程不用在等待，可以继续执行</p>
+
+<p>2.7、pthread_mutex</p>
+
+<pre><code>__block pthread_mutex_t theLock;
+pthread_mutex_init(&amp;theLock, NULL);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        pthread_mutex_lock(&amp;theLock);
+        NSLog(@"需要线程同步的操作1 开始");
+        sleep(3);
+        NSLog(@"需要线程同步的操作1 结束");
+        pthread_mutex_unlock(&amp;theLock);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        sleep(1);
+        pthread_mutex_lock(&amp;theLock);
+        NSLog(@"需要线程同步的操作2");
+        pthread_mutex_unlock(&amp;theLock);
+});
+</code></pre>
+
+<p>c语言定义下多线程加锁方式。</p>
+
+<p>1：pthread_mutex_init(pthread_mutex_t mutex,const pthread_mutexattr_t attr);</p>
+
+<p>初始化锁变量mutex。attr为锁属性，NULL值为默认属性。</p>
+
+<p>2：pthread_mutex_lock(pthread_mutex_t mutex);加锁</p>
+
+<p>3：pthread_mutex_tylock(<em>pthread_mutex_t </em>mutex);加锁，但是与2不一样的是当锁已经在使用的时候，返回为EBUSY，而不是挂起等待。</p>
+
+<p>4：pthread_mutex_unlock(pthread_mutex_t *mutex);释放锁</p>
+
+<p>5：pthread_mutex_destroy(pthread_mutex_t* mutex);使用完后释放</p>
+
+<p>代码执行操作结果如下：</p>
+
+<p>2.8、pthread_mutex(recursive)</p>
+
+<pre><code> __block pthread_mutex_t theLock;
+//pthread_mutex_init(&amp;theLock, NULL);
+pthread_mutexattr_t attr;
+pthread_mutexattr_init(&amp;attr);
+pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_RECURSIVE);
+pthread_mutex_init(&amp;lock, &amp;attr);
+pthread_mutexattr_destroy(&amp;attr);
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    static void (^RecursiveMethod)(int);
+    RecursiveMethod = ^(int value) {
+            pthread_mutex_lock(&amp;theLock);
+            if (value &gt; 0) {
+                NSLog(@"value = %d", value);
+                sleep(1);
+                RecursiveMethod(value - 1);
+            }
+            pthread_mutex_unlock(&amp;theLock);
+     };
+    RecursiveMethod(5);
+});
+</code></pre>
+
+<p>这是pthread_mutex为了防止在递归的情况下出现死锁而出现的递归锁。作用和NSRecursiveLock递归锁类似。</p>
+
+<p>如果使用pthread_mutex_init(&amp;theLock, NULL);初始化锁的话，上面的代码会出现死锁现象。如果使用递归锁的形式，则没有问题。</p>
+
+<p>2.9、OSSpinLock</p>
+
+<pre><code>__block OSSpinLock theLock = OS_SPINLOCK_INIT;
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    OSSpinLockLock(&amp;theLock);
+    NSLog(@"需要线程同步的操作1 开始");
+    sleep(3);
+    NSLog(@"需要线程同步的操作1 结束");
+    OSSpinLockUnlock(&amp;theLock);
+});
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    OSSpinLockLock(&amp;theLock);
+    sleep(1);
+    NSLog(@"需要线程同步的操作2");
+    OSSpinLockUnlock(&amp;theLock);
+});
+</code></pre>
+
+<p>OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do while 忙等。它的缺点是当等待时会消耗大量 CPU 资源，所以它不适用于较长时间的任务。 不过最近YY大神在自己的博客不再安全的 OSSpinLock中说明了OSSpinLock已经不再安全，请大家谨慎使用。</p>
+
+<p>三、性能对比</p>
+
+<pre><code>OSSpinLock和dispatch_semaphore的效率远远高于其他。
+
+@synchronized和NSConditionLock效率较差。
+
+鉴于OSSpinLock的不安全，所以我们在开发中如果考虑性能的话，建议使用dispatch_semaphore。
+
+如果不考虑性能，只是图个方便的话，那就使用@synchronized。
+</code></pre>
+
+<h3>网络（底层与安全）</h3>
+
+<h3>数据持久化（各种使用与区别）（CoreData、SQLite）</h3>
+
+<h3>Block（底层/__Block）</h3>
+
+<h3>音视频</h3>
+
+<h3>直播</h3>
+
+<h3>安全</h3>
+
+<h3>优化（性能、卡顿）</h3>
+
+<h3>常见错误</h3>
+
+<h3>常用技术</h3>
+
+<p>KVC</p>
+
+<pre><code>KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa-swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据
+一个对象在调用setValue的时候，（1）首先根据方法名找到运行方法的时候所需要的环境参数。（2）他会从自己isa指针结合环境参数，找到具体的方法实现的接口。（3）再直接查找得来的具体的方法实现。
+</code></pre>
+
+<p>KVO</p>
+
+<pre><code>观察者为一个对象的属性进行了注册，被观察对象的isa指针被修改的时候，isa指针就会指向一个中间类（setter/getter方法），而不是真实的类。所以isa指针其实不需要指向实例对象真实的类。所以我们的程序最好不要依赖于isa指针。在调用类的方法的时候，最好要明确对象实例的类名。
+熟悉KVO的朋友都知道，只有当我们调用KVC去访问key值的时候KVO才会起作用。所以肯定确定的是，KVO是基于KVC实现的。其实看了上面我们的分析以后，关系KVO的架构的构思也就水到渠成了。
+</code></pre>
+
+<p>任何工程产品（注意是任何工程产品）都可以使用以下两种方法之一进行测试。
+黑盒测试：已知产品的功能设计规格，可以进行测试证明每个实现了的功能是否符合要求。
+白盒测试：已知产品的内部工作过程，可以通过测试证明每种内部操作是否符合设计规格要求，所有内部成分是否以经过检查。</p>
+
+<h5>黑盒测试</h5>
+
+<p>软件的黑盒测试意味着测试要在软件的接口处进行。这种方法是把测试对象看做一个黑盒子，测试人员完全不考虑程序内部的逻辑结构和内部特性，只依据程序的需求规格说明书，检查程序的功能是否符合它的功能说明。因此黑盒测试又叫功能测试或数据驱动测试。</p>
+
+<pre><code>黑盒测试主要是为了发现以下几类错误：
+1、是否有不正确或遗漏的功能？
+2、在接口上，输入是否能正确的接受？能否输出正确的结果？
+3、是否有数据结构错误或外部信息（例如数据文件）访问错误？
+4、性能上是否能够满足要求？
+5、是否有初始化或终止性错误？
+</code></pre>
+
+<h5>白盒测试</h5>
+
+<p>软件的白盒测试是对软件的过程性细节做细致的检查。这种方法是把测试对象看做一个打开的盒子，它允许测试人员利用程序内部的逻辑结构及有关信息，设计或选择测试用例，对程序所有逻辑路径进行测试。通过在不同点检查程序状态，确定实际状态是否与预期的状态一致。因此白盒测试又称为结构测试或逻辑驱动测试。</p>
+
+<pre><code>白盒测试主要是想对程序模块进行如下检查：
+1、对程序模块的所有独立的执行路径至少测试一遍。
+2、对所有的逻辑判定，取“真”与取“假”的两种情况都能至少测一遍。
+3、在循环的边界和运行的界限内执行循环体。
+4、测试内部数据结构的有效性，等等。
+</code></pre>
+
+<p>以上事实说明，软件测试有一个致命的缺陷，即测试的不完全、不彻底性。由于任何程序只能进行少量（相对于穷举的巨大数量而言）的有限的测试，在未发现错误时，不能说明程序中没有错误。</p>
+
+<h5>灰盒测试</h5>
+
+<p>灰盒测试，是介于白盒测试与黑盒测试之间的，可以这样理解，灰盒测试关注输出对于输入的正确性，同时也关注内部表现，但这种关注不象白盒那样详细、完整，只是通过一些表征性的现象、事件、标志来判断内部的运行状态，有时候输出是正确的，但内部其实已经错误了，这种情况非常多，如果每次都通过白盒测试来操作，效率会很低，因此需要采取这样的一种灰盒的方法。</p>
+
+<h3>全栈相关</h3>
+
+<h3>算法（常用、排序）</h3>
+
+<h3>数据结构</h3>
+
+<h3>设计模式（32中）</h3>
+
+<h3>架构设计</h3>
+
+<h3>逆向工程</h3>
+
+<h3>实战应用</h3>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Keychain介绍与使用]]></title>
-    <link href="http://al1020119.github.io/blog/2016/01/21/keyChain/"/>
-    <updated>2016-01-21T10:05:08+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/01/21/keyChain</id>
-    <content type="html"><![CDATA[<h3>介绍</h3>
+    <title type="html"><![CDATA[Cell重用数据混乱]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi/"/>
+    <updated>2016-06-15T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi</id>
+    <content type="html"><![CDATA[<p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
 
-<p>引言：</p>
-
-<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
-
-<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
+<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
 
 <!--more-->
 
 
-<h3>使用</h3>
+<p>这样配置的话超过页面显示的内容会重复出现</p>
 
-<p>通常情况下，我们用NSUserDefaults存储数据信息，但是对于一些私密信息，比如密码、证书等等，就需要使用更为安全的keychain了。keychain里保存的信息不会因App被删除而丢失，在用户重新安装App后依然有效，数据还在。</p>
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过唯一标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
 
-<p>使用苹果官方发布的KeychainItemWrapper或者SFHFKeychainUtils很方便，后来看到 iphone使用keychain来存取用户名和密码 一文，觉得对了解keychain有很大的帮助，于是ARC控也尝试了一把。</p>
-
-<p>需要导入Security.framework</p>
-
-<pre><code>@implementation WQKeyChain
-+ (NSMutableDictionary *)getKeychainQuery:(NSString *)service {
-return [NSMutableDictionary dictionaryWithObjectsAndKeys:
-        (__bridge_transfer id)kSecClassGenericPassword,(__bridge_transfer id)kSecClass,
-        service, (__bridge_transfer id)kSecAttrService,
-        service, (__bridge_transfer id)kSecAttrAccount,
-        (__bridge_transfer id)kSecAttrAccessibleAfterFirstUnlock,(__bridge_transfer id)kSecAttrAccessible,
-        nil];
+    return cell;
 }
+</code></pre>
 
-+ (void)save:(NSString *)service data:(id)data {
-    //Get search dictionary
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    //Delete old item before add new item
-    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
-    //Add new object to search dictionary(Attention:the data format)
-    [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:data] forKey:(__bridge_transfer id)kSecValueData];
-    //Add item to keychain with the search dictionary
-    SecItemAdd((__bridge_retained CFDictionaryRef)keychainQuery, NULL);
+<p>通过以下3方案可以解决</p>
+
+<p>方案一  取消cell的重用机制，通过indexPath来创建cell 将可以解决重复显示问题 不过这样做相对于大数据来说内存就比较吃紧了</p>
+
+<p>通过不让他重用cell 来解决重复显示</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过indexPath创建cell实例 每一个cell都是单独的
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
 }
+</code></pre>
 
-+ (id)load:(NSString *)service {
-    id ret = nil;
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    //Configure the search setting
-    [keychainQuery setObject:(id)kCFBooleanTrue forKey:(__bridge_transfer id)kSecReturnData];
-    [keychainQuery setObject:(__bridge_transfer id)kSecMatchLimitOne forKey:(__bridge_transfer id)kSecMatchLimit];
-    CFDataRef keyData = NULL;
-    if (SecItemCopyMatching((__bridge_retained CFDictionaryRef)keychainQuery, (CFTypeRef *)&amp;keyData) == noErr) {
-        @try {
-            ret = [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge_transfer NSData *)keyData];
-        } @catch (NSException *e) {
-            NSLog(@"Unarchive of %@ failed: %@", service, e);
-        } @finally {
+<p>方案二  让每个cell都拥有一个对应的标识 这样做也会让cell无法重用 所以也就不会是重复显示了 显示内容比较多时内存占用也是比较多的和方案一类似
+同样通过不让他重用cell 来解决重复显示 不同的是每个cell对应一个标</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义cell标识  每个cell对应一个自己的标识
+    NSString *CellIdentifier = [NSString stringWithFormat:@"cell%ld%ld",indexPath.section,indexPath.row];
+    // 通过不同标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+
+    return cell;
+}
+</code></pre>
+
+<p>方案三 只要最后一个显示的cell内容不为空，然后把它的子视图全部删除，等同于把这个cell单独出来了 然后跟新数据就可以解决重复显示</p>
+
+<p> 当页面拉动需要显示新数据的时候，把最后一个cell进行删除 就有可以自定义cell 此方案即可避免重复显示，又重用了cell相对内存管理来说是最好的方案 前两者相对比较消耗内存</p>
+
+<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 定义唯一标识
+    static NSString *CellIdentifier = @"Cell";
+    // 通过唯一标识创建cell实例
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+
+    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+    }
+    else//当页面拉动的时候 当cell存在并且最后一个存在 把它进行删除就出来一个独特的cell我们在进行数据配置即可避免
+    {
+        while ([cell.contentView.subviews lastObject] != nil) {
+            [(UIView *)[cell.contentView.subviews lastObject] removeFromSuperview];
         }
     }
-    return ret;
-}
+    // 对cell 进行简单地数据配置
+    cell.textLabel.text = @"text";
+    cell.detailTextLabel.text = @"text";
+    cell.imageView.image = [UIImage imageNamed:@"4.png"];
 
-+ (void)delete:(NSString *)service {
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:service];
-    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
-}
-@end
-</code></pre>
-
-<p>比如，保存密码</p>
-
-<pre><code>@interface WQUserDataManager : NSObject
-
-
-+(void)savePassWord:(NSString *)password;
-
-
-+(id)readPassWord;
-
-
-+(void)deletePassWord;
-
-@end
-
-#import "WQUserDataManager.h"
-
-@implementation WQUserDataManager
-
-static NSString * const KEY_IN_KEYCHAIN = @"com.wuqian.app.allinfo";
-static NSString * const KEY_PASSWORD = @"com.wuqian.app.password";
-
-+(void)savePassWord:(NSString *)password
-{
-    NSMutableDictionary *usernamepasswordKVPairs = [NSMutableDictionary dictionary];
-    [usernamepasswordKVPairs setObject:password forKey:KEY_PASSWORD];
-    [WQKeyChain save:KEY_IN_KEYCHAIN data:usernamepasswordKVPairs];
-}
-
-+(id)readPassWord
-{
-    NSMutableDictionary *usernamepasswordKVPair = (NSMutableDictionary *)[WQKeyChain load:KEY_IN_KEYCHAIN];
-    return [usernamepasswordKVPair objectForKey:KEY_PASSWORD];
-}
-
-+(void)deletePassWord
-{
-    [WQKeyChain delete:KEY_IN_KEYCHAIN];
-}
-@end
-</code></pre>
-
-<p>实现一个简单的界面，把设定的密码存起来，然后立即读取显示出来看看效果</p>
-
-<pre><code>-(IBAction)btnAciton:(id)sender
-{
-    [WQUserDataManager savePassWord:self.textfield.text];
-    self.label.text = [WQUserDataManager readPassWord];
+    return cell;
 }
 </code></pre>
+
+<p>以上都是个人理解，本人也是菜鸟，有理解不对的地方希望大家指出，同时也希望能对大家起到一定的帮助！！ Thank you！</p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[iBeacon初探]]></title>
-    <link href="http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan/"/>
-    <updated>2015-11-28T17:42:15+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/11/28/ibeaconchu-tan</id>
-    <content type="html"><![CDATA[<blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
-当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
-
-<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
-等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+    <title type="html"><![CDATA[我知道你在找什么？]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm/"/>
+    <updated>2016-06-06T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm</id>
+    <content type="html"><![CDATA[<p>不喜欢废话。。。。。来，直接上（不是上我。。。。）</p>
 
 <!--more-->
 
 
-<h4>Apple Store 中的 iBeacon 支持</h4>
+<p>一：源代码实例</p>
 
-<h6>特点</h6>
+<p>1:快速搭建项目源代码</p>
 
-<pre><code>iBeacon 基于低功耗蓝牙技术（Bluetooth Low Energy, BLE）这一开放标准，因此也继承了 BLE 的一些特点。
-</code></pre>
+<p>地址：<a href="https://github.com/wujunyang/MobileProject">https://github.com/wujunyang/MobileProject</a></p>
 
-<h6>范围广</h6>
+<p>2:高仿美团iOS版</p>
 
-<pre><code>相比于 NFC 的数厘米的识别范围，iBeacon 的识别范围可以达到数十米，并且能够估计距离的远近。
-</code></pre>
+<p>地址：<a href="https://github.com/lookingstars/meituan">https://github.com/lookingstars/meituan</a></p>
 
-<h6>兼容性</h6>
+<p>3:模仿网易新闻做的精仿网易新闻</p>
 
-<pre><code>iBeacon 是基于 BLE 做的一个简单封装，因此大部分支持 BLE 的设备都可以兼容。
-例如可以使用一个普通的蓝牙芯片作为信标，使用 Android 设备检测信标的存在。
-</code></pre>
+<p>地址：<a href="https://github.com/dsxNiubility/SXNews">https://github.com/dsxNiubility/SXNews</a></p>
 
-<h6>低能耗</h6>
+<p>4:支付宝高仿版</p>
 
-<pre><code>不少 beacon 实现宣称可以不依赖外部能源独立运行两年。
-</code></pre>
+<p>地址：<a href="https://github.com/gsdios/GSD_ZHIFUBAO">https://github.com/gsdios/GSD_ZHIFUBAO</a></p>
 
-<h6>使用场景</h6>
+<p>5:高仿百度传课iOS版</p>
 
-<pre><code>我们以一个连锁商场的例子来讲解 iBeacon 的一个流程。在一个连锁商场中，店家需要在商场中的不同地方推送不同的优惠信息，比如服装和家居柜台推送的消息就很有可能不同。
-</code></pre>
+<p>地址：<a href="https://github.com/lookingstars/chuanke">https://github.com/lookingstars/chuanke</a></p>
 
-<p>当消费者走进某个商场时，会扫描到一个 beacon。这个 beacon 有三个标志符，proximityUUID 是一个整个公司（所有连锁商场）统一的值，可以用来标识这个公司，major 值用来标识特定的连锁商场，比如消费者正在走进的商场，minor 值标识了特定的一个位置的 beacon，例如定位到消费者正在门口。</p>
+<p>6：模仿一元云购</p>
 
-<p>这时商场的 app 会被系统唤醒，app 可以运行一个比较短的时间。在这段时间内，app 可以根据 beacon 的属性查询到用户的地理位置（通过查询服务器或者本地数据），例如在化妆品专柜，之后就可以通过一个 local notification 推送化妆品的促销信息。用户可以点击这次 local notification 来查看更详细的信息，这样一次促销行为就完成了。</p>
+<p>地址：<a href="https://github.com/JxbSir/YiYuanYunGou">https://github.com/JxbSir/YiYuanYunGou</a></p>
 
-<h6>API</h6>
+<p>7：wordpress源代码</p>
 
-<pre><code>闲话少说，我们来看下 iBeacon 具体怎么使用：
-</code></pre>
+<p>地址：<a href="https://github.com/wordpress-mobile/WordPress-iOS">https://github.com/wordpress-mobile/WordPress-iOS</a></p>
 
-<h6>Beacon 的表示</h6>
+<p>8：v2ex源代码（文章类型，若报SVProgressHUD错，则把Podfile中的SVProgressHUD移除）</p>
 
-<pre><code>iBeacon 本质上来说是一个位置（区域）信息，所以 Apple 把 iBeacon 功能集成在了 Core Location 里面。
-</code></pre>
+<p>地址：<a href="https://github.com/singro/v2ex">https://github.com/singro/v2ex</a></p>
 
-<p>iBeacon 信标在 Core Location 中表现为一个 CLBeacon，它圈定的范围则表现为 CLBeaconRegion，这是一个 CLRegion 的子类。</p>
+<p>9:PHPHub客户端(IOS8.0以上)</p>
 
-<p>CLBeaconRegion 主要用三个属性来标识一个 iBeacon，proximityUUID、major 和 minor。
-proximityUUID 是一个 NSUUID，用来标识公司，每个公司、组织使用的 iBeacon 应该拥有同样的 proximityUUID。
-major 用来识别一组相关联的 beacon，例如在连锁超市的场景中，每个分店的 beacon 应该拥有同样的 major。
-minor 则用来区分某个特定的 beacon。</p>
+<p>地址：<a href="https://github.com/Aufree/phphub-ios">https://github.com/Aufree/phphub-ios</a></p>
 
-<pre><code>这些属性如果不指定（即 nil），匹配的时候就会忽略这个属性。例如只指定 proximityUUID 的 CLBeaconRegion 可以匹配某公司的所有 beacons。
-</code></pre>
+<p>10:Coding.net客户端</p>
 
-<h6>Monitoring</h6>
+<p>地址：<a href="https://coding.net/u/coding/p/Coding-iOS/git">https://coding.net/u/coding/p/Coding-iOS/git</a></p>
 
-<pre><code>Apple 在 iOS 4 中增加了地理围栏 API，可以用来在设备进入/退出某个地理区域时获得通知，这些 API 包括 -startMonitoringForRegion:、-locationManager:didEnterRegion:、-locationManager:didExitRegion: 等。
-</code></pre>
+<p>11：如何优化UITableView中Cell加载图片的实例</p>
 
-<p>CLBeaconRegion 作为 CLRegion 的子类也可以复用这些 API，这种检测 iBeacon 的方式叫做 monitoring。</p>
+<p>地址：<a href="https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad">https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad</a></p>
 
-<p>使用这种方法可以在程序在后台运行时检测 iBeacon，但是只能同时检测 20 个 region，也不能推测设备与 beacon 的距离。</p>
+<p>12:开源的IOS代码集合</p>
 
-<h6>Ranging</h6>
+<p>地址：<a href="https://github.com/dkhamsing/open-source-ios-apps">https://github.com/dkhamsing/open-source-ios-apps</a></p>
 
-<pre><code>除了使用地理围栏 API 的方式，Apple 还在 iOS 7 中新增加了 iBeacon 专用的检测方式，也就是 ranging。
-</code></pre>
+<p>二：辅助软件</p>
 
-<p>通过 CLLocationManager 的 -startRangingBeaconsInRegion: 方法可以开始检测特定的 iBeacon。</p>
+<p>1：XCODE文档注解插件VVDocumenter</p>
 
-<p>当检测到 beacon 的时候，CLLocationManager 的 delegate 方法 -locationManager:didRangeBeacons:inRegion: 会被调用，通知调用者现在被检测到的 beacons。
-这个方法会返回一个 CLBeacon 的数组，根据 CLBeacon 的 proximity 属性就可以判断设备和 beacon 之间的距离。</p>
+<p>地址：<a href="https://github.com/onevcat/VVDocumenter-Xcode">https://github.com/onevcat/VVDocumenter-Xcode</a></p>
 
-<blockquote><p>proximity 属性有四个可能的值，unknown、immediate、near 和 far。
-另外 CLBeacon 还有 accuracy 和 rssi 两个属性能提供更详细的距离数据。</p></blockquote>
+<p>2：将JSON格式化输出为模型的属性</p>
 
-<h6>使用 iOS 设备作为 iBeacon</h6>
+<p>地址：<a href="https://github.com/EnjoySR/ESJsonFormat-Xcode">https://github.com/EnjoySR/ESJsonFormat-Xcode</a></p>
 
-<p>我们可以使用 Core Bluetooth 框架来广播特定的 payload 来让 iOS 设备成为一个 iBeacon。
-这个 payload 可以由 CLBeaconRegion 的 -peripheralDataWithMeasuredPower: 方法来获取。
-之后交给 CBPeripheralManager 广播出去就可以了。</p>
+<p>3：图片提示插件</p>
 
-<p>需要注意的是，广播 iBeacon 信息的时候 app 必须在前台运行。</p>
+<p>地址：<a href="https://github.com/ksuther/KSImageNamed-Xcode">https://github.com/ksuther/KSImageNamed-Xcode</a></p>
 
-<h6>行为</h6>
+<p>4：图片转换插件</p>
 
-<p>iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别是当应用运行在后台时，检测到 beacon 的时间延迟会让开发者难以推测。在做了一些实验和合理的推测后，我们得出了一些</p>
+<p>地址：<a href="https://github.com/rickytan/RTImageAssets">https://github.com/rickytan/RTImageAssets</a></p>
 
-<blockquote><p>结论：
-检测到 beacon 的时间跟设备进行蓝牙扫描的时间间隔有关，每当设备进行扫描的时候，就能发现 iBeacon region 的变化。
-在 ranging 打开的情况下，设备会每秒钟做一次扫描，也就是说状态更新最多延迟一秒。
-程序在后台运行，并且 monitoring 打开的时候，设备可能每隔数分钟做一次扫描。iOS 7 的响应速度较慢，iOS 7.1 有比较大的改善。
-如果存在设置 notifyEntryStateOnDisplay=YES 的 beacon，iOS 会在屏幕点亮的时候（锁屏状态下按下 home 键，或者因为收到推送点亮等）进行一次扫描。
-设备重启并不影响 iBeacon 后台检测的执行。
-iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。</p></blockquote>
+<p>5:测试模拟苹果通知</p>
+
+<p>地址：<a href="https://github.com/KnuffApp/Knuff">https://github.com/KnuffApp/Knuff</a></p>
+
+<p>6: HOStringSense可以在弹出框写NSString，所见及所得</p>
+
+<p>地址：<a href="https://github.com/holtwick/HOStringSense-for-Xcode">https://github.com/holtwick/HOStringSense-for-Xcode</a></p>
+
+<p>7：cocoapods-xcode-plugin  pod相关的操作可以在xcode菜单进行</p>
+
+<p>地址：<a href="https://github.com/kattrali/cocoapods-xcode-plugin">https://github.com/kattrali/cocoapods-xcode-plugin</a></p>
+
+<p>8：switch枚举的时候会自动生成代码</p>
+
+<p>地址：<a href="https://github.com/stefanceriu/SCXcodeSwitchExpander">https://github.com/stefanceriu/SCXcodeSwitchExpander</a></p>
+
+<p>9：git中关于各个语言的gitignore</p>
+
+<p>地址：<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a></p>
+
+<p>10：FLEX（Flipboard Explorer）是Flipboard官方发布的一组专门用于iOS开发的应用内调试工具</p>
+
+<p>地址：<a href="https://github.com/Flipboard/FLEX">https://github.com/Flipboard/FLEX</a></p>
+
+<p>11：ponyDebugger是一个远程调试工具包，通过使用Chrome开发者工具来调试iOS应用的网络流量和数据存储</p>
+
+<p>地址：<a href="https://github.com/square/PonyDebugger">https://github.com/square/PonyDebugger</a></p>
+
+<p>12: OC编码风格规范</p>
+
+<p>地址：<a href="https://github.com/NYTimes/objective-c-style-guide">https://github.com/NYTimes/objective-c-style-guide</a></p>
+
+<p>13:FBMemoryProfiler：Facebook出品的一个实时监测内存使用的库。相比于Xcode自带的Instruments</p>
+
+<p>地址：<a href="https://github.com/facebook/FBMemoryProfiler">https://github.com/facebook/FBMemoryProfiler</a></p>
+
+<p>14:app卡顿问题检测&ndash;KMCGeigerCounter(实例可以网上搜索)</p>
+
+<p>地址：<a href="https://github.com/kconner/KMCGeigerCounter/">https://github.com/kconner/KMCGeigerCounter/</a></p>
+
+<p>15:生成类的关系图KSHObjcUML</p>
+
+<p>地址：<a href="https://github.com/kimsungwhee/KSHObjcUML">https://github.com/kimsungwhee/KSHObjcUML</a></p>
+
+<p>16:realm-cocoa实体映射数据库，有自个的数据库（可以替换SQLITE，速度比较快）</p>
+
+<p>地址：<a href="https://github.com/realm/realm-cocoa">https://github.com/realm/realm-cocoa</a></p>
+
+<p>17:创建文档API，可以快速让APP先调用，并行开发</p>
+
+<p>地址：<a href="https://apiary.io/">https://apiary.io/</a></p>
+
+<p>18:直接查看虚拟器上的沙盒路径simpholders</p>
+
+<p>地址：<a href="http://www.maczapp.com/simpholders">http://www.maczapp.com/simpholders</a></p>
+
+<p>19:FastStub实现了类似的功能，能自动解析出某个类头文件，父类，所有protocol里面还没有被实现的方法(ctrl+cmd+k)</p>
+
+<p>地址：<a href="https://github.com/music4kid/FastStub-Xcode">https://github.com/music4kid/FastStub-Xcode</a></p>
+
+<p>三：第三方插件</p>
+
+<p>1:基于响应式编程思想的oc</p>
+
+<p>地址：<a href="https://github.com/ReactiveCocoa/ReactiveCocoa">https://github.com/ReactiveCocoa/ReactiveCocoa</a></p>
+
+<p>2：hud提示框</p>
+
+<p>地址：<a href="https://github.com/jdg/MBProgressHUD">https://github.com/jdg/MBProgressHUD</a></p>
+
+<p>3：XML/HTML解析</p>
+
+<p>地址：<a href="https://github.com/topfunky/hpple">https://github.com/topfunky/hpple</a></p>
+
+<p>4：有文字输入时，能根据键盘是否弹出来调整自身显示内容的位置</p>
+
+<p>地址：<a href="https://github.com/michaeltyson/TPKeyboardAvoiding">https://github.com/michaeltyson/TPKeyboardAvoiding</a></p>
+
+<p>5：状态栏提示框</p>
+
+<p>地址：<a href="https://github.com/jaydee3/JDStatusBarNotification">https://github.com/jaydee3/JDStatusBarNotification</a></p>
+
+<p>6：block工具包。将很多需要用delegate实现的方法整合成了block的形式</p>
+
+<p>地址：<a href="https://github.com/zwaldowski/BlocksKit">https://github.com/zwaldowski/BlocksKit</a></p>
+
+<p>7：图片加载</p>
+
+<p>地址：<a href="https://github.com/rs/SDWebImage">https://github.com/rs/SDWebImage</a></p>
+
+<p>8：正则表达式</p>
+
+<p>地址：<a href="https://github.com/wezm/RegexKitLite">https://github.com/wezm/RegexKitLite</a></p>
+
+<p>9：Masonry代码布局</p>
+
+<p>地址：<a href="https://github.com/SnapKit/Masonry">https://github.com/SnapKit/Masonry</a></p>
+
+<p>10：弹出窗</p>
+
+<p>地址：<a href="https://github.com/sberrevoets/SDCAlertView">https://github.com/sberrevoets/SDCAlertView</a></p>
+
+<p>11:Button的样式</p>
+
+<p>地址：<a href="https://github.com/mattlawer/BButton">https://github.com/mattlawer/BButton</a></p>
+
+<p>12：验证网络连接状态</p>
+
+<p>地址：<a href="https://github.com/tonymillion/Reachability">https://github.com/tonymillion/Reachability</a></p>
+
+<p>13：自动计算表格行高</p>
+
+<p>地址：<a href="https://github.com/forkingdog/UITableView-FDTemplateLayoutCell">https://github.com/forkingdog/UITableView-FDTemplateLayoutCell</a></p>
+
+<p>14：关键帧基础动画框架,如动画效果的启动页</p>
+
+<p>地址：<a href="https://github.com/IFTTT/JazzHands">https://github.com/IFTTT/JazzHands</a></p>
+
+<p>15：iOS快速简单集成国内三大平台分享</p>
+
+<p>地址：<a href="https://github.com/xumeng/XMShareModule">https://github.com/xumeng/XMShareModule</a></p>
+
+<p>16：五项能力值展示的五边形</p>
+
+<p>地址：<a href="https://github.com/dsxNiubility/SXFiveScoreShow">https://github.com/dsxNiubility/SXFiveScoreShow</a></p>
+
+<p>17：自动识别网址号码邮箱和表情的label</p>
+
+<p>地址：<a href="https://github.com/molon/MLEmojiLabel">https://github.com/molon/MLEmojiLabel</a></p>
+
+<p>18：IM对话功能的封装</p>
+
+<p>地址：<a href="https://github.com/ZhipingYang/UUChatTableView">https://github.com/ZhipingYang/UUChatTableView</a></p>
+
+<p>19：字典转模型框架</p>
+
+<p>地址：<a href="https://github.com/CoderMJLee/MJExtension">https://github.com/CoderMJLee/MJExtension</a></p>
+
+<p>20：下拉上拉刷数据</p>
+
+<p>地址：<a href="https://github.com/CoderMJLee/MJRefresh">https://github.com/CoderMJLee/MJRefresh</a></p>
+
+<p>21：表格行左右划动菜单</p>
+
+<p>地址：<a href="https://github.com/MortimerGoro/MGSwipeTableCell">https://github.com/MortimerGoro/MGSwipeTableCell</a></p>
+
+<p>22:图文混搭</p>
+
+<p>地址:<a href="https://github.com/zhouande/TLAttributedLabel">https://github.com/zhouande/TLAttributedLabel</a></p>
+
+<p>23:可以简单展示在UINavigationBar下方，类似Music app的播放列表视图，弹出菜单视图</p>
+
+<p>地址：<a href="https://github.com/DrummerB/BFNavigationBarDrawer">https://github.com/DrummerB/BFNavigationBarDrawer</a></p>
+
+<p>24：比如筛选、模糊、优化、蒙版、调整大小、旋转以及保存等等。同时还提供了一个UIImageView子类从URL异步加载图片，并在下载完毕时展示图片。</p>
+
+<p>地址：<a href="https://github.com/Nyx0uf/NYXImagesKit">https://github.com/Nyx0uf/NYXImagesKit</a></p>
+
+<p>25：底部TabBar</p>
+
+<p>地址：<a href="https://github.com/robbdimitrov/RDVTabBarController">https://github.com/robbdimitrov/RDVTabBarController</a></p>
+
+<p>26:表情面版</p>
+
+<p>地址：<a href="https://github.com/ayushgoel/AGEmojiKeyboard">https://github.com/ayushgoel/AGEmojiKeyboard</a></p>
+
+<p>27:记录框架</p>
+
+<p>地址：<a href="https://github.com/CocoaLumberjack/CocoaLumberjack">https://github.com/CocoaLumberjack/CocoaLumberjack</a></p>
+
+<p>28：IOS与javascript交互</p>
+
+<p>地址：<a href="https://github.com/marcuswestin/WebViewJavascriptBridge">https://github.com/marcuswestin/WebViewJavascriptBridge</a></p>
+
+<p>29：图表统计展示</p>
+
+<p>地址：<a href="https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89">https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89</a></p>
+
+<p>30:appStore评分</p>
+
+<p>地址：<a href="https://github.com/arashpayan/appirater">https://github.com/arashpayan/appirater</a></p>
+
+<p>31：iOS-Categories扩展类大全</p>
+
+<p>地址：<a href="https://github.com/shaojiankui/IOS-Categories">https://github.com/shaojiankui/IOS-Categories</a></p>
+
+<p>32：扫描二维码，仿微信效果，带有扫描条</p>
+
+<p>地址：<a href="https://github.com/JxbSir/JxbScanQR">https://github.com/JxbSir/JxbScanQR</a></p>
+
+<p>33:动效弹出视图(弹出窗里面为文字，可以定义弹出的方向，及显示的时间)&ndash;AMPopTip</p>
+
+<p>地址：<a href="https://github.com/andreamazz/AMPopTip">https://github.com/andreamazz/AMPopTip</a></p>
+
+<p>34:基于Masonry自动计算行高扩展</p>
+
+<p>地址：<a href="https://github.com/632840804/HYBMasonryAutoCellHeight">https://github.com/632840804/HYBMasonryAutoCellHeight</a></p>
+
+<p>35:模仿新浪微博弹出菜单</p>
+
+<p>地址：<a href="https://github.com/wwdc14/HyPopMenuView">https://github.com/wwdc14/HyPopMenuView</a></p>
+
+<p>36:搜索历史标签</p>
+
+<p>地址：<a href="https://github.com/zhiwupei/SearchHistory">https://github.com/zhiwupei/SearchHistory</a></p>
+
+<p>37：快速集成新手引导的类库</p>
+
+<p>地址：<a href="https://github.com/StrongX/XSportLight">https://github.com/StrongX/XSportLight</a></p>
+
+<p>38：设置页面的封装</p>
+
+<p>地址：<a href="https://github.com/renzifeng/ZFSetting">https://github.com/renzifeng/ZFSetting</a></p>
+
+<p>39：带箭头的弹出视图插件</p>
+
+<p>地址：<a href="https://github.com/xiekw2010/DXPopover">https://github.com/xiekw2010/DXPopover</a></p>
+
+<p>40：下拉菜单插件</p>
+
+<p>地址：<a href="https://github.com/dopcn/DOPDropDownMenu/">https://github.com/dopcn/DOPDropDownMenu/</a></p>
+
+<p>41：表格空白提示插件</p>
+
+<p>地址：<a href="https://github.com/dzenbot/DZNEmptyDataSet">https://github.com/dzenbot/DZNEmptyDataSet</a></p>
+
+<p>42:给任意UIView视图四条边框加上阴影，可以自定义阴影的颜色、粗细程度、透明程度以及位置（上下左右边框）</p>
+
+<p>地址：<a href="https://github.com/Seitk/UIView-Shadow-Maker">https://github.com/Seitk/UIView-Shadow-Maker</a></p>
+
+<p>43:不错的日期时间插件</p>
+
+<p>地址：<a href="https://github.com/CoderXL/UUDatePicker">https://github.com/CoderXL/UUDatePicker</a></p>
+
+<p>44:底部弹出选择</p>
+
+<p>地址：<a href="https://github.com/skywinder/ActionSheetPicker-3.0">https://github.com/skywinder/ActionSheetPicker-3.0</a></p>
+
+<p>45:比较不错的引导页面插件</p>
+
+<p>地址：<a href="https://github.com/ealeksandrov/EAIntroView">https://github.com/ealeksandrov/EAIntroView</a></p>
+
+<p>46:两个APP跳转的插件</p>
+
+<p>地址：<a href="https://github.com/usebutton/DeepLinkKit">https://github.com/usebutton/DeepLinkKit</a></p>
+
+<p>47:本地存取NSUserDefaults插件</p>
+
+<p>地址：<a href="https://github.com/gangverk/GVUserDefaults">https://github.com/gangverk/GVUserDefaults</a></p>
+
+<p>48:NSArray和NSDictionary关于LINQ的操作方式，封装一些常用的操作</p>
+
+<p>地址：<a href="https://github.com/ColinEberhardt/LinqToObjectiveC">https://github.com/ColinEberhardt/LinqToObjectiveC</a></p>
+
+<p>49:可以监控网络请求的内容</p>
+
+<p>地址：<a href="https://github.com/coderyi/NetworkEye">https://github.com/coderyi/NetworkEye</a></p>
+
+<p>50：时间帮助插件，可以快速获取时间，比较，增加等操作</p>
+
+<p>地址：<a href="https://github.com/MatthewYork/DateTools">https://github.com/MatthewYork/DateTools</a></p>
+
+<p>51:不错的链式动作</p>
+
+<p>地址：<a href="https://github.com/jhurray/JHChainableAnimations">https://github.com/jhurray/JHChainableAnimations</a></p>
+
+<p>52:弹出层视图，背景效果（可以自定义视图的内容）</p>
+
+<p>地址：<a href="https://github.com/HJaycee/JCAlertView">https://github.com/HJaycee/JCAlertView</a></p>
+
+<p>53:圆形进度条的显示，中间可显示值</p>
+
+<p>地址：<a href="https://github.com/mdinacci/MDRadialProgress">https://github.com/mdinacci/MDRadialProgress</a></p>
+
+<p>54:很帅的数据加载动画（可以用于数据列表加载的展现）</p>
+
+<p>地址：<a href="https://github.com/NghiaTranUIT/FeSpinner">https://github.com/NghiaTranUIT/FeSpinner</a></p>
+
+<p>55:一个开源的AFnetworking上层的封装（猿题库等运用）</p>
+
+<p>地址：<a href="https://github.com/yuantiku/YTKNetwork">https://github.com/yuantiku/YTKNetwork</a></p>
+
+<p>56:CBStoreHouseRefreshControl：一个效果很酷炫的下拉刷新控件</p>
+
+<p>地址：<a href="https://github.com/coolbeet/CBStoreHouseRefreshControl">https://github.com/coolbeet/CBStoreHouseRefreshControl</a></p>
+
+<p>57:AFNetworking-RACExtensions:针对ReactiveCocoa的AF封装</p>
+
+<p>地址：<a href="https://github.com/CodaFi/AFNetworking-RACExtensions">https://github.com/CodaFi/AFNetworking-RACExtensions</a></p>
+
+<p>58:模糊效果（毛玻璃）</p>
+
+<p>地址：<a href="https://github.com/nicklockwood/FXBlurView">https://github.com/nicklockwood/FXBlurView</a></p>
+
+<p>59:UITableView展开效果的插件</p>
+
+<p>地址：<a href="https://github.com/sakkaras/SKSTableView">https://github.com/sakkaras/SKSTableView</a></p>
+
+<p>60:ZIP压缩及解压插件ZipArchive</p>
+
+<p>地址：<a href="https://github.com/ZipArchive/ZipArchive">https://github.com/ZipArchive/ZipArchive</a></p>
+
+<p>61:自定义UIAlertView</p>
+
+<p>地址：<a href="https://github.com/lmcd/LMAlertView">https://github.com/lmcd/LMAlertView</a></p>
+
+<p>62:Facebook开源的动画库Pop</p>
+
+<p>地址：<a href="https://github.com/facebook/pop">https://github.com/facebook/pop</a></p>
+
+<p>63:关于使用facebook动画库的实例集合</p>
+
+<p>地址：<a href="https://github.com/schneiderandre/popping">https://github.com/schneiderandre/popping</a></p>
+
+<p>64:iOS应用视图上添加简单闪烁效果Shimmer</p>
+
+<p>地址：<a href="https://github.com/facebook/Shimmer">https://github.com/facebook/Shimmer</a></p>
+
+<p>65:ios数据持久化插件，使得Core Data使用起来更加的便捷容易</p>
+
+<p>地址：<a href="https://github.com/magicalpanda/MagicalRecord">https://github.com/magicalpanda/MagicalRecord</a></p>
+
+<p>66:创建缩合的iOS应用程序标题栏</p>
+
+<p>地址：<a href="https://github.com/bryankeller/BLKFlexibleHeightBar">https://github.com/bryankeller/BLKFlexibleHeightBar</a></p>
+
+<p>67:PDF阅读器核心库</p>
+
+<p>地址：<a href="https://github.com/vfr/Reader">https://github.com/vfr/Reader</a></p>
+
+<p>68:STPopup使弹出框也有UINavigationController的效果</p>
+
+<p>地址：<a href="https://github.com/kevin0571/STPopup">https://github.com/kevin0571/STPopup</a></p>
+
+<p>69:基于核心音频,有助于进行实时，低延迟音频处理和可视化的iOS和OSX音频可视化框架</p>
+
+<p>地址：<a href="https://github.com/syedhali/EZAudio">https://github.com/syedhali/EZAudio</a></p>
+
+<p>70:一个不错的弹出Sheet,可以前进跟后退，适合多个页面</p>
+
+<p>地址：<a href="https://github.com/m1entus/MZFormSheetController">https://github.com/m1entus/MZFormSheetController</a></p>
+
+<p>71:Aspect库是对面向切面编程的实现，里面封装了Runtime的方法</p>
+
+<p>地址：<a href="https://github.com/steipete/Aspects">https://github.com/steipete/Aspects</a></p>
+
+<p>72：一个不错在无输入源的输入框，如UITableViewCell等</p>
+
+<p>地址：<a href="https://github.com/slackhq/SlackTextViewController">https://github.com/slackhq/SlackTextViewController</a></p>
+
+<p>73:小红点插件，用于提示未读效果</p>
+
+<p>地址：<a href="https://github.com/weng1250/WZLBadge">https://github.com/weng1250/WZLBadge</a></p>
+
+<p>74:不错的照片选择器，视频选择器，支持单多选</p>
+
+<p>地址：<a href="https://github.com/mwaterfall/MWPhotoBrowser">https://github.com/mwaterfall/MWPhotoBrowser</a></p>
+
+<p>75:含10多种的转场动画效果</p>
+
+<p>地址：<a href="https://github.com/ColinEberhardt/VCTransitionsLibrary">https://github.com/ColinEberhardt/VCTransitionsLibrary</a></p>
+
+<p>76:左右菜单显示（类似QQ导航）</p>
+
+<p>地址：<a href="https://github.com/romaonthego/RESideMenu">https://github.com/romaonthego/RESideMenu</a></p>
+
+<p>77:很赞的等待指示动画（比系统自带的帅）</p>
+
+<p>地址：<a href="https://github.com/ninjaprox/DGActivityIndicatorView">https://github.com/ninjaprox/DGActivityIndicatorView</a></p>
+
+<p>78:KVOController一个简单安全的KVO(Key-value Observing,键-值观察)工具,提供简单方便、线程安全的API, Facebook的开源项目之一</p>
+
+<p>地址：<a href="https://github.com/facebook/KVOController">https://github.com/facebook/KVOController</a></p>
+
+<p>79：FormatterKit收集了很多构思优秀的NSFormatter子类</p>
+
+<p>地址：<a href="https://github.com/mattt/FormatterKit">https://github.com/mattt/FormatterKit</a></p>
+
+<p>80:自定义的UIPageControl(可以设置每个的样式)</p>
+
+<p>地址：<a href="https://github.com/Spaceman-Labs/SMPageControl">https://github.com/Spaceman-Labs/SMPageControl</a></p>
+
+<p>81:使用NJKWebViewProgress做webview进度条（解决先前无法获得进度的问题）</p>
+
+<p>地址：<a href="https://github.com/ninjinkun/NJKWebViewProgress">https://github.com/ninjinkun/NJKWebViewProgress</a></p>
+
+<p>82:修改NavigationBar的显示效果</p>
+
+<p>地址：<a href="https://github.com/ltebean/LTNavigationBar/">https://github.com/ltebean/LTNavigationBar/</a></p>
+
+<p>83:FCUUID获得设备号的替代方式</p>
+
+<p>地址：<a href="https://github.com/fabiocaccamo/FCUUID">https://github.com/fabiocaccamo/FCUUID</a></p>
+
+<p>84:多主题色或者白天黑夜模式的运用</p>
+
+<p>地址：<a href="https://github.com/Draveness/DKNightVersion">https://github.com/Draveness/DKNightVersion</a></p>
+
+<p>85:GPUImage是一个基于GPU图像和视频处理的开源框架,提供各种各样的图像处理滤镜</p>
+
+<p>地址：<a href="https://github.com/BradLarson/GPUImage">https://github.com/BradLarson/GPUImage</a></p>
+
+<p>86:YY图片加载插件，可以支持动态，网络本地，渐进式图片加载等</p>
+
+<p>地址：<a href="https://github.com/ibireme/YYWebImage">https://github.com/ibireme/YYWebImage</a></p>
+
+<p>87:封装后的蓝牙帮助库</p>
+
+<p>地址：<a href="https://github.com/coolnameismy/BabyBluetooth">https://github.com/coolnameismy/BabyBluetooth</a></p>
+
+<p>88:一个很通用的需求就是引导教程</p>
+
+<p>地址：<a href="https://github.com/bubudrc/MPCoachMarks">https://github.com/bubudrc/MPCoachMarks</a></p>
+
+<p>89:基于MPMoviePlayerController播放器KRVideoPlayer</p>
+
+<p>地址：<a href="https://github.com/36Kr-Mobile/KRVideoPlayer">https://github.com/36Kr-Mobile/KRVideoPlayer</a></p>
+
+<p>90:UICollection左对齐跟右对齐</p>
+
+<p>地址：<a href="https://github.com/mokagio/UICollectionViewLeftAlignedLayout">https://github.com/mokagio/UICollectionViewLeftAlignedLayout</a></p>
+
+<p>地址：<a href="https://github.com/mokagio/UICollectionViewRightAlignedLayout">https://github.com/mokagio/UICollectionViewRightAlignedLayout</a></p>
+
+<p>91:自定义弹出对话窗，类似系统又可以自定义视图DQAlertView或MMPopupView</p>
+
+<p>地址：<a href="https://github.com/dinhquan/DQAlertView">https://github.com/dinhquan/DQAlertView</a></p>
+
+<p>地址：<a href="https://github.com/adad184/MMPopupView">https://github.com/adad184/MMPopupView</a></p>
+
+<p>92:输入框在焦点获得时会有一个小标题JVFloatLabeledTextField</p>
+
+<p>地址：<a href="https://github.com/jverdi/JVFloatLabeledTextField">https://github.com/jverdi/JVFloatLabeledTextField</a></p>
+
+<p>93:针对一些UI进行显示优化，可以设置一些不同的背景色等</p>
+
+<p>地址：<a href="https://github.com/Grouper/FlatUIKit">https://github.com/Grouper/FlatUIKit</a></p>
+
+<p>94:色彩插件，如果没有设计师又想一些漂亮的色彩就可以运用Chameleon</p>
+
+<p>地址：<a href="https://github.com/ViccAlexander/Chameleon">https://github.com/ViccAlexander/Chameleon</a></p>
+
+<p>95:两个不错的侧边栏显示插件ECSlidingViewController，SWRevealViewController</p>
+
+<p>地址：<a href="https://github.com/ECSlidingViewController/">https://github.com/ECSlidingViewController/</a></p>
+
+<p>ECSlidingViewController</p>
+
+<p>地址：<a href="https://github.com/John-Lluch/SWRevealViewController">https://github.com/John-Lluch/SWRevealViewController</a></p>
+
+<p>96：各式各样的进度条，可以放在不同地方NAV或者图片或者扇形M13ProgressSuite</p>
+
+<p>地址：<a href="https://github.com/Marxon13/M13ProgressSuite">https://github.com/Marxon13/M13ProgressSuite</a></p>
+
+<p>97：拉动UITableView时CELL有一摇动的效果AMWaveTransition</p>
+
+<p>地址：<a href="https://github.com/andreamazz/AMWaveTransition">https://github.com/andreamazz/AMWaveTransition</a></p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Metal深究]]></title>
-    <link href="http://al1020119.github.io/blog/2015/10/10/metal/"/>
-    <updated>2015-10-10T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/10/10/metal</id>
-    <content type="html"><![CDATA[<p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
-
-<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
-
-<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
+    <title type="html"><![CDATA[警告与实战]]></title>
+    <link href="http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/"/>
+    <updated>2016-06-03T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli</id>
+    <content type="html"><![CDATA[<p>App实战中遇到的警告问题及处理方式</p>
 
 <!--more-->
 
 
-<p>在这篇教程里，你将会获得亲身的经历，使用Metal和Swift来创建一个有基本脉络的应用：画一个简单的三角形。在这个过程中，你将会学习一些Metal里最重要的类，比如devices、command queues，等等。</p>
+<p>Xcode 升级后，常常遇到的遇到的警告、错误，解决方法</p>
 
-<p>这篇教程是设计为任何人可以阅读明白，无论你是否学习过3D绘图。但是，我们会过得很快。如果你之前有过3D编程或者是OpenGL编程的经历，你会发现它非常简单，因为里面的很多概念你已经很熟悉了。</p>
+<h5>警告：“xoxoxoxo”  is deprecated</h5>
 
-<p>这篇教程假设你已经熟悉Swift了。如果你还是个Swift新手，先学习这些教程吧，苹果Swift站点、一些Swift教程。</p>
-
-<p>注意：Metal应用不能跑在iOS模拟器上，它们需要一个设备，设备上装载着苹果A7芯片或者更新的芯片。所以要学习这篇教程，你需要一台这样的设备(iPhone 5S,iPad Air,iPad mini2)来完成代码的测试。</p>
-
-<pre><code>Metal vs. Sprite Kit, Scene Kit, or Unity
+<pre><code>解决办法：查看xoxoxoxo的这个方法的文档，替换掉这个方法即可。
 </code></pre>
 
-<p>在我们开始之前，我想要讨论怎样比较Metal和一些没那么底层的框架，比如：Sprite Kit，Scene Kit或者Unity。</p>
+<h5>警告：Declaration of &ldquo;struct sockaddr&rdquo; will not be visible outside of this function</h5>
 
-<p>Metal是一个底层3D绘图API，和OpenGL类似，但是它的开销更低。它是一个GPU上一个简单的封装，所以能够完成几乎所有事情，像 在屏幕上渲染一个精灵（sprite）或者是一个3D模型。但你要编写完成这些事情的所有代码。这样麻烦的代价是，你拥有了GPU的力量和控制。</p>
-
-<p>没那么底层的游戏框架，像Sprite Kit、Scene Kit或者Unity都是在底层3D绘图API（像是Metal或是OpenGL ES）的基础上构建的。它们提供大部分你需要在游戏中编写的底层封装代码，比如在屏幕上渲染一个精灵(sprite)或者一个3D模型。</p>
-
-<p>如果你所想要做的就是制作一个游戏，大多数情况下我会推荐你使用一个没那么底层的库，像Sprite Kit、Scene Kit或者Unity，因为它会让你的工作更轻松。如果你喜欢这样，我们有很多教程来帮助你学习这些框架。</p>
-
-<p>但是，还是有两个很好的原因来学习Metal：</p>
-
-<ul>
-<li>1.使硬件达到运行效率的峰值：因为Metal非常底层，它允许你使硬件达到运行效率的峰值，对你的游戏如何运行有着完全的控制。</li>
-<li>2.这是一个很好的学习经历：学习Metal教导你很多关于3D绘图编程的概念，编写你自己的游戏引擎，以及高层(higher level)游戏框架如何运作。</li>
-</ul>
-
-
-<p>如果以上任何一点对你来说是个好的理由，继续读下去！</p>
-
-<h4>Metal vs OpenGL ES</h4>
-
-<p>下面让我们来对比一下Metal和OpenGL ES的不同之处。</p>
-
-<p>OpenGL ES被设计成跨平台的。那意味着你可以用C++OpenGL ES的代码，在大部分情况下只要作少许改动就能让它在另一个平台上运行，比如Android。</p>
-
-<p>苹果意识到尽管OpenGL ES对跨平台的支持很赞，但是它缺少了一些苹果设计产品的基本理念：苹果把操作系统、硬件、软件整合在了一起。</p>
-
-<p>所以苹果认真考虑了如果他们设计一套特定基于他们硬件的绘图API，会是怎样呢？它的目标是极速运行、低开销以及支持最新最好的特性。</p>
-
-<p>于是Metal诞生了。它对比OpenGL ES，能为你的应用单位时间内提高最高10倍的绘图调用次数。这能够产生超赞的特效，就像WWDC 2014 keynote上zen花园样例。</p>
-
-<p>让我们开始看看一些Metal代码吧！</p>
-
-<p>开头
-Xcode的iOS游戏模板有一个Metal选项，但是你不要在这里选择。这是因为我想要向你一步步展示如何编写一个Metal应用，所以你能够理解这过程中的每一步骤。</p>
-
-<p>打开Xcode 6通过iOS\Application\Single View Application template创建一个新的项目。使用HelloMetal作为项目名称，设置开发语言为Swift，设置设备为通用设备(Universal)。点击 Next，选择一个目录，点击Create。</p>
-
-<p>有七个步骤来设置metal：</p>
-
-<ul>
-<li>1.创建一个MTLDevice</li>
-<li>2.创建一个CAMetalLayer</li>
-<li>3.创建一个Vertex Buffer</li>
-<li>4.创建一个Vertex Shader</li>
-<li>5.创建一个Fragment Shader</li>
-<li>6.创建一个Render Pipeline</li>
-<li>7.创建一个Command Queue</li>
-</ul>
-
-
-<p>让我们一个个看它们。</p>
-
-<h5>1)创建一个MTLDevice</h5>
-
-<p>使用Metal你要做的第一件事就是获取一个MTLDevice的引用。</p>
-
-<p>你可以把一个MTLDevice想象成是你和CPU的直接连接。你将通过使用MTLDevice创建所有其他你需要的Metal对象（像是command queues，buffers，textures）。</p>
-
-<p>为了完成这点，打开ViewController.swift 并添加下面的import语句到文件最上方：</p>
-
-<pre><code>import Metal 
+<pre><code>解决办法：在你的开源.m文件中添加 #import &lt;netinet/in.h&gt;
 </code></pre>
 
-<p>这导入了Metal框架，所以你能够使用Metal的类（像这文件中的MTLDevice）。接着，在ViewController类中添加以下属性：</p>
+<h5>警告：Implicit conversion from enumeration type &lsquo;UIInterfaceOrientation&rsquo; to different enumeration type &lsquo;UIDeviceOrientation&rsquo;</h5>
 
-<pre><code>var device: MTLDevice! = nil 
+<pre><code>解决办法：类型不匹配。跳到出错的那一行，UIInterfaceOrientation强制转换为UIDeviceOrientation就行了。
 </code></pre>
 
-<p>你将要在viewDidLoad函数内初始化这个属性，而不是在一个init函数里，所以它不得不是一个optional。既然你知道你一定会 在使用它前初始化它，你为了方便，把它标记为一个隐式不包裹的optional。最后，添加这一行到viewDidLoad函数的最后。</p>
+<h5>警告：incompatible pointer types assigning to &lsquo;MyArrayList*'from 'NSMutableArray&rsquo;</h5>
 
-<pre><code>device = MTLCreateSystemDefaultDevice() 
+<pre><code>解决办法：加入强制转换(MyArrayList*)
 </code></pre>
 
-<p>这个函数返回一个默认MTLDevice引用，你的代码将会用到它。</p>
+<h5>警告：'&amp;&amp;&lsquo; within &rsquo;||'</h5>
 
-<h5>2）创建一个CAMetalLayer</h5>
+<p>问题出处：
+    if (exists &amp;&amp; !isDirectory || !exists)………</p>
 
-<p>在iOS里，你在屏幕上看见的所有东西，被一个CALayer所承载。存在不同特效的CALayer的子类，比如：渐变层(gradient layers)、形状层（shape layers）、重复层(replicator layers) 等等。</p>
-
-<p>好的，如果你想要用Metal在屏幕上画一些东西，你需要使用一个特别的CALayer子类，CAMetalLayer。所以在你的viewcontroller中添加一个。</p>
-
-<p>首先在这个文件的上方添加import语句。</p>
-
-<pre><code>import QuartzCore 
+<pre><code>  解决办法： if ((exists &amp;&amp; !isDirectory) || !exists)………
 </code></pre>
 
-<p>你需要它因为CAMetalLayer是QuartzCore框架的部分，而不是Metal框架里的。</p>
+<h5>警告：Warning：The Copy Bundle Resources build phase contains this target&rsquo;s Info.plist file</h5>
 
-<p>然后把新属性添加到类中：</p>
-
-<pre><code>var metalLayer: CAMetalLayer! = nil 
+<pre><code>解决办法：将Info.plist文件移到Resources目录下，而不要直接放在target下。
 </code></pre>
 
-<p>这将会存储你新layer的引用。</p>
+<h5>警告：在使用ASIHttp…第三方库的，运行报错。</h5>
 
-<p>最后，把这行代码添加到viewDidLoad方法最后。</p>
-
-<pre><code> 1 metalLayer = CAMetalLayer()          // 1 
- 2 
- 3 metalLayer.device = device           // 2 
- 4 
- 5 metalLayer.pixelFormat = .BGRA8Unorm // 3 
- 6 
- 7 metalLayer.framebufferOnly = true    // 4 
- 8 
- 9 metalLayer.frame = view.layer.frame  // 5 
-10 
-11 view.layer.addSublayer(metalLayer)   // 6 
+<pre><code>解决办法：看你的项目中是否添加CFNetwork.framework、SystemConfiguration.framework, MobileCoreServices.framework,
 </code></pre>
 
-<p>让我们一行行来看：</p>
+<p>CoreGraphics.framework和libz.1.2.3.dylib，如果是sdk5.0以上，改添加libz.1.2.5.dylib</p>
 
-<ul>
-<li>a.你创建了一个CAMetalLayer</li>
-<li>b.你必须明确layer使用的MTLDevice，你简单地设置你早前获取的device。</li>
-<li>c.你把像素格式（pixel format）设置为BGRA8Unorm，它代表”8字节代表蓝色、绿色、红色和透明度，通过在0到1之间单位化的值来表示”。这次两种用在CAMetalLayer的像素格式之一，一般情况下你这样写就可以了。</li>
-<li>d.苹果鼓励你设置framebufferOnly为true，来增强表现效率。除非你需要对从layer生成的纹理（textures）取 样，或者你需要在layer绘图纹理(drawable textures)激活一些计算内核，否则你不需要设置。（大部分情况下你不用设置）</li>
-<li>e.你把layer的frame设置为view的frame。</li>
-<li>f.你把layer作为view.layer下的子layer添加。</li>
-</ul>
+<h5>警告：xxxooo，missing required architecture i386 in file</h5>
 
-
-<h5>3）创建一个Vertex Buffer</h5>
-
-<p>在Metal里每一个东西都是三角形。在这个应用里，你只需要画一个三角形，不过即使是极其复杂的3D形状也能被解构为一系列的三角形。</p>
-
-<p>在Metal里，默认的坐标系是向量坐标系，这意味着默认的时候，一个2x2x1的立方体，中心点是(0,0,0.5)。</p>
-
-<p>如果你认为z=0是平面，那么(-1,-1,0)就是左下角，(0,0,0)就是中心，(1,1,0)是右上角。在这篇教程中，你想要在这些点上画三角形：</p>
-
-<p>让我们创建一个缓冲区。在你的类中添加下列的常量属性：</p>
-
-<pre><code>let vertexData:[Float] = [ 
-  0.0, 1.0, 0.0, 
-  -1.0, -1.0, 0.0, 
-  1.0, -1.0, 0.0] 
+<pre><code>解决办法：如果是错误信息的话：Target-&gt;Build Settings-&gt;Search Paths, 删除FrameworkSearch Paths 里面内容就可以了。
 </code></pre>
 
-<p>这在CPU创建一个浮点数数组——你需要通过把它移动到一个叫MTLBuffer的东西，来发送这些数据到GPU。</p>
+<p>要只是一个警告的话，真机调试可以过。具体解决方法待大神出现。</p>
 
-<p>添加另一个新的属性：</p>
+<h5>警告：</h5>
 
-<pre><code>var vertexBuffer: MTLBuffer! = nil 
-然后在 viewDidLoad 方法的最后添加以下代码：
-let dataSize = vertexData.count * sizeofValue(vertexData[0]) // 1 
-vertexBuffer = device.newBufferWithBytes(vertexData, length: dataSize, options: nil) // 2 
+<p>clang: error: no such file or directory: &lsquo;/demo2/控件代码/13/Recorder/Recorder_Prefix.pch&rsquo;
+clang: error: no input files
+Command /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/clang failed with exit code 1</p>
+
+<pre><code>解决办法： 在你的主工程文件 target搜素，pch ，找到Prefix Header    把它后面的值，都删除，再运行就解决了。
 </code></pre>
 
-<p>让我们一行行来看：</p>
+<h5>警告：</h5>
 
-<ul>
-<li>a.你需要获取vertex data的字节大小。你通过把第一个元素的大小和数组元素个数相乘来得到。</li>
-<li>b.你在MTLDevice上调用newBufferWithBytes(length:options:) ，在GPU创建一个新的buffer，从CPU里输送data。你传递nil来接受默认的选项。</li>
-</ul>
+<p>“ARC forbids synthesizing a property of an Objective-C object with unspecified ownership or storage attribute</p>
 
-
-<h5>4）创建一个Vertex Shader</h5>
-
-<p>你之前创建的顶点将成为你接下来写的一个叫vertext shader的小程序的输入。</p>
-
-<p>一个vertex shader 是一个在GPU上运行的小程序，它由像c++的一门语言编写，那门语言叫做Metal Shading Language。</p>
-
-<p>一个vertex shader被每个顶点调用，它的工作是接受顶点的信息（如：位置和颜色、纹理坐标），返回一个潜在的修正位置（可能还有别的相关信息）。</p>
-
-<p>为了把事情保持简单，你的vertex shader将会返回一个和传递位置相同的位置。</p>
-
-<p>最简单的了解 vertex shader 的方法是，自己体验。点击File\New\File，选择iOS\Source\Metal File，然后点击Next。输入Shader.metal作为文件名上按回车，然后点击Create。</p>
-
-<p>注意：在Metal里，你能够在一个Metal文件里包含多个shaders。你也能把你的shader 分散在多个Metal文件中。Metal会从任意Metal文件中加载你项目包含的shaders。
-在Shaders.metal底部添加下列代码：</p>
-
-<pre><code>metalLayer = CAMetalLayer()          // 1 
-
-metalLayer.device = device           // 2 
-
-metalLayer.pixelFormat = .BGRA8Unorm // 3 
-
-metalLayer.framebufferOnly = true    // 4 
-
-metalLayer.frame = view.layer.frame  // 5 
-
-view.layer.addSublayer(metalLayer)   // 6
+<pre><code>解决办法：如果定义了ARC有效，那么必须要有所有者属性的定义;所以代码改成下面这样
+@property (nonatomic, strong, readonly) NSString *ss;
 </code></pre>
 
-<p>让我们一行行来看：</p>
+<h5>警告：</h5>
 
-<ul>
-<li>a.所有的vertex shaders必须以关键字vertex开头。函数必须至少返回顶点的最终位置——你通过指定float4（一个元素为4个浮点数的向量）。然后你给一个名字给vetex shader，以后你将用这个名字来访问这个vertex shader。</li>
-<li>b.第一个参数是一个指向一个元素为packed_float3(一个向量包含3个浮点数)的数组的指针，如：每个顶点的位置。这个 [[ &hellip; ]] 语法被用在声明那些能被用作特定额外信息的属性，像是资源位置，shader输入，内建变量。这里你把这个参数用 [[ buffer(0) ]] 标记，来指明这个参数将会被在你代码中你发送到你的vertex shader的第一块buffer data所遍历。</li>
-<li>c.vertex shader会接受一个名叫vertex_id的属性的特定参数，它意味着它会被vertex数组里特定的顶点所装入。</li>
-<li>d.现在你基于vertex id来检索vertex数组中对应位置的vertex并把它返回。同时你把这个向量转换为一个float4类型，最后的value设置为1.0（简单的来说，这是3D数学要求的）。</li>
-</ul>
+<p>io6一下的xib系统均没有自动选择Use Autolayout， Supporting iOS 5 and below with xib of iOS 6</p>
 
-
-<h5>5）创建一个Fragment Shader</h5>
-
-<p>完成我们的vertex shader后，另一个shader，它被每个在屏幕上的fragment(think pixel)调用，它就是fragment shader。</p>
-
-<p>fragment shader通过内插(interpolating)vertex shader的输出还获得自己的输入。比如：思考在三角形两个底顶点之间的fragment：</p>
-
-<p>fragment的输入值将会由50%的左下角顶点和50%的右下角顶点组成。</p>
-
-<p>fragment shader的工作是给每个fragment返回最后的颜色。为了简便，你将会把每个fragment返回白色。</p>
-
-<p>在Shader.metal的底部添加下列代码：</p>
-
-<pre><code>1 fragment half4 basic_fragment() { // 1 
-2 
-3 return half4(1.0);              // 2 
-4 
-5 } 
+<pre><code>解决办法：Just un-select “Use Autolayout” in the file inspector of the xib’s view and we are back to the familiar autosizing in size inspector and boom, it supports iOS 5 and below.
 </code></pre>
 
-<p>让我们一行行来看：</p>
+<h5>警告：</h5>
 
-<ul>
-<li><ol type="a">
-<li>所有fragment shaders必须以fragment关键字开始。这个函数必须至少返回fragment的最终颜色——你通过指定half4（一个颜色的RGBA值）来 完成这个任务。注意，half4比float4在内存上更有效率，因为，你写入了更少的GPU内存。</li>
-</ol>
-</li>
-<li><ol type="a">
-<li>这里你返回(1,1,1,1)的颜色，也就是白色。</li>
-</ol>
-</li>
-</ul>
+<p>Warning: Multiple build commands for output file xxx.png</p>
 
-
-<h5>6）创建一个Render Pipeline</h5>
-
-<p>现在你已经创建了一个vertex shader和一个fragment shader，你需要组合它们（加上一些配置数据）到一个特殊的对象，它名叫render pipeline。Metal一个很酷的地方是，渲染器（shaders）是预编译的，render pipeline 配置会在你第一次设置它的时候被编译，所以所有事情都极其高效。</p>
-
-<ol>
-<li><p>首先在ViewController.swift里添加一个属性：
-var pipelineState: MTLRenderPipelineState! = nil
-这会对你即将要创建的render pipeline ，在它被编译后进行跟踪。</p></li>
-<li><p>接着，在 viewDidLoad 方法最后添加如下代码：</p></li>
-</ol>
-
-
-<p>// 1</p>
-
-<pre><code>1 let defaultLibrary = device.newDefaultLibrary() 
-2 
-3 let fragmentProgram = defaultLibrary.newFunctionWithName("basic_fragment") 
-4 
-5 let vertexProgram = defaultLibrary.newFunctionWithName("basic_vertex") 
+<pre><code>解决办法：找到项目里xxx.png重复，删除重复的资源。
 </code></pre>
 
-<p>// 2</p>
+<p>//以下是升级到 xcode 5.0.1 之后使用遇到的警告</p>
 
-<pre><code>let pipelineStateDescriptor = MTLRenderPipelineDescriptor() 
+<h5>警告：</h5>
 
-pipelineStateDescriptor.vertexFunction = vertexProgram 
+<p> “iOS 模拟器”未能安装此应用程序。</p>
 
-pipelineStateDescriptor.fragmentFunction = fragmentProgram 
-
-pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
+<pre><code>解决办法：删除模拟器上当前要运行那个APP，重新运行项目。就ok
 </code></pre>
 
-<p>//3</p>
+<h5>警告：</h5>
 
-<pre><code>pipelineState = device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, error: &amp;pipelineError) 
+<p>SpringBoard无法启动应用程序 错误:-3</p>
 
-if !pipelineState { 
-
-  println("Failed to create pipeline state, error \(pipelineError)") 
-
-}
+<pre><code>解决办法：退出模拟器，重新运行这个项目。
 </code></pre>
 
-<p>让我们分部分看这些代码：</p>
+<h5>警告：</h5>
 
-<ul>
-<li>a.你可以通过调用device.newDefaultLibrary方法获得的MTLibrary对象访问到你项目中的预编译shaders。然后你能够通过名字检索每个shader。</li>
-<li>b.你在这里设置你的render pipeline。它包含你想要使用的shaders、颜色附件（color attachment）的像素格式(pixel format)。（例如：你渲染到的输入缓冲区，也就是CAMetalLayer）。</li>
-<li>c.最后，你把这个pipeline 配置编译到一个pipeline 状态(state)中，让它使用起来有效率。</li>
-</ul>
+<p>The server certificate failed to verify.</p>
 
-
-<h5>7）创建一个Command Queue</h5>
-
-<p>你需要做的最终的一次性设置步骤，是创建一个MTLCommandQueue。</p>
-
-<p>把这个想象成是一个列表装载着你告诉GPU一次要执行的命令。</p>
-
-<p>要创建一个command queue，简单地添加一个属性：</p>
-
-<pre><code>var commandQueue: MTLCommandQueue! = nil 
+<pre><code>解决办法：
+1、打开终端（实用工具 --&gt;终端），在终端中输入如下命令：
+svn ls https://192.100.1.11?0/svn/xxxxxx（注意下面的url更换成你自己的url地址）
+然后直接输入 “ p ”  确认，就可以重新连接了。
 </code></pre>
 
-<p>把下面这行添加到 viewDidLoad 的最后：</p>
+<h5>警告：</h5>
 
-<pre><code>commandQueue = device.newCommandQueue() 
+<p>Bitmasking for introspection of Objective-C object pointers is strongly discouraged.</p>
+
+<pre><code>解决办法：
+某数字&amp; 0x1的时候是代表要取最低位是否为1，改成了  if(JK_EXPECT_F(((NSUInteger)object)%2))即可。
 </code></pre>
 
-<p>恭喜，你的预设置的代码完成了。</p>
+<h5>警告：</h5>
 
-<p>渲染三角形
-现在，是时候学习每帧执行的代码，来渲染这个三角形！</p>
+<p>Implicit conversion loses integer precision: &lsquo;unsigned long&rsquo; to &lsquo;CC_LONG&rsquo; (aka &lsquo;unsigned int&rsquo;).</p>
 
-<p>它将在五个步骤中被完成：</p>
-
-<ul>
-<li>1.创建一个Display link。</li>
-<li>2.创建一个Render Pass Descriptor</li>
-<li>3.创建一个Command Buffer</li>
-<li>4.创建一个Render Command Encoder</li>
-<li>5.提交你Command Buffer的内容。</li>
-</ul>
-
-
-<p>让我们深入来看！</p>
-
-<blockquote><p>注意：理论上这个应用实际上不需要每帧渲染，因为三角形被绘制之后不会动。但是，大部分应用会有物体的移动，所以我们会那样做。同时也为将来的教程打下基础。</p></blockquote>
-
-<h6>1）创建一个Display Link</h6>
-
-<p>你想要一个函数，在每次设备屏幕刷新的时候被调用，这样你就可以重绘屏幕。</p>
-
-<p>在iOS平台上，你通过CADisplayLink 类来实现。</p>
-
-<p>为了使用它，在类里添加一个新的属性：</p>
-
-<pre><code> 1 var timer: CADisplayLink! = nil  
+<pre><code>解决办法：
+CC_MD5(str,strlen(str), r);，改成了     CC_MD5(str, (CC_LONG)strlen(str), r);即可。
 </code></pre>
 
-<p>然后在 viewDidLoad 方法的末尾像这样初始化它：</p>
+<h5>警告：</h5>
 
-<pre><code>timer = CADisplayLink(target: self, selector: Selector("gameloop")) 
+<p>error: failed to launch &lsquo;/private/var/mobile/Applications/xxxxx&rsquo; &ndash; failed to get the task for process 11140.</p>
 
-timer.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode) 
+<pre><code>解决办法：
+    重启你的开发手机即可，还有一种可能是你的开发者证书与发布证书搞错了，检查在xcode中证书是否一直 。
 </code></pre>
 
-<p>这会设置你的代码，让它每次刷新屏幕的时候调用一个名叫gameloop的方法。</p>
+<h5>警告：</h5>
 
-<pre><code>func render() { 
+<p>error: ignoring filxxxxxx/libBaiduMobStat.a, missing required architecture x86_64 in filexxxx/libBaiduMobStat.a</p>
 
-// TODO 
-
-} 
-
-func gameloop() { 
-  autoreleasepool { 
-
-    self.render() 
-
-  } 
-
-} 
+<pre><code>解决办法：
+    targets -&gt;build setting 下的  architectures 设置为 standard architetures(armv7,armv7s)   vaild architectures 设置为armv7,armv7s。
 </code></pre>
 
-<p>这里 gameloop 函数简单地调用 render 函数，这时 render 函数只有一个空实现。让我们来实现它！</p>
+<h5>警告：</h5>
 
-<h6>2）创建一个Render Pass Descriptor</h6>
+<p>error: Directory not found for option &lsquo;-L/Users/joryoubonxx/BaiduStatistic</p>
 
-<p>下一步是创建一个MTLRenderPassDescriptor，它能配置什么纹理会被渲染到、什么是clear color，以及其他的配置。</p>
-
-<p>简单地在 render 函数里添加以下行：</p>
-
-<pre><code>var drawable = metalLayer.nextDrawable() 
-
-let renderPassDescriptor = MTLRenderPassDescriptor() 
-renderPassDescriptor.colorAttachments[0].texture = drawable.texture 
-
-renderPassDescriptor.colorAttachments[0].loadAction = .Clear 
-
-renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
+<pre><code>解决办法：
+  删除  targets -&gt;build setting 下的  library search path不正确的地址,如果还不行，重新添加第三库、clean ,重启Xcode.即可。
 </code></pre>
 
-<p>首先你在之前的metal layer上调用nextDrawable() ，它会返回你需要绘制到屏幕上的纹理(texture)。接下来，你配置你的render pass descriptor 来使用它。你设置load action为clear，也就是说在绘制之前，把纹理清空。然后你把绘制的背景颜色设置为绿色。</p>
-
-<h6>3）创建一个Command Buffer</h6>
-
-<p>下一步是创建一个command buffer。你可以把它想象为一系列这一帧想要执行的渲染命令。酷的是在你提交command buffer之前，没有事情会真正发生，这样给你对事物在何时发生有一个很好的控制。创建一个command buffer很简单，只要在render函数末尾加上这行代码：</p>
-
-<pre><code> 1 let commandBuffer = commandQueue.commandBuffer()  
-</code></pre>
-
-<p>一个command buffer包含一个或多个渲染指令（render commands）。让我们下面创建一个。</p>
-
-<h6>4）创建一个渲染命令编码器(Render Command Encoder)</h6>
-
-<p>为了创建一个渲染命令（render command），你使用一个名叫render command encoder的对象。在render函数的最后添加以下代码：</p>
-
-<pre><code>let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(renderPassDescriptor) 
-renderEncoder.setRenderPipelineState(pipelineState) 
-
-renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, atIndex: 0) 
-
-renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 3, instanceCount: 1) 
-
-renderEncoder.endEncoding()
-</code></pre>
-
-<p>这里你创建一个command encoder，并指定你之前创建的pipeline和顶点。最重要的部分是，调用drawPrimitives(vertexStart:vertexCount:instanceCount:)。</p>
-
-<p>这里你你告诉GPU，让它基于vertex buffer画一系列的三角形。每个三角形由三个顶点组成，从vertex buffer 下标为0的顶点开始，总共有一个三角形。</p>
-
-<p>当你完成后，你只要调用 endEncoding()。</p>
-
-<h6>5）提交你的Command Buffer</h6>
-
-<p>最后一步是提交command buffer。在render函数最后添加这些代码：</p>
-
-<pre><code>commandBuffer.presentDrawable(drawable)
-commandBuffer.commit()
-</code></pre>
-
-<p>第一行需要保证新纹理会在绘制完成后立即出现。然后你把事务(transaction)提交，把任务交给GPU。过去我们敲了不少代码，不过现在终于结束了。编译并运行这个应用：</p>
-
-<p>我见过最赞的三角形！</p>
-
-<blockquote><p>注意：如果你的应用崩溃了，请确定你在一台拥有A7芯片真机（iPhone 5S,iPad Air,iPad mini2 ,非模拟器）运行。</p>
-
-<p>最后:这是我们教程最终的项目。</p></blockquote>
-
-<pre><code>恭喜你，你学到了很多关于Metal API的知识！你现在对Metal的一些重要的概念有了了解，比如：shaders、devices、command buffers，pipeline等等。
-</code></pre>
-
-<p>我可能会写更多这系列的教程，覆盖uniforms，3D，纹理，光照，以及导入模型。如果你感到有兴趣、并想看到更多教程的话，请留下你的评论。同时，确定查看苹果一些很好的资源：</p>
+<p>遇到相关的警告，一般编译器都会提供解决方案，所以，作为新手，我们应该看懂编译器给我们的提示，这样我们解决问题就会事半功倍。</p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[KeyChain初探]]></title>
-    <link href="http://al1020119.github.io/blog/2015/07/20/keychainchu-tan/"/>
-    <updated>2015-07-20T22:46:16+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/07/20/keychainchu-tan</id>
-    <content type="html"><![CDATA[<p>iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。</p>
+    <title type="html"><![CDATA[反编译App小菜篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/05/01/fanbianyixiaocaipain/"/>
+    <updated>2016-05-01T13:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/05/01/fanbianyixiaocaipain</id>
+    <content type="html"><![CDATA[<p>前面介绍了那么多关于反编译的问题，也没有真正实战几下，这里简单的教你装一下13，希望大鸟看到不要笑。</p>
 
-<blockquote><p>“yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。</p></blockquote>
+<p>纯属个人即时玩玩，但是对于小菜还有有点用的，或者没有接触过的人！</p>
 
 <!--more-->
 
 
-<h3>一.基本知识</h3>
+<h3>获取App所有.h文件</h3>
 
-<h6>1.方法</h6>
+<p>第一步安装class-dump（class-dump可以提取.ipa中的.h文件）。
+安装：
+1. 下载地址 <a href="http://stevenygard.com/projects/class-dump/">http://stevenygard.com/projects/class-dump/</a>
+2. 终端中输入open /usr/bin
+3. 将解压出来的class-dump放入刚打开的目录。   <br/>
+4. 更改class-dump权限     sudo chmod 777 /usr/bin/class-dump</p>
 
-<ul>
-<li>SecItemAdd 增</li>
-<li>SecItemUpdate 改</li>
-<li>SecItemDelete 删</li>
-<li>SecItemCopyMatching 查</li>
-</ul>
+<h5>线下版</h5>
 
+<p>1.新建一个App修改里面相关代码运行。</p>
 
-<h6>2.权限</h6>
+<p>2.打开Products文件夹下的DecompilingTest.app所在目录</p>
 
-<p>文档上说iOS的keyChain是一个相对独立的空间，当程序替换，删除时并不会删除keyChain的内容，这个要比Library/Cache好。刷机，恢复出厂应该就没有了。关于备份，只会备份数据，到那时不会备份设备的密钥，换句话说，即使拿到数据，也没有办法解密里面的内容。有人说似乎破解的手机就能破解keyChain,本人并不清楚，希望有大神能指教。但个人认为，keyChain只是沙盒的升级版，可以存放一些非私密的信息，即使破解也不影响其它用户，只影响那个破解了的设备。（比如针对该设备的一个密钥）。</p>
+<p>3.显示包内容，拿到二进制文件。</p>
 
-<p>可访问性一般来说，自己的程序只能访问自己的keychain,相同bundle的程序通过设置group可以互相共享同组的keychain，从而实现程序间可以共同访问一些数据。详细后面介绍一些我测试下来的经验。</p>
+<p>4.复制到桌面，执行以下命令，即可拿到工程中的.h文件</p>
 
-<h6>3.如何查询keyChain</h6>
+<blockquote><p>class-dump -H Name</p></blockquote>
 
-<pre><code>[objc] view plaincopyprint?在CODE上查看代码片派生到我的代码片
-genericPasswordQuery = [[NSMutableDictionary alloc] init];   
-[genericPasswordQuery setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];//1  
-[genericPasswordQuery setObject:identifier forKey:(id)kSecAttrGeneric];//2  
-if (accessGroup != nil){  
-    [genericPasswordQuery setObject:accessGroup forKey:(id)kSecAttrAccessGroup];//3  
-}  
-[genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];//4  
-[genericPasswordQuery setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];//5  
-NSDictionary *tempQuery = [NSDictionary dictionaryWithDictionary:genericPasswordQuery];  
-NSMutableDictionary *outDictionary = nil;      
-if (SecItemCopyMatching((CFDictionaryRef)tempQuery, (CFTypeRef *)&amp;outDictionary) == noErr){//6  
-//found and outDicitionary is not nil  
-}else{  
-//not found  
-}  
-</code></pre>
+<h5>线上版</h5>
 
-<ul>
-<li>1.设置Class值，每个Class对应的都有不同的参数类型</li>
-<li>2.用户确定的参数，一般是程序中使用的类别，比如说是"Password"或"Account Info"，作为search的主力条件</li>
-<li>3.设置Group,如果不同程序都拥有这个组，那么不同程序间可以共享这个组的数据</li>
-<li>4.只返回第一个匹配数据，查询方法使用，还有值kSecMatchLimitAll</li>
-<li>5.返回数据为CFDicitionaryRef，查询方法使用</li>
-<li>6.执行查询方法，判断返回值</li>
-</ul>
+<p>举例：
+1.首先下载一个.ipa文件。</p>
 
+<p>2.将文件名改为.zip结尾</p>
 
-<blockquote><p>eg:这个是none-ARC的代码哦！ARC情况下会有bridge提示。</p></blockquote>
+<p>3.然后在解压出对应的文件夹</p>
 
-<h6>4.类型转换</h6>
+<p>4.在该文件夹中找到</p>
 
-<p>介绍增删改方法调用前，先介绍转换方法，如何将NSDictionary转换成KeyChain方法可以设置的Dicitionary，一般在写程序过程中，应该尽量避免直接访问KeyChain，一般会创建一个NSDictionary来同步对应的数据，所以两者需要做转换。</p>
+<p>这个就是目标文件。</p>
 
-<pre><code>//data to secItem  
-- (NSMutableDictionary *)dictionaryToSecItemFormat:(NSDictionary *)dictionaryToConvert  
-{  
-    // Create a dictionary to return populated with the attributes and data.  
-    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+<p>最后终端进入到纯在该文件的路径 ，运行class-dump -H Flap.app -o Flap就可以得到一个，这个文件夹中就是flappy中的所有头文件。</p>
 
-    //设置kSecClass  
-    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
-    //将Dictionary里的kSecValueData(一般就是这个keyChain里主要内容，比如说是password),NSString转换成NSData  
-    NSString *passwordString = [dictionaryToConvert objectForKey:(id)kSecValueData];  
-    [returnDictionary setObject:[passwordString dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];  
-    return returnDictionary;  
-}  
-//secItem to data  
-- (NSMutableDictionary *)secItemFormatToDictionary:(NSDictionary *)dictionaryToConvert  
-{  
-    NSMutableDictionary *returnDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionaryToConvert];  
+<p>但是你可能会发现只有一个.h文件CDStructures.h，而且里面撒野没有，这里就证明苹果进行了加壳。</p>
 
-    // Add the proper search key and class attribute.  
-    [returnDictionary setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnData];  
-    [returnDictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];  
+<p>后面我们就开始怎么先处理这一层壳</p>
 
-    // Acquire the password data from the attributes.  
-    NSData *passwordData = NULL;  
-    if (SecItemCopyMatching((CFDictionaryRef)returnDictionary, (CFTypeRef *)&amp;passwordData) == noErr)  
-    {  
-        // 删除多余的kSecReturnData数据  
-        [returnDictionary removeObjectForKey:(id)kSecReturnData];  
+<blockquote><p>class-dump 命令的参数可以在终端中运行 class-dump &ndash;help查看</p></blockquote>
 
-        // 对应前面的步骤，将数据从NSData转成NSString  
-        NSString *password = [[[NSString alloc] initWithBytes:[passwordData bytes] length:[passwordData length]  
-                                                     encoding:NSUTF8StringEncoding] autorelease];  
-        [returnDictionary setObject:password forKey:(id)kSecValueData];  
-    }  
-    else  
-    {  
-        NSAssert(NO, @"Serious error, no matching item found in the keychain.\n");  
-    }  
-    [passwordData release];   
-    return returnDictionary;  
-}  
-</code></pre>
+<h3>取方法的实现</h3>
 
-<h6>5.增删改</h6>
+<p>安装Hopper Disassembler（这里就不用说了，不像class-dump，傻瓜式操作）</p>
 
-<p>用代码来说明</p>
+<p>用法很简单，只要将二进制文件拖进去就行了</p>
 
-<pre><code>- (void)writeToKeychain  
-{  
-    NSDictionary *attributes = NULL;  
-    NSMutableDictionary *updateItem = NULL;  
-    OSStatus result;  
-    //判断是增还是改  
-    if (SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery, (CFTypeRef *)&amp;attributes) == noErr)  
-    {  
-            // First we need the attributes from the Keychain.  
-            updateItem = [NSMutableDictionary dictionaryWithDictionary:attributes];  
-        // Second we need to add the appropriate search key/values.  
-            [updateItem setObject:[genericPasswordQuery objectForKey:(id)kSecClass] forKey:(id)kSecClass];  
-            // Lastly, we need to set up the updated attribute list being careful to remove the class.  
-            NSMutableDictionary *tempCheck = [self dictionaryToSecItemFormat:keychainItemData];  
-            //删除kSecClass update不能update该字段，否则会报错  
-            [tempCheck removeObjectForKey:(id)kSecClass];  
-        //参数1表示search的，参数2表示需要更新后的值  
-            result = SecItemUpdate((CFDictionaryRef)updateItem, (CFDictionaryRef)tempCheck);  
-    }else{  
-            //增加  
-            result = SecItemAdd((CFDictionaryRef)[self dictionaryToSecItemFormat:keychainItemData], NULL);  
-    }  
-}  
-</code></pre>
-
-<p>删除很简单，就不写注释了</p>
-
-<pre><code>- (void)resetKeychainItem  
-{  
-    OSStatus junk = noErr;  
-    if (!keychainItemData)  
-    {  
-        self.keychainItemData = [[NSMutableDictionary alloc] init];  
-    }  
-    else if (keychainItemData)  
-    {  
-        NSMutableDictionary *tempDictionary = [self dictionaryToSecItemFormat:keychainItemData];  
-        junk = SecItemDelete((CFDictionaryRef)tempDictionary);  
-        NSAssert( junk == noErr || junk == errSecItemNotFound, @"Problem deleting current dictionary." );  
-    }  
-
-    // Default attributes for keychain item.  
-    [keychainItemData setObject:@"" forKey:(id)kSecAttrAccount];  
-    [keychainItemData setObject:@"" forKey:(id)kSecAttrLabel];  
-    [keychainItemData setObject:@"" forKey:(id)kSecAttrDescription];  
-
-    // Default data for keychain item.  
-    [keychainItemData setObject:@"" forKey:(id)kSecValueData];  
-}  
-</code></pre>
-
-<p>二.Group的配置
-配置Target的Code Signing Entitlements.</p>
-
-<p><img src="/images/keyChain001.png" title="Caption" ></p>
-
-<p>配置该文件</p>
-
-<p><img src="/images/keyChain002.png" title="Caption" ></p>
-
-<p><img src="/images/keyChain003.png" title="Caption" ></p>
-
-<p>可以配置一个Array列表，表示该程序可以支持多个group
-这样就可以在创建secItem时候添加kSecAttrAccessGroup了。
-经过测试有以下经验同大家分享：</p>
-
-<ul>
-<li><p>1.相同bundle下生成的程序都可以共享相同group的keyChain.
-相同bundle解释下就是：比如:2个程序分别使用的provision对应bundle是com.jv.key1和com.jv.key2，那你配置文件肯定是{Identifer}.com.jv.{name},其中identifer是苹果生成的随机串号，可以在申请证书时看到，复制过来即可，name可以自己取，程序中指定属于哪个Group即可。</p></li>
-<li><p>2.如果你在 addkey时，没有指定group,则会默认添加你keychain-access-groups里第一个group，如果你没有设置Entitlements,则默认使用对应的程序的bundle name,比如com.jv.key1,表示只能给自己程序使用。</p></li>
-<li><p>3.如果你程序添加的group并不存在你的配置文件中，程序会奔溃，表示无法添加。因此你只能添加你配置文件中支持的keychain。</p></li>
-</ul>
-
-
-<p>三、保存私密信息（工具）
-在应用里使用使用keyChain，我们需要导入Security.framework ，keychain的操作接口声明在头文件SecItem.h里。直接使用SecItem.h里方法操作keychain，需要写的代码较为复杂，为减轻咱们程序员的开发，我们可以使用一些已经封装好了的工具类，下面我会简单介绍下我用过的两个工具类：KeychainItemWrapper和SFHFKeychainUtils。</p>
-
-<p>（一）KeychainItemWrapper是apple官方例子“GenericKeychain”里一个访问keychain常用操作的封装类，在官网上下载了GenericKeychain项目后，只需要
-把“KeychainItemWrapper.h”和“KeychainItemWrapper.m”拷贝到我们项目，并导入Security.framework 。KeychainItemWrapper的用法：</p>
-
-<pre><code>/** 初始化一个保存用户帐号的KeychainItemWrapper */
-KeychainItemWrapper *wrapper = [[KeychainItemWrapper alloc] initWithIdentifier:@"Account Number"
-                                                                   accessGroup:@"YOUR_APP_ID_HERE.com.yourcompany.AppIdentifier"];  
-
-//保存帐号
-[
-wrapper setObject:@"&lt;帐号&gt;" forKey:(id)kSecAttrAccount];    
-
-//保存密码
-[
-wrapper setObject:@"&lt;帐号密码&gt;" forKey:(id)kSecValueData];    
-
-//从keychain里取出帐号密码
-NSString *password = [wrapper objectForKey:(id)kSecValueData];      
-
-//清空设置
-[
-wrapper resetKeychainItem];
-</code></pre>
-
-<p>其中方法“- (void)setObject:(id)inObject forKey:(id)key;”里参数“forKey”的值应该是Security.framework 里头文件“SecItem.h”里定义好的key，用其他字符串做key程序会崩溃！</p>
-
-<p>（二）SFHFKeychainUtils 提供了在 iOS keychain中安全的存储密码的工具</p>
-
-<p>下载地址<a href="https://github.com/ldandersen/scifihifi-iphone/tree/master/security">https://github.com/ldandersen/scifihifi-iphone/tree/master/security</a></p>
-
-<ul>
-<li><p>1、引入Security.frameWork框架。</p></li>
-<li><p>2、引入头文件：SFHKeychainUtils.h.</p></li>
-<li><p>3、存密码：</p></li>
-</ul>
-
-
-<hr />
-
-<pre><code>[SFHFKeychainUtils storeUsername:@"dd" andPassword:@"aa"forServiceName:SERVICE_NAME updateExisting:1 error:nil];
-
-[SFHFKeychainUtils deleteItemForUsername:@"dd" andServiceName:SERVICE_NAME error:nil];
-</code></pre>
-
-<ul>
-<li>4、取密码：</li>
-</ul>
-
-
-<hr />
-
-<pre><code>NSString *passWord =  [SFHFKeychainUtils getPasswordForUsername:@"dd"andServiceName:SERVICE_NAME error:nil];
-</code></pre>
+<p>。。。。。</p>
 ]]></content>
   </entry>
   
