@@ -1,0 +1,219 @@
+---
+
+layout: post
+title: "福利：抢红包神器就是这么来的"
+date: 2016-05-01 21:52:15 +0800
+comments: true
+categories: Foundation
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+---
+
+
+
+微信红包
+
+{% img /images/weixinhongbao0001.jpg Caption %}  
+
+    前言：最近笔者在研究iOS逆向工程，顺便拿微信来练手，在非越狱手机上实现了微信自动抢红包的功能。
+
+题外话：此教程是一篇严肃的学术探讨类文章，仅仅用于学习研究，也请读者不要用于商业或其他非法途径上，笔者一概不负责哟~~
+
+好了，接下来可以进入正题了！
+##此教程所需要的工具/文件
+
+    yololib
+    class-dump
+    dumpdecrypted
+    iOSOpenDev
+    iTools
+    OpenSSH(Cydia)
+    iFile(Cydia)
+    Cycript(Cydia)
+    Command Line Tools
+    Xcode
+    苹果开发者证书或企业证书
+    一台越狱的iPhone
+
+是的，想要实现在非越狱iPhone上达到自动抢红包的目的，工具用的可能是有点多（工欲善其事必先利其器^_^）。不过，没关系，大家可以按照教程的步骤一步一步来执行，不清楚的步骤可以重复实验，毕竟天上不会掉馅饼嘛。
+
+#解密微信可执行文件(Mach-O)
+
+因为从Appstore下载安装的应用都是加密过的，所以我们需要用一些工具来为下载的App解密，俗称砸壳。这样才能便于后面分析App的代码结构。
+
+首先我们需要一台已经越狱的iPhone手机(现在市面上越狱已经很成熟，具体越狱方法这里就不介绍了)。然后进入Cydia，安装OpenSSH、Cycript、iFile(调试程序时可以方便地查看日志文件)这三款软件。
+
+    PS：笔者的手机是iPhone 6Plus，系统版本为iOS9.1。
+
+在电脑上用iTunes上下载一个最新的微信，笔者当时下载的微信版本为6.3.13。下载完后，iTunes上会显示出已下载的app。
+
+itnues
+
+{% img /images/weixinhongbao0002.jpg Caption %}  
+
+连上iPhone，用iTunes装上刚刚下载的微信应用。
+
+打开Mac的终端，用ssh进入连上的iPhone(确保iPhone和Mac在同一个网段，笔者iPhone的IP地址为192.168.8.54)。OpenSSH的root密码默认为alpine。
+
+ssh
+{% img /images/weixinhongbao0003.jpg Caption %}  
+
+接下来就是需要找到微信的Bundle id了，，这里笔者有一个小技巧，我们可以把iPhone上的所有App都关掉，唯独保留微信，然后输入命令 ps -e
+
+微信bundle id
+{% img /images/weixinhongbao0004.jpg Caption %}  
+这样我们就找到了微信的可执行文件Wechat的具体路径了。接下来我们需要用Cycript找出微信的Documents的路径，输入命令cycript -p WeChat
+
+cycript
+{% img /images/weixinhongbao0005.jpg Caption %}  
+
+
+    编译dumpdecrypted
+    先记下刚刚我们获取到的两个路径(Bundle和Documents)，这时候我们就要开始用dumpdecrypted来为微信二进制文件(WeChat)砸壳了。
+    确保我们从Github上下载了最新的dumpdecrypted源码，进入dumpdecrypted源码的目录，编译dumpdecrypted.dylib，命令如下:
+
+
+dumpdecrypted.dylib
+{% img /images/weixinhongbao0006.jpg Caption %}  
+这样我们可以看到dumpdecrypted目录下生成了一个dumpdecrypted.dylib的文件。
+
+    scp
+    拷贝dumpdecrypted.dylib到iPhone上，这里我们用到scp命令.
+    scp 源文件路径 目标文件路径 。具体如下：
+
+
+scp
+{% img /images/weixinhongbao0007.jpg Caption %}  
+    开始砸壳
+    dumpdecrypted.dylib的具体用法是：DYLD_INSERT_LIBRARIES=/PathFrom/dumpdecrypted.dylib /PathTo
+
+
+dumpdecrypted
+{% img /images/weixinhongbao0008.jpg Caption %}  
+这样就代表砸壳成功了，当前目录下会生成砸壳后的文件，即WeChat.decrypted。同样用scp命令把WeChat.decrypted文件拷贝到电脑上,接下来我们要正式的dump微信的可执行文件了。
+#dump微信可执行文件
+
+    从Github上下载最新的class-dump源代码，然后用Xcode编译即可生成class-dump(这里比较简单，笔者就不详细说明了)。
+
+    导出微信的头文件
+    使用class-dump命令,把刚刚砸壳后的WeChat.decrypted,导出其中的头文件。./class-dump -s -S -H ./WeChat.decrypted -o ./header6.3-arm64
+
+
+导出的头文件
+{% img /images/weixinhongbao0009.jpg Caption %}  
+这里我们可以新建一个Xcode项目，把刚刚导出的头文件加到新建的项目中，这样便于查找微信的相关代码。
+
+微信的头文件
+{% img /images/weixinhongbao0010.jpg Caption %}  
+找到CMessageMgr.h和WCRedEnvelopesLogicMgr.h这两文件，其中我们注意到有这两个方法：- (void)AsyncOnAddMsg:(id)arg1 MsgWrap:(id)arg2; ，- (void)OpenRedEnvelopesRequest:(id)arg1;。没错，接下来我们就是要利用这两个方法来实现微信自动抢红包功能。其实现原理是，通过hook微信的新消息函数，我们判断是否为红包消息，如果是，我们就调用微信的打开红包方法。这样就能达到自动抢红包的目的了。哈哈，是不是很简单，我们一起来看看具体是怎么实现的吧。
+
+    新建一个dylib工程，因为Xcode默认不支持生成dylib，所以我们需要下载iOSOpenDev，安装完成后(Xcode7环境会提示安装iOSOpenDev失败，请参考iOSOpenDev安装问题)，重新打开Xcode，在新建项目的选项中即可看到iOSOpenDev选项了。
+
+
+iOSOpenDev
+{% img /images/weixinhongbao0011.jpg Caption %}  
+    dylib代码
+    选择Cocoa Touch Library，这样我们就新建了一个dylib工程了，我们命名为autoGetRedEnv。
+
+    删除autoGetRedEnv.h文件，修改autoGetRedEnv.m为autoGetRedEnv.mm，然后在项目中加入CaptainHook.h
+
+    因为微信不会主动来加载我们的hook代码，所以我们需要把hook逻辑写到构造函数中。
+
+    __attribute__((constructor)) static void entry()
+    {
+      //具体hook方法
+    }
+
+    hook微信的AsyncOnAddMsg: MsgWrap:方法，实现方法如下：
+
+    //声明CMessageMgr类
+    CHDeclareClass(CMessageMgr);
+    CHMethod(2, void, CMessageMgr, AsyncOnAddMsg, id, arg1, MsgWrap, id, arg2)
+    {
+      //调用原来的AsyncOnAddMsg:MsgWrap:方法
+      CHSuper(2, CMessageMgr, AsyncOnAddMsg, arg1, MsgWrap, arg2);
+      //具体抢红包逻辑
+      //...
+      //调用原生的打开红包的方法
+      //注意这里必须为给objc_msgSend的第三个参数声明为NSMutableDictionary,不然调用objc_msgSend时，不会触发打开红包的方法
+      ((void (*)(id, SEL, NSMutableDictionary*))objc_msgSend)(logicMgr, @selector(OpenRedEnvelopesRequest:), params);
+    }
+    __attribute__((constructor)) static void entry()
+    {
+      //加载CMessageMgr类
+      CHLoadLateClass(CMessageMgr);
+      //hook AsyncOnAddMsg:MsgWrap:方法
+      CHClassHook(2, CMessageMgr, AsyncOnAddMsg, MsgWrap);
+    }
+
+        项目的全部代码，笔者已放入Github中。
+
+    完成好具体实现逻辑后，就可以顺利生成dylib了。
+
+#重新打包微信App
+
+    为微信可执行文件注入dylib
+    要想微信应用运行后，能执行我们的代码，首先需要微信加入我们的dylib，这里我们用到一个dylib注入神器:yololib，从网上下载源代码，编译后得到yololib。
+
+    使用yololib简单的执行下面一句就可以成功完成注入。注入之前我们先把之前保存的WeChat.decrypted重命名为WeChat，即已砸完壳的可执行文件。
+    ./yololib 目标可执行文件 需注入的dylib
+    注入成功后即可见到如下信息：
+
+    dylib注入
+{% img /images/weixinhongbao0012.jpg Caption %}  
+    新建Entitlements.plist
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>application-identifier</key>
+      <string>123456.com.autogetredenv.demo</string>
+      <key>com.apple.developer.team-identifier</key>
+      <string>123456</string>
+      <key>get-task-allow</key>
+      <true/>
+      <key>keychain-access-groups</key>
+      <array>
+          <string>123456.com.autogetredenv.demo</string>
+      </array>
+    </dict>
+    </plist>
+
+    这里大家也许不清楚自己的证书Teamid及其他信息，没关系，笔者这里有一个小窍门，大家可以找到之前用开发者证书或企业证书打包过的App(例如叫Demo)，然后在终端中输入以下命令即可找到相关信息，命令如下：
+    ./ldid -e ./Demo.app/demo
+
+    给微信重新签名
+    接下来把我们生成的dylib(libautoGetRedEnv.dylib)、刚刚注入dylib的WeChat、以及embedded.mobileprovision文件(可以在之前打包过的App中找到)拷贝到WeChat.app中。
+
+    命令格式：codesign -f -s 证书名字 目标文件
+
+        PS:证书名字可以在钥匙串中找到
+
+    分别用codesign命令来为微信中的相关文件签名,具体实现如下：
+
+    重新签名
+{% img /images/weixinhongbao0013.jpg Caption %}  
+    打包成ipa
+    给微信重新签名后，我们就可以用xcrun来生成ipa了，具体实现如下：
+    xcrun -sdk iphoneos PackageApplication -v WeChat.app  -o ~/WeChat.ipa
+
+#安装拥有抢红包功能的微信
+
+以上步骤如果都成功实现的话，那么真的就是万事俱备，只欠东风了~~~
+
+我们可以使用iTools工具，来为iPhone(此iPhone Device id需加入证书中)安装改良过的微信了。
+
+iTools
+{% img /images/weixinhongbao0014.jpg Caption %}  
+#大工告成！！
+
+好了，我们可以看看hook过的微信抢红包效果了~
+
+自动抢红包
+{% img /images/weixinhongbao0015.gif Caption %}  
+哈哈，是不是觉得很爽啊，"妈妈再也不用担心我抢红包了。"。大家如果有兴趣可以继续hook微信的其他函数，这样既加强了学习，又满足了自己的特(zhuang)殊(bi)需求嘛。
+
+教程中所涉及到的工具及源代码笔者都上传到Github上。
+Github地址
