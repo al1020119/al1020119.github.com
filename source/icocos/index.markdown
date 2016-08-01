@@ -10,9 +10,6 @@ footer: true
 ---
  
  
- 
-
-
 {% img /images/iCocos.jpeg Caption %}  
 
  
@@ -20,9 +17,9 @@ footer: true
 	
 											|  基本信息  | 
 											
- 姓		名 :   曹理鹏（英：iCocos）	 
+ 姓		 名 :   曹理鹏（英：iCocos）	 
  
- 性		别 :  男  
+ 性		 别 :  男  
            
  年		 龄:  25岁     				  
     
@@ -31,6 +28,12 @@ footer: true
  籍    贯： 江西九江 
   
  电    话：	18370997821	              
+ 
+ 微    信：18370997821
+ 
+ Q     Q：790806573
+ 
+ 微    博：18370997821[刻骨铭心D幸福](http://weibo.com/u/3288975567)
  
  电子邮件：	al10201119@163.com  
      	
@@ -75,6 +78,10 @@ footer: true
 ######本人目前就职：
  
  * 玩秀网络科技-iiwanxiu
+ 
+ 1:[http://www.iiwanxiu.com/](http://www.iiwanxiu.com/)
+ 
+ 2:[http://www.iiyouxiu.com/](http://www.iiyouxiu.com/)
  
 
 ######技能：
