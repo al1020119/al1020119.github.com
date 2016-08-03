@@ -10,7 +10,7 @@ footer: true
 ---
  
  
-{% img /images/iCocos.jpeg Caption %}  
+{% img /images/iCocos.jpg Caption %}  
 
  
 
