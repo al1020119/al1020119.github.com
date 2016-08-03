@@ -1,7 +1,7 @@
 ---
 
 layout: post
-title: "CoreData VS SQLite VS FMDB"
+title: "CoreData 😘 SQLite 😍 FMDB"
 date: 2016-07-05 14:59:42 +0800
 comments: true
 categories: Senior

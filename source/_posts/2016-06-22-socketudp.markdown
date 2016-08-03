@@ -2,7 +2,7 @@
 ---
 
 layout: post
-title: "Sock编程-UDP篇"
+title: "Socket编程-UDP篇"
 date: 2016-06-22 13:53:19 +0800
 comments: true
 categories: Senior

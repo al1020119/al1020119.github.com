@@ -2,14 +2,12 @@
 ---
 
 layout: post
-title: "Sock编程-TCP篇"
+title: "Socket编程-TCP篇"
 date: 2016-06-21 13:53:19 +0800
 comments: true
 categories: Senior
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
-
-
 
 ---  
 

@@ -2,7 +2,7 @@
 ---
 
 layout: post
-title: "Sock编程-基础篇"
+title: "Socket编程-精华篇"
 date: 2016-06-20 13:53:19 +0800
 comments: true
 categories: Senior
