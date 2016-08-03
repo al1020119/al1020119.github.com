@@ -96,13 +96,16 @@
 
 <p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
 
+<!--more-->
+
+
 <p>所以，最后还是选择了FMDB进行封装。</p>
 
 <p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
 
 <p>项目简介：</p>
 
-<p>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</p>
+<h5>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</h5>
 
 <p>Description</p>
 
@@ -117,22 +120,24 @@
 支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
 </code></pre>
 
-<p>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</p>
+<h5>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</h5>
 
 <p>Installation（安装）</p>
 
-<p>use_frameworks!
-pod &lsquo;JRDB&rsquo;
-@import JRDB;</p>
+<pre><code>use_frameworks!
+pod 'JRDB'
+@import JRDB;
+</code></pre>
 
 <p>Usage</p>
 
+<p>。。。</p>
+
 <p>Save（保存）</p>
 
-<pre><code>Objective-C
-</code></pre>
+<p>Objective-C</p>
 
-<p>Person *p = [[Person alloc] init];
+<pre><code>Person *p = [[Person alloc] init];
 p.a_int = 1;
 p.b_unsigned_int = 2;
 p.c_long = 3;
@@ -141,95 +146,94 @@ p.e_unsigned_long = 5;
 p.f_unsigned_long_long = 6;
 p.g_float = 7.0;
 p.h_double = 8.0;
-p.i_string = @&ldquo;9&rdquo;;
+p.i_string = @"9";
 p.j_number = @10;
 p.k_data = [NSData data];
 p.l_date = [NSDate date];
-[p jr_save];</p>
-
-<pre><code>Swift
+[p jr_save];
 </code></pre>
+
+<p>Swift</p>
 
 <p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
 
-<p>The Object that you want to persistent should inherit from NSObject</p>
+<pre><code>The Object that you want to persistent should inherit from NSObject
 
-<p>let p = Person()
-p.name = &ldquo;name&rdquo;
+let p = Person()
+p.name = "name"
 p.age = 10
 p.birthday = NSDate()
-p.jr_save()</p>
+p.jr_save()
+</code></pre>
 
-<p>Update（更新）</p>
+<h5>Update（更新）</h5>
 
-<p>Person *p = [Person jr_findAll].firstObject;
-p.name = @&ldquo;abc&rdquo;;
-[p jr_update columns:nil];</p>
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+p.name = @"abc";
+[p jr_update columns:nil];
+</code></pre>
 
 <p>column: 需要更新的字段名，传入空为全量更新</p>
 
-<p>Delete（删除）
-1
-2</p>
+<h5>Delete（删除）</h5>
 
-<p>Person *p = [Person jr_findAll].firstObject;
-[p jr_delete];</p>
-
-<p>Select（查找）</p>
-
-<pre><code>常规查找
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+[p jr_delete];
 </code></pre>
 
-<p>Person <em>p = [Person jr_findByPrimaryKey:@&ldquo;111&rdquo;];
-NSArray </em>list = [Person jr_findAll];
-NSArray *list1 = [Person jr_findAllOrderBy:@&ldquo;_age&rdquo; isDesc:YES];</p>
+<h5>Select（查找）</h5>
 
-<pre><code>条件查询
+<h5>常规查找</h5>
+
+<pre><code>Person *p = [Person jr_findByPrimaryKey:@"111"];
+NSArray *list = [Person jr_findAll];
+NSArray *list1 = [Person jr_findAllOrderBy:@"_age" isDesc:YES];
 </code></pre>
 
-<p>NSArray <em>condis = @[
-     [JRQueryCondition condition:@&ldquo;<em>l_date &lt; ?&rdquo; args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
-     [JRQueryCondition condition:@&ldquo;</em>a_int > ?&rdquo; args:@[@9] type:JRQueryConditionTypeAnd],];
-NSArray </em>arr = [Person jr_findByConditions:condis
-                      groupBy:@&ldquo;<em>room&rdquo;
-                      orderBy:@&ldquo;</em>age&rdquo;
-                      limit:@&ldquo; limit 0,13 &rdquo;
-                      isDesc:YES];</p>
+<h5>条件查询</h5>
 
-<pre><code>SQL
+<pre><code>NSArray *condis = @[
+     [JRQueryCondition condition:@"_l_date &lt; ?" args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
+     [JRQueryCondition condition:@"_a_int &gt; ?" args:@[@9] type:JRQueryConditionTypeAnd],];
+NSArray *arr = [Person jr_findByConditions:condis
+                      groupBy:@"_room"
+                      orderBy:@"_age"
+                      limit:@" limit 0,13 "
+                      isDesc:YES];
 </code></pre>
 
-<p>1
-2</p>
+<p>SQL</p>
 
-<p>NSString <em>sql = @&ldquo;select * from Person where age = ?&rdquo;;
-NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
+<pre><code>NSString *sql = @"select * from Person where age = ?";
+NSArray *list = [Person jr_executeSql:sql args:@[@10]];
+</code></pre>
 
 <p>Other（其他）</p>
 
 <p>协议：JRPersistent</p>
 
-<p>@protocol JRPersistent @required
-- (void)setID:(NSString * <em>Nullable)ID;
-- (NSString * </em>Nullable)ID;
+<pre><code>@protocol JRPersistent @required
+- (void)setID:(NSString * _Nullable)ID;
+- (NSString * _Nullable)ID;
 @optional
-/<strong>
+/**
  *  返回不用入库的对象字段数组
  *  The full property names that you want to ignore for persistent
  *  @return array
  */
 + (NSArray * _Nullable)jr_excludePropertyNames;
-/</strong>
+/**
  *  返回自定义主键字段
  *  @return 字段全名
- <em>/
+ */
 + (NSString * _Nullable)jr_customPrimarykey;
 /**
  *  返回自定义主键值
  *  @return 主键值
- </em>/
+ */
 - (id _Nullable)jr_customPrimarykeyValue;
-@end</p>
+@end
+</code></pre>
 
 <p>主键</p>
 
@@ -239,43 +243,41 @@ NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
 
 <p>默认NSObject分类实现</p>
 
-<p>@interface NSObject (JRDB) (&hellip;methods)
+<pre><code>@interface NSObject (JRDB) (...methods)
 @end
 JRDBMgr
 @interface JRDBMgr : NSObject
-@property (nonatomic, strong) FMDatabase <em>defaultDB;
+@property (nonatomic, strong) FMDatabase *defaultDB;
 + (instancetype)shareInstance;
-+ (FMDatabase </em>)defaultDB;
-- (FMDatabase <em>)createDBWithPath:(NSString </em>)path;
-- (void)deleteDBWithPath:(NSString <em>)path;
++ (FMDatabase *)defaultDB;
+- (FMDatabase *)createDBWithPath:(NSString *)path;
+- (void)deleteDBWithPath:(NSString *)path;
 /**
  *  在这里注册的类，使用本框架的数据库将全部建有这些表
  *  @param clazz 类名
- </em>/
+ */
 - (void)registerClazzForUpdateTable:(Class)clazz;
-- (NSArray <em>)registedClazz;
+- (NSArray *)registedClazz;
 /**
  * 更新默认数据库的表（或者新建没有的表）
  * 更新的表需要在本类先注册
- </em>/
+ */
 - (void)updateDefaultDB;
 - (void)updateDB:(FMDatabase *)db;
-@end</p>
+@end
+</code></pre>
 
 <p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
 
-<p>Method
-1</p>
+<p>Method</p>
 
-<ul>
-<li>(void)registerClazzForUpdateTable:(Class)clazz;</li>
-</ul>
+<pre><code>- (void)registerClazzForUpdateTable:(Class)clazz;
+</code></pre>
 
+<p>在JRDBMgr中注册的类，可以使用</p>
 
-<p>在JRDBMgr中注册的类，可以使用
-1</p>
-
-<p>-(void)updateDB:(FMDatabase *)db</p>
+<pre><code>-(void)updateDB:(FMDatabase *)db
+</code></pre>
 
 <p>进行统一更新或者创建表。</p>
 
@@ -283,7 +285,7 @@ JRDBMgr
 
 <p>Create（建表）</p>
 
-<p>// FMDatabase+JRDB 方法
+<pre><code>// FMDatabase+JRDB 方法
 [[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
 [Person jr_createTable];
 // 删除原有的表，重新创建
@@ -293,35 +295,29 @@ JRDBMgr
 [person jr_save];
 Update 【更新表】
 [[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
-[Person jr_updateTable];</p>
+[Person jr_updateTable];
+</code></pre>
 
 <p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
 
 <p>Drop（删表）</p>
 
-<p>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
-[Person jr_dropTable];</p>
+<pre><code>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
+[Person jr_dropTable];
+</code></pre>
 
 <p>Thread Operation（线程操作）</p>
 
 <p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
 
-<p>[person jr_saveWithComplete:^(BOOL success) {
-    NSLog(@&ldquo;%d&rdquo;, success);
-}];</p>
+<pre><code>[person jr_saveWithComplete:^(BOOL success) {
+    NSLog(@"%d", success);
+}];
+</code></pre>
 
 <p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
 
 <p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
-
-<p>MoreUsage</p>
-
-<pre><code>查看FMDatabase+JRDB.h
-</code></pre>
-
-<p>项目地址：<a href="https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89">https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89</a></p>
-
-<p>第一次写这种东西，可能已经Github上已经有了很多类似的东西，如果有不足之处还请指教。</p>
 </div>
 
 

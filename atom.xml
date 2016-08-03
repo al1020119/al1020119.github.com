@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-03T14:38:08+08:00</updated>
+  <updated>2016-08-03T15:39:57+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -249,10 +249,7 @@ Github地址</p>
     <link href="http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao/"/>
     <updated>2016-08-26T13:53:19+08:00</updated>
     <id>http://al1020119.github.io/blog/2016/08/26/chongzhengzhidao</id>
-    <content type="html"><![CDATA[<!--more-->
-
-
-<p>重整之道（面试+技术+底层+高级）</p>
+    <content type="html"><![CDATA[<p>重整之道（面试+技术+底层+高级）</p>
 
 <p>不要问我为什么写这篇文章。</p>
 
@@ -287,6 +284,9 @@ Github地址</p>
 <li>逆向工程</li>
 <li>实战应用</li>
 </ul>
+
+
+<!--more-->
 
 
 <h3>运行时（底层）</h3>
@@ -1160,6 +1160,9 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 通过“活动监视器”可以查看Mac系统中所开启的进程
 </code></pre>
 
+<!--more-->
+
+
 <h4>2.什么是线程</h4>
 
 <pre><code>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）
@@ -1248,7 +1251,7 @@ CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
 
 <h4>4. NSOperation &amp; NSOperationQueue</h4>
 
-<h2>多线程的全解析-看了不行你还不会</h2>
+<h2>多线程的全解析-看了不信你还不会？</h2>
 
 <p><img src="http://al1020119.github.io/images/multithread.png" title="Caption" ></p>
 ]]></content>
@@ -1269,167 +1272,150 @@ CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
 
 <h3>3. FMDB</h3>
 
+<!--more-->
+
+
 <hr />
 
 <h2>SQLite</h2>
 
 <p>SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就是轻量级、跨平台，当前很多嵌入式操作系统都将其作为数据库首选。虽然SQLite是一款轻型数据库，但是其功能也绝不亚于很多大型关系数据库。学习数据库就要学习其相关的定义、操作、查询语言，也就是大家日常说得SQL语句。和其他数据库相比，SQLite中的SQL语法并没有太大的差别，因此这里对于SQL语句的内容不会过多赘述，大家可以参考SQLite中其他SQL相关的内容，这里还是重点讲解iOS中如何使用SQLite构建应用程序。先看一下SQLite数据库的几个特点：</p>
 
-<p>1.基于C语言开发的轻型数据库</p>
+<ol>
+<li><p>基于C语言开发的轻型数据库</p></li>
+<li><p>在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libqlite3框架基于C语言编写）</p></li>
+<li><p>SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）</p></li>
+<li><p>建立连接后通常不需要关闭连接（尽管可以手动关闭）</p></li>
+</ol>
 
-<p>2.在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libqlite3框架基于C语言编写）</p>
-
-<p>3.SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）</p>
-
-<p>4.建立连接后通常不需要关闭连接（尽管可以手动关闭）</p>
 
 <p>要使用SQLite很简单，如果在Mac OSX上使用可以考虑到SQLite官方网站下载命令行工具，也可以使用类似于SQLiteManager、Navicat for SQLite等工具。为了方便大家开发调试，建议在开发环境中安装上述工具。</p>
 
 <p>在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：</p>
 
-<p>1.打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。</p>
+<ol>
+<li><p>打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。</p></li>
+<li><p>执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。</p></li>
+<li><p>对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；</p></li>
+<li><p>对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p></li>
+</ol>
 
-<p>2.执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。</p>
-
-<p>3.对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；</p>
-
-<p>4.对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p>
 
 <p>在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。纵观整个操作过程，其实与其他平台的开发没有明显的区别，较为麻烦的就是数据读取，在iOS平台中使用C进行数据读取采用了游标的形式，每次只能读取一行数据，较为麻烦。因此实际开发中不妨对这些操作进行封装：</p>
 
 <p>KCDbManager.h
-//
-//  DbManager.h
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
+    //
+    //  DbManager.h
+    //  DataAccess
+    //
+    //  Created by Kenshin Cui on 14-3-29.
+    //  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+    //
+    #import &lt;Foundation/Foundation.h>
+    #import &lt;sqlite3.h>
+    #import &ldquo;KCSingleton.h&rdquo;
+    @interface KCDbManager : NSObject
+    singleton_interface(KCDbManager);
+    #pragma mark - 属性
+    #pragma mark 数据库引用，使用它进行数据库操作
+    @property (nonatomic) sqlite3 <em>database;
+    #pragma mark - 共有方法
+    /**
+     *  打开数据库
+     *
+     *  @param dbname 数据库名称
+     </em>/
+    -(void)openDb:(NSString <em>)dbname;
+    /**
+     *  执行无返回值的sql
+     *
+     *  @param sql sql语句
+     </em>/
+    -(void)executeNonQuery:(NSString <em>)sql;
+    /**
+     *  执行有返回值的sql
+     *
+     *  @param sql sql语句
+     *
+     *  @return 查询结果
+     </em>/
+    -(NSArray <em>)executeQuery:(NSString </em>)sql;
+    @end</p>
 
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &lt;sqlite3.h></h1>
-
-<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
-
-<p>@interface KCDbManager : NSObject
-singleton_interface(KCDbManager);</p>
-
-<h1>pragma mark - 属性</h1>
-
-<h1>pragma mark 数据库引用，使用它进行数据库操作</h1>
-
-<p>@property (nonatomic) sqlite3 *database;</p>
-
-<h1>pragma mark - 共有方法</h1>
-
-<p>/<strong>
- *  打开数据库
- *
- *  @param dbname 数据库名称
- <em>/
--(void)openDb:(NSString </em>)dbname;
-/</strong>
- *  执行无返回值的sql
- *
- *  @param sql sql语句
- <em>/
--(void)executeNonQuery:(NSString </em>)sql;
-/<em><em>
- *  执行有返回值的sql
- *
- *  @param sql sql语句
- *
- *  @return 查询结果
- </em>/
--(NSArray </em>)executeQuery:(NSString *)sql;
-@end</p>
-
-<p>KCDbManager.m
+<pre><code>KCDbManager.m
 //
 //  DbManager.m
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
-
-<h1>import &lt;sqlite3.h></h1>
-
-<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
-
-<h1>import &ldquo;KCAppConfig.h&rdquo;</h1>
-
-<h1>ifndef kDatabaseName</h1>
-
-<h1>define kDatabaseName @&ldquo;myDatabase.db&rdquo;</h1>
-
-<h1>endif</h1>
-
-<p>@interface KCDbManager()
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCDbManager.h"
+#import &lt;sqlite3.h&gt;
+#import "KCSingleton.h"
+#import "KCAppConfig.h"
+#ifndef kDatabaseName
+#define kDatabaseName @"myDatabase.db"
+#endif
+@interface KCDbManager()
 @end
 @implementation KCDbManager
-singleton_implementation(KCDbManager)</p>
-
-<h1>pragma mark 重写初始化方法</h1>
-
-<p>-(instancetype)init{
-    KCDbManager <em>manager;
+singleton_implementation(KCDbManager)
+#pragma mark 重写初始化方法
+-(instancetype)init{
+    KCDbManager *manager;
     if((manager=[super init]))
     {
         [manager openDb:kDatabaseName];
     }
     return manager;
 }
--(void)openDb:(NSString </em>)dbname{
+-(void)openDb:(NSString *)dbname{
     //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString <em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@&ldquo;%@&rdquo;,directory);
-    NSString </em>filePath=[directory stringByAppendingPathComponent:dbname];
+    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@"%@",directory);
+    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
     //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
-    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &amp;<em>database)) {
-        NSLog(@&ldquo;数据库打开成功!&rdquo;);
+    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &amp;_database)) {
+        NSLog(@"数据库打开成功!");
     }else{
-        NSLog(@&ldquo;数据库打开失败!&rdquo;);
+        NSLog(@"数据库打开失败!");
     }
 }
--(void)executeNonQuery:(NSString <em>)sql{
-    char </em>error;
+-(void)executeNonQuery:(NSString *)sql{
+    char *error;
     //单步执行sql语句，用于插入、修改、删除
-    if (SQLITE_OK!=sqlite3_exec(</em>database, sql.UTF8String, NULL, NULL,&amp;error)) {
-        NSLog(@&ldquo;执行SQL语句过程中发生错误！错误信息：%s&rdquo;,error);
+    if (SQLITE_OK!=sqlite3_exec(_database, sql.UTF8String, NULL, NULL,&amp;error)) {
+        NSLog(@"执行SQL语句过程中发生错误！错误信息：%s",error);
     }
 }
--(NSArray <em>)executeQuery:(NSString </em>)sql{
-    NSMutableArray *rows=[NSMutableArray array];//数据行</p>
+-(NSArray *)executeQuery:(NSString *)sql{
+    NSMutableArray *rows=[NSMutableArray array];//数据行
 
-<pre><code>//评估语法正确性
-sqlite3_stmt *stmt;
-//检查语法正确性
-if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &amp;stmt, NULL)) {
-    //单步执行sql语句
-    while (SQLITE_ROW==sqlite3_step(stmt)) {
-        int columnCount= sqlite3_column_count(stmt);
-        NSMutableDictionary *dic=[NSMutableDictionary dictionary];
-        for (int i=0; i&lt;columnCount; i++) {
-            const char *name= sqlite3_column_name(stmt, i);//取得列名
-            const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
-            dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+    //评估语法正确性
+    sqlite3_stmt *stmt;
+    //检查语法正确性
+    if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &amp;stmt, NULL)) {
+        //单步执行sql语句
+        while (SQLITE_ROW==sqlite3_step(stmt)) {
+            int columnCount= sqlite3_column_count(stmt);
+            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+            for (int i=0; i&lt;columnCount; i++) {
+                const char *name= sqlite3_column_name(stmt, i);//取得列名
+                const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
+                dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+            }
+            [rows addObject:dic];
         }
-        [rows addObject:dic];
     }
+
+    //释放句柄
+    sqlite3_finalize(stmt);
+
+    return rows;
 }
-
-//释放句柄
-sqlite3_finalize(stmt);
-
-return rows;
+@end
 </code></pre>
-
-<p>}
-@end</p>
 
 <p>在上面的类中对于数据库操作进行了封装，封装之后数据操作更加方便，同时所有的语法都由C转换成了ObjC。</p>
 
@@ -1441,22 +1427,19 @@ return rows;
 
 <p>KCDatabaseCreator.m</p>
 
-<p>//
+<pre><code>//
 //  KCDatabaseCreator.m
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCDatabaseCreator.h&rdquo;</h1>
-
-<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
-
-<p>@implementation KCDatabaseCreator
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCDatabaseCreator.h"
+#import "KCDbManager.h"
+@implementation KCDatabaseCreator
 +(void)initDatabase{
-    NSString <em>key=@&ldquo;IsCreatedDb&rdquo;;
-    NSUserDefaults </em>defaults=[[NSUserDefaults alloc]init];
+    NSString *key=@"IsCreatedDb";
+    NSUserDefaults *defaults=[[NSUserDefaults alloc]init];
     if ([[defaults valueForKey:key] intValue]!=1) {
         [self createUserTable];
         [self createStatusTable];
@@ -1464,94 +1447,76 @@ return rows;
     }
 }
 +(void)createUserTable{
-    NSString <em>sql=@&ldquo;CREATE TABLE User (Id integer PRIMARY KEY AUTOINCREMENT,name text,screenName text, profileImageUrl text,mbtype text,city text)&rdquo;;
+    NSString *sql=@"CREATE TABLE User (Id integer PRIMARY KEY AUTOINCREMENT,name text,screenName text, profileImageUrl text,mbtype text,city text)";
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
 +(void)createStatusTable{
-    NSString </em>sql=@&ldquo;CREATE TABLE Status (Id integer PRIMARY KEY AUTOINCREMENT,source text,createdAt date,\"text\&rdquo; text,user integer REFERENCES User (Id))&ldquo;;
+    NSString *sql=@"CREATE TABLE Status (Id integer PRIMARY KEY AUTOINCREMENT,source text,createdAt date,\"text\" text,user integer REFERENCES User (Id))";
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
-@end</p>
+@end
+</code></pre>
 
 <p>其次，定义数据模型，这里定义用户User和微博Status两个数据模型类。注意模型应该尽量保持其单纯性，仅仅是简单的POCO，不要引入视图、控制器等相关内容。</p>
 
 <p>KCUser.h</p>
 
-<p>//
+<pre><code>//
 //  KCUser.h
 //  UrlConnection
 //
 //  Created by Kenshin Cui on 14-3-22.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<p>@interface KCUser : NSObject</p>
-
-<h1>pragma mark 编号</h1>
-
-<p>@property (nonatomic,strong) NSNumber *Id;</p>
-
-<h1>pragma mark 用户名</h1>
-
-<p>@property (nonatomic,copy) NSString *name;</p>
-
-<h1>pragma mark 用户昵称</h1>
-
-<p>@property (nonatomic,copy) NSString *screenName;</p>
-
-<h1>pragma mark 头像</h1>
-
-<p>@property (nonatomic,copy) NSString *profileImageUrl;</p>
-
-<h1>pragma mark 会员类型</h1>
-
-<p>@property (nonatomic,copy) NSString *mbtype;</p>
-
-<h1>pragma mark 城市</h1>
-
-<p>@property (nonatomic,copy) NSString *city;</p>
-
-<h1>pragma mark - 动态方法</h1>
-
-<p>/<strong>
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+@interface KCUser : NSObject
+#pragma mark 编号
+@property (nonatomic,strong) NSNumber *Id;
+#pragma mark 用户名
+@property (nonatomic,copy) NSString *name;
+#pragma mark 用户昵称
+@property (nonatomic,copy) NSString *screenName;
+#pragma mark 头像
+@property (nonatomic,copy) NSString *profileImageUrl;
+#pragma mark 会员类型
+@property (nonatomic,copy) NSString *mbtype;
+#pragma mark 城市
+@property (nonatomic,copy) NSString *city;
+#pragma mark - 动态方法
+/**
  *  初始化用户
  *
  *  @param name 用户名
  *  @param city 所在城市
  *
  *  @return 用户对象
- <em>/
--(KCUser </em>)initWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString *)city;
-/</strong>
+ */
+-(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
+/**
  *  使用字典初始化用户对象
  *
  *  @param dic 用户数据
  *
  *  @return 用户对象
- <em>/
--(KCUser </em>)initWithDictionary:(NSDictionary *)dic;</p>
-
-<h1>pragma mark - 静态方法</h1>
-
-<p>+(KCUser <em>)userWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city;
-@end</p>
+ */
+-(KCUser *)initWithDictionary:(NSDictionary *)dic;
+#pragma mark - 静态方法
++(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
+@end
+</code></pre>
 
 <p>KCUser.m</p>
 
-<p>//
+<pre><code>//
 //  KCUser.m
 //  UrlConnection
 //
 //  Created by Kenshin Cui on 14-3-22.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCUser.h&rdquo;</h1>
-
-<p>@implementation KCUser
--(KCUser <em>)initWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city{
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCUser.h"
+@implementation KCUser
+-(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
     if (self=[super init]) {
         self.name=name;
         self.screenName=screenName;
@@ -1561,45 +1526,40 @@ return rows;
     }
     return self;
 }
--(KCUser <em>)initWithDictionary:(NSDictionary </em>)dic{
+-(KCUser *)initWithDictionary:(NSDictionary *)dic{
     if (self=[super init]) {
         [self setValuesForKeysWithDictionary:dic];
     }
     return self;
 }
-+(KCUser <em>)userWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city{
++(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
     KCUser *user=[[KCUser alloc]initWithName:name screenName:screenName profileImageUrl:profileImageUrl mbtype:mbtype city:city];
     return user;
 }
-@end</p>
+</code></pre>
+
+<p>@end</p>
 
 <p>KCStatus.h</p>
 
-<p>//
+<pre><code>//
 //  KCStatus.h
 //  UITableView
 //
 //  Created by Kenshin Cui on 14-3-1.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &ldquo;KCUser.h&rdquo;</h1>
-
-<p>@interface KCStatus : NSObject</p>
-
-<h1>pragma mark - 属性</h1>
-
-<p>@property (nonatomic,strong) NSNumber <em>Id;//微博id
-@property (nonatomic,strong) KCUser </em>user;//发送用户
-@property (nonatomic,copy) NSString <em>createdAt;//创建时间
-@property (nonatomic,copy) NSString </em>source;//设备来源
-@property (nonatomic,copy) NSString *text;//微博内容</p>
-
-<h1>pragma mark - 动态方法</h1>
-
-<p>/<strong>
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+#import "KCUser.h"
+@interface KCStatus : NSObject
+#pragma mark - 属性
+@property (nonatomic,strong) NSNumber *Id;//微博id
+@property (nonatomic,strong) KCUser *user;//发送用户
+@property (nonatomic,copy) NSString *createdAt;//创建时间
+@property (nonatomic,copy) NSString *source;//设备来源
+@property (nonatomic,copy) NSString *text;//微博内容
+#pragma mark - 动态方法
+/**
  *  初始化微博数据
  *
  *  @param createAt        创建日期
@@ -1608,9 +1568,9 @@ return rows;
  *  @param user            发送用户
  *
  *  @return 微博对象
- <em>/
--(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user;
-/</strong>
+ */
+-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
+/**
  *  初始化微博数据
  *
  *  @param profileImageUrl 用户头像
@@ -1621,20 +1581,18 @@ return rows;
  *  @param userId          用户编号
  *
  *  @return 微博对象
- <em>/
--(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId;
+ */
+-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
 /**
  *  使用字典初始化微博对象
  *
  *  @param dic 字典数据
  *
  *  @return 微博对象
- </em>/
--(KCStatus <em>)initWithDictionary:(NSDictionary </em>)dic;</p>
-
-<h1>pragma mark - 静态方法</h1>
-
-<p>/<strong>
+ */
+-(KCStatus *)initWithDictionary:(NSDictionary *)dic;
+#pragma mark - 静态方法
+/**
  *  初始化微博数据
  *
  *  @param createAt        创建日期
@@ -1643,9 +1601,9 @@ return rows;
  *  @param user            发送用户
  *
  *  @return 微博对象
- <em>/
-+(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user;
-/</strong>
+ */
++(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
+/**
  *  初始化微博数据
  *
  *  @param profileImageUrl 用户头像
@@ -1656,32 +1614,31 @@ return rows;
  *  @param userId          用户编号
  *
  *  @return 微博对象
- <em>/
-+(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString *)text userId:(int)userId;
-@end</p>
+ */
++(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
+@end
+</code></pre>
 
 <p>KCStatus.m</p>
 
-<p>//
+<pre><code>//
 //  KCStatus.m
 //  UITableView
 //
 //  Created by Kenshin Cui on 14-3-1.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCStatus.h&rdquo;</h1>
-
-<p>@implementation KCStatus
--(KCStatus <em>)initWithDictionary:(NSDictionary </em>)dic{
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCStatus.h"
+@implementation KCStatus
+-(KCStatus *)initWithDictionary:(NSDictionary *)dic{
     if (self=[super init]) {
         [self setValuesForKeysWithDictionary:dic];
         self.user=[[KCUser alloc]init];
-        self.user.Id=dic[@&ldquo;user&rdquo;];
+        self.user.Id=dic[@"user"];
     }
     return self;
 }
--(KCStatus <em>)initWithCreateAt:(NSString </em>)createAt source:(NSString <em>)source text:(NSString </em>)text user:(KCUser <em>)user{
+-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
     if (self=[super init]) {
         self.createdAt=createAt;
         self.source=source;
@@ -1690,394 +1647,364 @@ return rows;
     }
     return self;
 }
--(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId{
+-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
     if (self=[super init]) {
         self.createdAt=createAt;
         self.source=source;
         self.text=text;
-        KCUser </em>user=[[KCUser alloc]init];
+        KCUser *user=[[KCUser alloc]init];
         user.Id=[NSNumber numberWithInt:userId];
         self.user=user;
     }
     return self;
 }
--(NSString <em>)source{
-    return [NSString stringWithFormat:@&ldquo;来自 %@&rdquo;,_source];
+-(NSString *)source{
+    return [NSString stringWithFormat:@"来自 %@",_source];
 }
-+(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user{
-    KCStatus <em>status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text user:user];
++(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
+    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text user:user];
     return status;
 }
-+(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId{
-    KCStatus </em>status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text userId:userId];
++(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
+    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text userId:userId];
     return status;
 }
-@end</p>
+@end
+</code></pre>
 
 <p>然后，编写服务类，进行数据的增、删、改、查操作，由于服务类方法同样不需要过多的配置，因此定义为单例，保证程序中只有一个实例即可。服务类中调用前面封装的数据库方法将对数据库的操作转换为对模型的操作。</p>
 
 <p>KCUserService.h</p>
 
-<p>//
+<pre><code>//
 //  KCUserService.h
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &ldquo;KCUser.h&rdquo;</h1>
-
-<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
-
-<p>@interface KCUserService : NSObject
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+#import "KCUser.h"
+#import "KCSingleton.h"
+@interface KCUserService : NSObject
 singleton_interface(KCUserService)
-/<strong>
+/**
  *  添加用户信息
  *
  *  @param user 用户对象
- <em>/
--(void)addUser:(KCUser </em>)user;
-/</strong>
+ */
+-(void)addUser:(KCUser *)user;
+/**
  *  删除用户
  *
  *  @param user 用户对象
- <em>/
--(void)removeUser:(KCUser </em>)user;
-/<strong>
+ */
+-(void)removeUser:(KCUser *)user;
+/**
  *  根据用户名删除用户
  *
  *  @param name 用户名
- <em>/
--(void)removeUserByName:(NSString </em>)name;
-/</strong>
+ */
+-(void)removeUserByName:(NSString *)name;
+/**
  *  修改用户内容
  *
  *  @param user 用户对象
- <em>/
--(void)modifyUser:(KCUser </em>)user;
-/<strong>
+ */
+-(void)modifyUser:(KCUser *)user;
+/**
  *  根据用户编号取得用户
  *
  *  @param Id 用户编号
  *
  *  @return 用户对象
- <em>/
--(KCUser </em>)getUserById:(int)Id;
-/</strong>
+ */
+-(KCUser *)getUserById:(int)Id;
+/**
  *  根据用户名取得用户
  *
  *  @param name 用户名
  *
  *  @return 用户对象
- <em>/
--(KCUser </em>)getUserByName:(NSString *)name;
-@end</p>
+ */
+-(KCUser *)getUserByName:(NSString *)name;
+@end
+</code></pre>
 
 <p>KCUserService.m</p>
 
-<p>//
+<pre><code>//
 //  KCUserService.m
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCUserService.h&rdquo;</h1>
-
-<h1>import &ldquo;KCUser.h&rdquo;</h1>
-
-<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
-
-<p>@implementation KCUserService
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCUserService.h"
+#import "KCUser.h"
+#import "KCDbManager.h"
+@implementation KCUserService
 singleton_implementation(KCUserService)
--(void)addUser:(KCUser <em>)user{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;INSERT INTO User (name,screenName, profileImageUrl,mbtype,city) VALUES(&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;)&rdquo;,user.name,user.screenName, user.profileImageUrl,user.mbtype,user.city];
+-(void)addUser:(KCUser *)user{
+    NSString *sql=[NSString stringWithFormat:@"INSERT INTO User (name,screenName, profileImageUrl,mbtype,city) VALUES('%@','%@','%@','%@','%@')",user.name,user.screenName, user.profileImageUrl,user.mbtype,user.city];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(void)removeUser:(KCUser <em>)user{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;DELETE FROM User WHERE Id=&lsquo;%@&rsquo;&rdquo;,user.Id];
+-(void)removeUser:(KCUser *)user{
+    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE Id='%@'",user.Id];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(void)removeUserByName:(NSString <em>)name{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;DELETE FROM User WHERE name=&lsquo;%@&rsquo;&rdquo;,name];
+-(void)removeUserByName:(NSString *)name{
+    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE name='%@'",name];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(void)modifyUser:(KCUser <em>)user{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;UPDATE User SET name=&lsquo;%@&rsquo;,screenName=&lsquo;%@&rsquo;,profileImageUrl=&lsquo;%@&rsquo;,mbtype=&lsquo;%@&rsquo;,city=&lsquo;%@&rsquo; WHERE Id=&lsquo;%@&rsquo;&rdquo;,user.name,user.screenName,user.profileImageUrl,user.mbtype,user.city,user.Id];
+-(void)modifyUser:(KCUser *)user{
+    NSString *sql=[NSString stringWithFormat:@"UPDATE User SET name='%@',screenName='%@',profileImageUrl='%@',mbtype='%@',city='%@' WHERE Id='%@'",user.name,user.screenName,user.profileImageUrl,user.mbtype,user.city,user.Id];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(KCUser <em>)getUserById:(int)Id{
-    KCUser </em>user=[[KCUser alloc]init];
-    NSString <em>sql=[NSString stringWithFormat:@&ldquo;SELECT name,screenName,profileImageUrl,mbtype,city FROM User WHERE Id=&lsquo;%i&rsquo;&rdquo;, Id];
-    NSArray </em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&amp;&amp;rows.count>0) {
-        [user setValuesForKeysWithDictionary:rows[0]];
-    }
-    return user;
-}
--(KCUser <em>)getUserByName:(NSString </em>)name{
-    KCUser <em>user=[[KCUser alloc]init];
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;SELECT Id, name,screenName,profileImageUrl,mbtype,city FROM User WHERE name=&lsquo;%@&rsquo;&rdquo;, name];
+-(KCUser *)getUserById:(int)Id{
+    KCUser *user=[[KCUser alloc]init];
+    NSString *sql=[NSString stringWithFormat:@"SELECT name,screenName,profileImageUrl,mbtype,city FROM User WHERE Id='%i'", Id];
     NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&amp;&amp;rows.count>0) {
+    if (rows&amp;&amp;rows.count&gt;0) {
         [user setValuesForKeysWithDictionary:rows[0]];
     }
     return user;
 }
-@end</p>
+-(KCUser *)getUserByName:(NSString *)name{
+    KCUser *user=[[KCUser alloc]init];
+    NSString *sql=[NSString stringWithFormat:@"SELECT Id, name,screenName,profileImageUrl,mbtype,city FROM User WHERE name='%@'", name];
+    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    if (rows&amp;&amp;rows.count&gt;0) {
+        [user setValuesForKeysWithDictionary:rows[0]];
+    }
+    return user;
+}
+@end
+</code></pre>
 
 <p>KCStatusService.h</p>
 
-<p>//
+<pre><code>//
 //  KCStatusService.h
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
-
-<p>@class KCStatus;
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+#import "KCSingleton.h"
+@class KCStatus;
 @interface KCStatusService : NSObject
 singleton_interface(KCStatusService)
-/<strong>
+/**
  *  添加微博信息
  *
  *  @param status 微博对象
- <em>/
--(void)addStatus:(KCStatus </em>)status;
-/</strong>
+ */
+-(void)addStatus:(KCStatus *)status;
+/**
  *  删除微博
  *
  *  @param status 微博对象
- <em>/
--(void)removeStatus:(KCStatus </em>)status;
-/<strong>
+ */
+-(void)removeStatus:(KCStatus *)status;
+/**
  *  修改微博内容
  *
  *  @param status 微博对象
- <em>/
--(void)modifyStatus:(KCStatus </em>)status;
-/</strong>
+ */
+-(void)modifyStatus:(KCStatus *)status;
+/**
  *  根据编号取得微博
  *
  *  @param Id 微博编号
  *
  *  @return 微博对象
- <em>/
--(KCStatus </em>)getStatusById:(int)Id;
-/<em><em>
+ */
+-(KCStatus *)getStatusById:(int)Id;
+/**
  *  取得所有微博对象
  *
  *  @return 所有微博对象
- </em>/
--(NSArray </em>)getAllStatus;
-@end</p>
+ */
+-(NSArray *)getAllStatus;
+@end
+</code></pre>
 
 <p>KCStatusService.m</p>
 
-<p>//
+<pre><code>//
 //  KCStatusService.m
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCStatusService.h"
+#import "KCDbManager.h"
+#import "KCStatus.h"
+#import "KCUserService.h"
+#import "KCSingleton.h"
+@interface KCStatusService(){
 
-<h1>import &ldquo;KCStatusService.h&rdquo;</h1>
-
-<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
-
-<h1>import &ldquo;KCStatus.h&rdquo;</h1>
-
-<h1>import &ldquo;KCUserService.h&rdquo;</h1>
-
-<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
-
-<p>@interface KCStatusService(){</p>
-
-<p>}
+}
 @end
 @implementation KCStatusService
 singleton_implementation(KCStatusService)
--(void)addStatus:(KCStatus <em>)status{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;INSERT INTO Status (source,createdAt,\"text\&rdquo; ,user) VALUES(&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;)&ldquo;,status.source,status.createdAt,status.text,status.user.Id];
+-(void)addStatus:(KCStatus *)status{
+    NSString *sql=[NSString stringWithFormat:@"INSERT INTO Status (source,createdAt,\"text\" ,user) VALUES('%@','%@','%@','%@')",status.source,status.createdAt,status.text,status.user.Id];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(void)removeStatus:(KCStatus <em>)status{
-    NSString </em>sql=[NSString stringWithFormat:@"DELETE FROM Status WHERE Id=&lsquo;%@&rsquo;&rdquo;,status.Id];
+-(void)removeStatus:(KCStatus *)status{
+    NSString *sql=[NSString stringWithFormat:@"DELETE FROM Status WHERE Id='%@'",status.Id];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(void)modifyStatus:(KCStatus <em>)status{
-    NSString </em>sql=[NSString stringWithFormat:@&ldquo;UPDATE Status SET source=&lsquo;%@&rsquo;,createdAt=&lsquo;%@&rsquo;,\"text\&rdquo;=&lsquo;%@&rsquo; ,user=&lsquo;%@&rsquo; WHERE Id=&lsquo;%@&rsquo;&ldquo;,status.source,status.createdAt,status.text,status.user, status.Id];
+-(void)modifyStatus:(KCStatus *)status{
+    NSString *sql=[NSString stringWithFormat:@"UPDATE Status SET source='%@',createdAt='%@',\"text\"='%@' ,user='%@' WHERE Id='%@'",status.source,status.createdAt,status.text,status.user, status.Id];
     [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
 }
--(KCStatus <em>)getStatusById:(int)Id{
-    KCStatus </em>status=[[KCStatus alloc]init];
-    NSString <em>sql=[NSString stringWithFormat:@"SELECT Id, source,createdAt,\"text\&rdquo; ,user FROM Status WHERE Id=&lsquo;%i&rsquo;&ldquo;, Id];
-    NSArray </em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&amp;&amp;rows.count>0) {
+-(KCStatus *)getStatusById:(int)Id{
+    KCStatus *status=[[KCStatus alloc]init];
+    NSString *sql=[NSString stringWithFormat:@"SELECT Id, source,createdAt,\"text\" ,user FROM Status WHERE Id='%i'", Id];
+    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    if (rows&amp;&amp;rows.count&gt;0) {
         [status setValuesForKeysWithDictionary:rows[0]];
-        status.user=[[KCUserService sharedKCUserService] getUserById:[(NSNumber <em>)rows[0][@"user&rdquo;] intValue]] ;
+        status.user=[[KCUserService sharedKCUserService] getUserById:[(NSNumber *)rows[0][@"user"] intValue]] ;
     }
     return status;
 }
--(NSArray </em>)getAllStatus{
-    NSMutableArray <em>array=[NSMutableArray array];
-    NSString </em>sql=@&ldquo;SELECT Id, source,createdAt,\"text\&rdquo; ,user FROM Status ORDER BY Id";
-    NSArray <em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    for (NSDictionary </em>dic in rows) {
-        KCStatus <em>status=[self getStatusById:[(NSNumber </em>)dic[@&ldquo;Id&rdquo;] intValue]];
+-(NSArray *)getAllStatus{
+    NSMutableArray *array=[NSMutableArray array];
+    NSString *sql=@"SELECT Id, source,createdAt,\"text\" ,user FROM Status ORDER BY Id";
+    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    for (NSDictionary *dic in rows) {
+        KCStatus *status=[self getStatusById:[(NSNumber *)dic[@"Id"] intValue]];
         [array addObject:status];
     }
     return array;
 }
-@end</p>
+@end
+</code></pre>
 
 <p>最后，在视图控制器中调用相应的服务层进行各类数据操作，在下面的代码中分别演示了增、删、改、查四类操作。</p>
 
-<p>KCMainViewController.m
+<pre><code>KCMainViewController.m
 //
 //  KCMainTableViewController.m
 //  DataAccess
 //
 //  Created by Kenshin Cui on 14-3-29.
-//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
-//</p>
-
-<h1>import &ldquo;KCMainTableViewController.h&rdquo;</h1>
-
-<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
-
-<h1>import &ldquo;KCDatabaseCreator.h&rdquo;</h1>
-
-<h1>import &ldquo;KCUser.h&rdquo;</h1>
-
-<h1>import &ldquo;KCStatus.h&rdquo;</h1>
-
-<h1>import &ldquo;KCUserService.h&rdquo;</h1>
-
-<h1>import &ldquo;KCStatusService.h&rdquo;</h1>
-
-<h1>import &ldquo;KCStatusTableViewCell.h&rdquo;</h1>
-
-<p>@interface KCMainTableViewController (){
-    NSArray <em>_status;
-    NSMutableArray </em>_statusCells;
+//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+//
+#import "KCMainTableViewController.h"
+#import "KCDbManager.h"
+#import "KCDatabaseCreator.h"
+#import "KCUser.h"
+#import "KCStatus.h"
+#import "KCUserService.h"
+#import "KCStatusService.h"
+#import "KCStatusTableViewCell.h"
+@interface KCMainTableViewController (){
+    NSArray *_status;
+    NSMutableArray *_statusCells;
 }
 @end
 @implementation KCMainTableViewController
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [KCDatabaseCreator initDatabase];</p>
+    [KCDatabaseCreator initDatabase];
 
-<p>//    [self addUsers];
+//    [self addUsers];
 //    [self removeUser];
-//    [self modifyUserInfo];</p>
+//    [self modifyUserInfo];
 
-<p>//    [self addStatus];</p>
+//    [self addStatus];
 
-<pre><code>[self loadStatusData];
-</code></pre>
+    [self loadStatusData];
 
-<p>}
+}
 -(void)addUsers{
-    KCUser <em>user1=[KCUser userWithName:@&ldquo;Binger&rdquo; screenName:@&ldquo;冰儿&rdquo; profileImageUrl:@&ldquo;binger.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    KCUser *user1=[KCUser userWithName:@"Binger" screenName:@"冰儿" profileImageUrl:@"binger.jpg" mbtype:@"mbtype.png" city:@"北京"];
     [[KCUserService sharedKCUserService] addUser:user1];
-    KCUser </em>user2=[KCUser userWithName:@&ldquo;Xiaona&rdquo; screenName:@&ldquo;小娜&rdquo; profileImageUrl:@&ldquo;xiaona.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    KCUser *user2=[KCUser userWithName:@"Xiaona" screenName:@"小娜" profileImageUrl:@"xiaona.jpg" mbtype:@"mbtype.png" city:@"北京"];
     [[KCUserService sharedKCUserService] addUser:user2];
-    KCUser <em>user3=[KCUser userWithName:@&ldquo;Lily&rdquo; screenName:@&ldquo;丽丽&rdquo; profileImageUrl:@&ldquo;lily.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    KCUser *user3=[KCUser userWithName:@"Lily" screenName:@"丽丽" profileImageUrl:@"lily.jpg" mbtype:@"mbtype.png" city:@"北京"];
     [[KCUserService sharedKCUserService] addUser:user3];
-    KCUser </em>user4=[KCUser userWithName:@&ldquo;Qianmo&rdquo; screenName:@&ldquo;阡陌&rdquo; profileImageUrl:@&ldquo;qianmo.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    KCUser *user4=[KCUser userWithName:@"Qianmo" screenName:@"阡陌" profileImageUrl:@"qianmo.jpg" mbtype:@"mbtype.png" city:@"北京"];
     [[KCUserService sharedKCUserService] addUser:user4];
-    KCUser <em>user5=[KCUser userWithName:@&ldquo;Yanyue&rdquo; screenName:@&ldquo;炎月&rdquo; profileImageUrl:@&ldquo;yanyue.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    KCUser *user5=[KCUser userWithName:@"Yanyue" screenName:@"炎月" profileImageUrl:@"yanyue.jpg" mbtype:@"mbtype.png" city:@"北京"];
     [[KCUserService sharedKCUserService] addUser:user5];
 }
 -(void)addStatus{
-    KCStatus </em>status1=[KCStatus statusWithCreateAt:@&ldquo;9:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词&rdquo; userId:1];
+    KCStatus *status1=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
     [[KCStatusService sharedKCStatusService] addStatus:status1];
-    KCStatus <em>status2=[KCStatus statusWithCreateAt:@&ldquo;9:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词&rdquo; userId:1];
+    KCStatus *status2=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
     [[KCStatusService sharedKCStatusService] addStatus:status2];
-    KCStatus </em>status3=[KCStatus statusWithCreateAt:@&ldquo;9:30&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;【我们送iPhone6了 要求很简单】真心回馈粉丝，小编觉得现在最好的奖品就是iPhone6了。今起到12月31日，关注我们，转发微博，就有机会获iPhone6(奖品可能需要等待)！每月抽一台[鼓掌]。不费事，还是试试吧，万一中了呢&rdquo; userId:2];
+    KCStatus *status3=[KCStatus statusWithCreateAt:@"9:30" source:@"iPhone 6" text:@"【我们送iPhone6了 要求很简单】真心回馈粉丝，小编觉得现在最好的奖品就是iPhone6了。今起到12月31日，关注我们，转发微博，就有机会获iPhone6(奖品可能需要等待)！每月抽一台[鼓掌]。不费事，还是试试吧，万一中了呢" userId:2];
     [[KCStatusService sharedKCStatusService] addStatus:status3];
-    KCStatus <em>status4=[KCStatus statusWithCreateAt:@&ldquo;9:45&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;重大新闻：蒂姆库克宣布出柜后，ISIS战士怒扔iPhone，沙特神职人员呼吁人们换回iPhone 4。[via Pan-Arabia Enquirer]&rdquo; userId:3];
+    KCStatus *status4=[KCStatus statusWithCreateAt:@"9:45" source:@"iPhone 6" text:@"重大新闻：蒂姆库克宣布出柜后，ISIS战士怒扔iPhone，沙特神职人员呼吁人们换回iPhone 4。[via Pan-Arabia Enquirer]" userId:3];
     [[KCStatusService sharedKCStatusService] addStatus:status4];
-    KCStatus </em>status5=[KCStatus statusWithCreateAt:@&ldquo;10:05&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;小伙伴们，有谁知道怎么往Iphone4S里倒东西？倒入的东西又该在哪里找？用了Iphone这么长时间，还真的不知道怎么弄！有谁知道啊？谢谢！&rdquo; userId:4];
+    KCStatus *status5=[KCStatus statusWithCreateAt:@"10:05" source:@"iPhone 6" text:@"小伙伴们，有谁知道怎么往Iphone4S里倒东西？倒入的东西又该在哪里找？用了Iphone这么长时间，还真的不知道怎么弄！有谁知道啊？谢谢！" userId:4];
     [[KCStatusService sharedKCStatusService] addStatus:status5];
-    KCStatus <em>status6=[KCStatus statusWithCreateAt:@&ldquo;10:07&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;在音悦台iPhone客户端里发现一个悦单《Infinite 金明洙》，推荐给大家! &rdquo; userId:1];
+    KCStatus *status6=[KCStatus statusWithCreateAt:@"10:07" source:@"iPhone 6" text:@"在音悦台iPhone客户端里发现一个悦单《Infinite 金明洙》，推荐给大家! " userId:1];
     [[KCStatusService sharedKCStatusService] addStatus:status6];
-    KCStatus </em>status7=[KCStatus statusWithCreateAt:@&ldquo;11:20&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;如果sony吧mp3播放器产品发展下去，不贪图手头节目源的现实利益，就木有苹果的ipod，也就木有iphone。柯达类似的现实利益，不自我革命的案例也是一种巨头的宿命。&rdquo; userId:2];
+    KCStatus *status7=[KCStatus statusWithCreateAt:@"11:20" source:@"iPhone 6" text:@"如果sony吧mp3播放器产品发展下去，不贪图手头节目源的现实利益，就木有苹果的ipod，也就木有iphone。柯达类似的现实利益，不自我革命的案例也是一种巨头的宿命。" userId:2];
     [[KCStatusService sharedKCStatusService] addStatus:status7];
-    KCStatus <em>status8=[KCStatus statusWithCreateAt:@&ldquo;13:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;【iPhone 7 Plus】新买的iPhone 7 Plus ，如何？够酷炫么？&rdquo; userId:2];
+    KCStatus *status8=[KCStatus statusWithCreateAt:@"13:00" source:@"iPhone 6" text:@"【iPhone 7 Plus】新买的iPhone 7 Plus ，如何？够酷炫么？" userId:2];
     [[KCStatusService sharedKCStatusService] addStatus:status8];
-    KCStatus </em>status9=[KCStatus statusWithCreateAt:@&ldquo;13:24&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;自拍神器#卡西欧TR500#，tr350S～价格美丽，行货，全国联保～iPhone6 iPhone6Plus卡西欧TR150 TR200 TR350 TR350S全面到货 招收各种代理！[给力]微信：39017366&rdquo; userId:3];
+    KCStatus *status9=[KCStatus statusWithCreateAt:@"13:24" source:@"iPhone 6" text:@"自拍神器#卡西欧TR500#，tr350S～价格美丽，行货，全国联保～iPhone6 iPhone6Plus卡西欧TR150 TR200 TR350 TR350S全面到货 招收各种代理！[给力]微信：39017366" userId:3];
     [[KCStatusService sharedKCStatusService] addStatus:status9];
-    KCStatus <em>status10=[KCStatus statusWithCreateAt:@&ldquo;13:26&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;猜到猴哥玩手机时所思所想者，再奖iPhone一部。（奖品由“2014年野生动物摄影师”评委会颁发）&rdquo; userId:3];
+    KCStatus *status10=[KCStatus statusWithCreateAt:@"13:26" source:@"iPhone 6" text:@"猜到猴哥玩手机时所思所想者，再奖iPhone一部。（奖品由“2014年野生动物摄影师”评委会颁发）" userId:3];
     [[KCStatusService sharedKCStatusService] addStatus:status10];
 }
 -(void)removeUser{
     //注意在SQLite中区分大小写
-    [[KCUserService sharedKCUserService] removeUserByName:@&ldquo;Yanyue&rdquo;];
+    [[KCUserService sharedKCUserService] removeUserByName:@"Yanyue"];
 }
 -(void)modifyUserInfo{
-    KCUser </em>user1= [[KCUserService sharedKCUserService]getUserByName:@&ldquo;Xiaona&rdquo;];
-    user1.city=@&ldquo;上海&rdquo;;
-    [[KCUserService sharedKCUserService] modifyUser:user1];</p>
+    KCUser *user1= [[KCUserService sharedKCUserService]getUserByName:@"Xiaona"];
+    user1.city=@"上海";
+    [[KCUserService sharedKCUserService] modifyUser:user1];
 
-<pre><code>KCUser *user2= [[KCUserService sharedKCUserService]getUserByName:@"Lily"];
-user2.city=@"深圳";
-[[KCUserService sharedKCUserService] modifyUser:user2];
-</code></pre>
-
-<p>}</p>
-
-<h1>pragma mark 加载数据</h1>
-
-<p>-(void)loadStatusData{
-    <em>statusCells=[[NSMutableArray alloc]init];
-    </em>status=[[KCStatusService sharedKCStatusService]getAllStatus];
-    [<em>status enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL <em>stop) {
-        KCStatusTableViewCell </em>cell=[[KCStatusTableViewCell alloc]init];
-        cell.status=(KCStatus *)obj;
-        [</em>statusCells addObject:cell];
-    }];
-    NSLog(@&ldquo;%@&rdquo;,[_status lastObject]);
-}</p>
-
-<h1>pragma mark - Table view data source</h1>
-
-<ul>
-<li>(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-  return 1;
-}</li>
-<li>(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-  return _status.count;
-}</li>
-<li>(UITableViewCell <em>)tableView:(UITableView </em>)tableView cellForRowAtIndexPath:(NSIndexPath <em>)indexPath {
-  static NSString </em>identtityKey=@&ldquo;myTableViewCellIdentityKey1&rdquo;;
-  KCStatusTableViewCell <em>cell=[self.tableView dequeueReusableCellWithIdentifier:identtityKey];
-  if(cell==nil){
-      cell=[[KCStatusTableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identtityKey];
-  }
-  cell.status=_status[indexPath.row];
-  return cell;
+    KCUser *user2= [[KCUserService sharedKCUserService]getUserByName:@"Lily"];
+    user2.city=@"深圳";
+    [[KCUserService sharedKCUserService] modifyUser:user2];
 }
--(CGFloat)tableView:(UITableView </em>)tableView heightForRowAtIndexPath:(NSIndexPath <em>)indexPath{
-  return ((KCStatusTableViewCell </em>)_statusCells[indexPath.row]).height;
+#pragma mark 加载数据
+-(void)loadStatusData{
+    _statusCells=[[NSMutableArray alloc]init];
+    _status=[[KCStatusService sharedKCStatusService]getAllStatus];
+    [_status enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        KCStatusTableViewCell *cell=[[KCStatusTableViewCell alloc]init];
+        cell.status=(KCStatus *)obj;
+        [_statusCells addObject:cell];
+    }];
+    NSLog(@"%@",[_status lastObject]);
+}
+#pragma mark - Table view data source
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return _status.count;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *identtityKey=@"myTableViewCellIdentityKey1";
+    KCStatusTableViewCell *cell=[self.tableView dequeueReusableCellWithIdentifier:identtityKey];
+    if(cell==nil){
+        cell=[[KCStatusTableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identtityKey];
+    }
+    cell.status=_status[indexPath.row];
+    return cell;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return ((KCStatusTableViewCell *)_statusCells[indexPath.row]).height;
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
-  return 20.0f;
+    return 20.0f;
 }
-@end</li>
-</ul>
-
+@end
+</code></pre>
 
 <p>项目目录结构：</p>
 
@@ -2109,111 +2036,89 @@ Core Data</p>
 
 <p>User.h</p>
 
-<p>//
+<pre><code>//
 //  User.h
 //  CoreData
 //
 //  Created by Kenshin Cui on 14/03/27.
-//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &lt;CoreData/CoreData.h></h1>
-
-<p>@class Status;
+//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;CoreData/CoreData.h&gt;
+@class Status;
 @interface User : NSManagedObject
 @property (nonatomic, retain) NSString * city;
 @property (nonatomic, retain) NSString * mbtype;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * profileImageUrl;
 @property (nonatomic, retain) NSString * screenName;
-@property (nonatomic, retain) NSSet <em>statuses;
+@property (nonatomic, retain) NSSet *statuses;
 @end
 @interface User (CoreDataGeneratedAccessors)
-- (void)addStatusesObject:(Status </em>)value;
-- (void)removeStatusesObject:(Status <em>)value;
-- (void)addStatuses:(NSSet </em>)values;
+- (void)addStatusesObject:(Status *)value;
+- (void)removeStatusesObject:(Status *)value;
+- (void)addStatuses:(NSSet *)values;
 - (void)removeStatuses:(NSSet *)values;
-@end</p>
+@end
+</code></pre>
 
 <p>User.m</p>
 
-<p>//
+<pre><code>//
 //  User.m
 //  CoreData
 //
 //  Created by Kenshin Cui on 14/03/27.
-//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
-//</p>
-
-<h1>import &ldquo;User.h&rdquo;</h1>
-
-<h1>import &ldquo;Status.h&rdquo;</h1>
-
-<p>@implementation User
+//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+//
+#import "User.h"
+#import "Status.h"
+@implementation User
 @dynamic city;
 @dynamic mbtype;
 @dynamic name;
 @dynamic profileImageUrl;
 @dynamic screenName;
 @dynamic statuses;
-@end</p>
+@end
+</code></pre>
 
-<p>Status.h
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15</p>
+<p>Status.h</p>
 
-<p>//
+<pre><code>//
 //  Status.h
 //  CoreData
 //
 //  Created by Kenshin Cui on 14/03/27.
-//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
-//</p>
-
-<h1>import &lt;Foundation/Foundation.h></h1>
-
-<h1>import &lt;CoreData/CoreData.h></h1>
-
-<p>@interface Status : NSManagedObject
+//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+//
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;CoreData/CoreData.h&gt;
+@interface Status : NSManagedObject
 @property (nonatomic, retain) NSDate * createdAt;
 @property (nonatomic, retain) NSString * source;
 @property (nonatomic, retain) NSString * text;
 @property (nonatomic, retain) NSManagedObject *user;
-@end</p>
+@end
 
-<p>Status.m</p>
+Status.m
 
-<p>//
+
+//
 //  Status.m
 //  CoreData
 //
 //  Created by Kenshin Cui on 14/03/27.
-//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
-//</p>
-
-<h1>import &ldquo;Status.h&rdquo;</h1>
-
-<p>@implementation Status
+//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+//
+#import "Status.h"
+@implementation Status
 @dynamic createdAt;
 @dynamic source;
 @dynamic text;
 @dynamic user;
-@end</p>
+@end
+</code></pre>
 
 <p>很显然，通过模型生成类的过程相当简单，通常这些类也不需要手动维护，如果模型发生的变化只要重新生成即可。有几点需要注意：</p>
 
@@ -2227,13 +2132,13 @@ Core Data</p>
 
 <p><img src="http://al1020119.github.io/images/CSR006.jpg" title="Caption" ></p>
 
-<p>1.Persistent Object Store：可以理解为存储持久对象的数据库（例如SQLite，注意Core Data也支持其他类型的数据存储，例如xml、二进制数据等）。</p>
+<ol>
+<li><p>Persistent Object Store：可以理解为存储持久对象的数据库（例如SQLite，注意Core Data也支持其他类型的数据存储，例如xml、二进制数据等）。</p></li>
+<li><p>Managed Object Model：对象模型，对应Xcode中创建的模型文件。</p></li>
+<li><p>Persistent Store Coordinator：对象模型和实体类之间的转换协调器，用于管理不同存储对象的上下文。</p></li>
+<li><p>Managed Object Context:对象管理上下文，负责实体对象和数据库之间的交互。</p></li>
+</ol>
 
-<p>2.Managed Object Model：对象模型，对应Xcode中创建的模型文件。</p>
-
-<p>3.Persistent Store Coordinator：对象模型和实体类之间的转换协调器，用于管理不同存储对象的上下文。</p>
-
-<p>4.Managed Object Context:对象管理上下文，负责实体对象和数据库之间的交互。</p>
 
 <p>Core Data使用</p>
 
@@ -2249,37 +2154,38 @@ Core Data</p>
 
 <p>为了方便后面使用，NSManagedObjectContext对象可以作为单例或静态属性来保存，下面是创建的管理对象上下文的主要代码：</p>
 
-<p>-(NSManagedObjectContext <em>)createDbContext{
-    NSManagedObjectContext </em>context;
+<pre><code>-(NSManagedObjectContext *)createDbContext{
+    NSManagedObjectContext *context;
     //打开模型文件，参数为nil则打开包中所有模型文件并合并成一个
-    NSManagedObjectModel <em>model=[NSManagedObjectModel mergedModelFromBundles:nil];
+    NSManagedObjectModel *model=[NSManagedObjectModel mergedModelFromBundles:nil];
     //创建解析器
-    NSPersistentStoreCoordinator </em>storeCoordinator=[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:model];
+    NSPersistentStoreCoordinator *storeCoordinator=[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:model];
     //创建数据库保存路径
-    NSString <em>dir=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@&ldquo;%@&rdquo;,dir);
-    NSString </em>path=[dir stringByAppendingPathComponent:@&ldquo;myDatabase.db&rdquo;];
-    NSURL <em>url=[NSURL fileURLWithPath:path];
+    NSString *dir=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@"%@",dir);
+    NSString *path=[dir stringByAppendingPathComponent:@"myDatabase.db"];
+    NSURL *url=[NSURL fileURLWithPath:path];
     //添加SQLite持久存储到解析器
-    NSError </em>error;
+    NSError *error;
     [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:url options:nil error:&amp;error];
     if(error){
-        NSLog(@&ldquo;数据库打开失败！错误:%@&rdquo;,error.localizedDescription);
+        NSLog(@"数据库打开失败！错误:%@",error.localizedDescription);
     }else{
         context=[[NSManagedObjectContext alloc]init];
         context.persistentStoreCoordinator=storeCoordinator;
-        NSLog(@&ldquo;数据库打开成功！&rdquo;);
+        NSLog(@"数据库打开成功！");
     }
     return context;
-}</p>
+}
+</code></pre>
 
 <p>2.查询数据</p>
 
 <p>对于有条件的查询，在Core Data中是通过谓词来实现的。首先创建一个请求，然后设置请求条件，最后调用上下文执行请求的方法。</p>
 
-<p>-(void)addUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
+<pre><code>-(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
     //添加一个对象
-    User </em>us= [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;User&rdquo; inManagedObjectContext:self.context];
+    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
     us.name=name;
     us.screenName=screenName;
     us.profileImageUrl=profileImageUrl;
@@ -2288,36 +2194,37 @@ Core Data</p>
     NSError *error;
     //保存上下文
     if (![self.context save:&amp;error]) {
-        NSLog(@&ldquo;添加过程中发生错误,错误信息：%@！&rdquo;,error.localizedDescription);
+        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
     }
-}</p>
+}
+</code></pre>
 
 <p>如果有多个条件，只要使用谓词组合即可，那么对于关联对象条件怎么查询呢？这里分为两种情况进行介绍：</p>
 
 <p>a.查找一个对象只有唯一一个关联对象的情况，例如查找用户名为“Binger”的微博（一个微博只能属于一个用户），通过keypath查询</p>
 
-<p>-(NSArray <em>)getStatusesByUserName:(NSString </em>)name{
-    NSFetchRequest <em>request=[NSFetchRequest fetchRequestWithEntityName:@&ldquo;Status&rdquo;];
-    request.predicate=[NSPredicate predicateWithFormat:@&ldquo;user.name=%@&rdquo;,name];
-    NSArray </em>array=[self.context executeFetchRequest:request error:nil];
+<pre><code>-(NSArray *)getStatusesByUserName:(NSString *)name{
+    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
+    request.predicate=[NSPredicate predicateWithFormat:@"user.name=%@",name];
+    NSArray *array=[self.context executeFetchRequest:request error:nil];
     return  array;
-}</p>
+}
+</code></pre>
 
 <p>此时如果跟踪Core Data生成的SQL语句会发现其实就是把Status表和User表进行了关联查询（JOIN连接）。</p>
 
 <p>b.查找一个对象有多个关联对象的情况，例如查找发送微博内容中包含“Watch”并且用户昵称为“小娜”的用户（一个用户有多条微博），此时可以充分利用谓词进行过滤。</p>
 
-<p>-(NSArray <em>)getUsersByStatusText:(NSString </em>)text screenName:(NSString <em>)screenName{
-    NSFetchRequest </em>request=[NSFetchRequest fetchRequestWithEntityName:@&ldquo;Status&rdquo;];
-    request.predicate=[NSPredicate predicateWithFormat:@&ldquo;text LIKE &lsquo;<em>Watch</em>&rsquo;&rdquo;,text];
-    NSArray *statuses=[self.context executeFetchRequest:request error:nil];</p>
+<pre><code>-(NSArray *)getUsersByStatusText:(NSString *)text screenName:(NSString *)screenName{
+    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
+    request.predicate=[NSPredicate predicateWithFormat:@"text LIKE '*Watch*'",text];
+    NSArray *statuses=[self.context executeFetchRequest:request error:nil];
 
-<pre><code>NSPredicate *userPredicate= [NSPredicate predicateWithFormat:@"user.screenName=%@",screenName];
-NSArray *users= [statuses filteredArrayUsingPredicate:userPredicate];
-return users;
+    NSPredicate *userPredicate= [NSPredicate predicateWithFormat:@"user.screenName=%@",screenName];
+    NSArray *users= [statuses filteredArrayUsingPredicate:userPredicate];
+    return users;
+}
 </code></pre>
-
-<p>}</p>
 
 <p>注意：如果单纯查找微博中包含“Watch”的用户，直接查出对应的微博，然后通过每个微博的user属性即可获得用户，此时就不用使用额外的谓词过滤条件。</p>
 
@@ -2325,9 +2232,9 @@ return users;
 
 <p>插入数据需要调用实体描述对象NSEntityDescription返回一个实体对象，然后设置对象属性，最后保存当前上下文即可。这里需要注意，增、删、改操作完最后必须调用管理对象上下文的保存方法，否则操作不会执行。</p>
 
-<p>-(void)addUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
+<pre><code>-(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
     //添加一个对象
-    User </em>us= [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;User&rdquo; inManagedObjectContext:self.context];
+    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
     us.name=name;
     us.screenName=screenName;
     us.profileImageUrl=profileImageUrl;
@@ -2336,37 +2243,40 @@ return users;
     NSError *error;
     //保存上下文
     if (![self.context save:&amp;error]) {
-        NSLog(@&ldquo;添加过程中发生错误,错误信息：%@！&rdquo;,error.localizedDescription);
+        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
     }
-}</p>
+}
+</code></pre>
 
 <p>4.删除数据</p>
 
 <p>删除数据可以直接调用管理对象上下文的deleteObject方法，删除完保存上下文即可。注意，删除数据前必须先查询到对应对象。</p>
 
-<p>-(void)removeUser:(User <em>)user{
+<pre><code>-(void)removeUser:(User *)user{
     [self.context deleteObject:user];
-    NSError </em>error;
+    NSError *error;
     if (![self.context save:&amp;error]) {
-        NSLog(@&ldquo;删除过程中发生错误，错误信息：%@!&rdquo;,error.localizedDescription);
+        NSLog(@"删除过程中发生错误，错误信息：%@!",error.localizedDescription);
     }
-}</p>
+}
+</code></pre>
 
 <p>5.修改数据</p>
 
 <p>修改数据首先也是取出对应的实体对象，然后通过修改对象的属性，最后保存上下文。</p>
 
-<p>-(void)modifyUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
-    User </em>us=[self getUserByName:name];
+<pre><code>-(void)modifyUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+    User *us=[self getUserByName:name];
     us.screenName=screenName;
     us.profileImageUrl=profileImageUrl;
     us.mbtype=mbtype;
     us.city=city;
     NSError *error;
     if (![self.context save:&amp;error]) {
-        NSLog(@&ldquo;修改过程中发生错误,错误信息：%@&rdquo;,error.localizedDescription);
+        NSLog(@"修改过程中发生错误,错误信息：%@",error.localizedDescription);
     }
-}</p>
+}
+</code></pre>
 
 <p>调试</p>
 
@@ -2386,20 +2296,21 @@ return users;
 
 <p>1.FMDB既然是对于libsqlite3框架的封装，自然使用起来也是类似的，使用前也要打开一个数据库，这个数据库文件存在则直接打开否则会创建并打开。这里FMDB引入了一个MFDatabase对象来表示数据库，打开数据库和后面的数据库操作全部依赖此对象。下面是打开数据库获得MFDatabase对象的代码：</p>
 
-<p>-(void)openDb:(NSString <em>)dbname{
+<pre><code>-(void)openDb:(NSString *)dbname{
     //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString </em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@&ldquo;%@&rdquo;,directory);
+    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@"%@",directory);
     NSString *filePath=[directory stringByAppendingPathComponent:dbname];
     //创建FMDatabase对象
     self.database=[FMDatabase databaseWithPath:filePath];
     //打开数据上
     if ([self.database open]) {
-        NSLog(@&ldquo;数据库打开成功!&rdquo;);
+        NSLog(@"数据库打开成功!");
     }else{
-        NSLog(@&ldquo;数据库打开失败!&rdquo;);
+        NSLog(@"数据库打开失败!");
     }
-}</p>
+}
+</code></pre>
 
 <p>注意：dataWithPath中的路径参数一般会选择保存到沙箱中的Documents目录中；如果这个参数设置为nil则数据库会在内存中创建；如果设置为@””则会在沙箱中的临时目录创建,应用程序关闭则文件删除。</p>
 
@@ -2438,30 +2349,31 @@ return users;
 
 <p>创建FMDatabaseQueue的方法是类似的，调用databaseQueueWithPath:方法即可。注意这里不需要调用打开操作。</p>
 
-<p>-(void)openDb:(NSString <em>)dbname{
+<pre><code>-(void)openDb:(NSString *)dbname{
     //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString </em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@&ldquo;%@&rdquo;,directory);
+    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@"%@",directory);
     NSString *filePath=[directory stringByAppendingPathComponent:dbname];
     //创建FMDatabaseQueue对象
     self.database=[FMDatabaseQueue databaseQueueWithPath:filePath];
-}</p>
+}
+</code></pre>
 
 <p>然后所有的增删改查操作调用FMDatabaseQueue的inDatabase:方法在block中执行操作sql语句即可。</p>
 
-<p>-(void)executeNonQuery:(NSString <em>)sql{
+<pre><code>-(void)executeNonQuery:(NSString *)sql{
     //执行更新sql语句，用于插入、修改、删除
-    [self.database inDatabase:^(FMDatabase </em>db) {
+    [self.database inDatabase:^(FMDatabase *db) {
         [db executeQuery:sql];
     }];
 }
--(NSArray <em>)executeQuery:(NSString </em>)sql{
-    NSMutableArray <em>array=[NSMutableArray array];
-    [self.database inDatabase:^(FMDatabase </em>db) {
+-(NSArray *)executeQuery:(NSString *)sql{
+    NSMutableArray *array=[NSMutableArray array];
+    [self.database inDatabase:^(FMDatabase *db) {
         //执行查询sql语句
-        FMResultSet <em>result= [db executeQuery:sql];
+        FMResultSet *result= [db executeQuery:sql];
         while (result.next) {
-            NSMutableDictionary </em>dic=[NSMutableDictionary dictionary];
+            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
             for (int i=0; i&lt;result.columnCount; ++i) {
                 dic[[result columnNameForIndex:i]]=[result stringForColumnIndex:i];
             }
@@ -2469,7 +2381,8 @@ return users;
         }
     }];
     return array;
-}</p>
+}
+</code></pre>
 
 <p>之所以将事务放到FMDB中去说并不是因为只有FMDB才支持事务，而是因为FMDB将其封装成了几个方法来调用，不用自己写对应的sql而已。其实在在使用libsqlite3操作数据库时也是原生支持事务的（因为这里的事务是基于数据库的，FMDB还是使用的SQLite数据库），只要在执行sql语句前加上“begin transaction;”执行完之后执行“commit transaction;”或者“rollback transaction;”进行提交或回滚即可。另外在Core Data中大家也可以发现，所有的增、删、改操作之后必须调用上下文的保存方法，其实本身就提供了事务的支持，只要不调用保存方法，之前所有的操作是不会提交的。在FMDB中FMDatabase有beginTransaction、commit、rollback三个方法进行开启事务、提交事务和回滚事务。</p>
 
@@ -2520,6 +2433,9 @@ FMDB框架其实只是一层很薄的封装，主要的类也就两个：FMDatab
 
 <p>一个实际的例子：10,000条目
 想象一个RSS阅读器，一个用户可以在一个feed上点击右键，并且选择标记所有为已读。</p>
+
+<!--more-->
+
 
 <p>引擎下，有一个带有read属性的Article实体。把所有条目标记为已读，程序需要加载这个feed的所有文章(可能通过一对多的关系)，然后设置read属性为YES。</p>
 
@@ -2572,16 +2488,20 @@ FMDB框架其实只是一层很薄的封装，主要的类也就两个：FMDatab
 我通过FMDB Wrapper来使用SQLite，FMDB来自Flying Meat Software，由Gus Mueller提供。</p>
 
 <p>基本操作
-我在iPhone以前，Core Data以前就使用过SQLite。这是它怎么工作的的要点：
-1. 所有数据库访问-读和写-发生在连续的队列里，在一个后台线程。在主线程中触及数据库是从来不被允许的。使用一个连续队列来保证每一件事是按顺序发生的。
-2. 我大量使用blocks来让异步程序容易点。
-3. 模型对象只存在在主线程（但有两个重要的例外），改变会触发一个后台保存。
-4. 模型对象列出来他们在数据库中存储的属性。可能在代码里或者在plist文件里。
-5, 一些模型对象是唯一的，一些不是。取决于应用的需要（大部分情况是唯一的）。
-6. 对关系型数据，我尽可能避免连表查询。
-7. 一些对象类型在启动的时候就完全读入内存，另一些对象类型可能只需要创建并维护一个他们的uniqueIDs的。NSMutableSet，所以不需要去触及数据库，我就知道已经有什么。
-8. Web API的调用发生在后台线程，他们使用分开的模型对象。
-我会通过我现在的应用的代码来详细描述。</p>
+我在iPhone以前，Core Data以前就使用过SQLite。这是它怎么工作的的要点：</p>
+
+<ol>
+<li>所有数据库访问-读和写-发生在连续的队列里，在一个后台线程。在主线程中触及数据库是从来不被允许的。使用一个连续队列来保证每一件事是按顺序发生的。</li>
+<li>我大量使用blocks来让异步程序容易点。</li>
+<li>模型对象只存在在主线程（但有两个重要的例外），改变会触发一个后台保存。</li>
+<li>模型对象列出来他们在数据库中存储的属性。可能在代码里或者在plist文件里。
+5, 一些模型对象是唯一的，一些不是。取决于应用的需要（大部分情况是唯一的）。</li>
+<li>对关系型数据，我尽可能避免连表查询。</li>
+<li>一些对象类型在启动的时候就完全读入内存，另一些对象类型可能只需要创建并维护一个他们的uniqueIDs的。NSMutableSet，所以不需要去触及数据库，我就知道已经有什么。</li>
+<li>Web API的调用发生在后台线程，他们使用分开的模型对象。
+我会通过我现在的应用的代码来详细描述。</li>
+</ol>
+
 
 <p>数据库更新
 在我最近的应用中，有一个单一的数据库控制器-VSDatabaseController，它通过FMDB来与SQLite对话。</p>
@@ -2867,6 +2787,9 @@ Gus Mueller让我涉及自定义SQLite方法的内容。我并没有真的使用
 <p>OhMyStar 2 也进行了一段时日，我把持久化的方式从CoreData 换到了 Realm。有些感悟，顺手就记录一下吧。以下评论都是自己很主观的感受，无实际测试数据支持。
 论 iOS 的持久化</p>
 
+<!--more-->
+
+
 <p>iOS 持久化其实也没多少选择， 高端一点CoreData、Realm、FMDB、KV类(LevelDB等)。低端一些直接一个 NSArray 就写成 Plist 也能持久化下来。</p>
 
 <p>在网络环境越来越快的当下和大部分应用数据都可能是网络应用，如果业务逻辑并不复杂，其实极端一点就只用写到 JSON 转 Object 就好了。而且一堆这样好用的封装，远有Mantle 近有YYModel。</p>
@@ -2959,9 +2882,10 @@ CoreData</p>
 缺点
 入门门槛高</p>
 
-<p>CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+<pre><code>CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
 CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
-CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。</p>
+CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+</code></pre>
 
 <p>如果没有足够的时间和精力去接入 CoreData。 那选型的时候应当慎重考虑。
 需要一些工具才感觉好使</p>
@@ -2999,6 +2923,9 @@ Context</p>
 <p>在之前的文章中，已经讲了很多关于CoreData使用相关的知识点。这篇文章中主要讲两个方面，NSFetchedResultsController和版本迁移。</p>
 
 <p>文章题目中虽然有“高级”两个字，其实讲的东西并不高级，只是因为上一篇文章中东西太多了，把两个较复杂的知识点挪到这篇文章中。</p>
+
+<!--more-->
+
 
 <p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
 
@@ -3040,27 +2967,28 @@ Context</p>
 
 <p>下面例子是比较常用的FRC初始化方式，初始化时指定的MOC，还用之前讲过的MOC初始化代码，UITableView初始化代码这里也省略了，主要突出FRC的初始化。</p>
 
-<p>// 创建请求对象，并指明操作Employee表
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建请求对象，并指明操作Employee表
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 设置排序规则，指明根据height字段升序排序
-NSSortDescriptor </em>heightSort = [NSSortDescriptor sortDescriptorWithKey:@&ldquo;height&rdquo; ascending:YES];
+NSSortDescriptor *heightSort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
 request.sortDescriptors = @[heightSort];
 // 创建NSFetchedResultsController控制器实例，并绑定MOC
 NSError *error = nil;
 fetchedResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
-                                                     managedObjectContext:context
-                                            sectionNameKeyPath:@&ldquo;sectionName&rdquo;
-                                                   cacheName:nil];
+                                                 managedObjectContext:context
+                                        sectionNameKeyPath:@"sectionName"
+                                               cacheName:nil];
 // 设置代理，并遵守协议
 fetchedResultController.delegate = self;
 // 执行获取请求，执行后FRC会从持久化存储区加载数据，其他地方可以通过FRC获取数据
 [fetchedResultController performFetch:&amp;error];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;NSFetchedResultsController init error : %@&rdquo;, error);
+    NSLog(@"NSFetchedResultsController init error : %@", error);
 }
 // 刷新UI
-[tableView reloadData];</p>
+[tableView reloadData];
+</code></pre>
 
 <p>在上面初始化FRC时，传入的sectionNameKeyPath:参数，是指明当前托管对象的哪个属性当做section的title，在本文中就是Employee表的sectionName字段为section的title。从NSFetchedResultsSectionInfo协议的indexTitle属性获取这个值。</p>
 
@@ -3080,72 +3008,72 @@ if (error) {
 
 <p>在这个协议中有如下定义，可以看出这些属性和UITableView的执行流程是紧密相关的。</p>
 
-<p>@protocol NSFetchedResultsSectionInfo
-/<em> Name of the section </em>/
-@property (nonatomic, readonly) NSString <em>name;
-/</em> Title of the section (used when displaying the index) <em>/
-@property (nullable, nonatomic, readonly) NSString </em>indexTitle;
-/<em> Number of objects in section </em>/
+<pre><code>@protocol NSFetchedResultsSectionInfo
+/* Name of the section */
+@property (nonatomic, readonly) NSString *name;
+/* Title of the section (used when displaying the index) */
+@property (nullable, nonatomic, readonly) NSString *indexTitle;
+/* Number of objects in section */
 @property (nonatomic, readonly) NSUInteger numberOfObjects;
-/<em> Returns the array of objects in the section. </em>/
+/* Returns the array of objects in the section. */
 @property (nullable, nonatomic, readonly) NSArray *objects;
-@end // NSFetchedResultsSectionInfo</p>
+@end // NSFetchedResultsSectionInfo
+</code></pre>
 
 <p>在使用过程中应该将FRC和UITableView相互嵌套，在FRC的回调方法中嵌套UITableView的视图改变逻辑，在UITableView的回调中嵌套数据更新的逻辑。这样可以始终保证数据和UI的同步，在下面的示例代码中将会演示FRC和UITableView的相互嵌套。</p>
 
-<p>Table View Delegate</p>
+<pre><code>Table View Delegate
 
-<p>// 通过FRC的sections数组属性，获取所有section的count值
-- (NSInteger)numberOfSectionsInTableView:(UITableView <em>)tableView {
+// 通过FRC的sections数组属性，获取所有section的count值
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return fetchedResultController.sections.count;
 }
 // 通过当前section的下标从sections数组中取出对应的section对象，并从section对象中获取所有对象count
-- (NSInteger)tableView:(UITableView </em>)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return fetchedResultController.sections[section].numberOfObjects;
 }
 // FRC根据indexPath获取托管对象，并给cell赋值
-- (UITableViewCell <em>)tableView:(UITableView </em>)tableView cellForRowAtIndexPath:(NSIndexPath <em>)indexPath {
-    Employee </em>emp = [fetchedResultController objectAtIndexPath:indexPath];
-    UITableViewCell <em>cell = [tableView dequeueReusableCellWithIdentifier:@&ldquo;identifier&rdquo; forIndexPath:indexPath];
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"identifier" forIndexPath:indexPath];
     cell.textLabel.text = emp.name;
     return cell;
 }
 // 创建FRC对象时，通过sectionNameKeyPath:传递进去的section title的属性名，在这里获取对应的属性值
-- (NSString </em>)tableView:(UITableView <em>)tableView titleForHeaderInSection:(NSInteger)section {
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     return fetchedResultController.sections[section].indexTitle;
 }
 // 是否可以编辑
-- (BOOL)tableView:(UITableView </em>)tableView canEditRowAtIndexPath:(NSIndexPath <em>)indexPath {
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     return YES;
 }
 // 这里是简单模拟UI删除cell后，本地持久化区数据和UI同步的操作。在调用下面MOC保存上下文方法后，FRC会回调代理方法并更新UI
-- (void)tableView:(UITableView </em>)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath <em>)indexPath {
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
      if (editingStyle == UITableViewCellEditingStyleDelete) {
         // 删除托管对象
-        Employee </em>emp = [fetchedResultController objectAtIndexPath:indexPath];
+        Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
         [context deleteObject:emp];
         // 保存上下文环境，并做错误处理
         NSError *error = nil;
         if (![context save:&amp;error]) {
-            NSLog(@&ldquo;tableView delete cell error : %@&rdquo;, error);
+            NSLog(@"tableView delete cell error : %@", error);
         }
     }
-}</p>
+}
+</code></pre>
 
 <p>上面是UITableView的代理方法，代理方法中嵌套了FRC的数据获取代码，这样在刷新视图时就可以保证使用最新的数据。并且在代码中简单实现了删除cell后，通过MOC调用删除操作，使本地持久化数据和UI保持一致。</p>
 
 <p>就像上面cellForRowAtIndexPath:方法中使用的一样，FRC提供了两个方法轻松转换indexPath和NSManagedObject的对象，在实际开发中这两个方法非常实用，这也是FRC和UITableView、UICollectionView深度融合的表现。</p>
 
-<ul>
-<li>(id)objectAtIndexPath:(NSIndexPath *)indexPath;</li>
-<li>(nullable NSIndexPath *)indexPathForObject:(id)object;</li>
-</ul>
-
+<pre><code>- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable NSIndexPath *)indexPathForObject:(id)object;
+</code></pre>
 
 <p>Fetched Results Controller Delegate</p>
 
-<p>// Cell数据源发生改变会回调此方法，例如添加新的托管对象等
-- (void)controller:(NSFetchedResultsController <em>)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath </em>)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath <em>)newIndexPath {
+<pre><code>// Cell数据源发生改变会回调此方法，例如添加新的托管对象等
+- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
     switch (type) {
         case NSFetchedResultsChangeInsert:
             [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -3158,15 +3086,15 @@ if (error) {
             [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
             break;
         case NSFetchedResultsChangeUpdate: {
-            UITableViewCell </em>cell = [tableView cellForRowAtIndexPath:indexPath];
-            Employee <em>emp = [fetchedResultController objectAtIndexPath:indexPath];
+            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+            Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
             cell.textLabel.text = emp.name;
         }
             break;
     }
 }
 // Section数据源发生改变回调此方法，例如修改section title等。
-- (void)controller:(NSFetchedResultsController </em>)controller didChangeSection:(id <nsfetchedresultssectioninfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
+- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id &lt;nsfetchedresultssectioninfo&gt;)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
     switch (type) {
         case NSFetchedResultsChangeInsert:
             [tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -3179,17 +3107,18 @@ if (error) {
     }
 }
 // 本地数据源发生改变，将要开始回调FRC代理方法。
-- (void)controllerWillChangeContent:(NSFetchedResultsController <em>)controller {
+- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
     [tableView beginUpdates];
 }
 // 本地数据源发生改变，FRC代理方法回调完成。
-- (void)controllerDidChangeContent:(NSFetchedResultsController </em>)controller {
+- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
     [tableView endUpdates];
 }
 // 返回section的title，可以在这里对title做进一步处理。这里修改title后，对应section的indexTitle属性会被更新。
-- (nullable NSString <em>)controller:(NSFetchedResultsController </em>)controller sectionIndexTitleForSectionName:(NSString *)sectionName {
-    return [NSString stringWithFormat:@&ldquo;sectionName %@&rdquo;, sectionName];
-}</nsfetchedresultssectioninfo></p>
+- (nullable NSString *)controller:(NSFetchedResultsController *)controller sectionIndexTitleForSectionName:(NSString *)sectionName {
+    return [NSString stringWithFormat:@"sectionName %@", sectionName];
+}&lt;/nsfetchedresultssectioninfo&gt;
+</code></pre>
 
 <p>上面就是当本地持久化数据发生改变后，被回调的FRC代理方法的实现，可以在对应的实现中完成自己的代码逻辑。</p>
 
@@ -3197,20 +3126,18 @@ if (error) {
 
 <p>目前为止已经实现了数据和UI的双向同步，即UI发生改变后本地存储发生改变，本地存储发生改变后UI也随之改变。可以通过下面添加数据的代码来测试一下，NSFetchedResultsController就讲到这里了。</p>
 
-<ul>
-<li>(void)addMoreData {
-  Employee <em>employee = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee&rdquo; inManagedObjectContext:context];
-  employee.name = [NSString stringWithFormat:@&ldquo;lxz 15&rdquo;];
-  employee.height = @(15);
-  employee.brithday = [NSDate date];
-  employee.sectionName = [NSString stringWithFormat:@&ldquo;3&rdquo;];
-  NSError </em>error = nil;
-  if (![context save:&amp;error]) {
-      NSLog(@&ldquo;MOC save error : %@&rdquo;, error);
-  }
-}</li>
-</ul>
-
+<pre><code>- (void)addMoreData {
+    Employee *employee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+    employee.name = [NSString stringWithFormat:@"lxz 15"];
+    employee.height = @(15);
+    employee.brithday = [NSDate date];
+    employee.sectionName = [NSString stringWithFormat:@"3"];
+    NSError *error = nil;
+    if (![context save:&amp;error]) {
+        NSLog(@"MOC save error : %@", error);
+    }
+}
+</code></pre>
 
 <p>版本迁移</p>
 
@@ -3224,7 +3151,8 @@ if (error) {
 
 <p>在开发测试过程中，可以直接将原有程序卸载就可以解决这个问题，但是本地之前存储的数据也会消失。如果是线上程序，就涉及到版本迁移的问题，否则会导致崩溃，并提示如下错误：</p>
 
-<p>CoreData: error: Illegal attempt to save to a file that was never opened. &ldquo;This NSPersistentStoreCoordinator has no persistent stores (unknown).  It cannot perform a save operation.&rdquo;. No last error recorded.</p>
+<pre><code>CoreData: error: Illegal attempt to save to a file that was never opened. "This NSPersistentStoreCoordinator has no persistent stores (unknown).  It cannot perform a save operation.". No last error recorded.
+</code></pre>
 
 <p>然而在需求不断变化的过程中，后续版本肯定会对原有的模型文件进行修改，这时就需要用到版本迁移的技术，下面开始讲版本迁移的方案。</p>
 
@@ -3261,7 +3189,8 @@ if (error) {
 
 <p>此时还应该选中模型文件，设置当前模型文件的版本。这里选择将最新版本设置为刚才新建的1.1.0版本，模型文件设置工作完成。</p>
 
-<p>Show The File Inspector -> Model Version -> Current 设置为最新版本。</p>
+<pre><code>Show The File Inspector -&gt; Model Version -&gt; Current 设置为最新版本。
+</code></pre>
 
 <p><img src="http://al1020119.github.io/images/4007.png" title="Caption" ></p>
 
@@ -3275,18 +3204,19 @@ if (error) {
 
 <p>字典中设置的key：</p>
 
-<pre><code>NSMigratePersistentStoresAutomaticallyOption设置为YES，CoreData会试着把低版本的持久化存储区迁移到最新版本的模型文件。
+<pre><code>    NSMigratePersistentStoresAutomaticallyOption设置为YES，CoreData会试着把低版本的持久化存储区迁移到最新版本的模型文件。
 
-NSInferMappingModelAutomaticallyOption设置为YES，CoreData会试着以最为合理地方式自动推断出源模型文件的实体中，某个属性到底对应于目标模型文件实体中的哪一个属性。
+    NSInferMappingModelAutomaticallyOption设置为YES，CoreData会试着以最为合理地方式自动推断出源模型文件的实体中，某个属性到底对应于目标模型文件实体中的哪一个属性。
 </code></pre>
 
 <p>版本迁移的设置是在创建MOC时给PSC设置的，为了使代码更直观，下面只给出发生变化部分的代码，其他MOC的初始化代码都不变。</p>
 
-<p>// 设置版本迁移方案
+<pre><code>// 设置版本迁移方案
 NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
                                 NSInferMappingModelAutomaticallyOption : @YES};
 // 创建持久化存储协调器，并将迁移方案的字典当做参数传入
-[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:options error:nil];</p>
+[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:options error:nil];
+</code></pre>
 
 <p>修改实体名</p>
 
@@ -3298,11 +3228,12 @@ NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
 
 <p>修改后再使用实体时，应该将实体名设为最新的实体名，这里也就是Employee2，而且数据库中的数据也会迁移到Employee2表中。</p>
 
-<p>Employee2 *emp = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee2&rdquo; inManagedObjectContext:context];
-emp.name = @&ldquo;lxz&rdquo;;
+<pre><code>Employee2 *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee2" inManagedObjectContext:context];
+emp.name = @"lxz";
 emp.brithday = [NSDate date];
 emp.height = @1.9;
-[context save:nil];</p>
+[context save:nil];
+</code></pre>
 
 <p>Mapping Model 迁移方案</p>
 
@@ -3344,10 +3275,8 @@ emp.height = @1.9;
 
 <p>对于上面提到的问题，在Mapping Model文件中选中实体，可以看到Custom Policy这个选项，选项对应的是NSEntityMigrationPolicy的子类，可以创建并设置一个子类，并重写这个类的方法来控制迁移过程。</p>
 
-<ul>
-<li>(BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject <em>)sInstance entityMapping:(NSEntityMapping </em>)mapping manager:(NSMigrationManager *)manager error:(NSError **)error;</li>
-</ul>
-
+<pre><code>- (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance entityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error;
+</code></pre>
 
 <p>版本迁移总结</p>
 
@@ -3366,6 +3295,9 @@ emp.height = @1.9;
 
 <p>NSPredicate</p>
 
+<!--more-->
+
+
 <p>概述</p>
 
 <p>在iOS开发过程中，很多需求都需要用到过滤条件。例如过滤一个集合对象中存储的对象，可以通过Foundation框架下的NSPredicate类来执行这个操作。</p>
@@ -3377,7 +3309,8 @@ emp.height = @1.9;
 <p>NSPredicate更加偏向于自然语言，不像SQLite一样有很多固定的语法，看起来也更加清晰易懂。例如下面需要查找条件为年龄30岁以上，并且包括30岁的条件。
 1</p>
 
-<p>[NSPredicate predicateWithFormat:@&ldquo;age >= 30&rdquo;]</p>
+<pre><code>[NSPredicate predicateWithFormat:@"age &gt;= 30"]
+</code></pre>
 
 <p>过滤集合对象</p>
 
@@ -3386,24 +3319,28 @@ emp.height = @1.9;
 <p>对不可变数组NSArray执行的过滤，过滤后会返回一个NSArray类型的结果数组，其中存储着符合过滤条件的对象。
 1</p>
 
-<p>NSArray *results = [array filteredArrayUsingPredicate:predicate]</p>
+<pre><code>NSArray *results = [array filteredArrayUsingPredicate:predicate]
+</code></pre>
 
 <p>对可变数组NSMutableArray执行的过滤条件，过滤后会直接改变原集合对象内部存储的对象，删除不符合条件的对象。
 1</p>
 
-<p>[arrayM filterUsingPredicate:predicate]</p>
+<pre><code>[arrayM filterUsingPredicate:predicate]
+</code></pre>
 
 <p>复合过滤条件</p>
 
 <p>谓词不只可以过滤简单条件，还可以过滤复杂条件，设置复合过滤条件。
 1</p>
 
-<p>[NSPredicate predicateWithFormat:@&ldquo;(age &lt; 25) AND (firstName = XiaoZhuang)&rdquo;]</p>
+<pre><code>[NSPredicate predicateWithFormat:@"(age &lt; 25) AND (firstName = XiaoZhuang)"]
+</code></pre>
 
 <p>当然也可以通过NSCompoundPredicate对象来设置复合过滤条件，返回结果是一个NSPredicate的子类NSCompoundPredicate对象。
 1</p>
 
-<p>[[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:@[predicate1, predicate2]]</p>
+<pre><code>[[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:@[predicate1, predicate2]]
+</code></pre>
 
 <p>枚举值NSCompoundPredicateType参数，可以设置三种复合条件，枚举值非常直观很容易看懂。</p>
 
@@ -3426,32 +3363,33 @@ NSOrPredicateType
 1
 2</p>
 
-<p>NSString <em>mobile = @&ldquo;^1(3[0-9]|5[0-35-9]|8[025-9])\d{8}$&rdquo;;
-NSPredicate </em>regexmobile = [NSPredicate predicateWithFormat:@&ldquo;SELF MATCHES %@&rdquo;, mobile];</p>
+<pre><code>NSString *mobile = @"^1(3[0-9]|5[0-35-9]|8[025-9])\\d{8}$";
+NSPredicate *regexmobile = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", mobile];
+</code></pre>
 
 <p>模糊查询</p>
 
 <p>NSPredicate支持对数据的模糊查询，例如下面使用通配符来匹配包含lxz的结果，具体CoreData中的使用在下面会讲到。
 1</p>
 
-<p>[NSPredicate predicateWithFormat:@&ldquo;name LIKE %@&rdquo;, @&ldquo;<em>lxz</em>&rdquo;]</p>
+<pre><code>[NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"]
+</code></pre>
 
 <p>keyPath</p>
 
 <p>NSPredicate在创建查询条件时，还支持设置被匹配目标的keyPath，也就是设置更深层被匹配的目标。例如下面设置employee的name属性为查找条件，就是用点语法设置的keyPath。
 1</p>
 
-<p>[NSPredicate predicateWithFormat:@&ldquo;employee.name = %@&rdquo;, @&ldquo;lxz&rdquo;]</p>
+<pre><code>[NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"]
+</code></pre>
 
 <p>设置查询条件</p>
 
 <p>在之前的文章中，执行下面MOC的fetchRequest方法，一般都需要传入一个NSFetchRequest类型的参数。这个request参数可以做一些设置操作，这样就可以以较优的性能获取指定的数据。
 1</p>
 
-<ul>
-<li>(nullable NSArray <em>)executeFetchRequest:(NSFetchRequest </em>)request error:(NSError **)error;</li>
-</ul>
-
+<pre><code>- (nullable NSArray *)executeFetchRequest:(NSFetchRequest *)request error:(NSError **)error;
+</code></pre>
 
 <p>NSFetchRequest</p>
 
@@ -3479,25 +3417,26 @@ NSCountResultType: 返回请求结果的count值，这个操作是发生在数�
 
 <p>设置获取条件</p>
 
-<p>// 建立获取数据的请求对象，并指明操作Employee表
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 建立获取数据的请求对象，并指明操作Employee表
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 设置请求条件，通过设置的条件，来过滤出需要的数据
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
 request.predicate = predicate;
 // 设置请求结果排序方式，可以设置一个或一组排序方式，最后将所有的排序方式添加到排序数组中
-NSSortDescriptor <em>sort = [NSSortDescriptor sortDescriptorWithKey:@&ldquo;height&rdquo; ascending:YES];
+NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
 // NSSortDescriptor的操作都是在SQLite层级完成的，不会将对象加载到内存中，所以对内存的消耗是非常小的
 request.sortDescriptors = @[sort];
 // 执行获取请求操作，获取的托管对象将会被存储在一个数组中并返回
-NSError </em>error = nil;
+NSError *error = nil;
 NSArray *employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Employee Name : %@, Height : %@, Brithday : %@&rdquo;, obj.name, obj.height, obj.brithday);
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;CoreData Fetch Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"CoreData Fetch Data Error : %@", error);
+}
+</code></pre>
 
 <p>这里设置NSFetchRequest对象的一些请求条件，设置查找Employee表中name为lxz的数据，并且将所有符合的数据用height值升序的方式排列。</p>
 
@@ -3509,21 +3448,21 @@ if (error) {
 
 <p>插入实体</p>
 
-<p>// 创建托管对象，并将其关联到指定的MOC上
-Employee <em>zsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee&rdquo; inManagedObjectContext:context];
-zsEmployee.name = @&ldquo;zhangsan&rdquo;;
+<pre><code>// 创建托管对象，并将其关联到指定的MOC上
+Employee *zsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+zsEmployee.name = @"zhangsan";
 zsEmployee.height = @1.9f;
 zsEmployee.brithday = [NSDate date];
-Employee </em>lsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee&rdquo; inManagedObjectContext:context];
-lsEmployee.name = @&ldquo;lisi&rdquo;;
+Employee *lsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+lsEmployee.name = @"lisi";
 lsEmployee.height = @1.7f;
 lsEmployee.brithday = [NSDate date];
-Department <em>iosDepartment = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Department&rdquo; inManagedObjectContext:context];
-iosDepartment.departName = @&ldquo;iOS&rdquo;;
+Department *iosDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
+iosDepartment.departName = @"iOS";
 iosDepartment.createDate = [NSDate date];
 iosDepartment.employee = zsEmployee;
-Department </em>androidDepartment = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Department&rdquo; inManagedObjectContext:context];
-androidDepartment.departName = @&ldquo;android&rdquo;;
+Department *androidDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
+androidDepartment.departName = @"android";
 androidDepartment.createDate = [NSDate date];
 androidDepartment.employee = lsEmployee;
 // 执行存储操作
@@ -3533,8 +3472,9 @@ if (context.hasChanges) {
 }
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;Association Table Add Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"Association Table Add Data Error : %@", error);
+}
+</code></pre>
 
 <p>上面创建了四个实体，并且将Employee都关联到Department上，完成关联操作后通过MOC存储到本地。</p>
 
@@ -3543,7 +3483,8 @@ if (error) {
 <p>会崩的！创建托管对象时需要指定MOC，在运行时动态的生成set、get方法。但是直接通过init方法初始化的对象，系统是不知道这里是需要系统自身生成set、get方法的，而且系统也不知道应该对应哪个MOC，会导致方法未实现的崩溃。所以就出现了开发中经常出现的错误，如下面崩溃信息：
 1</p>
 
-<p>-[Employee setName:]: unrecognized selector sent to instance 0x7fa665900f60</p>
+<pre><code>-[Employee setName:]: unrecognized selector sent to instance 0x7fa665900f60
+</code></pre>
 
 <p>双向关联</p>
 
@@ -3576,25 +3517,27 @@ if (error) {
 <p>双向关联的关系不只体现在数据库中，在程序运行过程中托管对象的关联属性，也是随着发生变化的。双向关联的双方，一方的关联属性设置关系后，另一方关联属性的关系也会发生变化。用下面的代码打印一下各自的关联属性，结果和上面数据库的变化是一样的。
 1</p>
 
-<p>NSLog(@&ldquo;Department : %@, Employee : %@&rdquo;, androidDepartment.employee, lsEmployee.department);</p>
+<pre><code>NSLog(@"Department : %@, Employee : %@", androidDepartment.employee, lsEmployee.department);
+</code></pre>
 
 <p>查询操作</p>
 
-<p>// 创建获取数据的请求对象，并指明操作Department表
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Department&rdquo;];
+<pre><code>// 创建获取数据的请求对象，并指明操作Department表
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Department"];
 // 设置请求条件，设置employee的name为请求条件。NSPredicate的好处在于，可以设置keyPath条件
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;employee.name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"];
 request.predicate = predicate;
 // 执行查找操作
-NSError <em>error = nil;
-NSArray </em>departments = [context executeFetchRequest:request error:&amp;error];
-[departments enumerateObjectsUsingBlock:^(Department * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Department Search Result DepartName : %@, employee name : %@&rdquo;, obj.departName, obj.employee.name);
+NSError *error = nil;
+NSArray *departments = [context executeFetchRequest:request error:&amp;error];
+[departments enumerateObjectsUsingBlock:^(Department * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Department Search Result DepartName : %@, employee name : %@", obj.departName, obj.employee.name);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;Department Search Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"Department Search Error : %@", error);
+}
+</code></pre>
 
 <p>查找Department实体，并打印实体内容。就像上面讲的双向关系一样，有关联关系的实体，自己被查找出来后，也会将与之关联的其他实体也查找出来，并且查找出来的实体都是关联着MOC的。</p>
 
@@ -3604,25 +3547,26 @@ if (error) {
 
 <p>这种需求在实际开发中非常常见，例如TableView中，上拉加载数据，每次加载20条数据，就可以利用分页查询轻松实现。</p>
 
-<p>// 创建获取数据的请求对象，并指明操作Employee表
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建获取数据的请求对象，并指明操作Employee表
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 设置查找起始点，这里是从搜索结果的第六个开始获取
 request.fetchOffset = 6;
 // 设置分页，每次请求获取六个托管对象
 request.fetchLimit = 6;
 // 设置排序规则，这里设置身高升序排序
-NSSortDescriptor </em>descriptor = [NSSortDescriptor sortDescriptorWithKey:@&ldquo;height&rdquo; ascending:YES];
+NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
 request.sortDescriptors = @[descriptor];
 // 执行查询操作
-NSError <em>error = nil;
-NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Page Search Result Name : %@, height : %@&rdquo;, obj.name, obj.height);
+NSError *error = nil;
+NSArray *employees = [context executeFetchRequest:request error:&amp;error];
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Page Search Result Name : %@, height : %@", obj.name, obj.height);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;Page Search Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"Page Search Data Error : %@", error);
+}
+</code></pre>
 
 <p>上面是一个按照身高升序排序，分页获取搜索结果的例子。查找Employee表中的实体，将结果按照height字段升序排序，并从结果的第六个开始查找，并且设置获取的数量也是六个。</p>
 
@@ -3630,21 +3574,22 @@ if (error) {
 
 <p>有时需要获取具有某些相同特征的数据，这样就需要对查询的结果做模糊匹配。在CoreData执行模糊匹配时，可以通过NSPredicate执行这个操作。</p>
 
-<p>// 创建获取数据的请求对象，设置对Employee表进行操作
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建获取数据的请求对象，设置对Employee表进行操作
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 创建模糊查询条件。这里设置的带通配符的查询，查询条件是结果包含lxz
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name LIKE %@&rdquo;, @&ldquo;<em>lxz</em>&rdquo;];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
 request.predicate = predicate;
 // 执行查询操作
-NSError <em>error = nil;
-NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Fuzzy Search Result Name : %@, height : %@&rdquo;, obj.name, obj.height);
+NSError *error = nil;
+NSArray *employees = [context executeFetchRequest:request error:&amp;error];
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Fuzzy Search Result Name : %@, height : %@", obj.name, obj.height);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;Fuzzy Search Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"Fuzzy Search Data Error : %@", error);
+}
+</code></pre>
 
 <p>上面是使用通配符的方式进行模糊查询，NSPredicate支持多种形式的模糊查询，下面列举一些简单的匹配方式。模糊查询条件对大小写不敏感，所以查询条件大小写均可。</p>
 
@@ -3653,28 +3598,29 @@ if (error) {
 
 <p>1</p>
 
-<p>NSPredicate *predicate = [NSPredicate predicateWithFormat:@&ldquo;name BEGINSWITH %@&rdquo;, @&ldquo;lxz&rdquo;];</p>
+<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"lxz"];
 
-<pre><code>以lxz结尾
+以lxz结尾
 </code></pre>
 
 <p>1</p>
 
-<p>NSPredicate *predicate = [NSPredicate predicateWithFormat:@&ldquo;name ENDSWITH %@&rdquo;, @&ldquo;lxz&rdquo;];</p>
+<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name ENDSWITH %@", @"lxz"];
 
-<pre><code>其中包含lxz
+其中包含lxz
 </code></pre>
 
 <p>1</p>
 
-<p>NSPredicate *predicate = [NSPredicate predicateWithFormat:@&ldquo;name contains %@&rdquo;, @&ldquo;lxz&rdquo;];</p>
+<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name contains %@", @"lxz"];
 
-<pre><code>查询条件结果包含lxz
+查询条件结果包含lxz
 </code></pre>
 
 <p>1</p>
 
-<p>NSPredicate <em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name LIKE %@&rdquo;, @&ldquo;</em>lxz*&rdquo;];</p>
+<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
+</code></pre>
 
 <p>加载请求模板</p>
 
@@ -3682,20 +3628,21 @@ if (error) {
 
 <p>&hellip;. 省略上下文创建步骤 &hellip;.</p>
 
-<p>// 通过MOC获取模型文件对应的托管对象模型
-NSManagedObjectModel <em>model = context.persistentStoreCoordinator.managedObjectModel;
+<pre><code>// 通过MOC获取模型文件对应的托管对象模型
+NSManagedObjectModel *model = context.persistentStoreCoordinator.managedObjectModel;
 // 通过.xcdatamodeld文件中设置的模板名，获取请求对象
-NSFetchRequest </em>fetchRequest = [model fetchRequestTemplateForName:@&ldquo;EmployeeFR&rdquo;];
+NSFetchRequest *fetchRequest = [model fetchRequestTemplateForName:@"EmployeeFR"];
 // 请求数据，下面的操作和普通请求一样
-NSError <em>error = nil;
-NSArray </em>dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
-[dataList enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Employee.count = %ld, Employee.height = %f&rdquo;, dataList.count, [obj.height floatValue]);
+NSError *error = nil;
+NSArray *dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
+[dataList enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Employee.count = %ld, Employee.height = %f", dataList.count, [obj.height floatValue]);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;Execute Fetch Request Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"Execute Fetch Request Error : %@", error);
+}
+</code></pre>
 
 <p>获取结果Count值</p>
 
@@ -3704,43 +3651,45 @@ if (error) {
 <p>对于这个需求，苹果提供了两种常用的方式获取这个Count值。这两种获取操作，都是在数据库中完成的，并不需要将托管对象加载到内存中，对内存的开销也是很小的。</p>
 
 <pre><code>方法1，设置resultType
-</code></pre>
 
-<p>// 设置过滤条件，可以根据需求设置自己的过滤条件
-NSPredicate <em>predicate = [NSPredicate predicateWithFormat:@&ldquo;height &lt; 2&rdquo;];
+
+// 设置过滤条件，可以根据需求设置自己的过滤条件
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; 2"];
 // 创建请求对象，并指明操作Employee表
-NSFetchRequest </em>fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 fetchRequest.predicate = predicate;
 // 这一步是关键。设置返回结果类型为Count，返回结果为NSNumber类型
 fetchRequest.resultType = NSCountResultType;
 // 执行查询操作，返回的结果还是数组，数组中只存在一个对象，就是计算出的Count值
-NSError <em>error = nil;
-NSArray </em>dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
+NSError *error = nil;
+NSArray *dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
 NSInteger count = [dataList.firstObject integerValue];
-NSLog(@&ldquo;fetch request result Employee.count = %ld&rdquo;, count);
+NSLog(@"fetch request result Employee.count = %ld", count);
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;fetch request result error : %@&rdquo;, error);
-}</p>
+    NSLog(@"fetch request result error : %@", error);
+}
+</code></pre>
 
 <p>方法1中设置NSFetchRequest对象的resultType为NSCountResultType，获取到结果的Count值。这个枚举值在之前的文章中提到过，除了Count参数，还可以设置其他三种参数。</p>
 
 <pre><code>方法2，使用MOC提供的方法
-</code></pre>
 
-<p>// 设置过滤条件
-NSPredicate <em>predicate = [NSPredicate predicateWithFormat:@&ldquo;height &lt; 2&rdquo;];
+
+// 设置过滤条件
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; 2"];
 // 创建请求对象，指明操作Employee表
-NSFetchRequest </em>fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 fetchRequest.predicate = predicate;
 // 通过调用MOC的countForFetchRequest:error:方法，获取请求结果count值，返回结果直接是NSUInteger类型变量
 NSError *error = nil;
 NSUInteger count = [context countForFetchRequest:fetchRequest error:&amp;error];
-NSLog(@&ldquo;fetch request result count is : %ld&rdquo;, count);
+NSLog(@"fetch request result count is : %ld", count);
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;fetch request result error : %@&rdquo;, error);
-}</p>
+    NSLog(@"fetch request result error : %@", error);
+}
+</code></pre>
 
 <p>MOC提供了专门获取请求结果Count值的方法，通过这个方法可以直接返回一个NSUInteger类型的Count值，使用起来比上面的方法更方便点，其他都是一样的。</p>
 
@@ -3750,32 +3699,33 @@ if (error) {
 
 <p>CoreData对于这样的需求，提供了位运算的功能。MOC在执行请求时，是支持对数据进行位运算的。这个操作依然是在数据库层完成的，对内存的占用非常小。</p>
 
-<p>// 创建请求对象，指明操作Employee表
-NSFetchRequest <em>fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建请求对象，指明操作Employee表
+NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 设置返回值为字典类型，这是为了结果可以通过设置的name名取出，这一步是必须的
 fetchRequest.resultType = NSDictionaryResultType;
 // 创建描述对象
-NSExpressionDescription </em>expressionDes = [[NSExpressionDescription alloc] init];
+NSExpressionDescription *expressionDes = [[NSExpressionDescription alloc] init];
 // 设置描述对象的name，最后结果需要用这个name当做key来取出结果
-expressionDes.name = @&ldquo;sumOperatin&rdquo;;
+expressionDes.name = @"sumOperatin";
 // 设置返回值类型，根据运算结果设置类型
 expressionDes.expressionResultType = NSFloatAttributeType;
 // 创建具体描述对象，用来描述对那个属性进行什么运算(可执行的运算类型很多，这里描述的是对height属性，做sum运算)
-NSExpression <em>expression = [NSExpression expressionForFunction:@&ldquo;sum:&rdquo; arguments:@[[NSExpression expressionForKeyPath:@&ldquo;height&rdquo;]]];
+NSExpression *expression = [NSExpression expressionForFunction:@"sum:" arguments:@[[NSExpression expressionForKeyPath:@"height"]]];
 // 只能对应一个具体描述对象
 expressionDes.expression = expression;
 // 给请求对象设置描述对象，这里是一个数组类型，也就是可以设置多个描述对象
 fetchRequest.propertiesToFetch = @[expressionDes];
 // 执行请求，返回值还是一个数组，数组中只有一个元素，就是存储计算结果的字典
-NSError </em>error = nil;
-NSArray <em>resultArr = [context executeFetchRequest:fetchRequest error:&amp;error];
+NSError *error = nil;
+NSArray *resultArr = [context executeFetchRequest:fetchRequest error:&amp;error];
 // 通过上面设置的name值，当做请求结果的key取出计算结果
-NSNumber </em>number = resultArr.firstObject[@&ldquo;sumOperatin&rdquo;];
-NSLog(@&ldquo;fetch request result is %f&rdquo;, [number floatValue]);
+NSNumber *number = resultArr.firstObject[@"sumOperatin"];
+NSLog(@"fetch request result is %f", [number floatValue]);
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;fetch request result error : %@&rdquo;, error);
-}</p>
+    NSLog(@"fetch request result error : %@", error);
+}
+</code></pre>
 
 <p>执行结果：</p>
 
@@ -3786,7 +3736,8 @@ if (error) {
 <p>NSExpression类可以描述多种运算，可以在NSExpression.h文件中的注释部分，看到所有支持的运算类型，大概看了一下有二十多种运算。而且除了上面NSExpression调用的方法，此类还支持点语法的位运算，例如下面的例子。
 1</p>
 
-<p>[NSExpression expressionWithFormat:@&ldquo;@sum.height&rdquo;];</p>
+<pre><code>[NSExpression expressionWithFormat:@"@sum.height"];
+</code></pre>
 
 <p>批处理</p>
 
@@ -3800,22 +3751,23 @@ if (error) {
 
 <p>批量更新</p>
 
-<p>// 创建批量更新对象，并指明操作Employee表。
-NSBatchUpdateRequest <em>updateRequest = [NSBatchUpdateRequest batchUpdateRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建批量更新对象，并指明操作Employee表。
+NSBatchUpdateRequest *updateRequest = [NSBatchUpdateRequest batchUpdateRequestWithEntityName:@"Employee"];
 // 设置返回值类型，默认是什么都不返回(NSStatusOnlyResultType)，这里设置返回发生改变的对象Count值
 updateRequest.resultType = NSUpdatedObjectsCountResultType;
 // 设置发生改变字段的字典
-updateRequest.propertiesToUpdate = @{@&ldquo;height&rdquo; : [NSNumber numberWithFloat:5.f]};
+updateRequest.propertiesToUpdate = @{@"height" : [NSNumber numberWithFloat:5.f]};
 // 执行请求后，返回值是一个特定的result对象，通过result的属性获取返回的结果。MOC的这个API是从iOS8出来的，所以需要注意版本兼容。
-NSError </em>error = nil;
+NSError *error = nil;
 NSBatchUpdateResult *result = [context executeRequest:updateRequest error:&amp;error];
-NSLog(@&ldquo;batch update count is %ld&rdquo;, [result.result integerValue]);
+NSLog(@"batch update count is %ld", [result.result integerValue]);
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;batch update request result error : %@&rdquo;, error);
+    NSLog(@"batch update request result error : %@", error);
 }
 // 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];</p>
+[context refreshAllObjects];
+</code></pre>
 
 <p>上面对Employee表中所有的托管对象height值做了批量更新，在更新时通过设置propertiesToUpdate字典来控制更新字段和更新的值，设置格式是字段名 : 新值。通过设置批处理对象的predicate属性，设置一个谓词对象来控制受影响的对象。</p>
 
@@ -3825,25 +3777,26 @@ if (error) {
 
 <p>批量删除</p>
 
-<p>// 创建请求对象，并指明对Employee表做操作
-NSFetchRequest <em>fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建请求对象，并指明对Employee表做操作
+NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 通过谓词设置过滤条件，设置条件为height小于1.7
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;height &lt; %f&rdquo;, 1.7f];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; %f", 1.7f];
 fetchRequest.predicate = predicate;
 // 创建批量删除请求，并使用上面创建的请求对象当做参数进行初始化
-NSBatchDeleteRequest <em>deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
+NSBatchDeleteRequest *deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
 // 设置请求结果类型，设置为受影响对象的Count
 deleteRequest.resultType = NSBatchDeleteResultTypeCount;
 // 使用NSBatchDeleteResult对象来接受返回结果，通过id类型的属性result获取结果
-NSError </em>error = nil;
+NSError *error = nil;
 NSBatchDeleteResult *result = [context executeRequest:deleteRequest error:&amp;error];
-NSLog(@&ldquo;batch delete request result count is %ld&rdquo;, [result.result integerValue]);
+NSLog(@"batch delete request result count is %ld", [result.result integerValue]);
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;batch delete request error : %@&rdquo;, error);
+    NSLog(@"batch delete request error : %@", error);
 }
 // 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];</p>
+[context refreshAllObjects];
+</code></pre>
 
 <p>大多数情况下，涉及到托管对象的操作，都需要将其加载到内存中完成。所以使用CoreData时，需要注意内存的使用，不要在内存中存在过多的托管对象。在已经做系统兼容的情况下，进行大量数据的操作时，应该尽量使用批处理来完成操作。</p>
 
@@ -3851,12 +3804,12 @@ if (error) {
 
 <p>异步请求</p>
 
-<p>// 创建请求对象，并指明操作Employee表
-NSFetchRequest <em>fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 创建请求对象，并指明操作Employee表
+NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 创建异步请求对象，并通过一个block进行回调，返回结果是一个NSAsynchronousFetchResult类型参数
-NSAsynchronousFetchRequest </em>asycFetchRequest = [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:fetchRequest completionBlock:^(NSAsynchronousFetchResult * <em>Nonnull result) {
-    [result.finalResult enumerateObjectsUsingBlock:^(Employee * </em>Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@&ldquo;fetch request result Employee.count = %ld, Employee.name = %@&rdquo;, result.finalResult.count, obj.name);
+NSAsynchronousFetchRequest *asycFetchRequest = [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:fetchRequest completionBlock:^(NSAsynchronousFetchResult * _Nonnull result) {
+    [result.finalResult enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSLog(@"fetch request result Employee.count = %ld, Employee.name = %@", result.finalResult.count, obj.name);
     }];
 }];
 // 执行异步请求，和批量处理执行同一个请求方法
@@ -3864,8 +3817,9 @@ NSError *error = nil;
 [context executeRequest:asycFetchRequest error:&amp;error];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;fetch request result error : %@&rdquo;, error);
-}</p>
+    NSLog(@"fetch request result error : %@", error);
+}
+</code></pre>
 
 <p>上面通过NSAsynchronousFetchRequest对象创建了一个异步请求，并通过block进行回调。如果有多个请求同时发起，不需要担心线程安全的问题，系统会将所有的异步请求添加到一个操作队列中，在前一个任务访问数据库时，CoreData会将数据库加锁，等前面的执行完成才会继续执行后面的操作。</p>
 
@@ -3887,6 +3841,9 @@ if (error) {
 <p>文章中如有疏漏或错误，还请各位及时提出，谢谢！??</p>
 
 <p>创建自带CoreData的工程</p>
+
+<!--more-->
+
 
 <p>在新建一个项目时，可以勾选Use Core Data选项，这样创建出来的工程系统会默认生成一些CoreData的代码以及一个.xcdatamodeld后缀的模型文件，模型文件默认以工程名开头。这些代码在AppDelegate类中，也就是代表可以在全局使用AppDelegate.h文件中声明的CoreData方法和属性。</p>
 
@@ -4136,25 +4093,27 @@ NSMainQueueConcurrencyType 主并发队列类型，如果涉及到UI相关的操
 
 <p>如果还使用init方法，可能会对后面推出的一些API不兼容，导致多线程相关的错误。例如下面的错误，因为如果没有显式的设置并发类型，默认是一个已经弃用的NSConfinementConcurrencyType类型，就会导致新推出的API发生不兼容的崩溃错误。</p>
 
-<p>Terminating app due to uncaught exception &lsquo;NSInvalidArgumentException&rsquo;, reason: &lsquo;NSConfinementConcurrencyType context</p>
+<pre><code>Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'NSConfinementConcurrencyType context
+</code></pre>
 
 <p>创建MOC</p>
 
 <p>下面是根据Company模型文件，创建了一个主队列并发类型的MOC。</p>
 
-<p>// 创建上下文对象，并发队列设置为主队列
-NSManagedObjectContext <em>context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+<pre><code>// 创建上下文对象，并发队列设置为主队列
+NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
 // 创建托管对象模型，并使用Company.momd路径当做初始化参数
-NSURL </em>modelPath = [[NSBundle mainBundle] URLForResource:@&ldquo;Company&rdquo; withExtension:@&ldquo;momd&rdquo;];
-NSManagedObjectModel <em>model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
+NSURL *modelPath = [[NSBundle mainBundle] URLForResource:@"Company" withExtension:@"momd"];
+NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
 // 创建持久化存储调度器
-NSPersistentStoreCoordinator </em>coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
 // 创建并关联SQLite数据库文件，如果已经存在则不会重复创建
 NSString *dataPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-dataPath = [dataPath stringByAppendingFormat:@&ldquo;/%@.sqlite&rdquo;, @&ldquo;Company&rdquo;];
+dataPath = [dataPath stringByAppendingFormat:@"/%@.sqlite", @"Company"];
 [coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:nil error:nil];
 // 上下文对象设置属性为持久化存储器
-context.persistentStoreCoordinator = coordinator;</p>
+context.persistentStoreCoordinator = coordinator;
+</code></pre>
 
 <p>这段代码创建了一个MOC，我们从上往下看这段代码。</p>
 
@@ -4195,20 +4154,21 @@ NSInMemoryStoreType : 直接存储在内存中
 
 <p>插入操作</p>
 
-<p>// 创建托管对象，并指明创建的托管对象所属实体名
-Employee <em>emp = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee&rdquo; inManagedObjectContext:context];
-emp.name = @&ldquo;lxz&rdquo;;
+<pre><code>// 创建托管对象，并指明创建的托管对象所属实体名
+Employee *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+emp.name = @"lxz";
 emp.height = @1.7;
 emp.brithday = [NSDate date];
 // 通过上下文保存对象，并在保存前判断是否有更改
-NSError </em>error = nil;
+NSError *error = nil;
 if (context.hasChanges) {
     [context save:&amp;error];
 }
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;CoreData Insert Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"CoreData Insert Data Error : %@", error);
+}
+</code></pre>
 
 <p>通过NSEntityDescription的insert类方法，生成并返回一个Employee托管对象，并将这个对象插入到指定的上下文中。</p>
 
@@ -4216,16 +4176,16 @@ if (error) {
 
 <p>删除操作</p>
 
-<p>// 建立获取数据的请求对象，指明对Employee实体进行删除操作
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 建立获取数据的请求对象，指明对Employee实体进行删除操作
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 创建谓词对象，过滤出符合要求的对象，也就是要删除的对象
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
 request.predicate = predicate;
 // 执行获取操作，找到要删除的对象
-NSError <em>error = nil;
-NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
+NSError *error = nil;
+NSArray *employees = [context executeFetchRequest:request error:&amp;error];
 // 遍历符合删除要求的对象数组，执行删除操作
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
     [context deleteObject:obj];
 }];
 // 保存上下文
@@ -4234,22 +4194,23 @@ if (context.hasChanges) {
 }
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;CoreData Delete Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"CoreData Delete Data Error : %@", error);
+}
+</code></pre>
 
 <p>首先获取需要删除的托管对象，遍历获取的对象数组，逐个删除后调用MOC的save方法保存。</p>
 
 <p>修改操作</p>
 
-<p>// 建立获取数据的请求对象，并指明操作的实体为Employee
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 建立获取数据的请求对象，并指明操作的实体为Employee
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 创建谓词对象，设置过滤条件
-NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
 request.predicate = predicate;
 // 执行获取请求，获取到符合要求的托管对象
-NSError <em>error = nil;
-NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+NSError *error = nil;
+NSArray *employees = [context executeFetchRequest:request error:&amp;error];
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
     obj.height = @3.f;
 }];
 // 将上面的修改进行存储
@@ -4258,25 +4219,27 @@ if (context.hasChanges) {
 }
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;CoreData Update Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"CoreData Update Data Error : %@", error);
+}
+</code></pre>
 
 <p>和上面一样，首先获取到需要更改的托管对象，更改完成后调用MOC的save方法持久化到本地。</p>
 
 <p>查找操作</p>
 
-<p>// 建立获取数据的请求对象，指明操作的实体为Employee
-NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+<pre><code>// 建立获取数据的请求对象，指明操作的实体为Employee
+NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
 // 执行获取操作，获取所有Employee托管对象
-NSError </em>error = nil;
+NSError *error = nil;
 NSArray *employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
-    NSLog(@&ldquo;Employee Name : %@, Height : %@, Brithday : %@&rdquo;, obj.name, obj.height, obj.brithday);
+[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
 }];
 // 错误处理
 if (error) {
-    NSLog(@&ldquo;CoreData Ergodic Data Error : %@&rdquo;, error);
-}</p>
+    NSLog(@"CoreData Ergodic Data Error : %@", error);
+}
+</code></pre>
 
 <p>查找操作最简单粗暴，因为是演示代码，所以直接将所有Employee表中的托管对象加载出来。在实际开发中肯定不会这样做，只需要加载需要的数据。后面还会讲到一些更高级的操作，会涉及到获取方面的东西。</p>
 
@@ -4299,6 +4262,9 @@ if (error) {
 
 <p>在使用CoreData的过程中，我也是一边学习一边实践。在学习的过程中，一些写的质量比较高的博客对我的帮助也很大，例如objc.io等博客，在这里就不一一列举出来了，非常感谢这些作者。</p>
 
+<!--more-->
+
+
 <p>先不说项目中用不用得到，其实很多人都是不了解CoreData的，但是经过我的学习发现CoreData还是挺不错的。所以正如这系列文章的名字一样-认识CoreData，打算写这系列文章来认识一下CoreData。</p>
 
 <p>这系列博客将从简单到复杂的来讲一下CoreData，其中除了基础使用还会包括多线程、批量数据处理等内容，这些很多都是我公司项目开发过程中接触到的，我们也设想了一些极端的情况，解决方案都会体现在这系列博客中。</p>
@@ -4313,15 +4279,16 @@ if (error) {
 
 <p>在CoreData中有一些常用的类，称呼可能各不相同。所以这里先约定一些关键字，以便理解后面的一些内容，这些约定很多都是出现在苹果的官方文档中的。</p>
 
-<p>NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。</p>
+<pre><code>NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
 
-<p>NSManagedObjectContext(Managed Object Context)，缩写为MOC。</p>
+NSManagedObjectContext(Managed Object Context)，缩写为MOC。
 
-<p>NSManagedObjectModel(Managed Object Model)，缩写为MOM。</p>
+NSManagedObjectModel(Managed Object Model)，缩写为MOM。
 
-<p>NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。</p>
+NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
 
-<p>后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。</p>
+后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
+</code></pre>
 
 <p>什么是CoreData？</p>
 
@@ -4365,27 +4332,29 @@ if (error) {
 
 <p>模型文件操作</p>
 
-<p>1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)</p>
+<pre><code>1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
 
-<p>1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。</p>
+1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
 
-<p>1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)</p>
+1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
 
-<p>1.4 创建获取请求模板、设置配置模板等。</p>
+1.4 创建获取请求模板、设置配置模板等。
 
-<p>1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)</p>
+1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
+</code></pre>
 
 <p>实例化上下文对象</p>
 
-<p>2.1 创建托管对象上下文(NSManagedObjectContext)</p>
+<pre><code>2.1 创建托管对象上下文(NSManagedObjectContext)
 
-<p>2.2 创建托管对象模型(NSManagedObjectModel)</p>
+2.2 创建托管对象模型(NSManagedObjectModel)
 
-<p>2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)</p>
+2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
 
-<p>2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)</p>
+2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
 
-<p>2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。</p>
+2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
+</code></pre>
 
 <p>CoreData结构</p>
 
@@ -4530,21 +4499,22 @@ if (error) {
 
 <p>选择Arguments，在下面的ArgumentsPassed On Launch中添加下面两个选项。</p>
 
-<p>(1)-com.apple.CoreData.SQLDebug</p>
+<pre><code>(1)-com.apple.CoreData.SQLDebug
 
-<p>(2)1</p>
+(2)1
 
-<p>终端调试命令</p>
+    终端调试命令
 
-<p>如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。</p>
+    如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
 
-<p>.tables 查看当前数据库文件中所有的表名</p>
+    .tables 查看当前数据库文件中所有的表名
 
-<p>select *from tableName 执行查询的SQL语句</p>
+    select *from tableName 执行查询的SQL语句
 
-<p><img src="http://al1020119.github.io/images/1014.png" title="Caption" ></p>
+    &lt;img src="http://al1020119.github.io/images/1014.png" title="Caption" &gt; 
 
-<p>终端调试命令</p>
+    终端调试命令
+</code></pre>
 ]]></content>
   </entry>
   
@@ -4561,22 +4531,27 @@ if (error) {
 
 <p>之前我们提到过，由于 Realm 使用的是自己的引擎，因此， Realm 就可以在 iOS 和 Android 平台上共同使用（完全无缝），并且支持 Swift 、 Objective-C 以及 Java 语言来编写（ Android 平台和 iOS 平台使用不同的 SDK ）。</p>
 
+<!--more-->
+
+
 <p>数以万计的使用 Realm 的开发者都会发现，使用 Realm 比使用 SQLite 以及 Core Data 要快很多。下面我们给出一个例子，分别展示 Core Data 和 Realm 在执行一个断言查询请求并且排序结果所使用的代码量：</p>
 
-<p>// Core Data
-let fetchRequest = NSFetchRequest(entityName: &ldquo;Specimen&rdquo;)
-let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString)
+<pre><code>// Core Data
+let fetchRequest = NSFetchRequest(entityName: "Specimen")
+let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
 fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: &ldquo;name&rdquo;, ascending: true)
+let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
 fetchRequest.sortDescriptors = [sortDescriptor]
 let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)</p>
+let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)
+</code></pre>
 
 <p>而换成了 Realm 呢？您会惊叹于 Realm 的简单的：</p>
 
-<p>// Realm
-let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty(&ldquo;name&rdquo;, ascending: true)</p>
+<pre><code>// Realm
+let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
+let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
+</code></pre>
 
 <p>使用 Realm 可以让代码变得十分简洁，从而让您的代码易读易写。</p>
 
@@ -4676,15 +4651,16 @@ RLMResults ：这个类是执行任何查询请求后所返回的类，其中包
 
 <p>打开 SpeciesModel.swift 文件，然后用以下代码替换文件中的内容：</p>
 
-<p>import UIKit
+<pre><code>import UIKit
 import Realm
 class SpeciesModel: RLMObject {
-dynamic var name = &ldquo;&rdquo;
-dynamic var speciesDescription = &ldquo;&rdquo;
+dynamic var name = ""
+dynamic var speciesDescription = ""
 dynamic var latitude: Double = 0
 dynamic var longitude: Double = 0
 dynamic var created = NSDate()
-}</p>
+}
+</code></pre>
 
 <p>上面的代码添加了一些属性来存储信息： name 属性存储物种名称， speciesDescription 存储物种的描述信息。对于 Realm 中的一些特定的数据类型，比如说字符串，必须要初始化。在本例中，我们使用空字符串来进行初始化。</p>
 
@@ -4698,11 +4674,12 @@ dynamic var created = NSDate()
 
 <p>以下是解决方案的代码：</p>
 
-<p>import UIKit
+<pre><code>import UIKit
 import Realm
 class CategoryModel: RLMObject {
-dynamic var name = &ldquo;&rdquo;
-}</p>
+dynamic var name = ""
+}
+</code></pre>
 
 <p>我们现在拥有了 CategoryModel 数据模型了，下面我们将通过某种方式将其与 SpeciesModel 数据模型关联起来，搭建起 “ 关系 ” 。</p>
 
@@ -4711,7 +4688,8 @@ dynamic var name = &ldquo;&rdquo;
 <p>打开 SpeciesModel.swift 文件，然后在 created 属性下面添加如下语句：
 1</p>
 
-<p>dynamic var category = CategoryModel()</p>
+<pre><code>dynamic var category = CategoryModel()
+</code></pre>
 
 <p>这个语句设置了 “ 物种 ” 和 “ 类别 ” 之间的 “ 一对多 ” 关系，这就意味着每个物种都只能够拥有一个类别，但是一个类别可以从属于多个物种。</p>
 
@@ -4725,7 +4703,7 @@ dynamic var name = &ldquo;&rdquo;
 
 <p>在类定义当中添加以下方法，别忘了在文件顶部导入 Realm 框架（ import Realm ）：</p>
 
-<p>private func populateDefaultCategories() {
+<pre><code>private func populateDefaultCategories() {
 self.results = CategoryModel.allObjects() // 1
 if results.count == 0 { // 2
 let realm = RLMRealm.defaultRealm() // 3
@@ -4740,7 +4718,8 @@ realm.addObject(newCategory)
 realm.commitWriteTransaction() // 7
 self.results = CategoryModel.allObjects()
 }
-}</p>
+}
+</code></pre>
 
 <p>对应的标号注释如下：</p>
 
@@ -4764,24 +4743,27 @@ self.results = CategoryModel.allObjects()
 <p>然后在 viewDidLoad() 方法的底部加入以下代码：
 1</p>
 
-<p>populateDefaultCategories()</p>
+<pre><code>populateDefaultCategories()
+</code></pre>
 
 <p>这个方法将会在视图加载的过程中，添加我们的测试用类别，并且执行向数据库写入数据的操作。</p>
 
 <p>好了，现在我们的数据库当中已经有了一些数据了，我们需要更新一下表试图数据源相关方法，以显示这些类别。找到 tableView(_:cellForRowAtIndexPath:) 方法，然后用以下代码替换它：</p>
 
-<p>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-let cell = tableView.dequeueReusableCellWithIdentifier(&ldquo;CategoryCell&rdquo;, forIndexPath: indexPath) as! UITableViewCell
+<pre><code>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell {
+let cell = tableView.dequeueReusableCellWithIdentifier("CategoryCell", forIndexPath: indexPath) as! UITableViewCell
 cell.textLabel?.text = (results[UInt(indexPath.row)] as! CategoryModel).name
 return cell
-}</p>
+}
+</code></pre>
 
 <p>这个声明语句从 results 对象当中读取对应行的名称，然后设置到单元格的文本标签上面显示。</p>
 
 <p>接下来，添加一个新的属性：
 1</p>
 
-<p>var selectedCategory: CategoryModel!</p>
+<pre><code>var selectedCategory: CategoryModel!
+</code></pre>
 
 <p>我们用这个属性来存储当前选中的类别。</p>
 
@@ -4791,10 +4773,11 @@ return cell
 3
 4</p>
 
-<p>override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+<pre><code>override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -&gt; NSIndexPath? {
 selectedCategories = self.results[UInt(indexPath.row)] as! CategoryModel
 return indexPath
-}</p>
+}
+</code></pre>
 
 <p>上面声明的方法将会在用户点击某个单元格的时候，将用户点击的类别存储在 selectedCategory 属性当中。</p>
 
@@ -4813,7 +4796,8 @@ return indexPath
 <p>如果您仍然不清楚这个 Realm 数据库在哪儿的话，那么使用如下语句，就可以打印处这个数据库所在的完整位置了：
 1</p>
 
-<p>println(RLMRealm.defaultRealm().path)</p>
+<pre><code>println(RLMRealm.defaultRealm().path)
+</code></pre>
 
 <p>在这个 Documents 目录下面，我们可能会看到两个文件。一个是 default.realm 文件，这个是数据库文件，里面就是数据的存放点了。而另一个则是 default.realm.lock 文件，这个文件也有可能不会存在，它是用来当数据库文件被使用时，防止其它应用对其进行修改的一个文件。</p>
 
@@ -4836,7 +4820,8 @@ return indexPath
 <p>打开 AddNewEntryController.swift ，然后向类中添加以下属性：
 1</p>
 
-<p>var selectedCategory: CategoryModel!</p>
+<pre><code>var selectedCategory: CategoryModel!
+</code></pre>
 
 <p>我们将会用这个属性来存储我们在 CategoriesTableViewController 选中的类别。</p>
 
@@ -4844,8 +4829,9 @@ return indexPath
 1
 2</p>
 
-<p>selectedCategory = categoriesController.selectedCategories
-categoryTextField.text = selectedCategory.name</p>
+<pre><code>selectedCategory = categoriesController.selectedCategories
+categoryTextField.text = selectedCategory.name
+</code></pre>
 
 <p>这个方法会在用户从 categoriesTableViewController 中选择了一个类别后被调用。在这里，我们获取到了这个选择的类别，然后将其存储在本地属性 selectedCategory 当中，接着，我们将它的值填充到文本框里面。</p>
 
@@ -4854,13 +4840,14 @@ categoryTextField.text = selectedCategory.name</p>
 <p>仍然还是在 AddNewEntryController.swift 当中，向类中再添加一个属性：
 1</p>
 
-<p>var species: SpeciesModel!</p>
+<pre><code>var species: SpeciesModel!
+</code></pre>
 
 <p>这个属性将会存储一个新的物种数据模型对象。</p>
 
 <p>接下来，导入 Realm 框架，然后向类中添加以下方法：</p>
 
-<p>func addNewSpecies() {
+<pre><code>func addNewSpecies() {
 let realm = RLMRealm.defaultRealm() // 1
 realm.beginWriteTransaction() // 2
 let newSpecies = SpeciesModel() // 3
@@ -4873,7 +4860,8 @@ newSpecies.longitude = selectedAnnotation.coordinate.longitude
 realm.addObject(newSpecies) // 5
 realm.commitWriteTransaction() // 6
 self.species = newSpecies
-}</p>
+}
+</code></pre>
 
 <p>对应的标号注释如下：</p>
 
@@ -4895,18 +4883,20 @@ self.species = newSpecies
 <p>在 validateFields() 方法中找到以下代码：
 1</p>
 
-<p>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {</p>
+<pre><code>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {
+</code></pre>
 
 <p>将其变更为：
 1</p>
 
-<p>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {</p>
+<pre><code>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {
+</code></pre>
 
 <p>这个方法经能够确保所有的文本框都有值，并且用户也已经选择了一个类别。</p>
 
 <p>接下来，向类中添加以下方法：</p>
 
-<p>override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -> Bool {
+<pre><code>override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -&gt; Bool {
 if validateFields() {
 if species == nil {
 addNewSpecies()
@@ -4915,7 +4905,8 @@ return true
 } else {
 return false
 }
-}</p>
+}
+</code></pre>
 
 <p>在上面的代码中，我们调用了输入验证的方法，如果所有文本框都有值的话，那么就可以添加一个新的物种。</p>
 
@@ -4948,18 +4939,20 @@ return false
 <p>打开 SpeciesAnnotation.swift ，然后向类中添加一个新的属性：
 1</p>
 
-<p>var species: SpeciesModel?</p>
+<pre><code>var species: SpeciesModel?
+</code></pre>
 
 <p>这个属性将会为这个标记点保存它所拥有的物种信息。</p>
 
 <p>接下来，用以下代码替换构造器：</p>
 
-<p>init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
+<pre><code>init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
 self.coordinate = coordinate
 self.title = title
 self.subtitle = sub.rawValue
 self.species = species
-}</p>
+}
+</code></pre>
 
 <p>我们所做的改变，就是给这个构造器方法添加了一个带默认值的构造器参数，以便可以对 species 属性进行赋值。默认值为 nil ，这意味着我们可以忽略这个参数，使用前面三个参数进行初始化也是没有任何问题的。</p>
 
@@ -4972,7 +4965,7 @@ self.species = species
 
 <p>现在我们需要一些方法来获取所有的物种数据。仍然还是在 MapViewController.swift 当中，向类中添加如下方法：</p>
 
-<p>func populateMap() {
+<pre><code>func populateMap() {
 mapView.removeAnnotations(mapView.annotations) // 1
 if let results = SpeciesModel.allObjects() { // 2
 self.results = results
@@ -4983,7 +4976,8 @@ let speciesAnnotation = SpeciesAnnotation(coordinate: coordinate, title: species
 mapView.addAnnotation(speciesAnnotation) // 4
 }
 }
-}</p>
+}
+</code></pre>
 
 <p>对应的标号注释如下：</p>
 
@@ -5005,7 +4999,7 @@ mapView.addAnnotation(speciesAnnotation) // 4
 
 <p>接着，我们仅需要修改标记点的名称和类别即可。找到 unwindFromAddNewEntry() ，然后使用下列代码替换掉该方法：</p>
 
-<p>@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
+<pre><code>@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
 let addNewEntryController = segue.sourceViewController as! AddNewEntryController
 let addedSpecies = addNewEntryController.species
 let addedSpeciesCoordinate = CLLocationCoordinate2DMake(addedSpecies.latitude, addedSpecies.longitude)
@@ -5023,7 +5017,8 @@ break
 let annotation = SpeciesAnnotation(coordinate: addedSpeciesCoordinate, title: addedSpecies.name, sub: Categories(rawValue: addedSpecies.category.name)!, species: addedSpecies)
 mapView.addAnnotation(annotation)
 lastAnnotation = nil
-}</p>
+}
+</code></pre>
 
 <p>这个方法将会在我们从 AddNewEntryController 返回的时候被调用，然后这时候就会有一个新的物种被添加到地图上方。当我们添加了一个新的物种到地图上，那么就会产生一个标记图标。然后我们想要根据物种的类别来改变其图标的样式，在这个代码里面，我们就是简单的移除了最后添加的这个标记点，然后将其替换为有名称和类别的标记点。</p>
 
@@ -5040,28 +5035,31 @@ lastAnnotation = nil
 <p>打开 LogViewController.swift ，然后将 species 属性替换成以下形式（同样地，要导入 Realm ）：
 1</p>
 
-<p>var species: RLMResults!</p>
+<pre><code>var species: RLMResults!
+</code></pre>
 
 <p>在上面的代码中，我们用 RLMResults 替换掉了之前的一个空数组占位符，这个操作和我们在 MapViewController 所做的一样。</p>
 
 <p>接下来，找到 viewDidLoad() 方法，然后在 super.viewDidLoad() 语句下添加以下代码：
 1</p>
 
-<p>species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)</p>
+<pre><code>species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
+</code></pre>
 
 <p>这行代码会将数据库中的所有物种全部输出到 species 当中，并且按照名字进行排列。</p>
 
 <p>接下来，用以下代码替换 tableView(_:cellForRowAtIndexPath:) ：</p>
 
-<p>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-var cell = tableView.dequeueReusableCellWithIdentifier(&ldquo;LogCell&rdquo;) as! LogCell
+<pre><code>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell {
+var cell = tableView.dequeueReusableCellWithIdentifier("LogCell") as! LogCell
 var speciesModel: SpeciesModel!
 speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
 cell.titleLabel.text = speciesModel.name
 cell.subtitleLabel.text = speciesModel.category.name
 cell.iconImageView.image = getImageOfSpecies(speciesModel.category.name)
 return cell
-}</p>
+}
+</code></pre>
 
 <p>这个方法将会展示物种的名字和物种的类别，以及其图标。</p>
 
@@ -5077,15 +5075,16 @@ return cell
 
 <p>打开 LogViewController.swift 文件，然后添加以下方法：</p>
 
-<p>func deleteRowAtIndexPath(indexPath: NSIndexPath) {
+<pre><code>func deleteRowAtIndexPath(indexPath: NSIndexPath) {
 let realm = RLMRealm.defaultRealm() // 1
 let objectToDelete = species[UInt(indexPath.row)] as! SpeciesModel // 2
 realm.beginWriteTransaction() // 3
 realm.deleteObject(objectToDelete) // 4
 realm.commitWriteTransaction() // 5
-species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true) // 6
+species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true) // 6
 tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
-}</p>
+}
+</code></pre>
 
 <p>对应的标号注释如下：</p>
 
@@ -5107,7 +5106,8 @@ tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
 <p>接着，找到 tableView(_:commitEditingStyle: forRowAtIndexPath:) 方法，然后将以下代码加入到 if 语句块当中：
 1</p>
 
-<p>deleteRowAtIndexPath(indexPath)</p>
+<pre><code>deleteRowAtIndexPath(indexPath)
+</code></pre>
 
 <p>当表视图执行一个单例删除操作时，会调用这个协议代理，我们所需要做的就是调用我们刚刚创建的那个方法。</p>
 
@@ -5124,27 +5124,29 @@ tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
 <p>打开 LogViewController.swift ，然后将 searchResults 属性替换为以下代码：
 1</p>
 
-<p>var searchResults: RLMResults!</p>
+<pre><code>var searchResults: RLMResults!
+</code></pre>
 
 <p>因为我们仍然是执行 “ 检索 ” 操作，因此我们的数据是存放在 RLMResults 当中的。</p>
 
 <p>向类中添加以下方法：</p>
 
-<p>func filterResultsWithSearchString(searchString: String) {
-let predicate = &ldquo;name BEGINSWITH [c]&lsquo;(searchString)&rsquo;&rdquo; // 1
+<pre><code>func filterResultsWithSearchString(searchString: String) {
+let predicate = "name BEGINSWITH [c]'\(searchString)'" // 1
 let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
 searchResults = SpeciesModel.objectsWhere(predicate) // 2
 switch scopeIndex {
 case 0:
-searchResults = searchResults.sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true) // 3
+searchResults = searchResults.sortedResultsUsingProperty("name", ascending: true) // 3
 case 1:
-searchResults = searchResults.sortedResultsUsingProperty(&ldquo;distance&rdquo;, ascending: true) // 4
+searchResults = searchResults.sortedResultsUsingProperty("distance", ascending: true) // 4
 case 2:
-searchResults = searchResults.sortedResultsUsingProperty(&ldquo;created&rdquo;, ascending: true) 5
+searchResults = searchResults.sortedResultsUsingProperty("created", ascending: true) 5
 default:
 return
 }
-}</p>
+}
+</code></pre>
 
 <p>对应的标号注释如下：</p>
 
@@ -5162,15 +5164,17 @@ return
 <p>因为搜索会导致表视图调用同样的数据源方法，因此我们需要对 tableView(_:cellForRowAtIndexPath:) 进行小小的修改，以便让其能够处理主要的表视图记录以及查询结果。在这个方法里面，找到以下代码：
 1</p>
 
-<p>speciesModel = species[UInt(indexPath.row)] as! SpeciesModel</p>
+<pre><code>speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+</code></pre>
 
 <p>将其替换为以下代码：</p>
 
-<p>if searchController.active {
+<pre><code>if searchController.active {
 speciesModel = searchResults[UInt(indexPath.row)] as! SpeciesModel
 }else {
 speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-}</p>
+}
+</code></pre>
 
 <p>上面这行代码将会检查 searchController 是否激活。如果激活的话，那么就接收并显示搜索结果的数据；如果不是的话，那么就接收并显示 species 全部数据。</p>
 
@@ -5178,19 +5182,20 @@ speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
 
 <p>将空 scopeChanged 方法用以下代码来替换：</p>
 
-<p>@IBAction func scopeChanged(sender: UISegmentedControl) {
+<pre><code>@IBAction func scopeChanged(sender: UISegmentedControl) {
 switch sender.selectedSegmentIndex {
 case 0:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)
+species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
 case 1:
 break
 case 2:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;created&rdquo;, ascending: true)
+species = SpeciesModel.allObjects().sortedResultsUsingProperty("created", ascending: true)
 default:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)
+species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
 }
 tableView.reloadData()
-}</p>
+}
+</code></pre>
 
 <p>在上面的代码中，我们将会检查范围栏上的按钮是哪一个被按下（ A-Z ，距离，以及添加日期），然后调用 sortedResultsUsingProperty 来进行排序。通常情况下，这个列表将按照名字来排序。</p>
 
@@ -5212,36 +5217,39 @@ tableView.reloadData()
 
 <p>打开 AddNewEntryViewController.swift 文件，然后向类中添加以下方法：</p>
 
-<p>func fillTextFields() {
+<pre><code>func fillTextFields() {
 nameTextField.text = species.name
 categoryTextField.text = species.category.name
 descriptionTextView.text = species.speciesDescription
 selectedCategory = species.category
-}</p>
+}
+</code></pre>
 
 <p>这个方法将会使用 species 中的数据来填充用户界面的文本框。记住， AddNewEntryViewController 只有在添加新物种时才会保持文本框为空的状态。</p>
 
 <p>接下来，向 viewDidLoad() 方法的末尾添加以下语句：</p>
 
-<p>if species == nil {
-title = &ldquo; 添加新的物种 &rdquo;
+<pre><code>if species == nil {
+title = " 添加新的物种 "
 }else {
-title = &ldquo; 编辑 (species.name)&rdquo;
+title = " 编辑 \(species.name)"
 fillTextFields()
-}</p>
+}
+</code></pre>
 
 <p>上面这些代码段设置了导航栏的标题，以通知用户当前其是在添加新的物种还是在更新一个已存在的物种信息。如果 species 不为空，那么就调用 fillTextFields 方法来填充文本框。</p>
 
 <p>现在我们需要一个更新功能，以便响应用户的更改操作。向类中添加以下方法：</p>
 
-<p>func updateSpecies() {
+<pre><code>func updateSpecies() {
 let realm = RLMRealm.defaultRealm()
 realm.beginWriteTransaction()
 species.name = nameTextField.text
 species.category = selectedCategory
 species.speciesDescription = descriptionTextView.text
 realm.commitWriteTransaction()
-}</p>
+}
+</code></pre>
 
 <p>通常情况下，这种方法一般都先获得默认的 Realm 数据库，然后将数据写入的操作放在 beginWriteTransaction() 和 commitWriteTransaction() 方法之间。在这个事务中，我们只是简单的更新了这三个数据域的值。</p>
 
@@ -5249,16 +5257,17 @@ realm.commitWriteTransaction()
 
 <p>现在我们只需要在用户单击保存按钮的时候调用上述代码即可。找到 shouldPerformSegueWithIdentifier(_:sender:) ，然后在 return true 语句之前，第一个 if 代码块之内添加以下代码：</p>
 
-<p>else {
+<pre><code>else {
 updateSpecies()
-}</p>
+}
+</code></pre>
 
 <p>当恰当的时候，就会调用这个方法来对数据进行更新。</p>
 
 <p>现在打开 LogViewController.swift ，然后将 prepareForSegue(_:sender:) 用以下代码替换：</p>
 
-<p>override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-if segue.identifier == &ldquo;Edit&rdquo; {
+<pre><code>override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+if segue.identifier == "Edit" {
 let controller = segue.destinationViewController as! AddNewEntryController
 var selectedSpecies: SpeciesModel!
 let indexPath = tableView.indexPathForSelectedRow()
@@ -5271,7 +5280,8 @@ selectedSpecies = species[UInt(indexPath!.row)] as! SpeciesModel
 }
 controller.species = selectedSpecies
 }
-}</p>
+}
+</code></pre>
 
 <p>我们在这里将选中的物种信息传递给了 AddNewEntryController 。上面的 if/else 代码是因为要根据用户是否是在查看搜索结果来决定的。</p>
 
@@ -5290,16 +5300,18 @@ controller.species = selectedSpecies
 <p>打开 Species.swift 文件，然后向类中添加一个新的属性。
 1</p>
 
-<p>dynamic var distance: Double = 0</p>
+<pre><code>dynamic var distance: Double = 0
+</code></pre>
 
 <p>这个属性为保存用户位置和该记录点的距离信息。然而，没有必要去存储 distance 信息，因为用户位置会随时发生改变。我们想让距离成为这个模型的一部分，但是我们并不想 Realm 来存储这个数据。</p>
 
 <p>Realm 支持一种被称为忽视属性 (ignored properties) 的东西，然后向类中添加以下代码：</p>
 
-<p>func ignoredProperties() -> NSArray {
+<pre><code>func ignoredProperties() -&gt; NSArray {
 let propertiesToIgnore = [distance]
 return propertiesToIgnore
-}</p>
+}
+</code></pre>
 
 <p>要实现忽视属性，只需要声明一个命名为 ignoredProperties() 的方法，然后返回一个属性数组，里面保存有您不想进行存储的属性。</p>
 
@@ -5307,7 +5319,7 @@ return propertiesToIgnore
 
 <p>打开 MapViewController.swift ，添加以下方法：</p>
 
-<p>func updateLocationDistance() {
+<pre><code>func updateLocationDistance() {
 let realm = RLMRealm.defaultRealm()
 if results != nil {
 for result in results! {
@@ -5319,35 +5331,40 @@ currentSpecies.distance = Double(distance)
 realm.commitWriteTransaction()
 }
 }
-}</p>
+}
+</code></pre>
 
 <p>对于每个物种，我们计算了这个标记点与用户当前位置之间的距离。即时我们没有存储这个距离信息，我们仍然需要将其存储在记录当中，然后将其在写操作事务中保存这个变化消息。</p>
 
 <p>接下来，在 prepareForSegue(_:sender:) 方法底部添加以下代码：</p>
 
-<p>else if segue.identifier == &ldquo;Log&rdquo; {
+<pre><code>else if segue.identifier == "Log" {
 updateLocationDistance()
-}</p>
+}
+</code></pre>
 
 <p>现在，在用户打开 “ 记录界面 ” 之前，我们需要调用这个方法来计算距离。</p>
 
 <p>接下来，打开 LogViewController.swift ，然后找到 tableView(_:cellForRowAtIndexPath:) 方法。然后在这个方法底部附近， return 语句之前添加以下代码：</p>
 
-<p>if speciesModel.distance &lt; 0 {
-cell.distanceLabel.text = &ldquo;N/A&rdquo;
+<pre><code>if speciesModel.distance &lt; 0 {
+cell.distanceLabel.text = "N/A"
 }else {
-cell.distanceLabel.text = String(format: &ldquo;%.2fkm&rdquo;, speciesModel.distance / 1000)
-}</p>
+cell.distanceLabel.text = String(format: "%.2fkm", speciesModel.distance / 1000)
+}
+</code></pre>
 
 <p>最后，找到 scopeChanged() 然后将 case 1 中的 break 替换成以下代码：</p>
 
-<p>species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;distance&rdquo;, ascending: true)</p>
+<pre><code>species = SpeciesModel.allObjects().sortedResultsUsingProperty("distance", ascending: true)
+</code></pre>
 
 <p>编译并运行应用，然后 …… 呃？怎么崩溃掉了？</p>
 
-<p>&lsquo;RLMException`, reason: 'Column count does not match interface - migration required&rsquo;</p>
+<pre><code>'RLMException`, reason: 'Column count does not match interface - migration required'
+</code></pre>
 
-<p>什么鬼？</p>
+<h5>什么鬼？</h5>
 
 <p>当我们向 Species 模型中添加了一个新的 distance 属性的时候，我们就对架构（ schema ） 进行了变更，但是我们并没有告诉 Realm 如何处理这个新增的数据段。从旧版本的数据库迁移（ migrate ） 到新版本的数据库的操作超出了本教程的范围。这并不是 Realm 独有的问题， Core Data 同样也需要在添加、变更或者删除新的数据段的时候进行迁移操作。</p>
 
@@ -5361,7 +5378,7 @@ cell.distanceLabel.text = String(format: &ldquo;%.2fkm&rdquo;, speciesModel.dist
 
 <p>您或许需要模拟一个位置以便能够计算当前距离，在模拟器菜单栏上，选择 Debug\Location ，然后选择列表中的一个位置模拟。</p>
 
-<p>接下来该何去何从？</p>
+<h5>接下来该何去何从？</h5>
 
 <p>您可以点击此处下载完整的项目</p>
 
@@ -5401,6 +5418,9 @@ cell.distanceLabel.text = String(format: &ldquo;%.2fkm&rdquo;, speciesModel.dist
 
 <p>因为是ORM，本身在设计时也针对移动设备（iOS、Android），所以非常简单易用，学习成本很低。</p>
 
+<!--more-->
+
+
 <p>碾压级性能</p>
 
 <p>数据引自：introducing-realm</p>
@@ -5423,24 +5443,27 @@ cell.distanceLabel.text = String(format: &ldquo;%.2fkm&rdquo;, speciesModel.dist
 
 <p>Realm对象和其他对象没有太大区别，只是需要继承RLMObject</p>
 
-<p>@interface Dog : RLMObject
-@property NSString <em>name;
+<pre><code>@interface Dog : RLMObject
+@property NSString *name;
 @property NSInteger age;
 @end
-Dog </em>mydog = [[Dog alloc] init];</p>
+Dog *mydog = [[Dog alloc] init];
+</code></pre>
 
 <p>存储起来也非常简单，获取数据库实例，在一个事务中进行写入。</p>
 
-<p>RLMRealm *realm = [RLMRealm defaultRealm];
+<pre><code>RLMRealm *realm = [RLMRealm defaultRealm];
 [realm transactionWithBlock:^{
     [realm addObject:mydog];
-}];</p>
+}];
+</code></pre>
 
 <p>方便的查询，可以在一个查询结果中再进行查询。查询的条件有着丰富的支持。</p>
 
-<p>RLMResults *r = [Dog objectsWhere:@&ldquo;age > 8&rdquo;];
+<pre><code>RLMResults *r = [Dog objectsWhere:@"age &gt; 8"];
 // Queries are chainable
-r = [r objectsWhere:@&ldquo;name contains &lsquo;Rex&rsquo; AND  name BEGINSWITH &lsquo;大&rsquo;&rdquo;];</p>
+r = [r objectsWhere:@"name contains 'Rex' AND  name BEGINSWITH '大'"];
+</code></pre>
 
 <p>zero-copy和懒加载</p>
 
@@ -5456,27 +5479,28 @@ r = [r objectsWhere:@&ldquo;name contains &lsquo;Rex&rsquo; AND  name BEGINSWITH
 
 <p>即便已经是封装过的FMDB，要写这样的代码心里也依旧难受:</p>
 
-<p>FMDatabase <em>db = [FMDatabase databaseWithPath:@&ldquo;/tmp/tmp.db&rdquo;];
+<pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];
 if (![db open]) {
 [db release];
 return;
 }
-NSString </em>sql = @&ldquo;create table bulktest1 (id integer primary key autoincrement, x text);&rdquo;
-&ldquo;create table bulktest2 (id integer primary key autoincrement, y text);&rdquo;
-&ldquo;create table bulktest3 (id integer primary key autoincrement, z text);&rdquo;
-&ldquo;insert into bulktest1 (x) values (&lsquo;XXX&rsquo;);&rdquo;
-&ldquo;insert into bulktest2 (y) values (&lsquo;YYY&rsquo;);&rdquo;
-&ldquo;insert into bulktest3 (z) values (&lsquo;ZZZ&rsquo;);&rdquo;;
+NSString *sql = @"create table bulktest1 (id integer primary key autoincrement, x text);"
+"create table bulktest2 (id integer primary key autoincrement, y text);"
+"create table bulktest3 (id integer primary key autoincrement, z text);"
+"insert into bulktest1 (x) values ('XXX');"
+"insert into bulktest2 (y) values ('YYY');"
+"insert into bulktest3 (z) values ('ZZZ');";
 success = [db executeStatements:sql];
-sql = @&ldquo;select count(<em>) as count from bulktest1;&rdquo;
-&ldquo;select count(</em>) as count from bulktest2;&rdquo;
-&ldquo;select count(<em>) as count from bulktest3;&rdquo;;
-success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary </em>dictionary) {
-NSInteger count = [dictionary[@&ldquo;count&rdquo;] integerValue];
-XCTAssertEqual(count, 1, @&ldquo;expected one record for dictionary %@&rdquo;, dictionary);
+sql = @"select count(*) as count from bulktest1;"
+"select count(*) as count from bulktest2;"
+"select count(*) as count from bulktest3;";
+success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary *dictionary) {
+NSInteger count = [dictionary[@"count"] integerValue];
+XCTAssertEqual(count, 1, @"expected one record for dictionary %@", dictionary);
 return 0;
 }];
-[db close];</p>
+[db close];
+</code></pre>
 
 <p>VS CoreData</p>
 
@@ -5484,22 +5508,24 @@ return 0;
 
 <p>下面给出一个查询的比较：</p>
 
-<p>// Core Data
-let fetchRequest = NSFetchRequest(entityName: &ldquo;Specimen&rdquo;)
-let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString)
+<pre><code>// Core Data
+let fetchRequest = NSFetchRequest(entityName: "Specimen")
+let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
 fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: &ldquo;name&rdquo;, ascending: true)
+let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
 fetchRequest.sortDescriptors = [sortDescriptor]
 let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)</p>
+let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)
+</code></pre>
 
 <p>Realm则简单的多：</p>
 
-<p>// Realm
-let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty(&ldquo;name&rdquo;, ascending: true)</p>
+<pre><code>// Realm
+let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
+let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
+</code></pre>
 
-<p>总结一下Realm对CoreData的优势：</p>
+<h3>总结一下Realm对CoreData的优势：</h3>
 
 <pre><code>不需要架构Context那种烦人的东西
 
@@ -5516,7 +5542,7 @@ CoreData 是一个博大精深的技术，不要妄想几天之内可以用的�
 <pre><code>CoreData多个持久化文件很麻烦，Realm轻松支持这个功能
 </code></pre>
 
-<p>劣势：</p>
+<h5>劣势：</h5>
 
 <p>是会增加应用大概1MB的体积。CoreData原生支持，不会增加App体积。</p>
 
@@ -5580,13 +5606,16 @@ CoreData 是一个博大精深的技术，不要妄想几天之内可以用的�
 
 <p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
 
+<!--more-->
+
+
 <p>所以，最后还是选择了FMDB进行封装。</p>
 
 <p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
 
 <p>项目简介：</p>
 
-<p>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</p>
+<h5>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</h5>
 
 <p>Description</p>
 
@@ -5601,22 +5630,24 @@ CoreData 是一个博大精深的技术，不要妄想几天之内可以用的�
 支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
 </code></pre>
 
-<p>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</p>
+<h5>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</h5>
 
 <p>Installation（安装）</p>
 
-<p>use_frameworks!
-pod &lsquo;JRDB&rsquo;
-@import JRDB;</p>
+<pre><code>use_frameworks!
+pod 'JRDB'
+@import JRDB;
+</code></pre>
 
 <p>Usage</p>
 
+<p>。。。</p>
+
 <p>Save（保存）</p>
 
-<pre><code>Objective-C
-</code></pre>
+<p>Objective-C</p>
 
-<p>Person *p = [[Person alloc] init];
+<pre><code>Person *p = [[Person alloc] init];
 p.a_int = 1;
 p.b_unsigned_int = 2;
 p.c_long = 3;
@@ -5625,95 +5656,94 @@ p.e_unsigned_long = 5;
 p.f_unsigned_long_long = 6;
 p.g_float = 7.0;
 p.h_double = 8.0;
-p.i_string = @&ldquo;9&rdquo;;
+p.i_string = @"9";
 p.j_number = @10;
 p.k_data = [NSData data];
 p.l_date = [NSDate date];
-[p jr_save];</p>
-
-<pre><code>Swift
+[p jr_save];
 </code></pre>
+
+<p>Swift</p>
 
 <p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
 
-<p>The Object that you want to persistent should inherit from NSObject</p>
+<pre><code>The Object that you want to persistent should inherit from NSObject
 
-<p>let p = Person()
-p.name = &ldquo;name&rdquo;
+let p = Person()
+p.name = "name"
 p.age = 10
 p.birthday = NSDate()
-p.jr_save()</p>
+p.jr_save()
+</code></pre>
 
-<p>Update（更新）</p>
+<h5>Update（更新）</h5>
 
-<p>Person *p = [Person jr_findAll].firstObject;
-p.name = @&ldquo;abc&rdquo;;
-[p jr_update columns:nil];</p>
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+p.name = @"abc";
+[p jr_update columns:nil];
+</code></pre>
 
 <p>column: 需要更新的字段名，传入空为全量更新</p>
 
-<p>Delete（删除）
-1
-2</p>
+<h5>Delete（删除）</h5>
 
-<p>Person *p = [Person jr_findAll].firstObject;
-[p jr_delete];</p>
-
-<p>Select（查找）</p>
-
-<pre><code>常规查找
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+[p jr_delete];
 </code></pre>
 
-<p>Person <em>p = [Person jr_findByPrimaryKey:@&ldquo;111&rdquo;];
-NSArray </em>list = [Person jr_findAll];
-NSArray *list1 = [Person jr_findAllOrderBy:@&ldquo;_age&rdquo; isDesc:YES];</p>
+<h5>Select（查找）</h5>
 
-<pre><code>条件查询
+<h5>常规查找</h5>
+
+<pre><code>Person *p = [Person jr_findByPrimaryKey:@"111"];
+NSArray *list = [Person jr_findAll];
+NSArray *list1 = [Person jr_findAllOrderBy:@"_age" isDesc:YES];
 </code></pre>
 
-<p>NSArray <em>condis = @[
-     [JRQueryCondition condition:@&ldquo;<em>l_date &lt; ?&rdquo; args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
-     [JRQueryCondition condition:@&ldquo;</em>a_int > ?&rdquo; args:@[@9] type:JRQueryConditionTypeAnd],];
-NSArray </em>arr = [Person jr_findByConditions:condis
-                      groupBy:@&ldquo;<em>room&rdquo;
-                      orderBy:@&ldquo;</em>age&rdquo;
-                      limit:@&ldquo; limit 0,13 &rdquo;
-                      isDesc:YES];</p>
+<h5>条件查询</h5>
 
-<pre><code>SQL
+<pre><code>NSArray *condis = @[
+     [JRQueryCondition condition:@"_l_date &lt; ?" args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
+     [JRQueryCondition condition:@"_a_int &gt; ?" args:@[@9] type:JRQueryConditionTypeAnd],];
+NSArray *arr = [Person jr_findByConditions:condis
+                      groupBy:@"_room"
+                      orderBy:@"_age"
+                      limit:@" limit 0,13 "
+                      isDesc:YES];
 </code></pre>
 
-<p>1
-2</p>
+<p>SQL</p>
 
-<p>NSString <em>sql = @&ldquo;select * from Person where age = ?&rdquo;;
-NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
+<pre><code>NSString *sql = @"select * from Person where age = ?";
+NSArray *list = [Person jr_executeSql:sql args:@[@10]];
+</code></pre>
 
 <p>Other（其他）</p>
 
 <p>协议：JRPersistent</p>
 
-<p>@protocol JRPersistent @required
-- (void)setID:(NSString * <em>Nullable)ID;
-- (NSString * </em>Nullable)ID;
+<pre><code>@protocol JRPersistent @required
+- (void)setID:(NSString * _Nullable)ID;
+- (NSString * _Nullable)ID;
 @optional
-/<strong>
+/**
  *  返回不用入库的对象字段数组
  *  The full property names that you want to ignore for persistent
  *  @return array
  */
 + (NSArray * _Nullable)jr_excludePropertyNames;
-/</strong>
+/**
  *  返回自定义主键字段
  *  @return 字段全名
- <em>/
+ */
 + (NSString * _Nullable)jr_customPrimarykey;
 /**
  *  返回自定义主键值
  *  @return 主键值
- </em>/
+ */
 - (id _Nullable)jr_customPrimarykeyValue;
-@end</p>
+@end
+</code></pre>
 
 <p>主键</p>
 
@@ -5723,43 +5753,41 @@ NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
 
 <p>默认NSObject分类实现</p>
 
-<p>@interface NSObject (JRDB) (&hellip;methods)
+<pre><code>@interface NSObject (JRDB) (...methods)
 @end
 JRDBMgr
 @interface JRDBMgr : NSObject
-@property (nonatomic, strong) FMDatabase <em>defaultDB;
+@property (nonatomic, strong) FMDatabase *defaultDB;
 + (instancetype)shareInstance;
-+ (FMDatabase </em>)defaultDB;
-- (FMDatabase <em>)createDBWithPath:(NSString </em>)path;
-- (void)deleteDBWithPath:(NSString <em>)path;
++ (FMDatabase *)defaultDB;
+- (FMDatabase *)createDBWithPath:(NSString *)path;
+- (void)deleteDBWithPath:(NSString *)path;
 /**
  *  在这里注册的类，使用本框架的数据库将全部建有这些表
  *  @param clazz 类名
- </em>/
+ */
 - (void)registerClazzForUpdateTable:(Class)clazz;
-- (NSArray <em>)registedClazz;
+- (NSArray *)registedClazz;
 /**
  * 更新默认数据库的表（或者新建没有的表）
  * 更新的表需要在本类先注册
- </em>/
+ */
 - (void)updateDefaultDB;
 - (void)updateDB:(FMDatabase *)db;
-@end</p>
+@end
+</code></pre>
 
 <p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
 
-<p>Method
-1</p>
+<p>Method</p>
 
-<ul>
-<li>(void)registerClazzForUpdateTable:(Class)clazz;</li>
-</ul>
+<pre><code>- (void)registerClazzForUpdateTable:(Class)clazz;
+</code></pre>
 
+<p>在JRDBMgr中注册的类，可以使用</p>
 
-<p>在JRDBMgr中注册的类，可以使用
-1</p>
-
-<p>-(void)updateDB:(FMDatabase *)db</p>
+<pre><code>-(void)updateDB:(FMDatabase *)db
+</code></pre>
 
 <p>进行统一更新或者创建表。</p>
 
@@ -5767,7 +5795,7 @@ JRDBMgr
 
 <p>Create（建表）</p>
 
-<p>// FMDatabase+JRDB 方法
+<pre><code>// FMDatabase+JRDB 方法
 [[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
 [Person jr_createTable];
 // 删除原有的表，重新创建
@@ -5777,35 +5805,29 @@ JRDBMgr
 [person jr_save];
 Update 【更新表】
 [[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
-[Person jr_updateTable];</p>
+[Person jr_updateTable];
+</code></pre>
 
 <p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
 
 <p>Drop（删表）</p>
 
-<p>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
-[Person jr_dropTable];</p>
+<pre><code>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
+[Person jr_dropTable];
+</code></pre>
 
 <p>Thread Operation（线程操作）</p>
 
 <p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
 
-<p>[person jr_saveWithComplete:^(BOOL success) {
-    NSLog(@&ldquo;%d&rdquo;, success);
-}];</p>
+<pre><code>[person jr_saveWithComplete:^(BOOL success) {
+    NSLog(@"%d", success);
+}];
+</code></pre>
 
 <p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
 
 <p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
-
-<p>MoreUsage</p>
-
-<pre><code>查看FMDatabase+JRDB.h
-</code></pre>
-
-<p>项目地址：<a href="https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89">https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89</a></p>
-
-<p>第一次写这种东西，可能已经Github上已经有了很多类似的东西，如果有不足之处还请指教。</p>
 ]]></content>
   </entry>
   
@@ -5818,26 +5840,35 @@ Update 【更新表】
 
 <p>两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。</p>
 
-<p>使用方法</p>
+<h5>使用方法</h5>
 
-<p>FMDB有三个主要的类
-1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
+<p>FMDB有三个主要的类</p>
+
+<pre><code>1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
 2.FMResultSet – 表示FMDatabase执行查询后结果集
-3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。</p>
+3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。
+</code></pre>
 
-<p>数据库创建
-创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：
-1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
+<!--more-->
+
+
+<h5>数据库创建</h5>
+
+<p>创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：</p>
+
+<pre><code>1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
 2..空字符串(@”")。表示会在临时目录创建一个空的数据库，当FMDatabase 链接关闭时，文件也被删除。
-3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。</p>
+3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。
+</code></pre>
 
 <p>(如需对临时数据库或内在数据库进行一步了解，请继续阅读：<a href="http://www.sqlite.org/inmemorydb.html">http://www.sqlite.org/inmemorydb.html</a>)</p>
 
 <pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];   
 </code></pre>
 
-<p>打开数据库
-在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
+<h5>打开数据库</h5>
+
+<p>在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
 
 <pre><code>if (![db open]) {    
         [db release];   
@@ -5845,14 +5876,16 @@ Update 【更新表】
     }  
 </code></pre>
 
-<p>执行更新
-一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
+<h5>执行更新</h5>
+
+<p>一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
 简单来说，只要不是以SELECT开头的命令都是UPDATE命令。</p>
 
 <p>执行更新返回一个BOOL值。YES表示执行成功，否则表示有那些错误 。你可以调用 -lastErrorMessage 和 -lastErrorCode方法来得到更多信息。</p>
 
-<p>执行查询
-SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
+<h5>执行查询</h5>
+
+<p>SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
 
 <p>执行查询时，如果成功返回FMResultSet对象， 错误返回nil. 与执行更新相当，支持使用 NSError**参数。同时，你也可以使用 -lastErrorCode和-lastErrorMessage获知错误信息。</p>
 
@@ -5872,27 +5905,30 @@ while ([s next]) {
   }   
 </code></pre>
 
-<p>FMResultSet  提供了很多方法来获得所需的格式的值：
-    intForColumn:
-    longForColumn:
-    longLongIntForColumn:
-    boolForColumn:
-    doubleForColumn:
-    stringForColumn:
-    dataForColumn:
-    dataNoCopyForColumn:
-    UTF8StringForColumnIndex:
-    objectForColumn:</p>
+<p>FMResultSet  提供了很多方法来获得所需的格式的值：</p>
+
+<pre><code>intForColumn:
+longForColumn:
+longLongIntForColumn:
+boolForColumn:
+doubleForColumn:
+stringForColumn:
+dataForColumn:
+dataNoCopyForColumn:
+UTF8StringForColumnIndex:
+objectForColumn:
+</code></pre>
 
 <p>这些方法也都包括 {type}ForColumnIndex 的这样子的方法，参数是查询结果集的列的索引位置。</p>
 
 <p>你无需调用  [FMResultSet close]来关闭结果集, 当新的结果集产生，或者其数据库关闭时，会自动关闭。</p>
 
-<p>关闭数据库
-当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
+<h5>关闭数据库</h5>
+
+<p>当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
     [db close];</p>
 
-<p>事务</p>
+<h5>事务</h5>
 
 <p>FMDatabase是支持事务的。</p>
 
@@ -5946,12 +5982,12 @@ while ([s next]) {
 <p>使用FMDatabaseQueue 及线程安全
 在多个线程中同时使用一个FMDatabase实例是不明智的。现在你可以为每个线程创建一个FMDatabase对象。 不要让多个线程分享同一个实例，它无法在多个线程中同时使用。 若此，坏事会经常发生，程序会时不时崩溃，或者报告异常，或者陨石会从天空中掉下来砸到你Mac Pro.  总之很崩溃。所以，不要初始化FMDatabase对象，然后在多个线程中使用。请使用 FMDatabaseQueue，它是你的朋友而且会帮助你。以下是使用方法：</p>
 
-<p>首先创建队列。</p>
+<h5>首先创建队列。</h5>
 
 <pre><code>FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath]; 
 </code></pre>
 
-<p>这样使用。</p>
+<h5>这样使用。</h5>
 
 <pre><code>[queue inDatabase:^(FMDatabase *db) {    
           [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
@@ -5964,7 +6000,7 @@ while ([s next]) {
 }];   
 </code></pre>
 
-<p>像这样，轻松地把简单任务包装到事务里：</p>
+<h5>像这样，轻松地把简单任务包装到事务里：</h5>
 
 <pre><code>[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {    
             [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
@@ -5979,8 +6015,6 @@ while ([s next]) {
 </code></pre>
 
 <p> FMDatabaseQueue  后台会建立系列化的G-C-D队列，并执行你传给G-C-D队列的块。这意味着 你从多线程同时调用调用方法，GDC也会按它接收的块的顺序来执行。谁也不会吵到谁的脚 ，每个人都幸福。</p>
-
-<p>原文：<a href="http://www.cocoachina.com/bbs/read.php?tid=140901">http://www.cocoachina.com/bbs/read.php?tid=140901</a></p>
 ]]></content>
   </entry>
   
@@ -5991,160 +6025,168 @@ while ([s next]) {
     <id>http://al1020119.github.io/blog/2016/07/01/sqlzfengzhuang</id>
     <content type="html"><![CDATA[<p>最近写的项目中有用到数据库,写了不少蛋疼的sql语句,每次都是好几行代码,而且每次都是重复的没有一点技术含量的代码,虽然也有不少基于sqlite的封装,不过用起来还是感觉不够面向对象! 为了不再写重复的代码,花了几天时间,基于SQLite3简单封装了下,实现了一行代码解决增删改查等常用的功能!并没有太过高深的知识,主要用了runtime和KVC:</p>
 
+<!--more-->
+
+
 <p>首先我们创建个大家都熟悉的Person类,并声明两个属性,下面将以类此展开分析</p>
 
-<p>@interface Person : NSObject
+<pre><code>@interface Person : NSObject
 @property(nonatomic, copy) NSString *name;
 @property(nonatomic, assign) NSInteger age;
-@end</p>
+@end
+</code></pre>
 
-<p>创建表格</p>
+<h5>创建表格</h5>
 
 <p>相信下面这句创表语句大家都熟悉吧,就不做介绍了</p>
 
-<p>create table if not exists Person (id integer primary key autoincrement,name text,age integer)</p>
+<pre><code>create table if not exists Person (id integer primary key autoincrement,name text,age integer)
+</code></pre>
 
 <p>然而开发中我们都是基于模型开发的,基本上都是一个模型对应数据库的一张表,那么每个模型的属性都不一样,那么我们又该如何生成类似上面的语句呢? 我想到了runtime,通过runtime获取一个类的属性列表,所以有了下面这个方法:</p>
 
-<p>/// 获取当前类的所有属性
-+ (NSArray <em>)getAttributeListWithClass:(id)className {
+<pre><code>/// 获取当前类的所有属性
++ (NSArray *)getAttributeListWithClass:(id)className {
     // 记录属性个数
     unsigned int count;
-    objc_property_t </em>properties = class_copyPropertyList([className class], &amp;count);
-    NSMutableArray <em>tempArrayM = [NSMutableArray array];
+    objc_property_t *properties = class_copyPropertyList([className class], &amp;count);
+    NSMutableArray *tempArrayM = [NSMutableArray array];
     for (int i = 0; i &lt; count; i++) {
         // objc_property_t 属性类型
         objc_property_t property = properties[i];
         // 转换为Objective C 字符串
-        NSString </em>name = [NSString stringWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
-        NSAssert(![name isEqualToString:@&ldquo;index&rdquo;], @&ldquo;禁止在model中使用index作为属性,否则会引起语法错误&rdquo;);
-        if ([name isEqualToString:@&ldquo;hash&rdquo;]) {
+        NSString *name = [NSString stringWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
+        NSAssert(![name isEqualToString:@"index"], @"禁止在model中使用index作为属性,否则会引起语法错误");
+        if ([name isEqualToString:@"hash"]) {
             break;
         }
         [tempArrayM addObject:name];
     }
     free(properties);
     return [tempArrayM copy];
-}</p>
+}
+</code></pre>
 
 <p>通过这个方法我们可以获取一个类的所有属性列表并将其保存到数组中(index是数据库中保留的关键字,所以在这里用了个断言),然而仅仅是拿到属性列表还是不够的,我们还需要将对应的OC类型转换为SQL对应的数据类型,相信通过上面获取属性名的方法,大家也知道通过runtime能拿到属性对应的数据类型了,那么我们可以通过下面方法将其转换为SQLite需要的类型</p>
 
-<p>/// OC类型转SQL类型
-+ (NSString <em>)OCConversionTyleToSQLWithString:(NSString </em>)String {
-    if ([String isEqualToString:@&ldquo;long&rdquo;] || [String isEqualToString:@&ldquo;int&rdquo;] || [String isEqualToString:@&ldquo;BOOL&rdquo;]) {
-        return @&ldquo;integer&rdquo;;
+<pre><code>/// OC类型转SQL类型
++ (NSString *)OCConversionTyleToSQLWithString:(NSString *)String {
+    if ([String isEqualToString:@"long"] || [String isEqualToString:@"int"] || [String isEqualToString:@"BOOL"]) {
+        return @"integer";
     }
-    if ([String isEqualToString:@&ldquo;NSData&rdquo;]) {
-        return @&ldquo;blob&rdquo;;
+    if ([String isEqualToString:@"NSData"]) {
+        return @"blob";
     }
-    if ([String isEqualToString:@&ldquo;double&rdquo;] || [String isEqualToString:@&ldquo;float&rdquo;]) {
-        return @&ldquo;real&rdquo;;
+    if ([String isEqualToString:@"double"] || [String isEqualToString:@"float"]) {
+        return @"real";
     }
     // 自定义数组标记
-    if ([String isEqualToString:@&ldquo;NSArray&rdquo;] || [String isEqualToString:@&ldquo;NSMutableArray&rdquo;]) {
-        return @&ldquo;customArr&rdquo;;
+    if ([String isEqualToString:@"NSArray"] || [String isEqualToString:@"NSMutableArray"]) {
+        return @"customArr";
     }
     // 自定义字典标记
-    if ([String isEqualToString:@&ldquo;NSDictionary&rdquo;] || [String isEqualToString:@&ldquo;NSMutableDictionary&rdquo;]) {
-        return @&ldquo;customDict&rdquo;;
+    if ([String isEqualToString:@"NSDictionary"] || [String isEqualToString:@"NSMutableDictionary"]) {
+        return @"customDict";
     }
-    return @&ldquo;text&rdquo;;
-}</p>
+    return @"text";
+}
+</code></pre>
 
 <p>通过上面方法我们将OC的数据类型转换为了SQL的数据类型并保存到了数组中(上面有两个自定义的类型,后面使用到的时候再做介绍),通过上面的方法我们成功的拿到了一个模型类的属性名和对应的SQL数据类型,然后使用键值对的形式将其保存到了一个字典中,比如:</p>
 
-<p>@{@&ldquo;name&rdquo; : @&ldquo;text&rdquo;,@&ldquo;age&rdquo;:&ldquo;integer&rdquo;};</p>
+<pre><code>@{@"name" : @"text",@"age":"integer"};
+</code></pre>
 
 <p>获取到这些之后那么创表语句就不难了吧,</p>
 
-<p>// 该方法接收一个类型,内部通过遍历类的属性,字符串拼接获取完整的创表语句,并在内部执行sql语句,并返回结果
-- (BOOL)creatTableWithClassName:(id)className;</p>
+<p>// 该方法接收一个类型,内部通过遍历类的属性,字符串拼接获取完整的创表语句,并在内部执行sql语句,并返结果</p>
+
+<pre><code>    - (BOOL)creatTableWithClassName:(id)className;
+</code></pre>
 
 <p>介绍完了怎么创表,那么我们再来说说怎么将数据插入到数据库中: 我们先看一看插入数据的sql语句:insert into Person (name,age) values (&lsquo;花菜ChrisCai98&rsquo;,89); 前面都是固定格式的,同样我们可以通过字符串的拼接获取完整的创表语句; 在上面我们已经可以拿到Person类的所有属性列表,那么我们如何拼接sql语句呢? 在这里我定义了这么一个方法</p>
 
-<p>/// 该方法接收一个对象作为参数(模型对象),并返回是否插入成功
+<pre><code>/// 该方法接收一个对象作为参数(模型对象),并返回是否插入成功
 - (BOOL)insertDataFromObject:(id)object;
 /// 我们可以这样
 Person * p = [[Person alloc]init];
-p.name = @&ldquo;花菜ChrisCai&rdquo;;
+p.name = @"花菜ChrisCai";
 p.age = 18;
-[[GKDatabaseManager sharedManager] insertDataFromObject:p];</p>
+[[GKDatabaseManager sharedManager] insertDataFromObject:p];
+</code></pre>
 
-<p>插入数据</p>
+<h5>插入数据</h5>
 
 <p>通过上面这么简单的一句代码实现将数据插入到数据库中,在该方法内部我们通过上面所述的方法获取Person类的所有属性列表,那么我们可以就可以拼接插入语句的前半句了,然后通过KVC的形式完成后半部分赋值的操作;</p>
 
-<p>/// 插入数据
+<pre><code>/// 插入数据
 - (BOOL)insertDataFromObject:(id)object {
     // 创建可变字符串用于拼接sql语句
-    NSMutableString * sqlString = [NSMutableString stringWithFormat:@&ldquo;insert into %@ (&rdquo;,NSStringFromClass([object class])];
-    [[GKObjcProperty getUserNeedAttributeListWithClass:[object class]] enumerateObjectsUsingBlock:^(id  <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+    NSMutableString * sqlString = [NSMutableString stringWithFormat:@"insert into %@ (",NSStringFromClass([object class])];
+    [[GKObjcProperty getUserNeedAttributeListWithClass:[object class]] enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         // 拼接字段名
-        [sqlString appendFormat:@&ldquo;%@,&rdquo;,obj];
+        [sqlString appendFormat:@"%@,",obj];
     }];
     // 去掉后面的逗号
     [sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
     // 拼接values
-    [sqlString appendString:@&ldquo;) values (&rdquo;];</p>
+    [sqlString appendString:@") values ("];
 
-<pre><code>// 拼接字段值
-[[GKObjcProperty getSQLProperties:[object class]] enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-    // 拼接属性
-    if ([object valueForKey:key]){
-        if ([obj isEqualToString:@"text"]) {
+    // 拼接字段值
+    [[GKObjcProperty getSQLProperties:[object class]] enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        // 拼接属性
+        if ([object valueForKey:key]){
+            if ([obj isEqualToString:@"text"]) {
+                [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
+            } else if ([obj isEqualToString:@"customArr"] || [obj isEqualToString:@"customDict"]) { // 数组字典转处理
+                NSData * data = [NSJSONSerialization dataWithJSONObject:[object valueForKey:key] options:0 error:nil];
+                NSString * jsonString = [[NSString alloc] initWithData:data encoding:(NSUTF8StringEncoding)];
+                [sqlString appendFormat:@"'%@',",jsonString];
+            }else if ([obj isEqualToString:@"blob"]){ // NSData处理
+                NSString * jsonString = [[NSString alloc] initWithData:[object valueForKey:key] encoding:(NSUTF8StringEncoding)];
+                [sqlString appendFormat:@"'%@',",jsonString];
+            }else {
+                [sqlString appendFormat:@"%@,",[object valueForKey:key]];
+            }
+        }else {// 没有值就存NULL
             [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
-        } else if ([obj isEqualToString:@"customArr"] || [obj isEqualToString:@"customDict"]) { // 数组字典转处理
-            NSData * data = [NSJSONSerialization dataWithJSONObject:[object valueForKey:key] options:0 error:nil];
-            NSString * jsonString = [[NSString alloc] initWithData:data encoding:(NSUTF8StringEncoding)];
-            [sqlString appendFormat:@"'%@',",jsonString];
-        }else if ([obj isEqualToString:@"blob"]){ // NSData处理
-            NSString * jsonString = [[NSString alloc] initWithData:[object valueForKey:key] encoding:(NSUTF8StringEncoding)];
-            [sqlString appendFormat:@"'%@',",jsonString];
-        }else {
-            [sqlString appendFormat:@"%@,",[object valueForKey:key]];
         }
-    }else {// 没有值就存NULL
-        [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
-    }
-}];
-// 去掉后面的逗号
-[sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
-// 添加后面的括号
-[sqlString appendFormat:@");"];
-// 执行语句
-return [self executeSqlString:sqlString];
+    }];
+    // 去掉后面的逗号
+    [sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
+    // 添加后面的括号
+    [sqlString appendFormat:@");"];
+    // 执行语句
+    return [self executeSqlString:sqlString];
+}
 </code></pre>
-
-<p>}</p>
 
 <p>在上面方法中,我们用到了之前提到的自定义的类型,通过该自定的类型我们知道需要存储的是字典或者数组,在这里,我们将数组和字典转换为JSON字符串的形式存入数据库中;
 到此我们完成了创表和插入向表格中插入数据的操作,下面我们再看看如何从实现一行代码从数据库中将值取出来,在这里我们提供了6中查询的接口,</p>
 
-<pre><code>提供的接口如下:
+<h5>提供的接口如下:</h5>
+
+<pre><code>- (NSArray *)selecteDataWithClass:(id)className;// 根据类名查询对应表格内所有数据
+- (NSInteger)getTotalRowsFormClass:(id)className; // 获取表的总行数
+- (id)selecteFormClass:(id)className index:(NSInteger)index;// 获取指定行数据
+- (NSArray *)selectObject:(Class)className key:(id)key operate:(NSString *)operate value:(id)value;// 指定条件查询
+- (NSArray *)selecteDataWithSqlString:(NSString *)sqlString class:(id)className;// 自定义语句查询
+- (NSArray *)selectObject:(Class)className propertyName:(NSString *)propertyName type:(GKDatabaseSelectLocation)type content:(NSString *)content;// 模糊查询
 </code></pre>
-
-<ul>
-<li>(NSArray *)selecteDataWithClass:(id)className;// 根据类名查询对应表格内所有数据</li>
-<li>(NSInteger)getTotalRowsFormClass:(id)className; // 获取表的总行数</li>
-<li>(id)selecteFormClass:(id)className index:(NSInteger)index;// 获取指定行数据</li>
-<li>(NSArray <em>)selectObject:(Class)className key:(id)key operate:(NSString </em>)operate value:(id)value;// 指定条件查询</li>
-<li>(NSArray <em>)selecteDataWithSqlString:(NSString </em>)sqlString class:(id)className;// 自定义语句查询</li>
-<li>(NSArray <em>)selectObject:(Class)className propertyName:(NSString </em>)propertyName type:(GKDatabaseSelectLocation)type content:(NSString *)content;// 模糊查询</li>
-</ul>
-
 
 <p>通过第一个方法(该方法接收一个类名作为参数)就能简单的实现一行代码查询表格中的数据了</p>
 
-<p> NSArray * persons = [[GKDatabaseManager sharedManager] selecteDataWithClass:[Person class]];</p>
+<pre><code> NSArray * persons = [[GKDatabaseManager sharedManager] selecteDataWithClass:[Person class]];
+</code></pre>
 
 <p>下面我们着重介绍下核心方法,其他所有方法都是基于该方法实现的</p>
 
-<p>/// 自定义语句查询
-- (NSArray <em>)selecteDataWithSqlString:(NSString </em>)sqlString class:(id)className  {
+<pre><code>/// 自定义语句查询
+- (NSArray *)selecteDataWithSqlString:(NSString *)sqlString class:(id)className  {
     // 创建模型数组
-    NSMutableArray <em>models = nil;
+    NSMutableArray *models = nil;
     // 1.准备查询
-    sqlite3_stmt </em>stmt; // 用于提取数据的变量
+    sqlite3_stmt *stmt; // 用于提取数据的变量
     int result = sqlite3_prepare_v2(database, sqlString.UTF8String, -1, &amp;stmt, NULL);
     // 2.判断是否准备好
     if (SQLITE_OK == result) {
@@ -6159,45 +6201,45 @@ return [self executeSqlString:sqlString];
             for ( int i = 0; i &lt; arr.count; i++) {
                 // 默认第0个元素为表格主键 所以元素从第一个开始
                 // 使用KVC完成赋值
-                if ([dict[arr[i]] isEqualToString:@&ldquo;text&rdquo;]) {
-                    [objc setValue:[NSString stringWithFormat:@&ldquo;%@&rdquo;,[self textForColumn:i + 1  stmt:stmt]] forKey:arr[i]];</p>
+                if ([dict[arr[i]] isEqualToString:@"text"]) {
+                    [objc setValue:[NSString stringWithFormat:@"%@",[self textForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
 
-<pre><code>            } else if ([dict[arr[i]] isEqualToString:@"real"]) {
-                [objc setValue:[NSString stringWithFormat:@"%f",[self doubleForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
+                } else if ([dict[arr[i]] isEqualToString:@"real"]) {
+                    [objc setValue:[NSString stringWithFormat:@"%f",[self doubleForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
 
-            } else if ([dict[arr[i]] isEqualToString:@"integer"]) {
+                } else if ([dict[arr[i]] isEqualToString:@"integer"]) {
 
-                [objc setValue:[NSString stringWithFormat:@"%i",[self intForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
+                    [objc setValue:[NSString stringWithFormat:@"%i",[self intForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
 
-            } else if ([dict[arr[i]] isEqualToString:@"customArr"]) { // 数组处理
+                } else if ([dict[arr[i]] isEqualToString:@"customArr"]) { // 数组处理
 
-                NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                NSArray * resultArray = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                [objc setValue:resultArray forKey:arr[i]];
-            }  else if ([dict[arr[i]] isEqualToString:@"customDict"]) { // 字典处理
+                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                    NSArray * resultArray = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                    [objc setValue:resultArray forKey:arr[i]];
+                }  else if ([dict[arr[i]] isEqualToString:@"customDict"]) { // 字典处理
 
-                NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                NSDictionary * resultDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                [objc setValue:resultDict forKey:arr[i]];
-            } else if ([dict[arr[i]] isEqualToString:@"blob"]) { // 二进制处理
+                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                    NSDictionary * resultDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                    [objc setValue:resultDict forKey:arr[i]];
+                } else if ([dict[arr[i]] isEqualToString:@"blob"]) { // 二进制处理
 
-                NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                [objc setValue:data forKey:arr[i]];
+                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                    [objc setValue:data forKey:arr[i]];
+                }
             }
+            [models addObject:objc];
         }
-        [models addObject:objc];
     }
+    return [models copy];
 }
-return [models copy];
 </code></pre>
 
-<p>}</p>
+<p>在该方法内部,我们根据传递进来的类创建了一个对象(使用__block是因为在block内部需要修改对象的属性),通过之前的方法我们拿到了对应的sql类型,和属性名,这里就不重复介绍了,通过对应的sql类型执行对应的方法从数据中将数据取出来,并通过KVC的形式给对象赋值,值得一提的是这里我们通过自定义的字段(customArr,customDict)可以知道我们取的是数组或者字典,然后数据库中的JSON字符串转换为数组或者字典,然后再利用KVC赋值给对象!</p>
 
-<p>在该方法内部,我们根据传递进来的类创建了一个对象(使用__block是因为在block内部需要修改对象的属性),通过之前的方法我们拿到了对应的sql类型,和属性名,这里就不重复介绍了,通过对应的sql类型执行对应的方法从数据中将数据取出来,并通过KVC的形式给对象赋值,值得一提的是这里我们通过自定义的字段(customArr,customDict)可以知道我们取的是数组或者字典,然后数据库中的JSON字符串转换为数组或者字典,然后再利用KVC赋值给对象!
-到此基本上所有的功能就都实现了,其他的诸如更新数据,删除数据,删除表格等有提供具体的接口,这里就不一一介绍了,源码中有详细的注释,同时也有DEMO,有需要的可以自行下载,</p>
+<p>到此基本上所有的功能就都实现了,其他的诸如更新数据,删除数据,删除表格等有提供具体的接口,这里就不一一介绍了,源码中有详细的注释,同时也有DEMO,有需要的可以自行下载,</p>
 
 <p>以上均为个人这段时间的总结,如有不对的地方,可以在下面评论 也可以通过QQ:4593679联系我,如觉得好用记得star一下哦~,谢谢!!! 源码地址:<a href="https://github.com/ChrisCaixx/GKDatabase">https://github.com/ChrisCaixx/GKDatabase</a></p>
 ]]></content>
@@ -6208,15 +6250,20 @@ return [models copy];
     <link href="http://al1020119.github.io/blog/2016/07/01/sqljinghua/"/>
     <updated>2016-07-01T02:59:42+08:00</updated>
     <id>http://al1020119.github.io/blog/2016/07/01/sqljinghua</id>
-    <content type="html"><![CDATA[<p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
+    <content type="html"><![CDATA[<h4>概述</h4>
+
+<p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
 Core Data在后台也是使用SQLite来存储数据的，但是开发人员不能直接访问这些数据，只能通过Core Data提供的API来操作，如果一旦人为的通过SQLite修改这些数据那么使用Core Data再次访问这些数据时就会发生错误。</p>
 
-<p>SQLite库</p>
+<!--more-->
+
+
+<h3>SQLite库</h3>
 
 <p>SQLite是使用C语言写的开源库，实现了一个自包含的SQL关系型数据库引擎，可以使用SQLite存储操作大量的数据，作为关系型数据库我们可以在一个数据库中建立多张相关联的表来解决大量数据重复的问题。而且SQLite库也针对移动设备上的使用进行了优化。
 因为SQLite的接口使用C写的，而且Objective-C是C的超集所以可以直接在项目中使用SQLite。</p>
 
-<p>设计一个数据库</p>
+<h3>设计一个数据库</h3>
 
 <p>开始之前首先要想到需要存什么数据，然后怎么设计这个数据库。
 首先我们设计一个数据库用来存储人员信息如下：</p>
@@ -6235,124 +6282,117 @@ Core Data在后台也是使用SQLite来存储数据的，但是开发人员不�
 
 <p><img src="http://al1020119.github.io/images/sql0002.png" title="Caption" ></p>
 
-<p>使用SQLite创建数据库</p>
+<h5>使用SQLite创建数据库</h5>
 
 <p>为了熟悉SQLite语句，打开shell使用SQLite命令行来创建一个数据库</p>
 
 <pre><code>打开创建数据库
 
 打开shell切换到指定目录输入
+
+
+
+sqlite3 database.db
 </code></pre>
-
-<p>1</p>
-
-<p>sqlite3 database.db</p>
 
 <p>这行命令是启动sqlite命令行并且创建新的数据库database.db并附加该数据到命令行</p>
 
 <p>此时已经进入sqlite命令行通过输入.help可以显示可以使用哪些命令，通过输入.databases来查看当前有哪些数据库附加到当前的命令行工具中。输入.quit或.exit退出当前命令行工具</p>
 
-<p>创建表
-1</p>
+<h5>创建表</h5>
 
-<p>create table &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;id&rdquo; integer primary key autoincrement not null, &ldquo;name&rdquo; text,&ldquo;age&rdquo; integer,&ldquo;email&rdquo; text,&ldquo;region&rdquo; integer);</p>
+<pre><code>create table "main"."people" ("id" integer primary key autoincrement not null, "name" text,"age" integer,"email" text,"region" integer);
+</code></pre>
 
 <p>这条命令是创建一个people的表，并且将id字段设为primary key主键将其指定为一个autoincrement自动增长的字段。表示不用提供id的值数据库将自动生成。后面的表示该张表中所含有的字段。</p>
 
-<p>因为要设计两张表所以还需要创建region表
-1</p>
+<p>因为要设计两张表所以还需要创建region表</p>
 
-<p>create table &ldquo;main&rdquo;.&ldquo;region&rdquo; (&ldquo;regionid&rdquo; integer primary key autoincrement not null, &ldquo;regioninfo&rdquo; text,&ldquo;address&rdquo; text not null);</p>
+<pre><code>create table "main"."region" ("regionid" integer primary key autoincrement not null, "regioninfo" text,"address" text not null);
+</code></pre>
 
-<p>添加数据</p>
+<h5>添加数据</h5>
 
-<p>此时已经成功创建了两张表我们要添加数据进去
-1</p>
+<p>此时已经成功创建了两张表我们要添加数据进去</p>
 
-<p>insert into &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;name&rdquo;,&ldquo;age&rdquo;,&ldquo;email&rdquo;,&ldquo;region&rdquo;) values (&lsquo;jhon&rsquo;,&lsquo;20&rsquo;,&lsquo;jhon@mail&rsquo;,&lsquo;1&rsquo;);</p>
+<pre><code>insert into "main"."people" ("name","age","email","region") values ('jhon','20','jhon@mail','1');
+</code></pre>
 
-<p>这样成功往people表成功的插入了一条数据。这样写效率比较低。每次只能插入一条数据不要担心SQLite支持将文件直接导入数据库中。可以是普通的文件文件也可以是excel文件。下面我们创建一个people.txt文件格式如下：
-1</p>
+<p>这样成功往people表成功的插入了一条数据。这样写效率比较低。每次只能插入一条数据不要担心SQLite支持将文件直接导入数据库中。可以是普通的文件文件也可以是excel文件。下面我们创建一个people.txt文件格式如下：</p>
 
-<p>1 jhon 20 jhon@mail 12 peter 20 peter@mail 23 july 20 july@mail 14 elev 20 elev@mail 35 ribet 20 ribet@mail</p>
+<pre><code>1 jhon 20 jhon@mail 12 peter 20 peter@mail 23 july 20 july@mail 14 elev 20 elev@mail 35 ribet 20 ribet@mail
+</code></pre>
 
-<p>注意每个字段之间的空隙是用制表符来分割的，也就是创建文件是每个字段用tab键进行分割。字段的顺序必须和表中的顺序相同然后将people.txt文件导入people表中
-1</p>
+<p>注意每个字段之间的空隙是用制表符来分割的，也就是创建文件是每个字段用tab键进行分割。字段的顺序必须和表中的顺序相同然后将people.txt文件导入people表中</p>
 
 <p>.separator &ldquo;&rdquo;</p>
 
-<p>根据来分割字段，然后接着输入
-1</p>
+<p>根据来分割字段，然后接着输入</p>
 
-<p>.import &ldquo;people.txt&rdquo; people</p>
+<pre><code>.import "people.txt" people
+</code></pre>
 
-<p>导入people.txt文件到people表中此时会提示如下错误信息
-1</p>
+<p>导入people.txt文件到people表中此时会提示如下错误信息</p>
 
-<p>people.txt:1: INSERT failed: UNIQUE constraint failed: people.id</p>
+<pre><code>people.txt:1: INSERT failed: UNIQUE constraint failed: people.id
+</code></pre>
 
-<p>不用担心这个意思是说已经存在了一个id为1的数据所以这条数据插入失败，是因为我们之前手动了插入了一条数据。可以通过以下指令来查插入的数据
-1</p>
+<p>不用担心这个意思是说已经存在了一个id为1的数据所以这条数据插入失败，是因为我们之前手动了插入了一条数据。可以通过以下指令来查插入的数据</p>
 
-<p>select * from people;</p>
+<pre><code>select * from people;
+</code></pre>
 
 <p>然后用同样的方法创建一个region.txt的文件并将其导入region表中。</p>
 
-<p>注意</p>
+<h5>注意</h5>
 
 <p>使用SQLite命令行可能会出现&hellip;>这表示指令输入错误，按ctrl+d即可退出</p>
 
-<p>查询数据上面已经添加完数据通过select指令可以查询这些数据
-1</p>
+<p>查询数据上面已经添加完数据通过select指令可以查询这些数据</p>
 
-<p>select * from people;11</p>
+<pre><code>select * from people;11
+</code></pre>
 
 <p>查询popple表中的所有数据</p>
 
-<p>链接表数据
-1</p>
+<p>链接表数据</p>
 
-<p>select name,regioninfo from people,region where people.region=region.regionid;</p>
+<pre><code>select name,regioninfo from people,region where people.region=region.regionid;
+</code></pre>
 
-<p>输出结果
-1
-2
-3
-4
-5</p>
+<p>输出结果</p>
 
-<p>jhon beijing
+<pre><code>jhon beijing
 peter shanghai
 july beijing
 elev shenzhen
-ribet beijing</p>
+ribet beijing
+</code></pre>
 
 <p>从people和region表中查找name与regioninfo字段并且只查询people.region=region.regionid相匹配的结果，如果没有这个条件那么将出现5*3=15条数据</p>
 
-<p>如果要查找某个地区的人使用where来筛选条件
-1</p>
+<p>如果要查找某个地区的人使用where来筛选条件</p>
 
-<p>select name,regioninfo from people,region where people.region=region.regionid and region.regioninfo=&ldquo;beijing&rdquo;;</p>
+<pre><code>select name,regioninfo from people,region where people.region=region.regionid and region.regioninfo="beijing";
+</code></pre>
 
-<p>输出结果
-1
-2
-3</p>
+<p>输出结果</p>
 
-<p>jhon beijing
+<pre><code>jhon beijing
 july beijing
-ribet beijing</p>
+ribet beijing
+</code></pre>
 
-<p>iOS中SQLite的使用</p>
+<h3>iOS中SQLite的使用</h3>
 
 <p>开始之前应该在项目中引用SQLite库。TARGETS->General->Linked Frameworks and Libraries如下图所示</p>
 
 <p><img src="http://al1020119.github.io/images/sql0003.png" title="Caption" ></p>
 
-<p>将之前创建好的database.db文件导入项目中，并引入sqlite3.h头文件
-1</p>
+<p>将之前创建好的database.db文件导入项目中，并引入sqlite3.h头文件</p>
 
-<h1>import</h1>
+<pre><code>#import
+</code></pre>
 
 <p>使用SQLite需要一下几个步骤：</p>
 
@@ -6369,54 +6409,39 @@ ribet beijing</p>
 开始遍历结果sqlite3_step
 </code></pre>
 
-<p>初始化打开数据库
-1
-2
-3
-4
-5
-6
-7
-8</p>
+<h5>初始化打开数据库</h5>
 
-<p>sqlite3 * database;
+<pre><code>sqlite3 * database;
 -(void)initDatabase
-{ NSString *path = [[NSBundle mainBundle] pathForResource:@&ldquo;database&rdquo; ofType:@&ldquo;db&rdquo;];
-if (sqlite3_open([path UTF8String], &amp;database) == SQLITE_OK) { NSLog(@&ldquo;open database&rdquo;);
+{ NSString *path = [[NSBundle mainBundle] pathForResource:@"database" ofType:@"db"];
+if (sqlite3_open([path UTF8String], &amp;database) == SQLITE_OK) { NSLog(@"open database");
 } else{
-sqlite3_close(database); NSLog(@&ldquo;error %s&rdquo;,sqlite3_errmsg(database));
+sqlite3_close(database); NSLog(@"error %s",sqlite3_errmsg(database));
 }
-}</p>
+</code></pre>
+
+<p>}</p>
 
 <p>打开数据库如果返回的状态码不是SQLITE_OK那么打开失败关闭数据库并且输出错误信息</p>
 
-<p>查询数据
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10</p>
+<h5>查询数据</h5>
 
-<p>-(void)operateDatabase
-{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid&rdquo;;
+<pre><code>-(void)operateDatabase
+{ const char * sql = "select name,regioninfo from people,region where people.region=region.regionid";
 sqlite3_stmt *statement; //创建sql语句对象
 int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
 if ( sqlResult== SQLITE_OK) //是否准备结束
 { while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
-{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+{ NSLog(@"name %s, region %s",sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
 }
 }
-}</p>
+}
+</code></pre>
 
-<p>输出结果：
-1</p>
+<p>输出结果：</p>
 
-<p>name jhon, region beijingname peter, region shanghainame july, region beijingname elev, region shenzhenname ribet, region beijing1234512345</p>
+<pre><code>name jhon, region beijingname peter, region shanghainame july, region beijingname elev, region shenzhenname ribet, region beijing1234512345
+</code></pre>
 
 <p>sqlite3_prepare_v2的参数第一个是数据库连接，第二个是sql语句，第三个是这个语句的长度传入-1表示地道第一个null终止符为止，第四个是返回一个语句对象，第五个是返回一个指向该sql语句的第一个字节的指针。</p>
 
@@ -6424,93 +6449,64 @@ if ( sqlResult== SQLITE_OK) //是否准备结束
 
 <p>sqlite3_step用来遍历结果如果返回为SQLITE_ROW表示下一行准备结束可以开始查询。所以此处用一个while来便利所以查询的结果</p>
 
-<p>遍历的过程中要取到结果通过一下的函数获取遍历结果
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10</p>
+<p>遍历的过程中要取到结果通过一下的函数获取遍历结果</p>
 
-<p>SQLITE_API const void <em>SQLITE_STDCALL sqlite3_column_blob(sqlite3_stmt</em>, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes(sqlite3_stmt<em>, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes16(sqlite3_stmt</em>, int iCol);
-SQLITE_API double SQLITE_STDCALL sqlite3_column_double(sqlite3_stmt<em>, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_int(sqlite3_stmt</em>, int iCol);
-SQLITE_API sqlite3_int64 SQLITE_STDCALL sqlite3_column_int64(sqlite3_stmt<em>, int iCol);
-SQLITE_API const unsigned char </em>SQLITE_STDCALL sqlite3_column_text(sqlite3_stmt<em>, int iCol);
-SQLITE_API const void </em>SQLITE_STDCALL sqlite3_column_text16(sqlite3_stmt<em>, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_type(sqlite3_stmt</em>, int iCol);
-SQLITE_API sqlite3_value <em>SQLITE_STDCALL sqlite3_column_value(sqlite3_stmt</em>, int iCol);</p>
+<pre><code>SQLITE_API const void *SQLITE_STDCALL sqlite3_column_blob(sqlite3_stmt*, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes(sqlite3_stmt*, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
+SQLITE_API double SQLITE_STDCALL sqlite3_column_double(sqlite3_stmt*, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_int(sqlite3_stmt*, int iCol);
+SQLITE_API sqlite3_int64 SQLITE_STDCALL sqlite3_column_int64(sqlite3_stmt*, int iCol);
+SQLITE_API const unsigned char *SQLITE_STDCALL sqlite3_column_text(sqlite3_stmt*, int iCol);
+SQLITE_API const void *SQLITE_STDCALL sqlite3_column_text16(sqlite3_stmt*, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_type(sqlite3_stmt*, int iCol);
+SQLITE_API sqlite3_value *SQLITE_STDCALL sqlite3_column_value(sqlite3_stmt*, int iCol);
+</code></pre>
 
 <p>上面是所支持的结果类型，第一个参数为sql语句对象，第二个为获取哪一列的信息。</p>
 
-<p>参数化查询</p>
+<h5>参数化查询</h5>
 
-<p>上面的情况每次sql语句都写死了，如果想要改变某个条件就需要重新写一条语句，幸好sqlite支持参数化查询，每次只需要更改查询条件就可以而不用更改整条sql语句，如果现在只想查询北京地区的人口信息使用参数化查询如下：
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11</p>
+<p>上面的情况每次sql语句都写死了，如果想要改变某个条件就需要重新写一条语句，幸好sqlite支持参数化查询，每次只需要更改查询条件就可以而不用更改整条sql语句，如果现在只想查询北京地区的人口信息使用参数化查询如下：</p>
 
-<p>-(void)operateDatabase
-{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid and regioninfo=?&rdquo;;
+<pre><code>-(void)operateDatabase
+{ const char * sql = "select name,regioninfo from people,region where people.region=region.regionid and regioninfo=?";
 sqlite3_stmt *statement; //创建sql语句对象
 int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
-sqlite3_bind_text(statement, 1, &ldquo;beijing&rdquo;, -1,SQLITE_TRANSIENT); //绑定参数
+sqlite3_bind_text(statement, 1, "beijing", -1,SQLITE_TRANSIENT); //绑定参数
 if ( sqlResult== SQLITE_OK) //是否准备结束
 { while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
-{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+{ NSLog(@"name %s, region %s",sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
 }
 }
-}</p>
+}
+</code></pre>
 
-<p>输出结果：
-1</p>
+<p>输出结果：</p>
 
-<p>name jhon, regionbeijingname july, regionbeijingname ribet, regionbeijing</p>
+<pre><code>name jhon, regionbeijingname july, regionbeijingname ribet, regionbeijing
+</code></pre>
 
-<p>可见需要更改的条件sql中用?来代替，然后用sqlite3_bind_text函数来绑定参数。根据类型不同绑定的函数也不同
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11</p>
+<p>可见需要更改的条件sql中用?来代替，然后用sqlite3_bind_text函数来绑定参数。根据类型不同绑定的函数也不同</p>
 
-<p>SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob(sqlite3_stmt<em>, int, const void</em>, int n, void(<em>)(void</em>));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob64(sqlite3_stmt<em>, int, const void</em>, sqlite3_uint64,void(<em>)(void</em>));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_double(sqlite3_stmt<em>, int, double);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_int(sqlite3_stmt</em>, int, int);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_int64(sqlite3_stmt<em>, int, sqlite3_int64);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_null(sqlite3_stmt</em>, int);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text(sqlite3_stmt<em>,int,const char</em>,int,void(<em>)(void</em>));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text16(sqlite3_stmt<em>, int, const void</em>, int, void(<em>)(void</em>));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text64(sqlite3_stmt<em>, int, const char</em>, sqlite3_uint64,void(<em>)(void</em>), unsigned char encoding);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_value(sqlite3_stmt<em>, int, const sqlite3_value</em>);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);</p>
+<pre><code>SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob64(sqlite3_stmt*, int, const void*, sqlite3_uint64,void(*)(void*));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_double(sqlite3_stmt*, int, double);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int(sqlite3_stmt*, int, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_null(sqlite3_stmt*, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,void(*)(void*), unsigned char encoding);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
+</code></pre>
 
 <p>上面列出了所有支持绑定类型的函数。</p>
 
-<p>结束</p>
+<blockquote><p>结束</p>
 
-<p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p>
+<p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p></blockquote>
 ]]></content>
   </entry>
   

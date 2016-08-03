@@ -92,26 +92,35 @@
 
 <p>两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。</p>
 
-<p>使用方法</p>
+<h5>使用方法</h5>
 
-<p>FMDB有三个主要的类
-1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
+<p>FMDB有三个主要的类</p>
+
+<pre><code>1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
 2.FMResultSet – 表示FMDatabase执行查询后结果集
-3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。</p>
+3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。
+</code></pre>
 
-<p>数据库创建
-创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：
-1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
+<!--more-->
+
+
+<h5>数据库创建</h5>
+
+<p>创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：</p>
+
+<pre><code>1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
 2..空字符串(@”")。表示会在临时目录创建一个空的数据库，当FMDatabase 链接关闭时，文件也被删除。
-3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。</p>
+3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。
+</code></pre>
 
 <p>(如需对临时数据库或内在数据库进行一步了解，请继续阅读：<a href="http://www.sqlite.org/inmemorydb.html">http://www.sqlite.org/inmemorydb.html</a>)</p>
 
 <pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];   
 </code></pre>
 
-<p>打开数据库
-在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
+<h5>打开数据库</h5>
+
+<p>在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
 
 <pre><code>if (![db open]) {    
         [db release];   
@@ -119,14 +128,16 @@
     }  
 </code></pre>
 
-<p>执行更新
-一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
+<h5>执行更新</h5>
+
+<p>一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
 简单来说，只要不是以SELECT开头的命令都是UPDATE命令。</p>
 
 <p>执行更新返回一个BOOL值。YES表示执行成功，否则表示有那些错误 。你可以调用 -lastErrorMessage 和 -lastErrorCode方法来得到更多信息。</p>
 
-<p>执行查询
-SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
+<h5>执行查询</h5>
+
+<p>SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
 
 <p>执行查询时，如果成功返回FMResultSet对象， 错误返回nil. 与执行更新相当，支持使用 NSError**参数。同时，你也可以使用 -lastErrorCode和-lastErrorMessage获知错误信息。</p>
 
@@ -146,27 +157,30 @@ while ([s next]) {
   }   
 </code></pre>
 
-<p>FMResultSet  提供了很多方法来获得所需的格式的值：
-    intForColumn:
-    longForColumn:
-    longLongIntForColumn:
-    boolForColumn:
-    doubleForColumn:
-    stringForColumn:
-    dataForColumn:
-    dataNoCopyForColumn:
-    UTF8StringForColumnIndex:
-    objectForColumn:</p>
+<p>FMResultSet  提供了很多方法来获得所需的格式的值：</p>
+
+<pre><code>intForColumn:
+longForColumn:
+longLongIntForColumn:
+boolForColumn:
+doubleForColumn:
+stringForColumn:
+dataForColumn:
+dataNoCopyForColumn:
+UTF8StringForColumnIndex:
+objectForColumn:
+</code></pre>
 
 <p>这些方法也都包括 {type}ForColumnIndex 的这样子的方法，参数是查询结果集的列的索引位置。</p>
 
 <p>你无需调用  [FMResultSet close]来关闭结果集, 当新的结果集产生，或者其数据库关闭时，会自动关闭。</p>
 
-<p>关闭数据库
-当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
+<h5>关闭数据库</h5>
+
+<p>当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
     [db close];</p>
 
-<p>事务</p>
+<h5>事务</h5>
 
 <p>FMDatabase是支持事务的。</p>
 
@@ -220,12 +234,12 @@ while ([s next]) {
 <p>使用FMDatabaseQueue 及线程安全
 在多个线程中同时使用一个FMDatabase实例是不明智的。现在你可以为每个线程创建一个FMDatabase对象。 不要让多个线程分享同一个实例，它无法在多个线程中同时使用。 若此，坏事会经常发生，程序会时不时崩溃，或者报告异常，或者陨石会从天空中掉下来砸到你Mac Pro.  总之很崩溃。所以，不要初始化FMDatabase对象，然后在多个线程中使用。请使用 FMDatabaseQueue，它是你的朋友而且会帮助你。以下是使用方法：</p>
 
-<p>首先创建队列。</p>
+<h5>首先创建队列。</h5>
 
 <pre><code>FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath]; 
 </code></pre>
 
-<p>这样使用。</p>
+<h5>这样使用。</h5>
 
 <pre><code>[queue inDatabase:^(FMDatabase *db) {    
           [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
@@ -238,7 +252,7 @@ while ([s next]) {
 }];   
 </code></pre>
 
-<p>像这样，轻松地把简单任务包装到事务里：</p>
+<h5>像这样，轻松地把简单任务包装到事务里：</h5>
 
 <pre><code>[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {    
             [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
@@ -253,8 +267,6 @@ while ([s next]) {
 </code></pre>
 
 <p> FMDatabaseQueue  后台会建立系列化的G-C-D队列，并执行你传给G-C-D队列的块。这意味着 你从多线程同时调用调用方法，GDC也会按它接收的块的顺序来执行。谁也不会吵到谁的脚 ，每个人都幸福。</p>
-
-<p>原文：<a href="http://www.cocoachina.com/bbs/read.php?tid=140901">http://www.cocoachina.com/bbs/read.php?tid=140901</a></p>
 </div>
 
 
