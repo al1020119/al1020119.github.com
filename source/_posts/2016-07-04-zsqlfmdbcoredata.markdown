@@ -59,117 +59,117 @@ SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就�
 在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。纵观整个操作过程，其实与其他平台的开发没有明显的区别，较为麻烦的就是数据读取，在iOS平台中使用C进行数据读取采用了游标的形式，每次只能读取一行数据，较为麻烦。因此实际开发中不妨对这些操作进行封装：
 
 KCDbManager.h
-//
-//  DbManager.h
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import <sqlite3.h>
-#import "KCSingleton.h"
-@interface KCDbManager : NSObject
-singleton_interface(KCDbManager);
-#pragma mark - 属性
-#pragma mark 数据库引用，使用它进行数据库操作
-@property (nonatomic) sqlite3 *database;
-#pragma mark - 共有方法
-/**
- *  打开数据库
- *
- *  @param dbname 数据库名称
- */
--(void)openDb:(NSString *)dbname;
-/**
- *  执行无返回值的sql
- *
- *  @param sql sql语句
- */
--(void)executeNonQuery:(NSString *)sql;
-/**
- *  执行有返回值的sql
- *
- *  @param sql sql语句
- *
- *  @return 查询结果
- */
--(NSArray *)executeQuery:(NSString *)sql;
-@end
-
-KCDbManager.m
-//
-//  DbManager.m
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCDbManager.h"
-#import <sqlite3.h>
-#import "KCSingleton.h"
-#import "KCAppConfig.h"
-#ifndef kDatabaseName
-#define kDatabaseName @"myDatabase.db"
-#endif
-@interface KCDbManager()
-@end
-@implementation KCDbManager
-singleton_implementation(KCDbManager)
-#pragma mark 重写初始化方法
--(instancetype)init{
-    KCDbManager *manager;
-    if((manager=[super init]))
-    {
-        [manager openDb:kDatabaseName];
-    }
-    return manager;
-}
--(void)openDb:(NSString *)dbname{
-    //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@"%@",directory);
-    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
-    //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
-    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &_database)) {
-        NSLog(@"数据库打开成功!");
-    }else{
-        NSLog(@"数据库打开失败!");
-    }
-}
--(void)executeNonQuery:(NSString *)sql{
-    char *error;
-    //单步执行sql语句，用于插入、修改、删除
-    if (SQLITE_OK!=sqlite3_exec(_database, sql.UTF8String, NULL, NULL,&error)) {
-        NSLog(@"执行SQL语句过程中发生错误！错误信息：%s",error);
-    }
-}
--(NSArray *)executeQuery:(NSString *)sql{
-    NSMutableArray *rows=[NSMutableArray array];//数据行
-     
-    //评估语法正确性
-    sqlite3_stmt *stmt;
-    //检查语法正确性
-    if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &stmt, NULL)) {
-        //单步执行sql语句
-        while (SQLITE_ROW==sqlite3_step(stmt)) {
-            int columnCount= sqlite3_column_count(stmt);
-            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
-            for (int i=0; i<columnCount; i++) {
-                const char *name= sqlite3_column_name(stmt, i);//取得列名
-                const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
-                dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
-            }
-            [rows addObject:dic];
-        }
-    }
-     
-    //释放句柄
-    sqlite3_finalize(stmt);
-     
-    return rows;
-}
-@end
+	//
+	//  DbManager.h
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import <sqlite3.h>
+	#import "KCSingleton.h"
+	@interface KCDbManager : NSObject
+	singleton_interface(KCDbManager);
+	#pragma mark - 属性
+	#pragma mark 数据库引用，使用它进行数据库操作
+	@property (nonatomic) sqlite3 *database;
+	#pragma mark - 共有方法
+	/**
+	 *  打开数据库
+	 *
+	 *  @param dbname 数据库名称
+	 */
+	-(void)openDb:(NSString *)dbname;
+	/**
+	 *  执行无返回值的sql
+	 *
+	 *  @param sql sql语句
+	 */
+	-(void)executeNonQuery:(NSString *)sql;
+	/**
+	 *  执行有返回值的sql
+	 *
+	 *  @param sql sql语句
+	 *
+	 *  @return 查询结果
+	 */
+	-(NSArray *)executeQuery:(NSString *)sql;
+	@end
+	
+	KCDbManager.m
+	//
+	//  DbManager.m
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCDbManager.h"
+	#import <sqlite3.h>
+	#import "KCSingleton.h"
+	#import "KCAppConfig.h"
+	#ifndef kDatabaseName
+	#define kDatabaseName @"myDatabase.db"
+	#endif
+	@interface KCDbManager()
+	@end
+	@implementation KCDbManager
+	singleton_implementation(KCDbManager)
+	#pragma mark 重写初始化方法
+	-(instancetype)init{
+	    KCDbManager *manager;
+	    if((manager=[super init]))
+	    {
+	        [manager openDb:kDatabaseName];
+	    }
+	    return manager;
+	}
+	-(void)openDb:(NSString *)dbname{
+	    //取得数据库保存路径，通常保存沙盒Documents目录
+	    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+	    NSLog(@"%@",directory);
+	    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+	    //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
+	    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &_database)) {
+	        NSLog(@"数据库打开成功!");
+	    }else{
+	        NSLog(@"数据库打开失败!");
+	    }
+	}
+	-(void)executeNonQuery:(NSString *)sql{
+	    char *error;
+	    //单步执行sql语句，用于插入、修改、删除
+	    if (SQLITE_OK!=sqlite3_exec(_database, sql.UTF8String, NULL, NULL,&error)) {
+	        NSLog(@"执行SQL语句过程中发生错误！错误信息：%s",error);
+	    }
+	}
+	-(NSArray *)executeQuery:(NSString *)sql{
+	    NSMutableArray *rows=[NSMutableArray array];//数据行
+	     
+	    //评估语法正确性
+	    sqlite3_stmt *stmt;
+	    //检查语法正确性
+	    if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &stmt, NULL)) {
+	        //单步执行sql语句
+	        while (SQLITE_ROW==sqlite3_step(stmt)) {
+	            int columnCount= sqlite3_column_count(stmt);
+	            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+	            for (int i=0; i<columnCount; i++) {
+	                const char *name= sqlite3_column_name(stmt, i);//取得列名
+	                const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
+	                dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+	            }
+	            [rows addObject:dic];
+	        }
+	    }
+	     
+	    //释放句柄
+	    sqlite3_finalize(stmt);
+	     
+	    return rows;
+	}
+	@end
 
 在上面的类中对于数据库操作进行了封装，封装之后数据操作更加方便，同时所有的语法都由C转换成了ObjC。
 
@@ -182,578 +182,578 @@ singleton_implementation(KCDbManager)
 
 KCDatabaseCreator.m
 	
-//
-//  KCDatabaseCreator.m
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCDatabaseCreator.h"
-#import "KCDbManager.h"
-@implementation KCDatabaseCreator
-+(void)initDatabase{
-    NSString *key=@"IsCreatedDb";
-    NSUserDefaults *defaults=[[NSUserDefaults alloc]init];
-    if ([[defaults valueForKey:key] intValue]!=1) {
-        [self createUserTable];
-        [self createStatusTable];
-        [defaults setValue:@1 forKey:key];
-    }
-}
-+(void)createUserTable{
-    NSString *sql=@"CREATE TABLE User (Id integer PRIMARY KEY AUTOINCREMENT,name text,screenName text, profileImageUrl text,mbtype text,city text)";
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
-+(void)createStatusTable{
-    NSString *sql=@"CREATE TABLE Status (Id integer PRIMARY KEY AUTOINCREMENT,source text,createdAt date,\"text\" text,user integer REFERENCES User (Id))";
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
-@end
+	//
+	//  KCDatabaseCreator.m
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCDatabaseCreator.h"
+	#import "KCDbManager.h"
+	@implementation KCDatabaseCreator
+	+(void)initDatabase{
+	    NSString *key=@"IsCreatedDb";
+	    NSUserDefaults *defaults=[[NSUserDefaults alloc]init];
+	    if ([[defaults valueForKey:key] intValue]!=1) {
+	        [self createUserTable];
+	        [self createStatusTable];
+	        [defaults setValue:@1 forKey:key];
+	    }
+	}
+	+(void)createUserTable{
+	    NSString *sql=@"CREATE TABLE User (Id integer PRIMARY KEY AUTOINCREMENT,name text,screenName text, profileImageUrl text,mbtype text,city text)";
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	+(void)createStatusTable{
+	    NSString *sql=@"CREATE TABLE Status (Id integer PRIMARY KEY AUTOINCREMENT,source text,createdAt date,\"text\" text,user integer REFERENCES User (Id))";
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	@end
 
 其次，定义数据模型，这里定义用户User和微博Status两个数据模型类。注意模型应该尽量保持其单纯性，仅仅是简单的POCO，不要引入视图、控制器等相关内容。
 
 KCUser.h
 
 	
-//
-//  KCUser.h
-//  UrlConnection
-//
-//  Created by Kenshin Cui on 14-3-22.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-@interface KCUser : NSObject
-#pragma mark 编号
-@property (nonatomic,strong) NSNumber *Id;
-#pragma mark 用户名
-@property (nonatomic,copy) NSString *name;
-#pragma mark 用户昵称
-@property (nonatomic,copy) NSString *screenName;
-#pragma mark 头像
-@property (nonatomic,copy) NSString *profileImageUrl;
-#pragma mark 会员类型
-@property (nonatomic,copy) NSString *mbtype;
-#pragma mark 城市
-@property (nonatomic,copy) NSString *city;
-#pragma mark - 动态方法
-/**
- *  初始化用户
- *
- *  @param name 用户名
- *  @param city 所在城市
- *
- *  @return 用户对象
- */
--(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
-/**
- *  使用字典初始化用户对象
- *
- *  @param dic 用户数据
- *
- *  @return 用户对象
- */
--(KCUser *)initWithDictionary:(NSDictionary *)dic;
-#pragma mark - 静态方法
-+(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
-@end
+	//
+	//  KCUser.h
+	//  UrlConnection
+	//
+	//  Created by Kenshin Cui on 14-3-22.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	@interface KCUser : NSObject
+	#pragma mark 编号
+	@property (nonatomic,strong) NSNumber *Id;
+	#pragma mark 用户名
+	@property (nonatomic,copy) NSString *name;
+	#pragma mark 用户昵称
+	@property (nonatomic,copy) NSString *screenName;
+	#pragma mark 头像
+	@property (nonatomic,copy) NSString *profileImageUrl;
+	#pragma mark 会员类型
+	@property (nonatomic,copy) NSString *mbtype;
+	#pragma mark 城市
+	@property (nonatomic,copy) NSString *city;
+	#pragma mark - 动态方法
+	/**
+	 *  初始化用户
+	 *
+	 *  @param name 用户名
+	 *  @param city 所在城市
+	 *
+	 *  @return 用户对象
+	 */
+	-(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
+	/**
+	 *  使用字典初始化用户对象
+	 *
+	 *  @param dic 用户数据
+	 *
+	 *  @return 用户对象
+	 */
+	-(KCUser *)initWithDictionary:(NSDictionary *)dic;
+	#pragma mark - 静态方法
+	+(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city;
+	@end
 
 KCUser.m
 
-	
-//
-//  KCUser.m
-//  UrlConnection
-//
-//  Created by Kenshin Cui on 14-3-22.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCUser.h"
-@implementation KCUser
--(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
-    if (self=[super init]) {
-        self.name=name;
-        self.screenName=screenName;
-        self.profileImageUrl=profileImageUrl;
-        self.mbtype=mbtype;
-        self.city=city;
-    }
-    return self;
-}
--(KCUser *)initWithDictionary:(NSDictionary *)dic{
-    if (self=[super init]) {
-        [self setValuesForKeysWithDictionary:dic];
-    }
-    return self;
-}
-+(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
-    KCUser *user=[[KCUser alloc]initWithName:name screenName:screenName profileImageUrl:profileImageUrl mbtype:mbtype city:city];
-    return user;
-}
+		
+	//
+	//  KCUser.m
+	//  UrlConnection
+	//
+	//  Created by Kenshin Cui on 14-3-22.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCUser.h"
+	@implementation KCUser
+	-(KCUser *)initWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+	    if (self=[super init]) {
+	        self.name=name;
+	        self.screenName=screenName;
+	        self.profileImageUrl=profileImageUrl;
+	        self.mbtype=mbtype;
+	        self.city=city;
+	    }
+	    return self;
+	}
+	-(KCUser *)initWithDictionary:(NSDictionary *)dic{
+	    if (self=[super init]) {
+	        [self setValuesForKeysWithDictionary:dic];
+	    }
+	    return self;
+	}
+	+(KCUser *)userWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+	    KCUser *user=[[KCUser alloc]initWithName:name screenName:screenName profileImageUrl:profileImageUrl mbtype:mbtype city:city];
+	    return user;
+	}
 @end
 
 KCStatus.h
-
-//
-//  KCStatus.h
-//  UITableView
-//
-//  Created by Kenshin Cui on 14-3-1.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import "KCUser.h"
-@interface KCStatus : NSObject
-#pragma mark - 属性
-@property (nonatomic,strong) NSNumber *Id;//微博id
-@property (nonatomic,strong) KCUser *user;//发送用户
-@property (nonatomic,copy) NSString *createdAt;//创建时间
-@property (nonatomic,copy) NSString *source;//设备来源
-@property (nonatomic,copy) NSString *text;//微博内容
-#pragma mark - 动态方法
-/**
- *  初始化微博数据
- *
- *  @param createAt        创建日期
- *  @param source          来源
- *  @param text            微博内容
- *  @param user            发送用户
- *
- *  @return 微博对象
- */
--(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
-/**
- *  初始化微博数据
- *
- *  @param profileImageUrl 用户头像
- *  @param mbtype          会员类型
- *  @param createAt        创建日期
- *  @param source          来源
- *  @param text            微博内容
- *  @param userId          用户编号
- *
- *  @return 微博对象
- */
--(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
-/**
- *  使用字典初始化微博对象
- *
- *  @param dic 字典数据
- *
- *  @return 微博对象
- */
--(KCStatus *)initWithDictionary:(NSDictionary *)dic;
-#pragma mark - 静态方法
-/**
- *  初始化微博数据
- *
- *  @param createAt        创建日期
- *  @param source          来源
- *  @param text            微博内容
- *  @param user            发送用户
- *
- *  @return 微博对象
- */
-+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
-/**
- *  初始化微博数据
- *
- *  @param profileImageUrl 用户头像
- *  @param mbtype          会员类型
- *  @param createAt        创建日期
- *  @param source          来源
- *  @param text            微博内容
- *  @param userId          用户编号
- *
- *  @return 微博对象
- */
-+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
-@end
+	
+	//
+	//  KCStatus.h
+	//  UITableView
+	//
+	//  Created by Kenshin Cui on 14-3-1.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import "KCUser.h"
+	@interface KCStatus : NSObject
+	#pragma mark - 属性
+	@property (nonatomic,strong) NSNumber *Id;//微博id
+	@property (nonatomic,strong) KCUser *user;//发送用户
+	@property (nonatomic,copy) NSString *createdAt;//创建时间
+	@property (nonatomic,copy) NSString *source;//设备来源
+	@property (nonatomic,copy) NSString *text;//微博内容
+	#pragma mark - 动态方法
+	/**
+	 *  初始化微博数据
+	 *
+	 *  @param createAt        创建日期
+	 *  @param source          来源
+	 *  @param text            微博内容
+	 *  @param user            发送用户
+	 *
+	 *  @return 微博对象
+	 */
+	-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
+	/**
+	 *  初始化微博数据
+	 *
+	 *  @param profileImageUrl 用户头像
+	 *  @param mbtype          会员类型
+	 *  @param createAt        创建日期
+	 *  @param source          来源
+	 *  @param text            微博内容
+	 *  @param userId          用户编号
+	 *
+	 *  @return 微博对象
+	 */
+	-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
+	/**
+	 *  使用字典初始化微博对象
+	 *
+	 *  @param dic 字典数据
+	 *
+	 *  @return 微博对象
+	 */
+	-(KCStatus *)initWithDictionary:(NSDictionary *)dic;
+	#pragma mark - 静态方法
+	/**
+	 *  初始化微博数据
+	 *
+	 *  @param createAt        创建日期
+	 *  @param source          来源
+	 *  @param text            微博内容
+	 *  @param user            发送用户
+	 *
+	 *  @return 微博对象
+	 */
+	+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user;
+	/**
+	 *  初始化微博数据
+	 *
+	 *  @param profileImageUrl 用户头像
+	 *  @param mbtype          会员类型
+	 *  @param createAt        创建日期
+	 *  @param source          来源
+	 *  @param text            微博内容
+	 *  @param userId          用户编号
+	 *
+	 *  @return 微博对象
+	 */
+	+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId;
+	@end
 
 KCStatus.m
 
-//
-//  KCStatus.m
-//  UITableView
-//
-//  Created by Kenshin Cui on 14-3-1.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCStatus.h"
-@implementation KCStatus
--(KCStatus *)initWithDictionary:(NSDictionary *)dic{
-    if (self=[super init]) {
-        [self setValuesForKeysWithDictionary:dic];
-        self.user=[[KCUser alloc]init];
-        self.user.Id=dic[@"user"];
-    }
-    return self;
-}
--(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
-    if (self=[super init]) {
-        self.createdAt=createAt;
-        self.source=source;
-        self.text=text;
-        self.user=user;
-    }
-    return self;
-}
--(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
-    if (self=[super init]) {
-        self.createdAt=createAt;
-        self.source=source;
-        self.text=text;
-        KCUser *user=[[KCUser alloc]init];
-        user.Id=[NSNumber numberWithInt:userId];
-        self.user=user;
-    }
-    return self;
-}
--(NSString *)source{
-    return [NSString stringWithFormat:@"来自 %@",_source];
-}
-+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
-    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text user:user];
-    return status;
-}
-+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
-    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text userId:userId];
-    return status;
-}
-@end
+	//
+	//  KCStatus.m
+	//  UITableView
+	//
+	//  Created by Kenshin Cui on 14-3-1.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCStatus.h"
+	@implementation KCStatus
+	-(KCStatus *)initWithDictionary:(NSDictionary *)dic{
+	    if (self=[super init]) {
+	        [self setValuesForKeysWithDictionary:dic];
+	        self.user=[[KCUser alloc]init];
+	        self.user.Id=dic[@"user"];
+	    }
+	    return self;
+	}
+	-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
+	    if (self=[super init]) {
+	        self.createdAt=createAt;
+	        self.source=source;
+	        self.text=text;
+	        self.user=user;
+	    }
+	    return self;
+	}
+	-(KCStatus *)initWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
+	    if (self=[super init]) {
+	        self.createdAt=createAt;
+	        self.source=source;
+	        self.text=text;
+	        KCUser *user=[[KCUser alloc]init];
+	        user.Id=[NSNumber numberWithInt:userId];
+	        self.user=user;
+	    }
+	    return self;
+	}
+	-(NSString *)source{
+	    return [NSString stringWithFormat:@"来自 %@",_source];
+	}
+	+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text user:(KCUser *)user{
+	    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text user:user];
+	    return status;
+	}
+	+(KCStatus *)statusWithCreateAt:(NSString *)createAt source:(NSString *)source text:(NSString *)text userId:(int)userId{
+	    KCStatus *status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text userId:userId];
+	    return status;
+	}
+	@end
 
 然后，编写服务类，进行数据的增、删、改、查操作，由于服务类方法同样不需要过多的配置，因此定义为单例，保证程序中只有一个实例即可。服务类中调用前面封装的数据库方法将对数据库的操作转换为对模型的操作。
 
 KCUserService.h
 
 	
-//
-//  KCUserService.h
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import "KCUser.h"
-#import "KCSingleton.h"
-@interface KCUserService : NSObject
-singleton_interface(KCUserService)
-/**
- *  添加用户信息
- *
- *  @param user 用户对象
- */
--(void)addUser:(KCUser *)user;
-/**
- *  删除用户
- *
- *  @param user 用户对象
- */
--(void)removeUser:(KCUser *)user;
-/**
- *  根据用户名删除用户
- *
- *  @param name 用户名
- */
--(void)removeUserByName:(NSString *)name;
-/**
- *  修改用户内容
- *
- *  @param user 用户对象
- */
--(void)modifyUser:(KCUser *)user;
-/**
- *  根据用户编号取得用户
- *
- *  @param Id 用户编号
- *
- *  @return 用户对象
- */
--(KCUser *)getUserById:(int)Id;
-/**
- *  根据用户名取得用户
- *
- *  @param name 用户名
- *
- *  @return 用户对象
- */
--(KCUser *)getUserByName:(NSString *)name;
-@end
+	//
+	//  KCUserService.h
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import "KCUser.h"
+	#import "KCSingleton.h"
+	@interface KCUserService : NSObject
+	singleton_interface(KCUserService)
+	/**
+	 *  添加用户信息
+	 *
+	 *  @param user 用户对象
+	 */
+	-(void)addUser:(KCUser *)user;
+	/**
+	 *  删除用户
+	 *
+	 *  @param user 用户对象
+	 */
+	-(void)removeUser:(KCUser *)user;
+	/**
+	 *  根据用户名删除用户
+	 *
+	 *  @param name 用户名
+	 */
+	-(void)removeUserByName:(NSString *)name;
+	/**
+	 *  修改用户内容
+	 *
+	 *  @param user 用户对象
+	 */
+	-(void)modifyUser:(KCUser *)user;
+	/**
+	 *  根据用户编号取得用户
+	 *
+	 *  @param Id 用户编号
+	 *
+	 *  @return 用户对象
+	 */
+	-(KCUser *)getUserById:(int)Id;
+	/**
+	 *  根据用户名取得用户
+	 *
+	 *  @param name 用户名
+	 *
+	 *  @return 用户对象
+	 */
+	-(KCUser *)getUserByName:(NSString *)name;
+	@end
 
 KCUserService.m
 
 	
-//
-//  KCUserService.m
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCUserService.h"
-#import "KCUser.h"
-#import "KCDbManager.h"
-@implementation KCUserService
-singleton_implementation(KCUserService)
--(void)addUser:(KCUser *)user{
-    NSString *sql=[NSString stringWithFormat:@"INSERT INTO User (name,screenName, profileImageUrl,mbtype,city) VALUES('%@','%@','%@','%@','%@')",user.name,user.screenName, user.profileImageUrl,user.mbtype,user.city];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(void)removeUser:(KCUser *)user{
-    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE Id='%@'",user.Id];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(void)removeUserByName:(NSString *)name{
-    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE name='%@'",name];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(void)modifyUser:(KCUser *)user{
-    NSString *sql=[NSString stringWithFormat:@"UPDATE User SET name='%@',screenName='%@',profileImageUrl='%@',mbtype='%@',city='%@' WHERE Id='%@'",user.name,user.screenName,user.profileImageUrl,user.mbtype,user.city,user.Id];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(KCUser *)getUserById:(int)Id{
-    KCUser *user=[[KCUser alloc]init];
-    NSString *sql=[NSString stringWithFormat:@"SELECT name,screenName,profileImageUrl,mbtype,city FROM User WHERE Id='%i'", Id];
-    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&&rows.count>0) {
-        [user setValuesForKeysWithDictionary:rows[0]];
-    }
-    return user;
-}
--(KCUser *)getUserByName:(NSString *)name{
-    KCUser *user=[[KCUser alloc]init];
-    NSString *sql=[NSString stringWithFormat:@"SELECT Id, name,screenName,profileImageUrl,mbtype,city FROM User WHERE name='%@'", name];
-    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&&rows.count>0) {
-        [user setValuesForKeysWithDictionary:rows[0]];
-    }
-    return user;
-}
-@end
+	//
+	//  KCUserService.m
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCUserService.h"
+	#import "KCUser.h"
+	#import "KCDbManager.h"
+	@implementation KCUserService
+	singleton_implementation(KCUserService)
+	-(void)addUser:(KCUser *)user{
+	    NSString *sql=[NSString stringWithFormat:@"INSERT INTO User (name,screenName, profileImageUrl,mbtype,city) VALUES('%@','%@','%@','%@','%@')",user.name,user.screenName, user.profileImageUrl,user.mbtype,user.city];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(void)removeUser:(KCUser *)user{
+	    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE Id='%@'",user.Id];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(void)removeUserByName:(NSString *)name{
+	    NSString *sql=[NSString stringWithFormat:@"DELETE FROM User WHERE name='%@'",name];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(void)modifyUser:(KCUser *)user{
+	    NSString *sql=[NSString stringWithFormat:@"UPDATE User SET name='%@',screenName='%@',profileImageUrl='%@',mbtype='%@',city='%@' WHERE Id='%@'",user.name,user.screenName,user.profileImageUrl,user.mbtype,user.city,user.Id];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(KCUser *)getUserById:(int)Id{
+	    KCUser *user=[[KCUser alloc]init];
+	    NSString *sql=[NSString stringWithFormat:@"SELECT name,screenName,profileImageUrl,mbtype,city FROM User WHERE Id='%i'", Id];
+	    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+	    if (rows&&rows.count>0) {
+	        [user setValuesForKeysWithDictionary:rows[0]];
+	    }
+	    return user;
+	}
+	-(KCUser *)getUserByName:(NSString *)name{
+	    KCUser *user=[[KCUser alloc]init];
+	    NSString *sql=[NSString stringWithFormat:@"SELECT Id, name,screenName,profileImageUrl,mbtype,city FROM User WHERE name='%@'", name];
+	    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+	    if (rows&&rows.count>0) {
+	        [user setValuesForKeysWithDictionary:rows[0]];
+	    }
+	    return user;
+	}
+	@end
 
 KCStatusService.h
 
-//
-//  KCStatusService.h
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import "KCSingleton.h"
-@class KCStatus;
-@interface KCStatusService : NSObject
-singleton_interface(KCStatusService)
-/**
- *  添加微博信息
- *
- *  @param status 微博对象
- */
--(void)addStatus:(KCStatus *)status;
-/**
- *  删除微博
- *
- *  @param status 微博对象
- */
--(void)removeStatus:(KCStatus *)status;
-/**
- *  修改微博内容
- *
- *  @param status 微博对象
- */
--(void)modifyStatus:(KCStatus *)status;
-/**
- *  根据编号取得微博
- *
- *  @param Id 微博编号
- *
- *  @return 微博对象
- */
--(KCStatus *)getStatusById:(int)Id;
-/**
- *  取得所有微博对象
- *
- *  @return 所有微博对象
- */
--(NSArray *)getAllStatus;
-@end
+	//
+	//  KCStatusService.h
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import "KCSingleton.h"
+	@class KCStatus;
+	@interface KCStatusService : NSObject
+	singleton_interface(KCStatusService)
+	/**
+	 *  添加微博信息
+	 *
+	 *  @param status 微博对象
+	 */
+	-(void)addStatus:(KCStatus *)status;
+	/**
+	 *  删除微博
+	 *
+	 *  @param status 微博对象
+	 */
+	-(void)removeStatus:(KCStatus *)status;
+	/**
+	 *  修改微博内容
+	 *
+	 *  @param status 微博对象
+	 */
+	-(void)modifyStatus:(KCStatus *)status;
+	/**
+	 *  根据编号取得微博
+	 *
+	 *  @param Id 微博编号
+	 *
+	 *  @return 微博对象
+	 */
+	-(KCStatus *)getStatusById:(int)Id;
+	/**
+	 *  取得所有微博对象
+	 *
+	 *  @return 所有微博对象
+	 */
+	-(NSArray *)getAllStatus;
+	@end
 
 KCStatusService.m
-
 	
-//
-//  KCStatusService.m
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCStatusService.h"
-#import "KCDbManager.h"
-#import "KCStatus.h"
-#import "KCUserService.h"
-#import "KCSingleton.h"
-@interface KCStatusService(){
-     
-}
-@end
-@implementation KCStatusService
-singleton_implementation(KCStatusService)
--(void)addStatus:(KCStatus *)status{
-    NSString *sql=[NSString stringWithFormat:@"INSERT INTO Status (source,createdAt,\"text\" ,user) VALUES('%@','%@','%@','%@')",status.source,status.createdAt,status.text,status.user.Id];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(void)removeStatus:(KCStatus *)status{
-    NSString *sql=[NSString stringWithFormat:@"DELETE FROM Status WHERE Id='%@'",status.Id];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(void)modifyStatus:(KCStatus *)status{
-    NSString *sql=[NSString stringWithFormat:@"UPDATE Status SET source='%@',createdAt='%@',\"text\"='%@' ,user='%@' WHERE Id='%@'",status.source,status.createdAt,status.text,status.user, status.Id];
-    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
-}
--(KCStatus *)getStatusById:(int)Id{
-    KCStatus *status=[[KCStatus alloc]init];
-    NSString *sql=[NSString stringWithFormat:@"SELECT Id, source,createdAt,\"text\" ,user FROM Status WHERE Id='%i'", Id];
-    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    if (rows&&rows.count>0) {
-        [status setValuesForKeysWithDictionary:rows[0]];
-        status.user=[[KCUserService sharedKCUserService] getUserById:[(NSNumber *)rows[0][@"user"] intValue]] ;
-    }
-    return status;
-}
--(NSArray *)getAllStatus{
-    NSMutableArray *array=[NSMutableArray array];
-    NSString *sql=@"SELECT Id, source,createdAt,\"text\" ,user FROM Status ORDER BY Id";
-    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
-    for (NSDictionary *dic in rows) {
-        KCStatus *status=[self getStatusById:[(NSNumber *)dic[@"Id"] intValue]];
-        [array addObject:status];
-    }
-    return array;
-}
-@end
+		
+	//
+	//  KCStatusService.m
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCStatusService.h"
+	#import "KCDbManager.h"
+	#import "KCStatus.h"
+	#import "KCUserService.h"
+	#import "KCSingleton.h"
+	@interface KCStatusService(){
+	     
+	}
+	@end
+	@implementation KCStatusService
+	singleton_implementation(KCStatusService)
+	-(void)addStatus:(KCStatus *)status{
+	    NSString *sql=[NSString stringWithFormat:@"INSERT INTO Status (source,createdAt,\"text\" ,user) VALUES('%@','%@','%@','%@')",status.source,status.createdAt,status.text,status.user.Id];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(void)removeStatus:(KCStatus *)status{
+	    NSString *sql=[NSString stringWithFormat:@"DELETE FROM Status WHERE Id='%@'",status.Id];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(void)modifyStatus:(KCStatus *)status{
+	    NSString *sql=[NSString stringWithFormat:@"UPDATE Status SET source='%@',createdAt='%@',\"text\"='%@' ,user='%@' WHERE Id='%@'",status.source,status.createdAt,status.text,status.user, status.Id];
+	    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+	}
+	-(KCStatus *)getStatusById:(int)Id{
+	    KCStatus *status=[[KCStatus alloc]init];
+	    NSString *sql=[NSString stringWithFormat:@"SELECT Id, source,createdAt,\"text\" ,user FROM Status WHERE Id='%i'", Id];
+	    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+	    if (rows&&rows.count>0) {
+	        [status setValuesForKeysWithDictionary:rows[0]];
+	        status.user=[[KCUserService sharedKCUserService] getUserById:[(NSNumber *)rows[0][@"user"] intValue]] ;
+	    }
+	    return status;
+	}
+	-(NSArray *)getAllStatus{
+	    NSMutableArray *array=[NSMutableArray array];
+	    NSString *sql=@"SELECT Id, source,createdAt,\"text\" ,user FROM Status ORDER BY Id";
+	    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+	    for (NSDictionary *dic in rows) {
+	        KCStatus *status=[self getStatusById:[(NSNumber *)dic[@"Id"] intValue]];
+	        [array addObject:status];
+	    }
+	    return array;
+	}
+	@end
 
 最后，在视图控制器中调用相应的服务层进行各类数据操作，在下面的代码中分别演示了增、删、改、查四类操作。
 
-KCMainViewController.m
-//
-//  KCMainTableViewController.m
-//  DataAccess
-//
-//  Created by Kenshin Cui on 14-3-29.
-//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
-//
-#import "KCMainTableViewController.h"
-#import "KCDbManager.h"
-#import "KCDatabaseCreator.h"
-#import "KCUser.h"
-#import "KCStatus.h"
-#import "KCUserService.h"
-#import "KCStatusService.h"
-#import "KCStatusTableViewCell.h"
-@interface KCMainTableViewController (){
-    NSArray *_status;
-    NSMutableArray *_statusCells;
-}
-@end
-@implementation KCMainTableViewController
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    [KCDatabaseCreator initDatabase];
-     
-//    [self addUsers];
-//    [self removeUser];
-//    [self modifyUserInfo];
-     
-//    [self addStatus];
-     
-    [self loadStatusData];
-     
-}
--(void)addUsers{
-    KCUser *user1=[KCUser userWithName:@"Binger" screenName:@"冰儿" profileImageUrl:@"binger.jpg" mbtype:@"mbtype.png" city:@"北京"];
-    [[KCUserService sharedKCUserService] addUser:user1];
-    KCUser *user2=[KCUser userWithName:@"Xiaona" screenName:@"小娜" profileImageUrl:@"xiaona.jpg" mbtype:@"mbtype.png" city:@"北京"];
-    [[KCUserService sharedKCUserService] addUser:user2];
-    KCUser *user3=[KCUser userWithName:@"Lily" screenName:@"丽丽" profileImageUrl:@"lily.jpg" mbtype:@"mbtype.png" city:@"北京"];
-    [[KCUserService sharedKCUserService] addUser:user3];
-    KCUser *user4=[KCUser userWithName:@"Qianmo" screenName:@"阡陌" profileImageUrl:@"qianmo.jpg" mbtype:@"mbtype.png" city:@"北京"];
-    [[KCUserService sharedKCUserService] addUser:user4];
-    KCUser *user5=[KCUser userWithName:@"Yanyue" screenName:@"炎月" profileImageUrl:@"yanyue.jpg" mbtype:@"mbtype.png" city:@"北京"];
-    [[KCUserService sharedKCUserService] addUser:user5];
-}
--(void)addStatus{
-    KCStatus *status1=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
-    [[KCStatusService sharedKCStatusService] addStatus:status1];
-    KCStatus *status2=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
-    [[KCStatusService sharedKCStatusService] addStatus:status2];
-    KCStatus *status3=[KCStatus statusWithCreateAt:@"9:30" source:@"iPhone 6" text:@"【我们送iPhone6了 要求很简单】真心回馈粉丝，小编觉得现在最好的奖品就是iPhone6了。今起到12月31日，关注我们，转发微博，就有机会获iPhone6(奖品可能需要等待)！每月抽一台[鼓掌]。不费事，还是试试吧，万一中了呢" userId:2];
-    [[KCStatusService sharedKCStatusService] addStatus:status3];
-    KCStatus *status4=[KCStatus statusWithCreateAt:@"9:45" source:@"iPhone 6" text:@"重大新闻：蒂姆库克宣布出柜后，ISIS战士怒扔iPhone，沙特神职人员呼吁人们换回iPhone 4。[via Pan-Arabia Enquirer]" userId:3];
-    [[KCStatusService sharedKCStatusService] addStatus:status4];
-    KCStatus *status5=[KCStatus statusWithCreateAt:@"10:05" source:@"iPhone 6" text:@"小伙伴们，有谁知道怎么往Iphone4S里倒东西？倒入的东西又该在哪里找？用了Iphone这么长时间，还真的不知道怎么弄！有谁知道啊？谢谢！" userId:4];
-    [[KCStatusService sharedKCStatusService] addStatus:status5];
-    KCStatus *status6=[KCStatus statusWithCreateAt:@"10:07" source:@"iPhone 6" text:@"在音悦台iPhone客户端里发现一个悦单《Infinite 金明洙》，推荐给大家! " userId:1];
-    [[KCStatusService sharedKCStatusService] addStatus:status6];
-    KCStatus *status7=[KCStatus statusWithCreateAt:@"11:20" source:@"iPhone 6" text:@"如果sony吧mp3播放器产品发展下去，不贪图手头节目源的现实利益，就木有苹果的ipod，也就木有iphone。柯达类似的现实利益，不自我革命的案例也是一种巨头的宿命。" userId:2];
-    [[KCStatusService sharedKCStatusService] addStatus:status7];
-    KCStatus *status8=[KCStatus statusWithCreateAt:@"13:00" source:@"iPhone 6" text:@"【iPhone 7 Plus】新买的iPhone 7 Plus ，如何？够酷炫么？" userId:2];
-    [[KCStatusService sharedKCStatusService] addStatus:status8];
-    KCStatus *status9=[KCStatus statusWithCreateAt:@"13:24" source:@"iPhone 6" text:@"自拍神器#卡西欧TR500#，tr350S～价格美丽，行货，全国联保～iPhone6 iPhone6Plus卡西欧TR150 TR200 TR350 TR350S全面到货 招收各种代理！[给力]微信：39017366" userId:3];
-    [[KCStatusService sharedKCStatusService] addStatus:status9];
-    KCStatus *status10=[KCStatus statusWithCreateAt:@"13:26" source:@"iPhone 6" text:@"猜到猴哥玩手机时所思所想者，再奖iPhone一部。（奖品由“2014年野生动物摄影师”评委会颁发）" userId:3];
-    [[KCStatusService sharedKCStatusService] addStatus:status10];
-}
--(void)removeUser{
-    //注意在SQLite中区分大小写
-    [[KCUserService sharedKCUserService] removeUserByName:@"Yanyue"];
-}
--(void)modifyUserInfo{
-    KCUser *user1= [[KCUserService sharedKCUserService]getUserByName:@"Xiaona"];
-    user1.city=@"上海";
-    [[KCUserService sharedKCUserService] modifyUser:user1];
-     
-    KCUser *user2= [[KCUserService sharedKCUserService]getUserByName:@"Lily"];
-    user2.city=@"深圳";
-    [[KCUserService sharedKCUserService] modifyUser:user2];
-}
-#pragma mark 加载数据
--(void)loadStatusData{
-    _statusCells=[[NSMutableArray alloc]init];
-    _status=[[KCStatusService sharedKCStatusService]getAllStatus];
-    [_status enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        KCStatusTableViewCell *cell=[[KCStatusTableViewCell alloc]init];
-        cell.status=(KCStatus *)obj;
-        [_statusCells addObject:cell];
-    }];
-    NSLog(@"%@",[_status lastObject]);
-}
-#pragma mark - Table view data source
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _status.count;
-}
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    static NSString *identtityKey=@"myTableViewCellIdentityKey1";
-    KCStatusTableViewCell *cell=[self.tableView dequeueReusableCellWithIdentifier:identtityKey];
-    if(cell==nil){
-        cell=[[KCStatusTableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identtityKey];
-    }
-    cell.status=_status[indexPath.row];
-    return cell;
-}
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    return ((KCStatusTableViewCell *)_statusCells[indexPath.row]).height;
-}
--(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
-    return 20.0f;
-}
-@end
+	KCMainViewController.m
+	//
+	//  KCMainTableViewController.m
+	//  DataAccess
+	//
+	//  Created by Kenshin Cui on 14-3-29.
+	//  Copyright (c) 2014年 Kenshin Cui. All rights reserved.
+	//
+	#import "KCMainTableViewController.h"
+	#import "KCDbManager.h"
+	#import "KCDatabaseCreator.h"
+	#import "KCUser.h"
+	#import "KCStatus.h"
+	#import "KCUserService.h"
+	#import "KCStatusService.h"
+	#import "KCStatusTableViewCell.h"
+	@interface KCMainTableViewController (){
+	    NSArray *_status;
+	    NSMutableArray *_statusCells;
+	}
+	@end
+	@implementation KCMainTableViewController
+	- (void)viewDidLoad {
+	    [super viewDidLoad];
+	    [KCDatabaseCreator initDatabase];
+	     
+	//    [self addUsers];
+	//    [self removeUser];
+	//    [self modifyUserInfo];
+	     
+	//    [self addStatus];
+	     
+	    [self loadStatusData];
+	     
+	}
+	-(void)addUsers{
+	    KCUser *user1=[KCUser userWithName:@"Binger" screenName:@"冰儿" profileImageUrl:@"binger.jpg" mbtype:@"mbtype.png" city:@"北京"];
+	    [[KCUserService sharedKCUserService] addUser:user1];
+	    KCUser *user2=[KCUser userWithName:@"Xiaona" screenName:@"小娜" profileImageUrl:@"xiaona.jpg" mbtype:@"mbtype.png" city:@"北京"];
+	    [[KCUserService sharedKCUserService] addUser:user2];
+	    KCUser *user3=[KCUser userWithName:@"Lily" screenName:@"丽丽" profileImageUrl:@"lily.jpg" mbtype:@"mbtype.png" city:@"北京"];
+	    [[KCUserService sharedKCUserService] addUser:user3];
+	    KCUser *user4=[KCUser userWithName:@"Qianmo" screenName:@"阡陌" profileImageUrl:@"qianmo.jpg" mbtype:@"mbtype.png" city:@"北京"];
+	    [[KCUserService sharedKCUserService] addUser:user4];
+	    KCUser *user5=[KCUser userWithName:@"Yanyue" screenName:@"炎月" profileImageUrl:@"yanyue.jpg" mbtype:@"mbtype.png" city:@"北京"];
+	    [[KCUserService sharedKCUserService] addUser:user5];
+	}
+	-(void)addStatus{
+	    KCStatus *status1=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
+	    [[KCStatusService sharedKCStatusService] addStatus:status1];
+	    KCStatus *status2=[KCStatus statusWithCreateAt:@"9:00" source:@"iPhone 6" text:@"一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词" userId:1];
+	    [[KCStatusService sharedKCStatusService] addStatus:status2];
+	    KCStatus *status3=[KCStatus statusWithCreateAt:@"9:30" source:@"iPhone 6" text:@"【我们送iPhone6了 要求很简单】真心回馈粉丝，小编觉得现在最好的奖品就是iPhone6了。今起到12月31日，关注我们，转发微博，就有机会获iPhone6(奖品可能需要等待)！每月抽一台[鼓掌]。不费事，还是试试吧，万一中了呢" userId:2];
+	    [[KCStatusService sharedKCStatusService] addStatus:status3];
+	    KCStatus *status4=[KCStatus statusWithCreateAt:@"9:45" source:@"iPhone 6" text:@"重大新闻：蒂姆库克宣布出柜后，ISIS战士怒扔iPhone，沙特神职人员呼吁人们换回iPhone 4。[via Pan-Arabia Enquirer]" userId:3];
+	    [[KCStatusService sharedKCStatusService] addStatus:status4];
+	    KCStatus *status5=[KCStatus statusWithCreateAt:@"10:05" source:@"iPhone 6" text:@"小伙伴们，有谁知道怎么往Iphone4S里倒东西？倒入的东西又该在哪里找？用了Iphone这么长时间，还真的不知道怎么弄！有谁知道啊？谢谢！" userId:4];
+	    [[KCStatusService sharedKCStatusService] addStatus:status5];
+	    KCStatus *status6=[KCStatus statusWithCreateAt:@"10:07" source:@"iPhone 6" text:@"在音悦台iPhone客户端里发现一个悦单《Infinite 金明洙》，推荐给大家! " userId:1];
+	    [[KCStatusService sharedKCStatusService] addStatus:status6];
+	    KCStatus *status7=[KCStatus statusWithCreateAt:@"11:20" source:@"iPhone 6" text:@"如果sony吧mp3播放器产品发展下去，不贪图手头节目源的现实利益，就木有苹果的ipod，也就木有iphone。柯达类似的现实利益，不自我革命的案例也是一种巨头的宿命。" userId:2];
+	    [[KCStatusService sharedKCStatusService] addStatus:status7];
+	    KCStatus *status8=[KCStatus statusWithCreateAt:@"13:00" source:@"iPhone 6" text:@"【iPhone 7 Plus】新买的iPhone 7 Plus ，如何？够酷炫么？" userId:2];
+	    [[KCStatusService sharedKCStatusService] addStatus:status8];
+	    KCStatus *status9=[KCStatus statusWithCreateAt:@"13:24" source:@"iPhone 6" text:@"自拍神器#卡西欧TR500#，tr350S～价格美丽，行货，全国联保～iPhone6 iPhone6Plus卡西欧TR150 TR200 TR350 TR350S全面到货 招收各种代理！[给力]微信：39017366" userId:3];
+	    [[KCStatusService sharedKCStatusService] addStatus:status9];
+	    KCStatus *status10=[KCStatus statusWithCreateAt:@"13:26" source:@"iPhone 6" text:@"猜到猴哥玩手机时所思所想者，再奖iPhone一部。（奖品由“2014年野生动物摄影师”评委会颁发）" userId:3];
+	    [[KCStatusService sharedKCStatusService] addStatus:status10];
+	}
+	-(void)removeUser{
+	    //注意在SQLite中区分大小写
+	    [[KCUserService sharedKCUserService] removeUserByName:@"Yanyue"];
+	}
+	-(void)modifyUserInfo{
+	    KCUser *user1= [[KCUserService sharedKCUserService]getUserByName:@"Xiaona"];
+	    user1.city=@"上海";
+	    [[KCUserService sharedKCUserService] modifyUser:user1];
+	     
+	    KCUser *user2= [[KCUserService sharedKCUserService]getUserByName:@"Lily"];
+	    user2.city=@"深圳";
+	    [[KCUserService sharedKCUserService] modifyUser:user2];
+	}
+	#pragma mark 加载数据
+	-(void)loadStatusData{
+	    _statusCells=[[NSMutableArray alloc]init];
+	    _status=[[KCStatusService sharedKCStatusService]getAllStatus];
+	    [_status enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+	        KCStatusTableViewCell *cell=[[KCStatusTableViewCell alloc]init];
+	        cell.status=(KCStatus *)obj;
+	        [_statusCells addObject:cell];
+	    }];
+	    NSLog(@"%@",[_status lastObject]);
+	}
+	#pragma mark - Table view data source
+	- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+	    return 1;
+	}
+	- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	    return _status.count;
+	}
+	- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	    static NSString *identtityKey=@"myTableViewCellIdentityKey1";
+	    KCStatusTableViewCell *cell=[self.tableView dequeueReusableCellWithIdentifier:identtityKey];
+	    if(cell==nil){
+	        cell=[[KCStatusTableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identtityKey];
+	    }
+	    cell.status=_status[indexPath.row];
+	    return cell;
+	}
+	-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+	    return ((KCStatusTableViewCell *)_statusCells[indexPath.row]).height;
+	}
+	-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+	    return 20.0f;
+	}
+	@end
 
 项目目录结构：
 
@@ -786,102 +786,88 @@ Core Data
 User.h
 
 	
-//
-//  User.h
-//  CoreData
-//
-//  Created by Kenshin Cui on 14/03/27.
-//  Copyright (c) 2014年 cmjstudio. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-@class Status;
-@interface User : NSManagedObject
-@property (nonatomic, retain) NSString * city;
-@property (nonatomic, retain) NSString * mbtype;
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * profileImageUrl;
-@property (nonatomic, retain) NSString * screenName;
-@property (nonatomic, retain) NSSet *statuses;
-@end
-@interface User (CoreDataGeneratedAccessors)
-- (void)addStatusesObject:(Status *)value;
-- (void)removeStatusesObject:(Status *)value;
-- (void)addStatuses:(NSSet *)values;
-- (void)removeStatuses:(NSSet *)values;
-@end
+	//
+	//  User.h
+	//  CoreData
+	//
+	//  Created by Kenshin Cui on 14/03/27.
+	//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import <CoreData/CoreData.h>
+	@class Status;
+	@interface User : NSManagedObject
+	@property (nonatomic, retain) NSString * city;
+	@property (nonatomic, retain) NSString * mbtype;
+	@property (nonatomic, retain) NSString * name;
+	@property (nonatomic, retain) NSString * profileImageUrl;
+	@property (nonatomic, retain) NSString * screenName;
+	@property (nonatomic, retain) NSSet *statuses;
+	@end
+	@interface User (CoreDataGeneratedAccessors)
+	- (void)addStatusesObject:(Status *)value;
+	- (void)removeStatusesObject:(Status *)value;
+	- (void)addStatuses:(NSSet *)values;
+	- (void)removeStatuses:(NSSet *)values;
+	@end
 
 User.m
 
 	
-//
-//  User.m
-//  CoreData
-//
-//  Created by Kenshin Cui on 14/03/27.
-//  Copyright (c) 2014年 cmjstudio. All rights reserved.
-//
-#import "User.h"
-#import "Status.h"
-@implementation User
-@dynamic city;
-@dynamic mbtype;
-@dynamic name;
-@dynamic profileImageUrl;
-@dynamic screenName;
-@dynamic statuses;
-@end
+	//
+	//  User.m
+	//  CoreData
+	//
+	//  Created by Kenshin Cui on 14/03/27.
+	//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+	//
+	#import "User.h"
+	#import "Status.h"
+	@implementation User
+	@dynamic city;
+	@dynamic mbtype;
+	@dynamic name;
+	@dynamic profileImageUrl;
+	@dynamic screenName;
+	@dynamic statuses;
+	@end
 
 Status.h
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-	
-//
-//  Status.h
-//  CoreData
-//
-//  Created by Kenshin Cui on 14/03/27.
-//  Copyright (c) 2014年 cmjstudio. All rights reserved.
-//
-#import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
-@interface Status : NSManagedObject
-@property (nonatomic, retain) NSDate * createdAt;
-@property (nonatomic, retain) NSString * source;
-@property (nonatomic, retain) NSString * text;
-@property (nonatomic, retain) NSManagedObject *user;
-@end
-
-Status.m
 
 	
-//
-//  Status.m
-//  CoreData
-//
-//  Created by Kenshin Cui on 14/03/27.
-//  Copyright (c) 2014年 cmjstudio. All rights reserved.
-//
-#import "Status.h"
-@implementation Status
-@dynamic createdAt;
-@dynamic source;
-@dynamic text;
-@dynamic user;
-@end
+	//
+	//  Status.h
+	//  CoreData
+	//
+	//  Created by Kenshin Cui on 14/03/27.
+	//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+	//
+	#import <Foundation/Foundation.h>
+	#import <CoreData/CoreData.h>
+	@interface Status : NSManagedObject
+	@property (nonatomic, retain) NSDate * createdAt;
+	@property (nonatomic, retain) NSString * source;
+	@property (nonatomic, retain) NSString * text;
+	@property (nonatomic, retain) NSManagedObject *user;
+	@end
+	
+	Status.m
+	
+		
+	//
+	//  Status.m
+	//  CoreData
+	//
+	//  Created by Kenshin Cui on 14/03/27.
+	//  Copyright (c) 2014年 cmjstudio. All rights reserved.
+	//
+	#import "Status.h"
+	@implementation Status
+	@dynamic createdAt;
+	@dynamic source;
+	@dynamic text;
+	@dynamic user;
+	@end
 
 很显然，通过模型生成类的过程相当简单，通常这些类也不需要手动维护，如果模型发生的变化只要重新生成即可。有几点需要注意：
 
@@ -895,13 +881,13 @@ Status.m
 
 {% img /images/CSR006.jpg Caption %} 
 
-1.Persistent Object Store：可以理解为存储持久对象的数据库（例如SQLite，注意Core Data也支持其他类型的数据存储，例如xml、二进制数据等）。
+1. Persistent Object Store：可以理解为存储持久对象的数据库（例如SQLite，注意Core Data也支持其他类型的数据存储，例如xml、二进制数据等）。
 
-2.Managed Object Model：对象模型，对应Xcode中创建的模型文件。
+2. Managed Object Model：对象模型，对应Xcode中创建的模型文件。
 
-3.Persistent Store Coordinator：对象模型和实体类之间的转换协调器，用于管理不同存储对象的上下文。
+3. Persistent Store Coordinator：对象模型和实体类之间的转换协调器，用于管理不同存储对象的上下文。
 
-4.Managed Object Context:对象管理上下文，负责实体对象和数据库之间的交互。
+4. Managed Object Context:对象管理上下文，负责实体对象和数据库之间的交互。
 
 Core Data使用
 
@@ -918,76 +904,76 @@ Core Data使用起来相对直接使用SQLite3的API而言更加的面向对象�
 为了方便后面使用，NSManagedObjectContext对象可以作为单例或静态属性来保存，下面是创建的管理对象上下文的主要代码：
 
 	
--(NSManagedObjectContext *)createDbContext{
-    NSManagedObjectContext *context;
-    //打开模型文件，参数为nil则打开包中所有模型文件并合并成一个
-    NSManagedObjectModel *model=[NSManagedObjectModel mergedModelFromBundles:nil];
-    //创建解析器
-    NSPersistentStoreCoordinator *storeCoordinator=[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:model];
-    //创建数据库保存路径
-    NSString *dir=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@"%@",dir);
-    NSString *path=[dir stringByAppendingPathComponent:@"myDatabase.db"];
-    NSURL *url=[NSURL fileURLWithPath:path];
-    //添加SQLite持久存储到解析器
-    NSError *error;
-    [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:url options:nil error:&error];
-    if(error){
-        NSLog(@"数据库打开失败！错误:%@",error.localizedDescription);
-    }else{
-        context=[[NSManagedObjectContext alloc]init];
-        context.persistentStoreCoordinator=storeCoordinator;
-        NSLog(@"数据库打开成功！");
-    }
-    return context;
-}
+	-(NSManagedObjectContext *)createDbContext{
+	    NSManagedObjectContext *context;
+	    //打开模型文件，参数为nil则打开包中所有模型文件并合并成一个
+	    NSManagedObjectModel *model=[NSManagedObjectModel mergedModelFromBundles:nil];
+	    //创建解析器
+	    NSPersistentStoreCoordinator *storeCoordinator=[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:model];
+	    //创建数据库保存路径
+	    NSString *dir=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+	    NSLog(@"%@",dir);
+	    NSString *path=[dir stringByAppendingPathComponent:@"myDatabase.db"];
+	    NSURL *url=[NSURL fileURLWithPath:path];
+	    //添加SQLite持久存储到解析器
+	    NSError *error;
+	    [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:url options:nil error:&error];
+	    if(error){
+	        NSLog(@"数据库打开失败！错误:%@",error.localizedDescription);
+	    }else{
+	        context=[[NSManagedObjectContext alloc]init];
+	        context.persistentStoreCoordinator=storeCoordinator;
+	        NSLog(@"数据库打开成功！");
+	    }
+	    return context;
+	}
 
 2.查询数据
 
 对于有条件的查询，在Core Data中是通过谓词来实现的。首先创建一个请求，然后设置请求条件，最后调用上下文执行请求的方法。
 
 	
--(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
-    //添加一个对象
-    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
-    us.name=name;
-    us.screenName=screenName;
-    us.profileImageUrl=profileImageUrl;
-    us.mbtype=mbtype;
-    us.city=city;
-    NSError *error;
-    //保存上下文
-    if (![self.context save:&error]) {
-        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
-    }
-}
+	-(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+	    //添加一个对象
+	    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
+	    us.name=name;
+	    us.screenName=screenName;
+	    us.profileImageUrl=profileImageUrl;
+	    us.mbtype=mbtype;
+	    us.city=city;
+	    NSError *error;
+	    //保存上下文
+	    if (![self.context save:&error]) {
+	        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
+	    }
+	}
 
 如果有多个条件，只要使用谓词组合即可，那么对于关联对象条件怎么查询呢？这里分为两种情况进行介绍：
 
 a.查找一个对象只有唯一一个关联对象的情况，例如查找用户名为“Binger”的微博（一个微博只能属于一个用户），通过keypath查询
 
 	
--(NSArray *)getStatusesByUserName:(NSString *)name{
-    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
-    request.predicate=[NSPredicate predicateWithFormat:@"user.name=%@",name];
-    NSArray *array=[self.context executeFetchRequest:request error:nil];
-    return  array;
-}
+	-(NSArray *)getStatusesByUserName:(NSString *)name{
+	    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
+	    request.predicate=[NSPredicate predicateWithFormat:@"user.name=%@",name];
+	    NSArray *array=[self.context executeFetchRequest:request error:nil];
+	    return  array;
+	}
 
 此时如果跟踪Core Data生成的SQL语句会发现其实就是把Status表和User表进行了关联查询（JOIN连接）。
 
 b.查找一个对象有多个关联对象的情况，例如查找发送微博内容中包含“Watch”并且用户昵称为“小娜”的用户（一个用户有多条微博），此时可以充分利用谓词进行过滤。
 
 	
--(NSArray *)getUsersByStatusText:(NSString *)text screenName:(NSString *)screenName{
-    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
-    request.predicate=[NSPredicate predicateWithFormat:@"text LIKE '*Watch*'",text];
-    NSArray *statuses=[self.context executeFetchRequest:request error:nil];
-     
-    NSPredicate *userPredicate= [NSPredicate predicateWithFormat:@"user.screenName=%@",screenName];
-    NSArray *users= [statuses filteredArrayUsingPredicate:userPredicate];
-    return users;
-}
+	-(NSArray *)getUsersByStatusText:(NSString *)text screenName:(NSString *)screenName{
+	    NSFetchRequest *request=[NSFetchRequest fetchRequestWithEntityName:@"Status"];
+	    request.predicate=[NSPredicate predicateWithFormat:@"text LIKE '*Watch*'",text];
+	    NSArray *statuses=[self.context executeFetchRequest:request error:nil];
+	     
+	    NSPredicate *userPredicate= [NSPredicate predicateWithFormat:@"user.screenName=%@",screenName];
+	    NSArray *users= [statuses filteredArrayUsingPredicate:userPredicate];
+	    return users;
+	}
 
 注意：如果单纯查找微博中包含“Watch”的用户，直接查出对应的微博，然后通过每个微博的user属性即可获得用户，此时就不用使用额外的谓词过滤条件。
 
@@ -996,50 +982,50 @@ b.查找一个对象有多个关联对象的情况，例如查找发送微博内
 插入数据需要调用实体描述对象NSEntityDescription返回一个实体对象，然后设置对象属性，最后保存当前上下文即可。这里需要注意，增、删、改操作完最后必须调用管理对象上下文的保存方法，否则操作不会执行。
 
 	
--(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
-    //添加一个对象
-    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
-    us.name=name;
-    us.screenName=screenName;
-    us.profileImageUrl=profileImageUrl;
-    us.mbtype=mbtype;
-    us.city=city;
-    NSError *error;
-    //保存上下文
-    if (![self.context save:&error]) {
-        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
-    }
-}
+	-(void)addUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+	    //添加一个对象
+	    User *us= [NSEntityDescription insertNewObjectForEntityForName:@"User" inManagedObjectContext:self.context];
+	    us.name=name;
+	    us.screenName=screenName;
+	    us.profileImageUrl=profileImageUrl;
+	    us.mbtype=mbtype;
+	    us.city=city;
+	    NSError *error;
+	    //保存上下文
+	    if (![self.context save:&error]) {
+	        NSLog(@"添加过程中发生错误,错误信息：%@！",error.localizedDescription);
+	    }
+	}
 
 4.删除数据
 
 删除数据可以直接调用管理对象上下文的deleteObject方法，删除完保存上下文即可。注意，删除数据前必须先查询到对应对象。
 
 	
--(void)removeUser:(User *)user{
-    [self.context deleteObject:user];
-    NSError *error;
-    if (![self.context save:&error]) {
-        NSLog(@"删除过程中发生错误，错误信息：%@!",error.localizedDescription);
-    }
-}
+	-(void)removeUser:(User *)user{
+	    [self.context deleteObject:user];
+	    NSError *error;
+	    if (![self.context save:&error]) {
+	        NSLog(@"删除过程中发生错误，错误信息：%@!",error.localizedDescription);
+	    }
+	}
 
 5.修改数据
 
 修改数据首先也是取出对应的实体对象，然后通过修改对象的属性，最后保存上下文。
 
 	
--(void)modifyUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
-    User *us=[self getUserByName:name];
-    us.screenName=screenName;
-    us.profileImageUrl=profileImageUrl;
-    us.mbtype=mbtype;
-    us.city=city;
-    NSError *error;
-    if (![self.context save:&error]) {
-        NSLog(@"修改过程中发生错误,错误信息：%@",error.localizedDescription);
-    }
-}
+	-(void)modifyUserWithName:(NSString *)name screenName:(NSString *)screenName profileImageUrl:(NSString *)profileImageUrl mbtype:(NSString *)mbtype city:(NSString *)city{
+	    User *us=[self getUserByName:name];
+	    us.screenName=screenName;
+	    us.profileImageUrl=profileImageUrl;
+	    us.mbtype=mbtype;
+	    us.city=city;
+	    NSError *error;
+	    if (![self.context save:&error]) {
+	        NSLog(@"修改过程中发生错误,错误信息：%@",error.localizedDescription);
+	    }
+	}
 
 调试
 
@@ -1060,20 +1046,20 @@ FMDB
 1.FMDB既然是对于libsqlite3框架的封装，自然使用起来也是类似的，使用前也要打开一个数据库，这个数据库文件存在则直接打开否则会创建并打开。这里FMDB引入了一个MFDatabase对象来表示数据库，打开数据库和后面的数据库操作全部依赖此对象。下面是打开数据库获得MFDatabase对象的代码：
 
 	
--(void)openDb:(NSString *)dbname{
-    //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@"%@",directory);
-    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
-    //创建FMDatabase对象
-    self.database=[FMDatabase databaseWithPath:filePath];
-    //打开数据上
-    if ([self.database open]) {
-        NSLog(@"数据库打开成功!");
-    }else{
-        NSLog(@"数据库打开失败!");
-    }
-}
+	-(void)openDb:(NSString *)dbname{
+	    //取得数据库保存路径，通常保存沙盒Documents目录
+	    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+	    NSLog(@"%@",directory);
+	    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+	    //创建FMDatabase对象
+	    self.database=[FMDatabase databaseWithPath:filePath];
+	    //打开数据上
+	    if ([self.database open]) {
+	        NSLog(@"数据库打开成功!");
+	    }else{
+	        NSLog(@"数据库打开失败!");
+	    }
+	}
 
 注意：dataWithPath中的路径参数一般会选择保存到沙箱中的Documents目录中；如果这个参数设置为nil则数据库会在内存中创建；如果设置为@””则会在沙箱中的临时目录创建,应用程序关闭则文件删除。
 
