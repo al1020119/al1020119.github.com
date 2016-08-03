@@ -1,0 +1,259 @@
+---
+
+layout: post
+title: "CoreData是什么？"
+date: 2016-07-04 02:59:42 +0800
+comments: true
+categories: Senior
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
+
+---
+
+这段时间公司一直比较忙，和组里小伙伴一起把公司项目按照之前逻辑重写了一下。由于项目比较大，还要兼顾之前项目的迭代和其他项目，目前为止只写完第一阶段。
+
+之前项目本地持久化方案主要用的是SQLite，这次重写项目打算换一种持久化方案，于是我们经过讨论选择了苹果的“亲儿子”CoreData。
+
+在使用CoreData的过程中，我也是一边学习一边实践。在学习的过程中，一些写的质量比较高的博客对我的帮助也很大，例如objc.io等博客，在这里就不一一列举出来了，非常感谢这些作者。
+
+先不说项目中用不用得到，其实很多人都是不了解CoreData的，但是经过我的学习发现CoreData还是挺不错的。所以正如这系列文章的名字一样-认识CoreData，打算写这系列文章来认识一下CoreData。
+
+这系列博客将从简单到复杂的来讲一下CoreData，其中除了基础使用还会包括多线程、批量数据处理等内容，这些很多都是我公司项目开发过程中接触到的，我们也设想了一些极端的情况，解决方案都会体现在这系列博客中。
+
+本人接触CoreData时间并不长，只是专门花了一段时间学习CoreData。
+
+本系列文章偏重于通过图形化界面使用CoreData，不会全部采取纯代码进行CoreData的所有操作，而且那样操作起来也确实比较麻烦，反而就失去了CoreData的优势和本质。
+
+文章中如有疏漏或错误，还请各位及时提出，谢谢！
+
+写在前面
+
+在CoreData中有一些常用的类，称呼可能各不相同。所以这里先约定一些关键字，以便理解后面的一些内容，这些约定很多都是出现在苹果的官方文档中的。
+
+NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
+
+NSManagedObjectContext(Managed Object Context)，缩写为MOC。
+
+NSManagedObjectModel(Managed Object Model)，缩写为MOM。
+
+NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
+
+后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
+
+什么是CoreData？
+
+简单介绍一下
+
+CoreData出现在iOS 3中，是苹果推出的一个数据存储框架。CoreData提供了一种对象关系映射(ORM)的存储关系，类似于Java的hibernate框架。CoreData可以将OC对象存储到数据库中，也可以将数据库中的数据转化为OC对象，在这个过程中不需要手动编写任何SQL语句，这是系统帮我们完成。
+
+CoreData最大的优势就是使用过程中不需要编写任何SQL语句，CoreData封装了数据库的操作过程，以及数据库中数据和OC对象的转换过程。所以在使用CoreData的过程中，很多操作就像是对数据库进行操作一样，也有过滤条件、排序等操作。
+
+这就相当于CoreData完成了Model层的大量工作，例如Model层的表示和持久化，有效的减少了开发的工作量，使Model层的设计更加面向对象。
+
+CoreData好用吗？
+
+之前听人说过，CoreData比较容易入手，但是很难学精。这也是很多人说CoreData不好用的原因之一，只是因为使用方式有问题，或者说并没有真正掌握CoreData。
+
+如果从性能上来说，CoreData比SQLite确实略差一些。但是对于移动端来说，并不需要大型网站的高并发，所以这点性能差别几乎是没有影响的，所以这点可以忽略不计。在后面的文章中，将会给出CoreData的优点和缺点对比，以及详细的性能测评。
+
+CoreData主要的几个类
+
+    NSManagedObjectContext
+
+托管对象上下文，进行数据操作时大多都是和这个类打交道。
+
+    NSManagedObjectModel
+
+托管对象模型，一个托管对象模型关联一个模型文件(.xcdatamodeld)，存储着数据库的数据结构。
+
+    NSPersistentStoreCoordinator
+
+持久化存储协调器，负责协调存储区和上下文之间的关系。
+
+    NSManagedObject
+
+托管对象类，所有CoreData中的托管对象都必须继承自当前类，根据实体创建托管对象类文件。
+
+CoreData简单创建流程
+
+模型文件操作
+
+1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
+
+1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
+
+1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
+
+1.4 创建获取请求模板、设置配置模板等。
+
+1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
+
+实例化上下文对象
+
+2.1 创建托管对象上下文(NSManagedObjectContext)
+
+2.2 创建托管对象模型(NSManagedObjectModel)
+
+2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
+
+2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
+
+2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
+
+CoreData结构
+
+CoreData的结构构成
+
+之前看到过几张介绍CoreData结构的图片，感觉其表示的结构比较清晰。可以通过这几张图片初步认识一下CoreData，在后面的文章中还会对这几个类进行详细解释。
+
+{% img /images/1001.png Caption %} 
+
+整体结构
+
+上图中是初始化MOC所涉及到的一些类，由这些类实例化并最终构成可以使用的MOC。图中编号是实例化一个具备数据处理能力的MOC过程，这个过程和上面介绍过的实例化上下文对象相同。
+
+{% img /images/1002.png Caption %} 
+
+NSManagedObjectContext
+
+在PSC创建并关联本地数据库，并设置为MOC的persistentStoreCoordinator属性后，MOC就具备对当前存储区所有托管对象操作的能力。但是需要注意的是，MOC对托管对象是懒加载的，在使用时才会被加载到MOC的缓存中。
+
+{% img /images/1003.png Caption %} 
+
+NSManagedObjectModel
+
+MOM对象加载模型文件后，获取到模型文件中所有实体的构成结构。由于MOM中存储着模型文件的结构，PSC需要通过MOM对象实例化本地数据库。
+
+{% img /images/1004.png Caption %} 
+
+Entity
+
+所有属性都存在Entity中，以及有关联关系的属性和请求模板，这都会在后面的章节中讲到。
+
+{% img /images/1005.png Caption %} 
+
+NSManagedObject
+
+可以通过Entity创建继承自NSManagedObject类的文件，这个文件就是开发中使用的托管对象，具备模型对象的表示功能，CoreData的本地持久化都是通过这个类及其子类完成的。
+
+持久化存储调度器
+
+在CoreData的整体结构中，主要分为两部分。一个是NSManagedObjectContext管理的模型部分，管理着所有CoreData的托管对象。一个是SQLite实现的本地持久化部分，负责和SQL数据库进行数据交互，主要由NSPersistentStore类操作。这就构成了CoreData的大体结构。
+
+{% img /images/1006.png Caption %} 
+
+结构图
+
+从图中可以看出，这两部分都是比较独立的，两部分的交互由一个持久化存储调度器(NSPersistentStoreCoordinator)来控制。上层NSManagedObjectContext存储的数据都是交给持久化调度器，由调度器调用具体的持久化存储对象(NSPersistentStore)来操作对应的数据库文件，NSPersistentStore负责存储的实现细节。这样就很好的将两部分实现了分离。
+
+个人随想
+
+对于CoreData的整体结构，因为CoreData底层存储本来就是用SQLite实现的，所以我用CoreData的结构和SQLite对比了一下，发现还是很多相似之处的。
+
+.xcdatamodeld文件代表着数据库文件结构，通过.xcdatamodeld编译后的.momd文件生成数据库。每个实体代表一张数据表，实体之间的关联关系就是SQLite的外键。
+
+下图就是CoreData底层存储的结构，用红圈圈住的部分指向关联表的主键下标。例如1就指向关联表的主键下标为1的行。
+
+{% img /images/1007.png Caption %} 
+
+外键
+
+CoreData杂谈
+
+CoreData数据存储安全
+
+CoreData本质还是使用SQLite进行存储，并没有另外提供加密功能，具体的数据加解密还需要自己完成。
+
+CoreData在硬盘上的数据存储结构：
+
+{% img /images/1008.png Caption %} 
+
+数据库存储结构
+
+通过PSC指定创建SQLite目录后，会在指定的目录下生成一个数据库文件，同时还会生成两个同名但后缀不同的文件，其中只有后缀.sqlite的文件是存储数据的文件。
+
+这个数据库文件中会默认生成三个表，Z_METADATA、Z_PRIMARYKEY、Z_MODELCACHE，其他我们自己的表也都是大写Z开头的。
+
+在每个表中，系统还会默认生成三个字段，Z_PK、Z_ENT、Z_OPT三个字段，也都是大写Z开头并且带下划线的。其他字段就是我们自己的字段了，大写Z开头但不带下划线。
+
+CoreData执行效率
+
+现在市面上的大多数项目，都是使用SQLite作为持久化的方案，而CoreData的使用并不是很普遍。对于这个问题，我认为首先是很多项目开始的比较早，那时候好多iOS程序员都是从其他语言转过来的，更加熟悉SQLite，所以用SQLite比较多一些。后面如果不进行大的项目重构，就很难换其他的持久化方案了。
+
+还有就是不熟悉CoreData，也不想去了解和深入学习CoreData，我认为这是很大的原因。所以项目中用CoreData的人并不多，而真正掌握CoreData技术的人更少。
+
+之前听其他人说CoreData的执行效率不如SQLite高，这个如果深究的话，确实CoreData要比SQLite效率差一些，只不过并没有太大区别。CoreData本质也是在底层执行SQL语句，只是CoreData的SQL语句执行逻辑比较耗时，没有手动编写SQL语句更加直接。我们可以将CoreData的调试功能打开，具体看一下SQL语句的执行。
+
+这里要说一点，客户端毕竟不是服务端，不需要像服务器那样大量的数据查询，所以CoreData是完全可以应对客户端的查询量的。如果从灵活性来说，CoreData确实没有SQLite的灵活性高，一些SQLite的复杂功能可能也不能实现，但是就目前大多数项目来说，CoreData已经能够满足项目持久化需求了。
+
+导致执行效率差异的原因还体现在对象转换上，CoreData在执行SQL语句的基础上，还多了一层将数据映射给托管对象的操作，这样得到的就是OC的托管对象，而SQLite得到的则不是。如果给SQLite执行完成后，也加一层创建托管对象并赋值的操作，这时候对比性能两者的差距可能就会更小了。
+
+性能评测
+
+下面是一篇关于CoreData、FMDB、Realm性能测试结果的博客，最后的结果我也没有去验证，只是大致看了一下代码还是比价靠谱的。作者测试Demo和原文地址。
+
+测试数据的数量是以K为单位，最少为1K的数据量。涉及到的操作主要是下面四种：
+
+    新建数据库并插入1K条数据。
+
+    已有数据库，插入1K条数据。
+
+    查询总量为10K条数据，连续查询单次为1K数据。
+
+    10K条数据总量，更新其中1K条数据的部分字段性能。
+
+性能评测结果：
+
+根据测试结果可以发现，在前面两种插入操作，CoreData的性能比FMDB和Realm要快很多。
+
+而对于查询操作，CoreData比其他两种操作耗时多很多，大概多出三四倍。这很可能和CoreData将查询结果的数据转为托管对象有关系，抛去CoreData这部分转换操作性能会比现在好很多。
+
+而更新操作则直接基于SQLite封装的FMDB有绝对的优势，FMDB和其他两种操作差距大概是十倍左右，而其他两种操作性能差不多。当然CoreData也存在着上面提到的对象转换操作，CoreData抛去这步结果可能会比现在好很多。
+
+测试图表
+
+下面的测试数据中，取得是三次测试结果的平均值。
+
+{% img /images/1009.png Caption %} 
+
+{% img /images/1010.png Caption %} 
+
+新建数据库并插入1K条数据
+
+{% img /images/1011.png Caption %} 
+
+已有数据库，插入1K条数据
+
+{% img /images/1012.png Caption %} 
+
+查询总量为10K条数据，连续查询单次为1K数据
+
+{% img /images/1013.png Caption %} 
+
+10K条数据总量，更新其中1K条数据的部分字段性能
+
+CoreData调试
+
+Xcode调试命令
+
+CoreData本质上是对SQLite的一个封装，在内部将对象的持久化转化为SQL语句执行，可以在项目中将CoreData调试打开，从而可以看到CoreData的SQL语句执行和一些其他log信息。
+
+打开Product，选择Edit Scheme.
+
+选择Arguments，在下面的ArgumentsPassed On Launch中添加下面两个选项。
+
+(1)-com.apple.CoreData.SQLDebug
+
+(2)1
+
+终端调试命令
+
+如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
+
+.tables 查看当前数据库文件中所有的表名
+
+select *from tableName 执行查询的SQL语句
+
+{% img /images/1014.png Caption %} 
+
+终端调试命令
