@@ -1,0 +1,666 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>CoreData怎么用？ - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/04/coredatebzmshiyong/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">CoreData怎么用？</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-04T04:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:59 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>第一篇文章中并没有讲CoreData的具体用法，只是对CoreData做了一个详细的介绍，算是一个开始和总结吧。</p>
+
+<p>这篇文章中会主要讲CoreData的基础使用，以及在使用中需要注意的一些细节。因为文章中会插入代码和图片，内容可能会比较多，比较考验各位耐心。</p>
+
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！??</p>
+
+<p>创建自带CoreData的工程</p>
+
+<p>在新建一个项目时，可以勾选Use Core Data选项，这样创建出来的工程系统会默认生成一些CoreData的代码以及一个.xcdatamodeld后缀的模型文件，模型文件默认以工程名开头。这些代码在AppDelegate类中，也就是代表可以在全局使用AppDelegate.h文件中声明的CoreData方法和属性。</p>
+
+<p>系统默认生成的代码是非常简单的，只是生成了基础的托管对象模型、托管对象上下文、持久化存储调度器，以及MOC的save方法。但是这些代码已经可以完成基础的CoreData操作了。</p>
+
+<p>1469788227988682.png</p>
+
+<p>系统生成代码</p>
+
+<p>这部分代码不应该放在AppDelegate中，尤其对于大型项目来说，更应该把这部分代码单独抽离出去，放在专门的类或模块来管理CoreData相关的逻辑。所以我一般不会通过这种方式创建CoreData，我一般都是新建一个“干净”的项目，然后自己往里面添加，这样对于CoreData的完整使用流程掌握的也比较牢固。</p>
+
+<p>CoreData模型文件的创建</p>
+
+<p>构建模型文件</p>
+
+<p>使用CoreData的第一步是创建后缀为.xcdatamodeld的模型文件，使用快捷键Command + N，选择Core Data -> Data Model -> Next，完成模型文件的创建。</p>
+
+<p>创建完成后可以看到模型文件左侧列表，有三个选项Entities、Fetch Requests、Configurations，分别对应着实体、请求模板、配置信息。</p>
+
+<p><img src="/images/2001.png" title="Caption" >
+模型文件</p>
+
+<p>添加实体</p>
+
+<p>现在可以通过长按左侧列表下方的Add Entity按钮，会弹出Add Entity、Add Fetch Request、Add Configuration选项，可以添加实体、请求模板、配置信息。这里先选择Add Entity来添加一个实体，命名为Person。</p>
+
+<p>添加Person实体后，会发现一个实体对应着三部分内容，Attributes、Relationships、Fetched Properties，分别对应着属性、关联关系、获取操作。</p>
+
+<p><img src="/images/2002.png" title="Caption" ></p>
+
+<p>空实体</p>
+
+<p>现在对Person实体添加两个属性，添加age属性并设置type为Integer 16，添加name属性并设置type为String。</p>
+
+<p><img src="/images/2003.png" title="Caption" >
+添加属性</p>
+
+<p>实体属性类型</p>
+
+<p>在模型文件的实体中，参数类型和平时创建继承自NSObject的模型类大体类似，但是还是有一些关于类型的说明，下面简单的列举了一下。</p>
+
+<pre><code>Undefined: 默认值，参与编译会报错
+
+Integer 16: 整数，表示范围 -32768 ~ 32767
+
+Integer 32: 整数，表示范围 -2147483648 ~ 2147483647
+
+Integer 64: 整数，表示范围 –9223372036854775808 ~ 9223372036854775807
+
+Float: 小数，通过MAXFLOAT宏定义来看，最大值用科学计数法表示是 0x1.fffffep+127f
+
+Double: 小数，小数位比Float更精确，表示范围更大
+
+String: 字符串，用NSString表示
+
+Boolean: 布尔值，用NSNumber表示
+
+Date: 时间，用NSDate表示
+
+Binary Data: 二进制，用NSData表示
+
+Transformable: OC对象，用id表示。可以在创建托管对象类文件后，手动改为对应的OC类名。使用的前提是，这个OC对象必须遵守并实现NSCoding协议
+</code></pre>
+
+<p>添加实体关联关系</p>
+
+<p>创建两个实体Department和Employee，并且在这两个实体中分别添加一些属性，下面将会根据这两个实体来添加关联关系。
+<img src="/images/2004.png" title="Caption" ></p>
+
+<p>创建实体</p>
+
+<p>给Employee实体添加关系，在Relationships的位置点击加号，添加一个关联关系。添加关系的名称设为department，类型设置为Department，Inverse设置为employee(后面会讲解这个inverse的作用)。</p>
+
+<p><img src="/images/2005.png" title="Caption" ></p>
+
+<p>添加Relationships</p>
+
+<p>选择Department实体，点击Relationships位置的加号，添加关联关系。</p>
+
+<p>Department实体添加Relationships的操作和Employee都一样，区别在于用红圈标出的Type，这里设置的To Many一对多的关系。这里默认是To One一对一，上面的Employee就是一对一的关系。也就符合一个Department可以有多个Employee，而Employee只能有一个Department的情况，这也是符合常理的。</p>
+
+<p><img src="/images/2006.png" title="Caption" ></p>
+
+<p>添加Relationships</p>
+
+<p>Relationships类似于SQLite的外键，定义了在同一个模型中，实体与实体之间的关系。可以定义为对一关系或对多关系，也可以定义单向或双向的关系，根据需求来确定。如果是对多的关系，默认是使用NSSet集合来存储模型。</p>
+
+<p>Inverse是两个实体在Relationships中设置关联关系后，通过设置inverse为对应的实体，这样可以从一个实体找到另一个实体，使两个实体具有双向的关联关系。</p>
+
+<p>Fetched Properties</p>
+
+<p>在实体最下面，有一个Fetched Properties选项，这个选项用的不多，这里就不细讲了。</p>
+
+<p>Fetched Properties用于定义查询操作，和NSFetchRequest功能相同。定义fetchedProperty对象后，可以通过NSManagedObjectModel类的fetchRequestFromTemplateWithName:substitutionVariables:方法或其他相关方法获取这个fetchedProperty对象。</p>
+
+<p><img src="/images/2007.png" title="Caption" ></p>
+
+<p>fetched Property</p>
+
+<p>获取这个对象后，系统会默认将这个对象缓存到一个字典中，缓存之后也可以通过fetchedProperty字典获取fetchedProperty对象。</p>
+
+<p>Data Model Inspector</p>
+
+<p>选中一个实体后，右侧的侧边栏(Data Model Inspector)还有很多选项，这些选项可以对属性进行配置。根据不同的属性类型，侧边栏的显示也不太一样，下面是一个String类型的属性。</p>
+
+<p><img src="/images/2008.png" title="Caption" ></p>
+
+<p>Data Model Inspector</p>
+
+<p>属性设置</p>
+
+<pre><code>default Value: 设置默认值，除了二进制不能设置，其他类型几乎都能设置。
+
+optional: 在使用时是否可选，也可以理解为如果设置为NO，只要向MOC进行save操作，这个属性是否必须有值。否则MOC进行操作时会失败并返回一个error，该选项默认为YES。
+
+transient: 设置当前属性是否只存在于内存，不被持久化到本地，如果设置为YES，这个属性就不参与持久化操作，属性的其他操作没有区别。transient非常适合存储一些在内存中缓存的数据，例如存储临时数据，这些数据每次都是不同的，而且不需要进行本地持久化，所以可以声明为transient的属性。
+
+indexed: 设置当前属性是否是索引。添加索引后可以有效的提升检索操作的速度。但是对于删除这样的操作，删除索引后其他地方还需要做出相应的变化，所以速度会比较慢。
+
+Validation: 通过Validation可以设置Max Value和Min Value，通过这两个条件来约定数据，对数据的存储进行一个验证。数值类型都有相同的约定方式，而字符串则是约定长度，date是约定时间。
+
+Reg. Ex.(Regular Expression): 可以设置正则表达式，用来验证和控制数据，不对数据自身产生影响。(只能应用于String类型)
+
+Allows External Storage: 当存储二进制文件时，如果遇到比较大的文件，是否存储在存储区之外。如果选择YES，存储文件大小超过1MB的文件，都会存储在存储区之外。否则大型文件存储在存储区内，会造成SQLite进行表操作时，效率受到影响。
+</code></pre>
+
+<p>Relationships设置</p>
+
+<pre><code>delete rule: 定义关联属性的删除规则。在当前对象和其他对象有关联关系时，当前对象被删除后与之关联对象的反应。这个参数有四个枚举值，代码对应着模型文件的相同选项。
+
+NSNoActionDeleteRule 删除后没有任何操作，也不会将关联对象的关联属性指向nil。删除后使用关联对象的关联属性，可能会导致其他问题。
+
+NSNullifyDeleteRule 删除后会将关联对象的关联属性指向nil，这是默认值。
+
+NSCascadeDeleteRule 删除当前对象后，会将与之关联的对象也一并删除。
+
+NSDenyDeleteRule 在删除当前对象时，如果当前对象还指向其他关联对象，则当前对象不能被删除。
+
+Type: 主要有两种类型，To One和To Many，表示当前关系是一对多还是一对一。
+</code></pre>
+
+<p>实体</p>
+
+<pre><code>Parent Entity: 可以在实体中创建继承关系，在一个实体的菜单栏中通过Parent Entity可以设置父实体，这样就存在了实体的继承关系，最后创建出来的托管模型类也是具有继承关系的。注意继承关系中属性名不要相同。
+</code></pre>
+
+<p>使用了这样的继承关系后，系统会将子类继承父类的数据，存在父类的表中，所有继承自同一父类的子类都会将父类部分存放在父类的表中。这样可能会导致父类的表中数据量过多，造成性能问题。</p>
+
+<p>Fetch Requests</p>
+
+<p>在模型文件中Entities下面有一个Fetch Requests，这个也是配置请求对象的。但是这个使用起来更加直观，可以很容易的完成一些简单的请求配置。相对于上面讲到的Fetched Properties，这个还是更方便使用一些。</p>
+
+<p><img src="/images/2009.png" title="Caption" ></p>
+
+<p>Fetch Requests</p>
+
+<p>上面是对Employee实体的height属性配置的Fetch Request，这里配置的height要小于2米。配置之后可以通过NSManagedObjectModel类的fetchRequestTemplateForName:方法获取这个请求对象，参数是这个请求配置的名称，也就是EmployeeFR。</p>
+
+<p>Editor Style</p>
+
+<p>这是我认为CoreData最大的优势之一，可视化的模型文件结构。可以很清楚的看到实体和属性的关系，以及实体之间的对应关系。</p>
+
+<p><img src="/images/2010.png" title="Caption" ></p>
+
+<p>Editor Style</p>
+
+<p>一个.xcdatamodeld模型文件的展示风格有两种，一种是列表的形式(Table)，另一种是图表的形式展示(Graph)。</p>
+
+<p>图表看起来更加直观，而图表在操作上也有一些比Table更方便的地方。例如在Table的状态下添加两个实体的关联关系，如果只做一次关联操作，默认是单向的关系。而在Graph的状态下，按住Control对两个图表进行连线，两个实体的结果就是双向关联的关系。</p>
+
+<p>手动创建实体</p>
+
+<p>假设不使用.xcdatamodeld模型文件，全都是纯代码，怎么在项目里创建实体啊？这样的话就需要通过代码创建实体描述、关联描述等信息，然后设置给NSManagedObjectModel对象。而使用模型文件的话一般都是通过NSManagedObjectModel对象来读取文件。</p>
+
+<p>如果是纯代码的话，苹果更推荐使用KVC的方式存取值，然后所有托管对象都用NSManagedObject创建。但是这样存在的问题很多，开发成本比较大、使用不方便等等。最大的问题就是写属性名的key字符串，很容易出错，而且这样失去了CoreData原有的优点。所以还是推荐使用.xcdatamodeld模型文件的开发方式。</p>
+
+<p>创建托管对象类文件</p>
+
+<p>创建文件</p>
+
+<p>创建实体后，就可以根据对应的实体，生成开发中使用的基于NSManagedObject类的托管对象类文件。</p>
+
+<p>还是按照上面Department和Employee的例子，先创建一个Department实体。因为Department实体有对多关系，生成托管对象类文件的关联属性不一样，可以体现出和对一关系的区别，所以使用Department实体生成文件。</p>
+
+<p>快捷键Command + N -> NSManagedObject subclass -> 选择模型文件 -> 选择实体，生成Department实体对应的托管对象类文件。</p>
+
+<p><img src="/images/2012.png" title="Caption" ></p>
+
+<p>生成的托管对象类文件</p>
+
+<p>可以看到上面生成了四个文件，以实体名开头的.h和.m文件，另外两个是这个实体的Category文件。为什么生成Category文件？一会再说，先打开类文件进去看看。</p>
+
+<p>Category</p>
+
+<p><img src="/images/2013.png" title="Caption" ></p>
+
+<p>实体Category</p>
+
+<p>可以看到类文件中有两个Category，分别是CoreDataProperties和CoreDataGeneratedAccessors。其中如果没有设置对多关系的实体，只会有CoreDataProperties，而设置了对多关系的实体系统会为其生成CoreDataGeneratedAccessors。</p>
+
+<p>CoreDataProperties中会生成实体中声明的Attributes和Relationships中的属性，其中对多关系是用NSSet存储的属性，如果是对一的关系则是非集合的对象类型属性。再看.m文件中，所有属性都用@dynamic修饰，CoreData会在运行时动态为所有Category中的属性生成实现代码，所以这里用@dynamic修饰。</p>
+
+<p>对多属性生成的CoreDataGeneratedAccessors，是系统自动生成管理对多属性集合的方法，一般都是一个属性对应四个方法，方法的实现也是在运行时动态实现的，方法都是用来操作集合对象的。</p>
+
+<p>托管对象类文件</p>
+
+<p>点击系统生成的托管对象类文件，此类是继承自NSManagedObject类的。可以看到里面非常干净，没有其他逻辑代码。</p>
+
+<p>根据苹果的注释代码：Insert code here to declare functionality of your managed object subclass，提示应该在这个文件中编写此类相关的逻辑代码。这里就是编写此类逻辑代码的地方，当然也可以什么都不写，看需求啦。</p>
+
+<p>任意类型属性</p>
+
+<p>实体支持创建任意继承自NSObject类的属性，例如项目中手动创建的类。项目中创建的类在下拉列表中并不会体现，可以在属性类型选择transformable类型，然后生成托管对象类文件的时候，系统会将这个属性声明为id类型，在创建类文件后，可以直接手动更改这个属性的类型为我们想要的类型。</p>
+
+<p>对于手动设置的属性有一个要求，属性所属的类必须是遵守NSCoding协议，因为这个属性要被归档到本地。</p>
+
+<p>标量类型</p>
+
+<p>创建托管对象类文件时，实体属性的类型无论是选择的integer32还是float，只要是基础数据类型，最后创建出来的默认都是NSNumber类型的，这是Xcode默认的。</p>
+
+<p>如果需要生成的属性类型是基础数据类型，可以在创建文件时勾选Use scalar properties for primitive data types选项，这样就告诉系统需要生成标量类型属性，创建出来的属性就是int64_t、float这样的基础数据类型。</p>
+
+<p><img src="/images/2014.png" title="Caption" ></p>
+
+<p>标量类型</p>
+
+<p>更新文件</p>
+
+<p>当前模型对应的实体发生改变后，需要重新生成模型Category文件。生成步骤和上面一样，主要是替换Category文件，托管对象文件不会被替换。生成文件时不需要删除，直接替换文件。</p>
+
+<p>CoreData增删改查</p>
+
+<p>下面关于CoreData的相关操作，还是基于上面Department和Employee的例子。并且引入了Company当做.xcdatamodeld模型文件，前面两个实体被包含在Company中。</p>
+
+<p>先讲讲NSManagedObjectContext</p>
+
+<p>在iOS5之前创建NSManagedObjectContext对象时，都是直接通过init方法来创建。iOS5之后苹果更加推荐使用initWithConcurrencyType:方法来创建，在创建的时候指定当前是什么类型的并发队列，初始化方法参数是一个枚举值。这里简单说说MOC，后面多线程部分还会涉及MOC多线程相关的东西。</p>
+
+<p>NSManagedObjectContext初始化方法的枚举值参数主要有三个类型：</p>
+
+<pre><code>NSConfinementConcurrencyType 如果使用init方法初始化上下文，默认就是这个并发类型。在iOS9之后已经被苹果废弃，不建议用这个API，调用某些比较新的CoreData的API可能会导致崩溃。
+
+NSPrivateQueueConcurrencyType 私有并发队列类型，操作都是在子线程中完成的。
+
+NSMainQueueConcurrencyType 主并发队列类型，如果涉及到UI相关的操作，应该考虑使用这个参数初始化上下文。
+</code></pre>
+
+<p>如果还使用init方法，可能会对后面推出的一些API不兼容，导致多线程相关的错误。例如下面的错误，因为如果没有显式的设置并发类型，默认是一个已经弃用的NSConfinementConcurrencyType类型，就会导致新推出的API发生不兼容的崩溃错误。</p>
+
+<p>Terminating app due to uncaught exception &lsquo;NSInvalidArgumentException&rsquo;, reason: &lsquo;NSConfinementConcurrencyType context</p>
+
+<p>创建MOC</p>
+
+<p>下面是根据Company模型文件，创建了一个主队列并发类型的MOC。</p>
+
+<p>// 创建上下文对象，并发队列设置为主队列
+NSManagedObjectContext <em>context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+// 创建托管对象模型，并使用Company.momd路径当做初始化参数
+NSURL </em>modelPath = [[NSBundle mainBundle] URLForResource:@&ldquo;Company&rdquo; withExtension:@&ldquo;momd&rdquo;];
+NSManagedObjectModel <em>model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
+// 创建持久化存储调度器
+NSPersistentStoreCoordinator </em>coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+// 创建并关联SQLite数据库文件，如果已经存在则不会重复创建
+NSString *dataPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
+dataPath = [dataPath stringByAppendingFormat:@&ldquo;/%@.sqlite&rdquo;, @&ldquo;Company&rdquo;];
+[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:nil error:nil];
+// 上下文对象设置属性为持久化存储器
+context.persistentStoreCoordinator = coordinator;</p>
+
+<p>这段代码创建了一个MOC，我们从上往下看这段代码。</p>
+
+<p>momd文件</p>
+
+<p>关于MOC的并发队列类型上面已经简单说了，MOC下面出现了momd的字样，这是什么东西？</p>
+
+<p><img src="/images/2015.png" title="Caption" ></p>
+
+<p>momd文件</p>
+
+<p>在创建后缀为.xcdatamodeld的模型文件后，模型文件在编译期将会被编译为后缀为.momd的文件，存放在.app中，也就是Main Bundle中。在存在多个模型文件时，我们需要通过加载不同的.momd文件，来创建不同的NSManagedObjectModel对象，每个NSManagedObjectModel对应着不同的模型文件。</p>
+
+<p>NSManagedObjectModel类中包含了模型文件中的所有entities、configurations、fetchRequests的描述。虽然.momd文件是支持存放在.app中的，其他人可以通过打开.app包看到这个文件。但是这个文件是经过编码的，并不会知道这个.momd文件中的内容，所以这个文件是非常安全的。通过NSManagedObjectModel获取模型文件描述后，来创建和关联数据库，并交给PSC管理。</p>
+
+<p>如果不指定NSManagedObjectModel对应哪个模型文件，直接使用init方法初始化NSManagedObjectModel类，系统会默认将所有模型文件的表都放在一个SQLite数据库中。所以需要使用mainBundle中的不同.momd文件，对不同的NSManagedObjectModel进行初始化，这样在创建数据库时就会创建不同的数据库文件。</p>
+
+<p>持久化存储调度器(PSC)</p>
+
+<p>在NSManagedObjectModel下面就是NSPersistentStoreCoordinator，这个类在CoreData框架体系中起到了“中枢”的作用。对上层起到了提供简单的调用接口，并向上层隐藏持久化实现逻辑。对下层起到了协调多个持久化存储对象(NSPersistentStore)，使下层只需要专注持久化相关逻辑。</p>
+
+<p><img src="/images/2016.png" title="Caption" ></p>
+
+<p>持久化存储调度器</p>
+
+<p>addPersistentStoreWithType: configuration: URL: options: error:方法是PSC创建并关联数据库的部分，关联本地数据库后会返回一个NSPersistentStore类型对象，这个对象负责具体持久化存储的实现。可以看到这个方法是一个实例方法，也就是可以添加多个持久化存储对象，并且多个持久化存储对象都关联一个PSC，这是允许的，在上面的图中也看到了这样的结构。但是这样的需求并不多，而且管理起来比较麻烦，一般都不会这样做。</p>
+
+<p>PSC有四种可选的持久化存储方案，用得最多的是SQLite的方式。其中Binary和XML这两种方式，在进行数据操作时，需要将整个文件加载到内存中，这样对内存的消耗是很大的。</p>
+
+<pre><code>NSSQLiteStoreType : SQLite数据库
+
+NSXMLStoreType : XML文件
+
+NSBinaryStoreType : 二进制文件
+
+NSInMemoryStoreType : 直接存储在内存中
+</code></pre>
+
+<p>插入操作</p>
+
+<p>// 创建托管对象，并指明创建的托管对象所属实体名
+Employee <em>emp = [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;Employee&rdquo; inManagedObjectContext:context];
+emp.name = @&ldquo;lxz&rdquo;;
+emp.height = @1.7;
+emp.brithday = [NSDate date];
+// 通过上下文保存对象，并在保存前判断是否有更改
+NSError </em>error = nil;
+if (context.hasChanges) {
+    [context save:&amp;error];
+}
+// 错误处理
+if (error) {
+    NSLog(@&ldquo;CoreData Insert Data Error : %@&rdquo;, error);
+}</p>
+
+<p>通过NSEntityDescription的insert类方法，生成并返回一个Employee托管对象，并将这个对象插入到指定的上下文中。</p>
+
+<p>MOC将操作的数据存放在缓存层，只有调用MOC的save方法后，才会真正对数据库进行操作，否则这个对象只是存在内存中，这样做避免了频繁的数据库访问。</p>
+
+<p>删除操作</p>
+
+<p>// 建立获取数据的请求对象，指明对Employee实体进行删除操作
+NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+// 创建谓词对象，过滤出符合要求的对象，也就是要删除的对象
+NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+request.predicate = predicate;
+// 执行获取操作，找到要删除的对象
+NSError <em>error = nil;
+NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
+// 遍历符合删除要求的对象数组，执行删除操作
+[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+    [context deleteObject:obj];
+}];
+// 保存上下文
+if (context.hasChanges) {
+    [context save:nil];
+}
+// 错误处理
+if (error) {
+    NSLog(@&ldquo;CoreData Delete Data Error : %@&rdquo;, error);
+}</p>
+
+<p>首先获取需要删除的托管对象，遍历获取的对象数组，逐个删除后调用MOC的save方法保存。</p>
+
+<p>修改操作</p>
+
+<p>// 建立获取数据的请求对象，并指明操作的实体为Employee
+NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+// 创建谓词对象，设置过滤条件
+NSPredicate </em>predicate = [NSPredicate predicateWithFormat:@&ldquo;name = %@&rdquo;, @&ldquo;lxz&rdquo;];
+request.predicate = predicate;
+// 执行获取请求，获取到符合要求的托管对象
+NSError <em>error = nil;
+NSArray </em>employees = [context executeFetchRequest:request error:&amp;error];
+[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+    obj.height = @3.f;
+}];
+// 将上面的修改进行存储
+if (context.hasChanges) {
+    [context save:nil];
+}
+// 错误处理
+if (error) {
+    NSLog(@&ldquo;CoreData Update Data Error : %@&rdquo;, error);
+}</p>
+
+<p>和上面一样，首先获取到需要更改的托管对象，更改完成后调用MOC的save方法持久化到本地。</p>
+
+<p>查找操作</p>
+
+<p>// 建立获取数据的请求对象，指明操作的实体为Employee
+NSFetchRequest <em>request = [NSFetchRequest fetchRequestWithEntityName:@&ldquo;Employee&rdquo;];
+// 执行获取操作，获取所有Employee托管对象
+NSError </em>error = nil;
+NSArray *employees = [context executeFetchRequest:request error:&amp;error];
+[employees enumerateObjectsUsingBlock:^(Employee * <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+    NSLog(@&ldquo;Employee Name : %@, Height : %@, Brithday : %@&rdquo;, obj.name, obj.height, obj.brithday);
+}];
+// 错误处理
+if (error) {
+    NSLog(@&ldquo;CoreData Ergodic Data Error : %@&rdquo;, error);
+}</p>
+
+<p>查找操作最简单粗暴，因为是演示代码，所以直接将所有Employee表中的托管对象加载出来。在实际开发中肯定不会这样做，只需要加载需要的数据。后面还会讲到一些更高级的操作，会涉及到获取方面的东西。</p>
+
+<p>总结</p>
+
+<p>在CoreData中所有的托管对象被创建出来后，都是关联着MOC对象的。所以在对象进行任何操作后，都会被记录在MOC中。在最后调用MOC的save方法后，MOC会将操作交给PSC去处理，PSC将会将这个存储任务指派给NSPersistentStore对象。</p>
+
+<p>上面的增删改查操作，看上去大体流程都差不多，都是一些最基础的简单操作，在下一篇文章中将会将一些比较复杂的操作。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-04T04:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:59 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/04/coredateashishemme/" title="Previous Post: CoreData是什么？">&laquo; CoreData是什么？</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/04/coredatechaiyousa/" title="Next Post: CoreData还有撒？">CoreData还有撒？ &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/04/coredatebzmshiyong/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/04/coredatebzmshiyong/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Senior | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/senior/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-01T15:29:17+08:00</updated>
+  <updated>2016-08-03T14:38:08+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -908,992 +908,1853 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Cell重用数据混乱]]></title>
-    <link href="http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi/"/>
-    <updated>2016-06-15T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/06/15/cellshujuchongyongchulifangshi</id>
-    <content type="html"><![CDATA[<p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
+    <title type="html"><![CDATA[多线程之葵花宝典]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/10/duoxianc/"/>
+    <updated>2016-07-10T14:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/10/duoxianc</id>
+    <content type="html"><![CDATA[<h2>一、进程和线程</h2>
 
-<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
+<h4>1.什么是进程</h4>
 
-<!--more-->
+<pre><code>进程是指在系统中正在运行的一个应用程序
+
+每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内
 
 
-<p>这样配置的话超过页面显示的内容会重复出现</p>
 
-<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 定义唯一标识
-    static NSString *CellIdentifier = @"Cell";
-    // 通过唯一标识创建cell实例
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
-    if (!cell) {
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
-    }
-    // 对cell 进行简单地数据配置
-    cell.textLabel.text = @"text";
-    cell.detailTextLabel.text = @"text";
-    cell.imageView.image = [UIImage imageNamed:@"4.png"];
 
-    return cell;
-}
+
+比如同时打开QQ、Xcode，系统就会分别启动2个进程
+
+通过“活动监视器”可以查看Mac系统中所开启的进程
 </code></pre>
 
-<p>通过以下3方案可以解决</p>
+<h4>2.什么是线程</h4>
 
-<p>方案一  取消cell的重用机制，通过indexPath来创建cell 将可以解决重复显示问题 不过这样做相对于大数据来说内存就比较吃紧了</p>
+<pre><code>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）
 
-<p>通过不让他重用cell 来解决重复显示</p>
+线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行
 
-<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 定义唯一标识
-    static NSString *CellIdentifier = @"Cell";
-    // 通过indexPath创建cell实例 每一个cell都是单独的
-    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
-    if (!cell) {
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
-    }
-    // 对cell 进行简单地数据配置
-    cell.textLabel.text = @"text";
-    cell.detailTextLabel.text = @"text";
-    cell.imageView.image = [UIImage imageNamed:@"4.png"];
-
-    return cell;
-}
+比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行
 </code></pre>
 
-<p>方案二  让每个cell都拥有一个对应的标识 这样做也会让cell无法重用 所以也就不会是重复显示了 显示内容比较多时内存占用也是比较多的和方案一类似
-同样通过不让他重用cell 来解决重复显示 不同的是每个cell对应一个标</p>
+<p> 　　</p>
 
-<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 定义cell标识  每个cell对应一个自己的标识
-    NSString *CellIdentifier = [NSString stringWithFormat:@"cell%ld%ld",indexPath.section,indexPath.row];
-    // 通过不同标识创建cell实例
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
-    if (!cell) {
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
-    }
-    // 对cell 进行简单地数据配置
-    cell.textLabel.text = @"text";
-    cell.detailTextLabel.text = @"text";
-    cell.imageView.image = [UIImage imageNamed:@"4.png"];
+<h4>3.线程的串行</h4>
 
-    return cell;
-}
+<pre><code>1个线程中任务的执行是串行的
+
+如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务
+
+也就是说，在同一时间内，1个线程只能执行1个任务
+
+比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）
 </code></pre>
 
-<p>方案三 只要最后一个显示的cell内容不为空，然后把它的子视图全部删除，等同于把这个cell单独出来了 然后跟新数据就可以解决重复显示</p>
+<h2>二、多线程</h2>
 
-<p> 当页面拉动需要显示新数据的时候，把最后一个cell进行删除 就有可以自定义cell 此方案即可避免重复显示，又重用了cell相对内存管理来说是最好的方案 前两者相对比较消耗内存</p>
+<h4>1.什么是多线程</h4>
 
-<pre><code>- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // 定义唯一标识
-    static NSString *CellIdentifier = @"Cell";
-    // 通过唯一标识创建cell实例
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+<pre><code>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务
 
-    // 判断为空进行初始化  --（当拉动页面显示超过主页面内容的时候就会重用之前的cell，而不会再次初始化）
-    if (!cell) {
-        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
-    }
-    else//当页面拉动的时候 当cell存在并且最后一个存在 把它进行删除就出来一个独特的cell我们在进行数据配置即可避免
+进程 -&gt;车间，线程-&gt;车间工人
+
+多线程技术可以提高程序的执行效率
+
+比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）
+</code></pre>
+
+<h4>2.多线程的原理</h4>
+
+<pre><code>同一时间，CPU只能处理1条线程，只有1条线程在工作（执行）
+多线程并发（同时）执行，其实是CPU快速地在多条线程之间调度（切换）
+如果CPU调度线程的时间足够快，就造成了多线程并发执行的假象
+思考：如果线程非常非常多，会发生什么情况？
+CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
+每条线程被调度执行的频次会降低（线程的执行效率降低）
+</code></pre>
+
+<h4>3.多线程的优缺点</h4>
+
+<p>多线程的优点</p>
+
+<pre><code>能适当提高程序的执行效率
+
+能适当提高资源利用率（CPU、内存利用率）
+</code></pre>
+
+<p>多线程的缺点</p>
+
+<pre><code>开启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能
+
+线程越多，CPU在调度线程上的开销就越大
+
+程序设计更加复杂：比如线程之间的通信、多线程的数据共享
+</code></pre>
+
+<h4>4.多线程在iOS开发中的应用</h4>
+
+<pre><code>主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”
+
+主线程的主要作用
+
+显示\刷新UI界面
+
+处理UI事件（比如点击事件、滚动事件、拖拽事件等）
+</code></pre>
+
+<p>主线程的使用注意:别将比较耗时的操作放到主线程中。</p>
+
+<p>耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验</p>
+
+<h2>多线程的四中方式</h2>
+
+<h4>1. Pthreads</h4>
+
+<h4>2. NSThread</h4>
+
+<h4>3. GCD</h4>
+
+<h4>4. NSOperation &amp; NSOperationQueue</h4>
+
+<h2>多线程的全解析-看了不行你还不会</h2>
+
+<p><img src="/images/multithread.png" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CoreData vs SQLite vs FMDB]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/05/zsqlfmdbcoredata/"/>
+    <updated>2016-07-05T14:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/05/zsqlfmdbcoredata</id>
+    <content type="html"><![CDATA[<p>概览</p>
+
+<p>在iOS开发中数据存储的方式可以归纳为两类：一类是存储为文件，另一类是存储到数据库。例如前面IOS开发系列—Objective-C之Foundation框架的文章中提到归档、plist文件存储，包括偏好设置其本质都是存储为文件，只是说归档或者plist文件存储可以选择保存到沙盒中，而偏好设置系统已经规定只能保存到沙盒的Library/Preferences目录。当然，文件存储并不作为本文的重点内容。本文重点还是说数据库存储，做过数据库开发的朋友应该知道，可以通过SQL直接访问数据库，也可以通过ORM进行对象关系映射访问数据库。这两种方式恰恰对应iOS中SQLite和Core Data的内容，在此将重点进行分析:</p>
+
+<h3>1. SQLite</h3>
+
+<h3>2. Core Data</h3>
+
+<h3>3. FMDB</h3>
+
+<hr />
+
+<h2>SQLite</h2>
+
+<p>SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就是轻量级、跨平台，当前很多嵌入式操作系统都将其作为数据库首选。虽然SQLite是一款轻型数据库，但是其功能也绝不亚于很多大型关系数据库。学习数据库就要学习其相关的定义、操作、查询语言，也就是大家日常说得SQL语句。和其他数据库相比，SQLite中的SQL语法并没有太大的差别，因此这里对于SQL语句的内容不会过多赘述，大家可以参考SQLite中其他SQL相关的内容，这里还是重点讲解iOS中如何使用SQLite构建应用程序。先看一下SQLite数据库的几个特点：</p>
+
+<p>1.基于C语言开发的轻型数据库</p>
+
+<p>2.在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libqlite3框架基于C语言编写）</p>
+
+<p>3.SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）</p>
+
+<p>4.建立连接后通常不需要关闭连接（尽管可以手动关闭）</p>
+
+<p>要使用SQLite很简单，如果在Mac OSX上使用可以考虑到SQLite官方网站下载命令行工具，也可以使用类似于SQLiteManager、Navicat for SQLite等工具。为了方便大家开发调试，建议在开发环境中安装上述工具。</p>
+
+<p>在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：</p>
+
+<p>1.打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。</p>
+
+<p>2.执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。</p>
+
+<p>3.对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；</p>
+
+<p>4.对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。</p>
+
+<p>在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。纵观整个操作过程，其实与其他平台的开发没有明显的区别，较为麻烦的就是数据读取，在iOS平台中使用C进行数据读取采用了游标的形式，每次只能读取一行数据，较为麻烦。因此实际开发中不妨对这些操作进行封装：</p>
+
+<p>KCDbManager.h
+//
+//  DbManager.h
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &lt;sqlite3.h></h1>
+
+<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
+
+<p>@interface KCDbManager : NSObject
+singleton_interface(KCDbManager);</p>
+
+<h1>pragma mark - 属性</h1>
+
+<h1>pragma mark 数据库引用，使用它进行数据库操作</h1>
+
+<p>@property (nonatomic) sqlite3 *database;</p>
+
+<h1>pragma mark - 共有方法</h1>
+
+<p>/<strong>
+ *  打开数据库
+ *
+ *  @param dbname 数据库名称
+ <em>/
+-(void)openDb:(NSString </em>)dbname;
+/</strong>
+ *  执行无返回值的sql
+ *
+ *  @param sql sql语句
+ <em>/
+-(void)executeNonQuery:(NSString </em>)sql;
+/<em><em>
+ *  执行有返回值的sql
+ *
+ *  @param sql sql语句
+ *
+ *  @return 查询结果
+ </em>/
+-(NSArray </em>)executeQuery:(NSString *)sql;
+@end</p>
+
+<p>KCDbManager.m
+//
+//  DbManager.m
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
+
+<h1>import &lt;sqlite3.h></h1>
+
+<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
+
+<h1>import &ldquo;KCAppConfig.h&rdquo;</h1>
+
+<h1>ifndef kDatabaseName</h1>
+
+<h1>define kDatabaseName @&ldquo;myDatabase.db&rdquo;</h1>
+
+<h1>endif</h1>
+
+<p>@interface KCDbManager()
+@end
+@implementation KCDbManager
+singleton_implementation(KCDbManager)</p>
+
+<h1>pragma mark 重写初始化方法</h1>
+
+<p>-(instancetype)init{
+    KCDbManager <em>manager;
+    if((manager=[super init]))
     {
-        while ([cell.contentView.subviews lastObject] != nil) {
-            [(UIView *)[cell.contentView.subviews lastObject] removeFromSuperview];
-        }
+        [manager openDb:kDatabaseName];
     }
-    // 对cell 进行简单地数据配置
-    cell.textLabel.text = @"text";
-    cell.detailTextLabel.text = @"text";
-    cell.imageView.image = [UIImage imageNamed:@"4.png"];
-
-    return cell;
+    return manager;
 }
-</code></pre>
-
-<p>以上都是个人理解，本人也是菜鸟，有理解不对的地方希望大家指出，同时也希望能对大家起到一定的帮助！！ Thank you！</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[我知道你在找什么？]]></title>
-    <link href="http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm/"/>
-    <updated>2016-06-06T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/06/06/wpzhidapnizaizhaosm</id>
-    <content type="html"><![CDATA[<p>不喜欢废话。。。。。来，直接上（不是上我。。。。）</p>
-
-<!--more-->
-
-
-<p>一：源代码实例</p>
-
-<p>1:快速搭建项目源代码</p>
-
-<p>地址：<a href="https://github.com/wujunyang/MobileProject">https://github.com/wujunyang/MobileProject</a></p>
-
-<p>2:高仿美团iOS版</p>
-
-<p>地址：<a href="https://github.com/lookingstars/meituan">https://github.com/lookingstars/meituan</a></p>
-
-<p>3:模仿网易新闻做的精仿网易新闻</p>
-
-<p>地址：<a href="https://github.com/dsxNiubility/SXNews">https://github.com/dsxNiubility/SXNews</a></p>
-
-<p>4:支付宝高仿版</p>
-
-<p>地址：<a href="https://github.com/gsdios/GSD_ZHIFUBAO">https://github.com/gsdios/GSD_ZHIFUBAO</a></p>
-
-<p>5:高仿百度传课iOS版</p>
-
-<p>地址：<a href="https://github.com/lookingstars/chuanke">https://github.com/lookingstars/chuanke</a></p>
-
-<p>6：模仿一元云购</p>
-
-<p>地址：<a href="https://github.com/JxbSir/YiYuanYunGou">https://github.com/JxbSir/YiYuanYunGou</a></p>
-
-<p>7：wordpress源代码</p>
-
-<p>地址：<a href="https://github.com/wordpress-mobile/WordPress-iOS">https://github.com/wordpress-mobile/WordPress-iOS</a></p>
-
-<p>8：v2ex源代码（文章类型，若报SVProgressHUD错，则把Podfile中的SVProgressHUD移除）</p>
-
-<p>地址：<a href="https://github.com/singro/v2ex">https://github.com/singro/v2ex</a></p>
-
-<p>9:PHPHub客户端(IOS8.0以上)</p>
-
-<p>地址：<a href="https://github.com/Aufree/phphub-ios">https://github.com/Aufree/phphub-ios</a></p>
-
-<p>10:Coding.net客户端</p>
-
-<p>地址：<a href="https://coding.net/u/coding/p/Coding-iOS/git">https://coding.net/u/coding/p/Coding-iOS/git</a></p>
-
-<p>11：如何优化UITableView中Cell加载图片的实例</p>
-
-<p>地址：<a href="https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad">https://github.com/allenhsu/UIScrollView-Samples/tree/master/LazyLoad</a></p>
-
-<p>12:开源的IOS代码集合</p>
-
-<p>地址：<a href="https://github.com/dkhamsing/open-source-ios-apps">https://github.com/dkhamsing/open-source-ios-apps</a></p>
-
-<p>二：辅助软件</p>
-
-<p>1：XCODE文档注解插件VVDocumenter</p>
-
-<p>地址：<a href="https://github.com/onevcat/VVDocumenter-Xcode">https://github.com/onevcat/VVDocumenter-Xcode</a></p>
-
-<p>2：将JSON格式化输出为模型的属性</p>
-
-<p>地址：<a href="https://github.com/EnjoySR/ESJsonFormat-Xcode">https://github.com/EnjoySR/ESJsonFormat-Xcode</a></p>
-
-<p>3：图片提示插件</p>
-
-<p>地址：<a href="https://github.com/ksuther/KSImageNamed-Xcode">https://github.com/ksuther/KSImageNamed-Xcode</a></p>
-
-<p>4：图片转换插件</p>
-
-<p>地址：<a href="https://github.com/rickytan/RTImageAssets">https://github.com/rickytan/RTImageAssets</a></p>
-
-<p>5:测试模拟苹果通知</p>
-
-<p>地址：<a href="https://github.com/KnuffApp/Knuff">https://github.com/KnuffApp/Knuff</a></p>
-
-<p>6: HOStringSense可以在弹出框写NSString，所见及所得</p>
-
-<p>地址：<a href="https://github.com/holtwick/HOStringSense-for-Xcode">https://github.com/holtwick/HOStringSense-for-Xcode</a></p>
-
-<p>7：cocoapods-xcode-plugin  pod相关的操作可以在xcode菜单进行</p>
-
-<p>地址：<a href="https://github.com/kattrali/cocoapods-xcode-plugin">https://github.com/kattrali/cocoapods-xcode-plugin</a></p>
-
-<p>8：switch枚举的时候会自动生成代码</p>
-
-<p>地址：<a href="https://github.com/stefanceriu/SCXcodeSwitchExpander">https://github.com/stefanceriu/SCXcodeSwitchExpander</a></p>
-
-<p>9：git中关于各个语言的gitignore</p>
-
-<p>地址：<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a></p>
-
-<p>10：FLEX（Flipboard Explorer）是Flipboard官方发布的一组专门用于iOS开发的应用内调试工具</p>
-
-<p>地址：<a href="https://github.com/Flipboard/FLEX">https://github.com/Flipboard/FLEX</a></p>
-
-<p>11：ponyDebugger是一个远程调试工具包，通过使用Chrome开发者工具来调试iOS应用的网络流量和数据存储</p>
-
-<p>地址：<a href="https://github.com/square/PonyDebugger">https://github.com/square/PonyDebugger</a></p>
-
-<p>12: OC编码风格规范</p>
-
-<p>地址：<a href="https://github.com/NYTimes/objective-c-style-guide">https://github.com/NYTimes/objective-c-style-guide</a></p>
-
-<p>13:FBMemoryProfiler：Facebook出品的一个实时监测内存使用的库。相比于Xcode自带的Instruments</p>
-
-<p>地址：<a href="https://github.com/facebook/FBMemoryProfiler">https://github.com/facebook/FBMemoryProfiler</a></p>
-
-<p>14:app卡顿问题检测&ndash;KMCGeigerCounter(实例可以网上搜索)</p>
-
-<p>地址：<a href="https://github.com/kconner/KMCGeigerCounter/">https://github.com/kconner/KMCGeigerCounter/</a></p>
-
-<p>15:生成类的关系图KSHObjcUML</p>
-
-<p>地址：<a href="https://github.com/kimsungwhee/KSHObjcUML">https://github.com/kimsungwhee/KSHObjcUML</a></p>
-
-<p>16:realm-cocoa实体映射数据库，有自个的数据库（可以替换SQLITE，速度比较快）</p>
-
-<p>地址：<a href="https://github.com/realm/realm-cocoa">https://github.com/realm/realm-cocoa</a></p>
-
-<p>17:创建文档API，可以快速让APP先调用，并行开发</p>
-
-<p>地址：<a href="https://apiary.io/">https://apiary.io/</a></p>
-
-<p>18:直接查看虚拟器上的沙盒路径simpholders</p>
-
-<p>地址：<a href="http://www.maczapp.com/simpholders">http://www.maczapp.com/simpholders</a></p>
-
-<p>19:FastStub实现了类似的功能，能自动解析出某个类头文件，父类，所有protocol里面还没有被实现的方法(ctrl+cmd+k)</p>
-
-<p>地址：<a href="https://github.com/music4kid/FastStub-Xcode">https://github.com/music4kid/FastStub-Xcode</a></p>
-
-<p>三：第三方插件</p>
-
-<p>1:基于响应式编程思想的oc</p>
-
-<p>地址：<a href="https://github.com/ReactiveCocoa/ReactiveCocoa">https://github.com/ReactiveCocoa/ReactiveCocoa</a></p>
-
-<p>2：hud提示框</p>
-
-<p>地址：<a href="https://github.com/jdg/MBProgressHUD">https://github.com/jdg/MBProgressHUD</a></p>
-
-<p>3：XML/HTML解析</p>
-
-<p>地址：<a href="https://github.com/topfunky/hpple">https://github.com/topfunky/hpple</a></p>
-
-<p>4：有文字输入时，能根据键盘是否弹出来调整自身显示内容的位置</p>
-
-<p>地址：<a href="https://github.com/michaeltyson/TPKeyboardAvoiding">https://github.com/michaeltyson/TPKeyboardAvoiding</a></p>
-
-<p>5：状态栏提示框</p>
-
-<p>地址：<a href="https://github.com/jaydee3/JDStatusBarNotification">https://github.com/jaydee3/JDStatusBarNotification</a></p>
-
-<p>6：block工具包。将很多需要用delegate实现的方法整合成了block的形式</p>
-
-<p>地址：<a href="https://github.com/zwaldowski/BlocksKit">https://github.com/zwaldowski/BlocksKit</a></p>
-
-<p>7：图片加载</p>
-
-<p>地址：<a href="https://github.com/rs/SDWebImage">https://github.com/rs/SDWebImage</a></p>
-
-<p>8：正则表达式</p>
-
-<p>地址：<a href="https://github.com/wezm/RegexKitLite">https://github.com/wezm/RegexKitLite</a></p>
-
-<p>9：Masonry代码布局</p>
-
-<p>地址：<a href="https://github.com/SnapKit/Masonry">https://github.com/SnapKit/Masonry</a></p>
-
-<p>10：弹出窗</p>
-
-<p>地址：<a href="https://github.com/sberrevoets/SDCAlertView">https://github.com/sberrevoets/SDCAlertView</a></p>
-
-<p>11:Button的样式</p>
-
-<p>地址：<a href="https://github.com/mattlawer/BButton">https://github.com/mattlawer/BButton</a></p>
-
-<p>12：验证网络连接状态</p>
-
-<p>地址：<a href="https://github.com/tonymillion/Reachability">https://github.com/tonymillion/Reachability</a></p>
-
-<p>13：自动计算表格行高</p>
-
-<p>地址：<a href="https://github.com/forkingdog/UITableView-FDTemplateLayoutCell">https://github.com/forkingdog/UITableView-FDTemplateLayoutCell</a></p>
-
-<p>14：关键帧基础动画框架,如动画效果的启动页</p>
-
-<p>地址：<a href="https://github.com/IFTTT/JazzHands">https://github.com/IFTTT/JazzHands</a></p>
-
-<p>15：iOS快速简单集成国内三大平台分享</p>
-
-<p>地址：<a href="https://github.com/xumeng/XMShareModule">https://github.com/xumeng/XMShareModule</a></p>
-
-<p>16：五项能力值展示的五边形</p>
-
-<p>地址：<a href="https://github.com/dsxNiubility/SXFiveScoreShow">https://github.com/dsxNiubility/SXFiveScoreShow</a></p>
-
-<p>17：自动识别网址号码邮箱和表情的label</p>
-
-<p>地址：<a href="https://github.com/molon/MLEmojiLabel">https://github.com/molon/MLEmojiLabel</a></p>
-
-<p>18：IM对话功能的封装</p>
-
-<p>地址：<a href="https://github.com/ZhipingYang/UUChatTableView">https://github.com/ZhipingYang/UUChatTableView</a></p>
-
-<p>19：字典转模型框架</p>
-
-<p>地址：<a href="https://github.com/CoderMJLee/MJExtension">https://github.com/CoderMJLee/MJExtension</a></p>
-
-<p>20：下拉上拉刷数据</p>
-
-<p>地址：<a href="https://github.com/CoderMJLee/MJRefresh">https://github.com/CoderMJLee/MJRefresh</a></p>
-
-<p>21：表格行左右划动菜单</p>
-
-<p>地址：<a href="https://github.com/MortimerGoro/MGSwipeTableCell">https://github.com/MortimerGoro/MGSwipeTableCell</a></p>
-
-<p>22:图文混搭</p>
-
-<p>地址:<a href="https://github.com/zhouande/TLAttributedLabel">https://github.com/zhouande/TLAttributedLabel</a></p>
-
-<p>23:可以简单展示在UINavigationBar下方，类似Music app的播放列表视图，弹出菜单视图</p>
-
-<p>地址：<a href="https://github.com/DrummerB/BFNavigationBarDrawer">https://github.com/DrummerB/BFNavigationBarDrawer</a></p>
-
-<p>24：比如筛选、模糊、优化、蒙版、调整大小、旋转以及保存等等。同时还提供了一个UIImageView子类从URL异步加载图片，并在下载完毕时展示图片。</p>
-
-<p>地址：<a href="https://github.com/Nyx0uf/NYXImagesKit">https://github.com/Nyx0uf/NYXImagesKit</a></p>
-
-<p>25：底部TabBar</p>
-
-<p>地址：<a href="https://github.com/robbdimitrov/RDVTabBarController">https://github.com/robbdimitrov/RDVTabBarController</a></p>
-
-<p>26:表情面版</p>
-
-<p>地址：<a href="https://github.com/ayushgoel/AGEmojiKeyboard">https://github.com/ayushgoel/AGEmojiKeyboard</a></p>
-
-<p>27:记录框架</p>
-
-<p>地址：<a href="https://github.com/CocoaLumberjack/CocoaLumberjack">https://github.com/CocoaLumberjack/CocoaLumberjack</a></p>
-
-<p>28：IOS与javascript交互</p>
-
-<p>地址：<a href="https://github.com/marcuswestin/WebViewJavascriptBridge">https://github.com/marcuswestin/WebViewJavascriptBridge</a></p>
-
-<p>29：图表统计展示</p>
-
-<p>地址：<a href="https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89">https://github.com/kevinzhow/PNChart%EF%BC%88%E6%88%96https://github.com/danielgindi/ios-charts%EF%BC%89</a></p>
-
-<p>30:appStore评分</p>
-
-<p>地址：<a href="https://github.com/arashpayan/appirater">https://github.com/arashpayan/appirater</a></p>
-
-<p>31：iOS-Categories扩展类大全</p>
-
-<p>地址：<a href="https://github.com/shaojiankui/IOS-Categories">https://github.com/shaojiankui/IOS-Categories</a></p>
-
-<p>32：扫描二维码，仿微信效果，带有扫描条</p>
-
-<p>地址：<a href="https://github.com/JxbSir/JxbScanQR">https://github.com/JxbSir/JxbScanQR</a></p>
-
-<p>33:动效弹出视图(弹出窗里面为文字，可以定义弹出的方向，及显示的时间)&ndash;AMPopTip</p>
-
-<p>地址：<a href="https://github.com/andreamazz/AMPopTip">https://github.com/andreamazz/AMPopTip</a></p>
-
-<p>34:基于Masonry自动计算行高扩展</p>
-
-<p>地址：<a href="https://github.com/632840804/HYBMasonryAutoCellHeight">https://github.com/632840804/HYBMasonryAutoCellHeight</a></p>
-
-<p>35:模仿新浪微博弹出菜单</p>
-
-<p>地址：<a href="https://github.com/wwdc14/HyPopMenuView">https://github.com/wwdc14/HyPopMenuView</a></p>
-
-<p>36:搜索历史标签</p>
-
-<p>地址：<a href="https://github.com/zhiwupei/SearchHistory">https://github.com/zhiwupei/SearchHistory</a></p>
-
-<p>37：快速集成新手引导的类库</p>
-
-<p>地址：<a href="https://github.com/StrongX/XSportLight">https://github.com/StrongX/XSportLight</a></p>
-
-<p>38：设置页面的封装</p>
-
-<p>地址：<a href="https://github.com/renzifeng/ZFSetting">https://github.com/renzifeng/ZFSetting</a></p>
-
-<p>39：带箭头的弹出视图插件</p>
-
-<p>地址：<a href="https://github.com/xiekw2010/DXPopover">https://github.com/xiekw2010/DXPopover</a></p>
-
-<p>40：下拉菜单插件</p>
-
-<p>地址：<a href="https://github.com/dopcn/DOPDropDownMenu/">https://github.com/dopcn/DOPDropDownMenu/</a></p>
-
-<p>41：表格空白提示插件</p>
-
-<p>地址：<a href="https://github.com/dzenbot/DZNEmptyDataSet">https://github.com/dzenbot/DZNEmptyDataSet</a></p>
-
-<p>42:给任意UIView视图四条边框加上阴影，可以自定义阴影的颜色、粗细程度、透明程度以及位置（上下左右边框）</p>
-
-<p>地址：<a href="https://github.com/Seitk/UIView-Shadow-Maker">https://github.com/Seitk/UIView-Shadow-Maker</a></p>
-
-<p>43:不错的日期时间插件</p>
-
-<p>地址：<a href="https://github.com/CoderXL/UUDatePicker">https://github.com/CoderXL/UUDatePicker</a></p>
-
-<p>44:底部弹出选择</p>
-
-<p>地址：<a href="https://github.com/skywinder/ActionSheetPicker-3.0">https://github.com/skywinder/ActionSheetPicker-3.0</a></p>
-
-<p>45:比较不错的引导页面插件</p>
-
-<p>地址：<a href="https://github.com/ealeksandrov/EAIntroView">https://github.com/ealeksandrov/EAIntroView</a></p>
-
-<p>46:两个APP跳转的插件</p>
-
-<p>地址：<a href="https://github.com/usebutton/DeepLinkKit">https://github.com/usebutton/DeepLinkKit</a></p>
-
-<p>47:本地存取NSUserDefaults插件</p>
-
-<p>地址：<a href="https://github.com/gangverk/GVUserDefaults">https://github.com/gangverk/GVUserDefaults</a></p>
-
-<p>48:NSArray和NSDictionary关于LINQ的操作方式，封装一些常用的操作</p>
-
-<p>地址：<a href="https://github.com/ColinEberhardt/LinqToObjectiveC">https://github.com/ColinEberhardt/LinqToObjectiveC</a></p>
-
-<p>49:可以监控网络请求的内容</p>
-
-<p>地址：<a href="https://github.com/coderyi/NetworkEye">https://github.com/coderyi/NetworkEye</a></p>
-
-<p>50：时间帮助插件，可以快速获取时间，比较，增加等操作</p>
-
-<p>地址：<a href="https://github.com/MatthewYork/DateTools">https://github.com/MatthewYork/DateTools</a></p>
-
-<p>51:不错的链式动作</p>
-
-<p>地址：<a href="https://github.com/jhurray/JHChainableAnimations">https://github.com/jhurray/JHChainableAnimations</a></p>
-
-<p>52:弹出层视图，背景效果（可以自定义视图的内容）</p>
-
-<p>地址：<a href="https://github.com/HJaycee/JCAlertView">https://github.com/HJaycee/JCAlertView</a></p>
-
-<p>53:圆形进度条的显示，中间可显示值</p>
-
-<p>地址：<a href="https://github.com/mdinacci/MDRadialProgress">https://github.com/mdinacci/MDRadialProgress</a></p>
-
-<p>54:很帅的数据加载动画（可以用于数据列表加载的展现）</p>
-
-<p>地址：<a href="https://github.com/NghiaTranUIT/FeSpinner">https://github.com/NghiaTranUIT/FeSpinner</a></p>
-
-<p>55:一个开源的AFnetworking上层的封装（猿题库等运用）</p>
-
-<p>地址：<a href="https://github.com/yuantiku/YTKNetwork">https://github.com/yuantiku/YTKNetwork</a></p>
-
-<p>56:CBStoreHouseRefreshControl：一个效果很酷炫的下拉刷新控件</p>
-
-<p>地址：<a href="https://github.com/coolbeet/CBStoreHouseRefreshControl">https://github.com/coolbeet/CBStoreHouseRefreshControl</a></p>
-
-<p>57:AFNetworking-RACExtensions:针对ReactiveCocoa的AF封装</p>
-
-<p>地址：<a href="https://github.com/CodaFi/AFNetworking-RACExtensions">https://github.com/CodaFi/AFNetworking-RACExtensions</a></p>
-
-<p>58:模糊效果（毛玻璃）</p>
-
-<p>地址：<a href="https://github.com/nicklockwood/FXBlurView">https://github.com/nicklockwood/FXBlurView</a></p>
-
-<p>59:UITableView展开效果的插件</p>
-
-<p>地址：<a href="https://github.com/sakkaras/SKSTableView">https://github.com/sakkaras/SKSTableView</a></p>
-
-<p>60:ZIP压缩及解压插件ZipArchive</p>
-
-<p>地址：<a href="https://github.com/ZipArchive/ZipArchive">https://github.com/ZipArchive/ZipArchive</a></p>
-
-<p>61:自定义UIAlertView</p>
-
-<p>地址：<a href="https://github.com/lmcd/LMAlertView">https://github.com/lmcd/LMAlertView</a></p>
-
-<p>62:Facebook开源的动画库Pop</p>
-
-<p>地址：<a href="https://github.com/facebook/pop">https://github.com/facebook/pop</a></p>
-
-<p>63:关于使用facebook动画库的实例集合</p>
-
-<p>地址：<a href="https://github.com/schneiderandre/popping">https://github.com/schneiderandre/popping</a></p>
-
-<p>64:iOS应用视图上添加简单闪烁效果Shimmer</p>
-
-<p>地址：<a href="https://github.com/facebook/Shimmer">https://github.com/facebook/Shimmer</a></p>
-
-<p>65:ios数据持久化插件，使得Core Data使用起来更加的便捷容易</p>
-
-<p>地址：<a href="https://github.com/magicalpanda/MagicalRecord">https://github.com/magicalpanda/MagicalRecord</a></p>
-
-<p>66:创建缩合的iOS应用程序标题栏</p>
-
-<p>地址：<a href="https://github.com/bryankeller/BLKFlexibleHeightBar">https://github.com/bryankeller/BLKFlexibleHeightBar</a></p>
-
-<p>67:PDF阅读器核心库</p>
-
-<p>地址：<a href="https://github.com/vfr/Reader">https://github.com/vfr/Reader</a></p>
-
-<p>68:STPopup使弹出框也有UINavigationController的效果</p>
-
-<p>地址：<a href="https://github.com/kevin0571/STPopup">https://github.com/kevin0571/STPopup</a></p>
-
-<p>69:基于核心音频,有助于进行实时，低延迟音频处理和可视化的iOS和OSX音频可视化框架</p>
-
-<p>地址：<a href="https://github.com/syedhali/EZAudio">https://github.com/syedhali/EZAudio</a></p>
-
-<p>70:一个不错的弹出Sheet,可以前进跟后退，适合多个页面</p>
-
-<p>地址：<a href="https://github.com/m1entus/MZFormSheetController">https://github.com/m1entus/MZFormSheetController</a></p>
-
-<p>71:Aspect库是对面向切面编程的实现，里面封装了Runtime的方法</p>
-
-<p>地址：<a href="https://github.com/steipete/Aspects">https://github.com/steipete/Aspects</a></p>
-
-<p>72：一个不错在无输入源的输入框，如UITableViewCell等</p>
-
-<p>地址：<a href="https://github.com/slackhq/SlackTextViewController">https://github.com/slackhq/SlackTextViewController</a></p>
-
-<p>73:小红点插件，用于提示未读效果</p>
-
-<p>地址：<a href="https://github.com/weng1250/WZLBadge">https://github.com/weng1250/WZLBadge</a></p>
-
-<p>74:不错的照片选择器，视频选择器，支持单多选</p>
-
-<p>地址：<a href="https://github.com/mwaterfall/MWPhotoBrowser">https://github.com/mwaterfall/MWPhotoBrowser</a></p>
-
-<p>75:含10多种的转场动画效果</p>
-
-<p>地址：<a href="https://github.com/ColinEberhardt/VCTransitionsLibrary">https://github.com/ColinEberhardt/VCTransitionsLibrary</a></p>
-
-<p>76:左右菜单显示（类似QQ导航）</p>
-
-<p>地址：<a href="https://github.com/romaonthego/RESideMenu">https://github.com/romaonthego/RESideMenu</a></p>
-
-<p>77:很赞的等待指示动画（比系统自带的帅）</p>
-
-<p>地址：<a href="https://github.com/ninjaprox/DGActivityIndicatorView">https://github.com/ninjaprox/DGActivityIndicatorView</a></p>
-
-<p>78:KVOController一个简单安全的KVO(Key-value Observing,键-值观察)工具,提供简单方便、线程安全的API, Facebook的开源项目之一</p>
-
-<p>地址：<a href="https://github.com/facebook/KVOController">https://github.com/facebook/KVOController</a></p>
-
-<p>79：FormatterKit收集了很多构思优秀的NSFormatter子类</p>
-
-<p>地址：<a href="https://github.com/mattt/FormatterKit">https://github.com/mattt/FormatterKit</a></p>
-
-<p>80:自定义的UIPageControl(可以设置每个的样式)</p>
-
-<p>地址：<a href="https://github.com/Spaceman-Labs/SMPageControl">https://github.com/Spaceman-Labs/SMPageControl</a></p>
-
-<p>81:使用NJKWebViewProgress做webview进度条（解决先前无法获得进度的问题）</p>
-
-<p>地址：<a href="https://github.com/ninjinkun/NJKWebViewProgress">https://github.com/ninjinkun/NJKWebViewProgress</a></p>
-
-<p>82:修改NavigationBar的显示效果</p>
-
-<p>地址：<a href="https://github.com/ltebean/LTNavigationBar/">https://github.com/ltebean/LTNavigationBar/</a></p>
-
-<p>83:FCUUID获得设备号的替代方式</p>
-
-<p>地址：<a href="https://github.com/fabiocaccamo/FCUUID">https://github.com/fabiocaccamo/FCUUID</a></p>
-
-<p>84:多主题色或者白天黑夜模式的运用</p>
-
-<p>地址：<a href="https://github.com/Draveness/DKNightVersion">https://github.com/Draveness/DKNightVersion</a></p>
-
-<p>85:GPUImage是一个基于GPU图像和视频处理的开源框架,提供各种各样的图像处理滤镜</p>
-
-<p>地址：<a href="https://github.com/BradLarson/GPUImage">https://github.com/BradLarson/GPUImage</a></p>
-
-<p>86:YY图片加载插件，可以支持动态，网络本地，渐进式图片加载等</p>
-
-<p>地址：<a href="https://github.com/ibireme/YYWebImage">https://github.com/ibireme/YYWebImage</a></p>
-
-<p>87:封装后的蓝牙帮助库</p>
-
-<p>地址：<a href="https://github.com/coolnameismy/BabyBluetooth">https://github.com/coolnameismy/BabyBluetooth</a></p>
-
-<p>88:一个很通用的需求就是引导教程</p>
-
-<p>地址：<a href="https://github.com/bubudrc/MPCoachMarks">https://github.com/bubudrc/MPCoachMarks</a></p>
-
-<p>89:基于MPMoviePlayerController播放器KRVideoPlayer</p>
-
-<p>地址：<a href="https://github.com/36Kr-Mobile/KRVideoPlayer">https://github.com/36Kr-Mobile/KRVideoPlayer</a></p>
-
-<p>90:UICollection左对齐跟右对齐</p>
-
-<p>地址：<a href="https://github.com/mokagio/UICollectionViewLeftAlignedLayout">https://github.com/mokagio/UICollectionViewLeftAlignedLayout</a></p>
-
-<p>地址：<a href="https://github.com/mokagio/UICollectionViewRightAlignedLayout">https://github.com/mokagio/UICollectionViewRightAlignedLayout</a></p>
-
-<p>91:自定义弹出对话窗，类似系统又可以自定义视图DQAlertView或MMPopupView</p>
-
-<p>地址：<a href="https://github.com/dinhquan/DQAlertView">https://github.com/dinhquan/DQAlertView</a></p>
-
-<p>地址：<a href="https://github.com/adad184/MMPopupView">https://github.com/adad184/MMPopupView</a></p>
-
-<p>92:输入框在焦点获得时会有一个小标题JVFloatLabeledTextField</p>
-
-<p>地址：<a href="https://github.com/jverdi/JVFloatLabeledTextField">https://github.com/jverdi/JVFloatLabeledTextField</a></p>
-
-<p>93:针对一些UI进行显示优化，可以设置一些不同的背景色等</p>
-
-<p>地址：<a href="https://github.com/Grouper/FlatUIKit">https://github.com/Grouper/FlatUIKit</a></p>
-
-<p>94:色彩插件，如果没有设计师又想一些漂亮的色彩就可以运用Chameleon</p>
-
-<p>地址：<a href="https://github.com/ViccAlexander/Chameleon">https://github.com/ViccAlexander/Chameleon</a></p>
-
-<p>95:两个不错的侧边栏显示插件ECSlidingViewController，SWRevealViewController</p>
-
-<p>地址：<a href="https://github.com/ECSlidingViewController/">https://github.com/ECSlidingViewController/</a></p>
-
-<p>ECSlidingViewController</p>
-
-<p>地址：<a href="https://github.com/John-Lluch/SWRevealViewController">https://github.com/John-Lluch/SWRevealViewController</a></p>
-
-<p>96：各式各样的进度条，可以放在不同地方NAV或者图片或者扇形M13ProgressSuite</p>
-
-<p>地址：<a href="https://github.com/Marxon13/M13ProgressSuite">https://github.com/Marxon13/M13ProgressSuite</a></p>
-
-<p>97：拉动UITableView时CELL有一摇动的效果AMWaveTransition</p>
-
-<p>地址：<a href="https://github.com/andreamazz/AMWaveTransition">https://github.com/andreamazz/AMWaveTransition</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[警告与实战]]></title>
-    <link href="http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli/"/>
-    <updated>2016-06-03T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/06/03/appjinggaoshizhanchuli</id>
-    <content type="html"><![CDATA[<p>App实战中遇到的警告问题及处理方式</p>
-
-<!--more-->
-
-
-<p>Xcode 升级后，常常遇到的遇到的警告、错误，解决方法</p>
-
-<h5>警告：“xoxoxoxo”  is deprecated</h5>
-
-<pre><code>解决办法：查看xoxoxoxo的这个方法的文档，替换掉这个方法即可。
-</code></pre>
-
-<h5>警告：Declaration of &ldquo;struct sockaddr&rdquo; will not be visible outside of this function</h5>
-
-<pre><code>解决办法：在你的开源.m文件中添加 #import &lt;netinet/in.h&gt;
-</code></pre>
-
-<h5>警告：Implicit conversion from enumeration type &lsquo;UIInterfaceOrientation&rsquo; to different enumeration type &lsquo;UIDeviceOrientation&rsquo;</h5>
-
-<pre><code>解决办法：类型不匹配。跳到出错的那一行，UIInterfaceOrientation强制转换为UIDeviceOrientation就行了。
-</code></pre>
-
-<h5>警告：incompatible pointer types assigning to &lsquo;MyArrayList*'from 'NSMutableArray&rsquo;</h5>
-
-<pre><code>解决办法：加入强制转换(MyArrayList*)
-</code></pre>
-
-<h5>警告：'&amp;&amp;&lsquo; within &rsquo;||'</h5>
-
-<p>问题出处：
-    if (exists &amp;&amp; !isDirectory || !exists)………</p>
-
-<pre><code>  解决办法： if ((exists &amp;&amp; !isDirectory) || !exists)………
-</code></pre>
-
-<h5>警告：Warning：The Copy Bundle Resources build phase contains this target&rsquo;s Info.plist file</h5>
-
-<pre><code>解决办法：将Info.plist文件移到Resources目录下，而不要直接放在target下。
-</code></pre>
-
-<h5>警告：在使用ASIHttp…第三方库的，运行报错。</h5>
-
-<pre><code>解决办法：看你的项目中是否添加CFNetwork.framework、SystemConfiguration.framework, MobileCoreServices.framework,
-</code></pre>
-
-<p>CoreGraphics.framework和libz.1.2.3.dylib，如果是sdk5.0以上，改添加libz.1.2.5.dylib</p>
-
-<h5>警告：xxxooo，missing required architecture i386 in file</h5>
-
-<pre><code>解决办法：如果是错误信息的话：Target-&gt;Build Settings-&gt;Search Paths, 删除FrameworkSearch Paths 里面内容就可以了。
-</code></pre>
-
-<p>要只是一个警告的话，真机调试可以过。具体解决方法待大神出现。</p>
-
-<h5>警告：</h5>
-
-<p>clang: error: no such file or directory: &lsquo;/demo2/控件代码/13/Recorder/Recorder_Prefix.pch&rsquo;
-clang: error: no input files
-Command /Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin/clang failed with exit code 1</p>
-
-<pre><code>解决办法： 在你的主工程文件 target搜素，pch ，找到Prefix Header    把它后面的值，都删除，再运行就解决了。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>“ARC forbids synthesizing a property of an Objective-C object with unspecified ownership or storage attribute</p>
-
-<pre><code>解决办法：如果定义了ARC有效，那么必须要有所有者属性的定义;所以代码改成下面这样
-@property (nonatomic, strong, readonly) NSString *ss;
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>io6一下的xib系统均没有自动选择Use Autolayout， Supporting iOS 5 and below with xib of iOS 6</p>
-
-<pre><code>解决办法：Just un-select “Use Autolayout” in the file inspector of the xib’s view and we are back to the familiar autosizing in size inspector and boom, it supports iOS 5 and below.
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>Warning: Multiple build commands for output file xxx.png</p>
-
-<pre><code>解决办法：找到项目里xxx.png重复，删除重复的资源。
-</code></pre>
-
-<p>//以下是升级到 xcode 5.0.1 之后使用遇到的警告</p>
-
-<h5>警告：</h5>
-
-<p> “iOS 模拟器”未能安装此应用程序。</p>
-
-<pre><code>解决办法：删除模拟器上当前要运行那个APP，重新运行项目。就ok
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>SpringBoard无法启动应用程序 错误:-3</p>
-
-<pre><code>解决办法：退出模拟器，重新运行这个项目。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>The server certificate failed to verify.</p>
-
-<pre><code>解决办法：
-1、打开终端（实用工具 --&gt;终端），在终端中输入如下命令：
-svn ls https://192.100.1.11?0/svn/xxxxxx（注意下面的url更换成你自己的url地址）
-然后直接输入 “ p ”  确认，就可以重新连接了。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>Bitmasking for introspection of Objective-C object pointers is strongly discouraged.</p>
-
-<pre><code>解决办法：
-某数字&amp; 0x1的时候是代表要取最低位是否为1，改成了  if(JK_EXPECT_F(((NSUInteger)object)%2))即可。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>Implicit conversion loses integer precision: &lsquo;unsigned long&rsquo; to &lsquo;CC_LONG&rsquo; (aka &lsquo;unsigned int&rsquo;).</p>
-
-<pre><code>解决办法：
-CC_MD5(str,strlen(str), r);，改成了     CC_MD5(str, (CC_LONG)strlen(str), r);即可。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>error: failed to launch &lsquo;/private/var/mobile/Applications/xxxxx&rsquo; &ndash; failed to get the task for process 11140.</p>
-
-<pre><code>解决办法：
-    重启你的开发手机即可，还有一种可能是你的开发者证书与发布证书搞错了，检查在xcode中证书是否一直 。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>error: ignoring filxxxxxx/libBaiduMobStat.a, missing required architecture x86_64 in filexxxx/libBaiduMobStat.a</p>
-
-<pre><code>解决办法：
-    targets -&gt;build setting 下的  architectures 设置为 standard architetures(armv7,armv7s)   vaild architectures 设置为armv7,armv7s。
-</code></pre>
-
-<h5>警告：</h5>
-
-<p>error: Directory not found for option &lsquo;-L/Users/joryoubonxx/BaiduStatistic</p>
-
-<pre><code>解决办法：
-  删除  targets -&gt;build setting 下的  library search path不正确的地址,如果还不行，重新添加第三库、clean ,重启Xcode.即可。
-</code></pre>
-
-<p>遇到相关的警告，一般编译器都会提供解决方案，所以，作为新手，我们应该看懂编译器给我们的提示，这样我们解决问题就会事半功倍。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[环信高级篇-透传和拓展]]></title>
-    <link href="http://al1020119.github.io/blog/2016/05/20/huanxingaojipian/"/>
-    <updated>2016-05-20T13:53:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/05/20/huanxingaojipian</id>
-    <content type="html"><![CDATA[<p>由于App开发中遇到了：送花和打赏，但是我们使用的即时通讯是环信，并没有直接的接口实现，而是需要我们使用里面比较特殊的技术：拓展和透传</p>
-
-<p>透传：传递用户头像和昵称
-拓展：实现非正常消息（打赏，送花，送礼物）</p>
-
-<!--more-->
-
-
-<p>环信高级篇-透传和拓展</p>
-
-<p>////////////////////////////////////////////////////////////////////////////////////////////////////
-  透传
-////////////////////////////////////////////////////////////////////////////////////////////////////</p>
-
-<p>方法一 从APP服务器获取昵称和头像</p>
-
-<pre><code>昵称和头像的获取：当收到一条消息（群消息）时，得到发送者的用户ID，然后查找手机本地数据库是否有此用户ID的昵称和头像，如没有则调用APP服务器接口通过用户ID查询出昵称和头像，然后保存到本地数据库和缓存，下次此用户发来信息即可直接查询缓存或者本地数据库，不需要再次向APP服务器发起请求
-
-昵称和头像的更新：当点击发送者头像时加载用户详情时从APP服务器查询此用户的具体信息然后更新本地数据库和缓存。当用户自己更新昵称或头像时，也可以发送一条透传消息到其他用户和用户所在的群，来更新该用户的昵称和头像。
-</code></pre>
-
-<p>方法二 从消息扩展中获取昵称和头像</p>
-
-<pre><code>昵称和头像的获取：把用户基本的昵称和头像的URL放到消息的扩展中，通过消息传递给接收方，当收到一条消息时，则能通过消息的扩展得到发送者的昵称和头像URL，然后保存到本地数据库和缓存。当显示昵称和头像时，请从本地或者缓存中读取，不要直接从消息中把赋值拿给界面（否则当用户昵称改变后，同一个人会显示不同的昵称）。
-
-昵称和头像的更新：当扩展消息中的昵称和头像URI与当前本地数据库和缓存中的相应数据不同的时候，需要把新的昵称保存到本地数据库和缓存，并下载新的头像并保存到本地数据库和缓存。
-</code></pre>
-
-<p>透传的实现</p>
-
-<pre><code>- (void)sendTouChuanMessage:(int)count
-{
-
-    GiFHUD *gif = [[GiFHUD alloc] init];
-
-    //Setup GiFHUD image
-    [gif setGifWithImageName:@"pika.gif"];
-    [gif showWithOverlay];
-
-    // dismiss after 2 seconds
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [gif dismiss];
-
-
-
-        //                    EMChatCommand *cmdChat = [[EMChatCommand alloc] init];
-        //                    cmdChat.cmd = @"{"type":1, @"data":"{"count":count}"}";
-        //                    EMCommandMessageBody *body = [[EMCommandMessageBody alloc] initWithChatObject:cmdChat];
-        //                    // 生成message
-        //                    EMMessage *message = [[EMMessage alloc] initWithReceiver:@"6001" bodies:@[body]];
-        //                    message.messageType = eMessageTypeChat; // 设置为单聊消息
-        //                    //message.messageType = eConversationTypeGroupChat;// 设置为群聊消息
-        //                    //message.messageType = eConversationTypeChatRoom;// 设置为聊天室消息
-
-
-        //通过透传发送当前位置信息给领导
-
-        EMChatCommand *shareCommand = [[EMChatCommand alloc] init];
-
-        shareCommand.cmd = @"ResponseLocation";            // 当前cmd消息的关键字
-
-        EMCommandMessageBody *lovesMsgBody = [[EMCommandMessageBody alloc] initWithChatObject:shareCommand];
-
-        //设置要发给谁, fromToken是环信用户username或者群聊groupid
-
-        EMMessage *lovesMsg = [[EMMessage alloc] initWithReceiver:self.uid bodies:@[lovesMsgBody]];
-
-        lovesMsg.messageType = eMessageTypeChat;   // 单聊或者群聊
-
-
-        //                    //IM透传消息格式
-        //
-        //                    {"type":1 "data":""}
-        //                    //type 消息类型，1送花
-        //                    //data 根据消息类型的不同，消息的数据体
-        //
-        //                    1 送花
-        //                    data数据：{"count":99} //count 送出花的个数
-        lovesMsg.ext = @{
-                         @"type":@(1),
-                         @"data":@{@"count":@(count)},
-
-                         };
-        [[EaseMob sharedInstance].chatManager asyncSendMessage:lovesMsg progress:nil];
-    });
+-(void)openDb:(NSString </em>)dbname{
+    //取得数据库保存路径，通常保存沙盒Documents目录
+    NSString <em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@&ldquo;%@&rdquo;,directory);
+    NSString </em>filePath=[directory stringByAppendingPathComponent:dbname];
+    //如果有数据库则直接打开，否则创建并打开（注意filePath是ObjC中的字符串，需要转化为C语言字符串类型）
+    if (SQLITE_OK ==sqlite3_open(filePath.UTF8String, &amp;<em>database)) {
+        NSLog(@&ldquo;数据库打开成功!&rdquo;);
+    }else{
+        NSLog(@&ldquo;数据库打开失败!&rdquo;);
+    }
+}
+-(void)executeNonQuery:(NSString <em>)sql{
+    char </em>error;
+    //单步执行sql语句，用于插入、修改、删除
+    if (SQLITE_OK!=sqlite3_exec(</em>database, sql.UTF8String, NULL, NULL,&amp;error)) {
+        NSLog(@&ldquo;执行SQL语句过程中发生错误！错误信息：%s&rdquo;,error);
+    }
+}
+-(NSArray <em>)executeQuery:(NSString </em>)sql{
+    NSMutableArray *rows=[NSMutableArray array];//数据行</p>
+
+<pre><code>//评估语法正确性
+sqlite3_stmt *stmt;
+//检查语法正确性
+if (SQLITE_OK==sqlite3_prepare_v2(_database, sql.UTF8String, -1, &amp;stmt, NULL)) {
+    //单步执行sql语句
+    while (SQLITE_ROW==sqlite3_step(stmt)) {
+        int columnCount= sqlite3_column_count(stmt);
+        NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+        for (int i=0; i&lt;columnCount; i++) {
+            const char *name= sqlite3_column_name(stmt, i);//取得列名
+            const unsigned char *value= sqlite3_column_text(stmt, i);//取得某列的值
+            dic[[NSString stringWithUTF8String:name]]=[NSString stringWithUTF8String:(const char *)value];
+        }
+        [rows addObject:dic];
+    }
 }
 
-- (void)didReceiveCmdMessage:(EMMessage *)cmdMessage
-{
-    /**
-     *  {"messageId":"177936556470829584","messageType":0,"from":"47","bodies":["{\"type\":\"cmd\",\"action\":\"ResponseLocation\"}"],"ext":{"type":1,"data":{"count":1}},"isAcked":false,"to":"57","timestamp":1458993883065,"requireEncryption":false}
-     */
-    NSString *type = [cmdMessage.ext objectForKey:@"type"];
-    NSString *count = [[cmdMessage.ext objectForKey:@"data"] objectForKey:@"count"];
+//释放句柄
+sqlite3_finalize(stmt);
 
-}
-
-- (void)ReciveMessageExtension
-{
-
-}
+return rows;
 </code></pre>
 
-<p>//////////////////////////////////////////////////////////////////////////////////////////////////////
-//  自定义消息扩展
-//////////////////////////////////////////////////////////////////////////////////////////////////////</p>
+<p>}
+@end</p>
 
-<pre><code>环信官方的解释： 当 SDK 提供的消息类型不满足需求时，开发者可以通过扩展自 SDK 提供的文本、语音、图片、位置等消息类型，从而生成自己需要的消息类型。 
+<p>在上面的类中对于数据库操作进行了封装，封装之后数据操作更加方便，同时所有的语法都由C转换成了ObjC。</p>
+
+<p>下面仍然以微博查看为例进行SQLite演示。当然实际开发中微博数据是从网络读取的，但是考虑到缓存问题，通常会选择将微博数据保存到本地，下面的Demo演示了将数据存放到本地数据库以及数据读取的过程。当然，实际开发中并不会在视图控制器中直接调用数据库操作方法，在这里通常会引入两个概念Model和Service。Model自不必多说，就是MVC中的模型。而Service指的是操作数据库的服务层，它封装了对于Model的基本操作方法，实现具体的业务逻辑。为了解耦，在控制器中是不会直接接触数据库的，控制器中只和模型（模型是领域的抽象）、服务对象有关系，借助服务层对模型进行各类操作，模型的操作反应到数据库中就是对表中数据的操作。具体关系如下：</p>
+
+<p><img src="/images/CSR001.jpg" title="Caption" ></p>
+
+<p>要完成上述功能，首先定义一个应用程序全局对象进行数据库、表的创建。为了避免每次都创建数据库和表出错，这里利用了偏好设置进行保存当前创建状态（其实这也是数据存储的一部分），如果创建过了数据库则不再创建，否则创建数据库和表。</p>
+
+<p>KCDatabaseCreator.m</p>
+
+<p>//
+//  KCDatabaseCreator.m
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCDatabaseCreator.h&rdquo;</h1>
+
+<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
+
+<p>@implementation KCDatabaseCreator
++(void)initDatabase{
+    NSString <em>key=@&ldquo;IsCreatedDb&rdquo;;
+    NSUserDefaults </em>defaults=[[NSUserDefaults alloc]init];
+    if ([[defaults valueForKey:key] intValue]!=1) {
+        [self createUserTable];
+        [self createStatusTable];
+        [defaults setValue:@1 forKey:key];
+    }
+}
++(void)createUserTable{
+    NSString <em>sql=@&ldquo;CREATE TABLE User (Id integer PRIMARY KEY AUTOINCREMENT,name text,screenName text, profileImageUrl text,mbtype text,city text)&rdquo;;
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
++(void)createStatusTable{
+    NSString </em>sql=@&ldquo;CREATE TABLE Status (Id integer PRIMARY KEY AUTOINCREMENT,source text,createdAt date,\"text\&rdquo; text,user integer REFERENCES User (Id))&ldquo;;
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+@end</p>
+
+<p>其次，定义数据模型，这里定义用户User和微博Status两个数据模型类。注意模型应该尽量保持其单纯性，仅仅是简单的POCO，不要引入视图、控制器等相关内容。</p>
+
+<p>KCUser.h</p>
+
+<p>//
+//  KCUser.h
+//  UrlConnection
+//
+//  Created by Kenshin Cui on 14-3-22.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<p>@interface KCUser : NSObject</p>
+
+<h1>pragma mark 编号</h1>
+
+<p>@property (nonatomic,strong) NSNumber *Id;</p>
+
+<h1>pragma mark 用户名</h1>
+
+<p>@property (nonatomic,copy) NSString *name;</p>
+
+<h1>pragma mark 用户昵称</h1>
+
+<p>@property (nonatomic,copy) NSString *screenName;</p>
+
+<h1>pragma mark 头像</h1>
+
+<p>@property (nonatomic,copy) NSString *profileImageUrl;</p>
+
+<h1>pragma mark 会员类型</h1>
+
+<p>@property (nonatomic,copy) NSString *mbtype;</p>
+
+<h1>pragma mark 城市</h1>
+
+<p>@property (nonatomic,copy) NSString *city;</p>
+
+<h1>pragma mark - 动态方法</h1>
+
+<p>/<strong>
+ *  初始化用户
+ *
+ *  @param name 用户名
+ *  @param city 所在城市
+ *
+ *  @return 用户对象
+ <em>/
+-(KCUser </em>)initWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString *)city;
+/</strong>
+ *  使用字典初始化用户对象
+ *
+ *  @param dic 用户数据
+ *
+ *  @return 用户对象
+ <em>/
+-(KCUser </em>)initWithDictionary:(NSDictionary *)dic;</p>
+
+<h1>pragma mark - 静态方法</h1>
+
+<p>+(KCUser <em>)userWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city;
+@end</p>
+
+<p>KCUser.m</p>
+
+<p>//
+//  KCUser.m
+//  UrlConnection
+//
+//  Created by Kenshin Cui on 14-3-22.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCUser.h&rdquo;</h1>
+
+<p>@implementation KCUser
+-(KCUser <em>)initWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city{
+    if (self=[super init]) {
+        self.name=name;
+        self.screenName=screenName;
+        self.profileImageUrl=profileImageUrl;
+        self.mbtype=mbtype;
+        self.city=city;
+    }
+    return self;
+}
+-(KCUser <em>)initWithDictionary:(NSDictionary </em>)dic{
+    if (self=[super init]) {
+        [self setValuesForKeysWithDictionary:dic];
+    }
+    return self;
+}
++(KCUser <em>)userWithName:(NSString </em>)name screenName:(NSString <em>)screenName profileImageUrl:(NSString </em>)profileImageUrl mbtype:(NSString <em>)mbtype city:(NSString </em>)city{
+    KCUser *user=[[KCUser alloc]initWithName:name screenName:screenName profileImageUrl:profileImageUrl mbtype:mbtype city:city];
+    return user;
+}
+@end</p>
+
+<p>KCStatus.h</p>
+
+<p>//
+//  KCStatus.h
+//  UITableView
+//
+//  Created by Kenshin Cui on 14-3-1.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &ldquo;KCUser.h&rdquo;</h1>
+
+<p>@interface KCStatus : NSObject</p>
+
+<h1>pragma mark - 属性</h1>
+
+<p>@property (nonatomic,strong) NSNumber <em>Id;//微博id
+@property (nonatomic,strong) KCUser </em>user;//发送用户
+@property (nonatomic,copy) NSString <em>createdAt;//创建时间
+@property (nonatomic,copy) NSString </em>source;//设备来源
+@property (nonatomic,copy) NSString *text;//微博内容</p>
+
+<h1>pragma mark - 动态方法</h1>
+
+<p>/<strong>
+ *  初始化微博数据
+ *
+ *  @param createAt        创建日期
+ *  @param source          来源
+ *  @param text            微博内容
+ *  @param user            发送用户
+ *
+ *  @return 微博对象
+ <em>/
+-(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user;
+/</strong>
+ *  初始化微博数据
+ *
+ *  @param profileImageUrl 用户头像
+ *  @param mbtype          会员类型
+ *  @param createAt        创建日期
+ *  @param source          来源
+ *  @param text            微博内容
+ *  @param userId          用户编号
+ *
+ *  @return 微博对象
+ <em>/
+-(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId;
+/**
+ *  使用字典初始化微博对象
+ *
+ *  @param dic 字典数据
+ *
+ *  @return 微博对象
+ </em>/
+-(KCStatus <em>)initWithDictionary:(NSDictionary </em>)dic;</p>
+
+<h1>pragma mark - 静态方法</h1>
+
+<p>/<strong>
+ *  初始化微博数据
+ *
+ *  @param createAt        创建日期
+ *  @param source          来源
+ *  @param text            微博内容
+ *  @param user            发送用户
+ *
+ *  @return 微博对象
+ <em>/
++(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user;
+/</strong>
+ *  初始化微博数据
+ *
+ *  @param profileImageUrl 用户头像
+ *  @param mbtype          会员类型
+ *  @param createAt        创建日期
+ *  @param source          来源
+ *  @param text            微博内容
+ *  @param userId          用户编号
+ *
+ *  @return 微博对象
+ <em>/
++(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString *)text userId:(int)userId;
+@end</p>
+
+<p>KCStatus.m</p>
+
+<p>//
+//  KCStatus.m
+//  UITableView
+//
+//  Created by Kenshin Cui on 14-3-1.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCStatus.h&rdquo;</h1>
+
+<p>@implementation KCStatus
+-(KCStatus <em>)initWithDictionary:(NSDictionary </em>)dic{
+    if (self=[super init]) {
+        [self setValuesForKeysWithDictionary:dic];
+        self.user=[[KCUser alloc]init];
+        self.user.Id=dic[@&ldquo;user&rdquo;];
+    }
+    return self;
+}
+-(KCStatus <em>)initWithCreateAt:(NSString </em>)createAt source:(NSString <em>)source text:(NSString </em>)text user:(KCUser <em>)user{
+    if (self=[super init]) {
+        self.createdAt=createAt;
+        self.source=source;
+        self.text=text;
+        self.user=user;
+    }
+    return self;
+}
+-(KCStatus </em>)initWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId{
+    if (self=[super init]) {
+        self.createdAt=createAt;
+        self.source=source;
+        self.text=text;
+        KCUser </em>user=[[KCUser alloc]init];
+        user.Id=[NSNumber numberWithInt:userId];
+        self.user=user;
+    }
+    return self;
+}
+-(NSString <em>)source{
+    return [NSString stringWithFormat:@&ldquo;来自 %@&rdquo;,_source];
+}
++(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text user:(KCUser </em>)user{
+    KCStatus <em>status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text user:user];
+    return status;
+}
++(KCStatus </em>)statusWithCreateAt:(NSString <em>)createAt source:(NSString </em>)source text:(NSString <em>)text userId:(int)userId{
+    KCStatus </em>status=[[KCStatus alloc]initWithCreateAt:createAt source:source text:text userId:userId];
+    return status;
+}
+@end</p>
+
+<p>然后，编写服务类，进行数据的增、删、改、查操作，由于服务类方法同样不需要过多的配置，因此定义为单例，保证程序中只有一个实例即可。服务类中调用前面封装的数据库方法将对数据库的操作转换为对模型的操作。</p>
+
+<p>KCUserService.h</p>
+
+<p>//
+//  KCUserService.h
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &ldquo;KCUser.h&rdquo;</h1>
+
+<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
+
+<p>@interface KCUserService : NSObject
+singleton_interface(KCUserService)
+/<strong>
+ *  添加用户信息
+ *
+ *  @param user 用户对象
+ <em>/
+-(void)addUser:(KCUser </em>)user;
+/</strong>
+ *  删除用户
+ *
+ *  @param user 用户对象
+ <em>/
+-(void)removeUser:(KCUser </em>)user;
+/<strong>
+ *  根据用户名删除用户
+ *
+ *  @param name 用户名
+ <em>/
+-(void)removeUserByName:(NSString </em>)name;
+/</strong>
+ *  修改用户内容
+ *
+ *  @param user 用户对象
+ <em>/
+-(void)modifyUser:(KCUser </em>)user;
+/<strong>
+ *  根据用户编号取得用户
+ *
+ *  @param Id 用户编号
+ *
+ *  @return 用户对象
+ <em>/
+-(KCUser </em>)getUserById:(int)Id;
+/</strong>
+ *  根据用户名取得用户
+ *
+ *  @param name 用户名
+ *
+ *  @return 用户对象
+ <em>/
+-(KCUser </em>)getUserByName:(NSString *)name;
+@end</p>
+
+<p>KCUserService.m</p>
+
+<p>//
+//  KCUserService.m
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCUserService.h&rdquo;</h1>
+
+<h1>import &ldquo;KCUser.h&rdquo;</h1>
+
+<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
+
+<p>@implementation KCUserService
+singleton_implementation(KCUserService)
+-(void)addUser:(KCUser <em>)user{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;INSERT INTO User (name,screenName, profileImageUrl,mbtype,city) VALUES(&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;)&rdquo;,user.name,user.screenName, user.profileImageUrl,user.mbtype,user.city];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(void)removeUser:(KCUser <em>)user{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;DELETE FROM User WHERE Id=&lsquo;%@&rsquo;&rdquo;,user.Id];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(void)removeUserByName:(NSString <em>)name{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;DELETE FROM User WHERE name=&lsquo;%@&rsquo;&rdquo;,name];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(void)modifyUser:(KCUser <em>)user{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;UPDATE User SET name=&lsquo;%@&rsquo;,screenName=&lsquo;%@&rsquo;,profileImageUrl=&lsquo;%@&rsquo;,mbtype=&lsquo;%@&rsquo;,city=&lsquo;%@&rsquo; WHERE Id=&lsquo;%@&rsquo;&rdquo;,user.name,user.screenName,user.profileImageUrl,user.mbtype,user.city,user.Id];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(KCUser <em>)getUserById:(int)Id{
+    KCUser </em>user=[[KCUser alloc]init];
+    NSString <em>sql=[NSString stringWithFormat:@&ldquo;SELECT name,screenName,profileImageUrl,mbtype,city FROM User WHERE Id=&lsquo;%i&rsquo;&rdquo;, Id];
+    NSArray </em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    if (rows&amp;&amp;rows.count>0) {
+        [user setValuesForKeysWithDictionary:rows[0]];
+    }
+    return user;
+}
+-(KCUser <em>)getUserByName:(NSString </em>)name{
+    KCUser <em>user=[[KCUser alloc]init];
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;SELECT Id, name,screenName,profileImageUrl,mbtype,city FROM User WHERE name=&lsquo;%@&rsquo;&rdquo;, name];
+    NSArray *rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    if (rows&amp;&amp;rows.count>0) {
+        [user setValuesForKeysWithDictionary:rows[0]];
+    }
+    return user;
+}
+@end</p>
+
+<p>KCStatusService.h</p>
+
+<p>//
+//  KCStatusService.h
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
+
+<p>@class KCStatus;
+@interface KCStatusService : NSObject
+singleton_interface(KCStatusService)
+/<strong>
+ *  添加微博信息
+ *
+ *  @param status 微博对象
+ <em>/
+-(void)addStatus:(KCStatus </em>)status;
+/</strong>
+ *  删除微博
+ *
+ *  @param status 微博对象
+ <em>/
+-(void)removeStatus:(KCStatus </em>)status;
+/<strong>
+ *  修改微博内容
+ *
+ *  @param status 微博对象
+ <em>/
+-(void)modifyStatus:(KCStatus </em>)status;
+/</strong>
+ *  根据编号取得微博
+ *
+ *  @param Id 微博编号
+ *
+ *  @return 微博对象
+ <em>/
+-(KCStatus </em>)getStatusById:(int)Id;
+/<em><em>
+ *  取得所有微博对象
+ *
+ *  @return 所有微博对象
+ </em>/
+-(NSArray </em>)getAllStatus;
+@end</p>
+
+<p>KCStatusService.m</p>
+
+<p>//
+//  KCStatusService.m
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCStatusService.h&rdquo;</h1>
+
+<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
+
+<h1>import &ldquo;KCStatus.h&rdquo;</h1>
+
+<h1>import &ldquo;KCUserService.h&rdquo;</h1>
+
+<h1>import &ldquo;KCSingleton.h&rdquo;</h1>
+
+<p>@interface KCStatusService(){</p>
+
+<p>}
+@end
+@implementation KCStatusService
+singleton_implementation(KCStatusService)
+-(void)addStatus:(KCStatus <em>)status{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;INSERT INTO Status (source,createdAt,\"text\&rdquo; ,user) VALUES(&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;,&lsquo;%@&rsquo;)&ldquo;,status.source,status.createdAt,status.text,status.user.Id];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(void)removeStatus:(KCStatus <em>)status{
+    NSString </em>sql=[NSString stringWithFormat:@"DELETE FROM Status WHERE Id=&lsquo;%@&rsquo;&rdquo;,status.Id];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(void)modifyStatus:(KCStatus <em>)status{
+    NSString </em>sql=[NSString stringWithFormat:@&ldquo;UPDATE Status SET source=&lsquo;%@&rsquo;,createdAt=&lsquo;%@&rsquo;,\"text\&rdquo;=&lsquo;%@&rsquo; ,user=&lsquo;%@&rsquo; WHERE Id=&lsquo;%@&rsquo;&ldquo;,status.source,status.createdAt,status.text,status.user, status.Id];
+    [[KCDbManager sharedKCDbManager] executeNonQuery:sql];
+}
+-(KCStatus <em>)getStatusById:(int)Id{
+    KCStatus </em>status=[[KCStatus alloc]init];
+    NSString <em>sql=[NSString stringWithFormat:@"SELECT Id, source,createdAt,\"text\&rdquo; ,user FROM Status WHERE Id=&lsquo;%i&rsquo;&ldquo;, Id];
+    NSArray </em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    if (rows&amp;&amp;rows.count>0) {
+        [status setValuesForKeysWithDictionary:rows[0]];
+        status.user=[[KCUserService sharedKCUserService] getUserById:[(NSNumber <em>)rows[0][@"user&rdquo;] intValue]] ;
+    }
+    return status;
+}
+-(NSArray </em>)getAllStatus{
+    NSMutableArray <em>array=[NSMutableArray array];
+    NSString </em>sql=@&ldquo;SELECT Id, source,createdAt,\"text\&rdquo; ,user FROM Status ORDER BY Id";
+    NSArray <em>rows= [[KCDbManager sharedKCDbManager] executeQuery:sql];
+    for (NSDictionary </em>dic in rows) {
+        KCStatus <em>status=[self getStatusById:[(NSNumber </em>)dic[@&ldquo;Id&rdquo;] intValue]];
+        [array addObject:status];
+    }
+    return array;
+}
+@end</p>
+
+<p>最后，在视图控制器中调用相应的服务层进行各类数据操作，在下面的代码中分别演示了增、删、改、查四类操作。</p>
+
+<p>KCMainViewController.m
+//
+//  KCMainTableViewController.m
+//  DataAccess
+//
+//  Created by Kenshin Cui on 14-3-29.
+//  Copyright &copy; 2014年 Kenshin Cui. All rights reserved.
+//</p>
+
+<h1>import &ldquo;KCMainTableViewController.h&rdquo;</h1>
+
+<h1>import &ldquo;KCDbManager.h&rdquo;</h1>
+
+<h1>import &ldquo;KCDatabaseCreator.h&rdquo;</h1>
+
+<h1>import &ldquo;KCUser.h&rdquo;</h1>
+
+<h1>import &ldquo;KCStatus.h&rdquo;</h1>
+
+<h1>import &ldquo;KCUserService.h&rdquo;</h1>
+
+<h1>import &ldquo;KCStatusService.h&rdquo;</h1>
+
+<h1>import &ldquo;KCStatusTableViewCell.h&rdquo;</h1>
+
+<p>@interface KCMainTableViewController (){
+    NSArray <em>_status;
+    NSMutableArray </em>_statusCells;
+}
+@end
+@implementation KCMainTableViewController
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [KCDatabaseCreator initDatabase];</p>
+
+<p>//    [self addUsers];
+//    [self removeUser];
+//    [self modifyUserInfo];</p>
+
+<p>//    [self addStatus];</p>
+
+<pre><code>[self loadStatusData];
+</code></pre>
+
+<p>}
+-(void)addUsers{
+    KCUser <em>user1=[KCUser userWithName:@&ldquo;Binger&rdquo; screenName:@&ldquo;冰儿&rdquo; profileImageUrl:@&ldquo;binger.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    [[KCUserService sharedKCUserService] addUser:user1];
+    KCUser </em>user2=[KCUser userWithName:@&ldquo;Xiaona&rdquo; screenName:@&ldquo;小娜&rdquo; profileImageUrl:@&ldquo;xiaona.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    [[KCUserService sharedKCUserService] addUser:user2];
+    KCUser <em>user3=[KCUser userWithName:@&ldquo;Lily&rdquo; screenName:@&ldquo;丽丽&rdquo; profileImageUrl:@&ldquo;lily.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    [[KCUserService sharedKCUserService] addUser:user3];
+    KCUser </em>user4=[KCUser userWithName:@&ldquo;Qianmo&rdquo; screenName:@&ldquo;阡陌&rdquo; profileImageUrl:@&ldquo;qianmo.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    [[KCUserService sharedKCUserService] addUser:user4];
+    KCUser <em>user5=[KCUser userWithName:@&ldquo;Yanyue&rdquo; screenName:@&ldquo;炎月&rdquo; profileImageUrl:@&ldquo;yanyue.jpg&rdquo; mbtype:@&ldquo;mbtype.png&rdquo; city:@&ldquo;北京&rdquo;];
+    [[KCUserService sharedKCUserService] addUser:user5];
+}
+-(void)addStatus{
+    KCStatus </em>status1=[KCStatus statusWithCreateAt:@&ldquo;9:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词&rdquo; userId:1];
+    [[KCStatusService sharedKCStatusService] addStatus:status1];
+    KCStatus <em>status2=[KCStatus statusWithCreateAt:@&ldquo;9:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;一只雪猴在日本边泡温泉边玩iPhone的照片，获得了\"2014年野生动物摄影师\"大赛特等奖。一起来为猴子配个词&rdquo; userId:1];
+    [[KCStatusService sharedKCStatusService] addStatus:status2];
+    KCStatus </em>status3=[KCStatus statusWithCreateAt:@&ldquo;9:30&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;【我们送iPhone6了 要求很简单】真心回馈粉丝，小编觉得现在最好的奖品就是iPhone6了。今起到12月31日，关注我们，转发微博，就有机会获iPhone6(奖品可能需要等待)！每月抽一台[鼓掌]。不费事，还是试试吧，万一中了呢&rdquo; userId:2];
+    [[KCStatusService sharedKCStatusService] addStatus:status3];
+    KCStatus <em>status4=[KCStatus statusWithCreateAt:@&ldquo;9:45&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;重大新闻：蒂姆库克宣布出柜后，ISIS战士怒扔iPhone，沙特神职人员呼吁人们换回iPhone 4。[via Pan-Arabia Enquirer]&rdquo; userId:3];
+    [[KCStatusService sharedKCStatusService] addStatus:status4];
+    KCStatus </em>status5=[KCStatus statusWithCreateAt:@&ldquo;10:05&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;小伙伴们，有谁知道怎么往Iphone4S里倒东西？倒入的东西又该在哪里找？用了Iphone这么长时间，还真的不知道怎么弄！有谁知道啊？谢谢！&rdquo; userId:4];
+    [[KCStatusService sharedKCStatusService] addStatus:status5];
+    KCStatus <em>status6=[KCStatus statusWithCreateAt:@&ldquo;10:07&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;在音悦台iPhone客户端里发现一个悦单《Infinite 金明洙》，推荐给大家! &rdquo; userId:1];
+    [[KCStatusService sharedKCStatusService] addStatus:status6];
+    KCStatus </em>status7=[KCStatus statusWithCreateAt:@&ldquo;11:20&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;如果sony吧mp3播放器产品发展下去，不贪图手头节目源的现实利益，就木有苹果的ipod，也就木有iphone。柯达类似的现实利益，不自我革命的案例也是一种巨头的宿命。&rdquo; userId:2];
+    [[KCStatusService sharedKCStatusService] addStatus:status7];
+    KCStatus <em>status8=[KCStatus statusWithCreateAt:@&ldquo;13:00&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;【iPhone 7 Plus】新买的iPhone 7 Plus ，如何？够酷炫么？&rdquo; userId:2];
+    [[KCStatusService sharedKCStatusService] addStatus:status8];
+    KCStatus </em>status9=[KCStatus statusWithCreateAt:@&ldquo;13:24&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;自拍神器#卡西欧TR500#，tr350S～价格美丽，行货，全国联保～iPhone6 iPhone6Plus卡西欧TR150 TR200 TR350 TR350S全面到货 招收各种代理！[给力]微信：39017366&rdquo; userId:3];
+    [[KCStatusService sharedKCStatusService] addStatus:status9];
+    KCStatus <em>status10=[KCStatus statusWithCreateAt:@&ldquo;13:26&rdquo; source:@&ldquo;iPhone 6&rdquo; text:@&ldquo;猜到猴哥玩手机时所思所想者，再奖iPhone一部。（奖品由“2014年野生动物摄影师”评委会颁发）&rdquo; userId:3];
+    [[KCStatusService sharedKCStatusService] addStatus:status10];
+}
+-(void)removeUser{
+    //注意在SQLite中区分大小写
+    [[KCUserService sharedKCUserService] removeUserByName:@&ldquo;Yanyue&rdquo;];
+}
+-(void)modifyUserInfo{
+    KCUser </em>user1= [[KCUserService sharedKCUserService]getUserByName:@&ldquo;Xiaona&rdquo;];
+    user1.city=@&ldquo;上海&rdquo;;
+    [[KCUserService sharedKCUserService] modifyUser:user1];</p>
+
+<pre><code>KCUser *user2= [[KCUserService sharedKCUserService]getUserByName:@"Lily"];
+user2.city=@"深圳";
+[[KCUserService sharedKCUserService] modifyUser:user2];
+</code></pre>
+
+<p>}</p>
+
+<h1>pragma mark 加载数据</h1>
+
+<p>-(void)loadStatusData{
+    <em>statusCells=[[NSMutableArray alloc]init];
+    </em>status=[[KCStatusService sharedKCStatusService]getAllStatus];
+    [<em>status enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL <em>stop) {
+        KCStatusTableViewCell </em>cell=[[KCStatusTableViewCell alloc]init];
+        cell.status=(KCStatus *)obj;
+        [</em>statusCells addObject:cell];
+    }];
+    NSLog(@&ldquo;%@&rdquo;,[_status lastObject]);
+}</p>
+
+<h1>pragma mark - Table view data source</h1>
+
+<ul>
+<li>(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+  return 1;
+}</li>
+<li>(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+  return _status.count;
+}</li>
+<li>(UITableViewCell <em>)tableView:(UITableView </em>)tableView cellForRowAtIndexPath:(NSIndexPath <em>)indexPath {
+  static NSString </em>identtityKey=@&ldquo;myTableViewCellIdentityKey1&rdquo;;
+  KCStatusTableViewCell <em>cell=[self.tableView dequeueReusableCellWithIdentifier:identtityKey];
+  if(cell==nil){
+      cell=[[KCStatusTableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:identtityKey];
+  }
+  cell.status=_status[indexPath.row];
+  return cell;
+}
+-(CGFloat)tableView:(UITableView </em>)tableView heightForRowAtIndexPath:(NSIndexPath <em>)indexPath{
+  return ((KCStatusTableViewCell </em>)_statusCells[indexPath.row]).height;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+  return 20.0f;
+}
+@end</li>
+</ul>
 
 
-- (void)SendMessageExtension:(int)count
-{
+<p>项目目录结构：</p>
 
-    GiFHUD *gif = [[GiFHUD alloc] init];
+<p><img src="/images/CSR002.jpg" title="Caption" ></p>
 
-    //Setup GiFHUD image
-    [gif setGifWithImageName:@"pika.gif"];
-    [gif showWithOverlay];
+<p>运行效果</p>
 
-    // dismiss after 2 seconds
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        [gif dismiss];
+<p><img src="/images/CSR003.jpg" title="Caption" >
+Core Data</p>
 
-        NSDictionary *dict = @{@"type":@(1),@"data":@{@"count":@(count)}};
-        NSError *error = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict
-                                                           options:NSJSONWritingPrettyPrinted
-                                                             error:&amp;error];
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData
-                                                     encoding:NSUTF8StringEncoding];
+<p>基本概念</p>
 
+<p>当前，各类应用开发中只要牵扯到数据库操作通常都会用到一个概念“对象关系映射（ORM）”。例如在Java平台使用Hibernate，在.NET平台使用Entity Framework、Linq、NHibernate等。在iOS中也不例外，iOS中ORM框架首选Core Data，这是官方推荐的，不需要借助第三方框架。无论是哪种平台、哪种技术，ORM框架的作用都是相同的，那就是将关系数据库中的表（准确的说是实体）转换为程序中的对象，其本质还是对数据库的操作（例如Core Data中如果存储类型配置为SQLite则本质还是操作的SQLite数据库）。细心的朋友应该已经注意到，在上面的SQLite中其实我们在KCMainViewController中进行的数据库操作已经转换为了对象操作，服务层中的方法中已经将对数据库的操作封装起来，转换为了对Model的操作，这种方式已经是面向对象的。上述通过将对象映射到实体的过程完全是手动完成的，相对来说操作比较复杂，就拿对KCStatus对象的操作来说：首先要手动创建数据库（Status表），其次手动创建模型KCStatus，接着创建服务层KCStatusService。Core Data正是为了解决这个问题而产生的，它将数据库的创建、表的创建、对象和表的转换等操作封装起来，简化了我们的操作（注意Core Data只是将对象关系的映射简化了，并不是把服务层替代了，这一点大家需要明白）。</p>
 
-        // 创建一个聊天文本对象
-        EMChatText *chatText = [[EMChatText alloc] initWithText:jsonString];
-        //#warning 不同的消息类型对应不同的消息体
-        // 创建文本消息体
-        EMTextMessageBody *body = [[EMTextMessageBody alloc] initWithChatObject:chatText];
+<p>使用Core Data进行数据库存取并不需要手动创建数据库，这个过程完全由Core Data框架完成，开发人员面对的是模型，主要的工作就是把模型创建起来，具体数据库如何创建则不用管。在iOS项目中添加“Data Model”文件。然后在其中创建实体和关系：</p>
 
-        // 创建消息对象
-        EMMessage *msgObj = [[EMMessage alloc] initWithReceiver:self.buddy.username bodies:@[body]];
+<p><img src="/images/CSR004.jpg" title="Caption" >
+<img src="/images/CSR005.jpg" title="Caption" ></p>
 
-        msgObj.messageType = eMessageTypeChat; // 设置为单聊消息
-        msgObj.deliveryState = eMessageDeliveryState_Delivered;
-//        msgObj.ext = @{@"1":@(count)};
-        msgObj.ext = @{@"msg_type":@(1)};
-        // 发消息
-        [[EaseMob sharedInstance].chatManager asyncSendMessage:msgObj progress:nil prepare:^(EMMessage *message, EMError *error) {
-            NSLog(@"准备发送消息");
-        } onQueue:nil completion:^(EMMessage *message, EMError *error) {
-            if (!error) {
-                NSLog(@"消息发送成功");
-            }else{
-                NSLog(@"消息发送失败");
-                iCocosLog(@"%@=====================", error);
+<p>模型创建的过程中需要注意：</p>
+
+<p>1.实体对象不需要创建ID主键，Attributes中应该是有意义属性（创建过程中应该考虑对象的属性而不是数据库中表有几个字段，尽管多数属性会对应表的字段）。</p>
+
+<p>2.所有的属性应该指定具体类型（尽管在SQLite中可以不指定），因为实体对象会对应生成ObjC模型类。</p>
+
+<p>3.实体对象中其他实体对象类型的属性应该通过Relationships建立，并且注意实体之间的对应关系（例如一个用户有多条微博，而一条微博则只属于一个用户,用户和微博形成一对多的关系）。</p>
+
+<p>以上模型创建后，接下来就是根据上面的模型文件（.xcdatamodeld文件）生成具体的实体类。在Xcode中添加“NSManagedObject Subclass”文件，按照步骤选择创建的模型及实体，Xcode就会根据所创建模型生成具体的实体类。</p>
+
+<p>User.h</p>
+
+<p>//
+//  User.h
+//  CoreData
+//
+//  Created by Kenshin Cui on 14/03/27.
+//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &lt;CoreData/CoreData.h></h1>
+
+<p>@class Status;
+@interface User : NSManagedObject
+@property (nonatomic, retain) NSString * city;
+@property (nonatomic, retain) NSString * mbtype;
+@property (nonatomic, retain) NSString * name;
+@property (nonatomic, retain) NSString * profileImageUrl;
+@property (nonatomic, retain) NSString * screenName;
+@property (nonatomic, retain) NSSet <em>statuses;
+@end
+@interface User (CoreDataGeneratedAccessors)
+- (void)addStatusesObject:(Status </em>)value;
+- (void)removeStatusesObject:(Status <em>)value;
+- (void)addStatuses:(NSSet </em>)values;
+- (void)removeStatuses:(NSSet *)values;
+@end</p>
+
+<p>User.m</p>
+
+<p>//
+//  User.m
+//  CoreData
+//
+//  Created by Kenshin Cui on 14/03/27.
+//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
+//</p>
+
+<h1>import &ldquo;User.h&rdquo;</h1>
+
+<h1>import &ldquo;Status.h&rdquo;</h1>
+
+<p>@implementation User
+@dynamic city;
+@dynamic mbtype;
+@dynamic name;
+@dynamic profileImageUrl;
+@dynamic screenName;
+@dynamic statuses;
+@end</p>
+
+<p>Status.h
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</p>
+
+<p>//
+//  Status.h
+//  CoreData
+//
+//  Created by Kenshin Cui on 14/03/27.
+//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
+//</p>
+
+<h1>import &lt;Foundation/Foundation.h></h1>
+
+<h1>import &lt;CoreData/CoreData.h></h1>
+
+<p>@interface Status : NSManagedObject
+@property (nonatomic, retain) NSDate * createdAt;
+@property (nonatomic, retain) NSString * source;
+@property (nonatomic, retain) NSString * text;
+@property (nonatomic, retain) NSManagedObject *user;
+@end</p>
+
+<p>Status.m</p>
+
+<p>//
+//  Status.m
+//  CoreData
+//
+//  Created by Kenshin Cui on 14/03/27.
+//  Copyright &copy; 2014年 cmjstudio. All rights reserved.
+//</p>
+
+<h1>import &ldquo;Status.h&rdquo;</h1>
+
+<p>@implementation Status
+@dynamic createdAt;
+@dynamic source;
+@dynamic text;
+@dynamic user;
+@end</p>
+
+<p>很显然，通过模型生成类的过程相当简单，通常这些类也不需要手动维护，如果模型发生的变化只要重新生成即可。有几点需要注意：</p>
+
+<p>1.所有的实体类型都继承于NSManagedObject，每个NSManagedObject对象对应着数据库中一条记录。</p>
+
+<p>2.集合属性（例如User中的status）生成了访问此属性的分类方法。</p>
+
+<p>3.使用@dynamic代表具体属性实现，具体实现细节不需要开发人员关心。</p>
+
+<p>当然，了解了这些还不足以完成数据的操作。究竟Core Data具体的设计如何，要完成数据的存取我们还需要了解一下Core Data几个核心的类。</p>
+
+<p><img src="/images/CSR006.jpg" title="Caption" ></p>
+
+<p>1.Persistent Object Store：可以理解为存储持久对象的数据库（例如SQLite，注意Core Data也支持其他类型的数据存储，例如xml、二进制数据等）。</p>
+
+<p>2.Managed Object Model：对象模型，对应Xcode中创建的模型文件。</p>
+
+<p>3.Persistent Store Coordinator：对象模型和实体类之间的转换协调器，用于管理不同存储对象的上下文。</p>
+
+<p>4.Managed Object Context:对象管理上下文，负责实体对象和数据库之间的交互。</p>
+
+<p>Core Data使用</p>
+
+<p>Core Data使用起来相对直接使用SQLite3的API而言更加的面向对象，操作过程通常分为以下几个步骤：</p>
+
+<p>1.创建管理上下文</p>
+
+<p>创建管理上下可以细分为：加载模型文件->指定数据存储路径->创建对应数据类型的存储->创建管理对象上下方并指定存储。</p>
+
+<p>经过这几个步骤之后可以得到管理对象上下文NSManagedObjectContext，以后所有的数据操作都由此对象负责。同时如果是第一次创建上下文，Core Data会自动创建存储文件（例如这里使用SQLite3存储），并且根据模型对象创建对应的表结构。下图为第一次运行生成的数据库及相关映射文件：</p>
+
+<p><img src="/images/CSR007.jpg" title="Caption" ></p>
+
+<p>为了方便后面使用，NSManagedObjectContext对象可以作为单例或静态属性来保存，下面是创建的管理对象上下文的主要代码：</p>
+
+<p>-(NSManagedObjectContext <em>)createDbContext{
+    NSManagedObjectContext </em>context;
+    //打开模型文件，参数为nil则打开包中所有模型文件并合并成一个
+    NSManagedObjectModel <em>model=[NSManagedObjectModel mergedModelFromBundles:nil];
+    //创建解析器
+    NSPersistentStoreCoordinator </em>storeCoordinator=[[NSPersistentStoreCoordinator alloc]initWithManagedObjectModel:model];
+    //创建数据库保存路径
+    NSString <em>dir=[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@&ldquo;%@&rdquo;,dir);
+    NSString </em>path=[dir stringByAppendingPathComponent:@&ldquo;myDatabase.db&rdquo;];
+    NSURL <em>url=[NSURL fileURLWithPath:path];
+    //添加SQLite持久存储到解析器
+    NSError </em>error;
+    [storeCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:url options:nil error:&amp;error];
+    if(error){
+        NSLog(@&ldquo;数据库打开失败！错误:%@&rdquo;,error.localizedDescription);
+    }else{
+        context=[[NSManagedObjectContext alloc]init];
+        context.persistentStoreCoordinator=storeCoordinator;
+        NSLog(@&ldquo;数据库打开成功！&rdquo;);
+    }
+    return context;
+}</p>
+
+<p>2.查询数据</p>
+
+<p>对于有条件的查询，在Core Data中是通过谓词来实现的。首先创建一个请求，然后设置请求条件，最后调用上下文执行请求的方法。</p>
+
+<p>-(void)addUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
+    //添加一个对象
+    User </em>us= [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;User&rdquo; inManagedObjectContext:self.context];
+    us.name=name;
+    us.screenName=screenName;
+    us.profileImageUrl=profileImageUrl;
+    us.mbtype=mbtype;
+    us.city=city;
+    NSError *error;
+    //保存上下文
+    if (![self.context save:&amp;error]) {
+        NSLog(@&ldquo;添加过程中发生错误,错误信息：%@！&rdquo;,error.localizedDescription);
+    }
+}</p>
+
+<p>如果有多个条件，只要使用谓词组合即可，那么对于关联对象条件怎么查询呢？这里分为两种情况进行介绍：</p>
+
+<p>a.查找一个对象只有唯一一个关联对象的情况，例如查找用户名为“Binger”的微博（一个微博只能属于一个用户），通过keypath查询</p>
+
+<p>-(NSArray <em>)getStatusesByUserName:(NSString </em>)name{
+    NSFetchRequest <em>request=[NSFetchRequest fetchRequestWithEntityName:@&ldquo;Status&rdquo;];
+    request.predicate=[NSPredicate predicateWithFormat:@&ldquo;user.name=%@&rdquo;,name];
+    NSArray </em>array=[self.context executeFetchRequest:request error:nil];
+    return  array;
+}</p>
+
+<p>此时如果跟踪Core Data生成的SQL语句会发现其实就是把Status表和User表进行了关联查询（JOIN连接）。</p>
+
+<p>b.查找一个对象有多个关联对象的情况，例如查找发送微博内容中包含“Watch”并且用户昵称为“小娜”的用户（一个用户有多条微博），此时可以充分利用谓词进行过滤。</p>
+
+<p>-(NSArray <em>)getUsersByStatusText:(NSString </em>)text screenName:(NSString <em>)screenName{
+    NSFetchRequest </em>request=[NSFetchRequest fetchRequestWithEntityName:@&ldquo;Status&rdquo;];
+    request.predicate=[NSPredicate predicateWithFormat:@&ldquo;text LIKE &lsquo;<em>Watch</em>&rsquo;&rdquo;,text];
+    NSArray *statuses=[self.context executeFetchRequest:request error:nil];</p>
+
+<pre><code>NSPredicate *userPredicate= [NSPredicate predicateWithFormat:@"user.screenName=%@",screenName];
+NSArray *users= [statuses filteredArrayUsingPredicate:userPredicate];
+return users;
+</code></pre>
+
+<p>}</p>
+
+<p>注意：如果单纯查找微博中包含“Watch”的用户，直接查出对应的微博，然后通过每个微博的user属性即可获得用户，此时就不用使用额外的谓词过滤条件。</p>
+
+<p>3.插入数据</p>
+
+<p>插入数据需要调用实体描述对象NSEntityDescription返回一个实体对象，然后设置对象属性，最后保存当前上下文即可。这里需要注意，增、删、改操作完最后必须调用管理对象上下文的保存方法，否则操作不会执行。</p>
+
+<p>-(void)addUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
+    //添加一个对象
+    User </em>us= [NSEntityDescription insertNewObjectForEntityForName:@&ldquo;User&rdquo; inManagedObjectContext:self.context];
+    us.name=name;
+    us.screenName=screenName;
+    us.profileImageUrl=profileImageUrl;
+    us.mbtype=mbtype;
+    us.city=city;
+    NSError *error;
+    //保存上下文
+    if (![self.context save:&amp;error]) {
+        NSLog(@&ldquo;添加过程中发生错误,错误信息：%@！&rdquo;,error.localizedDescription);
+    }
+}</p>
+
+<p>4.删除数据</p>
+
+<p>删除数据可以直接调用管理对象上下文的deleteObject方法，删除完保存上下文即可。注意，删除数据前必须先查询到对应对象。</p>
+
+<p>-(void)removeUser:(User <em>)user{
+    [self.context deleteObject:user];
+    NSError </em>error;
+    if (![self.context save:&amp;error]) {
+        NSLog(@&ldquo;删除过程中发生错误，错误信息：%@!&rdquo;,error.localizedDescription);
+    }
+}</p>
+
+<p>5.修改数据</p>
+
+<p>修改数据首先也是取出对应的实体对象，然后通过修改对象的属性，最后保存上下文。</p>
+
+<p>-(void)modifyUserWithName:(NSString <em>)name screenName:(NSString </em>)screenName profileImageUrl:(NSString <em>)profileImageUrl mbtype:(NSString </em>)mbtype city:(NSString <em>)city{
+    User </em>us=[self getUserByName:name];
+    us.screenName=screenName;
+    us.profileImageUrl=profileImageUrl;
+    us.mbtype=mbtype;
+    us.city=city;
+    NSError *error;
+    if (![self.context save:&amp;error]) {
+        NSLog(@&ldquo;修改过程中发生错误,错误信息：%@&rdquo;,error.localizedDescription);
+    }
+}</p>
+
+<p>调试</p>
+
+<p>虽然Core Data（如果使用SQLite数据库）操作最终转换为SQL操作，但是调试起来却不想操作SQL那么方便。特别是对于初学者而言经常出现查询报错的问题，如果能看到最终生成的SQL语句自然对于调试很有帮助。事实上在Xcode中是支持Core Data调试的，具体操作：Product-Scheme-Edit Scheme-Run-Arguments中依次添加两个参数（注意参数顺序不能错）：-com.apple.CoreData.SQLDebug、1。然后在运行程序过程中如果操作了数据库就会将SQL语句打印在输出面板。</p>
+
+<p><img src="/images/CSR008.jpg" title="Caption" ></p>
+
+<p>注意：如果模型发生了变化，此时可以重新生成实体类文件，但是所生成的数据库并不会自动更新，这时需要考虑重新生成数据库并迁移原有的数据。</p>
+
+<p>FMDB</p>
+
+<p>基本使用</p>
+
+<p>相比于SQLite3来说Core Data存在着诸多优势，它面向对象，开发人员不必过多的关心更多数据库操作知识，同时它基于ObjC操作，书写更加优雅等。但是它本身也存在着一定的限制，例如如果考虑到跨平台，则只能选择SQLite，因为无论是iOS还是Android都可以使用同一个数据库，降低了开发成本和维护成本。其次是当前多数ORM框架都存在的性能问题，因为ORM最终转化为SQL操作，其中牵扯到模型数据转化，其性能自然比不上直接使用SQL操作数据库。那么有没有更好的选择呢？答案就是对SQLite进行封装。</p>
+
+<p>其实通过前面对于SQLite的分析，大家应该已经看到KCDbManager就是对于SQLite封装的结果，开发人员面对的只有SQL和ObjC方法，不用过多libsqlite3的C语言API。但它毕竟只是一个简单的封装，还有更多的细节没有考虑，例如如何处理并发安全性，如何更好的处理事务等。因此，这里推荐使用第三方框架FMDB，整个框架非常轻量级但又不失灵活性，也是很多企业开发的首选。</p>
+
+<p>1.FMDB既然是对于libsqlite3框架的封装，自然使用起来也是类似的，使用前也要打开一个数据库，这个数据库文件存在则直接打开否则会创建并打开。这里FMDB引入了一个MFDatabase对象来表示数据库，打开数据库和后面的数据库操作全部依赖此对象。下面是打开数据库获得MFDatabase对象的代码：</p>
+
+<p>-(void)openDb:(NSString <em>)dbname{
+    //取得数据库保存路径，通常保存沙盒Documents目录
+    NSString </em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@&ldquo;%@&rdquo;,directory);
+    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+    //创建FMDatabase对象
+    self.database=[FMDatabase databaseWithPath:filePath];
+    //打开数据上
+    if ([self.database open]) {
+        NSLog(@&ldquo;数据库打开成功!&rdquo;);
+    }else{
+        NSLog(@&ldquo;数据库打开失败!&rdquo;);
+    }
+}</p>
+
+<p>注意：dataWithPath中的路径参数一般会选择保存到沙箱中的Documents目录中；如果这个参数设置为nil则数据库会在内存中创建；如果设置为@””则会在沙箱中的临时目录创建,应用程序关闭则文件删除。</p>
+
+<p>2.对于数据库的操作跟前面KCDbManager的封装是类似的，在FMDB中FMDatabase类提供了两个方法executeUpdate:和executeQuery:分别用于执行无返回结果的查询和有返回结果的查询。当然这两个方法有很多的重载这里就不详细解释了。唯一需要指出的是，如果调用有格式化参数的sql语句时，格式化符号使用“?”而不是“%@”、等。下面是两种情况的代码片段：</p>
+
+<p>a.无返回结果</p>
+
+<p>-(void)executeNonQuery:(NSString *)sql{
+    //执行更新sql语句，用于插入、修改、删除
+    if (![self.database executeUpdate:sql]) {
+        NSLog(@&ldquo;执行SQL语句过程中发生错误！&rdquo;);
+    }
+}</p>
+
+<p>b.有返回结果</p>
+
+<p>-(NSArray <em>)executeQuery:(NSString </em>)sql{
+    NSMutableArray <em>array=[NSMutableArray array];
+    //执行查询sql语句
+    FMResultSet </em>result= [self.database executeQuery:sql];
+    while (result.next) {
+        NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+        for (int i=0; i&lt;result.columnCount; ++i) {
+            dic[[result columnNameForIndex:i]]=[result stringForColumnIndex:i];
+        }
+        [array addObject:dic];
+    }
+    return array;
+}</p>
+
+<p>对于有返回结果的查询而言，查询完返回一个游标FMResultSet，通过遍历游标进行查询。而且FMDB中提供了大量intForColumn、stringForColumn等方法进行取值。</p>
+
+<p>并发和事务</p>
+
+<p>我们知道直接使用libsqlite3进行数据库操作其实是线程不安全的，如果遇到多个线程同时操作一个表的时候可能会发生意想不到的结果。为了解决这个问题建议在多线程中使用FMDatabaseQueue对象，相比FMDatabase而言，它是线程安全的。</p>
+
+<p>创建FMDatabaseQueue的方法是类似的，调用databaseQueueWithPath:方法即可。注意这里不需要调用打开操作。</p>
+
+<p>-(void)openDb:(NSString <em>)dbname{
+    //取得数据库保存路径，通常保存沙盒Documents目录
+    NSString </em>directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+    NSLog(@&ldquo;%@&rdquo;,directory);
+    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+    //创建FMDatabaseQueue对象
+    self.database=[FMDatabaseQueue databaseQueueWithPath:filePath];
+}</p>
+
+<p>然后所有的增删改查操作调用FMDatabaseQueue的inDatabase:方法在block中执行操作sql语句即可。</p>
+
+<p>-(void)executeNonQuery:(NSString <em>)sql{
+    //执行更新sql语句，用于插入、修改、删除
+    [self.database inDatabase:^(FMDatabase </em>db) {
+        [db executeQuery:sql];
+    }];
+}
+-(NSArray <em>)executeQuery:(NSString </em>)sql{
+    NSMutableArray <em>array=[NSMutableArray array];
+    [self.database inDatabase:^(FMDatabase </em>db) {
+        //执行查询sql语句
+        FMResultSet <em>result= [db executeQuery:sql];
+        while (result.next) {
+            NSMutableDictionary </em>dic=[NSMutableDictionary dictionary];
+            for (int i=0; i&lt;result.columnCount; ++i) {
+                dic[[result columnNameForIndex:i]]=[result stringForColumnIndex:i];
             }
-        } onQueue:nil];
+            [array addObject:dic];
+        }
+    }];
+    return array;
+}</p>
 
-        iCocosLog(@"%@", msgObj.ext);
+<p>之所以将事务放到FMDB中去说并不是因为只有FMDB才支持事务，而是因为FMDB将其封装成了几个方法来调用，不用自己写对应的sql而已。其实在在使用libsqlite3操作数据库时也是原生支持事务的（因为这里的事务是基于数据库的，FMDB还是使用的SQLite数据库），只要在执行sql语句前加上“begin transaction;”执行完之后执行“commit transaction;”或者“rollback transaction;”进行提交或回滚即可。另外在Core Data中大家也可以发现，所有的增、删、改操作之后必须调用上下文的保存方法，其实本身就提供了事务的支持，只要不调用保存方法，之前所有的操作是不会提交的。在FMDB中FMDatabase有beginTransaction、commit、rollback三个方法进行开启事务、提交事务和回滚事务。</p>
 
+<p>总结：</p>
 
-        // 把发送的消息添加到数据源,显示
-        //    [self.dataSources addObject:msgObj];
-        [self addMessageToDataSource:msgObj];
-        [self.tableView reloadData];
-        [self scrollToBottom];
-    });
-}
+<p>core data</p>
+
+<p>core data 基于model-view-controller（mvc）模式下，为创建分解的cocoa应用程序提供了一个灵活和强大的数据模型框架。</p>
+
+<p>core data可以使你以图形界面的方式快速的定义app的数据模型，同时在你的代码中容易获取到它。core data提供了基础结构去处理常用的功能，例如保存，恢复，撤销和重做，允许你在app中继续创建新的任务。在使用core data的时候，你不用安装额外的数据库系统，因为core data使用内置的sqlite数据库。</p>
+
+<p>core data提供了一个通用的数据管理解决方案来处理那些所有需要数据模型的app(或大或小)。app使用core data来管理数据对象是很多的益处。</p>
+
+<p>苹果的图形用户界面编译器-interface builder（IB），提供了对core data controller对象的预构建，从而来减少app的用户界面和它的数据模型之间的粘滞代码。在使用core data的时候你不需要考虑sql的语法问题，也不需要管理相关的逻辑树去追踪用户的行为，更不用建立新的永久机制。当你写你app的用户界面到它的 core data模型的时候，它已经为你把所有的东西都做好了。</p>
+
+<p>core data将你app的模型层放入到一组定义在内存中的数据对象。core data会追踪这些对象的改变，同时可以根据需要做相反的改变，例如用户执行撤销命令。当core data在对你app数据的改变进行保存的时候，core data会把这些数据归档，并永久性保存。它保存的数据在一些常规的文件，你可以在Finder中可以进行管理，用spotlight进行搜索，备份到 cd，和email给朋友或者家人。</p>
+
+<p>在使用core data框架的时候，你可以创建一个管理对象的模型，该模型提供了对模型对象的抽象定义，这也就是我们所知道的entities，它可以在我们的程序中使用。</p>
+
+<p>core data是一个实体-关系模型，该模型是使用Xcode的数据模型设计工具来定义的，对数据实体以及他们的关系提供了丰富的环境。</p>
+
+<p>sqlite</p>
+
+<p>mac os x中sqlite库，它是一个轻量级功能强大的关系数据引擎，也很容易嵌入到应用程序。可以在多个平台使用，sqlite是一个轻量级的嵌入式sql数据库编程。与core data框架不同的是，sqlite是使用程序式的，sql的主要的API来直接操作数据表。</p>
+
+<p>fmdb
+FMDB框架其实只是一层很薄的封装，主要的类也就两个：FMDatabase和FMResultSet。在使用fmdb的时候还需要导入libsqlite3.0.dylib。</p>
+
+<p>core data允许用户使用代表实体和实体间关系的高层对象来操作数据。它也可以管理串行化的数据，提供对象生存期管理与object_graph 管理，包括存储。Core Data直接与Sqlite交互，避免开发者使用原本的SQL语句.</p>
+
+<p>上面的三种，都是在什么情况下使用呢？
+在编写程序的时候尽量使用core data，这样才是最优的选择。
+至于sqlite和fmdb的使用情况，这个看个人喜好了，个人觉得没什么标准。fmdb就是对sqlite的封装，使用起来有方便的接口，没那么麻烦而已。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CoreData vs SQLite]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/05/xsqlyucoredata/"/>
+    <updated>2016-07-05T14:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/05/xsqlyucoredata</id>
+    <content type="html"><![CDATA[<p>凭良心讲，我不能告诉你不去使用Core Data。它不错，而且也在变好，并且它被很多其他Cocoa开发者所理解，当有新人加入你的组或者需要别人接手你的项目的时候，这点很重要。</p>
+
+<p>更重要的是，不值得花时间和精力去写自己的系统去代替它。真的，使用Core Data吧。</p>
+
+<p>为什么我不使用Core Data<br/>
+ Mike Ash写到：就我自己而言，我不是个狂热粉丝。我发现API是笨拙的，并且框架本身对于大量的数据是极其缓慢的。</p>
+
+<p>一个实际的例子：10,000条目
+想象一个RSS阅读器，一个用户可以在一个feed上点击右键，并且选择标记所有为已读。</p>
+
+<p>引擎下，有一个带有read属性的Article实体。把所有条目标记为已读，程序需要加载这个feed的所有文章(可能通过一对多的关系)，然后设置read属性为YES。</p>
+
+<p>大部分情况下这样没关系。但是设想那个feed里有200个文章，为了避免阻塞主线程，你可能考虑在后台线程里做这个工作(特别当你的程序是一个iPhone应用)。当你一开始使用Core Data多线程，事情就开始变的不好处理了。</p>
+
+<p>这可能还凑合，至少不值得切换走Core Data。</p>
+
+<p>但是接下来加同步。</p>
+
+<p>我用过两种不同的获取已读文章ID列表的RSS同步接口。其中一个返回近10,000个ID。</p>
+
+<p>你不会打算在主线程中加载10,000个文章，然后设置read为NO。你甚至不想在后台线程里加载10,000个文章，即使很小心的管理内存，这有太多的工作（如果你频繁的这么做，想一下对电池寿命的影响）。</p>
+
+<p>你真正想要做的是，让数据库给在ID列表里的每一个文章设置read为YES。</p>
+
+<p>SQLite可以做到这个，只用一次调用。假设uniqueID上有索引，这会很快。而且你可以在后台线程执行像在主线程执行一样容易。</p>
+
+<p>另一个例子：快速启动
+我想减少我的另一个程序的启动时间，不只是开始的时间，而是在数据显示之前的所有时间。</p>
+
+<p>那是个类似Twitter的应用(虽然它不是)，它显示消息的时间轴。显示时间轴意味着获取消息，加载相关用户。它很快，但是在启动的时候，会填充UI，然后填充数据。</p>
+
+<p>关于iPhone的应用（或者所有应用）我的理论是，启动时间很重要，比其他大部分开发者想的都要重要。应用的启动很慢看起来不像是要启动一样，因为人们潜意识里记得，并且会产生阻止启动应用的想法。减少启动时间就减少了摩擦，让用户更有可能继续使用你的应用，并且推荐给其他人。这是你让你的应用成功的一部分。</p>
+
+<p>因为我不使用Core Data，我手边有一个简单的，保守的解决方案。我把timeline（消息和人物对象）通过NSCoding保存到一个plist文件中。启动的时候它读这个文件，创建消息和人物对象，UI一出现就显示时间轴。</p>
+
+<p>这明显的减少了延迟。</p>
+
+<p>把消息和人物对象作为NSManagedObject的实例对象，这是不可能的。（假设我有编码的并且存储的IDs对象，但是那意味着读plist然后触及数据库。这种方式我完全避免了数据库）。</p>
+
+<p>在更新更快的机器出来后, 我去掉了那些代码。回顾过去，我希望我可以把它留下来。</p>
+
+<p>我怎么考虑这个问题
+当考虑是否使用Core Data时，我考虑下面这些事情：</p>
+
+<p>会有难以置信数量的数据吗？
+对于一个RSS阅读器或者Twitter应用，答案显而易见：是的。有些人关注上百个人。一个人可能订阅了上千个feeds。</p>
+
+<p>即使你的应用不从网络获取数据，仍然有可能让用户自动添加数据。如果你用一个支持AppleScript的Mac，有些人会写脚本去加载非常多的数据。如果通过web API去加数据也是一样的。</p>
+
+<p>会有一个Web API包含类似于数据库的终端吗（对比类对象终端）？
+一个RSS同步API能够返回一个已读文章的uniquelIDs列表。一个记笔记的应用的一个同步API可能返回已存档的和已删除的笔记的uniquelIDs。</p>
+
+<p>用户可能通过操作处理大量对象吗？
+在底层，需要考虑和之前一样的问题。当有人删除所有下载的5，000个面食食谱，你的食谱应用可以多好的完成这个功能（在iPhone上？）？</p>
+
+<p>当我决定使用Core Data（我已经发布过使用Core Data的应用），我会小心留意我怎么使用它。为了得到好的性能，我发现我把它当做一个SQL数据库的一个奇怪接口来使用，然后我知道我应该舍弃Core Data，直接使用SQLite。</p>
+
+<p>我怎么使用SQLite
+我通过FMDB Wrapper来使用SQLite，FMDB来自Flying Meat Software，由Gus Mueller提供。</p>
+
+<p>基本操作
+我在iPhone以前，Core Data以前就使用过SQLite。这是它怎么工作的的要点：
+1. 所有数据库访问-读和写-发生在连续的队列里，在一个后台线程。在主线程中触及数据库是从来不被允许的。使用一个连续队列来保证每一件事是按顺序发生的。
+2. 我大量使用blocks来让异步程序容易点。
+3. 模型对象只存在在主线程（但有两个重要的例外），改变会触发一个后台保存。
+4. 模型对象列出来他们在数据库中存储的属性。可能在代码里或者在plist文件里。
+5, 一些模型对象是唯一的，一些不是。取决于应用的需要（大部分情况是唯一的）。
+6. 对关系型数据，我尽可能避免连表查询。
+7. 一些对象类型在启动的时候就完全读入内存，另一些对象类型可能只需要创建并维护一个他们的uniqueIDs的。NSMutableSet，所以不需要去触及数据库，我就知道已经有什么。
+8. Web API的调用发生在后台线程，他们使用分开的模型对象。
+我会通过我现在的应用的代码来详细描述。</p>
+
+<p>数据库更新
+在我最近的应用中，有一个单一的数据库控制器-VSDatabaseController，它通过FMDB来与SQLite对话。</p>
+
+<p>FMDB区分更新和查询。更新数据库，app调用：</p>
+
+<pre><code>-[VSDatabaseController runDatabaseBlockInTransaction:(VSDatabaseUpdateBlock)databaseBlock] 
 </code></pre>
+
+<p>VSDatabaseUpdateBlock很简单：</p>
+
+<pre><code>typedef void (^VSDatabaseUpdateBlock)(FMDatabase *database); 
+</code></pre>
+
+<p>runDatabaseBlockInTransaction也很简单：</p>
+
+<pre><code>- (void)runDatabaseBlockInTransaction:(VSDatabaseUpdateBlock)databaseBlock { 
+    dispatch_async(self.serialDispatchQueue, ^{ 
+        @autoreleasepool { 
+            [self beginTransaction]; 
+            databaseBlock(self.database); 
+            [self endTransaction]; 
+        } 
+    }); 
+} 
+</code></pre>
+
+<p>（注意我用自己的连续调度队列。Gus建议看一下FMDatabaseQueue，也是一个连续调度队列。我还没能去看一下，因为它比FMDB的其他东西都要新。）</p>
+
+<p>beginTransaction和endTransaction的调用是可嵌套的（在我的数据库控制器里）。在合适的时候他们会调用-[FMDatabase beginTransaction] 和 -[FMDatabase commit]。（使用事务是让SQLite变快的关键。）提示：我把当前事务存储在-[NSThread threadDictionary]。它很好获取每一个线程的数据，我几乎从不用其他的。</p>
+
+<p>这儿有个调用更新数据库的简单例子：</p>
+
+<pre><code>- (void)emptyTagsLookupTableForNote:(VSNote *)note { 
+    NSString *uniqueID = note.uniqueID; 
+    [self runDatabaseBlockInTransaction:^(FMDatabase *database) { 
+        [database executeUpdate: 
+            @"delete from tagsNotesLookup where noteUniqueID = ?;", uniqueID]; 
+    }]; 
+} 
+</code></pre>
+
+<p>这说明一些事情。首先SQL不可怕。即使你从没见过它，你也知道这行代码做了什么。</p>
+
+<p>像VSDatabaseController的所有其他公共接口，emptyTagsLookupTableForNote应该在主线程中被调用。模型对象只能在主线程中被引用，所以在block中用uniqueID，而不是VSNote对象。</p>
+
+<p>注意在这种情况下，我更新了一个查找表。Notes和tags是多对多关系，一种表现方式是用一个数据库表映射note uniqueIDs和tag uniqueIDs。这些表不会很难维护，但是如果可能，我确实尝试避免他们的使用。</p>
+
+<p>注意在更新字符串中的?。-[FMDatabase executeUpdate:] 是一个可变参数函数。SQLite支持使用占位符?，所以你不需要把正真的值放入字符串。这儿有一个安全问题：它帮助守护程序反对SQL插入。如果你需要避开某些值，它也为你省了麻烦。</p>
+
+<p>最后，在tagsNotesLookup表中，有一个noteUniquelID的索引（索引是SQLite性能的又一个关键）。这行代码在每次启动时都调用：</p>
+
+<pre><code>[self.database executeUpdate: 
+    @"CREATE INDEX if not exists noteUniqueIDIndex on tagsNotesLookup (noteUniqueID);"]; 
+</code></pre>
+
+<p>数据库获取
+要获取对象，app调用：</p>
+
+<pre><code>-[VSDatabaseController runFetchForClass:(Class)databaseObjectClass  
+                             fetchBlock:(VSDatabaseFetchBlock)fetchBlock  
+                      fetchResultsBlock:(VSDatabaseFetchResultsBlock)fetchResultsBlock]; 
+</code></pre>
+
+<p>这两行代码做了大部分工作：</p>
+
+<pre><code>FMResultSet *resultSet = fetchBlock(self.database); 
+NSArray *fetchedObjects = [self databaseObjectsWithResultSet:resultSet  
+                                                       class:databaseObjectClass]; 
+</code></pre>
+
+<p>用FMDB查找数据库返回一个FMResultSet. 通过resultSet你可以逐句循环，创建模型对象。</p>
+
+<p>我建议写通用的代码去转换数据库行到对象。一种我使用的方法是用一个plist，映射column名字到对象属性。它也包含类型，所以你知道是否需要调用 -[FMResultSet dateForColumn:]， -[FMResultSet stringForColumn:]或其他。</p>
+
+<p>在我的最新应用里我做了些简单的事情。数据库行刚好对应模型对象属性的名字。所有属性都是strings，除了那些名字以“Date”结尾的属性。很简单，但是你可以看到需要一个清晰的对应关系。</p>
+
+<p>唯一对象
+创建模型对象和从数据库获取数据在同一个后台线程。一获取到，程序会把他们转到主线程。</p>
+
+<p>通常我有uniqued对象。同一个数据库行结果始终对应同一个对象。</p>
+
+<p>为了做到唯一，我创建了一个对象缓存，一个NSMapTable，在init函数里：_objectCache = [NSMapTable weakToWeakObjectsMapTable]。我来解释一下：</p>
+
+<p>例如，当你做一个数据库获取并且把对象转交给一个视图控制器，你希望在视图控制器使用完这些对象后，或者一个不一样的视图控制器显示了，这些对象可以消失。</p>
+
+<p>如果你的对象缓存是一个NSMutableDictionary，你将需要做一些额外的工作来清空缓存中的对象。确定它对应的对象在别的地方是否有引用就变的很痛苦。NSMapTable是弱引用，就会自动处理这个问题。</p>
+
+<p>所以：我们在主线程中让对象唯一。如果一个对象已经在对象缓存中存在，我们就用那个存在的对象。（主线程胜出，因为它可能有新的改变。）如果对象缓存中没有，它会被加上。</p>
+
+<p>保持对象在内存中
+有很多次，把整个对象类型保留在内存中是有道理的。我最新的app有一个VSTag对象。虽然可能有成百上千个笔记，但tags的数量很小，基本少于10。一个tag只有6个属性：3个BOOL，两个很小的NSstring，还有一个NSDate。</p>
+
+<p>启动的时候，app获取所有tags并且把他们保存在两个字典里，一个主键是tag的uniqueID，另一个主键是tag名字的小写。</p>
+
+<p>这简化了很多事，不只是tag自动补全系统，这个可以完全在内存中操作，不需要数据库获取。</p>
+
+<p>但是很多次，把所有数据保留在内存中是不实际的。比如我们不会在内存中保留所有笔记。</p>
+
+<p>但是也有很多次，当不能在内存中保留对象时，你希望在内存中保留所有uniqueIDs。你会像这样做一个获取：</p>
+
+<pre><code>FMResultSet *resultSet = [self.database executeQuery:@"select uniqueID from some_table"]; 
+</code></pre>
+
+<p>resultSet只包含了uniqueIDs， 你可以存储到一个NSMutableSet里。</p>
+
+<p>我发现有时这个对web APIs很有用。想象一个API调用返回从某个确定的时间以后的，已创建笔记的uniqueIDs列表。如果我本地已经有了一个包含所有笔记uniqueIDs的NSMutableSet，我可以快速检查(通过 -[NSMutableSet minusSet])是否有漏掉的笔记，然后去调用另一个API下载那些漏掉的笔记。这些完全不需要触及数据库。</p>
+
+<p>但是，像这样的事情应该小心处理。app可以提供足够的内存吗？它真的简化编程并且提高性能了吗？</p>
+
+<p>用SQLite和FMDB而不是Core Data，给你带来大量的灵活性和聪明解决办法的空间。记住有的时候聪明是好的，也有的时候聪明是一个大错误。</p>
+
+<p>Web APIs
+我的API调用在后台进程（经常用一个NSOperationQueue，所以我可以取消操作）。模型对象只在主线程，但是我还传递模型对象给我的API调用。</p>
+
+<p>是这样的：一个数据库对象有一个detachedCopy方法，可以复制数据库对象。这个复制对象不是引用自我用来唯一化的对象缓存。唯一引用那个对象的地方是API调用，当API调用结束，那个复制的对象就消失了。</p>
+
+<p>这是一个好的系统，因为它意味着我可以在API调用里使用模型对象。方法看起来像这样：</p>
+
+<pre><code>- (void)uploadNote:(VSNote *)note { 
+    VSNoteAPICall *apiCall = [[VSNoteAPICall alloc] initWithNote:[note detachedCopy]]; 
+    [self enqueueAPICall:apiCall]; 
+} 
+</code></pre>
+
+<p>VSNoteAPICall从复制的VSNote获取值，并且创建HTTP请求，而不是一个字典或其他笔记的表现形式。</p>
+
+<p>处理Web API返回值
+我对web返回值做了一些类似的事情。我会对返回的JSON或者XML创建一个模型对象，这个模型对象也是分离的。它不是存储在为了唯一性的模型缓存里。</p>
+
+<p>这儿有些事情是不确定的。有时有必要用那个模型对象在两个地方做本地修改：在内存缓存和数据库。</p>
+
+<p>数据库通常是容易的部分。比如：我的应用已经有一个方法来保存笔记对象。它用一个SQL insert或者replace字符串。我只需调用那个从web API返回值生成的笔记对象，数据库就会更新。</p>
+
+<p>但是可能那个对象有一个在内存中的版本，幸运的是我们很容易找到：</p>
+
+<pre><code>VSNote *cachedNote = [self.mapTable objectForKey:downloadedNote.uniqueID]; 
+</code></pre>
+
+<p>如果cachedNote存在，我会让它从downloadedNote中获取值，而不是替换它（这样可能违反唯一性）。这可以共享detachedCopy方法的代码。</p>
+
+<p>一旦cachedNote更新了，观察者会通过KVO通知笔记，或者我会发送一个NSNotification，或者两者都做。</p>
+
+<p>Web API调用也会返回一些其他值。我提到过RSS阅读器可能获得一个已读条目的大列表。这种情况下，我用那个列表创建了一个NSSet，在内存中更新每一个缓存文章的read属性，然后调用-[FMDatabase executeUpdate:]。</p>
+
+<p>让它工作快速的关键是NSMapTable的查找是快速的。如果你找的对象在一个NSArray里，我们该重新考虑。</p>
+
+<p>数据库迁移
+Core Data的数据库迁移很酷，当它可行的时候。但是不可避免的，它是代码和数据库中的一层。如果你越直接使用SQLite，你更新数据库越直接。你可以安全容易的做到这点。</p>
+
+<p>比如加一个表：</p>
+
+<pre><code>[self.database executeUpdate:@"CREATE TABLE if not exists tags " 
+    "(uniqueID TEXT UNIQUE, name TEXT, deleted INTEGER, deletedModificationDate DATE);"]; 
+</code></pre>
+
+<p>或者加一个索引：</p>
+
+<pre><code>[self.database executeUpdate:@"CREATE INDEX if not exists " 
+    "archivedSortDateIndex on notes (archived, sortDate);"]; 
+</code></pre>
+
+<p>或者加一列：</p>
+
+<pre><code>[self.database executeUpdate:@"ALTER TABLE tags ADD deletedDate DATE"]; 
+</code></pre>
+
+<p>应用应该在代码的第一个地方用上面这些代码设置数据库。以后的改变只需加executeUpdate的调用 — 我让他们按顺序执行。因为我的数据库是我设计的，不会有什么问题（我从没碰到性能问题，它很快）。</p>
+
+<p>当然大的改变需要更多代码。如果你的数据通过web获取，有时你可以从一个新数据库模型开始，重新下载你需要的数据。</p>
+
+<p>性能技巧
+SQLite可以非常非常快，它也可以非常慢。完全取决于你怎么使用它。</p>
+
+<p>事务
+把更新包装在事务里。在更新前调用 -[FMDatabase beginTransaction] ，更新后调用-[FMDatabase commit]。</p>
+
+<p>如果你不得不反规范化（ Denormalize）
+反规范化让人很不爽。这个方法是，为了加速检索而添加冗余数据，但是它意味着你需要维护冗余数据。</p>
+
+<p>我总是疯狂避免它，直到这样能有严重的性能区别。然后我会尽可能少得这么做。</p>
+
+<p>使用索引
+我的应用中tags表的创建语句像这样：</p>
+
+<pre><code>CREATE TABLE if not exists tags  
+  (uniqueID TEXT UNIQUE, name TEXT, deleted INTEGER, deletedModificationDate DATE); 
+</code></pre>
+
+<p>uniqueID列是自动索引的，因为它定义为unique。但是如果我想用name来查询表，我可能会在name上创建一个索引，像这样：</p>
+
+<pre><code>CREATE INDEX if not exists tagNameIndex on tags (name); 
+</code></pre>
+
+<p>你可以一次性在多列上创建索引，像这样：</p>
+
+<pre><code>CREATE INDEX if not exists archivedSortDateIndex on notes (archived, sortDate); 
+</code></pre>
+
+<p>但是注意太多索引会降低你的插入速度。你只需要足够数量并且是对的那些。</p>
+
+<p>使用命令行应用
+当我的app在模拟器里运行时，我会打印数据库的路径。我可以通过sqlite3的命令行来打开数据库。（通过man sqlite3命令来了解这个应用的更多信息）。</p>
+
+<p>打开数据库的命令：sqlite3 “数据库的路径”。</p>
+
+<p>打开以后，你可以看schema: type .schema。</p>
+
+<p>你可以更新和查询，这是在使用你的app之前检查SQL是否正确的很好的方式。</p>
+
+<p>这里面最酷的一部分是，SQLite Explain Query Plan命令，你会希望确保你的语句执行的尽可能快。</p>
+
+<p>真实的例子
+我的应用显示所有没有归档笔记的标签列表。每当笔记或者标签有变化，这个查询就会重新执行一次，所以它需要很快。</p>
+
+<p>我可以用SQL join来查询，但是很慢（joins都很慢）。</p>
+
+<p>所以我放弃sqlite3并开始尝试别的方法。我又看了一次我的schema，意识到我可以反规范化。一个笔记的归档状态可以存储在notes表里，它也可以存储在tagsNotesLookup表。</p>
+
+<p>然后我可以执行一个查询：</p>
+
+<pre><code>select distinct tagUniqueID from tagsNotesLookup where archived=0; 
+</code></pre>
+
+<p>我已经有了一个在tagUniqueID上的索引。所以我用explain query plan来告诉我当我执行这个查询的时候会发生什么。</p>
+
+<pre><code>sqlite&gt; explain query plan select distinct tagUniqueID from tagsNotesLookup where archived=0; 
+0|0|0|SCAN TABLE tagsNotesLookup USING INDEX tagUniqueIDIndex (~100000 rows) 
+</code></pre>
+
+<p>它用了一个索引，但是SCAN TABLE听起来不太好，最好是一个SEARCH TABLE并且覆盖一个索引。
+我在tagUniqueID和archive上建了索引：</p>
+
+<pre><code>CREATE INDEX archivedTagUniqueID on tagsNotesLookup(archived, tagUniqueID); 
+</code></pre>
+
+<p>再次执行explain query plan:</p>
+
+<pre><code>sqlite&gt; explain query plan select distinct tagUniqueID from tagsNotesLookup where archived=0; 
+0|0|0|SEARCH TABLE tagsNotesLookup USING COVERING INDEX archivedTagUniqueID (archived=?) (~10 rows) 
+</code></pre>
+
+<p>好多了。</p>
+
+<p>更多性能提示
+FMDB的某处加了缓存statements的能力，所以当创建或打开一个数据库的时候，我总是调用[self.database setShouldCacheStatements:YES] 。这意味着对每个调用你不需要再次编译每个statement。</p>
+
+<p>我从来没有找到使用vacuum的好的指引，如果数据库没有定期压缩，它会越来越慢。我的应用会跑一个vacuum，但只是每周一次（它在NSUserDefaults里存储上次vacuum的时间，然后在开始的时候检查是否过了一周）。</p>
+
+<p>如果能auto_vacuum那更好，看pragma statements supported by SQLite列表。</p>
+
+<p>其他酷的东西
+Gus Mueller让我涉及自定义SQLite方法的内容。我并没有真的使用这些东西，既然他指出了，我可以放心的说我能找到它的用处。因为它很酷。</p>
+
+<p>在Gus的帖子里，有一个查询是这样的：</p>
+
+<pre><code>select displayName, key from items where UTTypeConformsTo(uti, ?) order by 2; 
+</code></pre>
+
+<p>SQLite完全不知道UITypes。但是你可以加核心方法，查看-[FMDatabase makeFunctionNamed:maximumArguments:withBlock:]。</p>
+
+<p>你可以执行一个大的查询来替代，然后评估每个对象。但是那需要更多工作。最好在SQL级就过滤，而不是在将表格行转为对象以后。</p>
+
+<p>最后
+你真的应该使用Core Data，我不是在开玩笑。</p>
+
+<p>我用SQLite和FMDB一段时间了，我对多得的好处感到很兴奋，也得到非同一般的性能。但是记住机器在变快，其他看你代码的人期望看到他已经知道的Core Data, 另一些不打算看你的数据库代码。所以请把这整篇文章看做一个疯子的叫喊，关于他为自己建立的细节的疯狂的世界，并把自己锁在里面。</p>
+
+<p>请享受了不起的Core Data的文章（有点难过的摇头）。</p>
+
+<p>接下来，在查完Gus指出的自定义SQLite方法特性后，我会研究SQLite的full-text search extension. 总有更多的内容需要去学习。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CoreData vs Realm]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/05/ycoredatayurealm/"/>
+    <updated>2016-07-05T04:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/05/ycoredatayurealm</id>
+    <content type="html"><![CDATA[<p>本文具有强烈的个人感情色彩,如有观看不适,请尽快关闭。本文仅作为个人学习记录使用，也欢迎在许可协议范围内转载或使用，请尊重版权并且保留原文链接，谢谢您的理解合作。如果您觉得本站对您能有帮助，您可以使用RSS方式订阅本站，这样您将能在第一时间获取本站信息。
+碎碎念</p>
+
+<p>OhMyStar 2 也进行了一段时日，我把持久化的方式从CoreData 换到了 Realm。有些感悟，顺手就记录一下吧。以下评论都是自己很主观的感受，无实际测试数据支持。
+论 iOS 的持久化</p>
+
+<p>iOS 持久化其实也没多少选择， 高端一点CoreData、Realm、FMDB、KV类(LevelDB等)。低端一些直接一个 NSArray 就写成 Plist 也能持久化下来。</p>
+
+<p>在网络环境越来越快的当下和大部分应用数据都可能是网络应用，如果业务逻辑并不复杂，其实极端一点就只用写到 JSON 转 Object 就好了。而且一堆这样好用的封装，远有Mantle 近有YYModel。</p>
+
+<p>所以需要持久化的时候，我觉的可以慎重的评估一下需求。想明白了，后面可以节省很多事情。</p>
+
+<p>本文章主要对比 Realm 和 CoreData，其他的就不涉及了。</p>
+
+<p>Realm
+优点
+入门门槛低</p>
+
+<p>Realm文档就算一个字一个字扣着读完，一个下午就足够了。而且还有中文版本，不要太友好哦，有点不习惯诶。</p>
+
+<p>文档覆盖了80%的使用情况，甚至有些太简陋的嫌疑。但不管怎么样，这种入门条件比起 CoreData 写了三个月都没搞清楚 Context 要好的多。</p>
+
+<p>在库的工具链上，安装一个 Realm Browser 以后就不需要其他辅助了。还是简单。</p>
+
+<p>几乎做到了上手即用的程度。五星好评。</p>
+
+<p>PS：我用了一个通宵把 OhMyStar 2 的持久化从 CoreData 换到了 Realm ，优化调整了大概5天左右达到勉强可以用的情况 。在这之前并没有任何 Realm 的经验。
+据说性能好一些</p>
+
+<p>Realm官方介绍Fast一段中</p>
+
+<p>Counts</p>
+
+<p><img src="/images/benchmarks.001b.png" title="Caption" ></p>
+
+<p>Queries</p>
+
+<p><img src="/images/benchmarks.002b.png" title="Caption" ></p>
+
+<p>Inserts</p>
+
+<p><img src="/images/benchmarks.003b.png" title="Caption" ></p>
+
+<p>在写这里的时候我顺手Google了一下 发现一篇Core Data, FMDB, Realm 性能测试。我就多说几句</p>
+
+<p>总觉得大家对 CoreData 误会蛮深，代码 Fork 看了一下， 总觉得不应该这样写来比性能的，但是一时半会也不知道怎么改。我只能说我在优化 CoreData 的时候根据 WWDC 上教的还是提升很高，另外一个事情是 CoreData 一般都用 Sqlite 做后端。所以如果你的查询是经过优化的，确认打出来的SQL语句科学以后，Sqlite(CoreData) 跟 Sqlite(FMDB)我觉得性能就算有差距，这差距没有能大到选择方案的决定性因素。如果使用 CoreData 遇到性能瓶颈，你应该仔细的研究 WWDC 和几篇很好的文章。确保你的 CoreData 使用方式是正确科学的。
+没有需要架构Context那种烦人的东西</p>
+
+<p>应该也算Realm简单的一个方面，Realm 只要保持自己线程里面，自己的 Realm Store 操作是正确的即可。如果是 CoreData，怎么架构一个科学的 Context Stack 就足够让我头疼一整，iOS 还好，界面是一个接着一个(VC跟VC之间的层级关系很清晰)。而 OhMyStar 2 这种 OS X 桌面应用场景VC之间很复杂，线程之间Context的关系让出现很多问题。
+支持 NSPredicate</p>
+
+<p>从 CoreData 转过来并没有太多的不适应
+很简单的使用多个存储文件</p>
+
+<p>举个例子，多用户登陆情况下。用户是单独的存储文件，和全部用户使用同一个存储文件。后者需要每条用户数据都要关联一次当前用户，所有查询用户数据的时候，你都必须加上当前用户的查询项。而使用每个用户单独一个数据文件的时候，整个存储结构会清爽很多。
+技术支持</p>
+
+<p>至少实在没法的时候还可以去微博上吐槽他们，他们其实也有极大的热情来解决你遇到的问题。CoreData 这种遇到问题就只能自己默默的吞下。
+缺点
+关联关系弱的一逼</p>
+
+<p>简单说来就是对象跟对象之间的一对多关系和多对多关系。并不能映射，需要在双方里面都写上属性，此外还需要在设置的时候两边同时设置。查询时候也是 NSPredicate 也仅仅只支持一些一层的查询，没法做出带SUBQUERY的复杂查询出来。
+强制内省容错机制导致存储文件不断变大</p>
+
+<p>Realm本身感觉有一个数据容错机制。但是这个机制在数据库文件有错误的情况自己修复的时候，会无限增大。具体我这里表现为，打开看只有3000条数据，但是文件大小已经有3GB。重现Bug也很容易，只要你在写数据库的时候,用Realm Browser查看一下，crash之后在打开就很容易出现。</p>
+
+<p>官方文档里面有说到会造成这种情形的原因，我在尽我所能的避免问题以后。存储文件还是会有可能不那么夸张的变大一些。但是用Realm Browser查看数据是正常的。所以我觉得官方应该提供一个函数，可以删除掉那些容易的东西。保持存储文件的干净。
+没有细粒化通知</p>
+
+<p>也就是说，当我在某个地方做出修改。 我其他地方只知道Realm有修改，但是没法知道我是增加、修改还是删除了数据。不知道我更新的是那一条数据。据文档说，将来会解决这个问题，就只有拭目以待。
+增加包体积</p>
+
+<p>据官方说会增加1MB左右的包大小，如果你是一个小体积应用，或者是一个几千万用户的主流应用。对包大小敏感的话慎用。
+核心代码目前闭源</p>
+
+<p>对于在我们这样一个作恶满天飞的天朝长大的孩子来说，有些孩子对闭源这个事情还是挺在意的。不过官方说将来会开源，我还是倾向于相信 Realm 他们的人品。
+CoreData</p>
+
+<p>CoreData 相关资料相对多一些我就简单说
+优点
+官方支持 &amp;&amp; 亲儿子</p>
+
+<p>系统自带，Apple支持
+带图形化的Model编辑</p>
+
+<p>对于视觉化动物来说比较友好，也可以清楚的知道自己设计的 Model 之间的关系
+强大的关联关系</p>
+
+<p>以前不觉得，用了 Realm 才发现 CoreData 的关联关系如此好用，一对多，多对多。想怎么查询就怎么查询，可以写出很复杂的查询逻辑来。
+强大的查询</p>
+
+<p>虽然可能在设置NSFetchRequest的时候感觉很多东西要弄，但是复杂也带来了强大的功能，NSFetchRequest 可以设置很多，比如限制查询数量， 限制只返回某些属性值等等。就不展开说了。
+精细化的通知</p>
+
+<p>可以知道具体插入了什么、更新了什么、删除了什么。这样在刷UI，比如一个tableview的时候，你就可以控制的很准确。
+缺点
+入门门槛高</p>
+
+<p>CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。</p>
+
+<p>如果没有足够的时间和精力去接入 CoreData。 那选型的时候应当慎重考虑。
+需要一些工具才感觉好使</p>
+
+<p>不管是老手还是新手，使用一些第三方的封装库和工具都会大大的提高使用 CoreData 的幸福指数。</p>
+
+<p>mogenerator 是必须必须要的。</p>
+
+<p>MagicalRecord 无愧 CoreData 第一库，据小道消息 主要贡献者 Saul Mora 可能去了微信了。
+Context</p>
+
+<p>其实还是 CoreData 门槛高的问题，对我来说。Context之间的关系和线程之间的处理让我感到很头痛，特别是 OS X  是一大堆VC铺到屏幕上，我水平又菜，出的问题很多。
+多个持久化文件很麻烦</p>
+
+<p>不是说不可以，但是真的好麻烦。</p>
+
+<p>有个第三方库有解决CoreData这个问题 CoreStore 但是我用着不是很顺手最后弃用.
+总结</p>
+
+<p>其实吧用啥持久化都行，具体还是需要看你的需求和方案上来说哪一个方案更加适合。</p>
+
+<p>如果简单说来，就是 Realm 更加适合一些业务逻辑不怎么复杂的场景，团队配置要求不高，有经验的人稍微看一下午就能上手。</p>
+
+<p>CoreData 更加适合业务逻辑复杂的情况，团队配置要求比较高，有经验的老手也需要几周甚至更长的时间才能科学的使用CoreData。</p>
 ]]></content>
   </entry>
   

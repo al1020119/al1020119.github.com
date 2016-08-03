@@ -1,0 +1,434 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Realm基础篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/03/realmjichupian/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Realm基础篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-03T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>介绍</p>
+
+<p>realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和Swift）以及Android。</p>
+
+<p>2014年7月发布。由YCombinator孵化的创业团队历时几年打造，是第一个专门针对移动平台设计的数据库。目标是取代SQLite。</p>
+
+<p>为了彻底解决性能问题，核心数据引擎C++打造，并不是建立在SQLite之上的ORM。如果对数据引擎实现想深入了解可以查看：Realm 核心数据库引擎探秘。因此得到的收益就是比普通的ORM要快很多，甚至比单独无封装的SQLite还要快。</p>
+
+<p>因为是ORM，本身在设计时也针对移动设备（iOS、Android），所以非常简单易用，学习成本很低。</p>
+
+<p>碾压级性能</p>
+
+<p>数据引自：introducing-realm</p>
+
+<p>每秒能在20万条数据中进行查询后count的次数。realm每秒可以进行30.9次查询后count。</p>
+
+<p><img src="/images/benchmarks.001b.png" title="Caption" ></p>
+
+<p>在20万条中进行一次遍历查询，数据和前面的count相似：realm一秒可以遍历20万条数据31次，而coredata只能进行两次查询。</p>
+
+<p><img src="/images/benchmarks.002b.png" title="Caption" ></p>
+
+<p>这是在一次事务每秒插入数据的对比，realm每秒可以插入9.4万条记录，在这个比较里纯SQLite的性能最好，每秒可以插入17.8万条记录。然而封装了SQLite的FMDB的成绩大概是realm的一半。</p>
+
+<p><img src="/images/benchmarks.003b.png" title="Caption" ></p>
+
+<p>简单易用</p>
+
+<p>实例代码语言是Objective?C。</p>
+
+<p>Realm对象和其他对象没有太大区别，只是需要继承RLMObject</p>
+
+<p>@interface Dog : RLMObject
+@property NSString <em>name;
+@property NSInteger age;
+@end
+Dog </em>mydog = [[Dog alloc] init];</p>
+
+<p>存储起来也非常简单，获取数据库实例，在一个事务中进行写入。</p>
+
+<p>RLMRealm *realm = [RLMRealm defaultRealm];
+[realm transactionWithBlock:^{
+    [realm addObject:mydog];
+}];</p>
+
+<p>方便的查询，可以在一个查询结果中再进行查询。查询的条件有着丰富的支持。</p>
+
+<p>RLMResults *r = [Dog objectsWhere:@&ldquo;age > 8&rdquo;];
+// Queries are chainable
+r = [r objectsWhere:@&ldquo;name contains &lsquo;Rex&rsquo; AND  name BEGINSWITH &lsquo;大&rsquo;&rdquo;];</p>
+
+<p>zero-copy和懒加载</p>
+
+<p>在通常的数据库中，数据大多数时间都静静地呆在硬盘当中。当你访问 NSManagedObject 对象中的某个属性的时候，Core Data 会将这个请求转换为一组 SQL 语句，如果还未连接数据库的话则创建一个数据库连接，然后将这个 SQL 语句发送给硬盘，执行检索，从匹配检索的结果中读取所有的数据，然后将它们放到内存当中（也就是内存分配）。然而，这时候你需要对其格式进行反序列化(deserialize)，因为硬盘上存储的格式不能直接在内存中使用，这意味着你需要调整位，以便 CPU 能够对其进行处理。</p>
+
+<p>然而Realm跳过了整个拷贝数据到内存的过程，称之为zero-copy。做到这点是因为文件始终是内存映射的，无论文件是或否在内存当中，你都能够访问文件的任何内容。关于核心文件格式的重要一点就是，确保硬盘上的文件格式都是内存可读的，这样就无需执行任何反序列化操作了。</p>
+
+<p>这样就带来了一个问题，难道数据全加载到内存里了？所以这里懒加载应运而生，比如在查询到一组数据后，只有当你真正访问对象的时候才真正加载进来。</p>
+
+<p>VS SQLite</p>
+
+<p>SQLite第一个版本发布于2000年，至今已16年。以当今的角度来看，它的编程抽象程度非常低。业务上我们其实只想把这些对象存进去，可以查询出来。</p>
+
+<p>即便已经是封装过的FMDB，要写这样的代码心里也依旧难受:</p>
+
+<p>FMDatabase <em>db = [FMDatabase databaseWithPath:@&ldquo;/tmp/tmp.db&rdquo;];
+if (![db open]) {
+[db release];
+return;
+}
+NSString </em>sql = @&ldquo;create table bulktest1 (id integer primary key autoincrement, x text);&rdquo;
+&ldquo;create table bulktest2 (id integer primary key autoincrement, y text);&rdquo;
+&ldquo;create table bulktest3 (id integer primary key autoincrement, z text);&rdquo;
+&ldquo;insert into bulktest1 (x) values (&lsquo;XXX&rsquo;);&rdquo;
+&ldquo;insert into bulktest2 (y) values (&lsquo;YYY&rsquo;);&rdquo;
+&ldquo;insert into bulktest3 (z) values (&lsquo;ZZZ&rsquo;);&rdquo;;
+success = [db executeStatements:sql];
+sql = @&ldquo;select count(<em>) as count from bulktest1;&rdquo;
+&ldquo;select count(</em>) as count from bulktest2;&rdquo;
+&ldquo;select count(<em>) as count from bulktest3;&rdquo;;
+success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary </em>dictionary) {
+NSInteger count = [dictionary[@&ldquo;count&rdquo;] integerValue];
+XCTAssertEqual(count, 1, @&ldquo;expected one record for dictionary %@&rdquo;, dictionary);
+return 0;
+}];
+[db close];</p>
+
+<p>VS CoreData</p>
+
+<p>详细的比较推荐看这篇：CoreData VS Realm。</p>
+
+<p>下面给出一个查询的比较：</p>
+
+<p>// Core Data
+let fetchRequest = NSFetchRequest(entityName: &ldquo;Specimen&rdquo;)
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString)
+fetchRequest.predicate = predicate
+let sortDescriptor = NSSortDescriptor(key: &ldquo;name&rdquo;, ascending: true)
+fetchRequest.sortDescriptors = [sortDescriptor]
+let error = NSError()
+let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)</p>
+
+<p>Realm则简单的多：</p>
+
+<p>// Realm
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString);
+let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty(&ldquo;name&rdquo;, ascending: true)</p>
+
+<p>总结一下Realm对CoreData的优势：</p>
+
+<pre><code>不需要架构Context那种烦人的东西
+
+CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+</code></pre>
+
+<hr />
+
+<pre><code>支持 NSPredicate
+</code></pre>
+
+<p>从 CoreData 转过来并没有太多的不适应。</p>
+
+<pre><code>CoreData多个持久化文件很麻烦，Realm轻松支持这个功能
+</code></pre>
+
+<p>劣势：</p>
+
+<p>是会增加应用大概1MB的体积。CoreData原生支持，不会增加App体积。</p>
+
+<p>虽然看上去很厉害，但是这么新靠谱吗</p>
+
+<p>Realm大部分源码公开在github上：realm。项目在新建不到两年里，已经得到开源社区大量关注：</p>
+
+<p><img src="/images/benchmarks.004b.png" title="Caption" ></p>
+
+<p>官方也承诺会持续解决用户反馈的各种问题。也可以直接在他们twitter上去@他们。</p>
+
+<p>就算靠谱，有别人在用吗</p>
+
+<p>推荐阅读这篇博客，作者介绍了他痛下决心抛弃CoreData后，如何安全迁移至Realm：《高速公路换轮胎——为遗留系统替换数据库》（文／凉粉小刀，简书作者）。</p>
+
+<p>在多年以前，人们做了个决策，用CoreData做本地存储，替换掉NSUserDefaults。这之间的历史已经远不可考，但自从我加入项目以来，整个团队已经被它高昂的学习曲线、复杂的数据Migration流程以及过时陈旧的设计折磨的苦不堪言。于是我们决心把CoreData换掉。</p>
+
+<p>再看下SO的情况：</p>
+
+<p><img src="/images/benchmarks.005b.png" title="Caption" ></p>
+
+<p>已经有大概两万条相关结果，你不是一个人！</p>
+
+<p>需要知道的一些问题</p>
+
+<pre><code>其实我自己觉得这些是可以接受的问题。技术很多时候就是权衡，为了达到一些目的，总是要牺牲掉一些东西。
+</code></pre>
+
+<p>所有的存储对象需要继承RealmObject</p>
+
+<p>比如我现在的项目的数据从网络请求回来都会继承自己写的一个方便解析的基类，在这里就需要做出一些适应。</p>
+
+<p>但是该问题在swift中是不存在的。因为swift是天生的面向协议编程范式。</p>
+
+<pre><code>不能自定义getter、setter
+</code></pre>
+
+<p>realm会自动生成getter、setter，如果自定义getter、setter存储就会有影响。如果要规避这个问题，可以通过设置这个对象的忽略属性。</p>
+
+<p>比如有个属性id，需要自定义setter。可以在对象属性里把id设置为忽略属性，这样realm就不会为它自动生成getter、setter，但是也不会把id存入数据库。接着自定义一个用于存储的属性比如realm_id。在id的setter中可以把把值也赋给realm_id。</p>
+
+<p>这个问题在swift中也是不存在的，因为swfit中使用的是willset、didset这种通知机制。</p>
+
+<pre><code>查询的结果不是数组
+</code></pre>
+
+<p>为了能够支持查询结果的链式查询，realm自定义了一个集合类型。可以枚举，但是不是熟悉的数组了。又因为realm的懒加载机制，所以不建议在数据层把这个枚举转成数组类型。这样的缺点就是上层知道了数据的存储逻辑。严格的说这里不应该让上层知道。但是这样设计也许是为了方便上层进行再次检索，realm有着优越的查询性能。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-03T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/02/fmdbzfenghuznag/" title="Previous Post: FMDB封装篇">&laquo; FMDB封装篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/03/realmjinghuapian/" title="Next Post: Realm精华篇">Realm精华篇 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/03/realmjichupian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/03/realmjichupian/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

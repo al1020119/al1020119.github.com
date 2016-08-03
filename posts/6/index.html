@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。 1，默认使用HTTPS请求 如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误: App Transport Security &hellip;">
+  <meta name="description" content="引言： 简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。
+多个应用间默认是不共亨cookie的
+删除重装应用cookie会被清除 一. Cookie介绍 Cookie是在客户端存储服务器状态的一种机制, &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -39,7 +41,7 @@
   <header role="banner"><hgroup>
   <h1><a href="/">iOS梦工厂</a></h1>
   
-    <h2>不战胜自己，何以改变未来！</h2>
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
   
 </hgroup>
 
@@ -75,7 +77,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode7总结</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/01/22/cookie-session/">Cookie是撒(&session）</a></h1>
     
     
       <p class="meta">
@@ -84,439 +86,493 @@
 
 
 
-<time class='entry-date' datetime='2015-12-20T23:56:09+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:56 pm</span></time>
+<time class='entry-date' datetime='2016-01-22T13:32:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
+  <div class="entry-content"><p>引言：</p>
 
-<h4>1，默认使用HTTPS请求</h4>
+<ol>
+<li><p>简单说不管是NSURLConnection还是UIWebView都会保留并传递服务端的cookie，重启进程，或重启系统cookie都在应用中。</p></li>
+<li><p>多个应用间默认是不共亨cookie的</p></li>
+<li><p>删除重装应用cookie会被清除</p></li>
+</ol>
 
-<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
 
-<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
+<h4>一. Cookie介绍</h4>
+
+<p>Cookie是在客户端存储服务器状态的一种机制,Web服务器可以通过Set-Cookie或者Set-Cookie2 HTTP头部设置Cookie。</p>
+
+<p>Cookie可以分为两类</p>
+
+<ul>
+<li>会话Cookie</li>
+<li>持久Cookie</li>
+</ul>
+
+
+<p>会话Cookie是临时Cookie,当前会话结束(浏览器退出)时Cookie会被删除。</p>
+
+<p>持久Cookie会存储在用户的硬盘上,浏览器退出，然后重新启动后Cookie仍然存在。会话Cookie和持久Cookie的区别在于过期时间，如果设置了Discard参数(Cookie 版本1)或者没有设置Expires(Cookie版本0)或Max-Age(Cookie版本1)设置过期时间，则此Cookie为会话Cookie</p>
+
+<p>Cookie有两个版本,一个是版本0(Netscape Cookies)和版本1(RFC 2965),目前大多数服务器使用的Cookie 0。</p>
+
+<h4>二. NSHTTPCookie</h4>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/22/cookie-session/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-21T10:05:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>10:05 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>介绍</h3>
+
+<p>引言：</p>
+
+<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
+
+<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/21/keyChain/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/18/disanfangzhifu/">第三方支付总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-18T11:35:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:35 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>引言：
+随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。</p>
+
+<p>本文源码源码（封装）<a href="https://github.com/al1020119/iCocosPay">iCocosPay</a>（内集常见支付方案：成支付宝，微信，银联）</p>
+
+<p>目录</p>
+
+<ul>
+<li>常见支付方案</li>
+<li>第三方支付SDK</li>
+<li>苹果官方支付方案</li>
+<li>web支付方案</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/18/disanfangzhifu/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianyibuhuancun/">图片处理-异步缓存优化</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-15T02:35:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:35 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ol>
+<li>引言</li>
+</ol>
+
+
+<p>过去的几年里，iOS 应用在视觉方面越来越吸引人。图像展示是其中很关键的部分，因为大部分图像展示都需要下载并且渲染。大部分开发者都要使用图像填充表格视图（table views）或者集合视图（collection views）。下载图片消耗一些资源（如蜂窝数据、电池以及 CPU 等）。为了减少资源消耗，一些缓存模型也应运而生。</p>
+
+<p>为了获得良好的用户体验，当我们缓存和加载图像时，了解 iOS 底层如何处理是很重要的。此外，大多数使用了图片缓存的开源库也是个不错解决方案。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/15/tupianyibuhuancun/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">图片优化-总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-15T01:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:21 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>主要针对问题</p>
+
+<ul>
+<li><p>图片文件比较大</p></li>
+<li><p>图片文件比较多</p></li>
+</ul>
+
+
+<h4>网络图片显示大体步骤:</h4>
+
+<ul>
+<li>下载图片</li>
+<li>图片处理（裁剪，边框等)</li>
+<li>写入磁盘</li>
+<li>从磁盘读取数据到内核缓冲区</li>
+<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
+<li>解压缩为位图（耗cpu较高）</li>
+<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
+<li>CoreAnimation渲染解压缩过的位图</li>
+<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS UI操作必须在主线程执行)。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/15/tupianchuliyouhuajiqiao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulibuchong/">图片处理-补充</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-14T16:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:21 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前面介绍了iOS开发中常见的图片处理方式，而在iOS开发中除了前面几个提到的，还有两个东西是最值得注意的东西，那就是选择什么格式的图片，和怎么去加载图片，下面就来补充一下！</p>
+
+<ol>
+<li><p>图片资源使用png还是jpg格式</p></li>
+<li><p>如何选择图片加载方式imageNamed&amp;imageWithContentsOfFile</p></li>
+</ol>
+
+
+<h3>图片资源使用png还是jpg格式</h3>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/14/tupianchulibuchong/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchuligaojijiqiao/">图片处理-高级篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-14T12:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:21 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一：UIImage的加载方式</h3>
+
+<p>上一篇文章的补充中也提到了这个，关于图片的加载方式，但是没有过多的涉及，这里就大概的总结一下，希望能有用！</p>
+
+<p>显示关于图片加载问题，由于正在做的项目用到很多图片，加载后内存问题很是头疼，这里是我的经验，大概说一个下。
+     一般加载图片的方式：
+第一种：</p>
+
+<pre><code>NSString * imagePath = [[NSBundle mainBundle] pathForResource:@"pic@.png" ofType:nil inDirectory:nil];  
+UIImage * image = [UIImage imageWithContentsOfFile:imagePath];  
 </code></pre>
 
-<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
+<p>第二种：</p>
 
-<p>Apple介绍了iOS9中的App Transport Security，它要求所有App在默认情况下使用HTTPS来进行网络请求。由于不是所有的服务器都运行在HTTPS环境下，Apple也提供了相关的方法来禁用ATS。</p>
-
-<ul>
-<li>最后：出于数据安全考虑，在完全禁用ATS的情况下，你也应该为某些重要的站点打开ATS。你可以通过NSExceptionDomainskey来禁用/启用特定的站点的ATS。参照如下图片:</li>
-</ul>
-
-
-<p><img src="/images/ats001.png" title="Caption" ></p>
-
-<ul>
-<li>该plist文件允许用户在HTTP环境下下载文件，但是只能在HTTPS情况下访问"workflow.is"</li>
-</ul>
-
-
-<p>需要提醒的是，ATS的设置只针对当前bundle。这意味着你不仅需要在你主项目的info.plist中添加ATS相关的Key,同时也需要在其他bundle下的info.plist中添加相关配置。</p>
-
-<blockquote><p>关于iOS9的适配，github上有一个中文项目iOS9AdaptationTips可以提供很大的帮助。</p></blockquote>
-
-<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
-
-<p>否则会提示类似如下错误:</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/">粘包&amp;封包&amp;拆包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-12-09T18:11:05+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>6:11 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天偶尔看到了一个关于网络底层的技术，粘包，结果花了一段时间摸索了一下，找了一些资料并总结了一翻，希望有用！</p>
-
-<h3>两个简单概念长连接与短连接：</h3>
-
-<h6>1.长连接</h6>
-
-<pre><code>Client方与Server方先建立通讯连接，连接建立后不断开， 然后再进行报文发送和接收。
+<pre><code>UIImage * image = [UIImage imageNamed:picName];  
 </code></pre>
 
-<h6>2.短连接</h6>
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/14/tupianchuligaojijiqiao/">阅读全文😘</a>
+    </footer>
+  
 
-<pre><code>Client方与Server每进行一次报文收发交易时才进行通讯连接，交易完毕后立即断开连接。此种方式常用于一点对多点
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-14T09:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:21 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。</p>
+
+<p>这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！</p>
+
+<p>目录</p>
+
+<ul>
+<li>获取图片</li>
+<li>比例缩放</li>
+<li>圆角 化</li>
+<li>添加阴影</li>
+<li>压缩大小</li>
+<li>格式的转换</li>
+<li>图片上传</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/14/tupianchulichangyongjiqiao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/11/ffmpeg-kxmovies/">Ffmpeg+kxmovie</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-11T16:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:21 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：<a href="http://objccn.io/issue-24-4/">API预览</a></p>
+
+<p>好了开始吧！</p>
+
+<p>首先介绍两个概念：</p>
+
+<ul>
+<li><p>FFmpeg：是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。采用LGPL或GPL许可证。它提供了录制、转换以及流化音视频的完整解决方案。它包含了非常先进的音频/视频编解码库libavcodec，为了保证高可移植性和编解码质量，libavcodec里很多codec都是从头开发的。</p></li>
+<li><p>kxmovie：在FFmpeg基础上封装的一套OC的框架，非常好用么热切很强大！</p></li>
+</ul>
+
+
+<h2>一：编译针对iOS平台的ffmpeg库（kxmovie）</h2>
+
+<p>近期有一个项目，需要播放各种格式的音频、视频以及网络摄像头实时监控的视频流数据，经过多种折腾之后，最后选择了kxmovie，kxmovie项目已经整合了ffmpeg和简单的播放器，具体可以参考kxmovie主页：<a href="https://">https://</a></p>
+
+<ul>
+<li>github.com/kolyvan/kxmovie
+
+<ul>
+<li>编译kxmovie很简单，已经支持iOS 6.1 和 armv7s，一次成功，编译过程没出现什么问题：</li>
+</ul>
+</li>
+<li>git clone git://github.com/kolyvan/kxmovie.git</li>
+<li>cd kxmovie</li>
+<li>git submodule update &ndash;init</li>
+<li>rake</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/11/ffmpeg-kxmovies/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/07/code-review/">Code ReView</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-07T16:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>4:21 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>提高代码质量的方法：</p>
+
+<p>1，codereview</p>
+
+<p> Why we do Code Review(为什么进行)</p>
+
+<pre><code>1、提高质量
+2、及早发现潜在缺陷与BUG，降低事故成本。
+3、促进团队内部知识共享，提高团队整体水平
+4、评审过程对于评审人员来说，也是一种思路重构的过程。帮助更多的人理解系统。
 </code></pre>
 
-<p>通讯，比如多个Client连接一个Server.</p>
+<p> Options of Code Review(代码评审的选择)</p>
 
-<h3>什么时候需要考虑粘包问题?</h3>
+<pre><code>1、最近一次迭代开发的代码
+2、系统关键模块
+3、业务较复杂的模块
+4、缺陷率较高的模块
+</code></pre>
 
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/09/nian-bao-and-feng-bao-and-chai-bao/">阅读全文😘</a>
-    </footer>
-  
+<p>如何做出从零开始code review呢, 我的建议是:</p>
 
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/28/ibeaconchu-tan/">iBeacon初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-11-28T17:42:15+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:42 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>iBeacon 是苹果公司在 iOS 7 中新推出的一种近场定位技术，可以感知一个附近的 iBeacon 信标的存在。
-当一个 iBeacon 兼容设备进入/退出一个 iBeacon 信标标识的区域时，iOS 和支持 iBeacon 的 app 就能得知这一信息，从而对用户发出相应的通知。</p></blockquote>
-
-<p>典型的应用场景例如博物馆实时推送附近展品的相关信息，商场内即时通知客户折扣信息
-等。苹果在 Apple Store 中也部署了 iBeacon 来推送优惠、活动信息。</p>
+<pre><code>tech leader 强压所有人开始 code review, 这是最重要的一步
+安排一次编码规范的技术分享
+前期经常回顾, 这次的code review开展的怎样, 有哪些地方可以改善
+对于积极的同学表示鼓励, 支持现场重构代码
+每天不光可以review代码, 也可以安排整场的技术分享
+</code></pre>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/11/28/ibeaconchu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/14/watch-os2-chu-tan/">Watch OS2 初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-11-14T17:44:31+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>5:44 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>这一年的WWDC大会上,苹果公司推出了watchOS 2,这标志着Apple Watch的开发产生了巨大的变化。现在,你可以开发能运行在你手表上原生的app了。 在这篇watchOS 2教程中,你会开发一个简单但是功能齐全的watchOS 2的app。
-在这个过程中,你会学到:</p></blockquote>
-
-<ul>
-<li>如何为iOS app添加watchOS 2的target</li>
-<li>如何在两个target之间共享数据</li>
-<li>如何添加一个watchOS 2界面控制器到Storyboard,并放置界面对象</li>
-<li>如何创建WKInterfaceController的子类并连线</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/14/watch-os2-chu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/06/quan-ping-fan-hui-(runtime)/">全屏返回（Runtime）</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-11-06T02:51:33+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:51 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>前言</p>
-
-<p>此次文章，讲述的是导航控制器全屏滑动返回效果，而且代码量非常少，10行内搞定。</p></blockquote>
-
-<p>如果喜欢我的文章，可以关注我，也可以来小码哥，了解下我们的iOS培训课程。陆续还会有更新ing&hellip;.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/06/quan-ping-fan-hui-(runtime)/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/20/java/">爬虫必备-java抓包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-20T12:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:03 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>希望在开始之前你先看看：<a href="http://al1020119.github.io/blog/2014/02/21/fu-wu-qi-da-jian/">搭建服务器</a>,除非你已经有相应的服务器。</p></blockquote>
-
-<p>前面我们介绍了怎么使用青花瓷和正则表达式抓包，今天就来介绍一下最后一篇：使用java抓包</p>
-
-<p>java是大家再熟悉不过了，所以不用太担心有多难，因为里面涉及的java技术几乎为0（有点夸张），所以想想看完这篇之后你就会知道怎么使用java快速抓包，还能根据自己的喜好选择对应的方式！</p>
-
-<p>我们开始吧！</p>
-
-<p>前提：熟悉java语法（能看懂就行）</p>
-
-<ul>
-<li>准备阶段：从网页中获取html代码</li>
-<li>实战阶段：将对应的html代码使用java语言解析出来，最后保存到plist文件</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/20/java/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/15/pa-chong-bi-bei-phthonzhua-bao/">爬虫必备-Python抓包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-15T11:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:03 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>由于最近都在研究网络爬虫技术，自己也总结了一些。借助一个朋友（boyXiong）的博文，了解到了python抓包技术，所以就整理到这里，希望你能喜欢！</p>
-
-<h4>准备搭建环境</h4>
-
-<p>因为是MAC电脑，所以自动安装了Python 2.7的版本</p>
-
-<p>添加一个 库 Beautiful Soup ,方法这里说两种</p>
-
-<ul>
-<li>1.在终端输入 pip install BeautifulSoup</li>
-<li>2.手动下载包后，终端切换到 解压的文件夹，输入 sudo python setup.py install 下载地址BeautifulSoup</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/15/pa-chong-bi-bei-phthonzhua-bao/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/13/zhengze/">爬虫必备-正则表达式抓包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-13T10:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:03 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>第一篇我们有介绍到使用青花瓷抓包，也提到了后面会介绍java和python实现，本篇就介绍一下怎么使用正则表达式抓取网络数据。</p>
-
-<p>先来看看网络爬虫的基本原理：</p>
-
-<p>一个通用的网络爬虫的框架如图所示：</p>
-
-<p><img src="/images/zhengze001.png" title="Caption" ></p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/13/zhengze/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/11/qinghuaci/">爬虫必备-青花瓷抓包</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-11T09:03:23+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:03 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在之前个人学习ios开发的时候听过抓包相关的技术，但是自己没有实现，所以也只是当听听。</p>
-
-<p>这段时间，由于公司新项目的原因，但是后台和UI都还没有，而又需要我先开始封装对应的工具或者一下大概的逻辑，我当时就蒙了，最后还是乖乖的来做。</p>
-
-<p>网上找了一些接口，也找了不少类似的网站，但是发现再美我用不了有什么用呢？最后我想到了之前听别人说的网络爬虫，找了不少资料研究了一番。发现效果还不错，就在这里记录下来，希望对你有用！</p>
-
-<p>关于网络数据抓取不仅仅在iOS开发中有，其他开发中也有，也叫网络爬虫，大致分为三种方式实现</p>
-
-<ul>
-<li>1: 青花瓷</li>
-<li>2: 正则表达</li>
-<li>3: 利用其他语言的工具包：java／Python</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/11/qinghuaci/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/10/metal/">Metal深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-10T13:53:19+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:53 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>学习使用苹果GPU加速3D绘图的新API:Metal！</p>
-
-<p>在iOS 8里，苹果发布了一个新的接口叫做Metal，它是一个支持GPU加速3D绘图的API。</p>
-
-<p>Metal和OpenGL ES相似，它也是一个底层API，负责和3D绘图硬件交互。它们之间的不同在于，Metal不是跨平台的。与之相反的，它设计的在苹果硬件上运行得极其高效，与OpenGL ES相比，它提供了更快的速度和更低的开销。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/10/metal/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2016/01/07/code-review/">阅读全文😘</a>
     </footer>
   
 
@@ -548,7 +604,7 @@
 <li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
 <li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
-<li class='category'><a href='/blog/categories/senior/'>senior (24)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
 <li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
 <li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
@@ -567,15 +623,15 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a>
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/06/wpzhidapnizaizhaosm/">我知道你在找什么？</a>
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/03/appjinggaoshizhanchuli/">警告与实战</a>
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
       </li>
     
   </ul>

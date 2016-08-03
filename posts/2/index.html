@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一、系统架构 我们编写的驱动一般运行在i/o Kit框架下。 二、一些记录 开发工具 xcode
-开发语言：c++, c c++用的是嵌入式c++，是标准c++的子集。 ">
+  <meta name="description" content="Realm 是一个跨平台的移动数据库引擎，于 2014 年 7 月发布，准确来说，它是专门为移动应用所设计的数据持久化解决方案之一。 Realm 可以轻松地移植到您的项目当中，并且绝大部分常用的功能（比如说插入、查询等等）都可以用一行简单的代码轻松完成！ Realm 并不是对 Core Data &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -40,7 +39,7 @@
   <header role="banner"><hgroup>
   <h1><a href="/">iOS梦工厂</a></h1>
   
-    <h2>不战胜自己，何以改变未来！</h2>
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
   
 </hgroup>
 
@@ -76,7 +75,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/04/15/qudongkaifa/">驱动开发</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/03/realmjinghuapian/">Realm精华篇</a></h1>
     
     
       <p class="meta">
@@ -85,35 +84,1308 @@
 
 
 
-<time class='entry-date' datetime='2016-04-15T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-07-03T22:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>10:59 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h4>一、系统架构</h4>
+  <div class="entry-content"><p>Realm 是一个跨平台的移动数据库引擎，于 2014 年 7 月发布，准确来说，它是专门为移动应用所设计的数据持久化解决方案之一。</p>
 
-<p><img src="/images/nixiangqudong001.png" title="Caption" ></p>
+<p>Realm 可以轻松地移植到您的项目当中，并且绝大部分常用的功能（比如说插入、查询等等）都可以用一行简单的代码轻松完成！</p>
 
-<p>我们编写的驱动一般运行在i/o Kit框架下。</p>
+<p>Realm 并不是对 Core Data 的简单封装，相反地， Realm 并不是基于 Core Data ，也不是基于 SQLite 所构建的。它拥有自己的数据库存储引擎，可以高效且快速地完成数据库的构建操作。</p>
 
-<h4>二、一些记录</h4>
+<p>之前我们提到过，由于 Realm 使用的是自己的引擎，因此， Realm 就可以在 iOS 和 Android 平台上共同使用（完全无缝），并且支持 Swift 、 Objective-C 以及 Java 语言来编写（ Android 平台和 iOS 平台使用不同的 SDK ）。</p>
+
+<p>数以万计的使用 Realm 的开发者都会发现，使用 Realm 比使用 SQLite 以及 Core Data 要快很多。下面我们给出一个例子，分别展示 Core Data 和 Realm 在执行一个断言查询请求并且排序结果所使用的代码量：</p>
+
+<p>// Core Data
+let fetchRequest = NSFetchRequest(entityName: &ldquo;Specimen&rdquo;)
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString)
+fetchRequest.predicate = predicate
+let sortDescriptor = NSSortDescriptor(key: &ldquo;name&rdquo;, ascending: true)
+fetchRequest.sortDescriptors = [sortDescriptor]
+let error = NSError()
+let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)</p>
+
+<p>而换成了 Realm 呢？您会惊叹于 Realm 的简单的：</p>
+
+<p>// Realm
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString);
+let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty(&ldquo;name&rdquo;, ascending: true)</p>
+
+<p>使用 Realm 可以让代码变得十分简洁，从而让您的代码易读易写。</p>
+
+<p>综上所述，我们之所以使用 Realm 的理由不外乎如下几点：</p>
+
+<pre><code>跨平台 ：现在绝大多数的应用开发并不仅仅只在 iOS 平台上进行开发，还要兼顾到 Android 平台的开发。为两个平台设计不同的数据库是愚蠢的，而使用 Realm 数据库， iOS 和 Android 无需考虑内部数据的架构，调用 Realm 提供的 API 就可以完成数据的交换，实现 “ 一个数据库，两个平台无缝衔接 ” 。
+
+简单易用 ： Core Data 和 SQLite 冗余、繁杂的知识和代码足以吓退绝大多数刚入门的开发者，而换用 Realm ，则可以极大地减少学习代价和学习时间，让应用及早用上数据存储功能。
+
+可视化 ： Realm 还提供了一个轻量级的数据库查看工具，借助这个工具，开发者可以查看数据库当中的内容，执行简单的插入和删除数据的操作。毕竟，很多时候，开发者使用数据库的理由是因为要提供一些所谓的 “ 知识库 ” 。
+</code></pre>
+
+<p>本教程将会向您介绍 Realm 在 iOS 平台上的简单应用，即导入 Realm 框架、创建数据模型、执行查询以及插入、更新和删除记录，以及使用既有的数据库。</p>
+
+<p>提示：原文教程写于 2014 年，而 Realm 的版本更新得十分快，因此，本教程并不会拘泥于原文教程所述内容，而是根据 Realm 的版本更新进行相关修改。
+原文作者提到，要在 Realm 抵达 1.0 版本的时候再来更新这篇教程，大家尽请期待吧！</p>
+
+<p>让我们开始吧</p>
+
+<p>我们将会以一个实际的项目来进行教程：假设您在西双版纳自然保护区觅得了一份职位 “ 监测员 ” ，职责是记录这个 “ 动植物王国 ” 当中所发现物种的相关信息，包括种群数量、发现区域、年龄结构等等。因此，您需要一个助手来帮忙记录您的发现，但是很可惜的是，保护区并没有多余的人手来做您的助手（主要是没钱）。所以没有办法，我们必须为自己制作一个虚拟的 “ 助手 ” ，也就是一个以 “ 物种监测 ” 命名的 APP ，这样就可以随手记录我们的发现了！</p>
+
+<p>点击此处下载本教程所使用的起始项目</p>
+
+<p>在 Xcode 当中打开我们的起始项目。此时， MapKit 已经在项目当中建立好了，而且项目已经拥有了一些简单的创建、更新和删除物种信息的功能。</p>
+
+<p>提示：如果您对 MapKit 的相关知识感兴趣，可以查看 Introduction to MapKit tutorial ，这篇教程将会深入阐述 MapKit 是如何工作的。</p>
+
+<p>现在，让我们前往 Realm 的官网去下载 Realm 的框架吧： <a href="http://static.realm.io/downloads/cocoa/latest">http://static.realm.io/downloads/cocoa/latest</a></p>
+
+<p>Realm 的使用需求如下：</p>
+
+<pre><code>iOS ≥ 7 或者 Mac OS X ≥  10.9
+
+Xcode ≥ 6
+
+现在 Realm 的版本为： 0.91.5
+</code></pre>
+
+<p>解压下载下来的 Realm 压缩包。在压缩包中，我们可以看到一个名为 iOS 的文件夹。打开这个文件夹，然后将 Realm.framework 文件拖入到我们的起始项目中，最好拖放到 “Frameworks” 文件夹中以确保文件有序（强迫症患者 ~ ）。</p>
+
+<p><img src="/images/realmjinghua0001.png" title="Caption" ></p>
+
+<p>将框架文件拖入到项目当中</p>
+
+<p>之后，一定要确保勾选了 Copy Items if needed 选项，然后单击 Finish 按钮就完成了往项目中添加框架的操作。</p>
+
+<p>之后，定位到项目设置中 SISpeciesNotes 的 General 选项卡，然后在 Link Binary with Libraries 栏目中添加 libc++.dylib 动态库文件。</p>
+
+<p>然后回到解压的 Realm 文件夹中，打开名为 Swift 的文件夹，然后将里面的 RLMSupport.swift 文件拖入到项目当中。这个文件包含了用于 Realm 相关类的 Swift 简便方法，比如说 RLMResults 中的 Generator 方法，这样就可以像使用原生数组一样使用 Realm 数组了。</p>
+
+<p>好的，我们的准备工作就完成了！您可以尝试运行一下起始项目，以确保没有任何错误产生。如果出现错误的话，请仔细查看上面所述的一些步骤，确保没有任何疏漏发生。运行成功后的基本界面如下所示：</p>
+
+<p><img src="/images/realmjinghua0002.png" title="Caption" ></p>
+
+<p>应用界面</p>
+
+<p>Realm Browser 介绍</p>
+
+<p>Realm 资源包中包含了一个很有用的实用工具，可以帮助我们更好地管理 Realm 数据库，那就是 Realm Browser 。</p>
+
+<p>Realm Browser 可以让您轻松地读写 Realm 数据库（以 .realm 结尾），因此我们无需头疼如何去查看 Realm 专有数据库的逻辑结构以及其中的数据，可视化的操作就如同 SQLite 的其他数据库查看工具一样，十分简单、易用（虽然 Realm Browser 的功能还十分简陋，真的只能读写而已）。</p>
+
+<p><img src="/images/realmjinghua0003.png" title="Caption" ></p>
+
+<p>Realm Browser</p>
+
+<p>Realm Browser 可以在解压的 Realm 文件夹中的 browser 文件夹中找到。您也可以访问 Realm GitHub repository 然后在其中的 tools/RealmBrowser 目录中找到它。</p>
+
+<p>您可以尝试在 Realm Browser 中选择 Tools -> Generate demo database 来试着探索一下 Realm Browser 的功能。</p>
+
+<p>Realm 相关术语和主要类</p>
+
+<p>为了帮助您更好地理解 Realm 的使用，下面我们将会对 Realm 的相关术语和主要类进行一个大致的介绍：</p>
+
+<pre><code>RLMRealm ： RLMRealm 是框架的核心所在，是我们构建数据库的访问点，就如同 Core Data 的管理对象上下文（ managed  object context ）一样。出于简单起见， realm 提供了一个名为 defaultRealm 的单例，在本教程中我们就仅使用这个单例来完成我们所需的功能。当然，我们也可以导入外部已经编写好的 realm 数据库文件，也可以在我们不需要将数据保存在硬盘上时使用 “ 内存实例对象 ” （ in-memory realm instance ），此外，还可以同时使用多个数据库文件。
+
+RLMObject ：这是我们自定义的 realm 数据模型。创建数据模型的行为将会影响到数据库的结构。要创建一个数据模型，我们只需要继承 RLMObject ，然后设计我们想要存储的属性即可。
+
+关系 (Relationships) ：通过简单地在数据模型中声明一个 RLMObject 类型的属性，我们就可以创建一个 “ 一对多 ” 的对象关系。同样地，借助 RLMArray 我们还可以创建 “ 多对一 ” 和 “ 多对多 ” 的关系。
+
+写操作事务 (Write Transactions) ：数据库中的所有操作，比如创建、编辑，或者删除对象，都必须在事务中完成。 “ 事务 ” 是指位于 beginWriteTransaction() 以及 commitWriteTransaction() 操作之间的代码段。
+
+查询 (Queries) ：要在数据库中检索信息，我们需要用到 “ 检索 ” 操作。检索最简单的形式是对 RLMObject 对象发送 allObjects() 消息。如果需要检索更复杂的数据，那么还可以使用断言（ predicates ）、复合查询以及结果排序等等操作。
+
+RLMResults ：这个类是执行任何查询请求后所返回的类，其中包含了一系列的 RLMObjects 对象。和 NSArray 类似，我们可以用下标语法来对其进行访问，并且还可以决定它们之间的关系。不仅如此，它还拥有许多更强大的功能，包括排序、查找等等操作。
+</code></pre>
+
+<p>现在您应该对 Realm 有了一个大概的了解了，现在是时候来试着使用 Realm 来完成起始项目的剩余工作了。</p>
+
+<p>创建第一个数据模型</p>
+
+<p>好了，前面我们废话了这么多，现在终于要开始使用数据库了。首先我们要创建一个数据模型，也相当于创建数据库的一个 “ 表 ” 。</p>
+
+<p>右键选择 Xcode 项目导航器中的 Model 组，然后选择 New File -> iOS -> Source -> Swift File ，创建一个新的 swift 文件，将其命名为 SpeciesModel 并且确保选中了 SISpeciesNotes 对象。</p>
+
+<p>提示：您也许查看过 Realm 的开发文档，它里面介绍说可以使用 “ 插件 ” 来完成数据模型的简单创建（也就是新建文件时，可以像新建 Core Data 数据模型文件一样创建一个既定的模板数据模型），但是很遗憾的是，现在这个功能还只支持创建 OC 版本的数据模型文件，我们为了代码的 “ 干净 ” ，就不采用这种方法。</p>
+
+<p>打开 SpeciesModel.swift 文件，然后用以下代码替换文件中的内容：</p>
+
+<p>import UIKit
+import Realm
+class SpeciesModel: RLMObject {
+dynamic var name = &ldquo;&rdquo;
+dynamic var speciesDescription = &ldquo;&rdquo;
+dynamic var latitude: Double = 0
+dynamic var longitude: Double = 0
+dynamic var created = NSDate()
+}</p>
+
+<p>上面的代码添加了一些属性来存储信息： name 属性存储物种名称， speciesDescription 存储物种的描述信息。对于 Realm 中的一些特定的数据类型，比如说字符串，必须要初始化。在本例中，我们使用空字符串来进行初始化。</p>
+
+<p>latitude 以及 longitude 存储了物种的经纬度信息。在这里我们将其类型设置为 Double （ CLLocationDegrees 是 Double 的别名），并且使用 0 来进行初始化。</p>
+
+<p>最后， created 存储了这个物种所创建的时间信息。 NSDate() 将会返回当前时间，因此我们就用这个值来初始化这个属性</p>
+
+<p>好了，现在我们就成功创建了第一个 Realm 数据模型了，要不要动动脑来完成一个小小的挑战呢？</p>
+
+<p>我们知道，这些物种将会被划分为不同的 “ 类别 ” ，您的任务就是自行创建一个 “ 类别 ” 数据模型，这个文件将被命名为 CategoryModel.swift ，然后这个新的数据模型只要一个字符串类型的属性 ——name 。</p>
+
+<p>以下是解决方案的代码：</p>
+
+<p>import UIKit
+import Realm
+class CategoryModel: RLMObject {
+dynamic var name = &ldquo;&rdquo;
+}</p>
+
+<p>我们现在拥有了 CategoryModel 数据模型了，下面我们将通过某种方式将其与 SpeciesModel 数据模型关联起来，搭建起 “ 关系 ” 。</p>
+
+<p>重新回顾一下上一节的内容，我们可以通过简单地声明一个属性来创建数据模型之间的关系。</p>
+
+<p>打开 SpeciesModel.swift 文件，然后在 created 属性下面添加如下语句：
+1</p>
+
+<p>dynamic var category = CategoryModel()</p>
+
+<p>这个语句设置了 “ 物种 ” 和 “ 类别 ” 之间的 “ 一对多 ” 关系，这就意味着每个物种都只能够拥有一个类别，但是一个类别可以从属于多个物种。</p>
+
+<p>好的，我们创建完了一个基础数据模型了，现在是时候向数据库中添加数据了！</p>
+
+<p>添加数据</p>
+
+<p>每当用户添加了一个新的物种标记，用户就可以对这个标记进行修改，比如说设置物种名字，选择类别等等。打开 CategoriesTableViewController.swift 文件。这个视图控制器将要在这个表视图中显示类别清单，以便用户可以选择。</p>
+
+<p>因此，我们需要在应用初始运行时，给用户提供几个默认的类别以供选择。</p>
+
+<p>在类定义当中添加以下方法，别忘了在文件顶部导入 Realm 框架（ import Realm ）：</p>
+
+<p>private func populateDefaultCategories() {
+self.results = CategoryModel.allObjects() // 1
+if results.count == 0 { // 2
+let realm = RLMRealm.defaultRealm() // 3
+realm.beginWriteTransaction() // 4
+let defaultCategories = Categories.allValues // 5
+for category in defaultCategories {
+// 6
+let newCategory = CategoryModel()
+newCategory.name = category
+realm.addObject(newCategory)
+}
+realm.commitWriteTransaction() // 7
+self.results = CategoryModel.allObjects()
+}
+}</p>
+
+<p>对应的标号注释如下：</p>
+
+<pre><code>allobjects() 方法将会返回指定对象的所有元素，在本例中，我们向数据库中的 CategoryModel 对象发送了一个查询请求，返回这个表当中的所有行信息。注意的是，这里我们得到的是一个 RLMResults 对象，这个对象用来存放我们的查询结果。
+
+如果查询结果中的元素数量为 0 ，那么就说明数据库当中没有类别信息的相关记录，那么就意味着这是用户第一次启动应用。
+
+我们访问默认的 realm 单例对象，然后将其用 realm 变量简单表示，以供访问
+
+这一步将在默认 realm 数据库中启动一个事务 —— 现在，我们就可以向数据库当中添加记录了。
+
+这里我们使用已经定义过的 Categories 枚举来创建一个含有全部默认类别的数组。
+
+对于每个类别名称来说，我们创建了一个对应的 CategoryModel 实例对象，然后设置其 name 属性，最后将这个对象添加到 realm 当中。
+
+当我们添加完所有的类别之后，调用 commitWriteTransaction() 方法来关闭事务，并且向数据库提交数据。
+</code></pre>
+
+<p>只有调用了 commitWriteTransaction() 方法，我们之前做的所有关于事务的操作才能够被成功运行，因为这涉及到 Realm 的内部处理的问题了。您可以像上面我们做的那样，执行一些简单的创建操作，或者您可以执行一些复杂的操作，比如说同时创建、更新、删除多个对象等等。</p>
+
+<p>然后在 viewDidLoad() 方法的底部加入以下代码：
+1</p>
+
+<p>populateDefaultCategories()</p>
+
+<p>这个方法将会在视图加载的过程中，添加我们的测试用类别，并且执行向数据库写入数据的操作。</p>
+
+<p>好了，现在我们的数据库当中已经有了一些数据了，我们需要更新一下表试图数据源相关方法，以显示这些类别。找到 tableView(_:cellForRowAtIndexPath:) 方法，然后用以下代码替换它：</p>
+
+<p>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+let cell = tableView.dequeueReusableCellWithIdentifier(&ldquo;CategoryCell&rdquo;, forIndexPath: indexPath) as! UITableViewCell
+cell.textLabel?.text = (results[UInt(indexPath.row)] as! CategoryModel).name
+return cell
+}</p>
+
+<p>这个声明语句从 results 对象当中读取对应行的名称，然后设置到单元格的文本标签上面显示。</p>
+
+<p>接下来，添加一个新的属性：
+1</p>
+
+<p>var selectedCategory: CategoryModel!</p>
+
+<p>我们用这个属性来存储当前选中的类别。</p>
+
+<p>找到 tableView(_: willSelectedRowAtIndexPath:) ，然后用以下代码替换它：
+1
+2
+3
+4</p>
+
+<p>override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+selectedCategories = self.results[UInt(indexPath.row)] as! CategoryModel
+return indexPath
+}</p>
+
+<p>上面声明的方法将会在用户点击某个单元格的时候，将用户点击的类别存储在 selectedCategory 属性当中。</p>
+
+<p>编译并运行这个应用，然后尝试定位到某个您感兴趣的位置（使用模拟器的位置模拟），然后点击右上角的 “+” 按钮创建一个新的标记点。点选地图上的这个标记点，然后点击其弹出来的气泡，接下来会弹出这个标记点的详细信息。随后，点击类别文本框，就可以看到如下图所示的类别列表了：</p>
+
+<p><img src="/images/realmjinghua0004.png" title="Caption" ></p>
+
+<p>类别列表</p>
+
+<p>您可以选择其中一个类别，不过这个操作仅仅只是将其保存到属性当中。如果您感兴趣，可以前往模拟器的 Documents 目录下面，使用 Realm Browser 查看我们生成的数据库，在里面就可以看到我们写入的数据了，这是不是很令人激动呢？</p>
+
+<p>使用 Realm Browser</p>
+
+<p>通常情况下，使用 defaultRealm() 方法生成的数据库文件将会存放在 /Users/(Your Account)/Library/Developer/CoreSimulator/Devices/(Simulator ID)/data/Containers/Data/Application/(Application ID)/Documents/ 路径下面，名为 default.realm 。 Simulator ID 指的是您运行的模拟器的 ID ， Application ID 指的是这个应用所分配到的 ID 。</p>
+
+<p>如果您仍然不清楚这个 Realm 数据库在哪儿的话，那么使用如下语句，就可以打印处这个数据库所在的完整位置了：
+1</p>
+
+<p>println(RLMRealm.defaultRealm().path)</p>
+
+<p>在这个 Documents 目录下面，我们可能会看到两个文件。一个是 default.realm 文件，这个是数据库文件，里面就是数据的存放点了。而另一个则是 default.realm.lock 文件，这个文件也有可能不会存在，它是用来当数据库文件被使用时，防止其它应用对其进行修改的一个文件。</p>
+
+<p>双击这个 default.realm 文件，就可以使用 Realm Browser 打开了：</p>
+
+<p><img src="/images/realmjinghua0005.png" title="Caption" ></p>
+
+<p>Realm Browser 打开的 default.realm 文件</p>
+
+<p>注意：如果 default.realm 已经在其它应用中打开了，那么强行打开它就可能会出现异常。</p>
+
+<p>.lock 文件就可以防止对 default.realm 文件的重复操作，在使用 Realm Browser 打开数据库文件前，请先确保应用没有在运行，然后删除 .lock 文件，才能打开。</p>
+
+<p>一旦数据库在 Realm Browser 中被打开，您将会看到 CategoryModel 类中拥有 6 个对象，这就意味着这个 “ 表 ” 中已经存放了 6 个记录了。点击这个类就可以查看这个类当中拥有的具体对象信息。</p>
+
+<p>增加类别</p>
+
+<p>好了，现在我们就可以来实现 “ 为某个物种添加类别 ” 的功能了。</p>
+
+<p>打开 AddNewEntryController.swift ，然后向类中添加以下属性：
+1</p>
+
+<p>var selectedCategory: CategoryModel!</p>
+
+<p>我们将会用这个属性来存储我们在 CategoriesTableViewController 选中的类别。</p>
+
+<p>接下来，找到 unwindFromCategories(segue:) 方法，然后在方法底部添加以下代码：
+1
+2</p>
+
+<p>selectedCategory = categoriesController.selectedCategories
+categoryTextField.text = selectedCategory.name</p>
+
+<p>这个方法会在用户从 categoriesTableViewController 中选择了一个类别后被调用。在这里，我们获取到了这个选择的类别，然后将其存储在本地属性 selectedCategory 当中，接着，我们将它的值填充到文本框里面。</p>
+
+<p>现在，我们已经完成了类别的获取，接下来就是要创建第一个物种了！</p>
+
+<p>仍然还是在 AddNewEntryController.swift 当中，向类中再添加一个属性：
+1</p>
+
+<p>var species: SpeciesModel!</p>
+
+<p>这个属性将会存储一个新的物种数据模型对象。</p>
+
+<p>接下来，导入 Realm 框架，然后向类中添加以下方法：</p>
+
+<p>func addNewSpecies() {
+let realm = RLMRealm.defaultRealm() // 1
+realm.beginWriteTransaction() // 2
+let newSpecies = SpeciesModel() // 3
+// 4
+newSpecies.name = nameTextField.text
+newSpecies.category = selectedCategory
+newSpecies.speciesDescription = descriptionTextView.text
+newSpecies.latitude = selectedAnnotation.coordinate.latitude
+newSpecies.longitude = selectedAnnotation.coordinate.longitude
+realm.addObject(newSpecies) // 5
+realm.commitWriteTransaction() // 6
+self.species = newSpecies
+}</p>
+
+<p>对应的标号注释如下：</p>
+
+<pre><code>获取默认的 Realm 数据库
+
+开启一个事务序列，准备写入数据
+
+创建一个 Species 对象实例
+
+接着，设置这个对象的相关值。这些值来自于用户界面的文本输入框。
+
+向 realm 中写入新的 Species 对象
+
+最后，使用 commitWriteTransaction() 提交写操作事务
+</code></pre>
+
+<p>在这里，我们需要使用 “ 输入验证 ” ，来确保用户的输入是正确的。在工程中已经有了一个存在的 validateFields() 方法来执行输入验证的工作，以确保物种名称和描述不能为空。我们刚刚增加了设置类别的功能，那么我们应该也要确保类别选择不能为空。</p>
+
+<p>在 validateFields() 方法中找到以下代码：
+1</p>
+
+<p>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {</p>
+
+<p>将其变更为：
+1</p>
+
+<p>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {</p>
+
+<p>这个方法经能够确保所有的文本框都有值，并且用户也已经选择了一个类别。</p>
+
+<p>接下来，向类中添加以下方法：</p>
+
+<p>override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -> Bool {
+if validateFields() {
+if species == nil {
+addNewSpecies()
+}
+return true
+} else {
+return false
+}
+}</p>
+
+<p>在上面的代码中，我们调用了输入验证的方法，如果所有文本框都有值的话，那么就可以添加一个新的物种。</p>
+
+<p>编译并运行您的应用，单击 “+” 按钮来创建一个新的物种。然后输入其名称和描述，选择一个类别，接着单击 “ 保存 ” 按钮来将这个物种添加到数据库中。</p>
+
+<p><img src="/images/realmjinghua0006.png" title="Caption" ></p>
+
+<p>添加新的数据</p>
+
+<p>视图消失了 —— 等等，怎么什么都没有发生呢？什么情况？</p>
+
+<p>哦对了，我们已经向 Realm 数据库提交了一个数据，但是我们还没有在地图上做出相应的设置和改变。</p>
+
+<p>检索数据</p>
+
+<p>既然我们已经向数据库中添加了一个物种了，那么现在我们希望它能够在地图上显示出来。</p>
+
+<p>如果您想要检视这个心数据，那么打开 Realm Browser 就可以查看数据了。记住要先退出模拟器。</p>
+
+<p>添加的物种信息</p>
+
+<p><img src="/images/realmjinghua0007.png" title="Caption" ></p>
+
+<p>添加的物种信息</p>
+
+<p>我们仅仅只能够看见孤零零的一条记录，里面存储了记录的名称、描述信息、经纬度信息、添加的时间。还有最重要的，就是我们看到了连接到 CategoryModel 的 category 记录，这就意味着我们已经创建好了物种和类别的 “ 一对多 ” 关系。点击这个蓝色的超链接，我们就可以查看 CategoryModel 的相关数据了。</p>
+
+<p>好的，回到正题，我们现在需要在地图上显示新添加的数据。</p>
+
+<p>打开 SpeciesAnnotation.swift ，然后向类中添加一个新的属性：
+1</p>
+
+<p>var species: SpeciesModel?</p>
+
+<p>这个属性将会为这个标记点保存它所拥有的物种信息。</p>
+
+<p>接下来，用以下代码替换构造器：</p>
+
+<p>init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
+self.coordinate = coordinate
+self.title = title
+self.subtitle = sub.rawValue
+self.species = species
+}</p>
+
+<p>我们所做的改变，就是给这个构造器方法添加了一个带默认值的构造器参数，以便可以对 species 属性进行赋值。默认值为 nil ，这意味着我们可以忽略这个参数，使用前面三个参数进行初始化也是没有任何问题的。</p>
+
+<p>打开 MapViewController.swift ，然后向类中添加一个新属性（同样地，别忘了导入 Realm ）：
+1</p>
+
+<p>var results: RLMResults?</p>
+
+<p>如果我们想要在用属性来存储一系列物种，那么我们需要将这个属性声明为 RLMResults 类型。要记住，我们是不能够初始化 RLMResults 对象的，我们必须要通过查询操作来获取它的值。</p>
+
+<p>现在我们需要一些方法来获取所有的物种数据。仍然还是在 MapViewController.swift 当中，向类中添加如下方法：</p>
+
+<p>func populateMap() {
+mapView.removeAnnotations(mapView.annotations) // 1
+if let results = SpeciesModel.allObjects() { // 2
+self.results = results
+for result in results {
+let species = result as! SpeciesModel
+let coordinate = CLLocationCoordinate2DMake(species.latitude, species.longitude)
+let speciesAnnotation = SpeciesAnnotation(coordinate: coordinate, title: species.name, sub: Categories(rawValue: species.category.name)!, species: species) // 3
+mapView.addAnnotation(speciesAnnotation) // 4
+}
+}
+}</p>
+
+<p>对应的标号注释如下：</p>
+
+<pre><code>首先，我们先清除了地图上所有存在的标记点，这样我们就不用考虑其他的要素
+
+然后，我们从 Realm 数据库中获取 Species 的全部数据
+
+我们在此创建了一个自定义的 SpeciesAnnotation
+
+最后，我们往 MKMapView 上添加这个标记点
+</code></pre>
+
+<p>好的，现在我们可以在某处地方吊用这个方法了。找到 viewDidLoad() 然后将这个方法加入到这个方法底部：
+1</p>
+
+<p>populateMap()</p>
+
+<p>这样就确保了每当地图视图控制器加载的时候，地图就能够显示 Species 标记点。</p>
+
+<p>接着，我们仅需要修改标记点的名称和类别即可。找到 unwindFromAddNewEntry() ，然后使用下列代码替换掉该方法：</p>
+
+<p>@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
+let addNewEntryController = segue.sourceViewController as! AddNewEntryController
+let addedSpecies = addNewEntryController.species
+let addedSpeciesCoordinate = CLLocationCoordinate2DMake(addedSpecies.latitude, addedSpecies.longitude)
+if lastAnnotation != nil {
+mapView.removeAnnotation(lastAnnotation)
+} else {
+for annotation in mapView.annotations {
+let currentAnnotation = annotation as! SpeciesAnnotation
+if currentAnnotation.coordinate.latitude == addedSpeciesCoordinate.latitude &amp;&amp; currentAnnotation.coordinate.longitude == addedSpeciesCoordinate.longitude {
+mapView.removeAnnotation(currentAnnotation)
+break
+}
+}
+}
+let annotation = SpeciesAnnotation(coordinate: addedSpeciesCoordinate, title: addedSpecies.name, sub: Categories(rawValue: addedSpecies.category.name)!, species: addedSpecies)
+mapView.addAnnotation(annotation)
+lastAnnotation = nil
+}</p>
+
+<p>这个方法将会在我们从 AddNewEntryController 返回的时候被调用，然后这时候就会有一个新的物种被添加到地图上方。当我们添加了一个新的物种到地图上，那么就会产生一个标记图标。然后我们想要根据物种的类别来改变其图标的样式，在这个代码里面，我们就是简单的移除了最后添加的这个标记点，然后将其替换为有名称和类别的标记点。</p>
+
+<p>编译并运行您的应用，创建一些不同的物种种类来查看现在地图是什么样式的吧！</p>
+
+<p><img src="/images/realmjinghua0008.png" title="Caption" ></p>
+
+<p>添加的标记点效果</p>
+
+<p>另外一个视图</p>
+
+<p>您或许已经注意到在地图视图的左上角有一个 “ 编辑 ” 的按钮。为了更好地管理地图上的记录点，我们这个应用设置了一个基于文本的表视图，用来列出地图上所有的记录点，这个视图我们现在命名为 “ 记录 ” 视图。现在，这个表视图仍然还是空的，现在我们就来向里面填充数据吧！</p>
+
+<p>打开 LogViewController.swift ，然后将 species 属性替换成以下形式（同样地，要导入 Realm ）：
+1</p>
+
+<p>var species: RLMResults!</p>
+
+<p>在上面的代码中，我们用 RLMResults 替换掉了之前的一个空数组占位符，这个操作和我们在 MapViewController 所做的一样。</p>
+
+<p>接下来，找到 viewDidLoad() 方法，然后在 super.viewDidLoad() 语句下添加以下代码：
+1</p>
+
+<p>species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)</p>
+
+<p>这行代码会将数据库中的所有物种全部输出到 species 当中，并且按照名字进行排列。</p>
+
+<p>接下来，用以下代码替换 tableView(_:cellForRowAtIndexPath:) ：</p>
+
+<p>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+var cell = tableView.dequeueReusableCellWithIdentifier(&ldquo;LogCell&rdquo;) as! LogCell
+var speciesModel: SpeciesModel!
+speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+cell.titleLabel.text = speciesModel.name
+cell.subtitleLabel.text = speciesModel.category.name
+cell.iconImageView.image = getImageOfSpecies(speciesModel.category.name)
+return cell
+}</p>
+
+<p>这个方法将会展示物种的名字和物种的类别，以及其图标。</p>
+
+<p>编译并运行应用，单击左上角的 “ 编辑 ” 按钮，然后您就会在表视图中看到我们之前录入的物种信息，如图所示：</p>
+
+<p><img src="/images/realmjinghua0009.png" title="Caption" ></p>
+
+<p>记录界面</p>
+
+<p>删除记录</p>
+
+<p>现在我们已经学习了如何在 Realm 中创建记录数据，但是如果我们不小心添加了错误的标记点，或者想要移除之前添加过的物种数据，那么我们应该要怎么做呢？因此，我们就需要添加从 Realm 中删除数据的功能。您会发现这是一个非常简单的操作。</p>
+
+<p>打开 LogViewController.swift 文件，然后添加以下方法：</p>
+
+<p>func deleteRowAtIndexPath(indexPath: NSIndexPath) {
+let realm = RLMRealm.defaultRealm() // 1
+let objectToDelete = species[UInt(indexPath.row)] as! SpeciesModel // 2
+realm.beginWriteTransaction() // 3
+realm.deleteObject(objectToDelete) // 4
+realm.commitWriteTransaction() // 5
+species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true) // 6
+tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
+}</p>
+
+<p>对应的标号注释如下：</p>
+
+<pre><code>首先，我们获取到默认的 Realm 数据库
+
+然后，我们从数据中找到我们想要删除的对象
+
+启动写操作事务
+
+调用 deleteObject() 方法，将要删除的对象传递进去， realm 会自动帮我们执行删除操作
+
+接着提交写操作事务，将删除操作提交到数据库当中
+
+一旦我们移除了一个物种，我们需要重新读取数据
+
+最后，我们更新 UITableViewCell ，将单元格移除
+</code></pre>
+
+<p>接着，找到 tableView(_:commitEditingStyle: forRowAtIndexPath:) 方法，然后将以下代码加入到 if 语句块当中：
+1</p>
+
+<p>deleteRowAtIndexPath(indexPath)</p>
+
+<p>当表视图执行一个单例删除操作时，会调用这个协议代理，我们所需要做的就是调用我们刚刚创建的那个方法。</p>
+
+<p>编译并运行您的应用，查看 “ 记录 ” 界面，然后在某个记录上面左滑删除。随后关闭模拟器，用 Realm Browser 打开数据库，我们就可以看到我们成功执行了更改：</p>
+
+<p><img src="/images/realmjinghua0010.png" title="Caption" ></p>
+
+<p>执行删除操作</p>
+
+<p>断言匹配</p>
+
+<p>我们仍然还想要给这个应用提供一些碉堡的功能，那么快速查找怎么样？在海量的数据中进行查找还是很麻烦的一件事情，但是有了快速查找，一切就都简单了。我们现在所拥有的这个项目已经包含了一个 UISearchController 控件，您所需要做的就是添加一点小小的修改，让这个功能能够在 Realm 中正常工作。</p>
+
+<p>打开 LogViewController.swift ，然后将 searchResults 属性替换为以下代码：
+1</p>
+
+<p>var searchResults: RLMResults!</p>
+
+<p>因为我们仍然是执行 “ 检索 ” 操作，因此我们的数据是存放在 RLMResults 当中的。</p>
+
+<p>向类中添加以下方法：</p>
+
+<p>func filterResultsWithSearchString(searchString: String) {
+let predicate = &ldquo;name BEGINSWITH [c]&lsquo;(searchString)&rsquo;&rdquo; // 1
+let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
+searchResults = SpeciesModel.objectsWhere(predicate) // 2
+switch scopeIndex {
+case 0:
+searchResults = searchResults.sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true) // 3
+case 1:
+searchResults = searchResults.sortedResultsUsingProperty(&ldquo;distance&rdquo;, ascending: true) // 4
+case 2:
+searchResults = searchResults.sortedResultsUsingProperty(&ldquo;created&rdquo;, ascending: true) 5
+default:
+return
+}
+}</p>
+
+<p>对应的标号注释如下：</p>
+
+<pre><code>首先我们创建了一个字符串版本的 “ 断言 (predicate)” ，在这里，我们搜索以 searchString 开头的 name 属性。 [c] 可以让 BEGINSWITH 以不区分大小写的灵敏度来进行查找，要注意， searchString 是被单引号括起来的。
+
+我们根据这个断言，使用 objectsWhere 这个方法来执行断言检索操作。
+
+如果选中的标签是 “ 名字 ” ，那么结果就按照 “ 名字 A-Z” 排列
+
+如果选中的标签是 “ 距离 ” ，那么就按照距离排列结果
+
+如果选中的标签是 “ 创建时间 ” ，那么就按照时间来进行排列。
+</code></pre>
+
+<p>因为搜索会导致表视图调用同样的数据源方法，因此我们需要对 tableView(_:cellForRowAtIndexPath:) 进行小小的修改，以便让其能够处理主要的表视图记录以及查询结果。在这个方法里面，找到以下代码：
+1</p>
+
+<p>speciesModel = species[UInt(indexPath.row)] as! SpeciesModel</p>
+
+<p>将其替换为以下代码：</p>
+
+<p>if searchController.active {
+speciesModel = searchResults[UInt(indexPath.row)] as! SpeciesModel
+}else {
+speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+}</p>
+
+<p>上面这行代码将会检查 searchController 是否激活。如果激活的话，那么就接收并显示搜索结果的数据；如果不是的话，那么就接收并显示 species 全部数据。</p>
+
+<p>最后，我们需要一个功能，那就是单击范围栏上的按钮时，更变返回结果的排列顺序。</p>
+
+<p>将空 scopeChanged 方法用以下代码来替换：</p>
+
+<p>@IBAction func scopeChanged(sender: UISegmentedControl) {
+switch sender.selectedSegmentIndex {
+case 0:
+species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)
+case 1:
+break
+case 2:
+species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;created&rdquo;, ascending: true)
+default:
+species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;name&rdquo;, ascending: true)
+}
+tableView.reloadData()
+}</p>
+
+<p>在上面的代码中，我们将会检查范围栏上的按钮是哪一个被按下（ A-Z ，距离，以及添加日期），然后调用 sortedResultsUsingProperty 来进行排序。通常情况下，这个列表将按照名字来排序。</p>
+
+<p>您可能会注意到，现在按照距离排序这一块中目前还是空的（ case 1 ），那是因为目前数据模型中还不存在 “ 距离 ” 这么一个玩意儿，因此我们暂时还不需要做这个工作，等到以后添加了再来完善。不过现在，我们已经可以看到它的大致功能了！</p>
+
+<p>编译并运行您的应用，尝试一些搜索操作，然后查看结果！</p>
+
+<p><img src="/images/realmjinghua0011.png" title="Caption" ></p>
+
+<p>查看不同的结果</p>
+
+<p>提示：在作者的原教程中，搜索功能实际上是无法实现的。如果您在 “ 合适 ” 的地方添加了相关方法，那么实际上程序仍然还是无法执行搜索功能的。它会提示 cell 的 titleLabel 的值为 nil 。因为在原教程中， Cell 是在 Storyboard 里面自定义的，而搜索栏则是要显示一个新的表视图。如果需要重用自定义的 Cell ，那么最好需要在 Xib 文件中进行制作。因为如果没有 init(style:reuseIdentifier:) 方法的 Cell 自定义类，是无法进行重用的。</p>
+
+<p>更新记录</p>
+
+<p>我们现在已经实现了添加和删除记录的功能了，剩下就是更新数据功能了。</p>
+
+<p>如果您试着单击 LogViewController 中的一个单元格，那么就会跳转到 AddNewEntryViewController 页面，但是这些区域都是空白的。当然，我们首先要做的就是让这个页面显示数据库中存放的数据，以便让用户编辑。</p>
+
+<p>打开 AddNewEntryViewController.swift 文件，然后向类中添加以下方法：</p>
+
+<p>func fillTextFields() {
+nameTextField.text = species.name
+categoryTextField.text = species.category.name
+descriptionTextView.text = species.speciesDescription
+selectedCategory = species.category
+}</p>
+
+<p>这个方法将会使用 species 中的数据来填充用户界面的文本框。记住， AddNewEntryViewController 只有在添加新物种时才会保持文本框为空的状态。</p>
+
+<p>接下来，向 viewDidLoad() 方法的末尾添加以下语句：</p>
+
+<p>if species == nil {
+title = &ldquo; 添加新的物种 &rdquo;
+}else {
+title = &ldquo; 编辑 (species.name)&rdquo;
+fillTextFields()
+}</p>
+
+<p>上面这些代码段设置了导航栏的标题，以通知用户当前其是在添加新的物种还是在更新一个已存在的物种信息。如果 species 不为空，那么就调用 fillTextFields 方法来填充文本框。</p>
+
+<p>现在我们需要一个更新功能，以便响应用户的更改操作。向类中添加以下方法：</p>
+
+<p>func updateSpecies() {
+let realm = RLMRealm.defaultRealm()
+realm.beginWriteTransaction()
+species.name = nameTextField.text
+species.category = selectedCategory
+species.speciesDescription = descriptionTextView.text
+realm.commitWriteTransaction()
+}</p>
+
+<p>通常情况下，这种方法一般都先获得默认的 Realm 数据库，然后将数据写入的操作放在 beginWriteTransaction() 和 commitWriteTransaction() 方法之间。在这个事务中，我们只是简单的更新了这三个数据域的值。</p>
+
+<p>这六行短短的代码就足以完成 Species 记录的更新操作了哦 ~O(∩_∩)O~</p>
+
+<p>现在我们只需要在用户单击保存按钮的时候调用上述代码即可。找到 shouldPerformSegueWithIdentifier(_:sender:) ，然后在 return true 语句之前，第一个 if 代码块之内添加以下代码：</p>
+
+<p>else {
+updateSpecies()
+}</p>
+
+<p>当恰当的时候，就会调用这个方法来对数据进行更新。</p>
+
+<p>现在打开 LogViewController.swift ，然后将 prepareForSegue(_:sender:) 用以下代码替换：</p>
+
+<p>override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+if segue.identifier == &ldquo;Edit&rdquo; {
+let controller = segue.destinationViewController as! AddNewEntryController
+var selectedSpecies: SpeciesModel!
+let indexPath = tableView.indexPathForSelectedRow()
+if searchController.active {
+let searchResultsController = searchController.searchResultsController as! UITableViewController
+let indexPathSearch = searchResultsController.tableView.indexPathForSelectedRow()
+selectedSpecies = searchResults[UInt(indexPathSearch!.row)] as! SpeciesModel
+}else{
+selectedSpecies = species[UInt(indexPath!.row)] as! SpeciesModel
+}
+controller.species = selectedSpecies
+}
+}</p>
+
+<p>我们在这里将选中的物种信息传递给了 AddNewEntryController 。上面的 if/else 代码是因为要根据用户是否是在查看搜索结果来决定的。</p>
+
+<p>编译并运行您的应用，打开记录视图，并且选中一个存在的物种。您应该可以看到文本框中已经填充了数据。</p>
+
+<p><img src="/images/realmjinghua0012.png" title="Caption" ></p>
+
+<p>更新数据</p>
+
+<p>把剩下的东西结束掉</p>
+
+<p>要让我们的应用变得更加完美，我们就需要实现剩下 的功能。</p>
+
+<p>还记不记得我们没有变法根据距离来排序记录？我们需要在里面添加不少的代码，才能够正常的运行这个功能，但是这个结果是非常值得的。</p>
+
+<p>打开 Species.swift 文件，然后向类中添加一个新的属性。
+1</p>
+
+<p>dynamic var distance: Double = 0</p>
+
+<p>这个属性为保存用户位置和该记录点的距离信息。然而，没有必要去存储 distance 信息，因为用户位置会随时发生改变。我们想让距离成为这个模型的一部分，但是我们并不想 Realm 来存储这个数据。</p>
+
+<p>Realm 支持一种被称为忽视属性 (ignored properties) 的东西，然后向类中添加以下代码：</p>
+
+<p>func ignoredProperties() -> NSArray {
+let propertiesToIgnore = [distance]
+return propertiesToIgnore
+}</p>
+
+<p>要实现忽视属性，只需要声明一个命名为 ignoredProperties() 的方法，然后返回一个属性数组，里面保存有您不想进行存储的属性。</p>
+
+<p>由于我们并不会存储距离这个属性，很明显地我们需要自己计算距离。</p>
+
+<p>打开 MapViewController.swift ，添加以下方法：</p>
+
+<p>func updateLocationDistance() {
+let realm = RLMRealm.defaultRealm()
+if results != nil {
+for result in results! {
+let currentSpecies = result as! SpeciesModel
+let currentLocation = CLLocation(latitude: currentSpecies.latitude, longitude: currentSpecies.longitude)
+let distance = currentLocation.distanceFromLocation(mapView.userLocation.location)
+realm.beginWriteTransaction()
+currentSpecies.distance = Double(distance)
+realm.commitWriteTransaction()
+}
+}
+}</p>
+
+<p>对于每个物种，我们计算了这个标记点与用户当前位置之间的距离。即时我们没有存储这个距离信息，我们仍然需要将其存储在记录当中，然后将其在写操作事务中保存这个变化消息。</p>
+
+<p>接下来，在 prepareForSegue(_:sender:) 方法底部添加以下代码：</p>
+
+<p>else if segue.identifier == &ldquo;Log&rdquo; {
+updateLocationDistance()
+}</p>
+
+<p>现在，在用户打开 “ 记录界面 ” 之前，我们需要调用这个方法来计算距离。</p>
+
+<p>接下来，打开 LogViewController.swift ，然后找到 tableView(_:cellForRowAtIndexPath:) 方法。然后在这个方法底部附近， return 语句之前添加以下代码：</p>
+
+<p>if speciesModel.distance &lt; 0 {
+cell.distanceLabel.text = &ldquo;N/A&rdquo;
+}else {
+cell.distanceLabel.text = String(format: &ldquo;%.2fkm&rdquo;, speciesModel.distance / 1000)
+}</p>
+
+<p>最后，找到 scopeChanged() 然后将 case 1 中的 break 替换成以下代码：</p>
+
+<p>species = SpeciesModel.allObjects().sortedResultsUsingProperty(&ldquo;distance&rdquo;, ascending: true)</p>
+
+<p>编译并运行应用，然后 …… 呃？怎么崩溃掉了？</p>
+
+<p>&lsquo;RLMException`, reason: 'Column count does not match interface - migration required&rsquo;</p>
+
+<p>什么鬼？</p>
+
+<p>当我们向 Species 模型中添加了一个新的 distance 属性的时候，我们就对架构（ schema ） 进行了变更，但是我们并没有告诉 Realm 如何处理这个新增的数据段。从旧版本的数据库迁移（ migrate ） 到新版本的数据库的操作超出了本教程的范围。这并不是 Realm 独有的问题， Core Data 同样也需要在添加、变更或者删除新的数据段的时候进行迁移操作。</p>
+
+<p>本教程的简单解决方案就是将模拟器的应用移除掉即可，然后重新编译并运行应用程序。这将会让应用创建一个全新的数据库，使用新的架构。</p>
+
+<p>从模拟器删除这个应用，接下来编译和运行这个应用。然后添加新的物种，接着打开这个记录视图，这时候我们就可以看到如下所示的距离信息：</p>
+
+<p><img src="/images/realmjinghua0013.png" title="Caption" ></p>
+
+<p>距离信息</p>
+
+<p>您或许需要模拟一个位置以便能够计算当前距离，在模拟器菜单栏上，选择 Debug\Location ，然后选择列表中的一个位置模拟。</p>
+
+<p>接下来该何去何从？</p>
+
+<p>您可以点击此处下载完整的项目</p>
+
+<p>在本教程中，我们学习了如何创建、更新、删除以及查找 Realm 数据库中的数据记录，以及如何使用断言来进行查找，还有按属性名对结果进行排序的方法。</p>
+
+<p>您可能要问了： “ 看起来 Realm 似乎是一个新项目，我感觉在一个完备的应用中使用它可能并不稳定 ” 。</p>
+
+<p>Realm 最近才想公众开放，但是早在 2012 年它就已经在公司级别的产品中使用了。我个人已经在我的既有项目中使用 Realm 了，而且似乎运转起来相当不错。</p>
+
+<p>如果您使用 Objective-C ，那么 Realm 是十分稳定的。对于 Swift 来说，由于 Swift 版本并不稳定，因此在使用 Realm 可能会遭遇到版本更迭所引发的一系列语法问题。不过随着 Swift 的更新，相信 Swift 的版本改动会越来越少， Realm 在 Swift 上也会越来越稳定。</p>
+
+<p>对于 Realm 来说，它还有许多在本教程没有介绍到的特点：</p>
+
+<pre><code>迁移（ Migrations ） ：在本教程中，我们看到了对 Realm 架构的修改导致了错误的产生。要学习关于如何在多版本之间迁移数据库的只是，请查看 Realm 说明文档的 “ 迁移（ migrations） ” 部分。
+
+其他类型的 Realm 数据库 ：在本教程中，我们一直都是使用着 “ 默认 ”Realm 数据库，但是我们仍然还可以使用其他类型的 Realm 数据库，比如说不存储数据的 “ 内存数据库（ in-memory realm ） ” 。我们也可以使用多个 Realm 数据库，如果我们享用多个数据库来保存多种类型的数据的话。
+</code></pre>
+
+<p>关于 Realm 的更多信息，您可以查看 官方文档 ，我发现这个文档真的写得十分详尽。</p>
+
+<p>如果您对本教程有什么建议和意见，请到评论区进行讨论，我会尽快处理这些建议和意见的 ~</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/03/realmjichupian/">Realm基础篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-03T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>介绍</p>
+
+<p>realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和Swift）以及Android。</p>
+
+<p>2014年7月发布。由YCombinator孵化的创业团队历时几年打造，是第一个专门针对移动平台设计的数据库。目标是取代SQLite。</p>
+
+<p>为了彻底解决性能问题，核心数据引擎C++打造，并不是建立在SQLite之上的ORM。如果对数据引擎实现想深入了解可以查看：Realm 核心数据库引擎探秘。因此得到的收益就是比普通的ORM要快很多，甚至比单独无封装的SQLite还要快。</p>
+
+<p>因为是ORM，本身在设计时也针对移动设备（iOS、Android），所以非常简单易用，学习成本很低。</p>
+
+<p>碾压级性能</p>
+
+<p>数据引自：introducing-realm</p>
+
+<p>每秒能在20万条数据中进行查询后count的次数。realm每秒可以进行30.9次查询后count。</p>
+
+<p><img src="/images/benchmarks.001b.png" title="Caption" ></p>
+
+<p>在20万条中进行一次遍历查询，数据和前面的count相似：realm一秒可以遍历20万条数据31次，而coredata只能进行两次查询。</p>
+
+<p><img src="/images/benchmarks.002b.png" title="Caption" ></p>
+
+<p>这是在一次事务每秒插入数据的对比，realm每秒可以插入9.4万条记录，在这个比较里纯SQLite的性能最好，每秒可以插入17.8万条记录。然而封装了SQLite的FMDB的成绩大概是realm的一半。</p>
+
+<p><img src="/images/benchmarks.003b.png" title="Caption" ></p>
+
+<p>简单易用</p>
+
+<p>实例代码语言是Objective?C。</p>
+
+<p>Realm对象和其他对象没有太大区别，只是需要继承RLMObject</p>
+
+<p>@interface Dog : RLMObject
+@property NSString <em>name;
+@property NSInteger age;
+@end
+Dog </em>mydog = [[Dog alloc] init];</p>
+
+<p>存储起来也非常简单，获取数据库实例，在一个事务中进行写入。</p>
+
+<p>RLMRealm *realm = [RLMRealm defaultRealm];
+[realm transactionWithBlock:^{
+    [realm addObject:mydog];
+}];</p>
+
+<p>方便的查询，可以在一个查询结果中再进行查询。查询的条件有着丰富的支持。</p>
+
+<p>RLMResults *r = [Dog objectsWhere:@&ldquo;age > 8&rdquo;];
+// Queries are chainable
+r = [r objectsWhere:@&ldquo;name contains &lsquo;Rex&rsquo; AND  name BEGINSWITH &lsquo;大&rsquo;&rdquo;];</p>
+
+<p>zero-copy和懒加载</p>
+
+<p>在通常的数据库中，数据大多数时间都静静地呆在硬盘当中。当你访问 NSManagedObject 对象中的某个属性的时候，Core Data 会将这个请求转换为一组 SQL 语句，如果还未连接数据库的话则创建一个数据库连接，然后将这个 SQL 语句发送给硬盘，执行检索，从匹配检索的结果中读取所有的数据，然后将它们放到内存当中（也就是内存分配）。然而，这时候你需要对其格式进行反序列化(deserialize)，因为硬盘上存储的格式不能直接在内存中使用，这意味着你需要调整位，以便 CPU 能够对其进行处理。</p>
+
+<p>然而Realm跳过了整个拷贝数据到内存的过程，称之为zero-copy。做到这点是因为文件始终是内存映射的，无论文件是或否在内存当中，你都能够访问文件的任何内容。关于核心文件格式的重要一点就是，确保硬盘上的文件格式都是内存可读的，这样就无需执行任何反序列化操作了。</p>
+
+<p>这样就带来了一个问题，难道数据全加载到内存里了？所以这里懒加载应运而生，比如在查询到一组数据后，只有当你真正访问对象的时候才真正加载进来。</p>
+
+<p>VS SQLite</p>
+
+<p>SQLite第一个版本发布于2000年，至今已16年。以当今的角度来看，它的编程抽象程度非常低。业务上我们其实只想把这些对象存进去，可以查询出来。</p>
+
+<p>即便已经是封装过的FMDB，要写这样的代码心里也依旧难受:</p>
+
+<p>FMDatabase <em>db = [FMDatabase databaseWithPath:@&ldquo;/tmp/tmp.db&rdquo;];
+if (![db open]) {
+[db release];
+return;
+}
+NSString </em>sql = @&ldquo;create table bulktest1 (id integer primary key autoincrement, x text);&rdquo;
+&ldquo;create table bulktest2 (id integer primary key autoincrement, y text);&rdquo;
+&ldquo;create table bulktest3 (id integer primary key autoincrement, z text);&rdquo;
+&ldquo;insert into bulktest1 (x) values (&lsquo;XXX&rsquo;);&rdquo;
+&ldquo;insert into bulktest2 (y) values (&lsquo;YYY&rsquo;);&rdquo;
+&ldquo;insert into bulktest3 (z) values (&lsquo;ZZZ&rsquo;);&rdquo;;
+success = [db executeStatements:sql];
+sql = @&ldquo;select count(<em>) as count from bulktest1;&rdquo;
+&ldquo;select count(</em>) as count from bulktest2;&rdquo;
+&ldquo;select count(<em>) as count from bulktest3;&rdquo;;
+success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary </em>dictionary) {
+NSInteger count = [dictionary[@&ldquo;count&rdquo;] integerValue];
+XCTAssertEqual(count, 1, @&ldquo;expected one record for dictionary %@&rdquo;, dictionary);
+return 0;
+}];
+[db close];</p>
+
+<p>VS CoreData</p>
+
+<p>详细的比较推荐看这篇：CoreData VS Realm。</p>
+
+<p>下面给出一个查询的比较：</p>
+
+<p>// Core Data
+let fetchRequest = NSFetchRequest(entityName: &ldquo;Specimen&rdquo;)
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString)
+fetchRequest.predicate = predicate
+let sortDescriptor = NSSortDescriptor(key: &ldquo;name&rdquo;, ascending: true)
+fetchRequest.sortDescriptors = [sortDescriptor]
+let error = NSError()
+let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)</p>
+
+<p>Realm则简单的多：</p>
+
+<p>// Realm
+let predicate = NSPredicate(format: &ldquo;name BEGINSWITH [c]%@&rdquo;, searchString);
+let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty(&ldquo;name&rdquo;, ascending: true)</p>
+
+<p>总结一下Realm对CoreData的优势：</p>
+
+<pre><code>不需要架构Context那种烦人的东西
+
+CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+</code></pre>
+
+<hr />
+
+<pre><code>支持 NSPredicate
+</code></pre>
+
+<p>从 CoreData 转过来并没有太多的不适应。</p>
+
+<pre><code>CoreData多个持久化文件很麻烦，Realm轻松支持这个功能
+</code></pre>
+
+<p>劣势：</p>
+
+<p>是会增加应用大概1MB的体积。CoreData原生支持，不会增加App体积。</p>
+
+<p>虽然看上去很厉害，但是这么新靠谱吗</p>
+
+<p>Realm大部分源码公开在github上：realm。项目在新建不到两年里，已经得到开源社区大量关注：</p>
+
+<p><img src="/images/benchmarks.004b.png" title="Caption" ></p>
+
+<p>官方也承诺会持续解决用户反馈的各种问题。也可以直接在他们twitter上去@他们。</p>
+
+<p>就算靠谱，有别人在用吗</p>
+
+<p>推荐阅读这篇博客，作者介绍了他痛下决心抛弃CoreData后，如何安全迁移至Realm：《高速公路换轮胎——为遗留系统替换数据库》（文／凉粉小刀，简书作者）。</p>
+
+<p>在多年以前，人们做了个决策，用CoreData做本地存储，替换掉NSUserDefaults。这之间的历史已经远不可考，但自从我加入项目以来，整个团队已经被它高昂的学习曲线、复杂的数据Migration流程以及过时陈旧的设计折磨的苦不堪言。于是我们决心把CoreData换掉。</p>
+
+<p>再看下SO的情况：</p>
+
+<p><img src="/images/benchmarks.005b.png" title="Caption" ></p>
+
+<p>已经有大概两万条相关结果，你不是一个人！</p>
+
+<p>需要知道的一些问题</p>
+
+<pre><code>其实我自己觉得这些是可以接受的问题。技术很多时候就是权衡，为了达到一些目的，总是要牺牲掉一些东西。
+</code></pre>
+
+<p>所有的存储对象需要继承RealmObject</p>
+
+<p>比如我现在的项目的数据从网络请求回来都会继承自己写的一个方便解析的基类，在这里就需要做出一些适应。</p>
+
+<p>但是该问题在swift中是不存在的。因为swift是天生的面向协议编程范式。</p>
+
+<pre><code>不能自定义getter、setter
+</code></pre>
+
+<p>realm会自动生成getter、setter，如果自定义getter、setter存储就会有影响。如果要规避这个问题，可以通过设置这个对象的忽略属性。</p>
+
+<p>比如有个属性id，需要自定义setter。可以在对象属性里把id设置为忽略属性，这样realm就不会为它自动生成getter、setter，但是也不会把id存入数据库。接着自定义一个用于存储的属性比如realm_id。在id的setter中可以把把值也赋给realm_id。</p>
+
+<p>这个问题在swift中也是不存在的，因为swfit中使用的是willset、didset这种通知机制。</p>
+
+<pre><code>查询的结果不是数组
+</code></pre>
+
+<p>为了能够支持查询结果的链式查询，realm自定义了一个集合类型。可以枚举，但是不是熟悉的数组了。又因为realm的懒加载机制，所以不建议在数据层把这个枚举转成数组类型。这样的缺点就是上层知道了数据的存储逻辑。严格的说这里不应该让上层知道。但是这样设计也许是为了方便上层进行再次检索，realm有着优越的查询性能。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/02/fmdbzfenghuznag/">FMDB封装篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T22:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>10:59 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前言：</p>
+
+<p>在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。</p>
+
+<p>显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。于是就出现了MagicRecord这个对CoreData的封装库。一开始遇到这个库的时候，好用到几乎让我想把所有项目的数据库都换成CoreData了。两句话解决CoreData调用栈的初始化，一句话完成数据库版本升级和自动数据合并更新（虽然我们很少用到）。</p>
+
+<p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
+
+<p>所以，最后还是选择了FMDB进行封装。</p>
+
+<p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
+
+<p>项目简介：</p>
+
+<p>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</p>
+
+<p>Description</p>
+
+<pre><code>使用分类的模式，模仿Hibernate，对FMDB进行简易封装
+
+支持pod 安装 『pod 'JRDB'』，Podfile需要添加 use_framework!
+
+使用协议，不用继承基类，对任意NSObject可以进行入库操作
+
+支持swift 和 Objective-C
+
+支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
+</code></pre>
+
+<p>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</p>
+
+<p>Installation（安装）</p>
+
+<p>use_frameworks!
+pod &lsquo;JRDB&rsquo;
+@import JRDB;</p>
+
+<p>Usage</p>
+
+<p>Save（保存）</p>
+
+<pre><code>Objective-C
+</code></pre>
+
+<p>Person *p = [[Person alloc] init];
+p.a_int = 1;
+p.b_unsigned_int = 2;
+p.c_long = 3;
+p.d_long_long = 4;
+p.e_unsigned_long = 5;
+p.f_unsigned_long_long = 6;
+p.g_float = 7.0;
+p.h_double = 8.0;
+p.i_string = @&ldquo;9&rdquo;;
+p.j_number = @10;
+p.k_data = [NSData data];
+p.l_date = [NSDate date];
+[p jr_save];</p>
+
+<pre><code>Swift
+</code></pre>
+
+<p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
+
+<p>The Object that you want to persistent should inherit from NSObject</p>
+
+<p>let p = Person()
+p.name = &ldquo;name&rdquo;
+p.age = 10
+p.birthday = NSDate()
+p.jr_save()</p>
+
+<p>Update（更新）</p>
+
+<p>Person *p = [Person jr_findAll].firstObject;
+p.name = @&ldquo;abc&rdquo;;
+[p jr_update columns:nil];</p>
+
+<p>column: 需要更新的字段名，传入空为全量更新</p>
+
+<p>Delete（删除）
+1
+2</p>
+
+<p>Person *p = [Person jr_findAll].firstObject;
+[p jr_delete];</p>
+
+<p>Select（查找）</p>
+
+<pre><code>常规查找
+</code></pre>
+
+<p>Person <em>p = [Person jr_findByPrimaryKey:@&ldquo;111&rdquo;];
+NSArray </em>list = [Person jr_findAll];
+NSArray *list1 = [Person jr_findAllOrderBy:@&ldquo;_age&rdquo; isDesc:YES];</p>
+
+<pre><code>条件查询
+</code></pre>
+
+<p>NSArray <em>condis = @[
+     [JRQueryCondition condition:@&ldquo;<em>l_date &lt; ?&rdquo; args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
+     [JRQueryCondition condition:@&ldquo;</em>a_int > ?&rdquo; args:@[@9] type:JRQueryConditionTypeAnd],];
+NSArray </em>arr = [Person jr_findByConditions:condis
+                      groupBy:@&ldquo;<em>room&rdquo;
+                      orderBy:@&ldquo;</em>age&rdquo;
+                      limit:@&ldquo; limit 0,13 &rdquo;
+                      isDesc:YES];</p>
+
+<pre><code>SQL
+</code></pre>
+
+<p>1
+2</p>
+
+<p>NSString <em>sql = @&ldquo;select * from Person where age = ?&rdquo;;
+NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
+
+<p>Other（其他）</p>
+
+<p>协议：JRPersistent</p>
+
+<p>@protocol JRPersistent @required
+- (void)setID:(NSString * <em>Nullable)ID;
+- (NSString * </em>Nullable)ID;
+@optional
+/<strong>
+ *  返回不用入库的对象字段数组
+ *  The full property names that you want to ignore for persistent
+ *  @return array
+ */
++ (NSArray * _Nullable)jr_excludePropertyNames;
+/</strong>
+ *  返回自定义主键字段
+ *  @return 字段全名
+ <em>/
++ (NSString * _Nullable)jr_customPrimarykey;
+/**
+ *  返回自定义主键值
+ *  @return 主键值
+ </em>/
+- (id _Nullable)jr_customPrimarykeyValue;
+@end</p>
+
+<p>主键</p>
+
+<p>默认每个Object的主键为ID， UUID字符串。</p>
+
+<p>可以实现 jr_customPrimarykey 以及 jr_customPrimarykeyValue 方法，自定义主键。</p>
+
+<p>默认NSObject分类实现</p>
+
+<p>@interface NSObject (JRDB) (&hellip;methods)
+@end
+JRDBMgr
+@interface JRDBMgr : NSObject
+@property (nonatomic, strong) FMDatabase <em>defaultDB;
++ (instancetype)shareInstance;
++ (FMDatabase </em>)defaultDB;
+- (FMDatabase <em>)createDBWithPath:(NSString </em>)path;
+- (void)deleteDBWithPath:(NSString <em>)path;
+/**
+ *  在这里注册的类，使用本框架的数据库将全部建有这些表
+ *  @param clazz 类名
+ </em>/
+- (void)registerClazzForUpdateTable:(Class)clazz;
+- (NSArray <em>)registedClazz;
+/**
+ * 更新默认数据库的表（或者新建没有的表）
+ * 更新的表需要在本类先注册
+ </em>/
+- (void)updateDefaultDB;
+- (void)updateDB:(FMDatabase *)db;
+@end</p>
+
+<p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
+
+<p>Method
+1</p>
 
 <ul>
-<li>开发工具 xcode</li>
-<li>开发语言：c++, c</li>
+<li>(void)registerClazzForUpdateTable:(Class)clazz;</li>
 </ul>
 
 
-<p>c++用的是嵌入式c++，是标准c++的子集。</p>
+<p>在JRDBMgr中注册的类，可以使用
+1</p>
 
+<p>-(void)updateDB:(FMDatabase *)db</p>
+
+<p>进行统一更新或者创建表。</p>
+
+<p>Table Operation（表操作）</p>
+
+<p>Create（建表）</p>
+
+<p>// FMDatabase+JRDB 方法
+[[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
+[Person jr_createTable];
+// 删除原有的表，重新创建
+[[JRDBMgr defaultDB] truncateTable4Clazz:[Person class]];
+[Person jr_truncateTable];
+//保存时，若发现没有表，将自动创建
+[person jr_save];
+Update 【更新表】
+[[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
+[Person jr_updateTable];</p>
+
+<p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
+
+<p>Drop（删表）</p>
+
+<p>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
+[Person jr_dropTable];</p>
+
+<p>Thread Operation（线程操作）</p>
+
+<p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
+
+<p>[person jr_saveWithComplete:^(BOOL success) {
+    NSLog(@&ldquo;%d&rdquo;, success);
+}];</p>
+
+<p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
+
+<p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
+
+<p>MoreUsage</p>
+
+<pre><code>查看FMDatabase+JRDB.h
+</code></pre>
+
+<p>项目地址：<a href="https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89">https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89</a></p>
+
+<p>第一次写这种东西，可能已经Github上已经有了很多类似的东西，如果有不足之处还请指教。</p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/15/qudongkaifa/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -124,7 +1396,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/02/fmdbjinghua/">FMDB精华篇</a></h1>
     
     
       <p class="meta">
@@ -133,29 +1405,182 @@
 
 
 
-<time class='entry-date' datetime='2016-04-10T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-07-02T12:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>12:59 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>为了了解支付宝app的源码结构，我们可以使用class-dump-z工具来分析支付宝二进制。
-1.下载配置class_dump_z</p>
+  <div class="entry-content"><p>由于FMDB是建立在SQLite的之上的，所以你至少也该把这篇文章从头到尾读一遍。与此同时，把SQLite的文档页 加到你的书签中。自动引用计数（APC）还是手动内存管理呢？</p>
 
-<p>前往 <a href="https://code.google.com/p/networkpx/wiki/class_dump_z">https://code.google.com/p/networkpx/wiki/class_dump_z</a> ，下载tar包，然后解压配置到本地环境</p>
+<p>两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。</p>
 
-<p>$ tar -zxvf class-dump-z_0.2a.tar.gz<br/>
-$ sudo cp mac_x86/class-dump-z /usr/bin/
-2.class_dump支付宝app
-$ class-dump-z Portal > Portal-dump.txt</p>
+<p>使用方法</p>
 
+<p>FMDB有三个主要的类
+1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
+2.FMResultSet – 表示FMDatabase执行查询后结果集
+3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。</p>
+
+<p>数据库创建
+创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：
+1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
+2..空字符串(@”")。表示会在临时目录创建一个空的数据库，当FMDatabase 链接关闭时，文件也被删除。
+3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。</p>
+
+<p>(如需对临时数据库或内在数据库进行一步了解，请继续阅读：<a href="http://www.sqlite.org/inmemorydb.html">http://www.sqlite.org/inmemorydb.html</a>)</p>
+
+<pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];   
+</code></pre>
+
+<p>打开数据库
+在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
+
+<pre><code>if (![db open]) {    
+        [db release];   
+        return;    
+    }  
+</code></pre>
+
+<p>执行更新
+一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
+简单来说，只要不是以SELECT开头的命令都是UPDATE命令。</p>
+
+<p>执行更新返回一个BOOL值。YES表示执行成功，否则表示有那些错误 。你可以调用 -lastErrorMessage 和 -lastErrorCode方法来得到更多信息。</p>
+
+<p>执行查询
+SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
+
+<p>执行查询时，如果成功返回FMResultSet对象， 错误返回nil. 与执行更新相当，支持使用 NSError**参数。同时，你也可以使用 -lastErrorCode和-lastErrorMessage获知错误信息。</p>
+
+<p>为了遍历查询结果，你可以使用while循环。你还需要知道怎么跳到下一个记录。使用FMDB，很简单实现，就像这样：</p>
+
+<pre><code>FMResultSet *s = [db executeQuery:@"SELECT * FROM myTable"];   
+while ([s next]) {   
+    //retrieve values for each record   
+}   
+</code></pre>
+
+<p>你必须一直调用   -[FMResultSet next]   在你访问查询返回值之前，甚至你只想要一个记录：</p>
+
+<pre><code>FMResultSet *s = [db executeQuery:@"SELECT COUNT(*) FROM myTable"];   
+  if ([s next]) {    
+       int totalCount = [s intForColumnIndex:0];   
+  }   
+</code></pre>
+
+<p>FMResultSet  提供了很多方法来获得所需的格式的值：
+    intForColumn:
+    longForColumn:
+    longLongIntForColumn:
+    boolForColumn:
+    doubleForColumn:
+    stringForColumn:
+    dataForColumn:
+    dataNoCopyForColumn:
+    UTF8StringForColumnIndex:
+    objectForColumn:</p>
+
+<p>这些方法也都包括 {type}ForColumnIndex 的这样子的方法，参数是查询结果集的列的索引位置。</p>
+
+<p>你无需调用  [FMResultSet close]来关闭结果集, 当新的结果集产生，或者其数据库关闭时，会自动关闭。</p>
+
+<p>关闭数据库
+当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
+    [db close];</p>
+
+<p>事务</p>
+
+<p>FMDatabase是支持事务的。</p>
+
+<p>数据净化（数据格式化）</p>
+
+<p>使用FMDB，插入数据前，你不要花时间审查你的数据。你可以使用标准的SQLite数据绑定语法。</p>
+
+<pre><code>INSERT INTO myTable VALUES (?, ?, ?)   
+</code></pre>
+
+<p>SQLite会识别 “?” 为一个输入的点位符， 这样的执行会接受一个可变参数（或者表示为其他参数，如NSArray, NSDictionary,或va_list等），会正确为您转义。</p>
+
+<p>你也可以选择使用命名参数语法。</p>
+
+<pre><code>INSERT INTO myTable VALUES (:id, :name, :value)   
+</code></pre>
+
+<p>参数名必须以冒名开头。SQLite本身支持其他字符，当Dictionary key的内部实现是冒号开头。注意你的NSDictionary key不要包含冒号。</p>
+
+<pre><code>NSDictionary *argsDict = [NSDictionary dictionaryWithObjectsAndKeys:@"My Name", @"name", nil];    
+    [db executeUpdate:@"INSERT INTO myTable (name) VALUES (:name)" withParameterDictionary:argsDict];   
+</code></pre>
+
+<p>而且，代码不能这么写（为什么？想想吧。）</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has \" lots of ' bizarre \" quotes '"]; 
+</code></pre>
+
+<p>你应该：</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has " lots of ' bizarre " quotes '"];   
+</code></pre>
+
+<p>提供给 -executeUpdate: 方法的参数都必须是对象。就像以下的代码就无法工作，且会产生崩溃。</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", 42];   
+</code></pre>
+
+<p> 正确有做法是把数字打包成 NSNumber对象</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:42]];   
+</code></pre>
+
+<p>或者，你可以使用  -execute*WithFormat: ，这是NSString风格的参数</p>
+
+<pre><code>[db executeUpdateWithFormat:@"INSERT INTO myTable VALUES (%d)", 42];   
+</code></pre>
+
+<p> -execute*WithFormat:  的方法的内部实现会帮你封装数据， 以下这些修饰符都可以使用： %@, %c, %s, %d, %D,%i, %u, %U, %hi, %hu, %qi, %qu, %f, %g, %ld, %lu, %lld, and %llu.  除此之外的修饰符可能导致无法预知的结果。 一些情况下，你需要在SQL语句中使用 % 字符，你应该使用 %%。</p>
+
+<p>使用FMDatabaseQueue 及线程安全
+在多个线程中同时使用一个FMDatabase实例是不明智的。现在你可以为每个线程创建一个FMDatabase对象。 不要让多个线程分享同一个实例，它无法在多个线程中同时使用。 若此，坏事会经常发生，程序会时不时崩溃，或者报告异常，或者陨石会从天空中掉下来砸到你Mac Pro.  总之很崩溃。所以，不要初始化FMDatabase对象，然后在多个线程中使用。请使用 FMDatabaseQueue，它是你的朋友而且会帮助你。以下是使用方法：</p>
+
+<p>首先创建队列。</p>
+
+<pre><code>FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath]; 
+</code></pre>
+
+<p>这样使用。</p>
+
+<pre><code>[queue inDatabase:^(FMDatabase *db) {    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
+          FMResultSet *rs = [db executeQuery:@"select * from foo"];    
+         while([rs next]) {   
+            …    
+         }    
+}];   
+</code></pre>
+
+<p>像这样，轻松地把简单任务包装到事务里：</p>
+
+<pre><code>[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
+            if (whoopsSomethingWrongHappened) {    
+                    *rollback = YES; return;    
+            }   
+            // etc…    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:4]];    
+    }];   
+</code></pre>
+
+<p> FMDatabaseQueue  后台会建立系列化的G-C-D队列，并执行你传给G-C-D队列的块。这意味着 你从多线程同时调用调用方法，GDC也会按它接收的块的顺序来执行。谁也不会吵到谁的脚 ，每个人都幸福。</p>
+
+<p>原文：<a href="http://www.cocoachina.com/bbs/read.php?tid=140901">http://www.cocoachina.com/bbs/read.php?tid=140901</a></p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/10/nixiangzhifubao/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -166,7 +1591,7 @@ $ class-dump-z Portal > Portal-dump.txt</p>
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/01/sqlzfengzhuang/">SQLite封装篇</a></h1>
     
     
       <p class="meta">
@@ -175,34 +1600,226 @@ $ class-dump-z Portal > Portal-dump.txt</p>
 
 
 
-<time class='entry-date' datetime='2016-04-05T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-07-01T12:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>12:59 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>首先先给我这困难的语言表达能力道个歉哈，真的尽力了。
-本章排版是参照<a href="http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6">http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6</a></p>
+  <div class="entry-content"><p>最近写的项目中有用到数据库,写了不少蛋疼的sql语句,每次都是好几行代码,而且每次都是重复的没有一点技术含量的代码,虽然也有不少基于sqlite的封装,不过用起来还是感觉不够面向对象! 为了不再写重复的代码,花了几天时间,基于SQLite3简单封装了下,实现了一行代码解决增删改查等常用的功能!并没有太过高深的知识,主要用了runtime和KVC:</p>
 
-<p>最近才接触不久的逆向工程,刷夜,爆肝,把《iOS应用逆向工程》这本书的工具，全部看了一遍，并且尝试了一遍，感觉需要点什么。 那就是实践！  最近6s手机出了3DTouch，无奈手中没有这款机型，恰好最近对逆向小有心得，又听说过已经有插件能实现同样的需求，证明确实有可行性，于是开动。根据点击的判断和出现，初步感觉，这应该不需要多少行代码就能搞定，应该只要添加一个手势，或者是更改一个手势的点击事件，让系统认为发生了3DTouch点击事件，就可以了。</p>
+<p>首先我们创建个大家都熟悉的Person类,并声明两个属性,下面将以类此展开分析</p>
+
+<p>@interface Person : NSObject
+@property(nonatomic, copy) NSString *name;
+@property(nonatomic, assign) NSInteger age;
+@end</p>
+
+<p>创建表格</p>
+
+<p>相信下面这句创表语句大家都熟悉吧,就不做介绍了</p>
+
+<p>create table if not exists Person (id integer primary key autoincrement,name text,age integer)</p>
+
+<p>然而开发中我们都是基于模型开发的,基本上都是一个模型对应数据库的一张表,那么每个模型的属性都不一样,那么我们又该如何生成类似上面的语句呢? 我想到了runtime,通过runtime获取一个类的属性列表,所以有了下面这个方法:</p>
+
+<p>/// 获取当前类的所有属性
++ (NSArray <em>)getAttributeListWithClass:(id)className {
+    // 记录属性个数
+    unsigned int count;
+    objc_property_t </em>properties = class_copyPropertyList([className class], &amp;count);
+    NSMutableArray <em>tempArrayM = [NSMutableArray array];
+    for (int i = 0; i &lt; count; i++) {
+        // objc_property_t 属性类型
+        objc_property_t property = properties[i];
+        // 转换为Objective C 字符串
+        NSString </em>name = [NSString stringWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
+        NSAssert(![name isEqualToString:@&ldquo;index&rdquo;], @&ldquo;禁止在model中使用index作为属性,否则会引起语法错误&rdquo;);
+        if ([name isEqualToString:@&ldquo;hash&rdquo;]) {
+            break;
+        }
+        [tempArrayM addObject:name];
+    }
+    free(properties);
+    return [tempArrayM copy];
+}</p>
+
+<p>通过这个方法我们可以获取一个类的所有属性列表并将其保存到数组中(index是数据库中保留的关键字,所以在这里用了个断言),然而仅仅是拿到属性列表还是不够的,我们还需要将对应的OC类型转换为SQL对应的数据类型,相信通过上面获取属性名的方法,大家也知道通过runtime能拿到属性对应的数据类型了,那么我们可以通过下面方法将其转换为SQLite需要的类型</p>
+
+<p>/// OC类型转SQL类型
++ (NSString <em>)OCConversionTyleToSQLWithString:(NSString </em>)String {
+    if ([String isEqualToString:@&ldquo;long&rdquo;] || [String isEqualToString:@&ldquo;int&rdquo;] || [String isEqualToString:@&ldquo;BOOL&rdquo;]) {
+        return @&ldquo;integer&rdquo;;
+    }
+    if ([String isEqualToString:@&ldquo;NSData&rdquo;]) {
+        return @&ldquo;blob&rdquo;;
+    }
+    if ([String isEqualToString:@&ldquo;double&rdquo;] || [String isEqualToString:@&ldquo;float&rdquo;]) {
+        return @&ldquo;real&rdquo;;
+    }
+    // 自定义数组标记
+    if ([String isEqualToString:@&ldquo;NSArray&rdquo;] || [String isEqualToString:@&ldquo;NSMutableArray&rdquo;]) {
+        return @&ldquo;customArr&rdquo;;
+    }
+    // 自定义字典标记
+    if ([String isEqualToString:@&ldquo;NSDictionary&rdquo;] || [String isEqualToString:@&ldquo;NSMutableDictionary&rdquo;]) {
+        return @&ldquo;customDict&rdquo;;
+    }
+    return @&ldquo;text&rdquo;;
+}</p>
+
+<p>通过上面方法我们将OC的数据类型转换为了SQL的数据类型并保存到了数组中(上面有两个自定义的类型,后面使用到的时候再做介绍),通过上面的方法我们成功的拿到了一个模型类的属性名和对应的SQL数据类型,然后使用键值对的形式将其保存到了一个字典中,比如:</p>
+
+<p>@{@&ldquo;name&rdquo; : @&ldquo;text&rdquo;,@&ldquo;age&rdquo;:&ldquo;integer&rdquo;};</p>
+
+<p>获取到这些之后那么创表语句就不难了吧,</p>
+
+<p>// 该方法接收一个类型,内部通过遍历类的属性,字符串拼接获取完整的创表语句,并在内部执行sql语句,并返回结果
+- (BOOL)creatTableWithClassName:(id)className;</p>
+
+<p>介绍完了怎么创表,那么我们再来说说怎么将数据插入到数据库中: 我们先看一看插入数据的sql语句:insert into Person (name,age) values (&lsquo;花菜ChrisCai98&rsquo;,89); 前面都是固定格式的,同样我们可以通过字符串的拼接获取完整的创表语句; 在上面我们已经可以拿到Person类的所有属性列表,那么我们如何拼接sql语句呢? 在这里我定义了这么一个方法</p>
+
+<p>/// 该方法接收一个对象作为参数(模型对象),并返回是否插入成功
+- (BOOL)insertDataFromObject:(id)object;
+/// 我们可以这样
+Person * p = [[Person alloc]init];
+p.name = @&ldquo;花菜ChrisCai&rdquo;;
+p.age = 18;
+[[GKDatabaseManager sharedManager] insertDataFromObject:p];</p>
+
+<p>插入数据</p>
+
+<p>通过上面这么简单的一句代码实现将数据插入到数据库中,在该方法内部我们通过上面所述的方法获取Person类的所有属性列表,那么我们可以就可以拼接插入语句的前半句了,然后通过KVC的形式完成后半部分赋值的操作;</p>
+
+<p>/// 插入数据
+- (BOOL)insertDataFromObject:(id)object {
+    // 创建可变字符串用于拼接sql语句
+    NSMutableString * sqlString = [NSMutableString stringWithFormat:@&ldquo;insert into %@ (&rdquo;,NSStringFromClass([object class])];
+    [[GKObjcProperty getUserNeedAttributeListWithClass:[object class]] enumerateObjectsUsingBlock:^(id  <em>Nonnull obj, NSUInteger idx, BOOL * </em>Nonnull stop) {
+        // 拼接字段名
+        [sqlString appendFormat:@&ldquo;%@,&rdquo;,obj];
+    }];
+    // 去掉后面的逗号
+    [sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
+    // 拼接values
+    [sqlString appendString:@&ldquo;) values (&rdquo;];</p>
+
+<pre><code>// 拼接字段值
+[[GKObjcProperty getSQLProperties:[object class]] enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+    // 拼接属性
+    if ([object valueForKey:key]){
+        if ([obj isEqualToString:@"text"]) {
+            [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
+        } else if ([obj isEqualToString:@"customArr"] || [obj isEqualToString:@"customDict"]) { // 数组字典转处理
+            NSData * data = [NSJSONSerialization dataWithJSONObject:[object valueForKey:key] options:0 error:nil];
+            NSString * jsonString = [[NSString alloc] initWithData:data encoding:(NSUTF8StringEncoding)];
+            [sqlString appendFormat:@"'%@',",jsonString];
+        }else if ([obj isEqualToString:@"blob"]){ // NSData处理
+            NSString * jsonString = [[NSString alloc] initWithData:[object valueForKey:key] encoding:(NSUTF8StringEncoding)];
+            [sqlString appendFormat:@"'%@',",jsonString];
+        }else {
+            [sqlString appendFormat:@"%@,",[object valueForKey:key]];
+        }
+    }else {// 没有值就存NULL
+        [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
+    }
+}];
+// 去掉后面的逗号
+[sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
+// 添加后面的括号
+[sqlString appendFormat:@");"];
+// 执行语句
+return [self executeSqlString:sqlString];
+</code></pre>
+
+<p>}</p>
+
+<p>在上面方法中,我们用到了之前提到的自定义的类型,通过该自定的类型我们知道需要存储的是字典或者数组,在这里,我们将数组和字典转换为JSON字符串的形式存入数据库中;
+到此我们完成了创表和插入向表格中插入数据的操作,下面我们再看看如何从实现一行代码从数据库中将值取出来,在这里我们提供了6中查询的接口,</p>
+
+<pre><code>提供的接口如下:
+</code></pre>
 
 <ul>
-<li>所需工具: cycript，openSSH，class-dump</li>
-<li>测试环境：iOS9.0.2，iPhone5s</li>
-<li>备注：因为自身没有3DTouch，所以需要下载一个插件，让机器拥有3DTouch功能，我使用的是forcy，通过覆盖长按手势，实现</li>
+<li>(NSArray *)selecteDataWithClass:(id)className;// 根据类名查询对应表格内所有数据</li>
+<li>(NSInteger)getTotalRowsFormClass:(id)className; // 获取表的总行数</li>
+<li>(id)selecteFormClass:(id)className index:(NSInteger)index;// 获取指定行数据</li>
+<li>(NSArray <em>)selectObject:(Class)className key:(id)key operate:(NSString </em>)operate value:(id)value;// 指定条件查询</li>
+<li>(NSArray <em>)selecteDataWithSqlString:(NSString </em>)sqlString class:(id)className;// 自定义语句查询</li>
+<li>(NSArray <em>)selectObject:(Class)className propertyName:(NSString </em>)propertyName type:(GKDatabaseSelectLocation)type content:(NSString *)content;// 模糊查询</li>
 </ul>
 
 
-<p>通过查阅官方文档，得到关键词  Shortcut Menu peek pop
-这个词将来就是要在找关键方法时刻所要用到的</p>
+<p>通过第一个方法(该方法接收一个类名作为参数)就能简单的实现一行代码查询表格中的数据了</p>
 
+<p> NSArray * persons = [[GKDatabaseManager sharedManager] selecteDataWithClass:[Person class]];</p>
+
+<p>下面我们着重介绍下核心方法,其他所有方法都是基于该方法实现的</p>
+
+<p>/// 自定义语句查询
+- (NSArray <em>)selecteDataWithSqlString:(NSString </em>)sqlString class:(id)className  {
+    // 创建模型数组
+    NSMutableArray <em>models = nil;
+    // 1.准备查询
+    sqlite3_stmt </em>stmt; // 用于提取数据的变量
+    int result = sqlite3_prepare_v2(database, sqlString.UTF8String, -1, &amp;stmt, NULL);
+    // 2.判断是否准备好
+    if (SQLITE_OK == result) {
+        models = [NSMutableArray array];
+        // 获取属性列表名数组 比如name
+        NSArray * arr = [GKObjcProperty getUserNeedAttributeListWithClass:[className class]];
+        // 获取属性列表名和sql数据类型 比如  name : text
+        NSDictionary * dict = [GKObjcProperty getSQLProperties:[className class]];
+        // 准备好了
+        while (SQLITE_ROW == sqlite3_step(stmt)) { // 提取到一条数据
+            __block id objc = [[[className class] alloc]init];
+            for ( int i = 0; i &lt; arr.count; i++) {
+                // 默认第0个元素为表格主键 所以元素从第一个开始
+                // 使用KVC完成赋值
+                if ([dict[arr[i]] isEqualToString:@&ldquo;text&rdquo;]) {
+                    [objc setValue:[NSString stringWithFormat:@&ldquo;%@&rdquo;,[self textForColumn:i + 1  stmt:stmt]] forKey:arr[i]];</p>
+
+<pre><code>            } else if ([dict[arr[i]] isEqualToString:@"real"]) {
+                [objc setValue:[NSString stringWithFormat:@"%f",[self doubleForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
+
+            } else if ([dict[arr[i]] isEqualToString:@"integer"]) {
+
+                [objc setValue:[NSString stringWithFormat:@"%i",[self intForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
+
+            } else if ([dict[arr[i]] isEqualToString:@"customArr"]) { // 数组处理
+
+                NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                NSArray * resultArray = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                [objc setValue:resultArray forKey:arr[i]];
+            }  else if ([dict[arr[i]] isEqualToString:@"customDict"]) { // 字典处理
+
+                NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                NSDictionary * resultDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                [objc setValue:resultDict forKey:arr[i]];
+            } else if ([dict[arr[i]] isEqualToString:@"blob"]) { // 二进制处理
+
+                NSString * str = [self textForColumn:i + 1 stmt:stmt];
+                NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
+                [objc setValue:data forKey:arr[i]];
+            }
+        }
+        [models addObject:objc];
+    }
+}
+return [models copy];
+</code></pre>
+
+<p>}</p>
+
+<p>在该方法内部,我们根据传递进来的类创建了一个对象(使用__block是因为在block内部需要修改对象的属性),通过之前的方法我们拿到了对应的sql类型,和属性名,这里就不重复介绍了,通过对应的sql类型执行对应的方法从数据中将数据取出来,并通过KVC的形式给对象赋值,值得一提的是这里我们通过自定义的字段(customArr,customDict)可以知道我们取的是数组或者字典,然后数据库中的JSON字符串转换为数组或者字典,然后再利用KVC赋值给对象!
+到此基本上所有的功能就都实现了,其他的诸如更新数据,删除数据,删除表格等有提供具体的接口,这里就不一一介绍了,源码中有详细的注释,同时也有DEMO,有需要的可以自行下载,</p>
+
+<p>以上均为个人这段时间的总结,如有不对的地方,可以在下面评论 也可以通过QQ:4593679联系我,如觉得好用记得star一下哦~,谢谢!!! 源码地址:<a href="https://github.com/ChrisCaixx/GKDatabase">https://github.com/ChrisCaixx/GKDatabase</a></p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/05/fei6sshixian3dtouch/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -213,7 +1830,7 @@ $ class-dump-z Portal > Portal-dump.txt</p>
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/30/youxifanbianyi/">游戏反编译</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/01/sqljinghua/">SQLite精华篇</a></h1>
     
     
       <p class="meta">
@@ -222,33 +1839,318 @@ $ class-dump-z Portal > Portal-dump.txt</p>
 
 
 
-<time class='entry-date' datetime='2016-03-30T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-07-01T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p> ipa游戏反编译
-看不懂的请飘过，不要继续。
-这不是给新手看的，也代表你不需要解决程序的修改问题。
-这些技巧不只用于游戏的修改。</p>
+  <div class="entry-content"><p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
+Core Data在后台也是使用SQLite来存储数据的，但是开发人员不能直接访问这些数据，只能通过Core Data提供的API来操作，如果一旦人为的通过SQLite修改这些数据那么使用Core Data再次访问这些数据时就会发生错误。</p>
 
-<p>下載 Windows 工具</p>
+<p>SQLite库</p>
 
-<p>Windows :
-winscp <a href="http://winscp.net/eng/download.php">http://winscp.net/eng/download.php</a>
-PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.very.rulez.org/latest/x86/putty.exe</a></p>
+<p>SQLite是使用C语言写的开源库，实现了一个自包含的SQL关系型数据库引擎，可以使用SQLite存储操作大量的数据，作为关系型数据库我们可以在一个数据库中建立多张相关联的表来解决大量数据重复的问题。而且SQLite库也针对移动设备上的使用进行了优化。
+因为SQLite的接口使用C写的，而且Objective-C是C的超集所以可以直接在项目中使用SQLite。</p>
 
-<p>Mac / Linux :
-用內置的 Terminal 便可</p>
+<p>设计一个数据库</p>
 
+<p>开始之前首先要想到需要存什么数据，然后怎么设计这个数据库。
+首先我们设计一个数据库用来存储人员信息如下：</p>
+
+<p><img src="/images/sql0004.png" title="Caption" ></p>
+
+<p>上面是所有的人员信息，实际可能比这个多很多。但是我们发现region这一行中有很多的数据重复出现。很多人可能来自同一个地方，为了避免这种情况我们应该再重新创建一张表来单独存储region这列的信息然后在这个表中引用region表中的信息。当然我们还可以在region表中添加更多的信息比如详细地址。现在创建两张表people与region如下所示</p>
+
+<pre><code>people表
+</code></pre>
+
+<p><img src="/images/sql0001.png" title="Caption" ></p>
+
+<pre><code>region表
+</code></pre>
+
+<p><img src="/images/sql0002.png" title="Caption" ></p>
+
+<p>使用SQLite创建数据库</p>
+
+<p>为了熟悉SQLite语句，打开shell使用SQLite命令行来创建一个数据库</p>
+
+<pre><code>打开创建数据库
+
+打开shell切换到指定目录输入
+</code></pre>
+
+<p>1</p>
+
+<p>sqlite3 database.db</p>
+
+<p>这行命令是启动sqlite命令行并且创建新的数据库database.db并附加该数据到命令行</p>
+
+<p>此时已经进入sqlite命令行通过输入.help可以显示可以使用哪些命令，通过输入.databases来查看当前有哪些数据库附加到当前的命令行工具中。输入.quit或.exit退出当前命令行工具</p>
+
+<p>创建表
+1</p>
+
+<p>create table &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;id&rdquo; integer primary key autoincrement not null, &ldquo;name&rdquo; text,&ldquo;age&rdquo; integer,&ldquo;email&rdquo; text,&ldquo;region&rdquo; integer);</p>
+
+<p>这条命令是创建一个people的表，并且将id字段设为primary key主键将其指定为一个autoincrement自动增长的字段。表示不用提供id的值数据库将自动生成。后面的表示该张表中所含有的字段。</p>
+
+<p>因为要设计两张表所以还需要创建region表
+1</p>
+
+<p>create table &ldquo;main&rdquo;.&ldquo;region&rdquo; (&ldquo;regionid&rdquo; integer primary key autoincrement not null, &ldquo;regioninfo&rdquo; text,&ldquo;address&rdquo; text not null);</p>
+
+<p>添加数据</p>
+
+<p>此时已经成功创建了两张表我们要添加数据进去
+1</p>
+
+<p>insert into &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;name&rdquo;,&ldquo;age&rdquo;,&ldquo;email&rdquo;,&ldquo;region&rdquo;) values (&lsquo;jhon&rsquo;,&lsquo;20&rsquo;,&lsquo;jhon@mail&rsquo;,&lsquo;1&rsquo;);</p>
+
+<p>这样成功往people表成功的插入了一条数据。这样写效率比较低。每次只能插入一条数据不要担心SQLite支持将文件直接导入数据库中。可以是普通的文件文件也可以是excel文件。下面我们创建一个people.txt文件格式如下：
+1</p>
+
+<p>1 jhon 20 jhon@mail 12 peter 20 peter@mail 23 july 20 july@mail 14 elev 20 elev@mail 35 ribet 20 ribet@mail</p>
+
+<p>注意每个字段之间的空隙是用制表符来分割的，也就是创建文件是每个字段用tab键进行分割。字段的顺序必须和表中的顺序相同然后将people.txt文件导入people表中
+1</p>
+
+<p>.separator &ldquo;&rdquo;</p>
+
+<p>根据来分割字段，然后接着输入
+1</p>
+
+<p>.import &ldquo;people.txt&rdquo; people</p>
+
+<p>导入people.txt文件到people表中此时会提示如下错误信息
+1</p>
+
+<p>people.txt:1: INSERT failed: UNIQUE constraint failed: people.id</p>
+
+<p>不用担心这个意思是说已经存在了一个id为1的数据所以这条数据插入失败，是因为我们之前手动了插入了一条数据。可以通过以下指令来查插入的数据
+1</p>
+
+<p>select * from people;</p>
+
+<p>然后用同样的方法创建一个region.txt的文件并将其导入region表中。</p>
+
+<p>注意</p>
+
+<p>使用SQLite命令行可能会出现&hellip;>这表示指令输入错误，按ctrl+d即可退出</p>
+
+<p>查询数据上面已经添加完数据通过select指令可以查询这些数据
+1</p>
+
+<p>select * from people;11</p>
+
+<p>查询popple表中的所有数据</p>
+
+<p>链接表数据
+1</p>
+
+<p>select name,regioninfo from people,region where people.region=region.regionid;</p>
+
+<p>输出结果
+1
+2
+3
+4
+5</p>
+
+<p>jhon beijing
+peter shanghai
+july beijing
+elev shenzhen
+ribet beijing</p>
+
+<p>从people和region表中查找name与regioninfo字段并且只查询people.region=region.regionid相匹配的结果，如果没有这个条件那么将出现5*3=15条数据</p>
+
+<p>如果要查找某个地区的人使用where来筛选条件
+1</p>
+
+<p>select name,regioninfo from people,region where people.region=region.regionid and region.regioninfo=&ldquo;beijing&rdquo;;</p>
+
+<p>输出结果
+1
+2
+3</p>
+
+<p>jhon beijing
+july beijing
+ribet beijing</p>
+
+<p>iOS中SQLite的使用</p>
+
+<p>开始之前应该在项目中引用SQLite库。TARGETS->General->Linked Frameworks and Libraries如下图所示</p>
+
+<p><img src="/images/sql0003.png" title="Caption" ></p>
+
+<p>将之前创建好的database.db文件导入项目中，并引入sqlite3.h头文件
+1</p>
+
+<h1>import</h1>
+
+<p>使用SQLite需要一下几个步骤：</p>
+
+<pre><code>声明类变量sqlite3来保存对数据库的引用
+
+使用sqlite3_open打开数据库
+
+创建SQLite语句
+
+创建SQLite语句对象sqlite3_stmt
+
+准备SQLite语句sqlite3_prepare_v2
+
+开始遍历结果sqlite3_step
+</code></pre>
+
+<p>初始化打开数据库
+1
+2
+3
+4
+5
+6
+7
+8</p>
+
+<p>sqlite3 * database;
+-(void)initDatabase
+{ NSString *path = [[NSBundle mainBundle] pathForResource:@&ldquo;database&rdquo; ofType:@&ldquo;db&rdquo;];
+if (sqlite3_open([path UTF8String], &amp;database) == SQLITE_OK) { NSLog(@&ldquo;open database&rdquo;);
+} else{
+sqlite3_close(database); NSLog(@&ldquo;error %s&rdquo;,sqlite3_errmsg(database));
+}
+}</p>
+
+<p>打开数据库如果返回的状态码不是SQLITE_OK那么打开失败关闭数据库并且输出错误信息</p>
+
+<p>查询数据
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10</p>
+
+<p>-(void)operateDatabase
+{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid&rdquo;;
+sqlite3_stmt *statement; //创建sql语句对象
+int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
+if ( sqlResult== SQLITE_OK) //是否准备结束
+{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
+{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+}
+}
+}</p>
+
+<p>输出结果：
+1</p>
+
+<p>name jhon, region beijingname peter, region shanghainame july, region beijingname elev, region shenzhenname ribet, region beijing1234512345</p>
+
+<p>sqlite3_prepare_v2的参数第一个是数据库连接，第二个是sql语句，第三个是这个语句的长度传入-1表示地道第一个null终止符为止，第四个是返回一个语句对象，第五个是返回一个指向该sql语句的第一个字节的指针。</p>
+
+<p>当sqlite3_prepare_v2返回状态码SQLITE_OK时开始遍历结果。</p>
+
+<p>sqlite3_step用来遍历结果如果返回为SQLITE_ROW表示下一行准备结束可以开始查询。所以此处用一个while来便利所以查询的结果</p>
+
+<p>遍历的过程中要取到结果通过一下的函数获取遍历结果
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10</p>
+
+<p>SQLITE_API const void <em>SQLITE_STDCALL sqlite3_column_blob(sqlite3_stmt</em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes16(sqlite3_stmt</em>, int iCol);
+SQLITE_API double SQLITE_STDCALL sqlite3_column_double(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_int(sqlite3_stmt</em>, int iCol);
+SQLITE_API sqlite3_int64 SQLITE_STDCALL sqlite3_column_int64(sqlite3_stmt<em>, int iCol);
+SQLITE_API const unsigned char </em>SQLITE_STDCALL sqlite3_column_text(sqlite3_stmt<em>, int iCol);
+SQLITE_API const void </em>SQLITE_STDCALL sqlite3_column_text16(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_type(sqlite3_stmt</em>, int iCol);
+SQLITE_API sqlite3_value <em>SQLITE_STDCALL sqlite3_column_value(sqlite3_stmt</em>, int iCol);</p>
+
+<p>上面是所支持的结果类型，第一个参数为sql语句对象，第二个为获取哪一列的信息。</p>
+
+<p>参数化查询</p>
+
+<p>上面的情况每次sql语句都写死了，如果想要改变某个条件就需要重新写一条语句，幸好sqlite支持参数化查询，每次只需要更改查询条件就可以而不用更改整条sql语句，如果现在只想查询北京地区的人口信息使用参数化查询如下：
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</p>
+
+<p>-(void)operateDatabase
+{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid and regioninfo=?&rdquo;;
+sqlite3_stmt *statement; //创建sql语句对象
+int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
+sqlite3_bind_text(statement, 1, &ldquo;beijing&rdquo;, -1,SQLITE_TRANSIENT); //绑定参数
+if ( sqlResult== SQLITE_OK) //是否准备结束
+{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
+{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+}
+}
+}</p>
+
+<p>输出结果：
+1</p>
+
+<p>name jhon, regionbeijingname july, regionbeijingname ribet, regionbeijing</p>
+
+<p>可见需要更改的条件sql中用?来代替，然后用sqlite3_bind_text函数来绑定参数。根据类型不同绑定的函数也不同
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</p>
+
+<p>SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob(sqlite3_stmt<em>, int, const void</em>, int n, void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob64(sqlite3_stmt<em>, int, const void</em>, sqlite3_uint64,void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_double(sqlite3_stmt<em>, int, double);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int(sqlite3_stmt</em>, int, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int64(sqlite3_stmt<em>, int, sqlite3_int64);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_null(sqlite3_stmt</em>, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text(sqlite3_stmt<em>,int,const char</em>,int,void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text16(sqlite3_stmt<em>, int, const void</em>, int, void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text64(sqlite3_stmt<em>, int, const char</em>, sqlite3_uint64,void(<em>)(void</em>), unsigned char encoding);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_value(sqlite3_stmt<em>, int, const sqlite3_value</em>);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);</p>
+
+<p>上面列出了所有支持绑定类型的函数。</p>
+
+<p>结束</p>
+
+<p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/30/youxifanbianyi/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -259,7 +2161,7 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/">获取短信-联系人</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/06/22/socketudp/">Socketudp</a></h1>
     
     
       <p class="meta">
@@ -268,28 +2170,215 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
 
 
 
-<time class='entry-date' datetime='2016-03-28T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-06-22T00:00:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>12:00 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>越狱的 ios 如何 获取 读取 提取 手机上的 短信 通话记录 联系人 等信息</p>
+  <div class="entry-content"><hr />
 
-<p><a href="http://willson.sinaapp.com/2011/12/iphone">http://willson.sinaapp.com/2011/12/iphone</a> 获取短信脚本.html  Iphone获取短信脚本
-<a href="http://bbs.9ria.com/thread-209349-1-1.html">http://bbs.9ria.com/thread-209349-1-1.html</a>          IPhone短信相关部分研究（转载）
-<a href="http://blog.csdn.net/slinloss/article/details/8722806">http://blog.csdn.net/slinloss/article/details/8722806</a>       整理：iOS 短信与电话事件的获取
-<a href="http://308812025-qq-com.iteye.com/blog/1549756">http://308812025-qq-com.iteye.com/blog/1549756</a>              IOS 5 拦截手机短信(需越狱)</p>
+<p>layout: post
+title: &ldquo;Sock编程-UDP篇&rdquo;
+date: 2016-06-22 13:53:19 +0800
+comments: true
+categories: Senior
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
 
-<p><a href="http://www.iteye.com/problems/84131">http://www.iteye.com/problems/84131</a>                                IOS 短信截取 监听到了事件缺不能往下执行。。。</p>
+<hr />
 
+<h3>1. UDP Socket编程</h3>
+
+<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
+
+<p>注意：Socket通信一定有要服务端和客户端。</p>
+
+<h4>1.1 UDP Socket客户端</h4>
+
+<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
+
+<p>笔者这里分成了四步：</p>
+
+<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
+第二步：调用sendto发送消息到服务器端
+第三步：调用recvfrom接收来自服务器端的消息
+第四步：调用close关闭socket
+</code></pre>
+
+<h4>1.1.1 客户端的代码实现：</h4>
+
+<pre><code>- (void)udpClient {
+  int clientSocketId;
+  ssize_t len;
+  socklen_t addrlen;
+  struct sockaddr_in client_sockaddr;
+  char buffer[256] = "Hello, server, how are you?";
+
+  // 第一步：创建Socket
+  clientSocketId = socket(AF_INET, SOCK_DGRAM, 0);
+  if(clientSocketId &lt; 0) {
+    NSLog(@"creat client socket fail\n");
+    return;
+  }
+
+  addrlen = sizeof(struct sockaddr_in);
+  bzero(&amp;client_sockaddr, addrlen);
+  client_sockaddr.sin_family = AF_INET;
+  client_sockaddr.sin_addr.s_addr = inet_addr("192.168.1.107");
+  client_sockaddr.sin_port = htons(1024);
+
+  int count = 10;
+  do {
+    bzero(buffer, sizeof(buffer));
+    sprintf(buffer, "%s", "Hello, server, how are you?");
+
+    // 第二步：发送消息到服务端
+    // 注意:UDP是面向无连接的，因此不用调用connect()
+    // 将字符串传送给server端
+   len = sendto(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, addrlen);
+
+    if (len &gt; 0) {
+      NSLog(@"发送成功");
+    } else {
+      NSLog(@"发送失败");
+    }
+
+    // 第三步：接收来自服务端返回的消息
+    // 接收server端返回的字符串
+    bzero(buffer, sizeof(buffer));
+    len = recvfrom(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, &amp;addrlen);
+    NSLog(@"receive message from server: %s", buffer);
+
+    count--;
+  } while (count &gt;= 0);
+
+  // 第四步：关闭socket
+  // 由于是面向无连接的，消息发出处就可以了，不用管它收不收得到，发完就可以关闭了
+  close(clientSocketId);
+}
+</code></pre>
+
+<h4>1.1.2 客户端的打印日志</h4>
+
+<pre><code>2015-12-06 15:38:36.095 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.316 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.317 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.328 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.329 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.355 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.356 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.373 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.392 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+</code></pre>
+
+<h4>1.2 UDP Socket服务器端</h4>
+
+<p>服务器端的工作流程：首先调用socket函数创建一个套接字，然后调用bind函数将其与本机地址以及一个本地端口号绑定，接收到一个客户端时，服务器显示该客户端的IP地址，并将字串返回给客户端。</p>
+
+<p>笔者这里分成了五步：</p>
+
+<pre><code>第一步：创建socket并配置socket
+第二步：调用bind绑定服务器本机ip及端口号
+第三步：调用recvfrom接收来自客户端的消息
+第四步：调用sendto将接收到服务器端的信息返回给客户端
+第四步：调用close关闭socket
+</code></pre>
+
+<h4>1.2.1 服务器端代码实现</h4>
+
+<pre><code>- (void)udpServer {
+  int serverSockerId = -1;
+  ssize_t len = -1;
+  socklen_t addrlen;
+  char buff[1024];
+  struct sockaddr_in ser_addr;
+
+  // 第一步：创建socket
+  // 注意，第二个参数是SOCK_DGRAM，因为udp是数据报格式的
+  serverSockerId = socket(AF_INET, SOCK_DGRAM, 0);
+
+  if(serverSockerId &lt; 0) {
+    NSLog(@"Create server socket fail");
+    return;
+  }
+
+  addrlen = sizeof(struct sockaddr_in);
+  bzero(&amp;ser_addr, addrlen);
+
+  ser_addr.sin_family = AF_INET;
+  ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  ser_addr.sin_port = htons(1024);
+
+  // 第二步：绑定端口号
+  if(bind(serverSockerId, (struct sockaddr *)&amp;ser_addr, addrlen) &lt; 0) {
+    NSLog(@"server connect socket fail");
+    return;
+  }
+
+  do {
+    bzero(buff, sizeof(buff));
+
+    // 第三步：接收客户端的消息
+    len = recvfrom(serverSockerId, buff, sizeof(buff), 0, (struct sockaddr *)&amp;ser_addr, &amp;addrlen);
+    // 显示client端的网络地址
+    NSLog(@"receive from %s\n", inet_ntoa(ser_addr.sin_addr));
+    // 显示客户端发来的字符串
+    NSLog(@"recevce:%s", buff);
+
+    // 第四步：将接收到的客户端发来的消息，发回客户端
+    // 将字串返回给client端
+    sendto(serverSockerId, buff, len, 0, (struct sockaddr *)&amp;ser_addr, addrlen);
+  } while (strcmp(buff, "exit") != 0);
+
+  // 第五步：关闭socket
+  close(serverSockerId);
+}
+</code></pre>
+
+<h4>1.2.2 服务器端的打印日志</h4>
+
+<pre><code>2015-12-06 15:38:36.268 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.269 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.409 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.410 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.414 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.415 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.425 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.426 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.472 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.473 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+</code></pre>
+
+<p>我们这里打印出了客户端发来的消息，由于上面实现的代码中，只发10次，所以这里只有10条。</p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -300,7 +2389,7 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/25/springboardjiemianjiegoufenxi/">SpringBoard界面结构分析</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/06/21/cockettcp/">Cockettcp</a></h1>
     
     
       <p class="meta">
@@ -309,30 +2398,263 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
 
 
 
-<time class='entry-date' datetime='2016-03-25T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-06-21T00:00:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>12:00 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>SpringBoard界面层级结构分析</p>
+  <div class="entry-content"><hr />
 
-<p>cycript -p 进程ID</p>
+<p>layout: post
+title: &ldquo;Sock编程-TCP篇&rdquo;
+date: 2016-06-21 13:53:19 +0800
+comments: true
+categories: Senior
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
 
-<p>通过cycript注入到SpringBoard进程中
-首先SpringBoard有点类似于一般app的结构，只不过它是由好几个window构成的，总共如下：
-  锁屏状态下是SBAlertWindow
-  正常状态下是SBAppWindow
-  通知栏滑下来时显示SBBulletinWindow
-主要分析下正常状态的window</p>
+<hr />
 
+<h3>1. TCP Socket编程</h3>
+
+<p>TCP是面向连接的，安全可靠的传输层协议。TCP的程序基本框架设计图：</p>
+
+<p>image</p>
+
+<p>注意：Socket通信一定有要服务端和客户端。</p>
+
+<h4>1.1 TCP Socket客户端</h4>
+
+<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
+
+<p>笔者这里分成了六步：</p>
+
+<pre><code>第一步：创建socket并配置socket
+第二步：调用bind绑定监听ip和端口号
+第三步：调用connect连接服务器
+第四步：调用getsockname获取套接字信息
+第五步：调用send发送消息到服务器端
+第六步：调用close关闭socket
+</code></pre>
+
+<p>这里没有写接收来自服务器端的消息，大家可以自行添加。</p>
+
+<h4>1.1.1 客户端的代码实现：</h4>
+
+<pre><code>- (void)tcpClient {
+  // 第一步：创建soket
+  // TCP是基于数据流的，因此参数二使用SOCK_STREAM
+  int error = -1;
+  int clientSocketId = socket(AF_INET, SOCK_STREAM, 0);
+  BOOL success = (clientSocketId != -1);
+  struct sockaddr_in addr;
+
+  // 第二步：绑定端口号
+  if (success) {
+    NSLog(@"client socket create success");
+    // 初始化
+    memset(&amp;addr, 0, sizeof(addr));
+    addr.sin_len = sizeof(addr);
+
+    // 指定协议簇为AF_INET，比如TCP/UDP等
+    addr.sin_family = AF_INET;
+
+    // 监听任何ip地址
+    addr.sin_addr.s_addr = INADDR_ANY;
+    error = bind(clientSocketId, (const struct sockaddr *)&amp;addr, sizeof(addr));
+    success = (error == 0);
+  }
+
+  if (success) {
+    // p2p
+    struct sockaddr_in peerAddr;
+    memset(&amp;peerAddr, 0, sizeof(peerAddr));
+    peerAddr.sin_len = sizeof(peerAddr);
+    peerAddr.sin_family = AF_INET;
+    peerAddr.sin_port = htons(1024);
+
+    // 指定服务端的ip地址，测试时，修改成对应自己服务器的ip
+    peerAddr.sin_addr.s_addr = inet_addr("192.168.1.107");
+
+    socklen_t addrLen;
+    addrLen = sizeof(peerAddr);
+    NSLog(@"will be connecting");
+
+    // 第三步：连接服务器
+    error = connect(clientSocketId, (struct sockaddr *)&amp;peerAddr, addrLen);
+    success = (error == 0);
+
+    if (success) {
+      // 第四步：获取套接字信息
+      error = getsockname(clientSocketId, (struct sockaddr *)&amp;addr, &amp;addrLen);
+      success = (error == 0);
+
+      if (success) {
+        NSLog(@"client connect success, local address:%s,port:%d",
+              inet_ntoa(addr.sin_addr),
+              ntohs(addr.sin_port));
+
+        // 这里只发送10次
+        int count = 10;
+        do {
+          // 第五步：发送消息到服务端
+          send(clientSocketId, "哈哈，server您好！", 1024, 0);
+          count--;
+
+          // 告诉server，客户端退出了
+          if (count == 0) {
+            send(clientSocketId, "exit", 1024, 0);
+          }
+        } while (count &gt;= 1);
+
+        // 第六步：关闭套接字
+        close(clientSocketId);
+      }
+    } else {
+      NSLog(@"connect failed");
+
+      // 第六步：关闭套接字
+      close(clientSocketId);
+    }
+  }
+}
+</code></pre>
+
+<h4>1.1.2 客户端的打印日志</h4>
+
+<pre><code>2015-12-06 18:35:00.385 iOS-Socket-C-Version-Client[9726:4256295] client socket create success
+2015-12-06 18:35:00.386 iOS-Socket-C-Version-Client[9726:4256295] will be connecting
+2015-12-06 18:35:00.507 iOS-Socket-C-Version-Client[9726:4256295] client connect success, local address:192.168.1.100,port:50311
+</code></pre>
+
+<p>说明连接服务器成功，然后发送了消息到服务器端。
+1.2 TCP Socket服务器端</p>
+
+<p>服务器端的工作流程：首先调用socket函数创建一个套接字，然后调用bind函数将其与本机地址以及一个本地端口号绑定，接收到一个客户端时，服务器显示该客户端的IP地址，并将字串返回给客户端。</p>
+
+<p>笔者这里分成了五步：</p>
+
+<pre><code>第一步：创建socket并配置socket
+第二步：调用bind绑定服务器本机ip及端口号
+第三步：调用listen监听客户端的连接，并指定同时最多可让accept的数量
+第四步：调用accept等待客户端的连接
+第五步：调用recvfrom接收来自客户端的消息
+第六步：调用close关闭socket
+</code></pre>
+
+<h4>1.2.1 服务器端代码实现</h4>
+
+<pre><code>- (void)tcpServer {
+  // 第一步：创建socket
+  int error = -1;
+
+  // 创建socket套接字
+  int serverSocketId = socket(AF_INET, SOCK_STREAM, 0);
+  // 判断创建socket是否成功
+  BOOL success = (serverSocketId != -1);
+
+  // 第二步：绑定端口号
+  if (success) {
+    NSLog(@"server socket create success");
+    // Socket address
+    struct sockaddr_in addr;
+
+    // 初始化全置为0
+    memset(&amp;addr, 0, sizeof(addr));
+
+    // 指定socket地址长度
+    addr.sin_len = sizeof(addr);
+
+    // 指定网络协议，比如这里使用的是TCP/UDP则指定为AF_INET
+    addr.sin_family = AF_INET;
+
+    // 指定端口号
+    addr.sin_port = htons(1024);
+
+    // 指定监听的ip，指定为INADDR_ANY时，表示监听所有的ip
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    // 绑定套接字
+    error = bind(serverSocketId, (const struct sockaddr *)&amp;addr, sizeof(addr));
+    success = (error == 0);
+  }
+
+  // 第三步：监听
+  if (success) {
+    NSLog(@"bind server socket success");
+    error = listen(serverSocketId, 5);
+    success = (error == 0);
+  }
+
+  if (success) {
+    NSLog(@"listen server socket success");
+
+    while (true) {
+      // p2p
+      struct sockaddr_in peerAddr;
+      int peerSocketId;
+      socklen_t addrLen = sizeof(peerAddr);
+
+      // 第四步：等待客户端连接
+      // 服务器端等待从编号为serverSocketId的Socket上接收客户连接请求
+      peerSocketId = accept(serverSocketId, (struct sockaddr *)&amp;peerAddr, &amp;addrLen);
+      success = (peerSocketId != -1);
+
+      if (success) {
+        NSLog(@"accept server socket success,remote address:%s,port:%d",
+              inet_ntoa(peerAddr.sin_addr),
+              ntohs(peerAddr.sin_port));
+        char buf[1024];
+        size_t len = sizeof(buf);
+
+        // 第五步：接收来自客户端的信息
+        // 当客户端输入exit时才退出
+        do {
+          // 接收来自客户端的信息
+          recv(peerSocketId, buf, len, 0);
+          if (strlen(buf) != 0) {
+            NSString *str = [NSString stringWithCString:buf encoding:NSUTF8StringEncoding];
+            if (str.length &gt;= 1) {
+              NSLog(@"received message from client：%@",str);
+            }
+          }
+        } while (strcmp(buf, "exit") != 0);
+
+        NSLog(@"收到exit信号，本次socket通信完毕");
+
+        // 第六步：关闭socket
+        close(peerSocketId);
+      }
+    }
+  }
+}
+</code></pre>
+
+<h4>1.2.2 服务器端的打印日志</h4>
+
+<pre><code>2015-12-06 18:34:31.258 iOS-Socket-C-Version-Server[39929:2622200] server socket create success
+2015-12-06 18:34:31.258 iOS-Socket-C-Version-Server[39929:2622200] bind server socket success
+2015-12-06 18:34:31.259 iOS-Socket-C-Version-Server[39929:2622200] listen server socket success
+2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] accept server socket success,remote address:192.168.1.100,port:50311
+2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
+2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] received message from client：exit
+2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] 收到exit信号，本次socket通信完毕
+</code></pre>
+
+<p>我们这里打印出了客户端发来的消息，由于上面实现的代码中，只发10次，所以这里只有10条。</p>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/25/springboardjiemianjiegoufenxi/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -343,7 +2665,7 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/">分析QQ-微信界面结构</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/06/20/cocketjichu/">Cocketjichu</a></h1>
     
     
       <p class="meta">
@@ -352,120 +2674,41 @@ PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.ve
 
 
 
-<time class='entry-date' datetime='2016-03-22T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-06-20T00:00:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:00 am</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>使用Reveal分析其他APP（如微信、qq等）的界面结构</p>
+  <div class="entry-content"><hr />
 
-<p>特别提醒，现已无需按下面的方式注入libReveal.dlib了，只需把libReveal.dylib上传到设备的/Library/MobileSubstrate/DynamicLibraries，然后同时编辑并上传一个libReveal.plist，格式如下：</p>
+<p>layout: post
+title: &ldquo;Sock编程-基础篇&rdquo;
+date: 2016-06-20 13:53:19 +0800
+comments: true
+categories: Senior
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
 
-<p>nixiang0001</p>
+<hr />
 
-<p> 设定BundleID
-注意，此时是可以指定多个BundleID的，也就是说，你可以同时监控任意多的app；再扩大一步说，如果你愿意，不上传这个libReveal.plist，你可以监控所有app，只要你不觉得机器很慢。。。
-一定确保手机和电脑端处在同一局域网中，不然看不到界面的
-Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对ios7.0以上的应用无效，需要Reveal2.0.4版，但又无法破解目前，2.0.3版本百度云下载
-<a href="http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c">http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c</a></p>
+<p>本序列文章关于Socket编程，摘自<a href="http://www.huangyibiao.com/">大神标哥</a>的精华</p>
 
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/">阅读全文😘</a>
-    </footer>
-  
+<h2>序言</h2>
 
+<p>网络七层由下往上分别为物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。 其中物理层、数据链路层和网络层通常被称作媒体层，是网络工程师所研究的对象； 传输层、会话层、表示层和应用层则被称作主机层，是用户所面向和关心的内容。</p>
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/20/siyouapi/">私有API</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-20T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一．基本知识</p>
-
-<p>iPhone中的API除了公开的 API：Published API外（或者叫文档中记录的API：Documented API），还有两类API：私有API：Private API和未公开的API：UnPublished API(或者叫文档中未记录的API：Undocumented API)。其中私有API是指放在PrivateFrameworks框架中的API，未公开的API是指虽然放在Frameworks框架中，但是却没有在苹果的官方文档中有使用说明、代码介绍等记录的API。后两种API是有区别的，按苹果的说法，未公开的API是还不够成熟，可能还会变动的API，等完全成型了后会变成公开的API，但是目前不对其提供承诺，就是系统版本升级后可能会失效。而私有API是苹果明确不能使用的API。虽然两者有所区别，但是在具体使用方法上是类似的。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/20/siyouapi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/19/shiyongtweakgongcheng/">使用Tweak工程</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-19T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS逆向 - 使用Tweak工程</p>
-
-<p>创建第一个Tweak工程
-1、创建工程</p>
-
-<p>在目录下面启动NIC /opt/theos/bin/nic.pl ,可以看到有好多个模板可以选择。 1、4、6、8、9 是Theos自带的模板,其他的是 <a href="https://github.com/DHowett/theos-nic-templates">https://github.com/DHowett/theos-nic-templates</a> 下载的。 这里主要学习tweak的用法，选择9</p>
-
-<pre><code>  NIC 2.0 - New Instance Creator
-------------------------------
-  [1.] iphone/application
-  [2.] iphone/cydget
-  [3.] iphone/framework
-  [4.] iphone/library
-  [5.] iphone/notification_center_widget
-  [6.] iphone/preference_bundle
-  [7.] iphone/sbsettingstoggle
-  [8.] iphone/tool
-  [9.] iphone/tweak
-  [10.] iphone/xpc_service
-Choose a Template (required):
+<pre><code>http协议对应于应用层
+tcp/udp协议对应于传输层
+ip协议对应于网络层
 </code></pre>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2016/03/19/shiyongtweakgongcheng/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2016/06/20/cocketjichu/">阅读全文😘</a>
     </footer>
   
 
@@ -477,7 +2720,7 @@ Choose a Template (required):
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/18/xiugaitubiaozhishishuzi/">修改图标数字</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a></h1>
     
     
       <p class="meta">
@@ -486,39 +2729,22 @@ Choose a Template (required):
 
 
 
-<time class='entry-date' datetime='2016-03-18T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+<time class='entry-date' datetime='2016-06-15T13:53:19+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>修改程序图标标示数字</p>
+  <div class="entry-content"><p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
 
-<p>1.修改自身应用图标标示数字：
-   [UIApplication sharedApplication].applicationIconBadgeNumber = 10;
-2. 修改其他应用图标标示数字：
-   ios7.0下的sdk
-   Use class-dump to dump the headers for /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS3.0.sdk/System/Library/PrivateFrameworks/iTunesStore.framework/iTunesStore</p>
-
-<p>涉及的头文件</p>
-
-<pre><code>ISOperation-ISAuthentication.h
-ISOperation-ISLoadSoftwareMapAdditions.h
-ISOperation-ISLoadURLBagAdditions.h
-ISOperation.h
-ISOperationDelegate-Protocol.h
-ISOperationQueue.h
-ISSetApplicationBadgeOperation.h
-
-You may have to edit ISOperation.h:
-</code></pre>
+<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2016/03/18/xiugaitubiaozhishishuzi/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">阅读全文😘</a>
     </footer>
   
 
@@ -550,7 +2776,7 @@ You may have to edit ISOperation.h:
 <li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
 <li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
-<li class='category'><a href='/blog/categories/senior/'>senior (24)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
 <li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
 <li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
@@ -569,15 +2795,15 @@ You may have to edit ISOperation.h:
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a>
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/06/wpzhidapnizaizhaosm/">我知道你在找什么？</a>
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/06/03/appjinggaoshizhanchuli/">警告与实战</a>
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
       </li>
     
   </ul>

@@ -1,0 +1,564 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>SQLite精华篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/01/sqljinghua/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">SQLite精华篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-01T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
+Core Data在后台也是使用SQLite来存储数据的，但是开发人员不能直接访问这些数据，只能通过Core Data提供的API来操作，如果一旦人为的通过SQLite修改这些数据那么使用Core Data再次访问这些数据时就会发生错误。</p>
+
+<p>SQLite库</p>
+
+<p>SQLite是使用C语言写的开源库，实现了一个自包含的SQL关系型数据库引擎，可以使用SQLite存储操作大量的数据，作为关系型数据库我们可以在一个数据库中建立多张相关联的表来解决大量数据重复的问题。而且SQLite库也针对移动设备上的使用进行了优化。
+因为SQLite的接口使用C写的，而且Objective-C是C的超集所以可以直接在项目中使用SQLite。</p>
+
+<p>设计一个数据库</p>
+
+<p>开始之前首先要想到需要存什么数据，然后怎么设计这个数据库。
+首先我们设计一个数据库用来存储人员信息如下：</p>
+
+<p><img src="/images/sql0004.png" title="Caption" ></p>
+
+<p>上面是所有的人员信息，实际可能比这个多很多。但是我们发现region这一行中有很多的数据重复出现。很多人可能来自同一个地方，为了避免这种情况我们应该再重新创建一张表来单独存储region这列的信息然后在这个表中引用region表中的信息。当然我们还可以在region表中添加更多的信息比如详细地址。现在创建两张表people与region如下所示</p>
+
+<pre><code>people表
+</code></pre>
+
+<p><img src="/images/sql0001.png" title="Caption" ></p>
+
+<pre><code>region表
+</code></pre>
+
+<p><img src="/images/sql0002.png" title="Caption" ></p>
+
+<p>使用SQLite创建数据库</p>
+
+<p>为了熟悉SQLite语句，打开shell使用SQLite命令行来创建一个数据库</p>
+
+<pre><code>打开创建数据库
+
+打开shell切换到指定目录输入
+</code></pre>
+
+<p>1</p>
+
+<p>sqlite3 database.db</p>
+
+<p>这行命令是启动sqlite命令行并且创建新的数据库database.db并附加该数据到命令行</p>
+
+<p>此时已经进入sqlite命令行通过输入.help可以显示可以使用哪些命令，通过输入.databases来查看当前有哪些数据库附加到当前的命令行工具中。输入.quit或.exit退出当前命令行工具</p>
+
+<p>创建表
+1</p>
+
+<p>create table &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;id&rdquo; integer primary key autoincrement not null, &ldquo;name&rdquo; text,&ldquo;age&rdquo; integer,&ldquo;email&rdquo; text,&ldquo;region&rdquo; integer);</p>
+
+<p>这条命令是创建一个people的表，并且将id字段设为primary key主键将其指定为一个autoincrement自动增长的字段。表示不用提供id的值数据库将自动生成。后面的表示该张表中所含有的字段。</p>
+
+<p>因为要设计两张表所以还需要创建region表
+1</p>
+
+<p>create table &ldquo;main&rdquo;.&ldquo;region&rdquo; (&ldquo;regionid&rdquo; integer primary key autoincrement not null, &ldquo;regioninfo&rdquo; text,&ldquo;address&rdquo; text not null);</p>
+
+<p>添加数据</p>
+
+<p>此时已经成功创建了两张表我们要添加数据进去
+1</p>
+
+<p>insert into &ldquo;main&rdquo;.&ldquo;people&rdquo; (&ldquo;name&rdquo;,&ldquo;age&rdquo;,&ldquo;email&rdquo;,&ldquo;region&rdquo;) values (&lsquo;jhon&rsquo;,&lsquo;20&rsquo;,&lsquo;jhon@mail&rsquo;,&lsquo;1&rsquo;);</p>
+
+<p>这样成功往people表成功的插入了一条数据。这样写效率比较低。每次只能插入一条数据不要担心SQLite支持将文件直接导入数据库中。可以是普通的文件文件也可以是excel文件。下面我们创建一个people.txt文件格式如下：
+1</p>
+
+<p>1 jhon 20 jhon@mail 12 peter 20 peter@mail 23 july 20 july@mail 14 elev 20 elev@mail 35 ribet 20 ribet@mail</p>
+
+<p>注意每个字段之间的空隙是用制表符来分割的，也就是创建文件是每个字段用tab键进行分割。字段的顺序必须和表中的顺序相同然后将people.txt文件导入people表中
+1</p>
+
+<p>.separator &ldquo;&rdquo;</p>
+
+<p>根据来分割字段，然后接着输入
+1</p>
+
+<p>.import &ldquo;people.txt&rdquo; people</p>
+
+<p>导入people.txt文件到people表中此时会提示如下错误信息
+1</p>
+
+<p>people.txt:1: INSERT failed: UNIQUE constraint failed: people.id</p>
+
+<p>不用担心这个意思是说已经存在了一个id为1的数据所以这条数据插入失败，是因为我们之前手动了插入了一条数据。可以通过以下指令来查插入的数据
+1</p>
+
+<p>select * from people;</p>
+
+<p>然后用同样的方法创建一个region.txt的文件并将其导入region表中。</p>
+
+<p>注意</p>
+
+<p>使用SQLite命令行可能会出现&hellip;>这表示指令输入错误，按ctrl+d即可退出</p>
+
+<p>查询数据上面已经添加完数据通过select指令可以查询这些数据
+1</p>
+
+<p>select * from people;11</p>
+
+<p>查询popple表中的所有数据</p>
+
+<p>链接表数据
+1</p>
+
+<p>select name,regioninfo from people,region where people.region=region.regionid;</p>
+
+<p>输出结果
+1
+2
+3
+4
+5</p>
+
+<p>jhon beijing
+peter shanghai
+july beijing
+elev shenzhen
+ribet beijing</p>
+
+<p>从people和region表中查找name与regioninfo字段并且只查询people.region=region.regionid相匹配的结果，如果没有这个条件那么将出现5*3=15条数据</p>
+
+<p>如果要查找某个地区的人使用where来筛选条件
+1</p>
+
+<p>select name,regioninfo from people,region where people.region=region.regionid and region.regioninfo=&ldquo;beijing&rdquo;;</p>
+
+<p>输出结果
+1
+2
+3</p>
+
+<p>jhon beijing
+july beijing
+ribet beijing</p>
+
+<p>iOS中SQLite的使用</p>
+
+<p>开始之前应该在项目中引用SQLite库。TARGETS->General->Linked Frameworks and Libraries如下图所示</p>
+
+<p><img src="/images/sql0003.png" title="Caption" ></p>
+
+<p>将之前创建好的database.db文件导入项目中，并引入sqlite3.h头文件
+1</p>
+
+<h1>import</h1>
+
+<p>使用SQLite需要一下几个步骤：</p>
+
+<pre><code>声明类变量sqlite3来保存对数据库的引用
+
+使用sqlite3_open打开数据库
+
+创建SQLite语句
+
+创建SQLite语句对象sqlite3_stmt
+
+准备SQLite语句sqlite3_prepare_v2
+
+开始遍历结果sqlite3_step
+</code></pre>
+
+<p>初始化打开数据库
+1
+2
+3
+4
+5
+6
+7
+8</p>
+
+<p>sqlite3 * database;
+-(void)initDatabase
+{ NSString *path = [[NSBundle mainBundle] pathForResource:@&ldquo;database&rdquo; ofType:@&ldquo;db&rdquo;];
+if (sqlite3_open([path UTF8String], &amp;database) == SQLITE_OK) { NSLog(@&ldquo;open database&rdquo;);
+} else{
+sqlite3_close(database); NSLog(@&ldquo;error %s&rdquo;,sqlite3_errmsg(database));
+}
+}</p>
+
+<p>打开数据库如果返回的状态码不是SQLITE_OK那么打开失败关闭数据库并且输出错误信息</p>
+
+<p>查询数据
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10</p>
+
+<p>-(void)operateDatabase
+{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid&rdquo;;
+sqlite3_stmt *statement; //创建sql语句对象
+int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
+if ( sqlResult== SQLITE_OK) //是否准备结束
+{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
+{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+}
+}
+}</p>
+
+<p>输出结果：
+1</p>
+
+<p>name jhon, region beijingname peter, region shanghainame july, region beijingname elev, region shenzhenname ribet, region beijing1234512345</p>
+
+<p>sqlite3_prepare_v2的参数第一个是数据库连接，第二个是sql语句，第三个是这个语句的长度传入-1表示地道第一个null终止符为止，第四个是返回一个语句对象，第五个是返回一个指向该sql语句的第一个字节的指针。</p>
+
+<p>当sqlite3_prepare_v2返回状态码SQLITE_OK时开始遍历结果。</p>
+
+<p>sqlite3_step用来遍历结果如果返回为SQLITE_ROW表示下一行准备结束可以开始查询。所以此处用一个while来便利所以查询的结果</p>
+
+<p>遍历的过程中要取到结果通过一下的函数获取遍历结果
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10</p>
+
+<p>SQLITE_API const void <em>SQLITE_STDCALL sqlite3_column_blob(sqlite3_stmt</em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes16(sqlite3_stmt</em>, int iCol);
+SQLITE_API double SQLITE_STDCALL sqlite3_column_double(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_int(sqlite3_stmt</em>, int iCol);
+SQLITE_API sqlite3_int64 SQLITE_STDCALL sqlite3_column_int64(sqlite3_stmt<em>, int iCol);
+SQLITE_API const unsigned char </em>SQLITE_STDCALL sqlite3_column_text(sqlite3_stmt<em>, int iCol);
+SQLITE_API const void </em>SQLITE_STDCALL sqlite3_column_text16(sqlite3_stmt<em>, int iCol);
+SQLITE_API int SQLITE_STDCALL sqlite3_column_type(sqlite3_stmt</em>, int iCol);
+SQLITE_API sqlite3_value <em>SQLITE_STDCALL sqlite3_column_value(sqlite3_stmt</em>, int iCol);</p>
+
+<p>上面是所支持的结果类型，第一个参数为sql语句对象，第二个为获取哪一列的信息。</p>
+
+<p>参数化查询</p>
+
+<p>上面的情况每次sql语句都写死了，如果想要改变某个条件就需要重新写一条语句，幸好sqlite支持参数化查询，每次只需要更改查询条件就可以而不用更改整条sql语句，如果现在只想查询北京地区的人口信息使用参数化查询如下：
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</p>
+
+<p>-(void)operateDatabase
+{ const char * sql = &ldquo;select name,regioninfo from people,region where people.region=region.regionid and regioninfo=?&rdquo;;
+sqlite3_stmt *statement; //创建sql语句对象
+int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
+sqlite3_bind_text(statement, 1, &ldquo;beijing&rdquo;, -1,SQLITE_TRANSIENT); //绑定参数
+if ( sqlResult== SQLITE_OK) //是否准备结束
+{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
+{ NSLog(@&ldquo;name %s, region %s&rdquo;,sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
+}
+}
+}</p>
+
+<p>输出结果：
+1</p>
+
+<p>name jhon, regionbeijingname july, regionbeijingname ribet, regionbeijing</p>
+
+<p>可见需要更改的条件sql中用?来代替，然后用sqlite3_bind_text函数来绑定参数。根据类型不同绑定的函数也不同
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11</p>
+
+<p>SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob(sqlite3_stmt<em>, int, const void</em>, int n, void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob64(sqlite3_stmt<em>, int, const void</em>, sqlite3_uint64,void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_double(sqlite3_stmt<em>, int, double);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int(sqlite3_stmt</em>, int, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_int64(sqlite3_stmt<em>, int, sqlite3_int64);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_null(sqlite3_stmt</em>, int);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text(sqlite3_stmt<em>,int,const char</em>,int,void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text16(sqlite3_stmt<em>, int, const void</em>, int, void(<em>)(void</em>));
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_text64(sqlite3_stmt<em>, int, const char</em>, sqlite3_uint64,void(<em>)(void</em>), unsigned char encoding);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_value(sqlite3_stmt<em>, int, const sqlite3_value</em>);
+SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);</p>
+
+<p>上面列出了所有支持绑定类型的函数。</p>
+
+<p>结束</p>
+
+<p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-01T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/06/22/socketudp/" title="Previous Post: Socketudp">&laquo; Socketudp</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/01/sqlzfengzhuang/" title="Next Post: SQLite封装篇">SQLite封装篇 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/01/sqljinghua/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/01/sqljinghua/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

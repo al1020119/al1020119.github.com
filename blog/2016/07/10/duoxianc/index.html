@@ -1,0 +1,369 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>多线程之葵花宝典 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/10/duoxianc/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">多线程之葵花宝典</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-10T14:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>一、进程和线程</h2>
+
+<h4>1.什么是进程</h4>
+
+<pre><code>进程是指在系统中正在运行的一个应用程序
+
+每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内
+
+
+
+
+
+比如同时打开QQ、Xcode，系统就会分别启动2个进程
+
+通过“活动监视器”可以查看Mac系统中所开启的进程
+</code></pre>
+
+<h4>2.什么是线程</h4>
+
+<pre><code>1个进程要想执行任务，必须得有线程（每1个进程至少要有1条线程）
+
+线程是进程的基本执行单元，一个进程（程序）的所有任务都在线程中执行
+
+比如使用酷狗播放音乐、使用迅雷下载电影，都需要在线程中执行
+</code></pre>
+
+<p> 　　</p>
+
+<h4>3.线程的串行</h4>
+
+<pre><code>1个线程中任务的执行是串行的
+
+如果要在1个线程中执行多个任务，那么只能一个一个地按顺序执行这些任务
+
+也就是说，在同一时间内，1个线程只能执行1个任务
+
+比如在1个线程中下载3个文件（分别是文件A、文件B、文件C）
+</code></pre>
+
+<h2>二、多线程</h2>
+
+<h4>1.什么是多线程</h4>
+
+<pre><code>1个进程中可以开启多条线程，每条线程可以并行（同时）执行不同的任务
+
+进程 -&gt;车间，线程-&gt;车间工人
+
+多线程技术可以提高程序的执行效率
+
+比如同时开启3条线程分别下载3个文件（分别是文件A、文件B、文件C）
+</code></pre>
+
+<h4>2.多线程的原理</h4>
+
+<pre><code>同一时间，CPU只能处理1条线程，只有1条线程在工作（执行）
+多线程并发（同时）执行，其实是CPU快速地在多条线程之间调度（切换）
+如果CPU调度线程的时间足够快，就造成了多线程并发执行的假象
+思考：如果线程非常非常多，会发生什么情况？
+CPU会在N多线程之间调度，CPU会累死，消耗大量的CPU资源
+每条线程被调度执行的频次会降低（线程的执行效率降低）
+</code></pre>
+
+<h4>3.多线程的优缺点</h4>
+
+<p>多线程的优点</p>
+
+<pre><code>能适当提高程序的执行效率
+
+能适当提高资源利用率（CPU、内存利用率）
+</code></pre>
+
+<p>多线程的缺点</p>
+
+<pre><code>开启线程需要占用一定的内存空间（默认情况下，主线程占用1M，子线程占用512KB），如果开启大量的线程，会占用大量的内存空间，降低程序的性能
+
+线程越多，CPU在调度线程上的开销就越大
+
+程序设计更加复杂：比如线程之间的通信、多线程的数据共享
+</code></pre>
+
+<h4>4.多线程在iOS开发中的应用</h4>
+
+<pre><code>主线程:一个iOS程序运行后，默认会开启1条线程，称为“主线程”或“UI线程”
+
+主线程的主要作用
+
+显示\刷新UI界面
+
+处理UI事件（比如点击事件、滚动事件、拖拽事件等）
+</code></pre>
+
+<p>主线程的使用注意:别将比较耗时的操作放到主线程中。</p>
+
+<p>耗时操作会卡住主线程，严重影响UI的流畅度，给用户一种“卡”的坏体验</p>
+
+<h2>多线程的四中方式</h2>
+
+<h4>1. Pthreads</h4>
+
+<h4>2. NSThread</h4>
+
+<h4>3. GCD</h4>
+
+<h4>4. NSOperation &amp; NSOperationQueue</h4>
+
+<h2>多线程的全解析-看了不行你还不会</h2>
+
+<p><img src="/images/multithread.png" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-10T14:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/05/zsqlfmdbcoredata/" title="Previous Post: CoreData VS SQLite VS FMDB">&laquo; CoreData VS SQLite VS FMDB</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/08/26/chongzhengzhidao/" title="Next Post: 重整之道（面试+技术+底层+高级）">重整之道（面试+技术+底层+高级） &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/10/duoxianc/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/10/duoxianc/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

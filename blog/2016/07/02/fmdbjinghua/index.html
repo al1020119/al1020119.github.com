@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FMDB精华篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/02/fmdbjinghua/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">FMDB精华篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T12:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>12:59 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>由于FMDB是建立在SQLite的之上的，所以你至少也该把这篇文章从头到尾读一遍。与此同时，把SQLite的文档页 加到你的书签中。自动引用计数（APC）还是手动内存管理呢？</p>
+
+<p>两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。</p>
+
+<p>使用方法</p>
+
+<p>FMDB有三个主要的类
+1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
+2.FMResultSet – 表示FMDatabase执行查询后结果集
+3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。</p>
+
+<p>数据库创建
+创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：
+1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
+2..空字符串(@”")。表示会在临时目录创建一个空的数据库，当FMDatabase 链接关闭时，文件也被删除。
+3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。</p>
+
+<p>(如需对临时数据库或内在数据库进行一步了解，请继续阅读：<a href="http://www.sqlite.org/inmemorydb.html">http://www.sqlite.org/inmemorydb.html</a>)</p>
+
+<pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];   
+</code></pre>
+
+<p>打开数据库
+在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
+
+<pre><code>if (![db open]) {    
+        [db release];   
+        return;    
+    }  
+</code></pre>
+
+<p>执行更新
+一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
+简单来说，只要不是以SELECT开头的命令都是UPDATE命令。</p>
+
+<p>执行更新返回一个BOOL值。YES表示执行成功，否则表示有那些错误 。你可以调用 -lastErrorMessage 和 -lastErrorCode方法来得到更多信息。</p>
+
+<p>执行查询
+SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
+
+<p>执行查询时，如果成功返回FMResultSet对象， 错误返回nil. 与执行更新相当，支持使用 NSError**参数。同时，你也可以使用 -lastErrorCode和-lastErrorMessage获知错误信息。</p>
+
+<p>为了遍历查询结果，你可以使用while循环。你还需要知道怎么跳到下一个记录。使用FMDB，很简单实现，就像这样：</p>
+
+<pre><code>FMResultSet *s = [db executeQuery:@"SELECT * FROM myTable"];   
+while ([s next]) {   
+    //retrieve values for each record   
+}   
+</code></pre>
+
+<p>你必须一直调用   -[FMResultSet next]   在你访问查询返回值之前，甚至你只想要一个记录：</p>
+
+<pre><code>FMResultSet *s = [db executeQuery:@"SELECT COUNT(*) FROM myTable"];   
+  if ([s next]) {    
+       int totalCount = [s intForColumnIndex:0];   
+  }   
+</code></pre>
+
+<p>FMResultSet  提供了很多方法来获得所需的格式的值：
+    intForColumn:
+    longForColumn:
+    longLongIntForColumn:
+    boolForColumn:
+    doubleForColumn:
+    stringForColumn:
+    dataForColumn:
+    dataNoCopyForColumn:
+    UTF8StringForColumnIndex:
+    objectForColumn:</p>
+
+<p>这些方法也都包括 {type}ForColumnIndex 的这样子的方法，参数是查询结果集的列的索引位置。</p>
+
+<p>你无需调用  [FMResultSet close]来关闭结果集, 当新的结果集产生，或者其数据库关闭时，会自动关闭。</p>
+
+<p>关闭数据库
+当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
+    [db close];</p>
+
+<p>事务</p>
+
+<p>FMDatabase是支持事务的。</p>
+
+<p>数据净化（数据格式化）</p>
+
+<p>使用FMDB，插入数据前，你不要花时间审查你的数据。你可以使用标准的SQLite数据绑定语法。</p>
+
+<pre><code>INSERT INTO myTable VALUES (?, ?, ?)   
+</code></pre>
+
+<p>SQLite会识别 “?” 为一个输入的点位符， 这样的执行会接受一个可变参数（或者表示为其他参数，如NSArray, NSDictionary,或va_list等），会正确为您转义。</p>
+
+<p>你也可以选择使用命名参数语法。</p>
+
+<pre><code>INSERT INTO myTable VALUES (:id, :name, :value)   
+</code></pre>
+
+<p>参数名必须以冒名开头。SQLite本身支持其他字符，当Dictionary key的内部实现是冒号开头。注意你的NSDictionary key不要包含冒号。</p>
+
+<pre><code>NSDictionary *argsDict = [NSDictionary dictionaryWithObjectsAndKeys:@"My Name", @"name", nil];    
+    [db executeUpdate:@"INSERT INTO myTable (name) VALUES (:name)" withParameterDictionary:argsDict];   
+</code></pre>
+
+<p>而且，代码不能这么写（为什么？想想吧。）</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has \" lots of ' bizarre \" quotes '"]; 
+</code></pre>
+
+<p>你应该：</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has " lots of ' bizarre " quotes '"];   
+</code></pre>
+
+<p>提供给 -executeUpdate: 方法的参数都必须是对象。就像以下的代码就无法工作，且会产生崩溃。</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", 42];   
+</code></pre>
+
+<p> 正确有做法是把数字打包成 NSNumber对象</p>
+
+<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:42]];   
+</code></pre>
+
+<p>或者，你可以使用  -execute*WithFormat: ，这是NSString风格的参数</p>
+
+<pre><code>[db executeUpdateWithFormat:@"INSERT INTO myTable VALUES (%d)", 42];   
+</code></pre>
+
+<p> -execute*WithFormat:  的方法的内部实现会帮你封装数据， 以下这些修饰符都可以使用： %@, %c, %s, %d, %D,%i, %u, %U, %hi, %hu, %qi, %qu, %f, %g, %ld, %lu, %lld, and %llu.  除此之外的修饰符可能导致无法预知的结果。 一些情况下，你需要在SQL语句中使用 % 字符，你应该使用 %%。</p>
+
+<p>使用FMDatabaseQueue 及线程安全
+在多个线程中同时使用一个FMDatabase实例是不明智的。现在你可以为每个线程创建一个FMDatabase对象。 不要让多个线程分享同一个实例，它无法在多个线程中同时使用。 若此，坏事会经常发生，程序会时不时崩溃，或者报告异常，或者陨石会从天空中掉下来砸到你Mac Pro.  总之很崩溃。所以，不要初始化FMDatabase对象，然后在多个线程中使用。请使用 FMDatabaseQueue，它是你的朋友而且会帮助你。以下是使用方法：</p>
+
+<p>首先创建队列。</p>
+
+<pre><code>FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath]; 
+</code></pre>
+
+<p>这样使用。</p>
+
+<pre><code>[queue inDatabase:^(FMDatabase *db) {    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
+          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
+          FMResultSet *rs = [db executeQuery:@"select * from foo"];    
+         while([rs next]) {   
+            …    
+         }    
+}];   
+</code></pre>
+
+<p>像这样，轻松地把简单任务包装到事务里：</p>
+
+<pre><code>[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
+            if (whoopsSomethingWrongHappened) {    
+                    *rollback = YES; return;    
+            }   
+            // etc…    
+            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:4]];    
+    }];   
+</code></pre>
+
+<p> FMDatabaseQueue  后台会建立系列化的G-C-D队列，并执行你传给G-C-D队列的块。这意味着 你从多线程同时调用调用方法，GDC也会按它接收的块的顺序来执行。谁也不会吵到谁的脚 ，每个人都幸福。</p>
+
+<p>原文：<a href="http://www.cocoachina.com/bbs/read.php?tid=140901">http://www.cocoachina.com/bbs/read.php?tid=140901</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T12:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>12:59 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/01/sqlzfengzhuang/" title="Previous Post: SQLite封装篇">&laquo; SQLite封装篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/02/fmdbzfenghuznag/" title="Next Post: FMDB封装篇">FMDB封装篇 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/02/fmdbjinghua/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/02/fmdbjinghua/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

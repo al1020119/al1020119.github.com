@@ -1,0 +1,495 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>FMDB封装篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">FMDB封装篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T22:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>10:59 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>前言：</p>
+
+<p>在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。</p>
+
+<p>显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。于是就出现了MagicRecord这个对CoreData的封装库。一开始遇到这个库的时候，好用到几乎让我想把所有项目的数据库都换成CoreData了。两句话解决CoreData调用栈的初始化，一句话完成数据库版本升级和自动数据合并更新（虽然我们很少用到）。</p>
+
+<p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
+
+<p>所以，最后还是选择了FMDB进行封装。</p>
+
+<p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
+
+<p>项目简介：</p>
+
+<p>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</p>
+
+<p>Description</p>
+
+<pre><code>使用分类的模式，模仿Hibernate，对FMDB进行简易封装
+
+支持pod 安装 『pod 'JRDB'』，Podfile需要添加 use_framework!
+
+使用协议，不用继承基类，对任意NSObject可以进行入库操作
+
+支持swift 和 Objective-C
+
+支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
+</code></pre>
+
+<p>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</p>
+
+<p>Installation（安装）</p>
+
+<p>use_frameworks!
+pod &lsquo;JRDB&rsquo;
+@import JRDB;</p>
+
+<p>Usage</p>
+
+<p>Save（保存）</p>
+
+<pre><code>Objective-C
+</code></pre>
+
+<p>Person *p = [[Person alloc] init];
+p.a_int = 1;
+p.b_unsigned_int = 2;
+p.c_long = 3;
+p.d_long_long = 4;
+p.e_unsigned_long = 5;
+p.f_unsigned_long_long = 6;
+p.g_float = 7.0;
+p.h_double = 8.0;
+p.i_string = @&ldquo;9&rdquo;;
+p.j_number = @10;
+p.k_data = [NSData data];
+p.l_date = [NSDate date];
+[p jr_save];</p>
+
+<pre><code>Swift
+</code></pre>
+
+<p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
+
+<p>The Object that you want to persistent should inherit from NSObject</p>
+
+<p>let p = Person()
+p.name = &ldquo;name&rdquo;
+p.age = 10
+p.birthday = NSDate()
+p.jr_save()</p>
+
+<p>Update（更新）</p>
+
+<p>Person *p = [Person jr_findAll].firstObject;
+p.name = @&ldquo;abc&rdquo;;
+[p jr_update columns:nil];</p>
+
+<p>column: 需要更新的字段名，传入空为全量更新</p>
+
+<p>Delete（删除）
+1
+2</p>
+
+<p>Person *p = [Person jr_findAll].firstObject;
+[p jr_delete];</p>
+
+<p>Select（查找）</p>
+
+<pre><code>常规查找
+</code></pre>
+
+<p>Person <em>p = [Person jr_findByPrimaryKey:@&ldquo;111&rdquo;];
+NSArray </em>list = [Person jr_findAll];
+NSArray *list1 = [Person jr_findAllOrderBy:@&ldquo;_age&rdquo; isDesc:YES];</p>
+
+<pre><code>条件查询
+</code></pre>
+
+<p>NSArray <em>condis = @[
+     [JRQueryCondition condition:@&ldquo;<em>l_date &lt; ?&rdquo; args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
+     [JRQueryCondition condition:@&ldquo;</em>a_int > ?&rdquo; args:@[@9] type:JRQueryConditionTypeAnd],];
+NSArray </em>arr = [Person jr_findByConditions:condis
+                      groupBy:@&ldquo;<em>room&rdquo;
+                      orderBy:@&ldquo;</em>age&rdquo;
+                      limit:@&ldquo; limit 0,13 &rdquo;
+                      isDesc:YES];</p>
+
+<pre><code>SQL
+</code></pre>
+
+<p>1
+2</p>
+
+<p>NSString <em>sql = @&ldquo;select * from Person where age = ?&rdquo;;
+NSArray </em>list = [Person jr_executeSql:sql args:@[@10]];</p>
+
+<p>Other（其他）</p>
+
+<p>协议：JRPersistent</p>
+
+<p>@protocol JRPersistent @required
+- (void)setID:(NSString * <em>Nullable)ID;
+- (NSString * </em>Nullable)ID;
+@optional
+/<strong>
+ *  返回不用入库的对象字段数组
+ *  The full property names that you want to ignore for persistent
+ *  @return array
+ */
++ (NSArray * _Nullable)jr_excludePropertyNames;
+/</strong>
+ *  返回自定义主键字段
+ *  @return 字段全名
+ <em>/
++ (NSString * _Nullable)jr_customPrimarykey;
+/**
+ *  返回自定义主键值
+ *  @return 主键值
+ </em>/
+- (id _Nullable)jr_customPrimarykeyValue;
+@end</p>
+
+<p>主键</p>
+
+<p>默认每个Object的主键为ID， UUID字符串。</p>
+
+<p>可以实现 jr_customPrimarykey 以及 jr_customPrimarykeyValue 方法，自定义主键。</p>
+
+<p>默认NSObject分类实现</p>
+
+<p>@interface NSObject (JRDB) (&hellip;methods)
+@end
+JRDBMgr
+@interface JRDBMgr : NSObject
+@property (nonatomic, strong) FMDatabase <em>defaultDB;
++ (instancetype)shareInstance;
++ (FMDatabase </em>)defaultDB;
+- (FMDatabase <em>)createDBWithPath:(NSString </em>)path;
+- (void)deleteDBWithPath:(NSString <em>)path;
+/**
+ *  在这里注册的类，使用本框架的数据库将全部建有这些表
+ *  @param clazz 类名
+ </em>/
+- (void)registerClazzForUpdateTable:(Class)clazz;
+- (NSArray <em>)registedClazz;
+/**
+ * 更新默认数据库的表（或者新建没有的表）
+ * 更新的表需要在本类先注册
+ </em>/
+- (void)updateDefaultDB;
+- (void)updateDB:(FMDatabase *)db;
+@end</p>
+
+<p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
+
+<p>Method
+1</p>
+
+<ul>
+<li>(void)registerClazzForUpdateTable:(Class)clazz;</li>
+</ul>
+
+
+<p>在JRDBMgr中注册的类，可以使用
+1</p>
+
+<p>-(void)updateDB:(FMDatabase *)db</p>
+
+<p>进行统一更新或者创建表。</p>
+
+<p>Table Operation（表操作）</p>
+
+<p>Create（建表）</p>
+
+<p>// FMDatabase+JRDB 方法
+[[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
+[Person jr_createTable];
+// 删除原有的表，重新创建
+[[JRDBMgr defaultDB] truncateTable4Clazz:[Person class]];
+[Person jr_truncateTable];
+//保存时，若发现没有表，将自动创建
+[person jr_save];
+Update 【更新表】
+[[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
+[Person jr_updateTable];</p>
+
+<p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
+
+<p>Drop（删表）</p>
+
+<p>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
+[Person jr_dropTable];</p>
+
+<p>Thread Operation（线程操作）</p>
+
+<p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
+
+<p>[person jr_saveWithComplete:^(BOOL success) {
+    NSLog(@&ldquo;%d&rdquo;, success);
+}];</p>
+
+<p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
+
+<p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
+
+<p>MoreUsage</p>
+
+<pre><code>查看FMDatabase+JRDB.h
+</code></pre>
+
+<p>项目地址：<a href="https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89">https://github.com/scubers/JRDB%EF%BC%88%E8%A7%89%E5%BE%97%E5%8F%AF%E4%BB%A5%E7%9A%84%E8%AF%9D%E5%B0%B1%E9%BA%BB%E7%83%A6%E6%98%9F%E4%B8%80%E4%B8%8B%E5%91%97~~~%EF%BC%89</a></p>
+
+<p>第一次写这种东西，可能已经Github上已经有了很多类似的东西，如果有不足之处还请指教。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T22:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>10:59 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/07/02/fmdbjinghua/" title="Previous Post: FMDB精华篇">&laquo; FMDB精华篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/03/realmjichupian/" title="Next Post: Realm基础篇">Realm基础篇 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
