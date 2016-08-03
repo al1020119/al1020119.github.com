@@ -9,12 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一个控件从外在特征来说，主要是封装这几点： 交互方式
-显示样式
-数据使用 对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征： 灵活性
-低耦合
-易拓展
-易维护 ">
+  <meta name="description" content="摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -74,6 +70,58 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/11/14/fang-fa-huan-cun/">方法缓存</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-11-14T17:42:41+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:42 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>摘要
+只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+
+<p>简介
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#x6f;&#x3a;&#109;&#x61;&#x6a;&#x69;&#x61;&#48;&#51;&#64;&#x6d;&#x65;&#105;&#116;&#x75;&#x61;&#110;&#46;&#x63;&#x6f;&#x6d;">&#109;&#97;&#x6a;&#x69;&#97;&#x30;&#51;&#64;&#x6d;&#101;&#x69;&#116;&#x75;&#97;&#x6e;&#46;&#99;&#111;&#109;</a> ）。</p>
+
+<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+
+<ul>
+<li>从消息决议说起</li>
+<li>缓存为谁而生</li>
+<li>追本溯源，何为方法缓存</li>
+<li>缓存和散列</li>
+<li>十万个为什么</li>
+<li>缓存 - 性能优化的万金油？</li>
+<li>优化，永无止境</li>
+<li>从消息决议说起</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/11/14/fang-fa-huan-cun/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -462,46 +510,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/14/unio/">独一无二</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-08-14T13:53:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>WWDC 2013已经闭幕，IOS7 Beta随即发布，界面之难看无以言表&hellip;,简直就是山寨Android。</p>
-
-<p>更让IOS程序猿悲催的是，设备唯一标识的MAC Address在IOS7中也失效了。</p>
-
-<p>IOS系统中，获取设备唯一标识的方法有很多：</p>
-
-<h5>一.UDID(Unique Device Identifier)</h5>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/08/14/unio/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/13">&larr; Older</a>
@@ -519,7 +527,7 @@
     <ul id="categories">
         <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
 <li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
-<li class='category'><a href='/blog/categories/developer/'>developer (14)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (15)</a></li>
 <li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
 <li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
 <li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
@@ -538,11 +546,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/09/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/08/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+        <a href="/blog/2016/07/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
       </li>
     
       <li class="post">
@@ -550,11 +554,15 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData vs SQLite vs FMDB</a>
+        <a href="/blog/2016/07/05/zsqlfmdbcoredata/">CoreData 😘 SQLite 😍 FMDB</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData vs SQLite</a>
+        <a href="/blog/2016/07/05/xsqlyucoredata/">CoreData 大战 SQLite</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/05/ycoredatayurealm/">Realm 爆菊 CoreData</a>
       </li>
     
   </ul>
