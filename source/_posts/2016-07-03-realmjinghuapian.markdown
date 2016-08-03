@@ -20,24 +20,30 @@ Realm 并不是对 Core Data 的简单封装，相反地， Realm 并不是基�
 
 之前我们提到过，由于 Realm 使用的是自己的引擎，因此， Realm 就可以在 iOS 和 Android 平台上共同使用（完全无缝），并且支持 Swift 、 Objective-C 以及 Java 语言来编写（ Android 平台和 iOS 平台使用不同的 SDK ）。
 
+
+
+<!--more-->
+
+
+
 数以万计的使用 Realm 的开发者都会发现，使用 Realm 比使用 SQLite 以及 Core Data 要快很多。下面我们给出一个例子，分别展示 Core Data 和 Realm 在执行一个断言查询请求并且排序结果所使用的代码量：
 
 	
-// Core Data
-let fetchRequest = NSFetchRequest(entityName: "Specimen")
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
-fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-fetchRequest.sortDescriptors = [sortDescriptor]
-let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&error)
+	// Core Data
+	let fetchRequest = NSFetchRequest(entityName: "Specimen")
+	let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
+	fetchRequest.predicate = predicate
+	let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
+	fetchRequest.sortDescriptors = [sortDescriptor]
+	let error = NSError()
+	let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&error)
 
 而换成了 Realm 呢？您会惊叹于 Realm 的简单的：
 
 	
-// Realm
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
+	// Realm
+	let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
+	let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
 
 使用 Realm 可以让代码变得十分简洁，从而让您的代码易读易写。
 
@@ -138,15 +144,15 @@ Realm 相关术语和主要类
 打开 SpeciesModel.swift 文件，然后用以下代码替换文件中的内容：
 
 	
-import UIKit
-import Realm
-class SpeciesModel: RLMObject {
-dynamic var name = ""
-dynamic var speciesDescription = ""
-dynamic var latitude: Double = 0
-dynamic var longitude: Double = 0
-dynamic var created = NSDate()
-}
+	import UIKit
+	import Realm
+	class SpeciesModel: RLMObject {
+	dynamic var name = ""
+	dynamic var speciesDescription = ""
+	dynamic var latitude: Double = 0
+	dynamic var longitude: Double = 0
+	dynamic var created = NSDate()
+	}
 
 上面的代码添加了一些属性来存储信息： name 属性存储物种名称， speciesDescription 存储物种的描述信息。对于 Realm 中的一些特定的数据类型，比如说字符串，必须要初始化。在本例中，我们使用空字符串来进行初始化。
 
@@ -161,11 +167,11 @@ latitude 以及 longitude 存储了物种的经纬度信息。在这里我们将
 以下是解决方案的代码：
 
 	
-import UIKit
-import Realm
-class CategoryModel: RLMObject {
-dynamic var name = ""
-}
+	import UIKit
+	import Realm
+	class CategoryModel: RLMObject {
+	dynamic var name = ""
+	}
 
 我们现在拥有了 CategoryModel 数据模型了，下面我们将通过某种方式将其与 SpeciesModel 数据模型关联起来，搭建起 “ 关系 ” 。
 
@@ -174,7 +180,7 @@ dynamic var name = ""
 打开 SpeciesModel.swift 文件，然后在 created 属性下面添加如下语句：
 1
 	
-dynamic var category = CategoryModel()
+	dynamic var category = CategoryModel()
 
 这个语句设置了 “ 物种 ” 和 “ 类别 ” 之间的 “ 一对多 ” 关系，这就意味着每个物种都只能够拥有一个类别，但是一个类别可以从属于多个物种。
 
@@ -188,22 +194,22 @@ dynamic var category = CategoryModel()
 
 在类定义当中添加以下方法，别忘了在文件顶部导入 Realm 框架（ import Realm ）：
 
-private func populateDefaultCategories() {
-self.results = CategoryModel.allObjects() // 1
-if results.count == 0 { // 2
-let realm = RLMRealm.defaultRealm() // 3
-realm.beginWriteTransaction() // 4
-let defaultCategories = Categories.allValues // 5
-for category in defaultCategories {
-// 6
-let newCategory = CategoryModel()
-newCategory.name = category
-realm.addObject(newCategory)
-}
-realm.commitWriteTransaction() // 7
-self.results = CategoryModel.allObjects()
-}
-}
+	private func populateDefaultCategories() {
+	self.results = CategoryModel.allObjects() // 1
+	if results.count == 0 { // 2
+	let realm = RLMRealm.defaultRealm() // 3
+	realm.beginWriteTransaction() // 4
+	let defaultCategories = Categories.allValues // 5
+	for category in defaultCategories {
+	// 6
+	let newCategory = CategoryModel()
+	newCategory.name = category
+	realm.addObject(newCategory)
+	}
+	realm.commitWriteTransaction() // 7
+	self.results = CategoryModel.allObjects()
+	}
+	}
 
 对应的标号注释如下：
 
@@ -226,25 +232,25 @@ self.results = CategoryModel.allObjects()
 然后在 viewDidLoad() 方法的底部加入以下代码：
 1
 	
-populateDefaultCategories()
+	populateDefaultCategories()
 
 这个方法将会在视图加载的过程中，添加我们的测试用类别，并且执行向数据库写入数据的操作。
 
 好了，现在我们的数据库当中已经有了一些数据了，我们需要更新一下表试图数据源相关方法，以显示这些类别。找到 tableView(_:cellForRowAtIndexPath:) 方法，然后用以下代码替换它：
 
 	
-override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-let cell = tableView.dequeueReusableCellWithIdentifier("CategoryCell", forIndexPath: indexPath) as! UITableViewCell
-cell.textLabel?.text = (results[UInt(indexPath.row)] as! CategoryModel).name
-return cell
-}
+	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+	let cell = tableView.dequeueReusableCellWithIdentifier("CategoryCell", forIndexPath: indexPath) as! UITableViewCell
+	cell.textLabel?.text = (results[UInt(indexPath.row)] as! CategoryModel).name
+	return cell
+	}
 
 这个声明语句从 results 对象当中读取对应行的名称，然后设置到单元格的文本标签上面显示。
 
 接下来，添加一个新的属性：
 1
 	
-var selectedCategory: CategoryModel!
+	var selectedCategory: CategoryModel!
 
 我们用这个属性来存储当前选中的类别。
 
@@ -254,10 +260,10 @@ var selectedCategory: CategoryModel!
 3
 4
 	
-override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-selectedCategories = self.results[UInt(indexPath.row)] as! CategoryModel
-return indexPath
-}
+	override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+	selectedCategories = self.results[UInt(indexPath.row)] as! CategoryModel
+	return indexPath
+	}
 
 上面声明的方法将会在用户点击某个单元格的时候，将用户点击的类别存储在 selectedCategory 属性当中。
 
@@ -277,7 +283,7 @@ return indexPath
 如果您仍然不清楚这个 Realm 数据库在哪儿的话，那么使用如下语句，就可以打印处这个数据库所在的完整位置了：
 1
 	
-println(RLMRealm.defaultRealm().path)
+	println(RLMRealm.defaultRealm().path)
 
 在这个 Documents 目录下面，我们可能会看到两个文件。一个是 default.realm 文件，这个是数据库文件，里面就是数据的存放点了。而另一个则是 default.realm.lock 文件，这个文件也有可能不会存在，它是用来当数据库文件被使用时，防止其它应用对其进行修改的一个文件。
 
@@ -301,7 +307,7 @@ Realm Browser 打开的 default.realm 文件
 打开 AddNewEntryController.swift ，然后向类中添加以下属性：
 1
 	
-var selectedCategory: CategoryModel!
+	var selectedCategory: CategoryModel!
 
 我们将会用这个属性来存储我们在 CategoriesTableViewController 选中的类别。
 
@@ -309,8 +315,8 @@ var selectedCategory: CategoryModel!
 1
 2
 	
-selectedCategory = categoriesController.selectedCategories
-categoryTextField.text = selectedCategory.name
+	selectedCategory = categoriesController.selectedCategories
+	categoryTextField.text = selectedCategory.name
 
 这个方法会在用户从 categoriesTableViewController 中选择了一个类别后被调用。在这里，我们获取到了这个选择的类别，然后将其存储在本地属性 selectedCategory 当中，接着，我们将它的值填充到文本框里面。
 
@@ -319,27 +325,27 @@ categoryTextField.text = selectedCategory.name
 仍然还是在 AddNewEntryController.swift 当中，向类中再添加一个属性：
 1
 	
-var species: SpeciesModel!
+	var species: SpeciesModel!
 
 这个属性将会存储一个新的物种数据模型对象。
 
 接下来，导入 Realm 框架，然后向类中添加以下方法：
 
 	
-func addNewSpecies() {
-let realm = RLMRealm.defaultRealm() // 1
-realm.beginWriteTransaction() // 2
-let newSpecies = SpeciesModel() // 3
-// 4
-newSpecies.name = nameTextField.text
-newSpecies.category = selectedCategory
-newSpecies.speciesDescription = descriptionTextView.text
-newSpecies.latitude = selectedAnnotation.coordinate.latitude
-newSpecies.longitude = selectedAnnotation.coordinate.longitude
-realm.addObject(newSpecies) // 5
-realm.commitWriteTransaction() // 6
-self.species = newSpecies
-}
+	func addNewSpecies() {
+	let realm = RLMRealm.defaultRealm() // 1
+	realm.beginWriteTransaction() // 2
+	let newSpecies = SpeciesModel() // 3
+	// 4
+	newSpecies.name = nameTextField.text
+	newSpecies.category = selectedCategory
+	newSpecies.speciesDescription = descriptionTextView.text
+	newSpecies.latitude = selectedAnnotation.coordinate.latitude
+	newSpecies.longitude = selectedAnnotation.coordinate.longitude
+	realm.addObject(newSpecies) // 5
+	realm.commitWriteTransaction() // 6
+	self.species = newSpecies
+	}
 
 对应的标号注释如下：
 
@@ -360,27 +366,27 @@ self.species = newSpecies
 在 validateFields() 方法中找到以下代码：
 1
 	
-if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {
+	if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {
 
 将其变更为：
 1
 	
-if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {
+	if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {
 
 这个方法经能够确保所有的文本框都有值，并且用户也已经选择了一个类别。
 
 接下来，向类中添加以下方法：
 
-override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -> Bool {
-if validateFields() {
-if species == nil {
-addNewSpecies()
-}
-return true
-} else {
-return false
-}
-}
+	override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -> Bool {
+	if validateFields() {
+	if species == nil {
+	addNewSpecies()
+	}
+	return true
+	} else {
+	return false
+	}
+	}
 
 在上面的代码中，我们调用了输入验证的方法，如果所有文本框都有值的话，那么就可以添加一个新的物种。
 
@@ -414,18 +420,18 @@ return false
 打开 SpeciesAnnotation.swift ，然后向类中添加一个新的属性：
 1
 	
-var species: SpeciesModel?
+	var species: SpeciesModel?
 
 这个属性将会为这个标记点保存它所拥有的物种信息。
 
 接下来，用以下代码替换构造器：
 
-init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
-self.coordinate = coordinate
-self.title = title
-self.subtitle = sub.rawValue
-self.species = species
-}
+	init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
+	self.coordinate = coordinate
+	self.title = title
+	self.subtitle = sub.rawValue
+	self.species = species
+	}
 
 我们所做的改变，就是给这个构造器方法添加了一个带默认值的构造器参数，以便可以对 species 属性进行赋值。默认值为 nil ，这意味着我们可以忽略这个参数，使用前面三个参数进行初始化也是没有任何问题的。
 
@@ -439,18 +445,18 @@ var results: RLMResults?
 现在我们需要一些方法来获取所有的物种数据。仍然还是在 MapViewController.swift 当中，向类中添加如下方法：
 
 	
-func populateMap() {
-mapView.removeAnnotations(mapView.annotations) // 1
-if let results = SpeciesModel.allObjects() { // 2
-self.results = results
-for result in results {
-let species = result as! SpeciesModel
-let coordinate = CLLocationCoordinate2DMake(species.latitude, species.longitude)
-let speciesAnnotation = SpeciesAnnotation(coordinate: coordinate, title: species.name, sub: Categories(rawValue: species.category.name)!, species: species) // 3
-mapView.addAnnotation(speciesAnnotation) // 4
-}
-}
-}
+	func populateMap() {
+	mapView.removeAnnotations(mapView.annotations) // 1
+	if let results = SpeciesModel.allObjects() { // 2
+	self.results = results
+	for result in results {
+	let species = result as! SpeciesModel
+	let coordinate = CLLocationCoordinate2DMake(species.latitude, species.longitude)
+	let speciesAnnotation = SpeciesAnnotation(coordinate: coordinate, title: species.name, sub: Categories(rawValue: species.category.name)!, species: species) // 3
+	mapView.addAnnotation(speciesAnnotation) // 4
+	}
+	}
+	}
 
 对应的标号注释如下：
 
@@ -471,25 +477,25 @@ populateMap()
 
 接着，我们仅需要修改标记点的名称和类别即可。找到 unwindFromAddNewEntry() ，然后使用下列代码替换掉该方法：
 
-@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
-let addNewEntryController = segue.sourceViewController as! AddNewEntryController
-let addedSpecies = addNewEntryController.species
-let addedSpeciesCoordinate = CLLocationCoordinate2DMake(addedSpecies.latitude, addedSpecies.longitude)
-if lastAnnotation != nil {
-mapView.removeAnnotation(lastAnnotation)
-} else {
-for annotation in mapView.annotations {
-let currentAnnotation = annotation as! SpeciesAnnotation
-if currentAnnotation.coordinate.latitude == addedSpeciesCoordinate.latitude && currentAnnotation.coordinate.longitude == addedSpeciesCoordinate.longitude {
-mapView.removeAnnotation(currentAnnotation)
-break
-}
-}
-}
-let annotation = SpeciesAnnotation(coordinate: addedSpeciesCoordinate, title: addedSpecies.name, sub: Categories(rawValue: addedSpecies.category.name)!, species: addedSpecies)
-mapView.addAnnotation(annotation)
-lastAnnotation = nil
-}
+	@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
+	let addNewEntryController = segue.sourceViewController as! AddNewEntryController
+	let addedSpecies = addNewEntryController.species
+	let addedSpeciesCoordinate = CLLocationCoordinate2DMake(addedSpecies.latitude, addedSpecies.longitude)
+	if lastAnnotation != nil {
+	mapView.removeAnnotation(lastAnnotation)
+	} else {
+	for annotation in mapView.annotations {
+	let currentAnnotation = annotation as! SpeciesAnnotation
+	if currentAnnotation.coordinate.latitude == addedSpeciesCoordinate.latitude && currentAnnotation.coordinate.longitude == addedSpeciesCoordinate.longitude {
+	mapView.removeAnnotation(currentAnnotation)
+	break
+	}
+	}
+	}
+	let annotation = SpeciesAnnotation(coordinate: addedSpeciesCoordinate, title: addedSpecies.name, sub: Categories(rawValue: addedSpecies.category.name)!, species: addedSpecies)
+	mapView.addAnnotation(annotation)
+	lastAnnotation = nil
+	}
 
 这个方法将会在我们从 AddNewEntryController 返回的时候被调用，然后这时候就会有一个新的物种被添加到地图上方。当我们添加了一个新的物种到地图上，那么就会产生一个标记图标。然后我们想要根据物种的类别来改变其图标的样式，在这个代码里面，我们就是简单的移除了最后添加的这个标记点，然后将其替换为有名称和类别的标记点。
 
@@ -506,29 +512,29 @@ lastAnnotation = nil
 打开 LogViewController.swift ，然后将 species 属性替换成以下形式（同样地，要导入 Realm ）：
 1
 	
-var species: RLMResults!
-
+	var species: RLMResults!
+	
 在上面的代码中，我们用 RLMResults 替换掉了之前的一个空数组占位符，这个操作和我们在 MapViewController 所做的一样。
 
 接下来，找到 viewDidLoad() 方法，然后在 super.viewDidLoad() 语句下添加以下代码：
 1
 	
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
 
 这行代码会将数据库中的所有物种全部输出到 species 当中，并且按照名字进行排列。
 
 接下来，用以下代码替换 tableView(_:cellForRowAtIndexPath:) ：
 
 	
-override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-var cell = tableView.dequeueReusableCellWithIdentifier("LogCell") as! LogCell
-var speciesModel: SpeciesModel!
-speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-cell.titleLabel.text = speciesModel.name
-cell.subtitleLabel.text = speciesModel.category.name
-cell.iconImageView.image = getImageOfSpecies(speciesModel.category.name)
-return cell
-}
+	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+	var cell = tableView.dequeueReusableCellWithIdentifier("LogCell") as! LogCell
+	var speciesModel: SpeciesModel!
+	speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+	cell.titleLabel.text = speciesModel.name
+	cell.subtitleLabel.text = speciesModel.category.name
+	cell.iconImageView.image = getImageOfSpecies(speciesModel.category.name)
+	return cell
+	}
 
 这个方法将会展示物种的名字和物种的类别，以及其图标。
 
@@ -546,15 +552,15 @@ return cell
 打开 LogViewController.swift 文件，然后添加以下方法：
 
 	
-func deleteRowAtIndexPath(indexPath: NSIndexPath) {
-let realm = RLMRealm.defaultRealm() // 1
-let objectToDelete = species[UInt(indexPath.row)] as! SpeciesModel // 2
-realm.beginWriteTransaction() // 3
-realm.deleteObject(objectToDelete) // 4
-realm.commitWriteTransaction() // 5
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true) // 6
-tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
-}
+	func deleteRowAtIndexPath(indexPath: NSIndexPath) {
+	let realm = RLMRealm.defaultRealm() // 1
+	let objectToDelete = species[UInt(indexPath.row)] as! SpeciesModel // 2
+	realm.beginWriteTransaction() // 3
+	realm.deleteObject(objectToDelete) // 4
+	realm.commitWriteTransaction() // 5
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true) // 6
+	tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
+	}
 
 对应的标号注释如下：
 
@@ -575,7 +581,7 @@ tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
 接着，找到 tableView(_:commitEditingStyle: forRowAtIndexPath:) 方法，然后将以下代码加入到 if 语句块当中：
 1
 	
-deleteRowAtIndexPath(indexPath)
+	deleteRowAtIndexPath(indexPath)
 
 当表视图执行一个单例删除操作时，会调用这个协议代理，我们所需要做的就是调用我们刚刚创建的那个方法。
 
@@ -593,28 +599,28 @@ deleteRowAtIndexPath(indexPath)
 打开 LogViewController.swift ，然后将 searchResults 属性替换为以下代码：
 1
 	
-var searchResults: RLMResults!
+	var searchResults: RLMResults!
 
 因为我们仍然是执行 “ 检索 ” 操作，因此我们的数据是存放在 RLMResults 当中的。
 
 向类中添加以下方法：
 
 	
-func filterResultsWithSearchString(searchString: String) {
-let predicate = "name BEGINSWITH [c]'\(searchString)'" // 1
-let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
-searchResults = SpeciesModel.objectsWhere(predicate) // 2
-switch scopeIndex {
-case 0:
-searchResults = searchResults.sortedResultsUsingProperty("name", ascending: true) // 3
-case 1:
-searchResults = searchResults.sortedResultsUsingProperty("distance", ascending: true) // 4
-case 2:
-searchResults = searchResults.sortedResultsUsingProperty("created", ascending: true) 5
-default:
-return
-}
-}
+	func filterResultsWithSearchString(searchString: String) {
+	let predicate = "name BEGINSWITH [c]'\(searchString)'" // 1
+	let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
+	searchResults = SpeciesModel.objectsWhere(predicate) // 2
+	switch scopeIndex {
+	case 0:
+	searchResults = searchResults.sortedResultsUsingProperty("name", ascending: true) // 3
+	case 1:
+	searchResults = searchResults.sortedResultsUsingProperty("distance", ascending: true) // 4
+	case 2:
+	searchResults = searchResults.sortedResultsUsingProperty("created", ascending: true) 5
+	default:
+	return
+	}
+	}
 
 对应的标号注释如下：
 
@@ -631,16 +637,16 @@ return
 因为搜索会导致表视图调用同样的数据源方法，因此我们需要对 tableView(_:cellForRowAtIndexPath:) 进行小小的修改，以便让其能够处理主要的表视图记录以及查询结果。在这个方法里面，找到以下代码：
 1
 	
-speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+	speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
 
 将其替换为以下代码：
 
 	
-if searchController.active {
-speciesModel = searchResults[UInt(indexPath.row)] as! SpeciesModel
-}else {
-speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-}
+	if searchController.active {
+	speciesModel = searchResults[UInt(indexPath.row)] as! SpeciesModel
+	}else {
+	speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
+	}
 
 上面这行代码将会检查 searchController 是否激活。如果激活的话，那么就接收并显示搜索结果的数据；如果不是的话，那么就接收并显示 species 全部数据。
 
@@ -649,19 +655,19 @@ speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
 将空 scopeChanged 方法用以下代码来替换：
 
 	
-@IBAction func scopeChanged(sender: UISegmentedControl) {
-switch sender.selectedSegmentIndex {
-case 0:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
-case 1:
-break
-case 2:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("created", ascending: true)
-default:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
-}
-tableView.reloadData()
-}
+	@IBAction func scopeChanged(sender: UISegmentedControl) {
+	switch sender.selectedSegmentIndex {
+	case 0:
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
+	case 1:
+	break
+	case 2:
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("created", ascending: true)
+	default:
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
+	}
+	tableView.reloadData()
+	}
 
 在上面的代码中，我们将会检查范围栏上的按钮是哪一个被按下（ A-Z ，距离，以及添加日期），然后调用 sortedResultsUsingProperty 来进行排序。通常情况下，这个列表将按照名字来排序。
 
@@ -685,38 +691,38 @@ tableView.reloadData()
 打开 AddNewEntryViewController.swift 文件，然后向类中添加以下方法：
 
 	
-func fillTextFields() {
-nameTextField.text = species.name
-categoryTextField.text = species.category.name
-descriptionTextView.text = species.speciesDescription
-selectedCategory = species.category
-}
+	func fillTextFields() {
+	nameTextField.text = species.name
+	categoryTextField.text = species.category.name
+	descriptionTextView.text = species.speciesDescription
+	selectedCategory = species.category
+	}
 
 这个方法将会使用 species 中的数据来填充用户界面的文本框。记住， AddNewEntryViewController 只有在添加新物种时才会保持文本框为空的状态。
 
 接下来，向 viewDidLoad() 方法的末尾添加以下语句：
 
 	
-if species == nil {
-title = " 添加新的物种 "
-}else {
-title = " 编辑 \(species.name)"
-fillTextFields()
-}
+	if species == nil {
+	title = " 添加新的物种 "
+	}else {
+	title = " 编辑 \(species.name)"
+	fillTextFields()
+	}
 
 上面这些代码段设置了导航栏的标题，以通知用户当前其是在添加新的物种还是在更新一个已存在的物种信息。如果 species 不为空，那么就调用 fillTextFields 方法来填充文本框。
 
 现在我们需要一个更新功能，以便响应用户的更改操作。向类中添加以下方法：
 
 	
-func updateSpecies() {
-let realm = RLMRealm.defaultRealm()
-realm.beginWriteTransaction()
-species.name = nameTextField.text
-species.category = selectedCategory
-species.speciesDescription = descriptionTextView.text
-realm.commitWriteTransaction()
-}
+	func updateSpecies() {
+	let realm = RLMRealm.defaultRealm()
+	realm.beginWriteTransaction()
+	species.name = nameTextField.text
+	species.category = selectedCategory
+	species.speciesDescription = descriptionTextView.text
+	realm.commitWriteTransaction()
+	}
 
 通常情况下，这种方法一般都先获得默认的 Realm 数据库，然后将数据写入的操作放在 beginWriteTransaction() 和 commitWriteTransaction() 方法之间。在这个事务中，我们只是简单的更新了这三个数据域的值。
 
@@ -725,30 +731,30 @@ realm.commitWriteTransaction()
 现在我们只需要在用户单击保存按钮的时候调用上述代码即可。找到 shouldPerformSegueWithIdentifier(_:sender:) ，然后在 return true 语句之前，第一个 if 代码块之内添加以下代码：
 
 	
-else {
-updateSpecies()
-}
+	else {
+	updateSpecies()
+	}
 
 当恰当的时候，就会调用这个方法来对数据进行更新。
 
 现在打开 LogViewController.swift ，然后将 prepareForSegue(_:sender:) 用以下代码替换：
 
 	
-override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-if segue.identifier == "Edit" {
-let controller = segue.destinationViewController as! AddNewEntryController
-var selectedSpecies: SpeciesModel!
-let indexPath = tableView.indexPathForSelectedRow()
-if searchController.active {
-let searchResultsController = searchController.searchResultsController as! UITableViewController
-let indexPathSearch = searchResultsController.tableView.indexPathForSelectedRow()
-selectedSpecies = searchResults[UInt(indexPathSearch!.row)] as! SpeciesModel
-}else{
-selectedSpecies = species[UInt(indexPath!.row)] as! SpeciesModel
-}
-controller.species = selectedSpecies
-}
-}
+	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+	if segue.identifier == "Edit" {
+	let controller = segue.destinationViewController as! AddNewEntryController
+	var selectedSpecies: SpeciesModel!
+	let indexPath = tableView.indexPathForSelectedRow()
+	if searchController.active {
+	let searchResultsController = searchController.searchResultsController as! UITableViewController
+	let indexPathSearch = searchResultsController.tableView.indexPathForSelectedRow()
+	selectedSpecies = searchResults[UInt(indexPathSearch!.row)] as! SpeciesModel
+	}else{
+	selectedSpecies = species[UInt(indexPath!.row)] as! SpeciesModel
+	}
+	controller.species = selectedSpecies
+	}
+	}
 
 我们在这里将选中的物种信息传递给了 AddNewEntryController 。上面的 if/else 代码是因为要根据用户是否是在查看搜索结果来决定的。
 
@@ -768,17 +774,17 @@ controller.species = selectedSpecies
 打开 Species.swift 文件，然后向类中添加一个新的属性。
 1
 	
-dynamic var distance: Double = 0
+	dynamic var distance: Double = 0
 
 这个属性为保存用户位置和该记录点的距离信息。然而，没有必要去存储 distance 信息，因为用户位置会随时发生改变。我们想让距离成为这个模型的一部分，但是我们并不想 Realm 来存储这个数据。
 
 Realm 支持一种被称为忽视属性 (ignored properties) 的东西，然后向类中添加以下代码：
 
 	
-func ignoredProperties() -> NSArray {
-let propertiesToIgnore = [distance]
-return propertiesToIgnore
-}
+	func ignoredProperties() -> NSArray {
+	let propertiesToIgnore = [distance]
+	return propertiesToIgnore
+	}
 
 要实现忽视属性，只需要声明一个命名为 ignoredProperties() 的方法，然后返回一个属性数组，里面保存有您不想进行存储的属性。
 
@@ -787,51 +793,51 @@ return propertiesToIgnore
 打开 MapViewController.swift ，添加以下方法：
 
 	
-func updateLocationDistance() {
-let realm = RLMRealm.defaultRealm()
-if results != nil {
-for result in results! {
-let currentSpecies = result as! SpeciesModel
-let currentLocation = CLLocation(latitude: currentSpecies.latitude, longitude: currentSpecies.longitude)
-let distance = currentLocation.distanceFromLocation(mapView.userLocation.location)
-realm.beginWriteTransaction()
-currentSpecies.distance = Double(distance)
-realm.commitWriteTransaction()
-}
-}
-}
+	func updateLocationDistance() {
+	let realm = RLMRealm.defaultRealm()
+	if results != nil {
+	for result in results! {
+	let currentSpecies = result as! SpeciesModel
+	let currentLocation = CLLocation(latitude: currentSpecies.latitude, longitude: currentSpecies.longitude)
+	let distance = currentLocation.distanceFromLocation(mapView.userLocation.location)
+	realm.beginWriteTransaction()
+	currentSpecies.distance = Double(distance)
+	realm.commitWriteTransaction()
+	}
+	}
+	}
 
 对于每个物种，我们计算了这个标记点与用户当前位置之间的距离。即时我们没有存储这个距离信息，我们仍然需要将其存储在记录当中，然后将其在写操作事务中保存这个变化消息。
 
 接下来，在 prepareForSegue(_:sender:) 方法底部添加以下代码：
 
 	
-else if segue.identifier == "Log" {
-updateLocationDistance()
-}
+	else if segue.identifier == "Log" {
+	updateLocationDistance()
+	}
 
 现在，在用户打开 “ 记录界面 ” 之前，我们需要调用这个方法来计算距离。
 
 接下来，打开 LogViewController.swift ，然后找到 tableView(_:cellForRowAtIndexPath:) 方法。然后在这个方法底部附近， return 语句之前添加以下代码：
 
 	
-if speciesModel.distance < 0 {
-cell.distanceLabel.text = "N/A"
-}else {
-cell.distanceLabel.text = String(format: "%.2fkm", speciesModel.distance / 1000)
-}
+	if speciesModel.distance < 0 {
+	cell.distanceLabel.text = "N/A"
+	}else {
+	cell.distanceLabel.text = String(format: "%.2fkm", speciesModel.distance / 1000)
+	}
 
 最后，找到 scopeChanged() 然后将 case 1 中的 break 替换成以下代码：
 
 	
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("distance", ascending: true)
+	species = SpeciesModel.allObjects().sortedResultsUsingProperty("distance", ascending: true)
 
 编译并运行应用，然后 …… 呃？怎么崩溃掉了？
 
 	
-'RLMException`, reason: 'Column count does not match interface - migration required'
+	'RLMException`, reason: 'Column count does not match interface - migration required'
 
-什么鬼？
+#####什么鬼？
 
 当我们向 Species 模型中添加了一个新的 distance 属性的时候，我们就对架构（ schema ） 进行了变更，但是我们并没有告诉 Realm 如何处理这个新增的数据段。从旧版本的数据库迁移（ migrate ） 到新版本的数据库的操作超出了本教程的范围。这并不是 Realm 独有的问题， Core Data 同样也需要在添加、变更或者删除新的数据段的时候进行迁移操作。
 
@@ -845,7 +851,7 @@ species = SpeciesModel.allObjects().sortedResultsUsingProperty("distance", ascen
 
 您或许需要模拟一个位置以便能够计算当前距离，在模拟器菜单栏上，选择 Debug\Location ，然后选择列表中的一个位置模拟。
 
-接下来该何去何从？
+#####接下来该何去何从？
 
 您可以点击此处下载完整的项目
 

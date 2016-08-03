@@ -18,6 +18,12 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 文章题目中虽然有“高级”两个字，其实讲的东西并不高级，只是因为上一篇文章中东西太多了，把两个较复杂的知识点挪到这篇文章中。
 
+
+
+<!--more-->
+
+
+
 文章中如有疏漏或错误，还请各位及时提出，谢谢！
 
 NSFetchedResultsController
@@ -58,27 +64,28 @@ Employee结构
 
 下面例子是比较常用的FRC初始化方式，初始化时指定的MOC，还用之前讲过的MOC初始化代码，UITableView初始化代码这里也省略了，主要突出FRC的初始化。
 	
-// 创建请求对象，并指明操作Employee表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置排序规则，指明根据height字段升序排序
-NSSortDescriptor *heightSort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
-request.sortDescriptors = @[heightSort];
-// 创建NSFetchedResultsController控制器实例，并绑定MOC
-NSError *error = nil;
-fetchedResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+	
+	// 创建请求对象，并指明操作Employee表
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 设置排序规则，指明根据height字段升序排序
+	NSSortDescriptor *heightSort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
+	request.sortDescriptors = @[heightSort];
+	// 创建NSFetchedResultsController控制器实例，并绑定MOC
+	NSError *error = nil;
+	fetchedResultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
                                                      managedObjectContext:context
                                             sectionNameKeyPath:@"sectionName"
                                                    cacheName:nil];
-// 设置代理，并遵守协议
-fetchedResultController.delegate = self;
-// 执行获取请求，执行后FRC会从持久化存储区加载数据，其他地方可以通过FRC获取数据
-[fetchedResultController performFetch:&error];
-// 错误处理
-if (error) {
-    NSLog(@"NSFetchedResultsController init error : %@", error);
-}
-// 刷新UI
-[tableView reloadData];
+	// 设置代理，并遵守协议
+	fetchedResultController.delegate = self;
+	// 执行获取请求，执行后FRC会从持久化存储区加载数据，其他地方可以通过FRC获取数据
+	[fetchedResultController performFetch:&error];
+	// 错误处理
+	if (error) {
+	    NSLog(@"NSFetchedResultsController init error : %@", error);
+	}
+	// 刷新UI
+	[tableView reloadData];
 
 在上面初始化FRC时，传入的sectionNameKeyPath:参数，是指明当前托管对象的哪个属性当做section的title，在本文中就是Employee表的sectionName字段为section的title。从NSFetchedResultsSectionInfo协议的indexTitle属性获取这个值。
 
@@ -98,114 +105,114 @@ FRC中包含UITableView执行过程中需要的相关数据，可以通过FRC的
 
 在这个协议中有如下定义，可以看出这些属性和UITableView的执行流程是紧密相关的。
 
-@protocol NSFetchedResultsSectionInfo
-/* Name of the section */
-@property (nonatomic, readonly) NSString *name;
-/* Title of the section (used when displaying the index) */
-@property (nullable, nonatomic, readonly) NSString *indexTitle;
-/* Number of objects in section */
-@property (nonatomic, readonly) NSUInteger numberOfObjects;
-/* Returns the array of objects in the section. */
-@property (nullable, nonatomic, readonly) NSArray *objects;
-@end // NSFetchedResultsSectionInfo
+	@protocol NSFetchedResultsSectionInfo
+	/* Name of the section */
+	@property (nonatomic, readonly) NSString *name;
+	/* Title of the section (used when displaying the index) */
+	@property (nullable, nonatomic, readonly) NSString *indexTitle;
+	/* Number of objects in section */
+	@property (nonatomic, readonly) NSUInteger numberOfObjects;
+	/* Returns the array of objects in the section. */
+	@property (nullable, nonatomic, readonly) NSArray *objects;
+	@end // NSFetchedResultsSectionInfo
 
 在使用过程中应该将FRC和UITableView相互嵌套，在FRC的回调方法中嵌套UITableView的视图改变逻辑，在UITableView的回调中嵌套数据更新的逻辑。这样可以始终保证数据和UI的同步，在下面的示例代码中将会演示FRC和UITableView的相互嵌套。
 
-Table View Delegate
-
-// 通过FRC的sections数组属性，获取所有section的count值
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return fetchedResultController.sections.count;
-}
-// 通过当前section的下标从sections数组中取出对应的section对象，并从section对象中获取所有对象count
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return fetchedResultController.sections[section].numberOfObjects;
-}
-// FRC根据indexPath获取托管对象，并给cell赋值
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"identifier" forIndexPath:indexPath];
-    cell.textLabel.text = emp.name;
-    return cell;
-}
-// 创建FRC对象时，通过sectionNameKeyPath:传递进去的section title的属性名，在这里获取对应的属性值
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    return fetchedResultController.sections[section].indexTitle;
-}
-// 是否可以编辑
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    return YES;
-}
-// 这里是简单模拟UI删除cell后，本地持久化区数据和UI同步的操作。在调用下面MOC保存上下文方法后，FRC会回调代理方法并更新UI
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // 删除托管对象
-        Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
-        [context deleteObject:emp];
-        // 保存上下文环境，并做错误处理
-        NSError *error = nil;
-        if (![context save:&error]) {
-            NSLog(@"tableView delete cell error : %@", error);
-        }
-    }
-}
+	Table View Delegate
+	
+	// 通过FRC的sections数组属性，获取所有section的count值
+	- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+	    return fetchedResultController.sections.count;
+	}
+	// 通过当前section的下标从sections数组中取出对应的section对象，并从section对象中获取所有对象count
+	- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	    return fetchedResultController.sections[section].numberOfObjects;
+	}
+	// FRC根据indexPath获取托管对象，并给cell赋值
+	- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+	    Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
+	    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"identifier" forIndexPath:indexPath];
+	    cell.textLabel.text = emp.name;
+	    return cell;
+	}
+	// 创建FRC对象时，通过sectionNameKeyPath:传递进去的section title的属性名，在这里获取对应的属性值
+	- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+	    return fetchedResultController.sections[section].indexTitle;
+	}
+	// 是否可以编辑
+	- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+	    return YES;
+	}
+	// 这里是简单模拟UI删除cell后，本地持久化区数据和UI同步的操作。在调用下面MOC保存上下文方法后，FRC会回调代理方法并更新UI
+	- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+	     if (editingStyle == UITableViewCellEditingStyleDelete) {
+	        // 删除托管对象
+	        Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
+	        [context deleteObject:emp];
+	        // 保存上下文环境，并做错误处理
+	        NSError *error = nil;
+	        if (![context save:&error]) {
+	            NSLog(@"tableView delete cell error : %@", error);
+	        }
+	    }
+	}
 
 上面是UITableView的代理方法，代理方法中嵌套了FRC的数据获取代码，这样在刷新视图时就可以保证使用最新的数据。并且在代码中简单实现了删除cell后，通过MOC调用删除操作，使本地持久化数据和UI保持一致。
 
 就像上面cellForRowAtIndexPath:方法中使用的一样，FRC提供了两个方法轻松转换indexPath和NSManagedObject的对象，在实际开发中这两个方法非常实用，这也是FRC和UITableView、UICollectionView深度融合的表现。
 	
-- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
-- (nullable NSIndexPath *)indexPathForObject:(id)object;
+	- (id)objectAtIndexPath:(NSIndexPath *)indexPath;
+	- (nullable NSIndexPath *)indexPathForObject:(id)object;
 
 Fetched Results Controller Delegate
 
 	
-// Cell数据源发生改变会回调此方法，例如添加新的托管对象等
-- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
-    switch (type) {
-        case NSFetchedResultsChangeInsert:
-            [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeDelete:
-            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeMove:
-            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeUpdate: {
-            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-            Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
-            cell.textLabel.text = emp.name;
-        }
-            break;
-    }
-}
-// Section数据源发生改变回调此方法，例如修改section title等。
-- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <nsfetchedresultssectioninfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
-    switch (type) {
-        case NSFetchedResultsChangeInsert:
-            [tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        case NSFetchedResultsChangeDelete:
-            [tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
-            break;
-        default:
-            break;
-    }
-}
-// 本地数据源发生改变，将要开始回调FRC代理方法。
-- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
-    [tableView beginUpdates];
-}
-// 本地数据源发生改变，FRC代理方法回调完成。
-- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
-    [tableView endUpdates];
-}
-// 返回section的title，可以在这里对title做进一步处理。这里修改title后，对应section的indexTitle属性会被更新。
-- (nullable NSString *)controller:(NSFetchedResultsController *)controller sectionIndexTitleForSectionName:(NSString *)sectionName {
-    return [NSString stringWithFormat:@"sectionName %@", sectionName];
-}</nsfetchedresultssectioninfo>
+	// Cell数据源发生改变会回调此方法，例如添加新的托管对象等
+	- (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(nullable NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(nullable NSIndexPath *)newIndexPath {
+	    switch (type) {
+	        case NSFetchedResultsChangeInsert:
+	            [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            break;
+	        case NSFetchedResultsChangeDelete:
+	            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            break;
+	        case NSFetchedResultsChangeMove:
+	            [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            [tableView insertRowsAtIndexPaths:@[newIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            break;
+	        case NSFetchedResultsChangeUpdate: {
+	            UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+	            Employee *emp = [fetchedResultController objectAtIndexPath:indexPath];
+	            cell.textLabel.text = emp.name;
+	        }
+	            break;
+	    }
+	}
+	// Section数据源发生改变回调此方法，例如修改section title等。
+	- (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <nsfetchedresultssectioninfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type {
+	    switch (type) {
+	        case NSFetchedResultsChangeInsert:
+	            [tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            break;
+	        case NSFetchedResultsChangeDelete:
+	            [tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationAutomatic];
+	            break;
+	        default:
+	            break;
+	    }
+	}
+	// 本地数据源发生改变，将要开始回调FRC代理方法。
+	- (void)controllerWillChangeContent:(NSFetchedResultsController *)controller {
+	    [tableView beginUpdates];
+	}
+	// 本地数据源发生改变，FRC代理方法回调完成。
+	- (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
+	    [tableView endUpdates];
+	}
+	// 返回section的title，可以在这里对title做进一步处理。这里修改title后，对应section的indexTitle属性会被更新。
+	- (nullable NSString *)controller:(NSFetchedResultsController *)controller sectionIndexTitleForSectionName:(NSString *)sectionName {
+	    return [NSString stringWithFormat:@"sectionName %@", sectionName];
+	}</nsfetchedresultssectioninfo>
 
 上面就是当本地持久化数据发生改变后，被回调的FRC代理方法的实现，可以在对应的实现中完成自己的代码逻辑。
 
@@ -213,17 +220,17 @@ Fetched Results Controller Delegate
 
 目前为止已经实现了数据和UI的双向同步，即UI发生改变后本地存储发生改变，本地存储发生改变后UI也随之改变。可以通过下面添加数据的代码来测试一下，NSFetchedResultsController就讲到这里了。
 
-- (void)addMoreData {
-    Employee *employee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-    employee.name = [NSString stringWithFormat:@"lxz 15"];
-    employee.height = @(15);
-    employee.brithday = [NSDate date];
-    employee.sectionName = [NSString stringWithFormat:@"3"];
-    NSError *error = nil;
-    if (![context save:&error]) {
-        NSLog(@"MOC save error : %@", error);
-    }
-}
+	- (void)addMoreData {
+	    Employee *employee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+	    employee.name = [NSString stringWithFormat:@"lxz 15"];
+	    employee.height = @(15);
+	    employee.brithday = [NSDate date];
+	    employee.sectionName = [NSString stringWithFormat:@"3"];
+	    NSError *error = nil;
+	    if (![context save:&error]) {
+	        NSLog(@"MOC save error : %@", error);
+	    }
+	}
 
 版本迁移
 
@@ -237,7 +244,7 @@ CoreData版本迁移的方式有很多，一般都是先在Xcode中，原有模�
 
 在开发测试过程中，可以直接将原有程序卸载就可以解决这个问题，但是本地之前存储的数据也会消失。如果是线上程序，就涉及到版本迁移的问题，否则会导致崩溃，并提示如下错误：
 
-CoreData: error: Illegal attempt to save to a file that was never opened. "This NSPersistentStoreCoordinator has no persistent stores (unknown).  It cannot perform a save operation.". No last error recorded.
+	CoreData: error: Illegal attempt to save to a file that was never opened. "This NSPersistentStoreCoordinator has no persistent stores (unknown).  It cannot perform a save operation.". No last error recorded.
 
 然而在需求不断变化的过程中，后续版本肯定会对原有的模型文件进行修改，这时就需要用到版本迁移的技术，下面开始讲版本迁移的方案。
 
@@ -274,7 +281,7 @@ CoreData: error: Illegal attempt to save to a file that was never opened. "This 
 
 此时还应该选中模型文件，设置当前模型文件的版本。这里选择将最新版本设置为刚才新建的1.1.0版本，模型文件设置工作完成。
 
-Show The File Inspector -> Model Version -> Current 设置为最新版本。
+	Show The File Inspector -> Model Version -> Current 设置为最新版本。
 
 {% img /images/4007.png Caption %} 
 
@@ -288,17 +295,17 @@ Show The File Inspector -> Model Version -> Current 设置为最新版本。
 
 字典中设置的key：
 
-    NSMigratePersistentStoresAutomaticallyOption设置为YES，CoreData会试着把低版本的持久化存储区迁移到最新版本的模型文件。
-
-    NSInferMappingModelAutomaticallyOption设置为YES，CoreData会试着以最为合理地方式自动推断出源模型文件的实体中，某个属性到底对应于目标模型文件实体中的哪一个属性。
+	    NSMigratePersistentStoresAutomaticallyOption设置为YES，CoreData会试着把低版本的持久化存储区迁移到最新版本的模型文件。
+	
+	    NSInferMappingModelAutomaticallyOption设置为YES，CoreData会试着以最为合理地方式自动推断出源模型文件的实体中，某个属性到底对应于目标模型文件实体中的哪一个属性。
 
 版本迁移的设置是在创建MOC时给PSC设置的，为了使代码更直观，下面只给出发生变化部分的代码，其他MOC的初始化代码都不变。
 
-// 设置版本迁移方案
-NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
-                                NSInferMappingModelAutomaticallyOption : @YES};
-// 创建持久化存储协调器，并将迁移方案的字典当做参数传入
-[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:options error:nil];
+	// 设置版本迁移方案
+	NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
+	                                NSInferMappingModelAutomaticallyOption : @YES};
+	// 创建持久化存储协调器，并将迁移方案的字典当做参数传入
+	[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:options error:nil];
 
 修改实体名
 
@@ -310,11 +317,11 @@ NSDictionary *options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
 
 修改后再使用实体时，应该将实体名设为最新的实体名，这里也就是Employee2，而且数据库中的数据也会迁移到Employee2表中。
 
-Employee2 *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee2" inManagedObjectContext:context];
-emp.name = @"lxz";
-emp.brithday = [NSDate date];
-emp.height = @1.9;
-[context save:nil];
+	Employee2 *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee2" inManagedObjectContext:context];
+	emp.name = @"lxz";
+	emp.brithday = [NSDate date];
+	emp.height = @1.9;
+	[context save:nil];
 
 Mapping Model 迁移方案
 
@@ -364,7 +371,7 @@ Filter Predicate
 对于上面提到的问题，在Mapping Model文件中选中实体，可以看到Custom Policy这个选项，选项对应的是NSEntityMigrationPolicy的子类，可以创建并设置一个子类，并重写这个类的方法来控制迁移过程。
 
 	
-- (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance entityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error;
+	- (BOOL)createDestinationInstancesForSourceInstance:(NSManagedObject *)sInstance entityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError **)error;
 
 版本迁移总结
 

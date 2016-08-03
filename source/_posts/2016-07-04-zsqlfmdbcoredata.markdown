@@ -24,31 +24,37 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ###3. FMDB
 
+
+
+<!--more-->
+
+
+
 ---
 
 ##SQLite
 
 SQLite是目前主流的嵌入式关系型数据库，其最主要的特点就是轻量级、跨平台，当前很多嵌入式操作系统都将其作为数据库首选。虽然SQLite是一款轻型数据库，但是其功能也绝不亚于很多大型关系数据库。学习数据库就要学习其相关的定义、操作、查询语言，也就是大家日常说得SQL语句。和其他数据库相比，SQLite中的SQL语法并没有太大的差别，因此这里对于SQL语句的内容不会过多赘述，大家可以参考SQLite中其他SQL相关的内容，这里还是重点讲解iOS中如何使用SQLite构建应用程序。先看一下SQLite数据库的几个特点：
 
-1.基于C语言开发的轻型数据库
+1. 基于C语言开发的轻型数据库
 
-2.在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libqlite3框架基于C语言编写）
+2. 在iOS中需要使用C语言语法进行数据库操作、访问（无法使用ObjC直接访问，因为libqlite3框架基于C语言编写）
 
-3.SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）
+3. SQLite中采用的是动态数据类型，即使创建时定义了一种类型，在实际操作时也可以存储其他类型，但是推荐建库时使用合适的类型（特别是应用需要考虑跨平台的情况时）
 
-4.建立连接后通常不需要关闭连接（尽管可以手动关闭）
+4. 建立连接后通常不需要关闭连接（尽管可以手动关闭）
 
 要使用SQLite很简单，如果在Mac OSX上使用可以考虑到SQLite官方网站下载命令行工具，也可以使用类似于SQLiteManager、Navicat for SQLite等工具。为了方便大家开发调试，建议在开发环境中安装上述工具。
 
 在iOS中操作SQLite数据库可以分为以下几步（注意先在项目中导入libsqlite3框架）：
 
-1.打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。
+1. 打开数据库，利用sqlite3_open()打开数据库会指定一个数据库文件保存路径，如果文件存在则直接打开，否则创建并打开。打开数据库会得到一个sqlite3类型的对象，后面需要借助这个对象进行其他操作。
 
-2.执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。
+2. 执行SQL语句，执行SQL语句又包括有返回值的语句和无返回值语句。
 
-3.对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；
+3. 对于无返回值的语句（如增加、删除、修改等）直接通过sqlite3_exec()函数执行；
 
-4.对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。
+4. 对于有返回值的语句则首先通过sqlite3_prepare_v2()进行sql语句评估（语法检测），然后通过sqlite3_step()依次取出查询结果的每一行数据，对于每行数据都可以通过对应的sqlite3_column_类型()方法获得对应列的数据，如此反复循环直到遍历完成。当然，最后需要释放句柄。
 
 在整个操作过程中无需管理数据库连接，对于嵌入式SQLite操作是持久连接（尽管可以通过sqlite3_close()关闭），不需要开发人员自己释放连接。纵观整个操作过程，其实与其他平台的开发没有明显的区别，较为麻烦的就是数据读取，在iOS平台中使用C进行数据读取采用了游标的形式，每次只能读取一行数据，较为麻烦。因此实际开发中不妨对这些操作进行封装：
 
@@ -1109,39 +1115,39 @@ b.有返回结果
 创建FMDatabaseQueue的方法是类似的，调用databaseQueueWithPath:方法即可。注意这里不需要调用打开操作。
 
 	
--(void)openDb:(NSString *)dbname{
-    //取得数据库保存路径，通常保存沙盒Documents目录
-    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
-    NSLog(@"%@",directory);
-    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
-    //创建FMDatabaseQueue对象
-    self.database=[FMDatabaseQueue databaseQueueWithPath:filePath];
-}
+	-(void)openDb:(NSString *)dbname{
+	    //取得数据库保存路径，通常保存沙盒Documents目录
+	    NSString *directory=[NSSearchPathForDirectoriesInDomains(NSDocumentationDirectory, NSUserDomainMask, YES) firstObject];
+	    NSLog(@"%@",directory);
+	    NSString *filePath=[directory stringByAppendingPathComponent:dbname];
+	    //创建FMDatabaseQueue对象
+	    self.database=[FMDatabaseQueue databaseQueueWithPath:filePath];
+	}
 
 然后所有的增删改查操作调用FMDatabaseQueue的inDatabase:方法在block中执行操作sql语句即可。
 
 	
--(void)executeNonQuery:(NSString *)sql{
-    //执行更新sql语句，用于插入、修改、删除
-    [self.database inDatabase:^(FMDatabase *db) {
-        [db executeQuery:sql];
-    }];
-}
--(NSArray *)executeQuery:(NSString *)sql{
-    NSMutableArray *array=[NSMutableArray array];
-    [self.database inDatabase:^(FMDatabase *db) {
-        //执行查询sql语句
-        FMResultSet *result= [db executeQuery:sql];
-        while (result.next) {
-            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
-            for (int i=0; i<result.columnCount; ++i) {
-                dic[[result columnNameForIndex:i]]=[result stringForColumnIndex:i];
-            }
-            [array addObject:dic];
-        }
-    }];
-    return array;
-}
+	-(void)executeNonQuery:(NSString *)sql{
+	    //执行更新sql语句，用于插入、修改、删除
+	    [self.database inDatabase:^(FMDatabase *db) {
+	        [db executeQuery:sql];
+	    }];
+	}
+	-(NSArray *)executeQuery:(NSString *)sql{
+	    NSMutableArray *array=[NSMutableArray array];
+	    [self.database inDatabase:^(FMDatabase *db) {
+	        //执行查询sql语句
+	        FMResultSet *result= [db executeQuery:sql];
+	        while (result.next) {
+	            NSMutableDictionary *dic=[NSMutableDictionary dictionary];
+	            for (int i=0; i<result.columnCount; ++i) {
+	                dic[[result columnNameForIndex:i]]=[result stringForColumnIndex:i];
+	            }
+	            [array addObject:dic];
+	        }
+	    }];
+	    return array;
+	}
 
 之所以将事务放到FMDB中去说并不是因为只有FMDB才支持事务，而是因为FMDB将其封装成了几个方法来调用，不用自己写对应的sql而已。其实在在使用libsqlite3操作数据库时也是原生支持事务的（因为这里的事务是基于数据库的，FMDB还是使用的SQLite数据库），只要在执行sql语句前加上“begin transaction;”执行完之后执行“commit transaction;”或者“rollback transaction;”进行提交或回滚即可。另外在Core Data中大家也可以发现，所有的增、删、改操作之后必须调用上下文的保存方法，其实本身就提供了事务的支持，只要不调用保存方法，之前所有的操作是不会提交的。在FMDB中FMDatabase有beginTransaction、commit、rollback三个方法进行开启事务、提交事务和回滚事务。
 

@@ -16,6 +16,12 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 在使用CoreData的过程中，我也是一边学习一边实践。在学习的过程中，一些写的质量比较高的博客对我的帮助也很大，例如objc.io等博客，在这里就不一一列举出来了，非常感谢这些作者。
 
+
+
+<!--more-->
+
+
+
 先不说项目中用不用得到，其实很多人都是不了解CoreData的，但是经过我的学习发现CoreData还是挺不错的。所以正如这系列文章的名字一样-认识CoreData，打算写这系列文章来认识一下CoreData。
 
 这系列博客将从简单到复杂的来讲一下CoreData，其中除了基础使用还会包括多线程、批量数据处理等内容，这些很多都是我公司项目开发过程中接触到的，我们也设想了一些极端的情况，解决方案都会体现在这系列博客中。
@@ -30,15 +36,15 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 在CoreData中有一些常用的类，称呼可能各不相同。所以这里先约定一些关键字，以便理解后面的一些内容，这些约定很多都是出现在苹果的官方文档中的。
 
-NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
-
-NSManagedObjectContext(Managed Object Context)，缩写为MOC。
-
-NSManagedObjectModel(Managed Object Model)，缩写为MOM。
-
-NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
-
-后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
+	NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
+	
+	NSManagedObjectContext(Managed Object Context)，缩写为MOC。
+	
+	NSManagedObjectModel(Managed Object Model)，缩写为MOM。
+	
+	NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
+	
+	后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
 
 什么是CoreData？
 
@@ -78,27 +84,27 @@ CoreData简单创建流程
 
 模型文件操作
 
-1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
-
-1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
-
-1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
-
-1.4 创建获取请求模板、设置配置模板等。
-
-1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
+	1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
+	
+	1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
+	
+	1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
+	
+	1.4 创建获取请求模板、设置配置模板等。
+	
+	1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
 
 实例化上下文对象
 
-2.1 创建托管对象上下文(NSManagedObjectContext)
-
-2.2 创建托管对象模型(NSManagedObjectModel)
-
-2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
-
-2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
-
-2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
+	2.1 创建托管对象上下文(NSManagedObjectContext)
+	
+	2.2 创建托管对象模型(NSManagedObjectModel)
+	
+	2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
+	
+	2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
+	
+	2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
 
 CoreData结构
 
@@ -242,18 +248,18 @@ CoreData本质上是对SQLite的一个封装，在内部将对象的持久化转
 
 选择Arguments，在下面的ArgumentsPassed On Launch中添加下面两个选项。
 
-(1)-com.apple.CoreData.SQLDebug
+	(1)-com.apple.CoreData.SQLDebug
+	
+	(2)1
 
-(2)1
-
-终端调试命令
-
-如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
-
-.tables 查看当前数据库文件中所有的表名
-
-select *from tableName 执行查询的SQL语句
-
-{% img /images/1014.png Caption %} 
-
-终端调试命令
+		终端调试命令
+		
+		如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
+		
+		.tables 查看当前数据库文件中所有的表名
+		
+		select *from tableName 执行查询的SQL语句
+		
+		{% img /images/1014.png Caption %} 
+		
+		终端调试命令

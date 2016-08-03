@@ -20,6 +20,12 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 NSPredicate
 
+
+
+<!--more-->
+
+
+
 概述
 
 在iOS开发过程中，很多需求都需要用到过滤条件。例如过滤一个集合对象中存储的对象，可以通过Foundation框架下的NSPredicate类来执行这个操作。
@@ -31,7 +37,7 @@ CoreData中可以通过设置NSFetchRequest类的predicate属性，来设置一�
 NSPredicate更加偏向于自然语言，不像SQLite一样有很多固定的语法，看起来也更加清晰易懂。例如下面需要查找条件为年龄30岁以上，并且包括30岁的条件。
 1
 	
-[NSPredicate predicateWithFormat:@"age >= 30"]
+	[NSPredicate predicateWithFormat:@"age >= 30"]
 
 过滤集合对象
 
@@ -40,24 +46,24 @@ NSPredicate更加偏向于自然语言，不像SQLite一样有很多固定的语
 对不可变数组NSArray执行的过滤，过滤后会返回一个NSArray类型的结果数组，其中存储着符合过滤条件的对象。
 1
 	
-NSArray *results = [array filteredArrayUsingPredicate:predicate]
+	NSArray *results = [array filteredArrayUsingPredicate:predicate]
 
 对可变数组NSMutableArray执行的过滤条件，过滤后会直接改变原集合对象内部存储的对象，删除不符合条件的对象。
 1
 	
-[arrayM filterUsingPredicate:predicate]
+	[arrayM filterUsingPredicate:predicate]
 
 复合过滤条件
 
 谓词不只可以过滤简单条件，还可以过滤复杂条件，设置复合过滤条件。
 1
 	
-[NSPredicate predicateWithFormat:@"(age < 25) AND (firstName = XiaoZhuang)"]
+	[NSPredicate predicateWithFormat:@"(age < 25) AND (firstName = XiaoZhuang)"]
 
 当然也可以通过NSCompoundPredicate对象来设置复合过滤条件，返回结果是一个NSPredicate的子类NSCompoundPredicate对象。
 1
 	
-[[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:@[predicate1, predicate2]]
+	[[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:@[predicate1, predicate2]]
 
 枚举值NSCompoundPredicateType参数，可以设置三种复合条件，枚举值非常直观很容易看懂。
 
@@ -81,29 +87,29 @@ NSPredicate中还可以使用正则表达式，可以通过正则表达式完成
 1
 2
 	
-NSString *mobile = @"^1(3[0-9]|5[0-35-9]|8[025-9])\\d{8}$";
-NSPredicate *regexmobile = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", mobile];
+	NSString *mobile = @"^1(3[0-9]|5[0-35-9]|8[025-9])\\d{8}$";
+	NSPredicate *regexmobile = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", mobile];
 
 模糊查询
 
 NSPredicate支持对数据的模糊查询，例如下面使用通配符来匹配包含lxz的结果，具体CoreData中的使用在下面会讲到。
 1
 	
-[NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"]
+	[NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"]
 
 keyPath
 
 NSPredicate在创建查询条件时，还支持设置被匹配目标的keyPath，也就是设置更深层被匹配的目标。例如下面设置employee的name属性为查找条件，就是用点语法设置的keyPath。
 1
 	
-[NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"]
+	[NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"]
 
 设置查询条件
 
 在之前的文章中，执行下面MOC的fetchRequest方法，一般都需要传入一个NSFetchRequest类型的参数。这个request参数可以做一些设置操作，这样就可以以较优的性能获取指定的数据。
 1
 	
-- (nullable NSArray *)executeFetchRequest:(NSFetchRequest *)request error:(NSError **)error;
+	- (nullable NSArray *)executeFetchRequest:(NSFetchRequest *)request error:(NSError **)error;
 
 NSFetchRequest
 
@@ -129,25 +135,25 @@ MOC执行fetch操作后，获取的结果是以数组的形式存储的，数组
 
 设置获取条件
 	
-// 建立获取数据的请求对象，并指明操作Employee表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置请求条件，通过设置的条件，来过滤出需要的数据
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
-request.predicate = predicate;
-// 设置请求结果排序方式，可以设置一个或一组排序方式，最后将所有的排序方式添加到排序数组中
-NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
-// NSSortDescriptor的操作都是在SQLite层级完成的，不会将对象加载到内存中，所以对内存的消耗是非常小的
-request.sortDescriptors = @[sort];
-// 执行获取请求操作，获取的托管对象将会被存储在一个数组中并返回
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Fetch Data Error : %@", error);
-}
+	// 建立获取数据的请求对象，并指明操作Employee表
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 设置请求条件，通过设置的条件，来过滤出需要的数据
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
+	request.predicate = predicate;
+	// 设置请求结果排序方式，可以设置一个或一组排序方式，最后将所有的排序方式添加到排序数组中
+	NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
+	// NSSortDescriptor的操作都是在SQLite层级完成的，不会将对象加载到内存中，所以对内存的消耗是非常小的
+	request.sortDescriptors = @[sort];
+	// 执行获取请求操作，获取的托管对象将会被存储在一个数组中并返回
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"CoreData Fetch Data Error : %@", error);
+	}
 
 这里设置NSFetchRequest对象的一些请求条件，设置查找Employee表中name为lxz的数据，并且将所有符合的数据用height值升序的方式排列。
 
@@ -159,32 +165,32 @@ if (error) {
 
 插入实体
 	
-// 创建托管对象，并将其关联到指定的MOC上
-Employee *zsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-zsEmployee.name = @"zhangsan";
-zsEmployee.height = @1.9f;
-zsEmployee.brithday = [NSDate date];
-Employee *lsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-lsEmployee.name = @"lisi";
-lsEmployee.height = @1.7f;
-lsEmployee.brithday = [NSDate date];
-Department *iosDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
-iosDepartment.departName = @"iOS";
-iosDepartment.createDate = [NSDate date];
-iosDepartment.employee = zsEmployee;
-Department *androidDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
-androidDepartment.departName = @"android";
-androidDepartment.createDate = [NSDate date];
-androidDepartment.employee = lsEmployee;
-// 执行存储操作
-NSError *error = nil;
-if (context.hasChanges) {
-    [context save:&error];
-}
-// 错误处理
-if (error) {
-    NSLog(@"Association Table Add Data Error : %@", error);
-}
+	// 创建托管对象，并将其关联到指定的MOC上
+	Employee *zsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+	zsEmployee.name = @"zhangsan";
+	zsEmployee.height = @1.9f;
+	zsEmployee.brithday = [NSDate date];
+	Employee *lsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+	lsEmployee.name = @"lisi";
+	lsEmployee.height = @1.7f;
+	lsEmployee.brithday = [NSDate date];
+	Department *iosDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
+	iosDepartment.departName = @"iOS";
+	iosDepartment.createDate = [NSDate date];
+	iosDepartment.employee = zsEmployee;
+	Department *androidDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
+	androidDepartment.departName = @"android";
+	androidDepartment.createDate = [NSDate date];
+	androidDepartment.employee = lsEmployee;
+	// 执行存储操作
+	NSError *error = nil;
+	if (context.hasChanges) {
+	    [context save:&error];
+	}
+	// 错误处理
+	if (error) {
+	    NSLog(@"Association Table Add Data Error : %@", error);
+	}
 
 上面创建了四个实体，并且将Employee都关联到Department上，完成关联操作后通过MOC存储到本地。
 
@@ -193,7 +199,7 @@ if (error) {
 会崩的！创建托管对象时需要指定MOC，在运行时动态的生成set、get方法。但是直接通过init方法初始化的对象，系统是不知道这里是需要系统自身生成set、get方法的，而且系统也不知道应该对应哪个MOC，会导致方法未实现的崩溃。所以就出现了开发中经常出现的错误，如下面崩溃信息：
 1
 	
--[Employee setName:]: unrecognized selector sent to instance 0x7fa665900f60
+	-[Employee setName:]: unrecognized selector sent to instance 0x7fa665900f60
 
 双向关联
 
@@ -234,25 +240,25 @@ Department
 双向关联的关系不只体现在数据库中，在程序运行过程中托管对象的关联属性，也是随着发生变化的。双向关联的双方，一方的关联属性设置关系后，另一方关联属性的关系也会发生变化。用下面的代码打印一下各自的关联属性，结果和上面数据库的变化是一样的。
 1
 	
-NSLog(@"Department : %@, Employee : %@", androidDepartment.employee, lsEmployee.department);
+	NSLog(@"Department : %@, Employee : %@", androidDepartment.employee, lsEmployee.department);
 
 查询操作
 	
-// 创建获取数据的请求对象，并指明操作Department表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Department"];
-// 设置请求条件，设置employee的name为请求条件。NSPredicate的好处在于，可以设置keyPath条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"];
-request.predicate = predicate;
-// 执行查找操作
-NSError *error = nil;
-NSArray *departments = [context executeFetchRequest:request error:&error];
-[departments enumerateObjectsUsingBlock:^(Department * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Department Search Result DepartName : %@, employee name : %@", obj.departName, obj.employee.name);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Department Search Error : %@", error);
-}
+	// 创建获取数据的请求对象，并指明操作Department表
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Department"];
+	// 设置请求条件，设置employee的name为请求条件。NSPredicate的好处在于，可以设置keyPath条件
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"];
+	request.predicate = predicate;
+	// 执行查找操作
+	NSError *error = nil;
+	NSArray *departments = [context executeFetchRequest:request error:&error];
+	[departments enumerateObjectsUsingBlock:^(Department * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Department Search Result DepartName : %@, employee name : %@", obj.departName, obj.employee.name);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"Department Search Error : %@", error);
+	}
 
 查找Department实体，并打印实体内容。就像上面讲的双向关系一样，有关联关系的实体，自己被查找出来后，也会将与之关联的其他实体也查找出来，并且查找出来的实体都是关联着MOC的。
 
@@ -262,25 +268,25 @@ if (error) {
 
 这种需求在实际开发中非常常见，例如TableView中，上拉加载数据，每次加载20条数据，就可以利用分页查询轻松实现。
 	
-// 创建获取数据的请求对象，并指明操作Employee表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置查找起始点，这里是从搜索结果的第六个开始获取
-request.fetchOffset = 6;
-// 设置分页，每次请求获取六个托管对象
-request.fetchLimit = 6;
-// 设置排序规则，这里设置身高升序排序
-NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
-request.sortDescriptors = @[descriptor];
-// 执行查询操作
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Page Search Result Name : %@, height : %@", obj.name, obj.height);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Page Search Data Error : %@", error);
-}
+	// 创建获取数据的请求对象，并指明操作Employee表
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 设置查找起始点，这里是从搜索结果的第六个开始获取
+	request.fetchOffset = 6;
+	// 设置分页，每次请求获取六个托管对象
+	request.fetchLimit = 6;
+	// 设置排序规则，这里设置身高升序排序
+	NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
+	request.sortDescriptors = @[descriptor];
+	// 执行查询操作
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Page Search Result Name : %@, height : %@", obj.name, obj.height);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"Page Search Data Error : %@", error);
+	}
 
 上面是一个按照身高升序排序，分页获取搜索结果的例子。查找Employee表中的实体，将结果按照height字段升序排序，并从结果的第六个开始查找，并且设置获取的数量也是六个。
 
@@ -288,21 +294,21 @@ if (error) {
 
 有时需要获取具有某些相同特征的数据，这样就需要对查询的结果做模糊匹配。在CoreData执行模糊匹配时，可以通过NSPredicate执行这个操作。
 	
-// 创建获取数据的请求对象，设置对Employee表进行操作
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建模糊查询条件。这里设置的带通配符的查询，查询条件是结果包含lxz
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
-request.predicate = predicate;
-// 执行查询操作
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Fuzzy Search Result Name : %@, height : %@", obj.name, obj.height);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Fuzzy Search Data Error : %@", error);
-}
+	// 创建获取数据的请求对象，设置对Employee表进行操作
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 创建模糊查询条件。这里设置的带通配符的查询，查询条件是结果包含lxz
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
+	request.predicate = predicate;
+	// 执行查询操作
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Fuzzy Search Result Name : %@, height : %@", obj.name, obj.height);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"Fuzzy Search Data Error : %@", error);
+	}
 
 上面是使用通配符的方式进行模糊查询，NSPredicate支持多种形式的模糊查询，下面列举一些简单的匹配方式。模糊查询条件对大小写不敏感，所以查询条件大小写均可。
 
@@ -310,46 +316,46 @@ if (error) {
 
 1
 	
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"lxz"];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"lxz"];
 
     以lxz结尾
 
 1
 	
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name ENDSWITH %@", @"lxz"];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name ENDSWITH %@", @"lxz"];
 
     其中包含lxz
 
 1
 	
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name contains %@", @"lxz"];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name contains %@", @"lxz"];
 
     查询条件结果包含lxz
 
 1
 	
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
 
 加载请求模板
 
 在之前的文章中谈到在模型文件中设置请求模板，也就是在.xcdatamodeld文件中，设置Fetch Requests，使用时可以通过对应的NSManagedObjectModel获取设置好的模板。
 
 .... 省略上下文创建步骤 ....
-	
-// 通过MOC获取模型文件对应的托管对象模型
-NSManagedObjectModel *model = context.persistentStoreCoordinator.managedObjectModel;
-// 通过.xcdatamodeld文件中设置的模板名，获取请求对象
-NSFetchRequest *fetchRequest = [model fetchRequestTemplateForName:@"EmployeeFR"];
-// 请求数据，下面的操作和普通请求一样
-NSError *error = nil;
-NSArray *dataList = [context executeFetchRequest:fetchRequest error:&error];
-[dataList enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Employee.count = %ld, Employee.height = %f", dataList.count, [obj.height floatValue]);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Execute Fetch Request Error : %@", error);
-}
+		
+	// 通过MOC获取模型文件对应的托管对象模型
+	NSManagedObjectModel *model = context.persistentStoreCoordinator.managedObjectModel;
+	// 通过.xcdatamodeld文件中设置的模板名，获取请求对象
+	NSFetchRequest *fetchRequest = [model fetchRequestTemplateForName:@"EmployeeFR"];
+	// 请求数据，下面的操作和普通请求一样
+	NSError *error = nil;
+	NSArray *dataList = [context executeFetchRequest:fetchRequest error:&error];
+	[dataList enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Employee.count = %ld, Employee.height = %f", dataList.count, [obj.height floatValue]);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"Execute Fetch Request Error : %@", error);
+	}
 
 获取结果Count值
 
@@ -360,41 +366,41 @@ if (error) {
     方法1，设置resultType
 
 	
-// 设置过滤条件，可以根据需求设置自己的过滤条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < 2"];
-// 创建请求对象，并指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-fetchRequest.predicate = predicate;
-// 这一步是关键。设置返回结果类型为Count，返回结果为NSNumber类型
-fetchRequest.resultType = NSCountResultType;
-// 执行查询操作，返回的结果还是数组，数组中只存在一个对象，就是计算出的Count值
-NSError *error = nil;
-NSArray *dataList = [context executeFetchRequest:fetchRequest error:&error];
-NSInteger count = [dataList.firstObject integerValue];
-NSLog(@"fetch request result Employee.count = %ld", count);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
+	// 设置过滤条件，可以根据需求设置自己的过滤条件
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < 2"];
+	// 创建请求对象，并指明操作Employee表
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	fetchRequest.predicate = predicate;
+	// 这一步是关键。设置返回结果类型为Count，返回结果为NSNumber类型
+	fetchRequest.resultType = NSCountResultType;
+	// 执行查询操作，返回的结果还是数组，数组中只存在一个对象，就是计算出的Count值
+	NSError *error = nil;
+	NSArray *dataList = [context executeFetchRequest:fetchRequest error:&error];
+	NSInteger count = [dataList.firstObject integerValue];
+	NSLog(@"fetch request result Employee.count = %ld", count);
+	// 错误处理
+	if (error) {
+	    NSLog(@"fetch request result error : %@", error);
+	}
 
 方法1中设置NSFetchRequest对象的resultType为NSCountResultType，获取到结果的Count值。这个枚举值在之前的文章中提到过，除了Count参数，还可以设置其他三种参数。
 
     方法2，使用MOC提供的方法
 
 	
-// 设置过滤条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < 2"];
-// 创建请求对象，指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-fetchRequest.predicate = predicate;
-// 通过调用MOC的countForFetchRequest:error:方法，获取请求结果count值，返回结果直接是NSUInteger类型变量
-NSError *error = nil;
-NSUInteger count = [context countForFetchRequest:fetchRequest error:&error];
-NSLog(@"fetch request result count is : %ld", count);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
+	// 设置过滤条件
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < 2"];
+	// 创建请求对象，指明操作Employee表
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	fetchRequest.predicate = predicate;
+	// 通过调用MOC的countForFetchRequest:error:方法，获取请求结果count值，返回结果直接是NSUInteger类型变量
+	NSError *error = nil;
+	NSUInteger count = [context countForFetchRequest:fetchRequest error:&error];
+	NSLog(@"fetch request result count is : %ld", count);
+	// 错误处理
+	if (error) {
+	    NSLog(@"fetch request result error : %@", error);
+	}
 
 MOC提供了专门获取请求结果Count值的方法，通过这个方法可以直接返回一个NSUInteger类型的Count值，使用起来比上面的方法更方便点，其他都是一样的。
 
@@ -404,32 +410,32 @@ MOC提供了专门获取请求结果Count值的方法，通过这个方法可以
 
 CoreData对于这样的需求，提供了位运算的功能。MOC在执行请求时，是支持对数据进行位运算的。这个操作依然是在数据库层完成的，对内存的占用非常小。
 	
-// 创建请求对象，指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置返回值为字典类型，这是为了结果可以通过设置的name名取出，这一步是必须的
-fetchRequest.resultType = NSDictionaryResultType;
-// 创建描述对象
-NSExpressionDescription *expressionDes = [[NSExpressionDescription alloc] init];
-// 设置描述对象的name，最后结果需要用这个name当做key来取出结果
-expressionDes.name = @"sumOperatin";
-// 设置返回值类型，根据运算结果设置类型
-expressionDes.expressionResultType = NSFloatAttributeType;
-// 创建具体描述对象，用来描述对那个属性进行什么运算(可执行的运算类型很多，这里描述的是对height属性，做sum运算)
-NSExpression *expression = [NSExpression expressionForFunction:@"sum:" arguments:@[[NSExpression expressionForKeyPath:@"height"]]];
-// 只能对应一个具体描述对象
-expressionDes.expression = expression;
-// 给请求对象设置描述对象，这里是一个数组类型，也就是可以设置多个描述对象
-fetchRequest.propertiesToFetch = @[expressionDes];
-// 执行请求，返回值还是一个数组，数组中只有一个元素，就是存储计算结果的字典
-NSError *error = nil;
-NSArray *resultArr = [context executeFetchRequest:fetchRequest error:&error];
-// 通过上面设置的name值，当做请求结果的key取出计算结果
-NSNumber *number = resultArr.firstObject[@"sumOperatin"];
-NSLog(@"fetch request result is %f", [number floatValue]);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
+	// 创建请求对象，指明操作Employee表
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 设置返回值为字典类型，这是为了结果可以通过设置的name名取出，这一步是必须的
+	fetchRequest.resultType = NSDictionaryResultType;
+	// 创建描述对象
+	NSExpressionDescription *expressionDes = [[NSExpressionDescription alloc] init];
+	// 设置描述对象的name，最后结果需要用这个name当做key来取出结果
+	expressionDes.name = @"sumOperatin";
+	// 设置返回值类型，根据运算结果设置类型
+	expressionDes.expressionResultType = NSFloatAttributeType;
+	// 创建具体描述对象，用来描述对那个属性进行什么运算(可执行的运算类型很多，这里描述的是对height属性，做sum运算)
+	NSExpression *expression = [NSExpression expressionForFunction:@"sum:" arguments:@[[NSExpression expressionForKeyPath:@"height"]]];
+	// 只能对应一个具体描述对象
+	expressionDes.expression = expression;
+	// 给请求对象设置描述对象，这里是一个数组类型，也就是可以设置多个描述对象
+	fetchRequest.propertiesToFetch = @[expressionDes];
+	// 执行请求，返回值还是一个数组，数组中只有一个元素，就是存储计算结果的字典
+	NSError *error = nil;
+	NSArray *resultArr = [context executeFetchRequest:fetchRequest error:&error];
+	// 通过上面设置的name值，当做请求结果的key取出计算结果
+	NSNumber *number = resultArr.firstObject[@"sumOperatin"];
+	NSLog(@"fetch request result is %f", [number floatValue]);
+	// 错误处理
+	if (error) {
+	    NSLog(@"fetch request result error : %@", error);
+	}
 
 执行结果：
 
@@ -444,7 +450,7 @@ if (error) {
 NSExpression类可以描述多种运算，可以在NSExpression.h文件中的注释部分，看到所有支持的运算类型，大概看了一下有二十多种运算。而且除了上面NSExpression调用的方法，此类还支持点语法的位运算，例如下面的例子。
 1
 	
-[NSExpression expressionWithFormat:@"@sum.height"];
+	[NSExpression expressionWithFormat:@"@sum.height"];
 
 批处理
 
@@ -458,22 +464,22 @@ NSExpression类可以描述多种运算，可以在NSExpression.h文件中的注
 
 批量更新
 	
-// 创建批量更新对象，并指明操作Employee表。
-NSBatchUpdateRequest *updateRequest = [NSBatchUpdateRequest batchUpdateRequestWithEntityName:@"Employee"];
-// 设置返回值类型，默认是什么都不返回(NSStatusOnlyResultType)，这里设置返回发生改变的对象Count值
-updateRequest.resultType = NSUpdatedObjectsCountResultType;
-// 设置发生改变字段的字典
-updateRequest.propertiesToUpdate = @{@"height" : [NSNumber numberWithFloat:5.f]};
-// 执行请求后，返回值是一个特定的result对象，通过result的属性获取返回的结果。MOC的这个API是从iOS8出来的，所以需要注意版本兼容。
-NSError *error = nil;
-NSBatchUpdateResult *result = [context executeRequest:updateRequest error:&error];
-NSLog(@"batch update count is %ld", [result.result integerValue]);
-// 错误处理
-if (error) {
-    NSLog(@"batch update request result error : %@", error);
-}
-// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];
+	// 创建批量更新对象，并指明操作Employee表。
+	NSBatchUpdateRequest *updateRequest = [NSBatchUpdateRequest batchUpdateRequestWithEntityName:@"Employee"];
+	// 设置返回值类型，默认是什么都不返回(NSStatusOnlyResultType)，这里设置返回发生改变的对象Count值
+	updateRequest.resultType = NSUpdatedObjectsCountResultType;
+	// 设置发生改变字段的字典
+	updateRequest.propertiesToUpdate = @{@"height" : [NSNumber numberWithFloat:5.f]};
+	// 执行请求后，返回值是一个特定的result对象，通过result的属性获取返回的结果。MOC的这个API是从iOS8出来的，所以需要注意版本兼容。
+	NSError *error = nil;
+	NSBatchUpdateResult *result = [context executeRequest:updateRequest error:&error];
+	NSLog(@"batch update count is %ld", [result.result integerValue]);
+	// 错误处理
+	if (error) {
+	    NSLog(@"batch update request result error : %@", error);
+	}
+	// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
+	[context refreshAllObjects];
 
 上面对Employee表中所有的托管对象height值做了批量更新，在更新时通过设置propertiesToUpdate字典来控制更新字段和更新的值，设置格式是字段名 : 新值。通过设置批处理对象的predicate属性，设置一个谓词对象来控制受影响的对象。
 
@@ -483,25 +489,25 @@ MOC在执行请求方法时，发现方法名也不一样了，执行的是execu
 
 批量删除
 	
-// 创建请求对象，并指明对Employee表做操作
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 通过谓词设置过滤条件，设置条件为height小于1.7
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < %f", 1.7f];
-fetchRequest.predicate = predicate;
-// 创建批量删除请求，并使用上面创建的请求对象当做参数进行初始化
-NSBatchDeleteRequest *deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
-// 设置请求结果类型，设置为受影响对象的Count
-deleteRequest.resultType = NSBatchDeleteResultTypeCount;
-// 使用NSBatchDeleteResult对象来接受返回结果，通过id类型的属性result获取结果
-NSError *error = nil;
-NSBatchDeleteResult *result = [context executeRequest:deleteRequest error:&error];
-NSLog(@"batch delete request result count is %ld", [result.result integerValue]);
-// 错误处理
-if (error) {
-    NSLog(@"batch delete request error : %@", error);
-}
-// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];
+	// 创建请求对象，并指明对Employee表做操作
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 通过谓词设置过滤条件，设置条件为height小于1.7
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height < %f", 1.7f];
+	fetchRequest.predicate = predicate;
+	// 创建批量删除请求，并使用上面创建的请求对象当做参数进行初始化
+	NSBatchDeleteRequest *deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
+	// 设置请求结果类型，设置为受影响对象的Count
+	deleteRequest.resultType = NSBatchDeleteResultTypeCount;
+	// 使用NSBatchDeleteResult对象来接受返回结果，通过id类型的属性result获取结果
+	NSError *error = nil;
+	NSBatchDeleteResult *result = [context executeRequest:deleteRequest error:&error];
+	NSLog(@"batch delete request result count is %ld", [result.result integerValue]);
+	// 错误处理
+	if (error) {
+	    NSLog(@"batch delete request error : %@", error);
+	}
+	// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
+	[context refreshAllObjects];
 
 大多数情况下，涉及到托管对象的操作，都需要将其加载到内存中完成。所以使用CoreData时，需要注意内存的使用，不要在内存中存在过多的托管对象。在已经做系统兼容的情况下，进行大量数据的操作时，应该尽量使用批处理来完成操作。
 
@@ -509,21 +515,21 @@ if (error) {
 
 异步请求
 	
-// 创建请求对象，并指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建异步请求对象，并通过一个block进行回调，返回结果是一个NSAsynchronousFetchResult类型参数
-NSAsynchronousFetchRequest *asycFetchRequest = [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:fetchRequest completionBlock:^(NSAsynchronousFetchResult * _Nonnull result) {
-    [result.finalResult enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@"fetch request result Employee.count = %ld, Employee.name = %@", result.finalResult.count, obj.name);
-    }];
-}];
-// 执行异步请求，和批量处理执行同一个请求方法
-NSError *error = nil;
-[context executeRequest:asycFetchRequest error:&error];
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
+	// 创建请求对象，并指明操作Employee表
+	NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 创建异步请求对象，并通过一个block进行回调，返回结果是一个NSAsynchronousFetchResult类型参数
+	NSAsynchronousFetchRequest *asycFetchRequest = [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:fetchRequest completionBlock:^(NSAsynchronousFetchResult * _Nonnull result) {
+	    [result.finalResult enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	        NSLog(@"fetch request result Employee.count = %ld, Employee.name = %@", result.finalResult.count, obj.name);
+	    }];
+	}];
+	// 执行异步请求，和批量处理执行同一个请求方法
+	NSError *error = nil;
+	[context executeRequest:asycFetchRequest error:&error];
+	// 错误处理
+	if (error) {
+	    NSLog(@"fetch request result error : %@", error);
+	}
 
 上面通过NSAsynchronousFetchRequest对象创建了一个异步请求，并通过block进行回调。如果有多个请求同时发起，不需要担心线程安全的问题，系统会将所有的异步请求添加到一个操作队列中，在前一个任务访问数据库时，CoreData会将数据库加锁，等前面的执行完成才会继续执行后面的操作。
 

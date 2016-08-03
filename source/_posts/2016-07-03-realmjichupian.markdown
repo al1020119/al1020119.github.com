@@ -22,6 +22,12 @@ realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和
 
 因为是ORM，本身在设计时也针对移动设备（iOS、Android），所以非常简单易用，学习成本很低。
 
+
+
+<!--more-->
+
+
+
 碾压级性能
 
 数据引自：introducing-realm
@@ -45,26 +51,26 @@ realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和
 Realm对象和其他对象没有太大区别，只是需要继承RLMObject
 
 	
-@interface Dog : RLMObject
-@property NSString *name;
-@property NSInteger age;
-@end
-Dog *mydog = [[Dog alloc] init];
+	@interface Dog : RLMObject
+	@property NSString *name;
+	@property NSInteger age;
+	@end
+	Dog *mydog = [[Dog alloc] init];
 
 存储起来也非常简单，获取数据库实例，在一个事务中进行写入。
 
 	
-RLMRealm *realm = [RLMRealm defaultRealm];
-[realm transactionWithBlock:^{
-    [realm addObject:mydog];
-}];
+	RLMRealm *realm = [RLMRealm defaultRealm];
+	[realm transactionWithBlock:^{
+	    [realm addObject:mydog];
+	}];
 
 方便的查询，可以在一个查询结果中再进行查询。查询的条件有着丰富的支持。
 
 	
-RLMResults *r = [Dog objectsWhere:@"age > 8"];
-// Queries are chainable
-r = [r objectsWhere:@"name contains 'Rex' AND  name BEGINSWITH '大'"];
+	RLMResults *r = [Dog objectsWhere:@"age > 8"];
+	// Queries are chainable
+	r = [r objectsWhere:@"name contains 'Rex' AND  name BEGINSWITH '大'"];
 
 zero-copy和懒加载
 
@@ -81,27 +87,27 @@ SQLite第一个版本发布于2000年，至今已16年。以当今的角度来�
 即便已经是封装过的FMDB，要写这样的代码心里也依旧难受:
 
 	
-FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];
-if (![db open]) {
-[db release];
-return;
-}
-NSString *sql = @"create table bulktest1 (id integer primary key autoincrement, x text);"
-"create table bulktest2 (id integer primary key autoincrement, y text);"
-"create table bulktest3 (id integer primary key autoincrement, z text);"
-"insert into bulktest1 (x) values ('XXX');"
-"insert into bulktest2 (y) values ('YYY');"
-"insert into bulktest3 (z) values ('ZZZ');";
-success = [db executeStatements:sql];
-sql = @"select count(*) as count from bulktest1;"
-"select count(*) as count from bulktest2;"
-"select count(*) as count from bulktest3;";
-success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary *dictionary) {
-NSInteger count = [dictionary[@"count"] integerValue];
-XCTAssertEqual(count, 1, @"expected one record for dictionary %@", dictionary);
-return 0;
-}];
-[db close];
+	FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];
+	if (![db open]) {
+	[db release];
+	return;
+	}
+	NSString *sql = @"create table bulktest1 (id integer primary key autoincrement, x text);"
+	"create table bulktest2 (id integer primary key autoincrement, y text);"
+	"create table bulktest3 (id integer primary key autoincrement, z text);"
+	"insert into bulktest1 (x) values ('XXX');"
+	"insert into bulktest2 (y) values ('YYY');"
+	"insert into bulktest3 (z) values ('ZZZ');";
+	success = [db executeStatements:sql];
+	sql = @"select count(*) as count from bulktest1;"
+	"select count(*) as count from bulktest2;"
+	"select count(*) as count from bulktest3;";
+	success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary *dictionary) {
+	NSInteger count = [dictionary[@"count"] integerValue];
+	XCTAssertEqual(count, 1, @"expected one record for dictionary %@", dictionary);
+	return 0;
+	}];
+	[db close];
 
 VS CoreData
 
@@ -110,23 +116,23 @@ VS CoreData
 下面给出一个查询的比较：
 
 	
-// Core Data
-let fetchRequest = NSFetchRequest(entityName: "Specimen")
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
-fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-fetchRequest.sortDescriptors = [sortDescriptor]
-let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&error)
+	// Core Data
+	let fetchRequest = NSFetchRequest(entityName: "Specimen")
+	let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
+	fetchRequest.predicate = predicate
+	let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
+	fetchRequest.sortDescriptors = [sortDescriptor]
+	let error = NSError()
+	let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&error)
 
 Realm则简单的多：
 
 	
-// Realm
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
+	// Realm
+	let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
+	let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
 
-总结一下Realm对CoreData的优势：
+###总结一下Realm对CoreData的优势：
 
     不需要架构Context那种烦人的东西
 
@@ -141,7 +147,7 @@ let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("
 
     CoreData多个持久化文件很麻烦，Realm轻松支持这个功能
 
-劣势：
+#####劣势：
 
 是会增加应用大概1MB的体积。CoreData原生支持，不会增加App体积。
 

@@ -22,6 +22,12 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 创建自带CoreData的工程
 
+
+
+<!--more-->
+
+
+
 在新建一个项目时，可以勾选Use Core Data选项，这样创建出来的工程系统会默认生成一些CoreData的代码以及一个.xcdatamodeld后缀的模型文件，模型文件默认以工程名开头。这些代码在AppDelegate类中，也就是代表可以在全局使用AppDelegate.h文件中声明的CoreData方法和属性。
 
 系统默认生成的代码是非常简单的，只是生成了基础的托管对象模型、托管对象上下文、持久化存储调度器，以及MOC的save方法。但是这些代码已经可以完成基础的CoreData操作了。
@@ -265,25 +271,25 @@ NSManagedObjectContext初始化方法的枚举值参数主要有三个类型：
 
 如果还使用init方法，可能会对后面推出的一些API不兼容，导致多线程相关的错误。例如下面的错误，因为如果没有显式的设置并发类型，默认是一个已经弃用的NSConfinementConcurrencyType类型，就会导致新推出的API发生不兼容的崩溃错误。
 
-Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'NSConfinementConcurrencyType context
+	Terminating app due to uncaught exception 'NSInvalidArgumentException', reason: 'NSConfinementConcurrencyType context
 
 创建MOC
 
 下面是根据Company模型文件，创建了一个主队列并发类型的MOC。
 	
-// 创建上下文对象，并发队列设置为主队列
-NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-// 创建托管对象模型，并使用Company.momd路径当做初始化参数
-NSURL *modelPath = [[NSBundle mainBundle] URLForResource:@"Company" withExtension:@"momd"];
-NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
-// 创建持久化存储调度器
-NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
-// 创建并关联SQLite数据库文件，如果已经存在则不会重复创建
-NSString *dataPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
-dataPath = [dataPath stringByAppendingFormat:@"/%@.sqlite", @"Company"];
-[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:nil error:nil];
-// 上下文对象设置属性为持久化存储器
-context.persistentStoreCoordinator = coordinator;
+	// 创建上下文对象，并发队列设置为主队列
+	NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+	// 创建托管对象模型，并使用Company.momd路径当做初始化参数
+	NSURL *modelPath = [[NSBundle mainBundle] URLForResource:@"Company" withExtension:@"momd"];
+	NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
+	// 创建持久化存储调度器
+	NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+	// 创建并关联SQLite数据库文件，如果已经存在则不会重复创建
+	NSString *dataPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
+	dataPath = [dataPath stringByAppendingFormat:@"/%@.sqlite", @"Company"];
+	[coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:nil error:nil];
+	// 上下文对象设置属性为持久化存储器
+	context.persistentStoreCoordinator = coordinator;
 
 这段代码创建了一个MOC，我们从上往下看这段代码。
 
@@ -323,20 +329,20 @@ PSC有四种可选的持久化存储方案，用得最多的是SQLite的方式�
 
 插入操作
 	
-// 创建托管对象，并指明创建的托管对象所属实体名
-Employee *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-emp.name = @"lxz";
-emp.height = @1.7;
-emp.brithday = [NSDate date];
-// 通过上下文保存对象，并在保存前判断是否有更改
-NSError *error = nil;
-if (context.hasChanges) {
-    [context save:&error];
-}
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Insert Data Error : %@", error);
-}
+	// 创建托管对象，并指明创建的托管对象所属实体名
+	Employee *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
+	emp.name = @"lxz";
+	emp.height = @1.7;
+	emp.brithday = [NSDate date];
+	// 通过上下文保存对象，并在保存前判断是否有更改
+	NSError *error = nil;
+	if (context.hasChanges) {
+	    [context save:&error];
+	}
+	// 错误处理
+	if (error) {
+	    NSLog(@"CoreData Insert Data Error : %@", error);
+	}
 
 通过NSEntityDescription的insert类方法，生成并返回一个Employee托管对象，并将这个对象插入到指定的上下文中。
 
@@ -344,67 +350,67 @@ MOC将操作的数据存放在缓存层，只有调用MOC的save方法后，才�
 
 删除操作
 	
-// 建立获取数据的请求对象，指明对Employee实体进行删除操作
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建谓词对象，过滤出符合要求的对象，也就是要删除的对象
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
-request.predicate = predicate;
-// 执行获取操作，找到要删除的对象
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-// 遍历符合删除要求的对象数组，执行删除操作
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    [context deleteObject:obj];
-}];
-// 保存上下文
-if (context.hasChanges) {
-    [context save:nil];
-}
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Delete Data Error : %@", error);
-}
+	// 建立获取数据的请求对象，指明对Employee实体进行删除操作
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 创建谓词对象，过滤出符合要求的对象，也就是要删除的对象
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
+	request.predicate = predicate;
+	// 执行获取操作，找到要删除的对象
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	// 遍历符合删除要求的对象数组，执行删除操作
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    [context deleteObject:obj];
+	}];
+	// 保存上下文
+	if (context.hasChanges) {
+	    [context save:nil];
+	}
+	// 错误处理
+	if (error) {
+	    NSLog(@"CoreData Delete Data Error : %@", error);
+	}
 
 首先获取需要删除的托管对象，遍历获取的对象数组，逐个删除后调用MOC的save方法保存。
 
 修改操作
-
-// 建立获取数据的请求对象，并指明操作的实体为Employee
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建谓词对象，设置过滤条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
-request.predicate = predicate;
-// 执行获取请求，获取到符合要求的托管对象
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    obj.height = @3.f;
-}];
-// 将上面的修改进行存储
-if (context.hasChanges) {
-    [context save:nil];
-}
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Update Data Error : %@", error);
-}
+	
+	// 建立获取数据的请求对象，并指明操作的实体为Employee
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 创建谓词对象，设置过滤条件
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
+	request.predicate = predicate;
+	// 执行获取请求，获取到符合要求的托管对象
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    obj.height = @3.f;
+	}];
+	// 将上面的修改进行存储
+	if (context.hasChanges) {
+	    [context save:nil];
+	}
+	// 错误处理
+	if (error) {
+	    NSLog(@"CoreData Update Data Error : %@", error);
+	}
 
 和上面一样，首先获取到需要更改的托管对象，更改完成后调用MOC的save方法持久化到本地。
 
 查找操作
 	
-// 建立获取数据的请求对象，指明操作的实体为Employee
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 执行获取操作，获取所有Employee托管对象
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Ergodic Data Error : %@", error);
-}
+	// 建立获取数据的请求对象，指明操作的实体为Employee
+	NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
+	// 执行获取操作，获取所有Employee托管对象
+	NSError *error = nil;
+	NSArray *employees = [context executeFetchRequest:request error:&error];
+	[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+	    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
+	}];
+	// 错误处理
+	if (error) {
+	    NSLog(@"CoreData Ergodic Data Error : %@", error);
+	}
 
 查找操作最简单粗暴，因为是演示代码，所以直接将所有Employee表中的托管对象加载出来。在实际开发中肯定不会这样做，只需要加载需要的数据。后面还会讲到一些更高级的操作，会涉及到获取方面的东西。
 
