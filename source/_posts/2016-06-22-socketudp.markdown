@@ -9,9 +9,11 @@ categories: Senior
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 
-
-
 ---  
+
+
+
+
 
 ###1. UDP Socket编程
 
@@ -28,6 +30,12 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
     第二步：调用sendto发送消息到服务器端
     第三步：调用recvfrom接收来自服务器端的消息
     第四步：调用close关闭socket
+
+
+
+<!--more-->
+
+
 
 ####1.1.1 客户端的代码实现：
 

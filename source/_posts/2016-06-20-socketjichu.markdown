@@ -11,8 +11,8 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---  
 
-本序列文章关于Socket编程，摘自[大神标哥](http://www.huangyibiao.com/)的精华
 
+本序列文章关于Socket编程，摘自[大神标哥](http://www.huangyibiao.com/)的精华
 
 
 ##序言
