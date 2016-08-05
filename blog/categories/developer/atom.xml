@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Developer | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/developer/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-04T10:11:23+08:00</updated>
+  <updated>2016-08-05T11:32:44+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,62 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-探程序之精华]]></title>
+    <link href="http://al1020119.github.io/blog/2017/08/08/oneday/"/>
+    <updated>2017-08-08T23:53:19+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/08/08/oneday</id>
+    <content type="html"><![CDATA[<blockquote><p>做了这么久ios开发，由于最近发现自己在性能和底层相关方面，还有有待提高，一句话总结就是：知其然，而不知其所以然。</p></blockquote>
+
+<p>最近也一直在研究相关方面的技术，包括ios相关技术的底层实现，但是这还是远远不够的，一个真正的程序员是必须做到“学无止境”。</p>
+
+<p>经过这几年的开发与学习，包括和同行朋友的了解，作为一个程序员，必备的技术有以下四种。</p>
+
+<ul>
+<li>算法</li>
+<li>数据结构
+
+<ul>
+<li>程序=算法+数据结构</li>
+</ul>
+</li>
+<li>设计模式</li>
+<li>数据库</li>
+</ul>
+
+
+<p>当然可能还有其他的，比如操作系统，软件工程，当然C语音是不能再基础的基础，但是除了上面四点，笔者可能不会专门去研究，最多作为了解。</p>
+
+<blockquote><p>从今天开始，我将从上面四点开始人生的第二次攀爬，希望能爬到一个属于我自己的高峰，也希望能对和我有意义心态的人有所帮助。</p></blockquote>
+
+<h4>路线</h4>
+
+<ol>
+<li>算法，数据结构，设计模式，数据库，相关概念的介绍与理解(可能会有部分的软件工程和操作系统相关)</li>
+<li>简单代码演示以便更加深刻理解</li>
+<li>实际应用以便更加深入理解</li>
+<li>举一反三</li>
+<li>相关总结</li>
+</ol>
+
+
+<hr />
+
+<p>更新中，敬请关注。。。。。。</p>
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS开发各种底层实现--包你满意😘！]]></title>
@@ -65,12 +121,11 @@
 </ul>
 
 
-<h6>通用篇</h6>
+<h6>全栈篇</h6>
 
 <ul>
-<li>数组</li>
-<li>字典</li>
-<li>集合</li>
+<li>JSPatch</li>
+<li>React Native</li>
 </ul>
 
 
@@ -83,15 +138,321 @@
 </ul>
 
 
-<h6>全栈篇</h6>
+<h6>通用篇</h6>
 
 <ul>
-<li>JSPatch</li>
-<li>React Native</li>
+<li>数组</li>
+<li>字典</li>
+<li>集合</li>
 </ul>
 
 
 <h6>#写在最后</h6>
+
+<hr />
+
+<h1>系统篇</h1>
+
+<hr />
+
+<h3>内存管理</h3>
+
+<ul>
+<li><p>黄金法则</p>
+
+<ul>
+<li>如果一个对象使用了alloc，[mutable] copy，retain，那么你必须使用相应的release或autonrelease</li>
+</ul>
+</li>
+</ul>
+
+
+<p>MRC:</p>
+
+<pre><code> 手动管理内存（retain, release, autorelease,不多说） 持有对象,retain +1 ,引用计数加1, 释放对象:release -1, 引用计数减1,当引用计数为0时,会自动释放内存.  autorelease对象内存的管理放到autoreleasepool中, 当pool drain时,回收内存. (这是基于 objective-c的运行时特性和垃圾回收机制)
+</code></pre>
+
+<p>ARC:</p>
+
+<pre><code> 手动管理内存, 这是xcode4.x版本的特性,(4.1及以前没有,我从4.6开始的), 原理是:在编译代码的时候为你自动在合适的位置插入release 和 autorelease, (运行时处理垃圾回收就如何MRC一样).
+</code></pre>
+
+<p>总结: ARC机制拥有和MRC一样的效率, ARC通过在部分优化和在最合适的地方完成引用计数的维护,所以支持使用ARC.</p>
+
+<p>规则</p>
+
+<p>规则：</p>
+
+<ul>
+<li><p>1、Objective-C类中实现了引用计数器，对象知道自己当前被引用的次数</p></li>
+<li><p>2、最初对象的计数器为1</p></li>
+<li><p>3、如果需要引用对象，可以给对象发送一个retain消息，这样对象的计数器就加1</p></li>
+<li><p>4、当不需要引用对象了，可以给对象发送release消息，这样对象计数器就减1</p></li>
+<li><p>5、当计数器减到0，自动调用对象的dealloc函数，对象就会释放内存</p></li>
+<li><p>6、计数器为0的对象不能再使用release和其他方法</p></li>
+</ul>
+
+
+<h3>Runtime</h3>
+
+<p>一套纯低层的C语言库
+平时我们编写的OC代码都会转成Runtime去执行</p>
+
+<p>特性：</p>
+
+<pre><code>动态类型：程序直到执行时才能确定所属的类。
+
+动态绑定：程序直到执行时才能确定实际要调用的方法。
+
+动态加载：根据需求加载所需要的资源
+</code></pre>
+
+<p>Runtime消息机制</p>
+
+<p>首先通过obj的isa指针找到obj对应的class。</p>
+
+<ul>
+<li>首先检测这个 selector 是不是要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数。</li>
+<li>检测这个 selector 的 target 是不是 nil，Objc 允许我们对一个 nil 对象执行任何方法不会 Crash，因为运行时会被忽略掉。</li>
+<li>如果上面两步都通过了，那么就开始查找这个类的实现 IMP，</li>
+<li>在Class中先去cache中 通过SEL查找对应函数method，找到就执行对应的实现。</li>
+<li>若cache中未找到，再去methodList中查找，找到就执行对应的实现。</li>
+<li>若methodlist中未找到，则取superClass中查找（重复执行以上两个步骤），直到找到最根的类为止。</li>
+<li>若任何一部能找到，则将method加 入到cache中，以方便下次查找，并通过method中的函数指针跳转到对应的函数中去执行。</li>
+<li>如果以上都不能找到，则会开始进行消息转发</li>
+</ul>
+
+
+<p>消息转发</p>
+
+<ul>
+<li>1.动态方法解析：向当前类发送 resolveInstanceMethod: 信号，检查是否动态向该类添加了方法。（迷茫请搜索：@dynamic）</li>
+<li>2.快速消息转发：检查该类是否实现了 forwardingTargetForSelector: 方法，若实现了则调用这个方法。若该方法返回值对象非nil或非self，则向该返回对象重新发送消息。</li>
+<li>3.标准消息转发：runtime发送methodSignatureForSelector:消息获取Selector对应的方法签名。返回值非空则通过forwardInvocation:转发消息，返回值为空则向当前对象发送doesNotRecognizeSelector:消息，程序崩溃退出</li>
+</ul>
+
+
+<p>总结就是：
+在一个函数找不到时，OC提供了三种方式去补救：</p>
+
+<ul>
+<li>1、调用resolveInstanceMethod给个机会让类添加这个实现这个函数</li>
+<li>2、调用forwardingTargetForSelector让别的对象去执行这个函数</li>
+<li>3、调用forwardInvocation（函数执行器）灵活的将目标函数以其他形式执行。
+如果都不中，调用doesNotRecognizeSelector抛出异常。</li>
+</ul>
+
+
+<hr />
+
+<h1>代码篇</h1>
+
+<hr />
+
+<h3>Block的底层实现</h3>
+
+<p>一句话:</p>
+
+<pre><code>栈地址和对地址值的拷贝
+
+block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。
+</code></pre>
+
+<p>Block结构体中含有isa指针，这就证明了Block其实就是对象，并具有一般对象的所有功能。这个isa指针被初始化为 <em>NSConcreteStackBlock 或者 </em>NSConcreteGlobalBlock 类的地址。在没有开启ARC的情况下，如果Block中包含有局部变量则isa被初始化为前者，否则就被初始化为后者。而当ARC开启后，如果Block中包含有局部变量则isa被初始化为 <em>NSConcreteMallocBlock ，否则就被初始化为 </em>NSConcreteGlobalBlock 。invoke是一个函数指针，它指向的是Block被转换成函数的地址。最后的imported variables部分是Block需要访问的外部的局部变量，他们在编译就会被拷贝到Block中，这样一来Block就是成为一个闭包了。</p>
+
+<h3>__block底层实现</h3>
+
+<pre><code>一句话：传值 和传址
+</code></pre>
+
+<p><strong>block打印C++源码可以看到</strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，<strong>Person</strong>test_block_impl_0的拷贝辅助函数<strong>Person</strong>test_block_copy_0会将__Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作</p>
+
+<pre><code>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
+</code></pre>
+
+<hr />
+
+<h1>实战篇</h1>
+
+<hr />
+
+<h2>KVO/KVC</h2>
+
+<p>VC/KVO是观察者模式的一种实现，在Cocoa中是以被万物之源NSObject类实现的NSKeyValueCoding/NSKeyValueObserving非正式协议的形式被定义为基础框架的一部分。从协议的角度来说，KVC/KVO本质上是定义了一套让我们去遵守和实现的方法。
+当然，KVC/KVO实现的根本是Objective-C的动态性和runtime，这在后文的原理部分会有详述。
+另外，KVC/KVO机制离不开访问器方法的实现，这在后文中也有解释。</p>
+
+<p>1、KVC简介</p>
+
+<pre><code>全称是Key-value coding，翻译成键值编码。顾名思义，在某种程度上跟map的关系匪浅。它提供了一种使用字符串而不是访问器方法去访问一个对象实例变量的机制。
+</code></pre>
+
+<p>2、KVO简介</p>
+
+<pre><code>全称是Key-value observing，翻译成键值观察。提供了一种当其它对象属性被修改的时候能通知当前对象的机制。再MVC大行其道的Cocoa中，KVO机制很适合实现model和controller类之间的通讯。
+</code></pre>
+
+<h3>KVO的底层实现（基于KVC-》运行时）</h3>
+
+<p>当某个类的对象第一次被观察时，系统就会在运行期动态地创建该类的一个派生类，在这个派生类中重写基类中任何被观察属性的 setter 方法。</p>
+
+<pre><code>派生类在被重写的 setter 方法实现真正的通知机制，就如前面手动实现键值观察那样。这么做是基于设置属性会调用 setter 方法，而通过重写就获得了 KVO 需要的通知机制。当然前提是要通过遵循 KVO 的属性设置方式来变更属性值，如果仅是直接修改属性对应的成员变量，是无法实现 KVO 的。
+
+同时派生类还重写了 class 方法以“欺骗”外部调用者它就是起初的那个类。然后系统将这个对象的 isa 指针指向这个新诞生的派生类，因此这个对象就成为该派生类的对象了，因而在该对象上对 setter 的调用就会调用重写的 setter，从而激活键值通知机制。此外，派生类还重写了 dealloc 方法来释放资源
+</code></pre>
+
+<p>isa指针指向的其实是类的元类，如果之前的类名为：Person，那么被runtime更改以后的类名会变成：NSKVONotifying_Person。
+新的NSKVONotifying_Person类会重写以下方法：
+增加了监听的属性对应的set方法，class，dealloc，_isKVOA</p>
+
+<h3>KVC的底层实现</h3>
+
+<p>KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa-swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据。</p>
+
+<p>一个对象在调用setValue的时候，</p>
+
+<ul>
+<li>（1）首先根据方法名找到运行方法的时候所需要的环境参数。</li>
+<li>（2）他会从自己isa指针结合环境参数，找到具体的方法实现的接口。</li>
+<li>（3）再直接查找得来的具体的方法实现。</li>
+</ul>
+
+
+<hr />
+
+<h1>高级</h1>
+
+<hr />
+
+<h3>GCD底层实现</h3>
+
+<p>GCD内部是怎么实现的</p>
+
+<ul>
+<li>1 IOS和OS X的核心是XNU内核，GCD是基于XUN内核实现的</li>
+<li>2 GCD的API全部在libdispatch库中</li>
+<li><p>3 GCD的底层实现主要有Dispatch Queue 和Dispatch Source</p>
+
+<ul>
+<li>Dispatch Queue ：管理block操作</li>
+<li>Dispatch Source :处理事件(比如线程间通信)</li>
+</ul>
+</li>
+</ul>
+
+
+<p>NSOperationQueue 和GCD的区别和类似的地方</p>
+
+<ul>
+<li>1 GCD是纯C语言的API， NSOperationQueue是基于GCD的OC版本封装</li>
+<li>2 GCD只支持FIFO的队列，NSOperationQueue可以很方便地调整执行顺序 设置最大并发数量</li>
+<li>3 NSOperationQueue 可以轻松地在operation 间设置依赖关系，而GCD需要写很多的代码</li>
+<li>4 NSOperationQueue支持KVO，可以监测operation是否正在执行(is Executed),是否结束(is finished),是否取消( is canceld);</li>
+<li>5 GCD的执行速度比NSOperationQueue快</li>
+</ul>
+
+
+<hr />
+
+<h1>全栈篇</h1>
+
+<hr />
+
+<h3>JSpatch底层实现</h3>
+
+<p>JSPatch 能做到通过 JS 调用和改写 OC 方法最根本的原因是 Objective-C 是动态语言，OC 上所有方法的调用/类的生成都通过 Objective-C Runtime 在运行时进行，我们可以通过类名/方法名反射得到相应的类和方法：</p>
+
+<pre><code>Class class = NSClassFromString("UIViewController");
+id viewController = [[class alloc] init];
+SEL selector = NSSelectorFromString("viewDidLoad");
+[viewController performSelector:selector];
+</code></pre>
+
+<p>也可以替换某个类的方法为新的实现：</p>
+
+<pre><code>static void newViewDidLoad(id slf, SEL sel) {}
+class_replaceMethod(class, selector, newViewDidLoad, @"");
+</code></pre>
+
+<p>还可以新注册一个类，为类添加方法：</p>
+
+<pre><code>Class cls = objc_allocateClassPair(superCls, "JPObject", 0);
+objc_registerClassPair(cls);
+class_addMethod(cls, selector, implement, typedesc);
+</code></pre>
+
+<p>对于 Objective-C 对象模型和动态消息发送的原理已有很多文章阐述得很详细，这里就不详细阐述了。理论上你可以在运行时通过类名/方法名调用到任何 OC 方法，替换任何类的实现以及新增任意类。所以 JSPatch 的基本原理就是：JS 传递字符串给 OC，OC 通过 Runtime 接口调用和替换 OC 方法。这是最基础的原理，实际实现过程还有很多怪要打，接下来看看具体是怎样实现的。</p>
+
+<h6>总结：</h6>
+
+<p>使用JS利用OC的动态特性，执行我们想要执行的代码</p>
+
+<h3>React Native</h3>
+
+<p>RN主要的通信在于java与js之间，平常我们写的jsx代码最终会调用到原生的View。上一篇博客我们也了解到了要新建一个原生模块需要在java层和js层分别写一个Module</p>
+
+<p>特点：</p>
+
+<ul>
+<li><p>可以基于 React Native使用 JavaScript 编写应用逻辑，UI 则可以保持全是原生的。这样的话就没有必要就 HTML5 的 UI 做出常见的妥协；</p></li>
+<li><p>React 引入了一种与众不同的、略显激进但具备高可用性的方案来构建用户界面。长话短说，应用的 UI 简单通过一个基于应用目前状态的函数来表达。</p></li>
+</ul>
+
+
+<p>RN总共分为三层，java层，C++层，js层</p>
+
+<ul>
+<li>Java层：java层就是app原生代码，它通过启动C++层的javascript解析器javascriptCore来执行js代码，从而构建原生UI等。java层依赖于众多优秀开源库，在图片处理使用的是Fresco，网络通信使用的是okhttp，Json解析工具用jackson,动画库用NineOldAndroids等，在java层原生的功能均封装为Module，如Toast和Log等。</li>
+<li>C++层：c++层最主要是封装了JavaScriptCore，它是一个全新的支持ES6的webKit。Bridge连接了java与js之间的通信。解析js文件是通过JSCExectutor进行的。</li>
+<li>Js层：主要处理事件分发及UI Layout，平常开发最常用的。通用jsx来写业务代码，通过flexbox来实现布局。不依赖DOM。由于react有 DOM diff这个算法，所以它的效率非常高。
+通信机制</li>
+</ul>
+
+
+<p>在Java层与Js层的bridge分别存有相同一份模块配置表，Java与Js互相通信时，通过将里配置表中的moduleID，methodID转换成json数据的形式传递给到C++层，C++层传送到js层，通过js层的的模块配置表找到对应的方法进行执行，如果有callback，则回传给java层。这里只是大概介绍。</p>
+
+<p>总结：</p>
+
+<ul>
+<li>在程序启动的时候，首先会调用ReactActivity的onCreate函数中，我们会去创建一个ReactInstanceManagerImpl对象。通过ReactRootView的startReactApplication方法开启整个RN世界的大门。</li>
+<li>在这个方法中，我们会通过一个AsyncTask去创建ReactContext</li>
+<li>在创建ReactContext中，我们把我们自己注入和CoreModulesPackage通过processPackage方法将其中的各个modules注入到了对应的Registry中。最后通过CatalystInstanceImpl中的ReactBridge将NativeModule和JSModule注册表通过jni传输到了JS层。</li>
+<li>java调用js时，会在ReactApplicationContext创建的时候存入注册表类JavaScriptModuleRegistry中，同时通过动态代理生成代理实例，并在代理拦截类JavaScriptModuleInvocationHandler中统一处理发向Javascript的所有通信请求。</li>
+<li>JSCExecutor将所有来自Java层的通信请求封装成Javascript执行语句。</li>
+<li>接着在js层中的MessageQueue里匹配ModuleId和MethodId。找到调用模块。</li>
+<li>如果是js层调用java层，js最终都会调用<em>_nativeCall方法，通过flushedQueue将this.</em>queue返回给Bridger。</li>
+<li>C++层调用PlatformBridgeCallback对象的onCallNativeModules方法，执行makeJavaCall方法，里面最终通过env->CallVoidMethod调用了Java层的方法。</li>
+<li>调用Java层NativeModulesReactCallback的call方法，通过moduleID从保存在其内部的NativeModule映射表，匹配到需要被执行的NativeModule对象，再通过methodID匹配到所要调用的方法。通过invoke反射方式执行NativeModule的方法。</li>
+</ul>
+
+
+<hr />
+
+<h1>必备篇</h1>
+
+<hr />
+
+<h5>多线程</h5>
+
+<h5>网络</h5>
+
+<h5>数据持久化</h5>
+
+<hr />
+
+<hr />
+
+<h1>通用篇</h1>
+
+<hr />
+
+<h5>数组</h5>
+
+<h5>字典</h5>
+
+<h5>集合</h5>
+
+<hr />
 
 <p>更新中，敬请关注。。。。。。</p>
 
@@ -884,175 +1245,6 @@ static FMDatabase *_db;
 
 <!--more-->
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[ScrollView回到顶部复原]]></title>
-    <link href="http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan/"/>
-    <updated>2015-08-21T02:33:00+08:00</updated>
-    <id>http://al1020119.github.io/blog/2015/08/21/scrollviewhui-dao-ding-bu-fu-yuan</id>
-    <content type="html"><![CDATA[<p>相信细心的开发者都会发现scrollView自带一个功能,当用户点击顶部的状态栏时,scrollView的ContentOffset.y轴会自动滚动到初始位置,效果如图所示:</p>
-
-<!--more-->
-
-
-<blockquote><p>单个scrollView单击顶部状态栏系统自带功能展示</p></blockquote>
-
-<p>这个功能对用户来说非常实用,尤其是在scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)展示的内容很多,当用户翻看很久以后,想回到最顶部时,只需单击一下顶部的状态栏位置就可以轻松返回到顶部(这里吐槽下.貌似很多用户都不知道有这个功能),而不用使劲用手滑动到顶部.</p>
-
-<ul>
-<li>可是功能在当前控制器有多个scrollView(TableView, WebView, CollectionView一切继承scrollView的控件)的时候就会失效,效果如下图所示:</li>
-</ul>
-
-
-<p>当控制器内有多个scrollView时,系统自带的滚动到顶的功能就会失效</p>
-
-<p>实际开发中,我们的产品在同一个控制器经常会有多个scrollView组合在一起的情况,这就意味着系统的方法已经失效了,需要开发人员自己来实现这个效果,下面我们就来搞定这个需求</p>
-
-<blockquote><p>我们分析下原生的方法为什么会失效,当一个控制器内只有一个scrollView时,点击状态栏,系统会遍历当前keyWindow的子控件,发现子控件中只有一个scrollView会调用这个scrollView的setContentOffset: animated:的这个方法,将scrollView的contentOffset.y值修改为初始值,但是当子控件中又多个scrollView时,系统会不知道掉用哪一个scrollView而失效,知道这点我们就知道该如何搞定这个问题了</p></blockquote>
-
-<p>这里就直接将解决思路一一写出来不将代码分段展示了,在代码中我加了详细的注释objective-c的套路和swift基本一样,在最后会将Swift和objective-c的代码一起放上,如果需要直接解决问题的童鞋可以直接将代码拷贝到工程里即可</p>
-
-<ul>
-<li>首先创建一个topWindow继承至NSObject,这里我们考虑将这个功能完全封装起来,所以所有的方法都用的类方法,所以用最基本的类就可以</li>
-<li>在initialize方法中初始化topWIndow,将topWIndow的级别改成最高的UIWindowLevelAlert级别,设置topWindow位置,并且添加点击手势</li>
-<li>在topWIndow被点击调用的方法中,我们拿出UIApplication的keyWindow,遍历keyWindow的所有子控件,如果满足是scrollView同时又显示在当前keyWindow条件时,将subView的contentOffset的y值回复到原始</li>
-<li>然后采用递归的套路在遍历subView内时候有满足条件的子控件,直到没有满足条件时会停止</li>
-</ul>
-
-
-<h4>Swift的代码</h4>
-
-<pre><code>import UIKit
-class TopWindow: UIWindow {
-    private static let window_: UIWindow = UIWindow()
-    ///  类初始化方法,保证window_只被创建一次
-    override class func initialize() {
-        window_.frame = CGRectMake(0, 0, global.appWidth, 20)
-        window_.windowLevel = UIWindowLevelAlert
-        window_.addGestureRecognizer(UITapGestureRecognizer(target: self, action: "topWindowClick"))
-    }
-    class func topWindowClick() {
-        // 遍历当前主窗口所有view,将满足条件的scrollView滚动回原位
-        searchAllowScrollViewInView(UIApplication.sharedApplication().keyWindow!)
-    }
-    private class func searchAllowScrollViewInView(superView: UIView) {
-        for subview: UIView in superView.subviews as! [UIView] {
-            if subview.isKindOfClass(UIScrollView.self) &amp;&amp; superView.viewIsInKeyWindow() {
-                // 拿到scrollView的contentOffset
-                var offest = (subview as! UIScrollView).contentOffset
-                // 将offest的y轴还原成最开始的值
-                offest.y = -(subview as! UIScrollView).contentInset.top
-                // 重新设置scrollView的内容
-                (subview as! UIScrollView).setContentOffset(offest, animated: true)
-            }
-            // 递归,让子控件再次调用这个方法判断时候还有满足条件的view
-            searchAllowScrollViewInView(subview)
-        }
-    }
-    ///  添加topWindow,使手势生效
-    class func showTopWindow() {
-        window_.hidden = false
-    }
-    ///  隐藏topWindow,移除手势
-    class func hiddenTopWindow() {
-        window_.hidden = true
-    }
-}
-///  对UIView的一个扩展
-extension UIView {
-    ///  判断调用方法的view是否在keyWindow中
-    func viewIsInKeyWindow() -&gt; Bool {
-        let keyWindow = UIApplication.sharedApplication().keyWindow!
-        // 将当前view的坐标系转换到window.bounds
-        let viewNewFrame = keyWindow.convertRect(self.frame, fromView: self.superview)
-        let keyWindowBounds = keyWindow.bounds
-        // 判断当前view是否在keyWindow的范围内
-        let isIntersects = CGRectIntersectsRect(viewNewFrame, keyWindowBounds)
-        // 判断是否满足所有条件
-        return !self.hidden &amp;&amp; self.alpha &gt; 0.01 &amp;&amp; self.window == keyWindow &amp;&amp; isIntersects
-    }   
-}
-</code></pre>
-
-<p>在AppDelegate里,程序启动完成方法时添加就OK了</p>
-
-<pre><code>  func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -&gt; Bool {
-      // 添加顶部的window
-      TopWindow.showTopWindow()
-      return true
-  }
-</code></pre>
-
-<p>需要注意添加了自定义的window后,控制器的改变状态栏状态方法会失效,可以在info.plist中将改变状态栏的管理权交给UIApplication解决,或者在需要改变状态栏的控制器中调用TopWindow.hiddenTopWindow()即可,或者直接改info.plist,用UIApplication.sharedApplication().setStatusBarStyle来管理</p>
-
-<h4>Objective-C代码</h4>
-
-<p>.h文件只暴露显示和隐藏方法</p>
-
-<pre><code>#import @interface WNXTopWindow : NSObject
-+ (void)show;
-+ (void)hide;
-@end
-</code></pre>
-
-<p>.m文件</p>
-
-<pre><code>#import "WNXTopWindow.h"
-@implementation WNXTopWindow
-static UIWindow *window_;
-//初始化window
-+ (void)initialize {
-  window_ = [[UIWindow alloc] init];
-  window_.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 20);
-  window_.windowLevel = UIWindowLevelAlert;
-  [window_ addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowClick)]];
-}  
-+ (void)show {
-  window_.hidden = NO;
-}
-+ (void)hide {
-  window_.hidden = YES;
-}
-// 监听窗口点击
-+ (void)windowClick {
-  UIWindow *window = [UIApplication sharedApplication].keyWindow;
-  [self searchScrollViewInView:window];
-}
-+ (void)searchScrollViewInView:(UIView *)superview {
-  for (UIScrollView *subview in superview.subviews) {
-      // 如果是scrollview, 滚动最顶部
-      if ([subview isKindOfClass:[UIScrollView class]] &amp;&amp; [subview isShowingOnKeyWindow]) {
-          CGPoint offset = subview.contentOffset;
-          offset.y = - subview.contentInset.top;
-          [subview setContentOffset:offset animated:YES];
-      }
-      // 递归继续查找子控件
-      [self searchScrollViewInView:subview];
-  }
-}
-+ (BOOL)isShowingOnKeyWindow:(UIView *)view {
-  // 主窗口
-  UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
-  // 以主窗口左上角为坐标原点, 计算self的矩形框
-  CGRect newFrame = [keyWindow convertRect:view.frame fromView:view.superview];
-  CGRect winBounds = keyWindow.bounds;
-  // 主窗口的bounds 和 self的矩形框 是否有重叠
-  BOOL intersects = CGRectIntersectsRect(newFrame, winBounds);
-  return !view.isHidden &amp;&amp; view.alpha &gt; 0.01 &amp;&amp; view.window == keyWindow &amp;&amp; intersects;
-}
-@end
-</code></pre>
-
-<p>同样,也是在程序初始化完成AppDelegate文件中显示topWindow,整个工程这个问题就统统解决了</p>
-
-<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-  // 添加一个window, 点击这个window, 可以让屏幕上的scrollView滚到最顶部
-  [WNXTopWindow show];
-  return YES;
-}
-</code></pre>
 ]]></content>
   </entry>
   
