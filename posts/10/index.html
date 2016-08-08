@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iOS6新特性 一、关于内存警告 ios6中废除了viewDidUnload，viewWillUnload这两个系统回调，收到内存警告时在didReceiveMemoryWarning中进行相关的处理。 ">
+  <meta name="description" content="iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,228 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/20/keychainchu-tan/">KeyChain初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-07-20T22:46:16+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:46 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS的keychain服务提供了一种安全的保存私密信息（密码，序列号，证书等）的方式，每个ios程序都有一个独立的keychain存储。相对于NSUserDefaults、文件保存等一般方式，keychain保存更为安全，而且keychain里保存的信息不会因App被删除而丢失，所以在重装App后，keychain里的数据还能使用。</p>
+
+<blockquote><p>“yourAppID.com.yourCompany.whatever”就是你要起的公共区名称，除了whatever字段可以随便定之外，其他的都必须如实填写。这个文件的路径要配置在 Project->build setting->Code Signing Entitlements里，否则公共区无效，配置好后，须用你正式的证书签名编译才可通过，否则xcode会弹框告诉你code signing有问题。所以，苹果限制了你只能同公司的产品共享KeyChain数据，别的公司访问不了你公司产品的KeyChain。</p></blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/20/keychainchu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-07-16T09:37:46+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:37 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/images/kadun001.jpg" title="Caption" ></p>
+
+<p>在 VSync 信号到来后，系统图形服务会通过 CADisplayLink 等机制通知 App，App 主线程开始在 CPU 中计算显示内容，比如视图的创建、布局计算、图片解码、文本绘制等。</p>
+
+<p>随后 CPU 会将计算好的内容提交到 GPU 去，由 GPU 进行变换、合成、渲染。随后 GPU 会把渲染结果提交到帧缓冲区去，等待下一次 VSync 信号到来时显示到屏幕上。</p>
+
+<p>由于垂直同步的机制，如果在一个 VSync 时间内，CPU 或者 GPU 没有完成内容提交，则那一帧就会被丢弃，等待下一次机会再显示，而这时显示屏会保留之前的内容不变。这就是界面卡顿的原因。</p>
+
+<p>从上面的图中可以看到，CPU 和 GPU 不论哪个阻碍了显示流程，都会造成掉帧现象。所以开发时，也需要分别对 CPU 和 GPU 压力进行评估和优化。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/16/appqia-dun-liao-zen-yao-ban-%3F/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/07/02/svnshi-zhan-zong-jie/">SVN实战总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-07-02T22:44:29+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>10:44 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ul>
+<li>A：add，新增</li>
+<li>C：conflict，冲突</li>
+<li>D：delete，删除</li>
+<li>M：modify，本地已经修改</li>
+<li>G：modify and merGed，本地文件修改并且和服务器的进行合并</li>
+<li>U：update，从服务器更新</li>
+<li>R：replace，从服务器替换</li>
+<li>I：ignored，忽略</li>
+</ul>
+
+
+<p>常见提示图标：</p>
+
+<h6>黄色感叹号(有冲突):</h6>
+
+<pre><code>--这是有冲突了，冲突就是说你对某个文件进行了修改，别人也对这个文件进行了修改，别人抢在你提交之前先提交了，这时你再提交就会被提示发生冲突，而不允许你提交，防止你的提交覆盖了别人的修改。要解决冲突，如果你确认你的修改是无效的，则用TSVN还原你的修改就行了；如果认为你的修改是正确的，别人的提交是无效的，那么用TSVN先标记为“解决冲突”，然后就可以提交了；如果你认为你的修改和别人的修改都有一部分是有效的，那么你就把别人的修改手动合并到你的修改中，然后使用TSVN标注为“解决冲突”，然后就可以提交了。进入文件夹，寻找有黄色感叹号的文件，这些文件就是发生冲突的地方，根据实际情况处理冲突
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/07/02/svnshi-zhan-zong-jie/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">自定义相册删除复活的实现</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-06-29T00:22:52+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:22 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在这里（<a href="http://www.cnblogs.com/iCocos/p/4705585.html">http://www.cnblogs.com/iCocos/p/4705585.html</a>）我们提到了。</p>
+
+<ul>
+<li>简单的实现了获取系统相册图片并且保存图片到系统相册</li>
+<li>定义自定义的相册，并且保存到自定义相册</li>
+</ul>
+
+
+<p>这里久以一个简单的例子实现一个上面的所有功能，并且添加一个很有用的功能实现
+App中自定义的相册呗删除之后再次保存相片无法成功</p>
+
+<p>这里使用的是一个系统的库：ALAssetsLibrary</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/06/29/zi-ding-yi-xiang-ce-shan-chu-fu-huo-de-shi-xian/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/06/18/core-image-chu-tan/">Core Image 初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-06-18T10:09:37+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:09 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><blockquote><p>前言：
+Core Image 是 IOS 的图片处理框架，有使用方便、易于管理，性能优异的特点。</p>
+
+<ul>
+<li>用途
+
+<ul>
+<li>在照片、视频处理，把滤镜作为最后一步，添加水印</li>
+<li>给照相机提供实时效果</li>
+<li>面部检测，自动滤镜增益,图片分析算法</li>
+<li>更多</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/06/18/core-image-chu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -289,211 +511,6 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/04/15/h5chu-tan/">H5初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-04-15T15:51:33+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>3:51 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>H5精华</h2>
-
-<blockquote><p>标准通用标记语言下的一个应用HTML标准自1999年12月发布的HTML4.01后，后继的HTML5和其它标准被束之高阁，为了推动Web标准化运动的发展，一些公司联合起来，成立了一个叫做 Web Hypertext Application Technology Working Group （Web超文本应用技术工作组 -WHATWG） 的组织。WHATWG 致力于 Web 表单和应用程序，而W3C（World Wide Web Consortium，万维网联盟） 专注于XHTML2.0。在 2006 年，双方决定进行合作，来创建一个新版本的 HTML。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/04/15/h5chu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/04/08/nian-tie-shen-jiu/">粘贴深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-04-08T02:59:00+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:59 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在iOS中，可以使用剪贴板实现应用程序之中以及应用程序之间实现数据的共享。比如你可以从iPhone QQ复制一个url，然后粘贴到safari浏览器中查看这个链接的内容。</p>
-
-<h3>一、在iOS中下面三个控件，自身就有复制-粘贴的功能：</h3>
-
-<ul>
-<li>1、UITextView</li>
-<li>2、UITextField</li>
-<li>3、UIWebView</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/04/08/nian-tie-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">事件处理与图像渲染深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-03-25T09:47:11+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>9:47 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>iOS 事件处理机制与图像渲染过程</h3>
-
-<ul>
-<li>iOS RunLoop都干了什么</li>
-<li>iOS 为什么必须在主线程中操作UI</li>
-<li>事件响应</li>
-<li>CALayer</li>
-<li>CADisplayLink 和 NSTimer</li>
-<li>iOS 渲染过程</li>
-<li>渲染时机</li>
-<li>CPU 和 GPU渲染</li>
-<li>Core Animation</li>
-<li>Facebook Pop介绍</li>
-<li>AsyncDisplay介绍</li>
-<li>参考文章</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/25/shi-jian-chu-li-yu-tu-xiang-xuan-ran-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">玩转定时器</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-03-09T18:17:51+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>6:17 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p> <img src="/images/dingshiqi.png" title="Caption" ></p>
-
-<p>在软件开发过程中，我们常常需要在某个时间后执行某个方法，或者是按照某个周期一直执行某个方法。在这个时候，我们就需要用到定时器。</p>
-
-<blockquote><p>然而，在iOS中有很多方法完成以上的任务，到底有多少种方法呢？经过查阅资料，大概有三种方法：NSTimer、CADisplayLink、GCD。接下来我就一一介绍它们的用法。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/09/wan-zheng-ding-shi-qi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UITableView性能优化与卡顿问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-03-02T00:19:52+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2015</span></span> <span class='time'>12:19 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：</p>
-
-<p>在iOS开发中关于TableView算是已经用烂了的控件，但是又有几个人认真去考路过他的性能优化问题（卡顿）</p>
-
-<p>最近项目中也遇到了不少卡顿的问题，为了更好的饿提高项目的性能，也为了提高自己的技术，专门花了一段时间研究了一下关于TableView的性能问题，在这里就总结了一下，希望可以帮你解决实际问题。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/11">&larr; Older</a>
@@ -530,23 +547,23 @@ ObjectiveC与Js交互是常见的需求，可对于新手或者所谓的高手�
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/08/08/oneday/">修行篇-探程序之精华</a>
+        <a href="/blog/2017/01/20/23zhongshejimoshi/">23zhongshejimoshi</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/08/01/gezhongdicenshixian/">iOS开发各种底层实现--包你满意😘！</a>
+        <a href="/blog/2017/01/18/qidachazhaosuanfa/">Qidachazhaosuanfa</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/08/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+        <a href="/blog/2017/01/15/wudachangyongsuanfa/">Wudachangyongsuanfa</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+        <a href="/blog/2017/01/12/badapaixusuanfa/">Badapaixusuanfa</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+        <a href="/blog/2017/01/09/shujujiegou/">Shujujiegou</a>
       </li>
     
   </ul>
