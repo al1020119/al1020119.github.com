@@ -478,7 +478,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatedzhuangbi/">CoreData装逼技能？</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatedzhuangbimegic/">MagicalRecord魔法</a></h1>
     
     
       <p class="meta">
@@ -487,7 +487,7 @@
 
 
 
-<time class='entry-date' datetime='2016-07-04T14:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 pm</span></time>
+<time class='entry-date' datetime='2016-07-04T20:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:59 pm</span></time>
         
       </p>
     
@@ -496,16 +496,229 @@
 
   <div class="entry-content"><p>正文：</p>
 
-<p>在之前的文章中，已经讲了很多关于CoreData使用相关的知识点。这篇文章中主要讲两个方面，NSFetchedResultsController和版本迁移。</p>
+<p>到目前为止，已经将CoreData相关的知识点都讲完了。</p>
 
-<p>文章题目中虽然有“高级”两个字，其实讲的东西并不高级，只是因为上一篇文章中东西太多了，把两个较复杂的知识点挪到这篇文章中。</p>
+<p>在这篇文章中，主要讲一个CoreData第三方库-MagicalRecord。目前为止这个第三方在Github上有9500+的Star，是所有CoreData第三方库中使用最多、功能最全的。在文章的后面还会对CoreData做一个总结，以及对本系列所有文章做一个总结。</p>
 
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
+
+<h4>MagicalRecord</h4>
+
+<p>CoreData是苹果自家推出的一个持久化框架，使用起来更加面向对象。但是在使用过程中会出现大量代码，而且CoreData学习曲线比较陡峭，如果掌握不好，在使用过程中很容易造成其他问题。</p>
+
+<p>国外开发者开源了一个基于CoreData封装的第三方——MagicalRecord，就像是FMDB封装SQLite一样，MagicalRecord封装的CoreData，使得原生的CoreData更加容易使用。并且MagicalRecord降低了CoreData的使用门槛，不用去手动管理之前的PSC、MOC等对象。</p>
+
+<p>根据Github上MagicalRecord的官方文档，MagicalRecord的优点主要有三条：</p>
+
+<ol>
+<li><p>清理项目中CoreData代码</p></li>
+<li><p>支持清晰、简单、一行式的查询操作</p></li>
+<li><p>当需要优化请求时，可以获取NSFetchRequest进行修改</p></li>
+</ol>
+
+
+<p>添加MagicalRecord到项目中</p>
+
+<p>将MagicalRecord添加到项目中，和使用其他第三方一样，可以通过下载源码和CocoaPods两种方式添加。</p>
+
+<ol>
+<li><p>从Github下载MagicalRecord源码，将源码直接拖到项目中，后续需要手动更新源码。</p></li>
+<li><p>也可以通过CocoaPods安装MagicalRecord，需要在Podfile中加入下面命令，后续只需要通过命令来更新。</p></li>
+</ol>
+
+
+<h6>安装</h6>
+
+<pre><code>pod "MagicalRecord"
+</code></pre>
+
+<p>在之前创建新项目时，通过勾选"Use Core Data"的方式添加CoreData到项目中，会在AppDelegate文件中生成大量CoreData相关代码。如果是大型项目，被占用的位置是很重要的。而对于MagicalRecord来说，只需要两行代码即可。</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+// 初始化CoreData堆栈，也可以指定初始化某个CoreData堆栈
+[MagicalRecord setupCoreDataStack];
+return YES;
+}
+- (void)applicationWillTerminate:(UIApplication *)application {
+// 在应用退出时，应该调用cleanUp方法
+[MagicalRecord cleanUp];
+}
+</code></pre>
+
+<p>MagicalRecord是支持CoreData的.xcdatamodeld文件的，使得CoreData这一优点可以继续使用。建立数据结构时还是像之前使用CoreData一样，通过.xcdatamodeld文件的方式建立。</p>
+
+<p><img src="/images/coredateduoxianchenganquan004.png" title="Caption" ></p>
+
+<h4>支持iCloud</h4>
+
+<p>CoreData是支持iCloud的，MagicalRecord对iCloud相关的操作也做了封装，只需要使用MagicalRecord+iCloud.h类中提供的方法，就可以进行iCloud相关的操作。</p>
+
+<p>例如下面是MagicalRecord+iCloud.h中的一个方法，需要将相关参数传入即可。</p>
+
+<pre><code>+ (void)setupCoreDataStackWithiCloudContainer:(NSString *)containerID localStoreNamed:(NSString *)localStore;
+</code></pre>
+
+<h6>创建上下文</h6>
+
+<p>MagicalRecord对上下文的管理和创建也比较全面，下面是MagicalRecord提供的部分创建和获取上下文的代码。因为是给NSManagedObjectContext添加的Category，可以直接用NSManagedObjectContext类调用，使用非常方便。</p>
+
+<p>但是需要注意，虽然系统帮我们管理了上下文对象，对于耗时操作仍然要放在后台线程中处理，并且在主线程中进行UI操作。</p>
+
+<pre><code>+ [NSManagedObjectContext MR_context]  设置默认的上下文为它的父级上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_newMainQueueContext]  创建一个新的上下文，并发类型为NSMainQueueConcurrencyType
+
++ [NSManagedObjectContext MR_newPrivateQueueContext]  创建一个新的上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_contextWithParent:]  创建一个新的上下文，允许自定义父级上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_contextWithStoreCoordinator:]  创建一个新的上下文，并允许自定义持久化存储协调器，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_defaultContext]  获取默认上下文对象，项目中最基础的上下文对象，并发类型是NSMainQueueConcurrencyType
+</code></pre>
+
+<p>增删改查</p>
+
+<p>MagicalRecord对NSManagedObject添加了一个Category，将增删改查等操作放在这个Category中，使得这些操作可以直接被NSManagedObject类及其子类调用。</p>
+
+<ol>
+<li>增</li>
+</ol>
+
+
+<p>对于托管模型的创建非常简单，不需要像之前还需要进行上下文的操作，现在这都是MagicalRecord帮我们完成的。</p>
+
+<pre><code>// 创建并插入到上下文中
+Employee *emp = [Employee MR_createEntity];
+</code></pre>
+
+<ol>
+<li>删</li>
+</ol>
+
+
+<p>删除数据</p>
+
+<pre><code>// 从上下文中删除当前对象
+[emp MR_deleteEntity];
+</code></pre>
+
+<ol>
+<li>改</li>
+</ol>
+
+
+<p>修改数据</p>
+
+<pre><code>// 获取一个上下文对象
+NSManagedObjectContext *defaultContext = [NSManagedObjectContext MR_defaultContext];
+// 在当前上下文环境中创建一个新的Employee对象
+Employee *emp = [Employee MR_createEntityInContext:defaultContext];
+emp.name      = @"lxz";
+emp.brithday  = [NSDate date];
+emp.height    = @1.7;
+// 保存修改到当前上下文中
+[defaultContext MR_saveToPersistentStoreAndWait];
+</code></pre>
+
+<ol>
+<li>查</li>
+</ol>
+
+
+<p> 查询数据</p>
+
+<pre><code>// 执行查找操作，并设置排序条件
+NSArray *empSorted = [Employee MR_findAllSortedBy:@"height" ascending:YES];
+</code></pre>
+
+<h4>自定义NSFetchRequest</h4>
+
+<p>下面示例代码中，Employee根据已有的employeeFilter谓词对象，创建了employeeRequest请求对象，并将请求对象做修改后，从MOC中获取请求结果，实现自定义查找条件。</p>
+
+<pre><code>NSPredicate *employeeFilter = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
+NSFetchRequest *employeeRequest = [Employee MR_requestAllWithPredicate:employeeFilter];
+employeeRequest.fetchOffset = 10;
+employeeRequest.fetchLimit = 10;
+NSArray *employees = [Employee MR_executeFetchRequest:employeeRequest];
+</code></pre>
+
+<h6>参数设置</h6>
+
+<ol>
+<li><p>可以通过修改MR_LOGGING_DISABLED预编译指令的值，控制log打印。</p>
+
+<ul>
+<li>&ldquo;#defne MR_LOGGING_DISABLED 1&rdquo;.</li>
+</ul>
+</li>
+</ol>
+
+
+<p>2.MagicalRecord在DEBUG模式下，对模型文件发生了更改，并且没有创建新的模型文件版本。MagicalRecord默认会将旧的持久化存储删除，创建新的持久化存储。</p>
+
+<p>MagicalRecord的使用方法还有很多，这里只是将一些比较常用的拿出来讲讲，其他就不一一讲解了。在Github上有国人翻译的MagicalRecord官方文档，翻译的非常全面，而且是实时更新的。</p>
+
+<p>这篇文章关于MagicalRecord的部分，也是参考文章来写的，我这里就犯了个懒……</p>
+
+<h2>MagicalRecord中文文档</h2>
+
+<h4>CoreData优缺点总结</h4>
+
+<p>无论是什么东西，肯定不会是绝对完美的，CoreData也是如此。CoreData被设计出来后，对比其他本地持久化方案有自己独有的优势，也有比较严重的问题。</p>
+
+<p>对于一个本地持久化方案的选取，还是要根据公司业务需求，来选择一个适合项目的方案，并没有哪个方案是万能的。</p>
+
+<h6>优点</h6>
+
+<pre><code>可以设置关联关系，也就是之前讲过的关联属性，关联属性可以和当前对象一起被MOC操作。
+
+例如Company关联一个Person对象，对Company进行操作时，也可以通过点语法从Company中获取Person，Person的修改会随着Company一起被持久化。
+
+如果用SQLite实现起来是很麻烦的，但CoreData可以很容易的完成，这也是CoreData更加面向对象的一种体现。
+
+更加面向对象，将之前Model层的表示和持久化合二为一。把数据库的交互和对象的转换封装起来，使用时不需要接触到任何SQLite相关的代码，直接使用托管对象即可。
+
+开发效率比较快，可以很快的封装一个基于CoreData实现的Model层，而不需要太多的代码就可以实现。
+
+可以很好的防范SQL注入的问题。对于SQLite来说，如果是用FMDB并且用?占位符，也可以防范SQL注入的问题。
+
+可视化化效果好且结构清晰。将模型文件内部的结构，以及实体之间的对应关系等，以可视化的结构展现出来。
+
+对OC原生编程支持非常好，支持keyPath操作方式。例如设置NSPredicate查找条件时，可以使用keyPath的点语法设置属性。而其他持久化存储对于这点支持的不太好，需要编写很复杂的查找条件，看起来也不太好理解。
+
+毕竟是Apple自家推出的，所以对OC融合度比较高，可以很好的配合和使用OC对象。
+
+设置一对一或一对多的关系，设置关系后做存储和查询也非常方便，这是非常便于开发的。如果对于性能没有苛刻的要求，并且持久化对象之间关系比较复杂，比较推荐使用CoreData。
+</code></pre>
+
+<h6>缺点</h6>
+
+<pre><code>灵活性不如SQLite，CoreData是对SQLite的一个封装，上层不能直接对数据库进行操作。处理任何数据都要按照CoreData内部的实现逻辑执行，而不能自定义执行逻辑，对执行逻辑没有可控性。
+
+进行大量数据处理时比较吃力，性能明显低于直接操作SQLite数据库，而且内存占用非常大，需要手动做内存控制。
+
+当执行一个操作时涉及的数据比较多，需要将所有相关的托管对象加载到内存中，而且中间还涉及到对象的转换等操作。这样对性能和内存的消耗都是非常大的，和涉及到的数据量成正比。
+</code></pre>
+
+<p>因为CoreData底层是用SQLite实现的，可以在CoreData的基础上，直接编写SQL语句对数据库进行操作。但是并不推荐这样做，在一个项目中应该只有一种持久化的主体方案。而且如果这两种方式混用的话，对于后期维护是非常困难的。</p>
+
+<pre><code>如果出现这样的需求，最好直接去用SQLite。
+
+CoreData入门门槛比较高，很难很好的掌握。
+</code></pre>
+
+<p>很多人都说CoreData不好用，这个原因很大一部分都是因为使用方式的问题。CoreData框架学习难度比较大，导致很多人都只是简单的使用CoreData，这些用法很多都是不合理的，很多的高级用法并没有用到。</p>
+
+<h4>写在最后</h4>
+
+<p>到目前为止CoreData系列的六篇文章就都写完了，文章中可能存在一些没有注意的问题，还请各位提出。博客中包括CoreData在内的所有文章永久更新维护，会不断将新知识添加到对应的文章中，也会对落后的文章进行重写。</p>
+
+<p>在第一篇文章中也说到，我接触CoreData时间也不是很长，这系列文章更像是我学习的一个总结。但是我确实是很认真的在写，文章内容也是检查了很多遍，防止错字或者语法问题。知识点总结的还是比较全面的，在后续我还会更深入的学习CoreData，也可能会推出后续文章。</p>
+
+<blockquote><p>许多人对于CoreData有很多意见，认为CoreData有各种各样的问题，这并不是空穴来风。在我学习CoreData的过程中，也发现CoreData确实存在诸多问题，例如查询性能略差、灵活性等。所以在使用CoreData的时候，还是根据公司业务需求来权衡是否使用CoreData。</p></blockquote>
 </div>
   
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/07/04/coredatedzhuangbi/">阅读全文😘</a>
-    </footer>
   
 
 
@@ -516,7 +729,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatechaiyousa/">CoreData还有撒？</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatedzhuangbianquang/">CoreData安全问题！</a></h1>
     
     
       <p class="meta">
@@ -525,24 +738,28 @@
 
 
 
-<time class='entry-date' datetime='2016-07-04T06:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:59 am</span></time>
+<time class='entry-date' datetime='2016-07-04T18:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:59 pm</span></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>之前两篇文章都比较偏理论，文字表达比较多一些，但都是干货！学习时先理解理论知识，才能更好的帮助后面的理解。在这篇文章中，将会涉及关于CoreData的一些复杂操作，这些操作会涉及分页查询、模糊查询、批处理等高级操作。通过这些操作可以更好的使用CoreData，提升CoreData性能。文章中将会出现大量示例代码，通过代码的方式更有助于理解。</p>
+  <div class="entry-content"><p>正文：</p>
 
-<p>文章内容还会比较多，希望各位耐心看完。文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
+<p>CoreData使用相关的技术点已经讲差不多了，我所掌握的也就这么多了&hellip;.</p>
 
-<p>NSPredicate</p>
+<p>在本篇文章中主要讲CoreData的多线程，其中会包括并发队列类型、线程安全等技术点。我对多线程的理解可能不是太透彻，文章中出现的问题还请各位指出。在之后公司项目使用CoreData的过程中，我会将其中遇到的多线程相关的问题更新到文章中。</p>
+
+<p>在文章的最后，会根据我对CoreData多线程的学习，以及在工作中的具体使用，给出一些关于多线程结构的设计建议，各位可以当做参考。</p>
+
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2016/07/04/coredatechaiyousa/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2016/07/04/coredatedzhuangbianquang/">阅读全文😘</a>
     </footer>
   
 
@@ -572,7 +789,7 @@
 <li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
 <li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
-<li class='category'><a href='/blog/categories/senior/'>senior (38)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
 <li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
 <li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
 <li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>

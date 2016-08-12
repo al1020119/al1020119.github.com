@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-08T19:04:10+08:00</updated>
+  <updated>2016-08-12T12:23:53+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -3371,6 +3371,525 @@ Context</p>
 <p>如果简单说来，就是 Realm 更加适合一些业务逻辑不怎么复杂的场景，团队配置要求不高，有经验的人稍微看一下午就能上手。</p>
 
 <p>CoreData 更加适合业务逻辑复杂的情况，团队配置要求比较高，有经验的老手也需要几周甚至更长的时间才能科学的使用CoreData。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MagicalRecord魔法]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/04/coredatedzhuangbimegic/"/>
+    <updated>2016-07-04T20:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/04/coredatedzhuangbimegic</id>
+    <content type="html"><![CDATA[<p>正文：</p>
+
+<p>到目前为止，已经将CoreData相关的知识点都讲完了。</p>
+
+<p>在这篇文章中，主要讲一个CoreData第三方库-MagicalRecord。目前为止这个第三方在Github上有9500+的Star，是所有CoreData第三方库中使用最多、功能最全的。在文章的后面还会对CoreData做一个总结，以及对本系列所有文章做一个总结。</p>
+
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
+
+<h4>MagicalRecord</h4>
+
+<p>CoreData是苹果自家推出的一个持久化框架，使用起来更加面向对象。但是在使用过程中会出现大量代码，而且CoreData学习曲线比较陡峭，如果掌握不好，在使用过程中很容易造成其他问题。</p>
+
+<p>国外开发者开源了一个基于CoreData封装的第三方——MagicalRecord，就像是FMDB封装SQLite一样，MagicalRecord封装的CoreData，使得原生的CoreData更加容易使用。并且MagicalRecord降低了CoreData的使用门槛，不用去手动管理之前的PSC、MOC等对象。</p>
+
+<p>根据Github上MagicalRecord的官方文档，MagicalRecord的优点主要有三条：</p>
+
+<ol>
+<li><p>清理项目中CoreData代码</p></li>
+<li><p>支持清晰、简单、一行式的查询操作</p></li>
+<li><p>当需要优化请求时，可以获取NSFetchRequest进行修改</p></li>
+</ol>
+
+
+<p>添加MagicalRecord到项目中</p>
+
+<p>将MagicalRecord添加到项目中，和使用其他第三方一样，可以通过下载源码和CocoaPods两种方式添加。</p>
+
+<ol>
+<li><p>从Github下载MagicalRecord源码，将源码直接拖到项目中，后续需要手动更新源码。</p></li>
+<li><p>也可以通过CocoaPods安装MagicalRecord，需要在Podfile中加入下面命令，后续只需要通过命令来更新。</p></li>
+</ol>
+
+
+<h6>安装</h6>
+
+<pre><code>pod "MagicalRecord"
+</code></pre>
+
+<p>在之前创建新项目时，通过勾选"Use Core Data"的方式添加CoreData到项目中，会在AppDelegate文件中生成大量CoreData相关代码。如果是大型项目，被占用的位置是很重要的。而对于MagicalRecord来说，只需要两行代码即可。</p>
+
+<pre><code>- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+// 初始化CoreData堆栈，也可以指定初始化某个CoreData堆栈
+[MagicalRecord setupCoreDataStack];
+return YES;
+}
+- (void)applicationWillTerminate:(UIApplication *)application {
+// 在应用退出时，应该调用cleanUp方法
+[MagicalRecord cleanUp];
+}
+</code></pre>
+
+<p>MagicalRecord是支持CoreData的.xcdatamodeld文件的，使得CoreData这一优点可以继续使用。建立数据结构时还是像之前使用CoreData一样，通过.xcdatamodeld文件的方式建立。</p>
+
+<p><img src="http://al1020119.github.io/images/coredateduoxianchenganquan004.png" title="Caption" ></p>
+
+<h4>支持iCloud</h4>
+
+<p>CoreData是支持iCloud的，MagicalRecord对iCloud相关的操作也做了封装，只需要使用MagicalRecord+iCloud.h类中提供的方法，就可以进行iCloud相关的操作。</p>
+
+<p>例如下面是MagicalRecord+iCloud.h中的一个方法，需要将相关参数传入即可。</p>
+
+<pre><code>+ (void)setupCoreDataStackWithiCloudContainer:(NSString *)containerID localStoreNamed:(NSString *)localStore;
+</code></pre>
+
+<h6>创建上下文</h6>
+
+<p>MagicalRecord对上下文的管理和创建也比较全面，下面是MagicalRecord提供的部分创建和获取上下文的代码。因为是给NSManagedObjectContext添加的Category，可以直接用NSManagedObjectContext类调用，使用非常方便。</p>
+
+<p>但是需要注意，虽然系统帮我们管理了上下文对象，对于耗时操作仍然要放在后台线程中处理，并且在主线程中进行UI操作。</p>
+
+<pre><code>+ [NSManagedObjectContext MR_context]  设置默认的上下文为它的父级上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_newMainQueueContext]  创建一个新的上下文，并发类型为NSMainQueueConcurrencyType
+
++ [NSManagedObjectContext MR_newPrivateQueueContext]  创建一个新的上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_contextWithParent:]  创建一个新的上下文，允许自定义父级上下文，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_contextWithStoreCoordinator:]  创建一个新的上下文，并允许自定义持久化存储协调器，并发类型为NSPrivateQueueConcurrencyType
+
++ [NSManagedObjectContext MR_defaultContext]  获取默认上下文对象，项目中最基础的上下文对象，并发类型是NSMainQueueConcurrencyType
+</code></pre>
+
+<p>增删改查</p>
+
+<p>MagicalRecord对NSManagedObject添加了一个Category，将增删改查等操作放在这个Category中，使得这些操作可以直接被NSManagedObject类及其子类调用。</p>
+
+<ol>
+<li>增</li>
+</ol>
+
+
+<p>对于托管模型的创建非常简单，不需要像之前还需要进行上下文的操作，现在这都是MagicalRecord帮我们完成的。</p>
+
+<pre><code>// 创建并插入到上下文中
+Employee *emp = [Employee MR_createEntity];
+</code></pre>
+
+<ol>
+<li>删</li>
+</ol>
+
+
+<p>删除数据</p>
+
+<pre><code>// 从上下文中删除当前对象
+[emp MR_deleteEntity];
+</code></pre>
+
+<ol>
+<li>改</li>
+</ol>
+
+
+<p>修改数据</p>
+
+<pre><code>// 获取一个上下文对象
+NSManagedObjectContext *defaultContext = [NSManagedObjectContext MR_defaultContext];
+// 在当前上下文环境中创建一个新的Employee对象
+Employee *emp = [Employee MR_createEntityInContext:defaultContext];
+emp.name      = @"lxz";
+emp.brithday  = [NSDate date];
+emp.height    = @1.7;
+// 保存修改到当前上下文中
+[defaultContext MR_saveToPersistentStoreAndWait];
+</code></pre>
+
+<ol>
+<li>查</li>
+</ol>
+
+
+<p> 查询数据</p>
+
+<pre><code>// 执行查找操作，并设置排序条件
+NSArray *empSorted = [Employee MR_findAllSortedBy:@"height" ascending:YES];
+</code></pre>
+
+<h4>自定义NSFetchRequest</h4>
+
+<p>下面示例代码中，Employee根据已有的employeeFilter谓词对象，创建了employeeRequest请求对象，并将请求对象做修改后，从MOC中获取请求结果，实现自定义查找条件。</p>
+
+<pre><code>NSPredicate *employeeFilter = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
+NSFetchRequest *employeeRequest = [Employee MR_requestAllWithPredicate:employeeFilter];
+employeeRequest.fetchOffset = 10;
+employeeRequest.fetchLimit = 10;
+NSArray *employees = [Employee MR_executeFetchRequest:employeeRequest];
+</code></pre>
+
+<h6>参数设置</h6>
+
+<ol>
+<li><p>可以通过修改MR_LOGGING_DISABLED预编译指令的值，控制log打印。</p>
+
+<ul>
+<li>&ldquo;#defne MR_LOGGING_DISABLED 1&rdquo;.</li>
+</ul>
+</li>
+</ol>
+
+
+<p>2.MagicalRecord在DEBUG模式下，对模型文件发生了更改，并且没有创建新的模型文件版本。MagicalRecord默认会将旧的持久化存储删除，创建新的持久化存储。</p>
+
+<p>MagicalRecord的使用方法还有很多，这里只是将一些比较常用的拿出来讲讲，其他就不一一讲解了。在Github上有国人翻译的MagicalRecord官方文档，翻译的非常全面，而且是实时更新的。</p>
+
+<p>这篇文章关于MagicalRecord的部分，也是参考文章来写的，我这里就犯了个懒……</p>
+
+<h2>MagicalRecord中文文档</h2>
+
+<h4>CoreData优缺点总结</h4>
+
+<p>无论是什么东西，肯定不会是绝对完美的，CoreData也是如此。CoreData被设计出来后，对比其他本地持久化方案有自己独有的优势，也有比较严重的问题。</p>
+
+<p>对于一个本地持久化方案的选取，还是要根据公司业务需求，来选择一个适合项目的方案，并没有哪个方案是万能的。</p>
+
+<h6>优点</h6>
+
+<pre><code>可以设置关联关系，也就是之前讲过的关联属性，关联属性可以和当前对象一起被MOC操作。
+
+例如Company关联一个Person对象，对Company进行操作时，也可以通过点语法从Company中获取Person，Person的修改会随着Company一起被持久化。
+
+如果用SQLite实现起来是很麻烦的，但CoreData可以很容易的完成，这也是CoreData更加面向对象的一种体现。
+
+更加面向对象，将之前Model层的表示和持久化合二为一。把数据库的交互和对象的转换封装起来，使用时不需要接触到任何SQLite相关的代码，直接使用托管对象即可。
+
+开发效率比较快，可以很快的封装一个基于CoreData实现的Model层，而不需要太多的代码就可以实现。
+
+可以很好的防范SQL注入的问题。对于SQLite来说，如果是用FMDB并且用?占位符，也可以防范SQL注入的问题。
+
+可视化化效果好且结构清晰。将模型文件内部的结构，以及实体之间的对应关系等，以可视化的结构展现出来。
+
+对OC原生编程支持非常好，支持keyPath操作方式。例如设置NSPredicate查找条件时，可以使用keyPath的点语法设置属性。而其他持久化存储对于这点支持的不太好，需要编写很复杂的查找条件，看起来也不太好理解。
+
+毕竟是Apple自家推出的，所以对OC融合度比较高，可以很好的配合和使用OC对象。
+
+设置一对一或一对多的关系，设置关系后做存储和查询也非常方便，这是非常便于开发的。如果对于性能没有苛刻的要求，并且持久化对象之间关系比较复杂，比较推荐使用CoreData。
+</code></pre>
+
+<h6>缺点</h6>
+
+<pre><code>灵活性不如SQLite，CoreData是对SQLite的一个封装，上层不能直接对数据库进行操作。处理任何数据都要按照CoreData内部的实现逻辑执行，而不能自定义执行逻辑，对执行逻辑没有可控性。
+
+进行大量数据处理时比较吃力，性能明显低于直接操作SQLite数据库，而且内存占用非常大，需要手动做内存控制。
+
+当执行一个操作时涉及的数据比较多，需要将所有相关的托管对象加载到内存中，而且中间还涉及到对象的转换等操作。这样对性能和内存的消耗都是非常大的，和涉及到的数据量成正比。
+</code></pre>
+
+<p>因为CoreData底层是用SQLite实现的，可以在CoreData的基础上，直接编写SQL语句对数据库进行操作。但是并不推荐这样做，在一个项目中应该只有一种持久化的主体方案。而且如果这两种方式混用的话，对于后期维护是非常困难的。</p>
+
+<pre><code>如果出现这样的需求，最好直接去用SQLite。
+
+CoreData入门门槛比较高，很难很好的掌握。
+</code></pre>
+
+<p>很多人都说CoreData不好用，这个原因很大一部分都是因为使用方式的问题。CoreData框架学习难度比较大，导致很多人都只是简单的使用CoreData，这些用法很多都是不合理的，很多的高级用法并没有用到。</p>
+
+<h4>写在最后</h4>
+
+<p>到目前为止CoreData系列的六篇文章就都写完了，文章中可能存在一些没有注意的问题，还请各位提出。博客中包括CoreData在内的所有文章永久更新维护，会不断将新知识添加到对应的文章中，也会对落后的文章进行重写。</p>
+
+<p>在第一篇文章中也说到，我接触CoreData时间也不是很长，这系列文章更像是我学习的一个总结。但是我确实是很认真的在写，文章内容也是检查了很多遍，防止错字或者语法问题。知识点总结的还是比较全面的，在后续我还会更深入的学习CoreData，也可能会推出后续文章。</p>
+
+<blockquote><p>许多人对于CoreData有很多意见，认为CoreData有各种各样的问题，这并不是空穴来风。在我学习CoreData的过程中，也发现CoreData确实存在诸多问题，例如查询性能略差、灵活性等。所以在使用CoreData的时候，还是根据公司业务需求来权衡是否使用CoreData。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[CoreData安全问题！]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/04/coredatedzhuangbianquang/"/>
+    <updated>2016-07-04T18:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/04/coredatedzhuangbianquang</id>
+    <content type="html"><![CDATA[<p>正文：</p>
+
+<p>CoreData使用相关的技术点已经讲差不多了，我所掌握的也就这么多了&hellip;.</p>
+
+<p>在本篇文章中主要讲CoreData的多线程，其中会包括并发队列类型、线程安全等技术点。我对多线程的理解可能不是太透彻，文章中出现的问题还请各位指出。在之后公司项目使用CoreData的过程中，我会将其中遇到的多线程相关的问题更新到文章中。</p>
+
+<p>在文章的最后，会根据我对CoreData多线程的学习，以及在工作中的具体使用，给出一些关于多线程结构的设计建议，各位可以当做参考。</p>
+
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
+
+<!--more-->
+
+
+<h4>MOC并发队列类型</h4>
+
+<p>在CoreData中MOC是支持多线程的，可以在创建MOC对象时，指定其并发队列的类型。当指定队列类型后，系统会将操作都放在指定的队列中执行，如果指定的是私有队列，系统会创建一个新的队列。但这都是系统内部的行为，我们并不能获取这个队列，队列由系统所拥有，并由系统将任务派发到这个队列中执行的。</p>
+
+<p>NSManagedObjectContext并发队列类型:</p>
+
+<pre><code>NSConfinementConcurrencyType : 如果使用init方法初始化上下文，默认就是这个并发类型。这个枚举值是不支持多线程的，从名字上也体现出来了。
+
+NSPrivateQueueConcurrencyType : 私有并发队列类型，操作都是在子线程中完成的。
+
+NSMainQueueConcurrencyType : 主并发队列类型，如果涉及到UI相关的操作，应该考虑使用这个枚举值初始化上下文。
+</code></pre>
+
+<p>其中NSConfinementConcurrencyType类型在iOS9之后已经被苹果废弃，不建议使用这个API。使用此类型创建的MOC，调用某些比较新的CoreData的API可能会导致崩溃。</p>
+
+<h4>MOC多线程调用方式</h4>
+
+<p>在CoreData中MOC不是线程安全的，在多线程情况下使用MOC时，不能简单的将MOC从一个线程中传递到另一个线程中使用，这并不是CoreData的多线程，而且会出问题。对于MOC多线程的使用，苹果给出了自己的解决方案。</p>
+
+<p>在创建的MOC中使用多线程，无论是私有队列还是主队列，都应该采用下面两种多线程的使用方式，而不是自己手动创建线程。调用下面方法后，系统内部会将任务派发到不同的队列中执行。可以在不同的线程中调用MOC的这两个方法，这个是允许的。</p>
+
+<pre><code>- (void)performBlock:(void (^)())block         //异步执行的block，调用之后会立刻返回
+- (void)performBlockAndWait:(void (^)())block    //同步执行的block，调用之后会等待这个任务完成，才会继续向下执行
+</code></pre>
+
+<p>下面是多线程调用的示例代码，在多线程的环境下执行MOC的save方法，就是将save方法放在MOC的block体中异步执行，其他方法的调用也是一样的。</p>
+
+<pre><code>[context performBlock:^{
+    [context save:nil];
+}];
+</code></pre>
+
+<p>但是需要注意的是，这两个block方法不能在NSConfinementConcurrencyType类型的MOC下调用，这个类型的MOC是不支持多线程的，只支持其他两种并发方式的MOC。</p>
+
+<h4>多线程的使用</h4>
+
+<p>在业务比较复杂的情况下，需要进行大量数据处理，并且还需要涉及到UI的操作。对于这种复杂需求，如果都放在主队列中，对性能和界面流畅度都会有很大的影响，导致用户体验非常差，降低屏幕FPS。对于这种情况，可以采取多个MOC配合的方式。</p>
+
+<p>CoreData多线程的发展中，在iOS5经历了一次比较大的变化，之后可以更方便的使用多线程。从iOS5开始，支持设置MOC的parentContext属性，通过这个属性可以设置MOC的父MOC。下面会针对iOS5之前和之后，分别讲解CoreData的多线程使用。</p>
+
+<p>尽管现在的开发中早就不兼容iOS5之前的系统了，但是作为了解这里还是要讲一下，而且这种同步方式在iOS5之后也是可以正常使用的，也有很多人还在使用这种同步方式，下面其他章节也是同理。</p>
+
+<h4>iOS 5之前使用多个MOC</h4>
+
+<p>在iOS 5之前实现MOC的多线程，可以创建多个MOC，多个MOC使用同一个PSC，并让多个MOC实现数据同步。通过这种方式不用担心PSC在调用过程中的线程问题，MOC在使用PSC进行save操作时，会对PSC进行加锁，等当前加锁的MOC执行完操作之后，其他MOC才能继续执行操作。</p>
+
+<p>每一个PSC都对应着一个持久化存储区，PSC知道存储区中数据存储的数据结构，而MOC需要使用这个PSC进行save操作的实现。</p>
+
+<p><img src="http://al1020119.github.io/images/coredateduoxianchenganquan001.png" title="Caption" ></p>
+
+<h4>多线程结构</h4>
+
+<p>这样做有一个问题，当一个MOC发生改变并持久化到本地时，系统并不会将其他MOC缓存在内存中的NSManagedObject对象改变。所以这就需要我们在MOC发生改变时，将其他MOC数据更新。</p>
+
+<p>根据上面的解释，在下面例子中创建了一个主队列的mainMOC，主要用于UI操作。一个私有队列的backgroundMOC，用于除UI之外的耗时操作，两个MOC使用的同一个PSC。</p>
+
+<pre><code>// 获取PSC实例对象
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator {
+    // 创建托管对象模型，并指明加载Company模型文件
+    NSURL *modelPath = [[NSBundle mainBundle] URLForResource:@"Company" withExtension:@"momd"];
+    NSManagedObjectModel *model = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelPath];
+       // 创建PSC对象，并将托管对象模型当做参数传入，其他MOC都是用这一个PSC。
+    NSPersistentStoreCoordinator *PSC = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
+    // 根据指定的路径，创建并关联本地数据库
+    NSString *dataPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject;
+    dataPath = [dataPath stringByAppendingFormat:@"/%@.sqlite", @"Company"];
+    [PSC addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[NSURL fileURLWithPath:dataPath] options:nil error:nil];
+    return PSC;
+}
+// 初始化用于本地存储的所有MOC
+- (void)createManagedObjectContext {
+    // 创建PSC实例对象，其他MOC都用这一个PSC。
+    NSPersistentStoreCoordinator *PSC = self.persistentStoreCoordinator;
+    // 创建主队列MOC，用于执行UI操作
+    NSManagedObjectContext *mainMOC = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    mainMOC.persistentStoreCoordinator = PSC;
+    // 创建私有队列MOC，用于执行其他耗时操作
+    NSManagedObjectContext *backgroundMOC = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    backgroundMOC.persistentStoreCoordinator = PSC;
+    // 通过监听NSManagedObjectContextDidSaveNotification通知，来获取所有MOC的改变消息
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChanged:) name:NSManagedObjectContextDidSaveNotification object:nil];
+}
+// MOC改变后的通知回调
+- (void)contextChanged:(NSNotification *)noti {
+    NSManagedObjectContext *MOC = noti.object;
+    // 这里需要做判断操作，判断当前改变的MOC是否我们将要做同步的MOC，如果就是当前MOC自己做的改变，那就不需要再同步自己了。
+    // 由于项目中可能存在多个PSC，所以下面还需要判断PSC是否当前操作的PSC，如果不是当前PSC则不需要同步，不要去同步其他本地存储的数据。
+    [MOC performBlock:^{
+        // 直接调用系统提供的同步API，系统内部会完成同步的实现细节。
+        [MOC mergeChangesFromContextDidSaveNotification:noti];
+    }];
+}
+</code></pre>
+
+<p>在上面的Demo中，创建了一个PSC，并将其他MOC都关联到这个PSC上，这样所有的MOC执行本地持久化相关的操作时，都是通过同一个PSC进行操作的。并在下面添加了一个通知，这个通知是监听所有MOC执行save操作后的通知，并在通知的回调方法中进行数据的合并。</p>
+
+<h4>iOS5之后使用多个MOC</h4>
+
+<blockquote><p>在iOS5之后，MOC可以设置parentContext，一个parentContext可以拥有多个ChildContext。在ChildContext执行save操作后，会将操作push到parentContext，由parentContext去完成真正的save操作，而ChildContext所有的改变都会被parentContext所知晓，这解决了之前MOC手动同步数据的问题。</p></blockquote>
+
+<p>需要注意的是，在ChildContext调用save方法之后，此时并没有将数据写入存储区，还需要调用parentContext的save方法。因为ChildContext并不拥有PSC，ChildContext也不需要设置PSC，所以需要parentContext调用PSC来执行真正的save操作。也就是只有拥有PSC的MOC执行save操作后，才是真正的执行了写入存储区的操作。</p>
+
+<pre><code>- (void)createManagedObjectContext {
+    // 创建PSC实例对象，还是用上面Demo的实例化代码
+    NSPersistentStoreCoordinator *PSC = self.persistentStoreCoordinator;
+    // 创建主队列MOC，用于执行UI操作
+    NSManagedObjectContext *mainMOC = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    mainMOC.persistentStoreCoordinator = PSC;
+    // 创建私有队列MOC，用于执行其他耗时操作，backgroundMOC并不需要设置PSC
+    NSManagedObjectContext *backgroundMOC = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    backgroundMOC.parentContext = mainMOC;
+    // 私有队列的MOC和主队列的MOC，在执行save操作时，都应该调用performBlock:方法，在自己的队列中执行save操作。
+    // 私有队列的MOC执行完自己的save操作后，还调用了主队列MOC的save方法，来完成真正的持久化操作，否则不能持久化到本地
+    [backgroundMOC performBlock:^{
+        [backgroundMOC save:nil];
+        [mainMOC performBlock:^{
+            [mainMOC save:nil];
+        }];
+    }];
+}
+</code></pre>
+
+<p>上面例子中创建一个主队列的mainMOC，来完成UI相关的操作。创建私有队列的backgroundMOC，处理复杂逻辑以及数据处理操作，在实际开发中可以根据需求创建多个backgroundMOC。需要注意的是，在backgroundMOC执行完save方法后，又在mainMOC中执行了一次save方法，这步是很重要的。</p>
+
+<h4>iOS5之前进行数据同步</h4>
+
+<p>就像上面章节中讲到的，在iOS5之前存在多个MOC的情况下，一个MOC发生更改并提交存储区后，其他MOC并不知道这个改变，其他MOC和本地存储的数据是不同步的，所以就涉及到数据同步的问题。</p>
+
+<p>进行数据同步时，会遇到多种复杂情况。例如只有一个MOC数据发生了改变，其他MOC更新时并没有对相同的数据做改变，这样不会造成冲突，可以直接将其他MOC更新。</p>
+
+<p>如果在一个MOC数据发生改变后，其他MOC对相同的数据做了改变，而且改变的结果不同，这样在同步时就会造成冲突。下面将会按照这两种情况，分别讲一下不同情况下的冲突处理方式。</p>
+
+<h4>简单情况下的数据同步</h4>
+
+<p>简单情况下的数据同步，是针对于只有一个MOC的数据发生改变，并提交存储区后，其他MOC更新时并没有对相同的数据做改变，只是单纯的同步数据的情况。</p>
+
+<p>在NSManagedObjectContext类中，根据不同操作定义了一些通知。在一个MOC发生改变时，其他地方可以通过MOC中定义的通知名，来获取MOC发生的改变。在NSManagedObjectContext中定义了下面三个通知：</p>
+
+<pre><code>NSManagedObjectContextWillSaveNotification：MOC将要向存储区存储数据时，调用这个通知。在这个通知中不能获取发生改变相关的NSManagedObject对象。
+
+NSManagedObjectContextDidSaveNotification：MOC向存储区存储数据后，调用这个通知。在这个通知中可以获取改变、添加、删除等信息，以及相关联的NSManagedObject对象。
+
+NSManagedObjectContextObjectsDidChangeNotification：在MOC中任何一个托管对象发生改变时，调用这个通知。例如修改托管对象的属性。
+</code></pre>
+
+<p>通过监听NSManagedObjectContextDidSaveNotification通知，获取所有MOC的save操作。</p>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(settingsContext:) name:NSManagedObjectContextDidSaveNotification object:nil];
+</code></pre>
+
+<p>不需要在通知的回调方法中，编写代码对比被修改的托管对象。MOC为我们提供了下面的方法，只需要将通知对象传入，系统会自动同步数据。</p>
+
+<pre><code>- (void)mergeChangesFromContextDidSaveNotification:(NSNotification *)notification;
+</code></pre>
+
+<p>下面是通知中的实现代码，但是需要注意的是，由于通知是同步执行的，在通知对应的回调方法中所处的线程，和发出通知的MOC执行操作时所处的线程是同一个线程，也就是系统performBlock:回调方法分配的线程。</p>
+
+<p>所以其他MOC在通知回调方法中，需要注意使用performBlock:方法，并在block体中执行操作。</p>
+
+<pre><code>- (void)settingsContext:(NSNotification *)noti {
+    [context performBlock:^{
+        // 调用需要同步的MOC对象的merge方法，直接将通知对象当做参数传进去即可，系统会完成同步操作。
+        [context mergeChangesFromContextDidSaveNotification:noti];
+    }];
+}
+</code></pre>
+
+<h4>复杂情况下的数据同步</h4>
+
+<p>在一个MOC对本地存储区的数据发生改变，而其他MOC也对同样的数据做了改变，这样后面执行save操作的MOC就会冲突，并导致后面的save操作失败，这就是复杂情况下的数据合并。</p>
+
+<p>这是因为每次一个MOC执行一次fetch操作后，会保存一个本地持久化存储的状态，当下次执行save操作时会对比这个状态和本地持久化状态是否一样。如果一样，则代表本地没有其他MOC对存储发生过改变；如果不一样，则代表本地持久化存储被其他MOC改变过，这就是造成冲突的根本原因。</p>
+
+<p>对于这种冲突的情况，可以通过MOC对象指定解决冲突的方案，通过mergePolicy属性来设置方案。mergePolicy属性有下面几种可选的策略，默认是NSErrorMergePolicy方式，这也是唯一一个有NSError返回值的选项。</p>
+
+<pre><code>NSErrorMergePolicy : 默认值，当出现合并冲突时，返回一个NSError对象来描述错误，而MOC和持久化存储区不发生改变。
+
+NSMergeByPropertyStoreTrumpMergePolicy : 以本地存储为准，使用本地存储来覆盖冲突部分。
+
+NSMergeByPropertyObjectTrumpMergePolicy : 以MOC的为准，使用MOC来覆盖本地存储的冲突部分。
+
+NSOverwriteMergePolicy : 以MOC为准，用MOC的所有NSManagedObject对象覆盖本地存储的对应对象。
+
+NSRollbackMergePolicy : 以本地存储为准，MOC所有的NSManagedObject对象被本地存储的对应对象所覆盖。
+</code></pre>
+
+<p>上面五种策略中，除了第一个NSErrorMergePolicy的策略，其他四种中NSMergeByPropertyStoreTrumpMergePolicy和NSRollbackMergePolicy，以及NSMergeByPropertyObjectTrumpMergePolicy和NSOverwriteMergePolicy看起来是重复的。</p>
+
+<p>其实它们并不是冲突的，这四种策略的不同体现在，对没有发生冲突的部分应该怎么处理。NSMergeByPropertyStoreTrumpMergePolicy和NSMergeByPropertyObjectTrumpMergePolicy对没有冲突的部分，未冲突部分数据并不会受到影响。而NSRollbackMergePolicy和NSOverwriteMergePolicy则是无论是否冲突，直接全部替换。</p>
+
+<blockquote><p>题外话：对于MOC的这种合并策略来看，有木有感觉到CoreData解决冲突的方式，和SVN解决冲突的方式特别像。。。</p></blockquote>
+
+<h4>线程安全</h4>
+
+<p>无论是MOC还是托管对象，都不应该在其他MOC的线程中执行操作，这两个API都不是线程安全的。但MOC可以在其他MOC线程中调用performBlock:方法，切换到自己的线程执行操作。</p>
+
+<p>如果其他MOC想要拿到托管对象，并在自己的队列中使用托管对象，这是不允许的，托管对象是不能直接传递到其他MOC的线程的。但是可以通过获取NSManagedObject的NSManagedObjectID对象，在其他MOC中通过NSManagedObjectID对象，从持久化存储区中获取NSManagedObject对象，这样就是允许的。NSManagedObjectID是线程安全，并且可以跨线程使用的。</p>
+
+<p>可以通过MOC获取NSManagedObjectID对应的NSManagedObject对象，例如下面几个MOC的API。</p>
+
+<pre><code>NSManagedObject *object = [context objectRegisteredForID:objectID];
+NSManagedObject *object = [context objectWithID:objectID];
+</code></pre>
+
+<p>通过NSManagedObject对象的objectID属性，获取NSManagedObjectID类型的objectID对象。</p>
+
+<p>NSManagedObjectID *objectID = object.objectID;</p>
+
+<h4>CoreData多线程结构设计</h4>
+
+<p>上面章节中写的大多都是怎么用CoreData多线程，在掌握多线程的使用后，就可以根据公司业务需求，设计一套CoreData多线程结构了。对于多线程结构的设计，应该本着尽量减少主线程压力的角度去设计，将所有耗时操作都放在子线程中执行。</p>
+
+<p>对于具体的设计我根据不同的业务需求，给出两种设计方案的建议。</p>
+
+<h4>两层设计方案</h4>
+
+<ol>
+<li>在项目中多线程操作比较简单时，可以创建一个主队列mainMOC，和一个或多个私有队列的backgroundMOC。将所有backgroundMOC的parentContext设置为mainMOC，采取这样的两层设计一般就能够满足大多数需求了。</li>
+</ol>
+
+
+<p><img src="http://al1020119.github.io/images/coredateduoxianchenganquan002.png" title="Caption" ></p>
+
+<ol>
+<li>将耗时操作都放在backgroundMOC中执行，mainMOC负责所有和UI相关的操作。所有和UI无关的工作都交给backgroundMOC，在backgroundMOC对数据发生改变后，调用save方法会将改变push到mainMOC中，再由mainMOC执行save方法将改变保存到存储区。</li>
+</ol>
+
+
+<p>代码这里就不写了，和上面例子中设置parentContext代码一样，主要讲一下设计思路。</p>
+
+<h4>三层设计方案</h4>
+
+<ul>
+<li>但是我们发现，上面的save操作最后还是由mainMOC去执行的，backgroundMOC只是负责处理数据。虽然mainMOC只执行save操作并不会很耗时，但是如果save涉及的数据比较多，这样还是会对性能造成影响的。</li>
+</ul>
+
+
+<p>虽然客户端很少涉及到大量数据处理的需求，但是假设有这样的需求。可以考虑在两层结构之上，给mainMOC之上再添加一个parentMOC，这个parentMOC也是私有队列的MOC，用于处理save操作。</p>
+
+<p><img src="http://al1020119.github.io/images/coredateduoxianchenganquan003.png" title="Caption" ></p>
+
+<ul>
+<li>这样CoreData存储的结构就是三层了，最底层是backgroundMOC负责处理数据，中间层是mainMOC负责UI相关操作，最上层也是一个backgroundMOC负责执行save操作。这样就将影响UI的所有耗时操作全都剥离到私有队列中执行，使性能达到了很好的优化。</li>
+</ul>
+
+
+<p>需要注意的是，执行MOC相关操作时，不要阻塞当前主线程。所有MOC的操作应该是异步的，无论是子线程还是主线程，尽量少的使用同步block方法。</p>
+
+<h4>MOC同步时机</h4>
+
+<p>设置MOC的parentContext属性之后，parent对于child的改变是知道的，但是child对于parent的改变是不知道的。苹果这样设计，应该是为了更好的数据同步。</p>
+
+<pre><code>Employee *emp = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:backgroundMOC];
+emp.name = @"lxz";
+emp.brithday = [NSDate date];
+emp.height = @1.7f;
+[backgroundMOC performBlock:^{
+    [backgroundMOC save:nil];
+    [mainMOC performBlock:^{
+        [mainMOC save:nil];
+    }];
+}];
+</code></pre>
+
+<p>在上面这段代码中，mainMOC是backgroundMOC的parentContext。在backgroundMOC执行save方法前，backgroundMOC和mainMOC都不能获取到Employee的数据，在backgroundMOC执行完save方法后，自身上下文发生改变的同时，也将改变push到mainMOC中，mainMOC也具有了Employee对象。</p>
+
+<p>所以在backgroundMOC的save方法执行时，是对内存中的上下文做了改变，当拥有PSC的mainMOC执行save方法后，是对本地存储区做了改变。</p>
 ]]></content>
   </entry>
   
@@ -6968,474 +7487,6 @@ SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
 <blockquote><p>结束</p>
 
 <p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p></blockquote>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Socket Udp]]></title>
-    <link href="http://al1020119.github.io/blog/2016/06/22/socket-udp/"/>
-    <updated>2016-06-22T00:00:00+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/06/22/socket-udp</id>
-    <content type="html"><![CDATA[<hr />
-
-<p>layout: post
-title: &ldquo;Socket编程-UDP篇&rdquo;
-date: 2016-06-22 13:53:19 +0800
-comments: true
-categories: Senior
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
-
-<hr />
-
-<h3>1. UDP Socket编程</h3>
-
-<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
-
-<p>注意：Socket通信一定有要服务端和客户端。</p>
-
-<h4>1.1 UDP Socket客户端</h4>
-
-<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
-
-<p>笔者这里分成了四步：</p>
-
-<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
-第二步：调用sendto发送消息到服务器端
-第三步：调用recvfrom接收来自服务器端的消息
-第四步：调用close关闭socket
-</code></pre>
-
-<!--more-->
-
-
-<h4>1.1.1 客户端的代码实现：</h4>
-
-<pre><code>- (void)udpClient {
-  int clientSocketId;
-  ssize_t len;
-  socklen_t addrlen;
-  struct sockaddr_in client_sockaddr;
-  char buffer[256] = "Hello, server, how are you?";
-
-  // 第一步：创建Socket
-  clientSocketId = socket(AF_INET, SOCK_DGRAM, 0);
-  if(clientSocketId &lt; 0) {
-    NSLog(@"creat client socket fail\n");
-    return;
-  }
-
-  addrlen = sizeof(struct sockaddr_in);
-  bzero(&amp;client_sockaddr, addrlen);
-  client_sockaddr.sin_family = AF_INET;
-  client_sockaddr.sin_addr.s_addr = inet_addr("192.168.1.107");
-  client_sockaddr.sin_port = htons(1024);
-
-  int count = 10;
-  do {
-    bzero(buffer, sizeof(buffer));
-    sprintf(buffer, "%s", "Hello, server, how are you?");
-
-    // 第二步：发送消息到服务端
-    // 注意:UDP是面向无连接的，因此不用调用connect()
-    // 将字符串传送给server端
-   len = sendto(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, addrlen);
-
-    if (len &gt; 0) {
-      NSLog(@"发送成功");
-    } else {
-      NSLog(@"发送失败");
-    }
-
-    // 第三步：接收来自服务端返回的消息
-    // 接收server端返回的字符串
-    bzero(buffer, sizeof(buffer));
-    len = recvfrom(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, &amp;addrlen);
-    NSLog(@"receive message from server: %s", buffer);
-
-    count--;
-  } while (count &gt;= 0);
-
-  // 第四步：关闭socket
-  // 由于是面向无连接的，消息发出处就可以了，不用管它收不收得到，发完就可以关闭了
-  close(clientSocketId);
-}
-</code></pre>
-
-<h4>1.1.2 客户端的打印日志</h4>
-
-<pre><code>2015-12-06 15:38:36.095 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.316 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.317 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.328 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.329 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.355 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.356 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.372 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-2015-12-06 15:38:36.373 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
-2015-12-06 15:38:36.392 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
-</code></pre>
-
-<h4>1.2 UDP Socket服务器端</h4>
-
-<p>服务器端的工作流程：首先调用socket函数创建一个套接字，然后调用bind函数将其与本机地址以及一个本地端口号绑定，接收到一个客户端时，服务器显示该客户端的IP地址，并将字串返回给客户端。</p>
-
-<p>笔者这里分成了五步：</p>
-
-<pre><code>第一步：创建socket并配置socket
-第二步：调用bind绑定服务器本机ip及端口号
-第三步：调用recvfrom接收来自客户端的消息
-第四步：调用sendto将接收到服务器端的信息返回给客户端
-第四步：调用close关闭socket
-</code></pre>
-
-<h4>1.2.1 服务器端代码实现</h4>
-
-<pre><code>- (void)udpServer {
-  int serverSockerId = -1;
-  ssize_t len = -1;
-  socklen_t addrlen;
-  char buff[1024];
-  struct sockaddr_in ser_addr;
-
-  // 第一步：创建socket
-  // 注意，第二个参数是SOCK_DGRAM，因为udp是数据报格式的
-  serverSockerId = socket(AF_INET, SOCK_DGRAM, 0);
-
-  if(serverSockerId &lt; 0) {
-    NSLog(@"Create server socket fail");
-    return;
-  }
-
-  addrlen = sizeof(struct sockaddr_in);
-  bzero(&amp;ser_addr, addrlen);
-
-  ser_addr.sin_family = AF_INET;
-  ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  ser_addr.sin_port = htons(1024);
-
-  // 第二步：绑定端口号
-  if(bind(serverSockerId, (struct sockaddr *)&amp;ser_addr, addrlen) &lt; 0) {
-    NSLog(@"server connect socket fail");
-    return;
-  }
-
-  do {
-    bzero(buff, sizeof(buff));
-
-    // 第三步：接收客户端的消息
-    len = recvfrom(serverSockerId, buff, sizeof(buff), 0, (struct sockaddr *)&amp;ser_addr, &amp;addrlen);
-    // 显示client端的网络地址
-    NSLog(@"receive from %s\n", inet_ntoa(ser_addr.sin_addr));
-    // 显示客户端发来的字符串
-    NSLog(@"recevce:%s", buff);
-
-    // 第四步：将接收到的客户端发来的消息，发回客户端
-    // 将字串返回给client端
-    sendto(serverSockerId, buff, len, 0, (struct sockaddr *)&amp;ser_addr, addrlen);
-  } while (strcmp(buff, "exit") != 0);
-
-  // 第五步：关闭socket
-  close(serverSockerId);
-}
-</code></pre>
-
-<h4>1.2.2 服务器端的打印日志</h4>
-
-<pre><code>2015-12-06 15:38:36.268 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.269 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.409 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.410 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.414 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.415 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.425 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.426 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-2015-12-06 15:38:36.472 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
-2015-12-06 15:38:36.473 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
-</code></pre>
-
-<p>我们这里打印出了客户端发来的消息，由于上面实现的代码中，只发10次，所以这里只有10条。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Socket Tcp]]></title>
-    <link href="http://al1020119.github.io/blog/2016/06/21/socket-tcp/"/>
-    <updated>2016-06-21T00:00:00+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/06/21/socket-tcp</id>
-    <content type="html"><![CDATA[<hr />
-
-<p>layout: post
-title: &ldquo;Socket编程-TCP篇&rdquo;
-date: 2016-06-21 12:59:42 +0800
-comments: true
-categories: Senior
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
-
-<hr />
-
-<h3>1. TCP Socket编程</h3>
-
-<p>TCP是面向连接的，安全可靠的传输层协议。</p>
-
-<p>注意：Socket通信一定有要服务端和客户端。</p>
-
-<h4>1.1 TCP Socket客户端</h4>
-
-<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
-
-<p>笔者这里分成了六步：</p>
-
-<pre><code>第一步：创建socket并配置socket
-第二步：调用bind绑定监听ip和端口号
-第三步：调用connect连接服务器
-第四步：调用getsockname获取套接字信息
-第五步：调用send发送消息到服务器端
-第六步：调用close关闭socket
-</code></pre>
-
-<p>这里没有写接收来自服务器端的消息，大家可以自行添加。</p>
-
-<!--more-->
-
-
-<h4>1.1.1 客户端的代码实现：</h4>
-
-<pre><code>- (void)tcpClient {
-  // 第一步：创建soket
-  // TCP是基于数据流的，因此参数二使用SOCK_STREAM
-  int error = -1;
-  int clientSocketId = socket(AF_INET, SOCK_STREAM, 0);
-  BOOL success = (clientSocketId != -1);
-  struct sockaddr_in addr;
-
-  // 第二步：绑定端口号
-  if (success) {
-    NSLog(@"client socket create success");
-    // 初始化
-    memset(&amp;addr, 0, sizeof(addr));
-    addr.sin_len = sizeof(addr);
-
-    // 指定协议簇为AF_INET，比如TCP/UDP等
-    addr.sin_family = AF_INET;
-
-    // 监听任何ip地址
-    addr.sin_addr.s_addr = INADDR_ANY;
-    error = bind(clientSocketId, (const struct sockaddr *)&amp;addr, sizeof(addr));
-    success = (error == 0);
-  }
-
-  if (success) {
-    // p2p
-    struct sockaddr_in peerAddr;
-    memset(&amp;peerAddr, 0, sizeof(peerAddr));
-    peerAddr.sin_len = sizeof(peerAddr);
-    peerAddr.sin_family = AF_INET;
-    peerAddr.sin_port = htons(1024);
-
-    // 指定服务端的ip地址，测试时，修改成对应自己服务器的ip
-    peerAddr.sin_addr.s_addr = inet_addr("192.168.1.107");
-
-    socklen_t addrLen;
-    addrLen = sizeof(peerAddr);
-    NSLog(@"will be connecting");
-
-    // 第三步：连接服务器
-    error = connect(clientSocketId, (struct sockaddr *)&amp;peerAddr, addrLen);
-    success = (error == 0);
-
-    if (success) {
-      // 第四步：获取套接字信息
-      error = getsockname(clientSocketId, (struct sockaddr *)&amp;addr, &amp;addrLen);
-      success = (error == 0);
-
-      if (success) {
-        NSLog(@"client connect success, local address:%s,port:%d",
-              inet_ntoa(addr.sin_addr),
-              ntohs(addr.sin_port));
-
-        // 这里只发送10次
-        int count = 10;
-        do {
-          // 第五步：发送消息到服务端
-          send(clientSocketId, "哈哈，server您好！", 1024, 0);
-          count--;
-
-          // 告诉server，客户端退出了
-          if (count == 0) {
-            send(clientSocketId, "exit", 1024, 0);
-          }
-        } while (count &gt;= 1);
-
-        // 第六步：关闭套接字
-        close(clientSocketId);
-      }
-    } else {
-      NSLog(@"connect failed");
-
-      // 第六步：关闭套接字
-      close(clientSocketId);
-    }
-  }
-}
-</code></pre>
-
-<h4>1.1.2 客户端的打印日志</h4>
-
-<pre><code>2015-12-06 18:35:00.385 iOS-Socket-C-Version-Client[9726:4256295] client socket create success
-2015-12-06 18:35:00.386 iOS-Socket-C-Version-Client[9726:4256295] will be connecting
-2015-12-06 18:35:00.507 iOS-Socket-C-Version-Client[9726:4256295] client connect success, local address:192.168.1.100,port:50311
-</code></pre>
-
-<p>说明连接服务器成功，然后发送了消息到服务器端。
-1.2 TCP Socket服务器端</p>
-
-<p>服务器端的工作流程：首先调用socket函数创建一个套接字，然后调用bind函数将其与本机地址以及一个本地端口号绑定，接收到一个客户端时，服务器显示该客户端的IP地址，并将字串返回给客户端。</p>
-
-<p>笔者这里分成了五步：</p>
-
-<pre><code>第一步：创建socket并配置socket
-第二步：调用bind绑定服务器本机ip及端口号
-第三步：调用listen监听客户端的连接，并指定同时最多可让accept的数量
-第四步：调用accept等待客户端的连接
-第五步：调用recvfrom接收来自客户端的消息
-第六步：调用close关闭socket
-</code></pre>
-
-<h4>1.2.1 服务器端代码实现</h4>
-
-<pre><code>- (void)tcpServer {
-  // 第一步：创建socket
-  int error = -1;
-
-  // 创建socket套接字
-  int serverSocketId = socket(AF_INET, SOCK_STREAM, 0);
-  // 判断创建socket是否成功
-  BOOL success = (serverSocketId != -1);
-
-  // 第二步：绑定端口号
-  if (success) {
-    NSLog(@"server socket create success");
-    // Socket address
-    struct sockaddr_in addr;
-
-    // 初始化全置为0
-    memset(&amp;addr, 0, sizeof(addr));
-
-    // 指定socket地址长度
-    addr.sin_len = sizeof(addr);
-
-    // 指定网络协议，比如这里使用的是TCP/UDP则指定为AF_INET
-    addr.sin_family = AF_INET;
-
-    // 指定端口号
-    addr.sin_port = htons(1024);
-
-    // 指定监听的ip，指定为INADDR_ANY时，表示监听所有的ip
-    addr.sin_addr.s_addr = INADDR_ANY;
-
-    // 绑定套接字
-    error = bind(serverSocketId, (const struct sockaddr *)&amp;addr, sizeof(addr));
-    success = (error == 0);
-  }
-
-  // 第三步：监听
-  if (success) {
-    NSLog(@"bind server socket success");
-    error = listen(serverSocketId, 5);
-    success = (error == 0);
-  }
-
-  if (success) {
-    NSLog(@"listen server socket success");
-
-    while (true) {
-      // p2p
-      struct sockaddr_in peerAddr;
-      int peerSocketId;
-      socklen_t addrLen = sizeof(peerAddr);
-
-      // 第四步：等待客户端连接
-      // 服务器端等待从编号为serverSocketId的Socket上接收客户连接请求
-      peerSocketId = accept(serverSocketId, (struct sockaddr *)&amp;peerAddr, &amp;addrLen);
-      success = (peerSocketId != -1);
-
-      if (success) {
-        NSLog(@"accept server socket success,remote address:%s,port:%d",
-              inet_ntoa(peerAddr.sin_addr),
-              ntohs(peerAddr.sin_port));
-        char buf[1024];
-        size_t len = sizeof(buf);
-
-        // 第五步：接收来自客户端的信息
-        // 当客户端输入exit时才退出
-        do {
-          // 接收来自客户端的信息
-          recv(peerSocketId, buf, len, 0);
-          if (strlen(buf) != 0) {
-            NSString *str = [NSString stringWithCString:buf encoding:NSUTF8StringEncoding];
-            if (str.length &gt;= 1) {
-              NSLog(@"received message from client：%@",str);
-            }
-          }
-        } while (strcmp(buf, "exit") != 0);
-
-        NSLog(@"收到exit信号，本次socket通信完毕");
-
-        // 第六步：关闭socket
-        close(peerSocketId);
-      }
-    }
-  }
-}
-</code></pre>
-
-<h4>1.2.2 服务器端的打印日志</h4>
-
-<pre><code>2015-12-06 18:34:31.258 iOS-Socket-C-Version-Server[39929:2622200] server socket create success
-2015-12-06 18:34:31.258 iOS-Socket-C-Version-Server[39929:2622200] bind server socket success
-2015-12-06 18:34:31.259 iOS-Socket-C-Version-Server[39929:2622200] listen server socket success
-2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] accept server socket success,remote address:192.168.1.100,port:50311
-2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.743 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.744 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] received message from client：哈哈，server您好！
-2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] received message from client：exit
-2015-12-06 18:35:00.745 iOS-Socket-C-Version-Server[39929:2622200] 收到exit信号，本次socket通信完毕
-</code></pre>
-
-<p>我们这里打印出了客户端发来的消息，由于上面实现的代码中，只发10次，所以这里只有10条。</p>
 ]]></content>
   </entry>
   
