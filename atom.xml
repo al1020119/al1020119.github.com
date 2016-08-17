@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-12T12:23:53+08:00</updated>
+  <updated>2016-08-17T10:20:34+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,4403 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Shujujiegouchangjiancaozuozongjie]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/25/shujujiegouchangjiancaozuozongjie/"/>
+    <updated>2017-01-25T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/25/shujujiegouchangjiancaozuozongjie</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-数据结构常见操作与总结&rdquo;
+date: 2016-08-13 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<h1>一、栈</h1>
+
+<p>栈是只能在一端进行插入和删除的线性表。
+（别看只是个定义，非常重要，已经道出了运算方法：只能在一端插入和删除。)</p>
+
+<blockquote><p>栈的特征：后进先出，先进后出。</p></blockquote>
+
+<p>插入和删除元素的一端称为栈顶。（说明了我们在栈顶操作）
+另一端称为栈底。
+插入元素和删除元素的操作称为入栈和出栈。</p>
+
+<h3>1.顺序栈</h3>
+
+<p>结构：(top总是指向数组最后的元素，比如data[n]，而不是前面)</p>
+
+<pre><code>#define MAXSIZE 100
+typedef struct
+{
+    elementtype data[MAXSIZE];
+    int top;
+} seqstack;
+</code></pre>
+
+<p>初始化栈：</p>
+
+<pre><code>void init_stack(seqstack *S)
+{
+    S-&gt;top = -1;    //一个元素也没有，注意因为TOP是下标而不是元素个数，用-1
+}
+</code></pre>
+
+<p>判断栈是否为空：</p>
+
+<pre><code>int stack_empty(seqstack *S)
+{
+    if (S-&gt;top == -1)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取栈顶元素：</p>
+
+<pre><code>elementtype stack_top(seqstack *S)
+{
+    if (stack_empty(S))
+        error("栈为空！");
+    else
+        return S-&gt;data[S-&gt;top];
+}
+</code></pre>
+
+<p>入栈：</p>
+
+<pre><code>void push_stack(seqstack *S, elementtype x)
+{
+    if (S-&gt;top == MAXSIZE -1)
+        error("溢出！");
+    else
+        S-&gt;data[++S-&gt;top] = x;    //注意-&gt;运算符的优先级是最高的
+}
+</code></pre>
+
+<p>出栈：</p>
+
+<pre><code>elementtype pop_stack(seqstack *S)
+{
+    if (stack_empty(S))
+        error("栈为空！");
+    else
+        return S-&gt;data[S-&gt;top--];
+}
+</code></pre>
+
+<p>判断栈是否为满：</p>
+
+<pre><code>int stack_full(seqstack *S)
+{
+    if (S-&gt;top == MAXSIZE -1)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>总体来说，顺序栈很简单，出的时候取最后的元素，进的时候一样进在尾部。</p>
+
+<h3>2.链栈</h3>
+
+<p>栈的链式存储结构称为链栈。
+其插入和删除操作仅限制在表头位置上进行。
+由于只能在链表头部进行操作，故链栈没有必要象单链表那样添加头结点。栈顶指针就是链表的头指针。
+结构：</p>
+
+<pre><code>typedef struct node    //和一般链表的结构一样。
+{
+    elementtype data;
+    struct node *next;
+} linkstack; 
+linkstack *top;
+当top=NULL时，链栈为空栈。
+</code></pre>
+
+<p>入栈：</p>
+
+<pre><code>void push_stack(linkstack *top, elementtype x)
+{
+    linkstack *P = (linkstack *)malloc(sizeof(linkstack));
+    P-&gt;data = x;
+    P-&gt;next = top-&gt;next;
+    top = P;
+}
+</code></pre>
+
+<p>出栈：</p>
+
+<pre><code>elementype pop_stack(linkstack *top)
+{
+    elementtype x;
+    linkstack *P;
+    if (top == NULL)
+        error("栈为空！");
+    else
+    {
+        x = top-&gt;data;
+        P = top;
+        top = top-&gt;next;
+        free(P);
+        return x;
+    }
+}
+</code></pre>
+
+<h1>二、队列</h1>
+
+<p>队列是只能在一端插入，另一端删除的线性表。
+特征是：先进先出，后进后出。</p>
+
+<h1>1.顺序队列</h1>
+
+<p>注意顺序队列多是循环队列，这里要注意几点：</p>
+
+<ul>
+<li>(1)front是队头的前一个位置。</li>
+<li>(2)尾部入队，头部出队。</li>
+<li><p>(3)由于循环，任何的位置移动计算之后要取余：P = (P + 1) % MAXSIZE 。
+结构：</p>
+
+<p>  #define MAXSIZE 100
+  typedef struct
+  {
+      elementtype data[MAXSIZE];
+      int front;    //头序号（注意是队头的前一个位置）
+      int rear;    //尾序号（直接指向尾元素）
+  } seqqueue;</p></li>
+</ul>
+
+
+<p>初始化队列：</p>
+
+<pre><code>void init_queue(seqqueue *Q)
+{
+    Q-&gt;front = 0;
+    Q-&gt;rear = 0;
+}
+</code></pre>
+
+<p>还有一种写法：</p>
+
+<pre><code>void init_queue(seqqueue *Q)
+{
+    Q-&gt;front = MAXSIZE - 1;
+    Q-&gt;rear = MAXSIZE - 1;
+}
+</code></pre>
+
+<p>两种方法的区别是第一种插入第一个元素是data[1]，而第二种是data[0]。
+判断队列是否为空：</p>
+
+<pre><code>int queue_empty(seqqueue *Q)
+{
+    if (Q-&gt;front == Q-&gt;rear)
+        return 1;
+    else
+        return -1;
+}
+</code></pre>
+
+<p>判断队列是否为满：</p>
+
+<pre><code>int queue_full(seqqueue *Q)
+{
+    if ((Q-&gt;rear + 1) % MAXSIZE == Q-&gt;front)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取队头元素：</p>
+
+<pre><code>elementtype queue_front(seqqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+        return Q-&gt;data[(Q-&gt;front + 1) % MAXSIZE];
+}
+</code></pre>
+
+<p>入队：</p>
+
+<pre><code>void Enqueue(seqqueue *Q, elementtype x)
+{
+    if (queue_full(Q))
+        error("队列满！");
+    else
+    {
+        Q-&gt;rear = (Q-&gt;rear + 1) % MAXSIZE;    //千万不能直接用Q-&gt;rear++，在循环队列要特别注意
+        Q-&gt;data[Q-&gt;rear] = x;
+    }
+}
+</code></pre>
+
+<p>出队：</p>
+
+<pre><code>elementtype Outqueue(seqqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+    {
+        Q-&gt;front = (Q-&gt;front + 1) % MAXSIZE;
+        return Q-&gt;data[Q-&gt;front];
+    }
+}
+</code></pre>
+
+<h3>2.链队列</h3>
+
+<p>出队时，删除表头操作，入队时，在表尾添加结点。（也就是头部出，尾部进）
+使用带头结点的单链表形式。（注意链栈是不带头结点的）
+结构：</p>
+
+<pre><code>typedef struct mynode
+{
+    elementtype data;
+    mynode *next;
+} node;    //就是单链表
+typedef struct
+{
+    node *front;
+    node *rear;
+} linkqueue;
+</code></pre>
+
+<p>初始化队列：</p>
+
+<pre><code>void init_queue(linkqueue *Q)
+{
+    Q-&gt;front = (node *)malloc(sizeof(node));    //生成头结点（注意是NODE类型，Q结构是已有的一个结构，这里有点特殊，仔细体会）
+    Q-&gt;rear = Q-&gt;front;
+    Q-&gt;front = NULL;
+}
+</code></pre>
+
+<p>判断队列是否为空：</p>
+
+<pre><code>int queue_empty(linkqueue *Q)
+{
+    if (Q-&gt;front == Q-&gt;rear)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取队头元素：</p>
+
+<pre><code>elementtype queue_front(linkqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+        return Q-&gt;front-&gt;next-&gt;data;
+}
+</code></pre>
+
+<p>入队：</p>
+
+<pre><code>void Enqueue(linkqueue *Q, elementtype x)
+{
+    node *P = (node *)malloc(sizeof(node));
+    P-&gt;data = x;
+    P-&gt;next = NULL;
+    Q-&gt;rear-&gt;next = P;
+    Q-&gt;rear = P;
+}
+</code></pre>
+
+<p>出队：</p>
+
+<pre><code>elementtype Outqueue(linkqueue *Q)
+{
+    node *P;
+    elmenttype x;
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+    {
+        P = Q-&gt;front-&gt;next;
+        Q-&gt;front-&gt;next = P-&gt;next;
+        x = P-&gt;data;
+        free(P);
+    }
+    if (Q-&gt;front-&gt;next == NULL)    //只剩一个结点删除后队列为空时的特殊情况，一定要注意处理
+        Q-&gt;rear = Q-&gt;front;
+    return x;
+}
+</code></pre>
+
+<h1>数组</h1>
+
+<p>主要是稀疏矩阵的压缩存储：
+当数组中非零元素非常少时，称之为稀疏矩阵。
+存储特别如下：</p>
+
+<ul>
+<li>(1)对稀疏矩阵压缩存储时，除了存储非零元素的值v以外，还要存储其行列号i和j，故每个元素对应一个三元组(i, j, v)。将这些元素的三元组组织起来构成三元组表。</li>
+<li>(2)需要在三元组表中增设元素个数、行列数，以唯一确定一个稀疏矩阵。</li>
+</ul>
+
+
+<p>结构如下：</p>
+
+<pre><code>#define MAXSIZE 100
+typedef struct    //三元组结构
+{
+    int i, j;
+    elementtype v;
+} tuple;
+typedef struct
+{
+    int mu, nu, tu;    //行数、列数、非0元素个数
+    tuple data[MAXSIZE];
+} spmatrix;
+</code></pre>
+
+<h1>树</h1>
+
+<h3>一、树</h3>
+
+<p>树中的每个结点最多只有一个前驱（父辈），但可能有多个后继（后代）。
+一个结点的度是指该结点的孩子数目。
+若一个结点的度为0，称为叶子结点或终结点，否则称为分支结点或非终结点。
+一棵树的度是树中最大的结点的度。
+某个结点的子树的根称为其孩子结点，而该结点为其孩子结点的双亲结点或父结点。
+同一个结点的孩子互相称为兄弟结点。
+根的层次为1，其余结点的层次为父结点的层次数加1，而最大的层次数称为树的高度或深度。
+如果树中各兄弟结点之间的排列次序是无关的，则称之为有序树，否则称为无序树。
+称多棵树为森林。</p>
+
+<h3>二叉树</h3>
+
+<p>二叉树和树一样，都可以为空树。
+注意二叉树每个结点的孩子都有左右之分，每个结点都有左右两个子树，这与树结构明显不同。
+二叉树和树本质上是完全不同的两种结构。
+ 定义：满二叉树是指每层都有最大数目结点的二叉树，即高度为k的满二叉树中有2k-1个结点。而完全二叉树则是指在满二叉树的最下层从右到左连续地删除若干个结点所得到的二叉树。</p>
+
+<p>二叉树的性质：</p>
+
+<ul>
+<li>1.在二叉树的第i层上的结点个数&lt;=2i-1(i>0)</li>
+<li>2.深度（高度）为k的二叉树的结点个数&lt;=2k-1</li>
+<li>3.对任一棵非空的二叉树，如果其叶子数为n0, 度为2的结点数为n2, 则有下面的关系式成立：n0=n2+1
+(这个性质很重要。主要是有个概念：除去根结点，每个结点都与一个它上面的分支一一对应，也就是说，结点数＝分支数＋1，所以有：n-1=n1+2*n2)</li>
+<li>4.有n个结点的完全二叉树(n>0)的深度为[log2n]+1([]为取整)</li>
+<li>5.在编号的完全二叉树中，各结点的编号之间的关系为：
+编号为i的结点如果存在左孩子，则其编号为2i，如果存在右孩子，则其编号为2i+1，如果存在父结点，则其编号为[i/2]。</li>
+</ul>
+
+
+<p>二叉树的存储结构：
+1.顺序存储结构：
+按完全二叉树的编号次序进行，即编号为i的结点存储在数组中下标为i的元素中。
+缺点：若二叉树不是完全二叉树，则为了保持结点之间的关系，不得不空出许多元素来，这就造成了空间的浪费。</p>
+
+<p>2.二叉链表存储结构：</p>
+
+<pre><code>typedef struct node
+{
+    datatype data;
+    struct node *lchild, *rchild;
+} bitree;
+</code></pre>
+
+<h3>二叉树的遍历：</h3>
+
+<p>所谓遍历二叉树是指按某种次序访问二叉树中每个结点一次且仅一次。
+根据访问根结点的次序，可以分为先序遍历，中序遍历，后序遍历。
+先序遍历可描述为：
+若二叉树T不为空：</p>
+
+<ul>
+<li>(1)访问T的根结点；</li>
+<li>(2)先序遍历T的左子树；</li>
+<li><p>(3)先序遍历T的右子树。
+遍历的算法非常简单，只写出先序遍历算法：</p>
+
+<p>  void preorder(bitree *T)
+  {
+      if (T != NULL)
+      {
+          visit(T);    //一般用的最多的就是输出
+          preorder(T->lchild);
+          preorder(T->rchild);
+      }
+  }</p></li>
+</ul>
+
+
+<h3>线索二叉树</h3>
+
+<p>线索二叉树主要是为了求解在某种次序下的前驱或后继结点。
+将二叉树各结点中的空的左孩子指针域改为指向其前驱，空的右孩子指针域改为指向其后继。称这种新的指针（前驱或后继）为线索，所得到的二叉树被称为线索二叉树，将二叉树转变成线索二叉树的过程称为线索化。
+同时，为了区分到底指针是指向前驱（后继）还是孩子，要加入两个标志来判断。
+结构：</p>
+
+<pre><code>typedef struct node
+{
+    int ltag, rtag;    //0为孩子，1为前驱或后继
+    datatype data;
+    struct node *lchild, *rchild;
+} ordertree;
+</code></pre>
+
+<p>先序后继的求解：</p>
+
+<pre><code>ordertree *presuc(ordertree *P)
+{
+    if (P-&gt;ltag == 0)
+        return P-&gt;lchild;
+    else
+        return P-&gt;rchild;
+}
+</code></pre>
+
+<p>中序后继：</p>
+
+<pre><code>ordertree *insuc(ordertree *P)
+{
+    ordertree *q = P-&gt;rchild;
+    if (P-&gt;rtag == 1)
+        return q;
+    else
+    {
+        while (q-&gt;ltag == 0)
+            q = q-&gt;lchild;
+        return q;
+    }
+}
+</code></pre>
+
+<p>中序先驱：</p>
+
+<pre><code>ordertree *infore(ordertree *P)
+{
+    ordertree *q = P-&gt;lchild;
+    if (P-&gt;ltag == 1)
+        return q;
+    else
+    {
+        while (q-&gt;rtag == 0)
+            q = q-&gt;rchild;
+        return q;
+    }
+}
+</code></pre>
+
+<p>后序先驱：</p>
+
+<pre><code>ordertree *postfore(ordertree *P)
+{
+    if (P-&gt;rtag == 0)
+        return P-&gt;rchild;
+    else
+        return P-&gt;lchild;
+}
+</code></pre>
+
+<h3>树和森林</h3>
+
+<h5>1.树的存储结构：</h5>
+
+<p>(1)双亲表示法</p>
+
+<pre><code>struct tnode
+{
+    datatype data;
+    int parent;
+}
+struct tnode treelist[MAXSIZE];    //整个树的存储数组说明
+</code></pre>
+
+<p>其中parent指示该结点父结点的下标，data存放结点的值。
+优点：便于搜索相应结点的父结点和祖先结点。
+缺点：若要搜索孩子结点或后代结点需要搜索整个表，浪费时间。</p>
+
+<p>(2)孩子链表表示法
+分别将每个结点的孩子结点连成一个链表，然后将各表头指针放在一个表中构成一个整体结构。</p>
+
+<pre><code>typedef struct node    //链表中每个孩子结点的定义
+{
+    int data;
+    struct node *next;
+} listnode;
+typedef struct    //数组元素的定义，每个数组元素都是一个单链表，单头元素不同
+{
+    datatype info;
+    listnode *firstchild;
+} arrnode;
+arrnode tree[MAXSIZE];    //MAXSIZE为所有结点的个数
+</code></pre>
+
+<p>优缺点：与双亲表示法恰好相反。</p>
+
+<p>(3)孩子－兄弟链表表示法（二叉链表表示法，二叉树表示法）
+树中每个结点用一个链表结点来存储，每个链表结点中除了存放结点的值外，还有两个指针，一个用来指示该结点的第一个孩子，另一个用于指示该结点的下一个兄弟结点。</p>
+
+<pre><code>typedef struct node
+{
+    datatype data;
+    struct node *firstchild, *nextbrother;
+} tnode;
+</code></pre>
+
+<h5>2.树（森林）与二叉树的转换</h5>
+
+<p>树或森林的子树转换为二叉树的左子树，兄弟转化为右子树。</p>
+
+<h5>3.树（森林）的遍历</h5>
+
+<p>树的遍历可分为先序遍历和后序遍历。（注意没有中序，因为树有不只两个孩子）即结点是在其子树之前还是之后访问。
+遍历树（森林）要转换为遍历其对应的二叉树：
+先序遍历：（同二叉树的先序遍历）</p>
+
+<pre><code>void preorder(tnode *T)
+{
+    if (T != NULL)
+    {
+        visit(T);
+        preorder(T-&gt;firstchild);
+        preorder(T-&gt;nextbrother);
+    }
+}
+</code></pre>
+
+<p>后序遍历：（同二叉树的中序遍历）</p>
+
+<pre><code>void postorder(tnode *T)
+{
+    if (T != NULL)
+    {
+        postorder(T-&gt;firstchild);
+        visit(T);
+        postorder(T-&gt;nextbrother);
+    }
+}
+</code></pre>
+
+<h3>哈夫曼树</h3>
+
+<p>哈夫曼树主要用来处理压缩算法。
+一般的判断问题的流程就象是一棵二叉树，其中分支（判断）结点对应于二叉树的分支结点；而最后得出的结论对应于叶子结点；一个结论所需要的判断次数是从根结点到该叶子结点的分支线数（层次数-1）；每个结论成立的次数作为叶子结点的权值。
+(这个权值可能比较少接触,但是其实它非常重要,因为我们平时设计的系统,判断的结果常常都是通过长年的实践会有一个出现机率分配,而不可能是平分的,比如考试,如果常常80-90分的比较多,也许就要换一种算法,当然这是后话,和考试无关了.)</p>
+
+<p>哈夫曼算法步骤如下:</p>
+
+<ul>
+<li>(1)根据给定的n个权值,构成一排结点T,每个的值都是相应的权值.</li>
+<li>(2)从T中选两棵权值最小的二叉树,作为左右子树构成一棵新的二叉树T',并且新二叉树的权值为左右子树权值之和.</li>
+<li>(3)将新二叉树T'并入到T中,删除原来的两棵二叉树.</li>
+<li>(4)重复2,3直到只剩一棵二叉树.这棵树就是哈夫曼树.</li>
+</ul>
+
+
+<p>哈夫曼树的带权路径长度WPL=∑wL
+即所有叶子结点的 权值*比较次数(层次数-1) 之和.
+而WPL也正好等于所有分支结点(不包括叶子结点)的值之和.</p>
+
+<h1>图</h1>
+
+<p>图中将每个对象用一个顶点表示，并常用一个序号来标识一个顶点。
+其中弧表示单向关系，边表示双向关系，用离散数学中的术语来说，则分别表示为非对称关系和对称关系。
+弧用&lt;A, B>表示（A为尾，B为头），边用(A, B)表示。</p>
+
+<pre><code>一个图G由两部分内容构成，即顶点(vertex)集合(V)和边(或弧edge)的集合(E)，并用二元组(V, E)来表示，记做G = (V, E) 
+</code></pre>
+
+<ul>
+<li>根据顶点间的关系是否有向而引入有向图和无向图。</li>
+<li>给每条边或弧加上权值，这样的带权图称为网络。</li>
+<li>若无向图中任意两点间都有一条边，则称此图G为无向完全图。(共有边数 n*(n-1)/2 )</li>
+<li><p>若有向图中任意一个顶点到其余各点间均有一条弧，则称为有向完全图。(共有弧数 n*(n-1) )
+若一个图G1是从G中选取部分顶点和部分边（或弧）组成，则称G1是G的子图。（注意，顶点和边必须都为子关系）</p></li>
+<li><p>若无向图中两个顶点i, j之间存在一条边，则称i, j相邻接，并互为邻接点。
+在有向图中，若存在弧&lt;Vi, Vj>，也做Vi, Vj相邻接，但为区别弧的头、尾顶点，可进一步称做Vi邻接到Vj，Vj邻接于Vi。</p></li>
+</ul>
+
+
+<p>与一个顶点相邻接的顶点数称为该顶点的度。
+在有向图中，进入一个顶点的弧数称为该顶点的入度，从一个顶点发出的弧数为该顶点的出度，并将入度和出度之和作为该顶点的度。</p>
+
+<p>一个顶点经过一定的可经路程到达另一个顶点，就为顶点之间的路径。</p>
+
+<ul>
+<li>若某路径所经过的顶点不重复，则称此路径为简单路径。</li>
+<li>若某路径的首尾相同，则称此路径为回路（或称为环）。</li>
+<li><p>若某回路的中间不重复，则称之为简单回路。</p></li>
+<li><p>若无向图中任意两点之间均存在路径，则称G为连通图，否则不连通，就存在若干个连通分量。</p></li>
+<li>若有向图中任意两点间可以互相到达，则称为强连通图。</li>
+</ul>
+
+
+<p>一个无向图，连通并且无回路，称这样的图为树。
+若有向图中仅有一个顶点的入度为0，其余顶点的入度都为1，称此图为有向树，入度为0的顶点为根。</p>
+
+<h3>图的存储结构：</h3>
+
+<h5>1。邻接矩阵表示</h5>
+
+<p>对n个顶点的图来说，其邻接矩阵为n*n阶的。
+邻接矩阵的元素存放边（弧）的权值，对不存在的边（弧），则用0或∞表示。
+定义格式如下：</p>
+
+<pre><code>#define n 6    /* 图顶点数 */ 
+#define e 8    /* 图的边（弧）数 */
+typedef struct
+{
+    vextype vexs[n];    /* 顶点类型 */
+    datatype arcs[n][n];    /* 权值类型 */
+} graph; 
+</code></pre>
+
+<p>建立一个无向网络的算法：</p>
+
+<pre><code>CreateGraph(graph *G) 
+{ 
+    int i, j, k; 
+    float w; 
+    for (i=0; i&lt;n; i++) 
+        G-&gt;vexs[i] = getchar();    /* 读入顶点信息，创建表，这里用字符型 */ 
+    for (i=0; i&lt;n; i++) 
+        for (j=0; j&lt;n; j++) 
+            G-&gt;arcs[i][j] = 0;    /* 邻接矩阵初始化 */ 
+    for (k=0; k&lt;e; k++) 
+    { 
+        scanf("%d%d%f", &amp;i, &amp;j, &amp;w);    /* 读入边(vi, vj)上的权w(暂用float类型) */ 
+        G-&gt;arcs[i][j] = w; 
+        G-&gt;arcs[j][i] = w; 
+    } 
+}
+</code></pre>
+
+<h5>2.邻接表表示法</h5>
+
+<p>将每个顶点的邻接点连成链表，并将各链表的表头指针合在一起（用数组或链表表示均可），其中每个头指针与该结点的信息合为一个整体结点。
+如果将邻接表中各顶点的邻接表变为其前驱顶点即可，从而得到逆邻接表。
+用邻接表存储网络时，需要将各条边（弧）的权值作为相应邻接结点中的一个字段。
+结构：</p>
+
+<pre><code>typedef struct node
+{
+    int adjvex;    /* 邻接点域 */
+    struct node *next;    /* 链域 */
+    datatype arc;    /* 权值 */
+} edgenode;    /* 边表指针 */
+typedef struct
+{
+    vextype vertex;    /* 顶点信息 */
+    edgenode *link;    /* 边表头指针 */
+} vexnode;    /* 顶点表结点 */
+vexnode gnode[n];    /* 整个图的构成 */
+ 建立无向图的邻接表：
+CreateAdjlist(gnode)
+{
+    int i, j, k;
+    edgenode *s;
+    for (i=0; i&lt;n; i++)    /* 读入顶点信息 */
+    {
+        gnode[i].vertex = getchar();
+        gnode[i].link = NULL;    /* 边表指针初始化 */
+    }
+    for (k=0; k&lt;e; k++)    /* 建立边表 */
+    {
+        scanf("%d%d", &amp;i, &amp;j);    /* 读入边(vi,vj)的顶点序号 */
+        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为j的表结点 */
+        s-&gt;adjvex = j;
+        s-&gt;next = gnode[i].link;
+        gnode[i].link = s;    /* 将*s插入顶点vi的边表头部(插到头部比尾部简单) */
+        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为i的边表结点*s */
+        s-&gt;adjvex = i;
+        s-&gt;next = gnode[j].link;
+        gnode[j].link = s;    /* 将*s插入顶点vj的边表头部(最后四行由于是无向图，所以相互，两次) */
+    }
+}
+</code></pre>
+
+<h3>图的遍历算法及其应用</h3>
+
+<h5>1.深度遍历</h5>
+
+<ul>
+<li>(1)访问V0</li>
+<li>(2)依次从V0 的各个未被访问的邻接点出发深度遍历
+（两句话说的非常清楚。是一种以深度为绝对优先的访问。）</li>
+</ul>
+
+
+<h5>2。深度优先搜索遍历算法</h5>
+
+<p>由于实际算法比较复杂，这里算法依赖两个函数来求解（对于不同的存储结构有不同的写法）
+firstadj(G, v)：返回图G中顶点v的第一个邻接点。若不存在，返回0。
+nextadj(G, v, w)：返回图G中顶点v的邻接点中处于w之后的那个邻接点。若不存在，返回0。
+depth first search:</p>
+
+<pre><code>void dfs(graph G, int v)
+{
+    int w;
+    visit(v);
+    visited[v] = 1;
+    w = firstadj(G, v)
+    while (w != 0)
+    {
+        if (visited[w] == 0)
+            dfs(w);
+        w = nextadj(G, v, w);
+    }
+}
+</code></pre>
+
+<p>如果不是连通图，或者是有向图，那么访问一个v不可能遍历所有顶点。所以，需要再选择未被访问的顶点作为起点再调用dfs.</p>
+
+<p>所以，深度遍历图的算法如下：</p>
+
+<pre><code>void dfs_travel(graph G)
+{
+    int i;
+    for (i=1; i&lt;=n; i++)
+        visited[i] = 0;        //初始化各顶点的访问标志
+    for (i=1; i&lt;=n; i++)
+        if (visited[i] == 0)
+            dfs(G, i);
+}
+</code></pre>
+
+<h5>3.广度优先搜索遍历算法</h5>
+
+<p>广度优先搜索遍历算法(bfs)是一种由近而远的层次遍历算法，从顶点V0出发的广度遍历bfs描述为：</p>
+
+<ul>
+<li>(1)访问V0（可作为访问的第一层）；</li>
+<li>(2)假设最近一层的访问顶点依次为V1, V2, &hellip;, Vk，则依次访问他们的未被访问的邻接点。</li>
+<li>(3)重复2，直到找不到未被访问的邻接点为止。</li>
+</ul>
+
+
+<p>算法</p>
+
+<pre><code>void bfs(graph G, int V0)
+{
+    int w;
+    int v;
+    queue Q;
+    init_queue(Q);
+    visit(V0);
+    visited[V0] = 1;
+    Enqueue(Q, V0);
+    while (!empty(Q))
+    {
+        v = Outqueue(Q);
+        w = firstadj(G, v);
+        while (w != 0)
+        {
+            if (visited[w] == 0)
+            {
+                visit(w);
+                visited[w] = 1;
+                Enqueue(Q, w);
+            }
+            w = nextadj(G, v, w);
+        }
+    }
+}
+</code></pre>
+
+<p>广度遍历图的算法和深度一样：</p>
+
+<pre><code>void bfs_travel(graph G)
+{
+    int i;
+    for (i=1; i&lt;=n; i++)
+        visited[i] = 0;
+    for (i=1; i&lt;=n; i++)
+        if (visited[i] = 0)
+            bfs(G, i);
+}
+</code></pre>
+
+<p>最小生成树：</p>
+
+<pre><code>从图中选取若干条边，将所有顶点连接起来，并且所选取的这些边的权值之和最小。
+</code></pre>
+
+<p>这样所选取的边构成了一棵树，称这样的树为生成树，由于权值最小，称为最小生成树。</p>
+
+<h3>构造最小生成树有两种方法：</h3>
+
+<h6>1.Prim算法：</h6>
+
+<pre><code>首先将所指定的起点作为已选顶点，然后反复在满足如下条件的边中选择一条最小边，直到所有顶点成为已选顶点为止（选择n-1条边）：一端已选，另一端未选。
+</code></pre>
+
+<p>(简单的说，就是先任选一点，然后每次选择一条最小权值的边，而且只连接到一个已选顶点)</p>
+
+<h6>2.Kruskal算法：</h6>
+
+<pre><code>反复在满足如下条件的边中选出一条最小的，和已选边不够成回路。
+(条件就是不够成回路就OK，反复选最小边，知道所有顶点都有连接）
+</code></pre>
+
+<p>最短路径：
+一般即是要一个顶点到其余各个顶点的最短路径。（比如隔很远的顶点，要绕哪几条边走）
+求解方法：</p>
+
+<pre><code>首先，我们要画一个表，每个顶点有path和dist两个值，分别用来存储到各点的最短路径（比如(1,5,6)，就是1-5-6这个路径）和相应的长度（到该点的权值之和）。
+</code></pre>
+
+<ul>
+<li>(1)对V以外的各顶点，若两点间的邻接路径存在，则将其作为最短路径和最短长度存到path[v]和dist[v]中。(实际上也就是最开始对顶点的直接后继进行处理）</li>
+<li>(2)从未解顶点中选择一个dist值最小的顶点v，则当前的path[v]和dist[v]就是顶点v的最终解（从而使v成为已解顶点）。</li>
+<li>(3)如果v的直接后继经过v会更近一些，则修改v的直接后继的path和dist值。</li>
+</ul>
+
+
+<p>(上面的确是很难懂，只能通过例子自己慢慢熟悉。）</p>
+
+<h1>查找</h1>
+
+<blockquote><p>在软件设计中，通常是将待查找的数据元素集以某种表的形式给出，从而构成一种新的数据结构－－查找表。
+表包括一些“元素”，“字段”等等概念。</p></blockquote>
+
+<p>在一个数据表中，若某字段的值可以标识一个数据元素，则称之为关键字（或键）。
+若此关键字的每个值均可以唯一标识一个元素，则称之为主关键字，否则，若该关键字可以标识若干个元素，则称之为次关键字。</p>
+
+<p>查找算法的时间性能一般以查找次数来衡量。所谓查找长度是指查找一个元素所进行的关键字的比较次数。常以平均查找次数、最大查找次数来衡量查找算法的性能。</p>
+
+<h5>一、简单顺序查找</h5>
+
+<pre><code>int seq_seach(elementtype A[], int n, keytype x)
+{
+    int i;
+    A[0].key = x;        //设定监视哨
+    for (i=n; A[i].key!=x; i--);
+    return i;
+}
+</code></pre>
+
+<p>监视哨是一个小技巧，查找失败时，这里设定的数据是A[1]-A[n]，肯定可以在A[0]中找到该元素，并返回0表示查找失败。如果不设定监视哨，则在每次循环中要判断下标是否越界：for (i=1; i!=n&amp;&amp;A[i].key!=x;i&ndash;); 可以节省一半的时间。</p>
+
+<h5>二、有序表的二分查找</h5>
+
+<pre><code>int bin_search(elementtype A[], int n, keytype x)
+{
+    int mid, low, high;
+    low = 0;
+    high = n - 1;
+    while (low &lt;= high)
+    {
+        mid = (low + high) / 2;
+        if (x == A[mid].key)
+            return mid;
+        else if (x &lt; A[mid].key)
+            high = mid - 1;
+        else
+            low = mid + 1;
+    }
+    return -1;
+}
+</code></pre>
+
+<p>也可以使用递归算法：</p>
+
+<pre><code>int bin_search(elementtype A[], int low, int high, keytype x)
+{
+    int mid;
+    if (low &lt; high)
+        return -1;
+    else
+    {
+        mid = (low + high) / 2;
+        if (x == A[mid].key)
+            return mid;
+        else if (x &lt; A[mid],key)
+            return bin_search(A, low, mid - 1, x);
+        else
+            return bin_search(A, mid - 1, high, x);
+    }
+}
+</code></pre>
+
+<h1>排序</h1>
+
+<ul>
+<li>增排序和减排序：如果排序的结果是按关键字从小到大的次序排列的，就是增排序，否则就是减排序。</li>
+<li>内部排序和外部排序：如果在排序过程中，数据表中所有数据均在内存中进行，则这类排序为内部排序，否则就是外部排序。</li>
+<li>稳定排序和不稳定排序：在排序过程中，如果关键字相同的两个元素的相对次序不变，则称为稳定排序，否则是不稳定排序。</li>
+</ul>
+
+
+<p>在分析算法的时间性能时，主要以算法中用的最多的基本操作的执行次数（或者其数量级）来衡量，这些操作主要是比较、移动和交换元素。有时，可能要用这些次数的平均数来表示。</p>
+
+<h3>一、插入排序</h3>
+
+<p>基本思想：</p>
+
+<blockquote><p>把整个待排序子表看作是左右两部分，其中左边为有序区，右边为无序区，整个排序过程就是把右边无序区中的元素逐个插入到左边的有序区中，以构成新的有序区。
+实际中，开始排序时把第一个元素A[0]（或A[1]）看作左边的有序区，然后把剩下的2～N个元素依次插入到有序表中。</p></blockquote>
+
+<pre><code>void insert_sort(elementtype A[n+1])
+{
+    int i;
+    for (i=2; i&lt;=n; i++)
+    {
+        A[0] = A[i];        //设置监视哨，这个数组同样是从1开始，A[0]就设为监视哨
+        j = i - 1;
+        while (A[j].key &gt; A[0].key)
+        {
+            A[j + 1] = A[j];
+            j--;
+        }
+        A[j + 1] = A[0];
+    }
+}
+</code></pre>
+
+<p>明白这种方法的简单原理：
+a1 a2 a3 &hellip; a(i-1) ai &hellip;
+先将ai临时保存起来，然后把a(i-1)向前只要是比ai大的向后移，再把ai填进去即可。</p>
+
+<h3>二、快速排序</h3>
+
+<p>速度最快的办法！一定要掌握，考试重点。</p>
+
+<p>基本思想：</p>
+
+<blockquote><p>首先，选定一个元素作为中间元素，然后将表中所有元素与该中间元素相比较，将表中比中间元素小的元素调到表的前面，将比中间元素大的元素调到后面，再将中间数放在这两部分之间作为分界点，这样便得到一个划分；然后再对左右两部分分别进行快速排序，如此反复，直到每个子表仅有一个元素或空表为止。
+中间数一般选择部分的第一个元素。</p></blockquote>
+
+<pre><code>int partition(elementtype A[n], int s, int t)    //s,t是要排序元素的起点和终点,并返回最后中间元素位置
+{
+    elementtype x = A[s];    //保存中间元素到临时变量x,以腾出空位
+    int i = s;                        //置两端搜索位置的初值
+    int j = t;
+    while (i != j)        //两端位置重和再停止
+    {
+        while (i &lt; j &amp;&amp; A[j].key &gt; x.key) j--;    //从后面搜索“小”的元素
+        if (i &lt; j)        //如果找到，就调到前面的空位中
+        {
+            A[i] = A[j];
+            i++;
+        }
+        while (i &lt; j &amp;&amp; A[i].key &lt; x.key) i++;    //从前面搜索“大”的元素
+        if (i &lt; j)        //如果找到，调到后面的空位中
+        {
+            A[j] = A[i];
+            j--;
+        }
+    }
+    A[i] = x;        //将中间数移到最终位置上
+    return i;
+}
+</code></pre>
+
+<p>整个算法：</p>
+
+<pre><code>void quick_sort(elementtype A[n], int s, int t)    //对数组中下标从s到t的部分进行快速排序，如果是整个表就是0, n-1
+{
+    int i;
+    if (s &lt; t)    //表中至少有两个元素时
+    {
+        i = partition(A, s, t);    //划分排序一次
+        quick_sort(A, i + 1, t);    //对后面部分快速排序
+        quick_sort(A, s, i - 1);    //对前面部分快速排序
+    }
+}
+</code></pre>
+
+<h3>三、选择排序：</h3>
+
+<p>在待排序子表中完整地比较一遍以确定最大（小）元素，并将该元素放在子表的最前（后）面。
+【注：可能发觉和冒泡法比较类似，但注意选择法是全部比较一遍，找到最小元素的下标，再进行一次交换，而冒泡则是进行多次交换】</p>
+
+<pre><code>void select_sort(elementtype A[n])
+{
+   int min, i, j;
+   elementtype temp;
+   for (i=0; i&lt;n-1; i++)
+   {
+      min = i;
+      for (j=i+1; j&lt;n; j++)
+         if (A[min].key &gt; A[j].key) min = j;
+      if (min != i)
+      {
+         temp = A[i];
+         A[i] = A[min];
+         A[min] = temp;
+      }
+   }
+}
+</code></pre>
+
+<h3>四、归并排序</h3>
+
+<p>所谓归并是指将两个或两个以上的有序表合并成一个新的有序表。
+归并算法：</p>
+
+<p>假设两个序列A[m]和B[n]为非降序列（即存在相同元素的升序列），现要把他们合并为一个非降序列C[m+n]。</p>
+
+<pre><code>void merge(elementtype A[], elementtype B[], elementtype C[], int m, int n)
+{
+    int ia = 0, ib = 0, ic = 0;
+    while (ia &lt; m &amp;&amp; ib &lt; n)
+        if (A[ia] &lt;= B[ib])
+            C[ic++] = A[ia++];
+        else
+            C[ic++] = B[ib++];
+    while (ia &lt; m)
+        C[ic++] = A[ia++];
+    while (ib &lt; n)
+        C[ic++] = B[ib++];
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Suanfazhijinghua]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/22/suanfazhijinghua/"/>
+    <updated>2017-01-22T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/22/suanfazhijinghua</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-算法之精华-算法&amp;冒泡&rdquo;
+date: 2016-08-15 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<p>交换排序—冒泡排序（Bubble Sort）
+基本思想：</p>
+
+<blockquote><p>在要排序的一组数中，对当前还未排好序的范围内的全部数，自上而下对相邻的两个数依次进行比较和调整，让较大的数往下沉，较小的往上冒。即：每当两相邻的数比较后发现它们的排序与排序要求相反时，就将它们互换。
+算法的实现：</p></blockquote>
+
+<pre><code>void bubbleSort(int a[], int n){  
+    for(int i =0 ; i&lt; n-1; ++i) {  
+        for(int j = 0; j &lt; n-i-1; ++j) {  
+            if(a[j] &gt; a[j+1])  
+            {  
+                int tmp = a[j] ; a[j] = a[j+1] ;  a[j+1] = tmp;  
+            }  
+        }  
+    }  
+}  
+</code></pre>
+
+<p>冒泡排序算法的改进</p>
+
+<blockquote><p>对冒泡排序常见的改进方法是加入一标志性变量exchange，用于标志某一趟排序过程中是否有数据交换，如果进行某一趟排序时并没有进行数据交换，则说明数据已经按要求排列好，可立即结束排序，避免不必要的比较过程。本文再提供以下两种改进算法：</p></blockquote>
+
+<p>1．设置一标志性变量pos,用于记录每趟排序中最后一次进行交换的位置。由于pos位置之后的记录均已交换到位,故在进行下一趟排序时只要扫描到pos位置即可。
+改进后算法如下:</p>
+
+<pre><code>void Bubble_1 ( int r[], int n) {  
+    int i= n -1;  //初始时,最后位置保持不变  
+    while ( i&gt; 0) {   
+        int pos= 0; //每趟开始时,无记录交换  
+        for (int j= 0; j&lt; i; j++)  
+            if (r[j]&gt; r[j+1]) {  
+                pos= j; //记录交换的位置   
+                int tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
+            }   
+        i= pos; //为下一趟排序作准备  
+     }   
+}    
+</code></pre>
+
+<p>2．传统冒泡排序中每一趟排序操作只能找到一个最大值或最小值,我们考虑利用在每趟排序中进行正向和反向两遍冒泡的方法一次可以得到两个最终值(最大者和最小者) , 从而使排序趟数几乎减少了一半。
+改进后的算法实现为:</p>
+
+<pre><code>void Bubble_2 ( int r[], int n){  
+    int low = 0;   
+    int high= n -1; //设置变量的初始值  
+    int tmp,j;  
+    while (low &lt; high) {  
+        for (j= low; j&lt; high; ++j) //正向冒泡,找到最大者  
+            if (r[j]&gt; r[j+1]) {  
+                tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
+            }   
+        --high;                 //修改high值, 前移一位  
+        for ( j=high; j&gt;low; --j) //反向冒泡,找到最小者  
+            if (r[j]&lt;r[j-1]) {  
+                tmp = r[j]; r[j]=r[j-1];r[j-1]=tmp;  
+            }  
+        ++low;                  //修改low值,后移一位  
+    }   
+}   
+</code></pre>
+
+<p> 交换排序—快速排序（Quick Sort）</p>
+
+<p>基本思想：</p>
+
+<ul>
+<li><p>1）选择一个基准元素,通常选择第一个元素或者最后一个元素,</p></li>
+<li><p>2）通过一趟排序讲待排序的记录分割成独立的两部分，其中一部分记录的元素值均比基准元素值小。另一部分记录的 元素值比基准值大。</p></li>
+<li><p>3）此时基准元素在其排好序后的正确位置</p></li>
+<li><p>4）然后分别对这两部分记录用同样的方法继续进行排序，直到整个序列有序。</p></li>
+</ul>
+
+
+<p>算法的实现：
+ 递归实现：</p>
+
+<pre><code>void print(int a[], int n){  
+    for(int j= 0; j&lt;n; j++){  
+        cout&lt;&lt;a[j] &lt;&lt;"  ";  
+    }  
+    cout&lt;&lt;endl;  
+}  
+
+void swap(int *a, int *b)  
+{  
+    int tmp = *a;  
+    *a = *b;  
+    *b = tmp;  
+}  
+int partition(int a[], int low, int high)  
+{  
+    int privotKey = a[low];                             //基准元素  
+    while(low &lt; high){                                   //从表的两端交替地向中间扫描  
+        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high;  //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
+        swap(&amp;a[low], &amp;a[high]);  
+        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
+        swap(&amp;a[low], &amp;a[high]);  
+    }  
+    print(a,10);  
+    return low;  
+}  
+void quickSort(int a[], int low, int high){  
+    if(low &lt; high){  
+        int privotLoc = partition(a,  low,  high);  //将表一分为二  
+        quickSort(a,  low,  privotLoc -1);          //递归对低子表递归排序  
+        quickSort(a,   privotLoc + 1, high);        //递归对高子表递归排序  
+    }  
+}  
+int main(){  
+    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
+    cout&lt;&lt;"初始值：";  
+    print(a,10);  
+    quickSort(a,0,9);  
+    cout&lt;&lt;"结果：";  
+    print(a,10);  
+
+}  
+</code></pre>
+
+<p>分析：</p>
+
+<blockquote><p>快速排序是通常被认为在同数量级（O(nlog2n)）的排序方法中平均性能最好的。但若初始序列按关键码有序或基本有序时，快排序反而蜕化为冒泡排序。为改进之，通常以“三者取中法”来选取基准记录，即将排序区间的两个端点与中点三个记录关键码居中的调整为支点记录。快速排序是一个不稳定的排序方法。
+快速排序的改进</p></blockquote>
+
+<p>在本改进算法中,只对长度大于k的子序列递归调用快速排序,让原序列基本有序，然后再对整个基本有序序列用插入排序算法排序。实践证明，改进后的算法时间复杂度有所降低，且当k取值为 8 左右时,改进算法的性能最佳。算法思想如下：</p>
+
+<pre><code>void print(int a[], int n){  
+    for(int j= 0; j&lt;n; j++){  
+        cout&lt;&lt;a[j] &lt;&lt;"  ";  
+    }  
+    cout&lt;&lt;endl;  
+}  
+void swap(int *a, int *b)  
+{  
+    int tmp = *a;  
+    *a = *b;  
+    *b = tmp;  
+}  
+int partition(int a[], int low, int high)  
+{  
+    int privotKey = a[low];                 //基准元素  
+    while(low &lt; high){                   //从表的两端交替地向中间扫描  
+        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high; //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
+        swap(&amp;a[low], &amp;a[high]);  
+        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
+        swap(&amp;a[low], &amp;a[high]);  
+    }  
+    print(a,10);  
+    return low;  
+}  
+void qsort_improve(int r[ ],int low,int high, int k){  
+    if( high -low &gt; k ) { //长度大于k时递归, k为指定的数  
+        int pivot = partition(r, low, high); // 调用的Partition算法保持不变  
+        qsort_improve(r, low, pivot - 1,k);  
+        qsort_improve(r, pivot + 1, high,k);  
+    }   
+}   
+void quickSort(int r[], int n, int k){  
+    qsort_improve(r,0,n,k);//先调用改进算法Qsort使之基本有序  
+    //再用插入排序对基本有序序列排序  
+    for(int i=1; i&lt;=n;i ++){  
+        int tmp = r[i];   
+        int j=i-1;  
+        while(tmp &lt; r[j]){  
+            r[j+1]=r[j]; j=j-1;   
+        }  
+        r[j+1] = tmp;  
+    }   
+
+}   
+int main(){  
+    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
+    cout&lt;&lt;"初始值：";  
+    print(a,10);  
+    quickSort(a,9,4);  
+    cout&lt;&lt;"结果：";  
+    print(a,10);  
+
+}  
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[23zhongshejimoshi]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/20/23zhongshejimoshi/"/>
+    <updated>2017-01-20T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/20/23zhongshejimoshi</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-常见查找算法&rdquo;
+date: 2016-08-13 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<h2>设计模式</h2>
+
+<p>总体来说设计模式分为三大类：</p>
+
+<ul>
+<li><p>创建型模式，共五种：工厂方法模式、抽象工厂模式、单例模式、建造者模式、原型模式。</p></li>
+<li><p>结构型模式，共七种：适配器模式、装饰器模式、代理模式、外观模式、桥接模式、组合模式、享元模式。</p></li>
+<li><p>行为型模式，共十一种：策略模式、模板方法模式、观察者模式、迭代子模式、责任链模式、命令模式、备忘录模式、状态模式、访问者模式、中介者模式、解释器模式。</p>
+
+<ul>
+<li>其实还有两类：并发型模式和线程池模式。</li>
+</ul>
+</li>
+</ul>
+
+
+<!--more-->
+
+
+<h2>创建型模式</h2>
+
+<h3>工厂方法模式</h3>
+
+<p>简单工厂模式的最大优点在于工厂类中包含了必要的逻辑判断，根据客户端输入的选择条件动态的实例化相关的类，对于客户端来说，去除了与具体产品的依赖。</p>
+
+<p>但是简单工厂方法违背了开放——封闭模式。</p>
+
+<h6>1、思想</h6>
+
+<pre><code>工厂方法模式：定义一个用于创建对象的接口，让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 核心工厂类不再负责所有产品的创建，而是将具体创建的工作交给了子类去做，成为一个抽象工厂角色，仅仅负责具体工厂类必须实现的接口，而不接触哪一个产品类应当被实例化的细节。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：修正了简单工厂模式中不遵守开放－封闭原则。工厂方法模式把选择判断移到了客户端去实现，如果想添加新功能就不用修改原来的类，直接修改客户端即可，从而保持了封装对象创建过程的优点。使得更换对象时，不需要做大的改动就可以实现，降低了客户程序与产品对象的耦合。</p>
+
+<p>BAD：每增加一个产品，就需要增加一个产品工厂类，即增加了额外的开发量</p>
+
+<h3>抽象工厂模式</h3>
+
+<h6>一、思想</h6>
+
+<pre><code> 定义一个用于创建对象的接口，让子类决定实例化哪一个类。Factory使一个类的实例化延迟到其子类。（四人团）
+
+实际上： 工厂模式主要就是用于创建对象。新添加类时，不会影响以前的系统代码。
+</code></pre>
+
+<h6>二、基本思想</h6>
+
+<p>   核心思想：是用一个工厂来根据输入的条件产生不同的类，然后根据不同类的virtual函数得到不同的结果。</p>
+
+<pre><code> 客户类和工厂类分开，消费者任何时候需要某种产品类对象，只需要向工厂类（有静态成员函数接收）提交参数和请求即可。消费者无需修改（直接用所有产品共同的父类指针指向）就可以接纳和使用新产品类的对象。
+</code></pre>
+
+<h6>三、优缺点分析</h6>
+
+<p>GOOD: 适用于不同情况创建不同的类时</p>
+
+<p>BAD：  客户端必须要知道基类和工厂类，耦合性差，而且当产品修改时，工厂类也要做相应修改（如：如何创建及如何向客户端提供）</p>
+
+<h3>单例模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>保证一个类仅有一个实例，并提供一个访问它的全局访问点
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<p>确保某个类只有一个实例（类的静态成员变量），而且自行实例化并向整个系统提供这个实例单例模式。</p>
+
+<p>直接将类的构造方法改成私有的（所有类都有构造方法，不编码则系统默认生成空的构造方法，若有显示定义的构造方法，默认的构造方法就会失效），然后在一个public的实例化函数中调用私有构造函数，完成仅有的一次实例化。</p>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD:单例模式只应在有真正的“单一实例”的需求时才可使用。</p>
+
+<p>单例模式因为Singleton类封装它的唯一实例，这样它可以严格地控制客户怎样访问它以及何时访问它，简单的说就是对唯一实例的受控访问。</p>
+
+<h3>建造者模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>建造者模式：将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 将产品的内部表象和产品的生成过程分割开来，从而使一个建造过程生成具有不同的内部表象的产品对象。建造模式使得产品内部表象可以独立的变化，客户不必知道产品内部组成的细节。
+</code></pre>
+
+<p>即用户就只需要指定需要建造的类型就可以得到产品，而具体的建造过程和细节就不需要知道了。</p>
+
+<p>建造模式可以强制实行一种分步骤进行的建造过程。</p>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：使得建造代码与表示代码分离，由于建造者隐藏了该产品是如何组装的，所以若需要改变一个产品的内部表示，只需要再定义一个具体的建造者就可以了。</p>
+
+<h6>适用于：</h6>
+
+<p>（1）在当创建复杂对象的算法应该独立于该对象的组成部分以及它们的装配方式时适用。</p>
+
+<p>就是说：主要用于创建一些复杂的对象，这些对象内部的构建顺序通常是稳定的，但是对象内部的具体各个构建方法通常面临着复杂的变化。</p>
+
+<p>（2）当构造过程必须允许被构造的对象有不同的表示时。</p>
+
+<h3>原型模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>原型模式：用原型实例指定创建对象的种类，并且通过拷贝这些原型创建新的对象。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 通过给出一个原型对象来指明所要创建的对象的类型，然后用复制这个原型对象的方法创建出更多同类型的对象。原型模式允许动态的增加或减少产品类，产品类不需要非得有任何事先确定的等级结构。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<p>从一个对象再创建另外一个可定制的对象，而无需知道任何创建的细节。并能提高创建的性能。 说白了就COPY技术，把一个对象完整的COPY出一份。</p>
+
+<p>一般在初始化的信息不发生变化的情况下，克隆是最好的办法。这既隐藏了对象创建的细节，又对性能是大大的提高。
+BAD：</p>
+
+<p>缺点是每一个类都必须配备一个复制方法。
+必须注意：</p>
+
+<p>浅复制和深复制的问题：如果字段是基本数据类型的，则用拷贝构造函数即可进行逐位复制，但如果字段是指针或引用类型的，则复制就不仅仅要复制指针和引用本身，还需要对其所指的实际数据对象进行复制。</p>
+
+<h2>结构型模式</h2>
+
+<h3>适配器模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>把一个类的接口变换成客户端所期待的另一种接口，从而使原本因接口不兼容而无法一起工作的两个类能够一起工作。
+</code></pre>
+
+<h6>2、优缺点分析</h6>
+
+<p>适用情况：当系统的数据和行为都正确，但接口不符时，我们应该考虑使用适配器，目的是使控制范围之外的一个原有对象与某个接口匹配。适配器模式主要应用于希望复用一些现存的类，但是接口又与复用环境要求不一致的情况。
+装饰器模式</p>
+
+<h3>装饰模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>装饰模式：动态的给一个对象添加一些额外的职责（不重要的功能，只是偶然一次要执行）。就增加功能来说，Decorator模式比使用继承生成子类更为灵活。
+
+ 建造过程不稳定，需要把所需的功能按正确的顺序串联起来进行控制。
+</code></pre>
+
+<h6>2、优缺点分析</h6>
+
+<p>GOOD:当你向旧的类中添加新代码时，一般是为了添加核心职责或主要行为。而当需要加入的仅仅是一些特定情况下才会执行的特定的功能时（简单点就是不是核心应用的功能），就会增加类的复杂度。</p>
+
+<pre><code>装饰模式就是把要添加的附加功能分别放在单独的类中，并让这个类包含它要装饰的对象，
+
+当需要执行时，客户端就可以有选择地、按顺序地使用装饰功能包装对象。
+</code></pre>
+
+<h3>代理模式</h3>
+
+<h6>一、思想</h6>
+
+<pre><code>代理模式：为其他对象提供一种代理以控制对这个对象的访问
+</code></pre>
+
+<h6>二、基本思想</h6>
+
+<pre><code> 代理模式实际就是在访问对象时引入一定程度的间接性，因为这种间接性，可以附加多种用途。
+</code></pre>
+
+<h6>三、优缺点分析</h6>
+
+<p>GOOD：（适用场合）</p>
+
+<p>远程代理：也就是为一个对象在不同的地址空间提供局部代表，这样可以隐藏一个对象在不同地址空间的事实。</p>
+
+<pre><code>              例如：客户端程序调用代理就可以解决远程访问的问题
+</code></pre>
+
+<p>虚拟代理：是根据需要创建开销很大的对象，通过代理来存放实例化需要很长时间的真实对象，从而达到性能的最优化（例如浏览器使用代理模式来优化下载）。</p>
+
+<pre><code>              例如：打开大网页时，未马上打开的图片就是通过虚拟代理来替代了真实的图片，而代理存储了真实图片的路径和尺寸。
+</code></pre>
+
+<p>安全代理：用来控制真实对象的访问权限</p>
+
+<p>智能引用：当调用真实对象时，代理处理另外一些事</p>
+
+<h3>外观模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>外观模式：为子系统中的一组接口提供一个一致的界面，此模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 外部与一个子系统的通信必须通过一个统一的外观对象进行。外观模式提供一个高层次的接口，使得子系统更易于使用。每一个子系统只有一个外观类，而且此外观类只有一个实例，也就是还说它是一个单例模式。但整个系统可以有多个外观类。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<p>为子系统的一组接口提供一个一致的界面。使用户使用起来更加方便。</p>
+
+<pre><code>完美体现了依赖倒转原则和迪米特原则
+</code></pre>
+
+<p>适用情况：</p>
+
+<pre><code>分三个阶段：
+
+1、首先，在设计初期阶段，应该有意识的将不同的两个层分离，即在层与层之间建立外观Facade
+
+2、其次，在开发阶段，子系统往往因为不断的重构演化，而变得越来越复杂，增加外观Facade可以提供一个简单的接口，减少它们之间的依赖。
+
+3、在维护一个遗留的大型系统时，可能这个系统已经非常难以维护和扩展了，就可以为新系统开发一个外观Facade类，来提供设计粗糙或高度复杂的遗留代码的比较清晰简单的接口，让新系统与Facade对象交互，Facade与遗留代码交互所有复杂的工作。
+</code></pre>
+
+<h3>桥接模式</h3>
+
+<h6>1、合成聚合原则</h6>
+
+<p>缘由：对象的继承关系是在编译时就定义好了，所以无法在运行时改变从父类继承的实现。子类的实现与它的父类有非常紧密的依赖关系，以至于父类实现中的任何变化必然会导致子类发生变化。当你需要复用子类时，如果继承下来的实现不适合解决新的问题，则父类必须重写或被其他更适合的类替换。这种依赖关系限制了灵活性并最终限制了复用性。</p>
+
+<p>原则：</p>
+
+<pre><code>合成/聚合原则(CARP)：尽量使用合成/聚合，尽量不要使用类继承
+</code></pre>
+
+<ul>
+<li><p>聚合：一种弱的’拥有’关系，体现的是A对象可以包含B对象，但B对象不是A对象的一部分</p></li>
+<li><p>合成：一种强的’拥有’关系，体现了严格的部分和整体的关系，部分和整体的生命周期一样。</p></li>
+</ul>
+
+
+<h6>合成聚合的好处：</h6>
+
+<p>优先使用对象的合成/聚合将有助于你保持每个类被封装，并被集中在单个任务上，这样类和类继承层次会保持较小规模，并且不太可能增长为不可控制的庞然大物。</p>
+
+<h6>2、桥模式思想</h6>
+
+<pre><code>桥接模式(Bridge)：将抽象部分与它的实现部分分离，使它们都可以独立地变化
+</code></pre>
+
+<p>抽象与实现分离：指的是抽象类和它的派生类用来实现自己的对象</p>
+
+<h6>3、核心思想</h6>
+
+<p>桥模式就是将抽象化与实现化脱耦，使得二者可以独立的变化，也就是说将他们之间的强关联变成弱关联，也就是指在一个软件系统的抽象化与实现化之间使用组合/聚合关系而不是继承关系，从而让二者独立的变化。</p>
+
+<h6>4、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>将抽象部分与实现部分分离，使它们可以独立变化。
+
+这里说的意思不是让抽象基类与具体类分离，而是现实系统可能有多角度分类，每一种分类都有可能变化，那么把这种多角度分离出来让它们独立变化，减少它们之间的耦合性，即如果继承不能实现“开放－封闭原则”的话，就应该考虑用桥接模式 
+</code></pre>
+
+<h3>组合模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>组合模式：将对象组合成树形结构以表示“部分——整体”的层次结构。组合模式使得用户对单个对象和组合对象的使用具有一致性
+</code></pre>
+
+<h6>2、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>整体和部分可以被一致对待（如WORD中复制一个文字、一段文字、一篇文章都是一样的操作）
+
+用户不用关心到底是处理一个叶结点还是处理一个组合组件，也就不用为定义组合而写一些选择判断语句，即用户可以一致的使用组合结构和单个对象。
+</code></pre>
+
+<h6>适用情况：</h6>
+
+<p>当需求中是体现部分与整体层次的结构时，以及希望用户可以忽略组合对象与单个对象的不同，统一地使用组合结构中的所有对象时，就应该考虑用组合模式</p>
+
+<h3>享元模式。</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>享元模式：运用共享技术有效地支持大量细粒度的对象
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code>  享元模式以共享的方式高效的支持大量的细粒度对象。享元模式能做到共享的关键是区分内蕴状态和外蕴状态。
+
+ 内蕴状态存储在享元内部，不会随环境的改变而有所不同。外蕴状态是随环境的改变而改变的。外蕴状态不能影响内蕴状态，它们是相互独立的。
+
+  将可以共享的状态和不可以共享的状态从常规类中区分开来，将不可以共享的状态从类里剔除出去。
+
+  客户端不可以直接创建被共享的对象，而应当使用一个工厂对象负责创建被共享的对象。享元模式大幅度的降低内存中对象的数量。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>（1）运用共享技术有效地支持大量细粒度的对象（对于C++来说就是共用一个内存块啦，对象指针指向同一个地方）。
+
+（2）如果一个应用程序使用了大量的对象，而这些对象造成了很大的存储开销就应该考虑使用。
+
+（3）还有就是对象的大多数状态可以外部状态，如果删除对象的外部状态，那么可以用较少的共享对象取代多组对象，此时可以考虑使用享元。 
+</code></pre>
+
+<h2>行为型模式</h2>
+
+<h3>策略模式</h3>
+
+<h6>一、思想</h6>
+
+<pre><code> 定义一系列的算法，把它们一个个封装起来，并且使它们可相互替换，本模式使得算法可独立于使用它的客户而变化——四人团
+</code></pre>
+
+<h6>二、基本思想</h6>
+
+<pre><code>定义算法家族，分别封装起来，让它们之间可以互相替换，让算法的变化，不会影响到使用算法的用户。
+</code></pre>
+
+<h6>三、优缺点分析</h6>
+
+<p>GOOD:</p>
+
+<p>（1）策略模式是一种定义一系列算法的方法，从概念上看，所有这些算法完成的都是相同的工作，只是实现不同。</p>
+
+<pre><code>   所以使用策略模式，就可以以相同的方式调用所有的算法，减少了各种算法类与使用算法类之间的耦合。
+</code></pre>
+
+<p>（2）策略模式的Strategy类层次为Context定义了一系列的可供重用的算法或行为。继承有助于析取出这些算法中的公共功能</p>
+
+<p>（3）简化了单元测试（因为每个算法都有自己的类，可以通过自己的接口单独测试）</p>
+
+<p>BUG:客户端要做出判断使用哪个具体算法（可通过在context中与工厂模式的结合来消除这个问题，虽然当新增加需求时，还是要改context中的代码，但是任何需求的变更本身就是需要成本的）
+四、适用情况</p>
+
+<pre><code> 策略模式和简单工厂基本相同，但简单工厂模式只能解决对象创建问题，对于类中的成员以方法为主，而且算法经常变动的类，应使用策略模式。
+
+ 在实践中，策略模式实际上可以封装几乎任何类型的规则，只要在分析过程中听到需要不同时间应用不同的业务规则，就可以考虑使用策略模式处理这种变化的可能性。
+</code></pre>
+
+<h3>模板方法模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>定义一个操作中的算法的骨架，而将一些步骤延迟到子类中。template method使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 模板方法模式准备一个抽象类，将部分逻辑以具体方法以及具体构造子类的形式实现，然后声明一些抽象方法来迫使子类剩余的逻辑。不同的子类可以以不同的方式实现这些抽象方法，从而对剩余的逻辑有不同的实现。先制定一个顶级逻辑框架，而将逻辑的细节留给具体的子类去实现。
+
+ 当要完成在某一细节层次一致的一个过程或一系列步骤，但其个别步骤在更详细的层次上的实现可能不同时，通常考虑用模板方法来处理。也就是说：有时候，我们遇到由一系列步骤构成的过程需要执行。这个过程从高层次上看是相同的，但从底层看有些具体步骤实现又可能不同，这时候，就要考虑使用模板方法模式。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>把不变的代码部分都转移到父类中，将可变的代码用virtual留到子类重写，从而提供了一个很好的代码复用平台。
+</code></pre>
+
+<p>即当不变的和可变的行为在方法的子类实现中混合在一起的时候，不变的行为就会在子类中重复出现。我们就可以通过模板方法模式把这些行为搬移到单一的地方，这样就帮助子类摆脱重复的不变行为的纠缠。</p>
+
+<h3>观察者模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>定义对象间的一种一对多的依赖关系，让多个观察者对象同时监听某一个主题对象。这个主题对象在状态发生改变时，会通知所有观察者对象，使它们能够自动更新自己。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 观察者模式定义了一种一对多的依赖关系，让多个观察者对象同时监听某一个主题对象。这个主题对象在状态上发生变化时，会通知所有观察者对象，使他们能够自动更新自己。
+</code></pre>
+
+<h6>使用动机：</h6>
+
+<p>　　将一个系统分割成一系列相互协作的类有一个很不好的副作用，那就是需要维护相关对象间的一致性。我们不希望为了维持一致性而使各类紧密耦合，这样会给维护、扩展和重用都带来不便。</p>
+
+<h6>本模式适用情况：</h6>
+
+<p>（1）当一个对象的改变需要同时改变其他对象的时候，而且它不知道具体有多少对象有待改变时，应该考虑使用观察者模式。</p>
+
+<p>（2）当一个抽象模型有两个方面，其中一方面依赖于另一方面，这时用观察者模式可以将这两者封装在独立的对象中，使它们各自独立地改变和复用。
+总结：</p>
+
+<pre><code>观察者模式所做的工作其实就是解除耦合，让耦合的双方都依赖于抽象，而不是依赖于具体。从而使得各自的变化都不会影响另一边的变化。
+
+本模式是依赖倒置原则的最佳体现！
+
+设计原则：为了交互对象之间的松耦合设计而奋斗到底！
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>定义了一种一对多的关系，让多个观察对象（公司员工）同时监听一个主题对象（秘书），主题对象状态发生变化时，会通知所有的观察者，使它们能够更新自己。
+</code></pre>
+
+<p>BAD:</p>
+
+<pre><code>尽管使用了“依赖倒置原则”，但是“抽象通知者”还是依赖于“抽象观察者”。而且每个具体观察者不一定是“更新”方法需要调用。
+
+在.net中可通过事件委托方法，使得通知者和观察者之间根本就互相不知道。  
+</code></pre>
+
+<h3>迭代子模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>迭代器模式：提供一种方法顺序访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<h6>3、优缺点分析</h6>
+
+<p>适用情况：</p>
+
+<p>（1）当需要访问一个聚集对象，而且不管这些对象是什么都需要遍历的时候，就应该考虑使用迭代器模式</p>
+
+<p>（2）当需要对聚集有多种方式遍历时，可以考虑使用迭代器模式</p>
+
+<p>GOOD：</p>
+
+<pre><code>提供一种方法顺序访问一个聚敛对象的各个元素，而又不暴露该对象的内部表示。
+
+为遍历不同的聚集结构提供如开始，下一个，是否结束，当前一项等统一接口。 
+</code></pre>
+
+<h3>责任链模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>使多个对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系，将这些对象连成一条链，并沿着这条链传递该请求，直到有一个对象处理它为止。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<p>在责任链模式中，很多对象由每一个对象对其下家的引用而接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。客户并不知道链上具体的哪一个对象最终处理了这个请求，系统可以在不影响客户端的情况下，动态的重新组织链和分配责任。处理者有两个选择：承担责任或者把责任推给下家。一个请求可以最终不被任何接收端对象所接受。</p>
+
+<h6>3、优缺点分析</h6>
+
+<p>关键点：当客户提交一个请求时，请求是沿链传递直至有一个ConcreteHandler对象负责处理它。</p>
+
+<p>GOOD：</p>
+
+<pre><code>（1）这就使得接受者和发送者之间都没有对方明确的信息，且链中的对象自己也并不知道整个链的结构。结果是职责链可简化对象的相互连接，它们仅需保持一个指向其后继者的引用，而不需要保持它所有的候选接受者的引用。
+
+（2）可以随时地增加或修改一个请求的结构，增强了给对象指派职责的灵活性
+
+（3）一个请求极有可能到了链的末端都得不到处理，或者因为没有正确配置而得不到处理
+</code></pre>
+
+<h3>命令模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>命令模式：将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化；对请求排队或记录请求日志，以及支持可撤销的操作
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<p>命令模式：把一个请求或者操作封装到一个对象中，命令模式把发出命令的责任和执行命令的责任分割开来，委派给不同的对象。命令模式允许请求的一方和发送的一方独立开来，使得请求的一方不必知道接收请求的一方的接口，更不必知道请求是怎么被接收，以及操作是否执行，何时被执行以及是怎么被执行的。</p>
+
+<h6>3、优缺点分析</h6>
+
+<p>GOOD：</p>
+
+<pre><code>一、能较容易地建立一个命令队列；
+
+二、在需要的情况下，可以较容易地将命令记入日志；
+
+三、允许接收请求的一方是否拒绝请求；
+
+四、可以容易地实现对请求的撤销和重做，
+
+五、由于加进新的具体命令类不影响其他的类，因此添加一个新命令类不影响其它类；
+</code></pre>
+
+<p>最关键的优点：命令模式把请求一个操作的对象与知道怎么操行一个操作的对象分开</p>
+
+<p>适用原则：敏捷开发原则告诉我们，不要为代码添加基于猜测的、实际不需要的功能。如果不清楚一个系统是否需要命令模式，一般不要着急去实现它，事实上、在需要的时候通过重构实现这个模式并不困难，只有在真正需要如撤销、恢复等操作功能时，才把原有的代码重构为命令模式才有意义。</p>
+
+<h3>备忘录模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>在不破坏封装的条件下，将一个对象的状态捉住，并在该对象外部保存这个状态，从而可以在将来合适的时候把这个对象还原到存储起来的状态。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 备忘录对象是一个用来存储另外一个对象内部状态的快照的对象。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<p>适用于功能比较复杂的，但需要记录或维护属性历史的类；或者需要保存的属性只是众多属性中的一小部分时Originator可以根据保存的Memo还原到前一状态。</p>
+
+<h3>状态模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>状态模式：当一个对象的内在状态改变时允许改变其行为，这个对象看起来像是改变了其类。
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<pre><code> 状态模式允许一个对象在其内部状态改变的时候改变行为。这个对象看上去像是改变了它的类一样。状态模式把所研究的对象的行为包装在不同的状态对象里，每一个状态对象都属于一个抽象状态类的一个子类。状态模式的思想是让一个对象在其内部状态改变的时候，其行为也随之改变。状态模式需要对每一个系统可能取得的状态创立一个状态类的子类。当系统的状态变化时，系统便改变所选的子类。
+
+ 状态模式主要解决的是当控制一个对象状态转换的条件表达式过于复杂时的情况。把状态的判断逻辑转移到表示不同状态的一系列类当中，可以把复杂的判断逻辑简化。
+</code></pre>
+
+<h6>3、优缺点分析</h6>
+
+<ul>
+<li><p>优点：</p>
+
+<ul>
+<li><p>状态模式的好处是将与特定状态相关的行为局部化，并且将不同状态的行为分割开来。</p>
+
+<pre><code>  即：将特定的状态相关的行为都放入一个对象中，由于所有与状态相关的代码都存在于某个ConcreteState中，所以通过定义新的子类可以很容易地增加新的状态和转换。
+</code></pre></li>
+<li><p>消除了庞大的条件分支语句，并且通过把各种状态转移逻辑分布到State的子类之间，来减少相互间的依赖。
+适用情况：</p></li>
+<li><p>当一个对象的行为取决于它的状态，并且它必须在运行时刻根据状态改变它的行为时，可考虑用到状态模式。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h3>中介者模式</h3>
+
+<h6>1、思想</h6>
+
+<pre><code>中介者模式：用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互
+</code></pre>
+
+<h6>2、核心思想</h6>
+
+<p>包装了一系列对象相互作用的方式，使得这些对象不必相互明显作用。从而使他们可以松散耦合。当某些对象之间的作用发生改变时，不会立即影响其他的一些对象之间的作用。保证这些作用可以彼此独立的变化。调停者模式将多对多的相互作用转化为一对多的相互作用。调停者模式将对象的行为和协作抽象化，把对象在小尺度的行为上与其他对象的相互作用分开处理。</p>
+
+<h6>3、优缺点分析</h6>
+
+<p>中介者模式很容易在系统中应用，也很容易在系统中误用。当系统中出现了’多对多’交互复杂的对象群时，不要急于使用中介者模式，而要反思你的系统在设计上是不是合理。</p>
+
+<p>GOOD:</p>
+
+<p>（1）Mediator的出现减少了各个Colleague的耦合，使得可以独立地改变和复用各个Colleague类和Mediator</p>
+
+<p>（2）由于把对象如何协作进行了抽象，将中介作为一个独立的概念并将其封装在一个对象中，这样关注的对象就从对象各自本身的行为转移到了它们之间的交互上来，也就是站在一个更宏观的角度去看待系统。</p>
+
+<p>BAD:</p>
+
+<p>由于ConcreteMediator控制了集中化，于是就把交互复杂性变为了中介者的复杂性，这就使得中介者会变得比任何一个ConcreteColleague都复杂。</p>
+
+<h6>适用场合：</h6>
+
+<p>中介者模式一般应用于一组对象以定义良好但是复杂的方式进行通信的场合，以及想定义一个分布在多个类中的行为，而又不想生成太多的子类的场合。</p>
+
+<h3>解释器模式</h3>
+
+<h6>思想</h6>
+
+<pre><code>Interpreter是一种特殊的设计模式，它建立一个解释器，对于特定的计算机程序设计语言，用来解释预先定义的文法。简单地说，Interpreter模式是一种简单的语法解释器构架。
+
+给定一个语言，定义它的文法表示，并定义一个解释器，这个解释器使用该标识来解释语言中的句子。
+</code></pre>
+
+<h6>适用场景：</h6>
+
+<pre><code>    1.当有一个语言需要解释执行，并且你可将该语言中的句子表示为一个抽象语法树，可以使用解释器模式。而当存在以下情况时该模式效果最好
+
+    2.该文法的类层次结构变得庞大而无法管理。此时语法分析程序生成器这样的工具是最好的选择。他们无需构建抽象语法树即可解释表达式，这样可以节省空间而且还可能节省时间。
+
+    3.效率不是一个关键问题，最高效的解释器通常不是通过直接解释语法分析树实现的，而是首先将他们装换成另一种形式，例如，正则表达式通常被装换成状态机，即使在这种情况下，转换器仍可用解释器模式实现，该模式仍是有用的
+</code></pre>
+
+<h6>优缺点：</h6>
+
+<ul>
+<li><p>优点： 1、可扩展性比较好，灵活。 2、增加了新的解释表达式的方式。 3、易于实现简单文法。</p></li>
+<li><p>缺点： 1、可利用场景比较少。 2、对于复杂的文法比较难维护。 3、解释器模式会引起类膨胀。 4、解释器模式采用递归调用方法。</p></li>
+</ul>
+
+
+<h3>访问者模式</h3>
+
+<h6>思想：</h6>
+
+<pre><code>封装某些作用于某种数据结构中各元素的操作，它可以在不改变数据结构的前提下定义作用于这些元素的新的操作。
+</code></pre>
+
+<h6>优点</h6>
+
+<pre><code>符合单一职责原则：凡是适用访问者模式的场景中，元素类中需要封装在访问者中的操作必定是与元素类本身关系不大且是易变的操作，使用访问者模式一方面符合单一职责原则，另一方面，因为被封装的操作通常来说都是易变的，所以当发生变化时，就可以在不改变元素类本身的前提下，实现对变化部分的扩展。
+扩展性良好：元素类可以通过接受不同的访问者来实现对不同操作的扩展。
+</code></pre>
+
+<h6>访问者模式的适用场景</h6>
+
+<pre><code>   假如一个对象中存在着一些与本对象不相干（或者关系较弱）的操作，为了避免这些操作污染这个对象，则可以使用访问者模式来把这些操作封装到访问者中去。
+
+   假如一组对象中，存在着相似的操作，为了避免出现大量重复的代码，也可以将这些重复的操作封装到访问者中去。
+</code></pre>
+
+<hr />
+
+<h4>其他：</h4>
+
+<h3>单一职责原则</h3>
+
+<pre><code>就一个类而言，应该仅有一个引起它变化的原因。
+</code></pre>
+
+<p>　　如果一个类承担的职责过多，就等于把这些职责耦合在一起，一个职责的变化可能会削弱或者抑制这个类完成其它职责能力。这种耦合会导制脆弱的设计，当变化发生时，设计会遭受到意想不到的破坏。</p>
+
+<pre><code>软件设计真正要做的许多内容，就是发现职责并把那些职责相互分离。
+
+如果你能够想到多于一个的动机去改变一个类，那么这个类就具有多于一个的职责。
+</code></pre>
+
+<h3>开放——封闭原则</h3>
+
+<h6>一、基本概念</h6>
+
+<pre><code>  OCP: 软件实体（类、模块、函数等）应该可以扩展，但是不可修改。
+
+ 解释：即对于扩展是开放的，对于修改是封闭的。
+</code></pre>
+
+<h6>二、实际技巧</h6>
+
+<pre><code> 实际上，无论模式多么的‘封闭’，都会存在一些无法对之封闭的变化，既然不可能完全封闭，设计人员必须对于他设计的模块应该对哪种变化封闭做出选择。他必须先猜测出最有可能发生的变化种类，然后构造抽象来隔离那些变化。
+
+ 即：当变化发生时，我们就创建抽象来隔离以后发生同类的变化。（等到变化发生时立即采取行动）    
+
+ 面对需求，对程序的改动是通过增加代码来完成的，而不是改动现有的代码。（例如简单工厂模式思想）
+</code></pre>
+
+<h6>三、优点</h6>
+
+<pre><code> 开放――封闭原则是面向对象的核心所在。这个原则所带来的优点就是可维护、可扩展、可复用、灵活型好。
+
+ 开发人员应该对程序中呈现出频繁变化的那部分做出抽象，拒绝对任何部分都刻意抽象及不成熟的抽象。
+</code></pre>
+
+<h3>里氏代换原则</h3>
+
+<h6>一、基本概念</h6>
+
+<pre><code>  抽象不应该依赖细节，细节应该依赖抽象。即针对接口编程，不要对实现编程。
+
+A：高层模块不能依赖低层模块，两者都应依赖抽象。
+
+B：抽象不应该依赖细节，细节应该依赖抽象。 
+</code></pre>
+
+<h6>二、里氏代换原则（LSP）</h6>
+
+<pre><code>子类型必须能够替换掉它们的父类型
+</code></pre>
+
+<p>解释：一个软件实体如果使用的是一个父类的话，那么一定适用于其子类，而且它察觉不出父类对象和子类对象的区别。</p>
+
+<pre><code>   也就是说，在软件里面，把父类都替换成它的子类，程序的行为没有变化。
+
+   只有当子类可以替换父类，软件单位的功能不受到影响时，父类才真正被复用，而子类也能够在父类的基础上增加新的行为。
+
+   所以，正是由于子类型的可替换性才使得使用父类类型的模块在无需修改的情况下就可以扩展。
+</code></pre>
+
+<h3>最少知识原则</h3>
+
+<h6>一、基本概念</h6>
+
+<pre><code>迪米特法则：如果两个类不直接通信，那么这两个类就不应当发生直接的相互作用。如果一个类需要调用另一个类的某个方法的话，可以通过第三个类转发这个调用。
+</code></pre>
+
+<h6>二、核心思想</h6>
+
+<pre><code> 在类的结构设计上，每一个类都应该尽量降低成员的访问权限。也就是说：一个类包装好自己的private状态，不需要让别的类知道的字段或行为就不要公开。
+
+迪米特原则的根本思想：强调了类之间的松耦合。     
+
+ 类之间的耦合越弱，越有利于复用，一个处在弱耦合的类被修改，不会对有关系的类造成波及。
+
+  该法则在后面的适配器模式、解释模式等中有强烈的体现。    
+</code></pre>
+
+<hr />
+
+<hr />
+
+<h2>总结：</h2>
+
+<ul>
+<li><p>1、当涉及到“维护”时，为了“复用”目的而使用继承，并不是最好的方法。</p></li>
+<li><p>2、利用继承来提供对象的行为，会导致以下缺点：</p>
+
+<ul>
+<li><p>1）代码在多个子类中重复；</p></li>
+<li><p>2）运行时的行为不容易改变；</p></li>
+<li><p>3）很难知道所有子类的全部行为；</p></li>
+<li><p>4）改变父类会牵一发而动全身，造成其他子类不想要的改变；</p></li>
+</ul>
+</li>
+<li><p>3、使用接口（JAVA）或虚基类加多重继承（C++）方法，则会需要对需要维护的代码中的每个子类都分别考虑其特有方法的继承来源。</p></li>
+<li><p>4、设计原则：找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。即：把会变化的部分取出并“封装”起来，以便以后可以轻易的改动或扩充此部分，而不影响不需要变化的部分。</p></li>
+<li><p>5、设计原则：针对接口编程，而不是针对实现编程。</p></li>
+</ul>
+
+
+<p>将对象的行为放在分开的类中，此类专门提供某行为接口的实现，并且在对象类中包含可设定行为的方法，使得程序可在“运行时”动态的改变特定对象的行为。</p>
+
+<ul>
+<li>6、封装行为的大局观</li>
+</ul>
+
+
+<p>设计原则：多用组合，少用继承</p>
+
+<ul>
+<li><p>7、策略模型：定义了算法族，分别封装起来，让它们之间可以相互替换，此模式让算法的变化独立于使用算法的客户。</p></li>
+<li><p>8、设计模式的名词使用主要为了程序员间交流方便</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Qidachazhaosuanfa]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/18/qidachazhaosuanfa/"/>
+    <updated>2017-01-18T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/18/qidachazhaosuanfa</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-常见查找算法&rdquo;
+date: 2016-08-12 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<p>阅读目录</p>
+
+<ul>
+<li><p>1、顺序查找</p></li>
+<li><p>2、二分查找</p></li>
+<li><p>3、插值查找</p></li>
+<li><p>4、斐波那契查找</p></li>
+<li><p>5、树表查找</p></li>
+<li><p>6、分块查找</p></li>
+<li><p>7、哈希查找</p></li>
+</ul>
+
+
+<p>查找是在大量的信息中寻找一个特定的信息元素，在计算机应用中，查找是常用的基本运算，例如编译程序中符号表的查找。</p>
+
+<!--more-->
+
+
+<blockquote><p>本文简单概括性的介绍了常见的七种查找算法，说是七种，其实二分查找、插值查找以及斐波那契查找都可以归为一类——插值查找。插值查找和斐波那契查找是在二分查找的基础上的优化查找算法。树表查找和哈希查找会在后续的博文中进行详细介绍。</p></blockquote>
+
+<p>查找定义：根据给定的某个值，在查找表中确定一个其关键字等于给定值的数据元素（或记录）。</p>
+
+<p>查找算法分类：</p>
+
+<p>1）静态查找和动态查找；</p>
+
+<pre><code>注：静态或者动态都是针对查找表而言的。动态表指查找表中有删除和插入操作的表。
+</code></pre>
+
+<p>2）无序查找和有序查找。</p>
+
+<pre><code>无序查找：被查找数列有序无序均可；
+
+有序查找：被查找数列必须为有序数列。
+</code></pre>
+
+<p>平均查找长度（Average Search Length，ASL）：</p>
+
+<ul>
+<li>需和指定key进行比较的关键字的个数的期望值，称为查找算法在查找成功时的平均查找长度。</li>
+</ul>
+
+
+<p>对于含有n个数据元素的查找表，查找成功的平均查找长度为：ASL = Pi*Ci的和。</p>
+
+<pre><code>Pi：查找表中第i个数据元素的概率。
+
+Ci：找到第i个数据元素时已经比较过的次数。
+</code></pre>
+
+<h3>1、顺序查找</h3>
+
+<ul>
+<li>说明：顺序查找适合于存储结构为顺序存储或链接存储的线性表。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>顺序查找也称为线形查找，属于无序查找算法。从数据结构线形表的一端开始，顺序扫描，依次将扫描到的结点关键字与给定值k相比较，若相等则表示查找成功；若扫描结束仍没有找到关键字等于k的结点，表示查找失败。
+</code></pre>
+
+<p>复杂度分析：　</p>
+
+<pre><code>查找成功时的平均查找长度为：（假设每个数据元素的概率相等） ASL = 1/n(1+2+3+…+n) = (n+1)/2 ;
+</code></pre>
+
+<p>当查找不成功时，需要n+1次比较，时间复杂度为O(n);</p>
+
+<blockquote><p>所以，顺序查找的时间复杂度为O(n)。</p></blockquote>
+
+<pre><code>//顺序查找
+int SequenceSearch(int a[], int value, int n)
+{
+    int i;
+    for(i=0; i&lt;n; i++)
+        if(a[i]==value)
+            return i;
+    return -1;
+}
+</code></pre>
+
+<h3>2、二分查找</h3>
+
+<blockquote><p>说明：元素必须是有序的，如果是无序的则要先进行排序操作。</p></blockquote>
+
+<p>基本思想：</p>
+
+<pre><code>也称为是折半查找，属于有序查找算法。用给定值k先与中间结点的关键字比较，中间结点把线形表分成两个子表，若相等则查找成功；若不相等，再根据k与该中间结点关键字的比较结果确定下一步查找哪个子表，这样递归进行，直到查找到或查找结束发现表中没有这样的结点。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏情况下，关键词比较次数为log2(n+1)，且期望时间复杂度为O(log2n)；
+</code></pre>
+
+<blockquote><p>注：折半查找的前提条件是需要有序表顺序存储，对于静态查找表，一次排序后不再变化，折半查找能得到不错的效率。但对于需要频繁执行插入或删除操作的数据集来说，维护有序的排序会带来不小的工作量，那就不建议使用。——《大话数据结构》</p></blockquote>
+
+<pre><code>    //二分查找（折半查找），版本1
+int BinarySearch1(int a[], int value, int n)
+{
+    int low, high, mid;
+    low = 0;
+    high = n-1;
+    while(low&lt;=high)
+    {
+        mid = (low+high)/2;
+        if(a[mid]==value)
+            return mid;
+        if(a[mid]&gt;value)
+            high = mid-1;
+        if(a[mid]&lt;value)
+            low = mid+1;
+    }
+    return -1;
+}
+
+//二分查找，递归版本
+int BinarySearch2(int a[], int value, int low, int high)
+{
+    int mid = low+(high-low)/2;
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return BinarySearch2(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return BinarySearch2(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>3、插值查找</h3>
+
+<p>在介绍插值查找之前，首先考虑一个新问题，为什么上述算法一定要是折半，而不是折四分之一或者折更多呢？</p>
+
+<pre><code>打个比方，在英文字典里面查“apple”，你下意识翻开字典是翻前面的书页还是后面的书页呢？如果再让你查“zoo”，你又怎么查？很显然，这里你绝对不会是从中间开始查起，而是有一定目的的往前或往后翻。
+</code></pre>
+
+<p>同样的，比如要在取值范围1 ~ 10000 之间 100 个元素从小到大均匀分布的数组中查找5， 我们自然会考虑从数组下标较小的开始查找。</p>
+
+<p>经过以上分析，折半查找这种查找方式，不是自适应的（也就是说是傻瓜式的）。二分查找中查找点计算如下：</p>
+
+<pre><code>mid=(low+high)/2, 即mid=low+1/2*(high-low);
+</code></pre>
+
+<p>通过类比，我们可以将查找的点改进为如下：</p>
+
+<pre><code>mid=low+(key-a[low])/(a[high]-a[low])*(high-low)，
+</code></pre>
+
+<p>也就是将上述的比例参数1/2改进为自适应的，根据关键字在整个有序表中所处的位置，让mid值的变化更靠近关键字key，这样也就间接地减少了比较次数。</p>
+
+<p>基本思想：</p>
+
+<pre><code>基于二分查找算法，将查找点的选择改进为自适应选择，可以提高查找效率。当然，差值查找也属于有序查找。
+</code></pre>
+
+<blockquote><p>注：对于表长较大，而关键字分布又比较均匀的查找表来说，插值查找算法的平均性能比折半查找要好的多。反之，数组中如果分布非常不均匀，那么插值查找未必是很合适的选择。</p></blockquote>
+
+<p>复杂度分析：查找成功或者失败的时间复杂度均为O(log2(log2n))。</p>
+
+<pre><code>//插值查找
+int InsertionSearch(int a[], int value, int low, int high)
+{
+    int mid = low+(value-a[low])/(a[high]-a[low])*(high-low);
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return InsertionSearch(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return InsertionSearch(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>4、斐波那契查找</h3>
+
+<blockquote><p>在介绍斐波那契查找算法之前，我们先介绍一下很它紧密相连并且大家都熟知的一个概念——黄金分割。</p></blockquote>
+
+<p>黄金比例又称黄金分割，</p>
+
+<pre><code>是指事物各部分间一定的数学比例关系，即将整体一分为二，较大部分与较小部分之比等于整体与较大部分之比，其比值约为1:0.618或1.618:1。
+</code></pre>
+
+<p>0.618被公认为最具有审美意义的比例数字，这个数值的作用不仅仅体现在诸如绘画、雕塑、音乐、建筑等艺术领域，而且在管理、工程设计等方面也有着不可忽视的作用。因此被称为黄金分割。</p>
+
+<p>大家记不记得斐波那契数列：</p>
+
+<ul>
+<li>1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89…….（从第三个数开始，后边每一个数都是前两个数的和）。然后我们会发现，随着斐波那契数列的递增，前后两个数的比值会越来越接近0.618，利用这个特性，我们就可以将黄金比例运用到查找技术中。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>也是二分查找的一种提升算法，通过运用黄金比例的概念在数列中选择查找点进行查找，提高查找效率。同样地，斐波那契查找也属于一种有序查找算法。
+</code></pre>
+
+<p>相对于折半查找，一般将待比较的key值与第mid=（low+high）/2位置的元素比较，比较结果分三种情况：</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1;</p></li>
+<li><p>3）&lt;，high=mid-1。</p></li>
+</ul>
+
+
+<p>斐波那契查找与折半查找很相似，他是根据斐波那契序列的特点对有序表进行分割的。他要求开始表中记录的个数为某个斐波那契数小1，及n=F(k)-1;</p>
+
+<p>开始将k值与第F(k-1)位置的记录进行比较(及mid=low+F(k-1)-1),比较结果也分为三种</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1,k-=2;</p>
+
+<ul>
+<li>说明：low=mid+1说明待查找的元素在[mid+1,high]范围内，k-=2 说明范围[mid+1,high]内的元素个数为n-(F(k-1))= Fk-1-F(k-1)=Fk-F(k-1)-1=F(k-2)-1个，所以可以递归的应用斐波那契查找。</li>
+</ul>
+</li>
+<li><p>3）&lt;，high=mid-1,k-=1。</p></li>
+</ul>
+
+
+<p>说明：low=mid+1说明待查找的元素在[low,mid-1]范围内，k-=1 说明范围[low,mid-1]内的元素个数为F(k-1)-1个，所以可以递归 的应用斐波那契查找。</p>
+
+<p>复杂度分析：最坏情况下，时间复杂度为O(log2n)，且其期望复杂度也为O(log2n)。</p>
+
+<pre><code>// 斐波那契查找.cpp 
+
+#include "stdafx.h"
+#include &lt;memory&gt;
+#include  &lt;iostream&gt;
+using namespace std;
+
+const int max_size=20;//斐波那契数组的长度
+
+/*构造一个斐波那契数组*/ 
+void Fibonacci(int * F)
+{
+    F[0]=0;
+    F[1]=1;
+    for(int i=2;i&lt;max_size;++i)
+        F[i]=F[i-1]+F[i-2];
+}
+
+/*定义斐波那契查找法*/  
+int FibonacciSearch(int *a, int n, int key)  //a为要查找的数组,n为要查找的数组长度,key为要查找的关键字
+{
+  int low=0;
+  int high=n-1;
+
+  int F[max_size];
+  Fibonacci(F);//构造一个斐波那契数组F 
+
+  int k=0;
+  while(n&gt;F[k]-1)//计算n位于斐波那契数列的位置
+      ++k;
+
+  int  * temp;//将数组a扩展到F[k]-1的长度
+  temp=new int [F[k]-1];
+  memcpy(temp,a,n*sizeof(int));
+
+  for(int i=n;i&lt;F[k]-1;++i)
+     temp[i]=a[n-1];
+
+  while(low&lt;=high)
+  {
+    int mid=low+F[k-1]-1;
+    if(key&lt;temp[mid])
+    {
+      high=mid-1;
+      k-=1;
+    }
+    else if(key&gt;temp[mid])
+    {
+     low=mid+1;
+     k-=2;
+    }
+    else
+    {
+       if(mid&lt;n)
+           return mid; //若相等则说明mid即为查找到的位置
+       else
+           return n-1; //若mid&gt;=n则说明是扩展的数值,返回n-1
+    }
+  }  
+  delete [] temp;
+  return -1;
+}
+
+int main()
+{
+    int a[] = {0,16,24,35,47,59,62,73,88,99};
+    int key=100;
+    int index=FibonacciSearch(a,sizeof(a)/sizeof(int),key);
+    cout&lt;&lt;key&lt;&lt;" is located at:"&lt;&lt;index;
+    return 0;
+}
+</code></pre>
+
+<h3>5、树表查找</h3>
+
+<h5>5.1 最简单的树表查找算法——二叉树查找算法。</h5>
+
+<p>基本思想：</p>
+
+<pre><code>二叉查找树是先对待查找的数据进行生成树，确保树的左分支的值小于右分支的值，然后在就行和每个节点的父节点比较大小，查找最适合的范围。 这个算法的查找效率很高，但是如果使用这种查找方法要首先创建树。 
+</code></pre>
+
+<p>二叉查找树（BinarySearch Tree，也叫二叉搜索树，或称二叉排序树Binary Sort Tree）或者是一棵空树，或者是具有下列性质的二叉树：</p>
+
+<ul>
+<li><p>1）若任意节点的左子树不空，则左子树上所有结点的值均小于它的根结点的值；</p></li>
+<li><p>2）若任意节点的右子树不空，则右子树上所有结点的值均大于它的根结点的值；</p></li>
+<li><p>3）任意节点的左、右子树也分别为二叉查找树。</p></li>
+</ul>
+
+
+<p>二叉查找树性质：</p>
+
+<pre><code>对二叉查找树进行中序遍历，即可得到有序的数列。
+</code></pre>
+
+<p>不同形态的二叉查找树如下图所示：</p>
+
+<p>有关二叉查找树的查找、插入、删除等操作的详细讲解，请移步浅谈算法和数据结构: 七 二叉查找树。</p>
+
+<p>复杂度分析：它和二分查找一样，插入和查找的时间复杂度均为O(logn)，但是在最坏的情况下仍然会有O(n)的时间复杂度。原因在于插入和删除元素的时候，树没有保持平衡（比如，我们查找上图（b）中的“93”，我们需要进行n次查找操作）。我们追求的是在最坏的情况下仍然有较好的时间复杂度，这就是平衡查找树设计的初衷。</p>
+
+<p>下图为二叉树查找和顺序查找以及二分查找性能的对比图：</p>
+
+<p>基于二叉查找树进行优化，进而可以得到其他的树表查找算法，如平衡树、红黑树等高效算法。</p>
+
+<h5>5.2 平衡查找树之2-3查找树（2-3 Tree）</h5>
+
+<p>2-3查找树定义：</p>
+
+<pre><code>和二叉树不一样，2-3树运行每个节点保存1个或者两个的值。对于普通的2节点(2-node)，他保存1个key和左右两个自己点。对应3节点(3-node)，保存两个Key，2-3查找树的定义如下：
+</code></pre>
+
+<ul>
+<li><p>1）要么为空，要么：</p></li>
+<li><p>2）对于2节点，该节点保存一个key及对应value，以及两个指向左右节点的节点，左节点也是一个2-3节点，所有的值都比key要小，右节点也是一个2-3节点，所有的值比key要大。</p></li>
+<li><p>3）对于3节点，该节点保存两个key及对应value，以及三个指向左中右的节点。左节点也是一个2-3节点，所有的值均比两个key中的最小的key还要小；中间节点也是一个2-3节点，中间节点的key值在两个跟节点key值之间；右节点也是一个2-3节点，节点的所有key值比两个key中的最大的key还要大。</p></li>
+</ul>
+
+
+<p>2-3查找树的性质：</p>
+
+<ul>
+<li><p>1）如果中序遍历2-3查找树，就可以得到排好序的序列；</p></li>
+<li><p>2）在一个完全平衡的2-3查找树中，根节点到每一个为空节点的距离都相同。（这也是平衡树中“平衡”一词的概念，根节点到叶节点的最长距离对应于查找算法的最坏情况，而平衡树中根节点到叶节点的距离都一样，最坏情况也具有对数复杂度。）</p></li>
+</ul>
+
+
+<p>复杂度分析：</p>
+
+<p>2-3树的查找效率与树的高度是息息相关的。</p>
+
+<pre><code>在最坏的情况下，也就是所有的节点都是2-node节点，查找效率为lgN
+
+在最好的情况下，所有的节点都是3-node节点，查找效率为log3N约等于0.631lgN
+</code></pre>
+
+<p>距离来说，对于1百万个节点的2-3树，树的高度为12-20之间，对于10亿个节点的2-3树，树的高度为18-30之间。</p>
+
+<p>对于插入来说，只需要常数次操作即可完成，因为他只需要修改与该节点关联的节点即可，不需要检查其他节点，所以效率和查找类似。下面是2-3查找树的效率：</p>
+
+<h5>5.3 平衡查找树之红黑树（Red-Black Tree）</h5>
+
+<p>2-3查找树能保证在插入元素之后能保持树的平衡状态，最坏情况下即所有的子节点都是2-node，树的高度为lgn，从而保证了最坏情况下的时间复杂度。但是2-3树实现起来比较复杂，于是就有了一种简单实现2-3树的数据结构，即红黑树（Red-Black Tree）。</p>
+
+<p>基本思想：红黑树的思想就是对2-3查找树进行编码，尤其是对2-3查找树中的3-nodes节点添加额外的信息。红黑树中将节点之间的链接分为两种不同类型，红色链接，他用来链接两个2-nodes节点来表示一个3-nodes节点。黑色链接用来链接普通的2-3节点。特别的，使用红色链接的两个2-nodes来表示一个3-nodes节点，并且向左倾斜，即一个2-node是另一个2-node的左子节点。这种做法的好处是查找的时候不用做任何修改，和普通的二叉查找树相同。</p>
+
+<p>红黑树的定义：红黑树是一种具有红色和黑色链接的平衡查找树，同时满足：</p>
+
+<pre><code>红色节点向左倾斜
+
+一个节点不可能有两个红色链接
+
+整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同。
+</code></pre>
+
+<p>下图可以看到红黑树其实是2-3树的另外一种表现形式：如果我们将红色的连线水平绘制，那么他链接的两个2-node节点就是2-3树中的一个3-node节点了。</p>
+
+<p>红黑树的性质：</p>
+
+<pre><code>整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同（2-3树的第2）性质，从根节点到叶子节点的距离都相等）。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏的情况就是，红黑树中除了最左侧路径全部是由3-node节点组成，即红黑相间的路径长度是全黑路径长度的2倍。
+</code></pre>
+
+<p>下图是一个典型的红黑树，从中可以看到最长的路径(红黑相间的路径)是最短路径的2倍：</p>
+
+<pre><code>　　红黑树的平均高度大约为logn。
+</code></pre>
+
+<p>下图是红黑树在各种情况下的时间复杂度，可以看出红黑树是2-3查找树的一种实现，它能保证最坏情况下仍然具有对数的时间复杂度。</p>
+
+<p>红黑树这种数据结构应用十分广泛，在多种编程语言中被用作符号表的实现，如：</p>
+
+<pre><code>Java中的java.util.TreeMap,java.util.TreeSet；
+
+C++ STL中的：map,multimap,multiset；
+
+.NET中的：SortedDictionary,SortedSet 等。
+</code></pre>
+
+<h5>5.4 B树和B+树（B Tree/B+ Tree）</h5>
+
+<p>平衡查找树中的2-3树以及其实现红黑树。2-3树种，一个节点最多有2个key，而红黑树则使用染色的方式来标识这两个key。</p>
+
+<blockquote><p>维基百科对B树的定义为“在计算机科学中，B树（B-tree）是一种树状数据结构，它能够存储数据、对其进行排序并允许以O(log n)的时间复杂度运行进行查找、顺序读取、插入和删除的数据结构。B树，概括来说是一个节点可以拥有多于2个子节点的二叉查找树。与自平衡二叉查找树不同，B树为系统最优化大块数据的读和写操作。B-tree算法减少定位记录时所经历的中间过程，从而加快存取速度。普遍运用在数据库和文件系统。</p></blockquote>
+
+<h6>B树定义：</h6>
+
+<pre><code>B树可以看作是对2-3查找树的一种扩展，即他允许每个节点有M-1个子节点。
+
+根节点至少有两个子节点
+
+每个节点有M-1个key，并且以升序排列
+
+位于M-1和M key的子节点的值位于M-1 和M key对应的Value之间
+
+其它节点至少有M/2个子节点
+</code></pre>
+
+<p>下图是一个M=4 阶的B树:</p>
+
+<p>可以看到B树是2-3树的一种扩展，他允许一个节点有多于2个的元素。B树的插入及平衡化操作和2-3树很相似，这里就不介绍了。</p>
+
+<h6>B+树定义：</h6>
+
+<p>B+树是对B树的一种变形树，它与B树的差异在于：</p>
+
+<pre><code>有k个子结点的结点必然有k个关键码；
+
+非叶结点仅具有索引作用，跟记录有关的信息均存放在叶结点中。
+
+树的所有叶结点构成一个有序链表，可以按照关键码排序的次序遍历全部记录。
+</code></pre>
+
+<p>如下图，是一个B+树:</p>
+
+<pre><code>B和B+树的区别在于，B+树的非叶子结点只包含导航信息，不包含实际的值，所有的叶子结点和相连的节点使用链表相连，便于区间查找和遍历。
+</code></pre>
+
+<p>B+ 树的优点在于：</p>
+
+<pre><code>由于B+树在内部节点上不好含数据信息，因此在内存页中能够存放更多的key。 数据存放的更加紧密，具有更好的空间局部性。因此访问叶子几点上关联的数据也具有更好的缓存命中率。
+
+B+树的叶子结点都是相链的，因此对整棵树的便利只需要一次线性遍历叶子结点即可。而且由于数据顺序排列并且相连，所以便于区间查找和搜索。而B树则需要进行每一层的递归遍历。相邻的元素可能在内存中不相邻，所以缓存命中性没有B+树好。
+</code></pre>
+
+<p>但是B树也有优点，其优点在于，由于B树的每一个节点都包含key和value，因此经常访问的元素可能离根节点更近，因此访问也更迅速。</p>
+
+<p>B/B+树常用于文件系统和数据库系统中，它通过对每个节点存储个数的扩展，使得对连续的数据能够进行较快的定位和访问，能够有效减少查找时间，提高存储的空间局部性从而减少IO操作。它广泛用于文件系统及数据库中，如：</p>
+
+<pre><code>Windows：HPFS文件系统；
+
+Mac：HFS，HFS+文件系统；
+
+Linux：ResiserFS，XFS，Ext3FS，JFS文件系统；
+
+数据库：ORACLE，MYSQL，SQLSERVER等中。
+</code></pre>
+
+<p>有关B/B+树在数据库索引中的应用，请看张洋的MySQL索引背后的数据结构及算法原理这篇文章，这篇文章对MySQL中的如何使用B+树进行索引有比较详细的介绍，推荐阅读。</p>
+
+<p>树表查找总结：</p>
+
+<pre><code>二叉查找树平均查找性能不错，为O(logn)，但是最坏情况会退化为O(n)。在二叉查找树的基础上进行优化，我们可以使用平衡查找树。平衡查找树中的2-3查找树，这种数据结构在插入之后能够进行自平衡操作，从而保证了树的高度在一定的范围内进而能够保证最坏情况下的时间复杂度。但是2-3查找树实现起来比较困难，红黑树是2-3树的一种简单高效的实现，他巧妙地使用颜色标记来替代2-3树中比较难处理的3-node节点问题。红黑树是一种比较高效的平衡查找树，应用非常广泛，很多编程语言的内部实现都或多或少的采用了红黑树。
+</code></pre>
+
+<p>除此之外，2-3查找树的另一个扩展——B/B+平衡树，在文件系统和数据库系统中有着广泛的应用。</p>
+
+<h3>6、分块查找</h3>
+
+<p>分块查找又称索引顺序查找，它是顺序查找的一种改进方法。</p>
+
+<p>算法思想：</p>
+
+<pre><code>将n个数据元素"按块有序"划分为m块（m ≤ n）。每一块中的结点不必有序，但块与块之间必须"按块有序"；即第1块中任一元素的关键字都必须小于第2块中任一元素的关键字；而第2块中任一元素又都必须小于第3块中的任一元素，……
+</code></pre>
+
+<p>算法流程：</p>
+
+<ol>
+<li>step1 先选取各块中的最大关键字构成一个索引表；</li>
+<li>step2 查找分两个部分：先对索引表进行二分查找或顺序查找，以确定待查记录</li>
+</ol>
+
+
+<p>在哪一块中；然后，在已确定的块中用顺序法进行查找。</p>
+
+<h3>7、哈希查找</h3>
+
+<p>什么是哈希表（Hash）？</p>
+
+<pre><code>我们使用一个下标范围比较大的数组来存储元素。可以设计一个函数（哈希函数， 也叫做散列函数），使得每个元素的关键字都与一个函数值（即数组下标）相对应，于是用这个数组单元来存储这个元素；也可以简单的理解为，按照关键字为每一个元素"分类"，然后将这个元素存储在相应"类"所对应的地方。但是，不能够保证每个元素的关键字与函数值是一一对应的，因此极有可能出现对于不同的元素，却计算出了相同的函数值，这样就产生了"冲突"，换句话说，就是把不同的元素分在了相同的"类"之中。后面我们将看到一种解决"冲突"的简便做法。
+</code></pre>
+
+<p>总的来说，"直接定址"与"解决冲突"是哈希表的两大特点。</p>
+
+<p>什么是哈希函数？哈希函数的规则是：</p>
+
+<pre><code>通过某种转换关系，使关键字适度的分散到指定大小的的顺序结构中，越分散，则以后查找的时间复杂度越小，空间复杂度越高。
+</code></pre>
+
+<p>算法思想：</p>
+
+<pre><code>哈希的思路很简单，如果所有的键都是整数，那么就可以使用一个简单的无序数组来实现：将键作为索引，值即为其对应的值，这样就可以快速访问任意键的值。这是对于简单的键的情况，我们将其扩展到可以处理更加复杂的类型的键。
+</code></pre>
+
+<p>算法流程：</p>
+
+<ul>
+<li><p>1）用给定的哈希函数构造哈希表；</p></li>
+<li><p>2）根据选择的冲突处理方法解决地址冲突；</p>
+
+<ul>
+<li>常见的解决冲突的方法：拉链法和线性探测法。</li>
+</ul>
+</li>
+<li><p>3）在哈希表的基础上执行哈希查找。</p></li>
+</ul>
+
+
+<p>哈希表是一个在时间和空间上做出权衡的经典例子。如果没有内存限制，那么可以直接将键作为数组的索引。那么所有的查找时间复杂度为O(1)；如果没有时间限制，那么我们可以使用无序数组并进行顺序查找，这样只需要很少的内存。哈希表使用了适度的时间和空间来在这两个极端之间找到了平衡。只需要调整哈希函数算法即可在时间和空间上做出取舍。</p>
+
+<p>复杂度分析：</p>
+
+<pre><code>单纯论查找复杂度：对于无冲突的Hash表而言，查找复杂度为O(1)（注意，在查找之前我们需要构建相应的Hash表）。
+</code></pre>
+
+<p>使用Hash，我们付出了什么？</p>
+
+<pre><code>我们在实际编程中存储一个大规模的数据，最先想到的存储结构可能就是map，也就是我们常说的KV pair，经常使用Python的博友可能更有这种体会。使用map的好处就是，我们在后续处理数据处理时，可以根据数据的key快速的查找到对应的value值。map的本质就是Hash表，那我们在获取了超高查找效率的基础上，我们付出了什么？
+</code></pre>
+
+<blockquote><p>Hash是一种典型以空间换时间的算法，比如原来一个长度为100的数组，对其查找，只需要遍历且匹配相应记录即可，从空间复杂度上来看，假如数组存储的是byte类型数据，那么该数组占用100byte空间。现在我们采用Hash算法，我们前面说的Hash必须有一个规则，约束键与存储位置的关系，那么就需要一个固定长度的hash表，此时，仍然是100byte的数组，假设我们需要的100byte用来记录键与位置的关系，那么总的空间为200byte,而且用于记录规则的表大小会根据规则，大小可能是不定的。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Wudachangyongsuanfa]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/15/wudachangyongsuanfa/"/>
+    <updated>2017-01-15T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/15/wudachangyongsuanfa</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-五大常用算法&rdquo;
+date: 2016-08-11 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<h3>分治算法</h3>
+
+<h6>概念：分而治之</h6>
+
+<pre><code>把一个复杂的问题分成两个或更多的相同或相似的子问题，再把子问题分成更小的子问题……直到最后子问题可以简单的直接求解，原问题的解即子问题的解的合并
+
+排序算法(快速排序，归并排序)，傅立叶变换(快速傅立叶变换)……
+</code></pre>
+
+<p>思想：将一个难以直接解决的大问题，分割成一些规模较小的相同问题，以便各个击破，分而治之</p>
+
+<pre><code>分治策略是：对于一个规模为n的问题，若该问题可以容易地解决（比如说规模n较小）则直接解决，否则将其分解为k个规模较小的子问题，这些子问题互相独立且与原问题形式相同，递归地解这些子问题，然后将各子问题的解合并得到原问题的解。这种算法设计策略叫做分治法
+
+这自然导致递归过程的产生。分治与递归像一对孪生兄弟
+</code></pre>
+
+<!--more-->
+
+
+<h6>特征：</h6>
+
+<p>分治法所能解决的问题一般具有以下几个特征：</p>
+
+<pre><code>1) 该问题的规模缩小到一定的程度就可以容易地解决
+
+2) 该问题可以分解为若干个规模较小的相同问题，即该问题具有最优子结构性质。
+
+3) 利用该问题分解出的子问题的解可以合并为该问题的解；
+
+4) 该问题所分解出的各个子问题是相互独立的，即子问题之间不包含公共的子子问题。
+</code></pre>
+
+<p>综上：</p>
+
+<ul>
+<li><p>第一条特征是绝大多数问题都可以满足的，因为问题的计算复杂性一般是随着问题规模的增加而增加；</p></li>
+<li><p>第二条特征是应用分治法的前提它也是大多数问题可以满足的，此特征反映了递归思想的应用；、</p></li>
+<li><p>第三条特征是关键，能否利用分治法完全取决于问题是否具有第三条特征，如果具备了第一条和第二条特征，而不具备第三条特征，则可以考虑用贪心法或动态规划法。</p></li>
+<li><p>第四条特征涉及到分治法的效率，如果各子问题是不独立的则分治法要做许多不必要的工作，重复地解公共的子问题，此时虽然可用分治法，但一般用动态规划法较好。</p></li>
+</ul>
+
+
+<h6>性能：</h6>
+
+<p> 一个分治法将规模为n的问题分成k个规模为n／m的子问题去解。设分解阀值n0=1，且adhoc解规模为1的问题耗费1个单位时间。再设将原问题分解为k个子问题以及用merge将k个子问题的解合并为原问题的解需用f(n)个单位时间。用T(n)表示该分治法解规模为|P|=n的问题所需的计算时间，则有：</p>
+
+<p> T（n）= k T(n/m)+f(n)</p>
+
+<pre><code>通过迭代法求得方程的解：
+递归方程及其解只给出n等于m的方幂时T(n)的值，但是如果认为T(n)足够平滑，那么由n等于m的方幂时T(n)的值可以估计T(n)的增长速度。通常假定T(n)是单调上升的，从而当                  mi≤n&lt;mi+1时，T(mi)≤T(n)&lt;T(mi+1)。 
+</code></pre>
+
+<h6>经典问题</h6>
+
+<ul>
+<li>（1）二分搜索</li>
+<li>（2）大整数乘法</li>
+<li>（3）Strassen矩阵乘法</li>
+<li>（4）棋盘覆盖</li>
+<li>（5）合并排序</li>
+<li>（6）快速排序</li>
+<li>（7）线性时间选择</li>
+<li>（8）最接近点对问题</li>
+<li>（9）循环赛日程表</li>
+<li>（10）汉诺塔</li>
+</ul>
+
+
+<h6>思维过程</h6>
+
+<pre><code>实际上就是类似于数学归纳法，找到解决本问题的求解方程公式，然后根据方程公式设计递归程序。
+</code></pre>
+
+<ol>
+<li>一定是先找到最小问题规模时的求解方法</li>
+<li>然后考虑随着问题规模增大时的求解方法</li>
+<li>找到求解的递归函数式后（各种规模或因子），设计递归程序即可。</li>
+</ol>
+
+
+<h3>动态规划</h3>
+
+<h6>概念</h6>
+
+<pre><code>每次决策依赖于当前状态，又随即引起状态的转移。一个决策序列就是在变化的状态中产生出来的，所以，这种多阶段最优化决策解决问题的过程就称为动态规划
+</code></pre>
+
+<h6>思想</h6>
+
+<pre><code>基本思想与分治法类似，也是将待求解的问题分解为若干个子问题（阶段），按顺序求解子阶段，前一子问题的解，为后一子问题的求解提供了有用的信息。在求解任一子问题时，列出各种可能的局部解，通过决策保留那些有可能达到最优的局部解，丢弃其他局部解。依次解决各子问题，最后一个子问题就是初始问题的解
+</code></pre>
+
+<h6>特点：</h6>
+
+<pre><code>叠子问题这个特点，为减少重复计算，对每一个子问题只解一次，将其不同阶段的不同状态保存在一个二维数组中
+</code></pre>
+
+<h6>与分治法最大的差别是：</h6>
+
+<pre><code>适合于用动态规划法求解的问题，经分解后得到的子问题往往不是互相独立的（即下一个子阶段的求解是建立在上一个子阶段的解的基础上，进行进一步的求解）。
+</code></pre>
+
+<h6>使用</h6>
+
+<ul>
+<li><p>(1) 最优化原理：如果问题的最优解所包含的子问题的解也是最优的，就称该问题具有最优子结构，即满足最优化原理。</p></li>
+<li><p>(2) 无后效性：即某阶段状态一旦确定，就不受这个状态以后决策的影响。也就是说，某状态以后的过程不会影响以前的状态，只与当前状态有关。</p></li>
+<li><p>（3）有重叠子问题：即子问题之间是不独立的，一个子问题在下一阶段决策中可能被多次使用到。（该性质并不是动态规划适用的必要条件，但是如果没有这条性质，动态规划算法同其他算法相比就不具备优势）
+实际应用</p></li>
+</ul>
+
+
+<h6>三要素：</h6>
+
+<p>使用动态规划求解问题，最重要的就是确定动态规划三要素：</p>
+
+<pre><code>（1）问题的阶段 
+
+（2）每个阶段的状态
+
+（3）从前一个阶段转化到后一个阶段之间的递推关系。
+</code></pre>
+
+<h6>总结</h6>
+
+<p>递推关系必须是从次小的问题开始到较大的问题之间的转化，从这个角度来说，动态规划往往可以用递归程序来实现，不过因为递推可以充分利用前面保存的子问题的解来减少重复计算，所以对于大规模问题来说，有递归不可比拟的优势，这也是动态规划算法的核心之处。</p>
+
+<pre><code>确定了动态规划的这三要素，整个求解过程就可以用一个最优决策表来描述，最优决策表是一个二维表，其中行表示决策的阶段，列表示问题状态，表格需要填写的数据一般对应此问题的在某个阶段某个状态下的最优值（如最短路径，最长公共子序列，最大价值等），填表的过程就是根据递推关系，从1行1列开始，以行或者列优先的顺序，依次填写表格，最后根据整个表格的数据通过简单的取舍或者运算求得问题的最优解。
+
+      f(n,m)=max{f(n-1,m), f(n-1,m-w[n])+P(n,m)}
+</code></pre>
+
+<h3>贪心算法</h3>
+
+<h6>概念</h6>
+
+<pre><code>在对问题求解时，总是做出在当前看来是最好的选择。也就是说，不从整体最优上加以考虑，他所做出的仅是在某种意义上的局部最优解。
+</code></pre>
+
+<blockquote><p>贪心算法不是对所有问题都能得到整体最优解，选择的贪心策略必须具备无后效性，即某个状态以后的过程不会影响以前的状态，只与当前状态有关。</p></blockquote>
+
+<h6>思想</h6>
+
+<ol>
+<li>建立数学模型来描述问题。</li>
+<li>把求解的问题分成若干个子问题。</li>
+<li>对每一子问题求解，得到子问题的局部最优解。</li>
+<li>把子问题的解局部最优解合成原来解问题的一个解。</li>
+</ol>
+
+
+<h6>使用</h6>
+
+<p>局部最优策略能导致产生全局最优解。</p>
+
+<pre><code>实际上，贪心算法适用的情况很少。一般，对一个问题分析是否适用于贪心算法，可以先选择该问题下的几个实际数据进行分析，就可做出判断。
+</code></pre>
+
+<p>实际应用</p>
+
+<p>实现框架
+    从问题的某一初始解出发；
+    while （能朝给定总目标前进一步）
+    {
+          利用可行的决策，求出可行解的一个解元素；
+    }
+    由所有解元素组合成问题的一个可行解；</p>
+
+<pre><code>    因为用贪心算法只能通过解局部最优解的策略来达到全局最优解，因此，一定要注意判断问题是否适合采用贪心算法策略，找到的解是否一定是问题的最优解。
+</code></pre>
+
+<h6>总结</h6>
+
+<blockquote><p>贪心算法并不是完全不可以使用，贪心策略一旦经过证明成立后，它就是一种高效的算法。</p></blockquote>
+
+<ul>
+<li>需要证明: 贪心算法的证明围绕着：整个问题的最优解一定由在贪心策略中存在的子问题的最优解得来的。</li>
+</ul>
+
+
+<h3>回溯算法</h3>
+
+<h6>概念</h6>
+
+<pre><code>一个类似枚举的搜索尝试过程，主要是在搜索尝试过程中寻找问题的解，当发现已不满足求解条件时，就“回溯”返回，尝试别的路径
+
+回溯法是一种选优搜索法，按选优条件向前搜索，以达到目标。但当探索到某一步时，发现原先选择并不优或达不到目标，就退回一步重新选择，这种走不通就退回再走的技术为回溯法，而满足回溯条件的某个状态的点称为“回溯点”。
+</code></pre>
+
+<p>特点：有“通用解题方法”的美称。</p>
+
+<h6>思想</h6>
+
+<p>在包含问题的所有解的解空间树中，按照深度优先搜索的策略，从根结点出发深度探索解空间树。当探索到某一结点时，要先判断该结点是否包含问题的解，如果包含，就从该结点出发继续探索下去，如果该结点不包含问题的解，则逐层向其祖先结点回溯。（其实回溯法就是对隐式图的深度优先搜索算法）。</p>
+
+<pre><code>   若用回溯法求问题的所有解时，要回溯到根，且根结点的所有可行的子树都要已被搜索遍才结束。
+
+   而若使用回溯法求任一个解时，只要搜索到问题的一个解就可以结束。
+</code></pre>
+
+<h6>使用</h6>
+
+<pre><code>（1）针对所给问题，确定问题的解空间：首先应明确定义问题的解空间，问题的解空间应至少包含问题的一个（最优）解。
+
+（2）确定结点的扩展搜索规则
+
+（3）以深度优先方式搜索解空间，并在搜索过程中用剪枝函数避免无效搜索。实际应用
+</code></pre>
+
+<h3>分支限界法</h3>
+
+<h6>概念</h6>
+
+<pre><code> 类似于回溯法，也是一种在问题的解空间树T上搜索问题解的算法。但在一般情况下，分支限界法与回溯法的求解目标不同。回溯法的求解目标是找出T中满足约束条件的所有解，而分支限界法的求解目标则是找出满足约束条件的一个解，或是在满足约束条件的解中找出使某一目标函数值达到极大或极小的解，即在某种意义下的最优解。
+</code></pre>
+
+<p>回溯法和分支限界法的一些区别</p>
+
+<pre><code>有一些问题其实无论用回溯法还是分支限界法都可以得到很好的解决，但是另外一些则不然。也许我们需要具体一些的分析——到底何时使用分支限界而何时使用回溯呢？
+</code></pre>
+
+<h6>搜索算法</h6>
+
+<pre><code>所谓“分支”就是采用广度优先的策略，依次搜索E-结点的所有分支，也就是所有相邻结点，抛弃不满足约束条件的结点，其余结点加入活结点表。然后从表中选择一个结点作为下一个E-结点，继续搜索。
+
+ 选择下一个E-结点的方式不同，则会有几种不同的分支搜索方式。
+</code></pre>
+
+<p>   1）FIFO搜索</p>
+
+<p>   2）LIFO搜索</p>
+
+<p>   3）优先队列式搜索</p>
+
+<h6>回溯法和分支限界法的区别：</h6>
+
+<ul>
+<li><p>方法对解空间树的搜索方式       存储结点的常用数据结构      结点存储特性常用应用</p></li>
+<li><p>回溯法深度优先搜索堆栈活结点的所有可行子结点被遍历后才被从栈中弹出找出满足约束条件的所有解</p></li>
+<li><p>分支限界法广度优先或最小消耗优先搜索队列、优先队列每个结点只有一次成为活结点的机会找出满足约束条件的一个解或特定意义下的最优解</p></li>
+</ul>
+
+
+<hr />
+
+<p>总结</p>
+
+<blockquote><p>多理解，多理解，多理解。。。。</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Badapaixusuanfa]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/12/badapaixusuanfa/"/>
+    <updated>2017-01-12T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/12/badapaixusuanfa</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-常见排序算法&rdquo;
+date: 2016-08-10 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<p>常用排序算法</p>
+
+<blockquote><p>这里我们大概按照重要性的先后顺序介绍</p></blockquote>
+
+<h2>快速排序</h2>
+
+<ul>
+<li><p>快速排序是不稳定的，其时间平均时间复杂度是O ( nlgn )。</p></li>
+<li><p>快速排序采用的思想是分治思想。</p></li>
+</ul>
+
+
+<p>思路:快速排序是找出一个元素（理论上可以随便找一个）作为基准(pivot),然后对数组进行分区操作,使基准左边元素的值都不大于基准值,基准右边的元素值 都不小于基准值，如此作为基准的元素调整到排序后的正确位置。递归快速排序，将其他n-1个元素也调整到排序后的正确位置。最后每个元素都是在排序后的正 确位置，排序完成。所以快速排序算法的核心算法是分区操作，即如何调整基准的位置以及调整返回基准的最终位置以便分治递归。</p>
+
+<!--more-->
+
+
+<p>伪代码</p>
+
+<pre><code>void quickSort(int a[], int len, int left, int right) {
+   // 所有都排序完毕了，就退出递归
+   if left &gt;= right {
+     return;
+   }
+
+   // 每一趟划分，使左边的比基准小，右边的比基准大，并返回新的基准的位置
+   int baseIndex = partition(a, len, left, right);
+
+   // 递归排序左部分
+   quickSort(a, len, left, baseIndex - 1);
+   // 递归排序右部分
+   quickSort(a, len, baseIndex + 1, right)
+}
+
+int partition(int a[], int len, int left, int right) {
+   // 记录哪个是基准数
+   int base = a[left];
+   // 记录当前基准数的位置
+   int baseIndex = left;
+
+   while left &lt; right {
+     // 先从右边往左边扫描，找到第一个比base还要小的数，但是不能与left相遇
+     while left &lt; right &amp;&amp; a[right] &gt;= base {
+       right--;
+     }
+
+     // 再从左边往右边扫描，找到第一个比base还要大的数，但是不能与right相遇
+     while left &lt; right &amp;&amp; a[left] &lt;= base {
+       left++;
+     }
+
+     // 将所扫描到的第一个比基准数小和第一个比基准数大的数交换
+     swap(a, left, right);
+   }
+
+   // 交换left与baseIndex对应的元素，将left位置的元素作为新的基准数
+   swap(a, baseIndex, left);
+
+   // 返回新的基准位置
+   return left;
+}
+
+void swap(int a[], int i, int j) {
+   int temp = a[i];
+
+   a[i] = a[j];
+   a[j] = temp;
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void quickSort(int a[], int len, int left, int right) {
+  if (left &gt;= right) {
+    return;
+  }
+
+  // 一次划分后，得到基准数据的位置
+ int baseIndex = partition(a, len, left, right);
+
+  // 快排左边部分
+  quickSort(a, len, left, baseIndex - 1);
+  // 快排右边部分
+  quickSort(a, len, baseIndex + 1, right);
+}
+
+int partition(int a[], int len, int left, int right) {
+  // 每一次的划分，都让第一个元素作为基准
+  int base = a[left];
+  // 记下刚开始的基准的位置， 便于最后相遇时交换
+  int baseIndex = left;
+
+  while (left &lt; right) {
+    // 查找右部分比base还小的元素的下标
+    while (left &lt; right &amp;&amp; a[right] &gt;= base) {
+      right--;
+    }
+
+    // 查找左部分比base还大的元素的下标
+    while (left &lt; right &amp;&amp; a[left] &lt;= base) {
+      left++;
+    }
+
+    // 将这一趟比基准大和比基准小的所找到的第一个值，互相交换
+    swap(a, left, right);
+  }
+
+  // 在left与right相遇时，将基准数与相遇点交换
+  // 这样这一次划分，就可以保证左边的比基准数小，右边的比基准数大
+  swap(a, baseIndex, left);
+
+  // 划分完成后，以left位置的元素作为新的基准，分成左右序列，分别递归排序
+  return left;
+}
+
+void swap(int a[], int i, int j) {
+  int temp = a[i];
+  a[i] = a[j];
+  a[j] = temp;
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func quickSort(inout a: [Int], left: Int, right: Int) {
+  if left &gt;= right {
+    return
+  }
+
+  let baseIndex = partition(&amp;a, left: left, right: right)
+
+  quickSort(&amp;a, left: left, right: baseIndex - 1)
+  quickSort(&amp;a, left: baseIndex + 1, right: right)
+}
+
+func partition(inout a: [Int], var left: Int, var right: Int) -&gt;Int {
+  let base = a[left]
+  let baseIndex = left
+
+  while left &lt; right {
+    while left &lt; right &amp;&amp; a[right] &gt;= base {
+      right--
+    }
+
+    while left &lt; right &amp;&amp; a[left] &lt;= base {
+      left++
+    }
+
+    swapInt(&amp;a, i: left, j: right)
+  }
+
+  swapInt(&amp;a, i: baseIndex, j: left)
+
+  return left
+}
+
+func swapInt(inout a: [Int], i: Int, j: Int) {
+  let temp = a[i]
+  a[i] = a[j]
+  a[j] = temp
+}
+</code></pre>
+
+<hr />
+
+<h2>冒泡排序</h2>
+
+<p>算法思路：冒泡排序的核心思想就是通过与相邻元素的比较和交换，把小的数交换到最前面。因为这个过程类似于水泡向上升一样，因此被命名为冒泡排序。</p>
+
+<blockquote><p>冒泡排序需要两个循环来控制遍历，也就是需要n * n趟才能判断、交换完成。</p></blockquote>
+
+<p>冒泡排序的时间复杂度为O ( n2 )。</p>
+
+<p>伪代码</p>
+
+<pre><code>void bubbleSort(int a[], int len) {
+   for i = 0; i &lt; len - 1; ++i {
+      for j = len - 1; j &gt; i; --j {
+         if a[j] &lt; a[j - 1] {
+            swap(a, j, j - 1);
+         }
+      }
+   }
+}
+
+void swap(int a[], int i, int j) {
+   int temp = a[i];
+   a[i] = a[j];
+   a[j] = temp;
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void bubbleSortUsingC(int arr[], int len) {
+  // 代表走多少趟，最后一趟就不用再走了
+  for (int i = 0; i &lt; len - 1; ++i) {
+
+    // 从后往前走，相当于泡从水底冒出来到水面
+    for (int j = len - 1; j &gt; i; --j) {
+
+      // 如果后面的比前面一个的值还要小，则需要交换
+      if (arr[j] &lt; arr[j - 1]) {
+        swap(arr, j, j - 1);
+      }
+    }
+  }
+}
+
+void swap(int arr[], int i, int j) {
+  int temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
+</code></pre>
+
+<p>测试一下：</p>
+
+<pre><code>int a[5] = {5,3,8,6,4};
+
+bubbleSortUsingC(a, sizeof(a) / sizeof(int));
+
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@"%d", a[i]);
+}
+
+// 打印: 3, 4, 5, 6, 8 初步如期效果
+
+ObjC版
+
+- (void)bubbleSort:(int [])array len:(size_t)len {
+  for (size_t i = 0; i &lt; len - 1; ++i) {
+    for (size_t j = len - 1; j &gt; i; --j) {
+      if (array[j] &lt; array[j - 1]) {
+        // 交换
+        int temp = array[j];
+        array[j] = array[j - 1];
+        array[j - 1] = temp;
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>测试使用：</p>
+
+<p>int a[5] = {5,3,8,6,4};
+[self bubbleSort:a len:sizeof(a) / sizeof(int)];
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@&ldquo;%d&rdquo;, a[i]);
+}</p>
+
+<p>Swift版</p>
+
+<pre><code>func bubbleSort(var arr: [Int]) -&gt;[Int] {
+  // 走多少趟
+  for var i = 0; i &lt; arr.count - 1; ++i {
+
+    // 从后往前
+    for var j = arr.count - 1; j &gt; i; --j {
+
+      // 后者 &lt; 前者 ？ 交换 ： 不交换
+      if arr[j] &lt; arr[j - 1] {
+        let temp = arr[j]
+
+        arr[j] = arr[j - 1]
+        arr[j - 1] = temp
+      }
+    }
+  }
+
+  return arr
+}
+</code></pre>
+
+<p>测试使用：</p>
+
+<pre><code>// 由于swift中数组也是结构体，是值类型，因此需要接收返回值才能得到排序后的数组
+var arr = [5, 3, 8, 6, 4]
+arr = bubbleSort(arr)
+print(arr)
+
+尝试给Model排序
+
+- (void)bubbleSort:(NSMutableArray *)array {
+  for (NSUInteger i = 0; i &lt; array.count - 1; ++i) {
+
+    for (NSUInteger j = array.count - 1; j &gt; i; --j) {
+      HYBTestModel *modelj = [array objectAtIndex:j];
+      HYBTestModel *modelj_1 = [array objectAtIndex:j - 1];
+
+      // 前者 &lt; 后者 ？ 交换 ： 不交换
+      if ([modelj.uid compare:modelj_1.uid options:NSCaseInsensitiveSearch] == NSOrderedAscending) {
+        [array exchangeObjectAtIndex:j withObjectAtIndex:j - 1];
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>NSMutableArray *array = [[NSMutableArray alloc] init];
+for (NSUInteger i = 0; i &lt; 10; ++i) {
+  HYBTestModel *model = [[HYBTestModel alloc] init];
+  model.title = [NSString stringWithFormat:@"标哥的技术博客：%ld", 10 - (i + 1)];
+  model.uid = [NSString stringWithFormat:@"%ld", 10 - (i + 1)];
+
+  [array addObject:model];
+}
+
+[self bubbleSort:array];
+
+for (HYBTestModel *model in array) {
+  NSLog(@"%@ %@", model.uid, model.title);
+}
+</code></pre>
+
+<p>// 打印:</p>
+
+<pre><code>2016-03-10 22:57:37.524 DataAgorithmDemos[96148:3779265] 0 标哥的技术博客：0
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 1 标哥的技术博客：1
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 2 标哥的技术博客：2
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 3 标哥的技术博客：3
+2016-03-10 22:57:37.582 DataAgorithmDemos[96148:3779265] 4 标哥的技术博客：4
+2016-03-10 22:57:37.588 DataAgorithmDemos[96148:3779265] 5 标哥的技术博客：5
+2016-03-10 22:57:37.589 DataAgorithmDemos[96148:3779265] 6 标哥的技术博客：6
+2016-03-10 22:57:37.593 DataAgorithmDemos[96148:3779265] 7 标哥的技术博客：7
+2016-03-10 22:57:37.594 DataAgorithmDemos[96148:3779265] 8 标哥的技术博客：8
+2016-03-10 22:57:37.596 DataAgorithmDemos[96148:3779265] 9 标哥的技术博客：9
+</code></pre>
+
+<p>说明排序正常的~</p>
+
+<h2>选择排序</h2>
+
+<ul>
+<li>选择排序:的思想其实和冒泡排序有点类似，都是在一次排序后把最小的元素放到最前面。但是过程不同，冒泡排序是通过相邻的比较和交换。而选择排序是通过对整体的选择</li>
+</ul>
+
+
+<p>算法思想：每一趟从前往后查找出值最小的索引（下标），最后通过比较是否需要交换。每一趟都将最小的元素交换到最前面。</p>
+
+<p>其实选择排序可以看成是冒泡排序的优化，因为其目的相同，只是选择排序只有在确定了最小数的前提下才进行交换，大大减少了交换的次数，而比较次数是一样的。</p>
+
+<blockquote><p>注意：冒泡排序是从后往前扫，使大的往下沉，而小的往上浮；选择排序是从前往后扫，每趟找出值最小的索引，使每趟最小值都交换到该趟的最前面，从而得到升序序列</p></blockquote>
+
+<p>选择排序可以看作冒泡排序的优化版本，一样要两层循环才能排序完成。</p>
+
+<p>所以，选择排序的时间复杂度为O ( n2 )</p>
+
+<p>伪代码</p>
+
+<pre><code>void selectSort(int arr[], int len) {
+  int min = 0;
+
+  // 只需要n-1趟即可，到最后一趟只有一个元素，一定是最小的了
+  for i = 0; i &lt; len - 1; ++i {
+
+    // 每一趟的开始，假设该趟的第一个元素是最小的
+    min = i;
+
+    // 查找该趟有没有更小的，如果找到更小的，则更新最小值的下标
+    for j = i + 1; j &lt; len; ++j {
+       if arr[j] &lt; arr[min] {
+          min = j;
+       } 
+    }
+
+    // 如果该趟的第一个元素不是最小的，说明需要交换
+    if min != i {
+       int temp = arr[i];
+       arr[i] = arr[min];
+       arr[min] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void selectSort(int arr[], int len) {
+  int min = 0;
+
+  // 只需要n-1趟
+  for (int i = 0; i &lt; len - 1; ++i) {
+    min = i;
+
+    // 从第n+1趟起始找到末尾
+    for (int j = i + 1; j &lt; len; ++j) {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if (arr[j] &lt; arr[min]) {
+        min = j;
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if (min != i) {
+      int temp = arr[min];
+      arr[min] = arr[i];
+      arr[i] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>ObjC版</p>
+
+<pre><code>- (void)selectSort:(int [])arr len:(int)len {
+  int min = 0;
+
+  // 只需要n-1趟
+  for (int i = 0; i &lt; len - 1; ++i) {
+    min = i;
+
+    // 从第n+1趟起始找到末尾
+    for (int j = i + 1; j &lt; len; ++j) {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if (arr[j] &lt; arr[min]) {
+        min = j;
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if (min != i) {
+      int temp = arr[min];
+      arr[min] = arr[i];
+      arr[i] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func selectSort(var arr: [Int]) -&gt;[Int] {
+  var min = 0
+
+  // 只需要n-1趟
+  for var i = 0; i &lt; arr.count - 1; ++i {
+    min = i
+
+    // 从第n+1趟起始找到末尾
+    for var j = i + 1; j &lt; arr.count; ++j {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if arr[j] &lt; arr[min] {
+        min = j
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if min != i {
+      let temp = arr[i]
+      arr[i] = arr[min]
+      arr[min] = temp
+    }
+  }
+
+  return arr
+}
+</code></pre>
+
+<p>尝试ObjC实现模型选择排序</p>
+
+<pre><code>- (void)selectSort:(NSMutableArray *)array {
+  NSUInteger minIndex = 0;
+
+  for (NSUInteger i = 0; i &lt; array.count - 1; ++i) {
+    minIndex = i;
+
+    for (NSUInteger j = i + 1; j &lt; array.count; ++j) {
+      HYBTestModel *modelj = [array objectAtIndex:j];
+      HYBTestModel *model = [array objectAtIndex:minIndex];
+
+      // 比min下的还要小，则更新min
+      if ([modelj.uid compare:model.uid options:NSCaseInsensitiveSearch] == NSOrderedAscending) {
+        minIndex = j;
+      }
+    }
+
+    if (minIndex != i) {
+      [array exchangeObjectAtIndex:minIndex withObjectAtIndex:i];
+    }
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>NSMutableArray *array = [[NSMutableArray alloc] init];
+for (NSUInteger i = 0; i &lt; 10; ++i) {
+  HYBTestModel *model = [[HYBTestModel alloc] init];
+  model.title = [NSString stringWithFormat:@"标哥的技术博客：%ld", 10 - (i + 1)];
+  model.uid = [NSString stringWithFormat:@"%ld", 10 - (i + 1)];
+
+  [array addObject:model];
+
+}
+
+[self selectSort:array];
+
+for (HYBTestModel *model in array) {
+  NSLog(@"%@ %@", model.uid, model.title);
+}
+</code></pre>
+
+<p>// 打印:</p>
+
+<pre><code>2016-03-11 11:52:47.482 DataAgorithmDemos[97923:4012461] 0 标哥的技术博客：0
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 1 标哥的技术博客：1
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 2 标哥的技术博客：2
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 3 标哥的技术博客：3
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 4 标哥的技术博客：4
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 5 标哥的技术博客：5
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 6 标哥的技术博客：6
+2016-03-11 11:52:47.485 DataAgorithmDemos[97923:4012461] 7 标哥的技术博客：7
+2016-03-11 11:52:47.487 DataAgorithmDemos[97923:4012461] 8 标哥的技术博客：8
+2016-03-11 11:52:47.487 DataAgorithmDemos[97923:4012461] 9 标哥的技术博客：9
+</code></pre>
+
+<h2>堆排序</h2>
+
+<p>堆是指二叉堆，二叉堆又称完全二叉树或者叫近似完全二叉树。二叉堆又分为最大堆和最小堆。</p>
+
+<p>堆排序(Heapsort)是指利用堆这种数据结构所设计的一种排序算法，它是选择排序的一种。可以利用数组的特点快速定位指定索引的元素。数组可以根据索引直接获取元素，时间复杂度为O（1），也就是常量，因此对于取值效率极高。</p>
+
+<p>最大堆的特性如下：</p>
+
+<pre><code>父结点的键值总是大于或者等于任何一个子节点的键值
+每个结点的左子树和右子树都是一个最大堆
+</code></pre>
+
+<p>最小堆的特性如下：</p>
+
+<pre><code>父结点的键值总是小于或者等于任何一个子节点的键值
+每个结点的左子树和右子树都是一个最小堆
+</code></pre>
+
+<p>堆排序的时间，主要由建立初始堆和反复调整堆这两部分的时间开销构成.由于堆排序是不稳定的，它得扭到的时间复杂度会根据实际情况较大，因此只能取平均时间复杂度。</p>
+
+<p>平均时间复杂度为：O( N * log2(N) )</p>
+
+<p>使用建议：</p>
+
+<pre><code>由于初始化堆需要比较的次数较多，因此，堆排序比较适合于数据量非常大的场合（百万数据或更多）。由于高效的快速排序是基于递归实现的，所以在数据量非常大时会发生堆栈溢出错误。
+</code></pre>
+
+<p>基于最大堆实现升序排序</p>
+
+<pre><code>// 初始化堆
+void initHeap(int a[], int len) {
+  // 从完全二叉树最后一个非子节点开始
+  // 在数组中第一个元素的索引是0
+  // 第n个元素的左孩子为2n+1，右孩子为2n+2，
+  // 最后一个非子节点位置在(n - 1) / 2
+  for (int i = (len - 1) / 2; i &gt;= 0; --i) {
+    adjustMaxHeap(a, len, i);
+  }
+}
+
+void adjustMaxHeap(int a[], int len, int parentNodeIndex) {
+  // 若只有一个元素，那么只能是堆顶元素，也没有必要再排序了
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 记录比父节点大的左孩子或者右孩子的索引
+  int targetIndex = -1;
+
+  // 获取左、右孩子的索引
+  int leftChildIndex = 2 * parentNodeIndex + 1;
+  int rightChildIndex = 2 * parentNodeIndex + 2;
+
+  // 没有左孩子
+  if (leftChildIndex &gt;= len) {
+    return;
+  }
+
+  // 有左孩子，但是没有右孩子
+  if (rightChildIndex &gt;= len) {
+    targetIndex = leftChildIndex;
+  }
+  // 有左孩子和右孩子
+  else {
+    // 取左、右孩子两者中最大的一个
+    targetIndex = a[leftChildIndex] &gt; a[rightChildIndex] ? leftChildIndex : rightChildIndex;
+  }
+
+  // 只有孩子比父节点的值还要大，才需要交换
+  if (a[targetIndex] &gt; a[parentNodeIndex]) {
+    int temp = a[targetIndex];
+
+    a[targetIndex] = a[parentNodeIndex];
+    a[parentNodeIndex] = temp;
+
+
+    // 交换完成后，有可能会导致a[targetIndex]结点所形成的子树不满足堆的条件，
+    // 若不满足堆的条件，则调整之使之也成为堆
+    adjustMaxHeap(a, len, targetIndex);
+  }
+}
+
+void heapSort(int a[], int len) {
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 初始堆成无序最大堆
+  initHeap(a, len);
+
+  for (int i = len - 1; i &gt; 0; --i) {
+    // 将当前堆顶元素与最后一个元素交换，保证这一趟所查找到的堆顶元素与最后一个元素交换
+    // 注意：这里所说的最后不是a[len - 1]，而是每一趟的范围中最后一个元素
+    // 为什么要加上&gt;0判断？每次不是说堆顶一定是最大值吗？没错，每一趟调整后，堆顶是最大值的
+    // 但是，由于len的范围不断地缩小，导致某些特殊的序列出现异常
+    // 比如说，5, 3, 8, 6, 4序列，当调整i=1时，已经调整为3,4,5,6,8序列，已经有序了
+    // 但是导致了a[i]与a[0]交换，由于变成了4,3,5,6,8反而变成无序了!
+    if (a[0] &gt; a[i]) {
+      int temp = a[0];
+      a[0] = a[i];
+      a[i] = temp;
+    }
+
+    // 范围变成为：
+    // 0...len-1
+    // 0...len-1-1
+    // 0...1 // 结束
+    // 其中，0是堆顶，每次都是找出在指定的范围内比堆顶还大的元素，然后与堆顶元素交换
+    adjustMaxHeap(a, i - 1, 0);
+  }
+}
+</code></pre>
+
+<p>基于最小堆实现降序排序</p>
+
+<pre><code>// 初始化堆
+void initHeap(int a[], int len) {
+  // 从完全二叉树最后一个非子节点开始
+  // 在数组中第一个元素的索引是0
+  // 第n个元素的左孩子为2n+1，右孩子为2n+2，
+  // 最后一个非子节点位置在(n - 1) / 2
+  for (int i = (len - 1) / 2; i &gt;= 0; --i) {
+    adjustMinHeap(a, len, i);
+  }
+}
+
+void adjustMinHeap(int a[], int len, int parentNodeIndex) {
+  // 若只有一个元素，那么只能是堆顶元素，也没有必要再排序了
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 记录比父节点大的左孩子或者右孩子的索引
+  int targetIndex = -1;
+
+  // 获取左、右孩子的索引
+  int leftChildIndex = 2 * parentNodeIndex + 1;
+  int rightChildIndex = 2 * parentNodeIndex + 2;
+
+  // 没有左孩子
+  if (leftChildIndex &gt;= len) {
+    return;
+  }
+
+  // 有左孩子，但是没有右孩子
+  if (rightChildIndex &gt;= len) {
+    targetIndex = leftChildIndex;
+  }
+  // 有左孩子和右孩子
+  else {
+    // 取左、右孩子两者中最上的一个
+    targetIndex = a[leftChildIndex] &lt; a[rightChildIndex] ? leftChildIndex : rightChildIndex;
+  }
+
+  // 只有孩子比父节点的值还要小，才需要交换
+  if (a[targetIndex] &lt; a[parentNodeIndex]) {
+    int temp = a[targetIndex];
+
+    a[targetIndex] = a[parentNodeIndex];
+    a[parentNodeIndex] = temp;
+
+
+    // 交换完成后，有可能会导致a[targetIndex]结点所形成的子树不满足堆的条件，
+    // 若不满足堆的条件，则调整之使之也成为堆
+    adjustMinHeap(a, len, targetIndex);
+  }
+}
+
+void heapSort(int a[], int len) {
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 初始堆成无序最小堆
+  initHeap(a, len);
+
+  for (int i = len - 1; i &gt; 0; --i) {
+    // 将当前堆顶元素与最后一个元素交换，保证这一趟所查找到的堆顶元素与最后一个元素交换
+    // 注意：这里所说的最后不是a[len - 1]，而是每一趟的范围中最后一个元素
+    // 为什么要加上&gt;0判断？每次不是说堆顶一定是最小值吗？没错，每一趟调整后，堆顶是最小值的
+    // 但是，由于len的范围不断地缩小，导致某些特殊的序列出现异常
+    // 比如说，5, 3, 8, 6, 4序列，当调整i=1时，已经调整为3,4,5,6,8序列，已经有序了
+    // 但是导致了a[i]与a[0]交换，由于变成了4,3,5,6,8反而变成无序了!
+    if (a[0] &lt; a[i]) {
+      int temp = a[0];
+      a[0] = a[i];
+      a[i] = temp;
+    }
+
+    // 范围变成为：
+    // 0...len-1
+    // 0...len-1-1
+    // 0...1 // 结束
+    // 其中，0是堆顶，每次都是找出在指定的范围内比堆顶还小的元素，然后与堆顶元素交换
+    adjustMinHeap(a, i - 1, 0);
+  }
+}
+</code></pre>
+
+<p>C语言版测试</p>
+
+<p>大家可以测试一下：</p>
+
+<pre><code>//  int a[] = {5, 3, 8, 6, 4};
+int a[] = {89,-7,999,-89,7,0,-888,7,-7};
+heapSort(a, sizeof(a) / sizeof(int));
+
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@"%d", a[i]);
+}
+</code></pre>
+
+<p>Swift版实现
+基于最大堆实现升序排序</p>
+
+<pre><code>func initHeap(inout a: [Int]) {
+  for var i = (a.count - 1) / 2; i &gt;= 0; --i {
+    adjustMaxHeap(&amp;a, len: a.count, parentNodeIndex: i)
+  }
+}
+
+func adjustMaxHeap(inout a: [Int], len: Int, parentNodeIndex: Int) {
+  // 如果len &lt;= 0，说明已经无序区已经缩小到0
+  guard len &gt; 1 else {
+    return
+  }
+
+  // 父结点的左、右孩子的索引
+  let leftChildIndex = 2 * parentNodeIndex + 1
+
+  // 如果连左孩子都没有， 一定没有右孩子，说明已经不用再往下了
+  guard leftChildIndex &lt; len else {
+    return
+  }
+
+  let rightChildIndex = 2 * parentNodeIndex + 2
+
+  // 用于记录需要与父结点交换的孩子的索引
+  var targetIndex = -1
+
+  // 若没有右孩子，但有左孩子，只能选择左孩子
+  if rightChildIndex &gt; len {
+    targetIndex = leftChildIndex
+  } else {
+    // 左、右孩子都有，则需要找出最大的一个
+    targetIndex = a[leftChildIndex] &gt; a[rightChildIndex] ? leftChildIndex : rightChildIndex
+  }
+
+  // 只有孩子比父结点还要大，再需要交换
+  if a[targetIndex] &gt; a[parentNodeIndex] {
+    let temp = a[targetIndex]
+
+    a[targetIndex] = a[parentNodeIndex]
+    a[parentNodeIndex] = temp
+
+    // 由于交换后，可能会破坏掉新的子树堆的性质，因此需要调整以a[targetIndex]为父结点的子树，使之满足堆的性质
+    adjustMaxHeap(&amp;a, len: len, parentNodeIndex: targetIndex)
+  }
+}
+
+func maxHeapSort(inout a: [Int]) {
+  guard a.count &gt; 1 else {
+    return
+  }
+
+  initHeap(&amp;a)
+
+  for var i = a.count - 1; i &gt; 0; --i {
+    // 每一趟都将堆顶交换到指定范围内的最后一个位置
+    if a[0] &gt; a[i] {
+      let temp = a[0]
+
+      a[0] = a[i]
+      a[i] = temp
+    }
+    print(a)
+    print(i - 1)
+    // 有序区长度+1，而无序区长度-1，继续缩小无序区，所以i-1
+    // 堆顶永远是在0号位置，所以父结点调整从堆顶开始就可以了
+    adjustMaxHeap(&amp;a, len: i - 1, parentNodeIndex: 0)
+    print(a)
+  }
+}
+</code></pre>
+
+<p>基于最小堆降序排序</p>
+
+<pre><code>func initHeap(inout a: [Int]) {
+  for var i = (a.count - 1) / 2; i &gt;= 0; --i {
+    adjustMinHeap(&amp;a, len: a.count, parentNodeIndex: i)
+  }
+}
+
+func adjustMinHeap(inout a: [Int], len: Int, parentNodeIndex: Int) {
+  // 如果len &lt;= 0，说明已经无序区已经缩小到0
+  guard len &gt; 1 else {
+    return
+  }
+
+  // 父结点的左、右孩子的索引
+  let leftChildIndex = 2 * parentNodeIndex + 1
+
+  // 如果连左孩子都没有， 一定没有右孩子，说明已经不用再往下了
+  guard leftChildIndex &lt; len else {
+    return
+  }
+
+  let rightChildIndex = 2 * parentNodeIndex + 2
+
+  // 用于记录需要与父结点交换的孩子的索引
+  var targetIndex = -1
+
+  // 若没有右孩子，但有左孩子，只能选择左孩子
+  if rightChildIndex &gt; len {
+    targetIndex = leftChildIndex
+  } else {
+    // 左、右孩子都有，则需要找出最大的一个
+    targetIndex = a[leftChildIndex] &lt; a[rightChildIndex] ? leftChildIndex : rightChildIndex
+  }
+
+  // 只有孩子比父结点还要大，再需要交换
+  if a[targetIndex] &lt; a[parentNodeIndex] {
+    let temp = a[targetIndex]
+
+    a[targetIndex] = a[parentNodeIndex]
+    a[parentNodeIndex] = temp
+
+    // 由于交换后，可能会破坏掉新的子树堆的性质，因此需要调整以a[targetIndex]为父结点的子树，使之满足堆的性质
+    adjustMinHeap(&amp;a, len: len, parentNodeIndex: targetIndex)
+  }
+}
+
+func minHeapSort(inout a: [Int]) {
+  guard a.count &gt; 1 else {
+    return
+  }
+
+  initHeap(&amp;a)
+
+  for var i = a.count - 1; i &gt; 0; --i {
+    // 每一趟都将堆顶交换到指定范围内的最后一个位置
+    if a[0] &lt; a[i] {
+      let temp = a[0]
+
+      a[0] = a[i]
+      a[i] = temp
+    } else {
+       return // 可以直接退出了，因为已经全部有序了
+    }
+
+    // 有序区长度+1，而无序区长度-1，继续缩小无序区，所以i-1
+    // 堆顶永远是在0号位置，所以父结点调整从堆顶开始就可以了
+    adjustMinHeap(&amp;a, len: i - 1, parentNodeIndex: 0)
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>var arr = [5, 3, 8, 6, 4]
+//var arr = [89,-7,999,-89,7,0,-888,7,-7]
+maxHeapSort(&amp;arr)
+
+print(arr)
+
+// 打印日志如下：
+[4, 6, 5, 3, 8]
+3
+[6, 4, 5, 3, 8]
+
+[3, 4, 5, 6, 8]
+2
+[5, 4, 3, 6, 8]
+
+[3, 4, 5, 6, 8]
+1
+[3, 4, 5, 6, 8]
+
+[3, 4, 5, 6, 8]
+0
+[3, 4, 5, 6, 8]
+
+[3, 4, 5, 6, 8]
+</code></pre>
+
+<h2>归并排序</h2>
+
+<p>归并排序（MERGE-SORT）是建立在归并操作上的一种有效的排序算法,该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为二路归并。</p>
+
+<p>归并排序的效率是比较高的，假设数列长度为N，采用中分法的方式将数列分开成若干个小数列一共要log2N 步，每步都是一个合并有序数列的过程，时间复杂度可以记为O ( N )，故一共为O ( N * log2N )。</p>
+
+<p>因为归并排序每次都是在相邻的数据中进行操作，所以归并排序在常用的几种排序方法（快速排序，归并排序，希尔排序，堆排序）中也是效率比较高的。</p>
+
+<p>时间复杂度：O ( N * log2N )</p>
+
+<p>C语言实现</p>
+
+<pre><code>/**
+ *  归并排序算法
+ *
+ *  @param list   待排序的序列
+ *  @param first    子序列的起点索引
+ *  @param last   子序列的终点索引
+ *  @param temp   临时数组，用于将两个子序列二路归并时存储
+ */
+void mergeSort(int list[], int first, int last, int temp[]) {
+  if (first &lt; last) {
+    int mid = (first + last) / 2;
+
+    // 递归归并中分左子序列，使子序列有序
+    mergeSort(list, first, mid, temp);
+
+    // 递归归并中分右子序列，使子序列有序
+    mergeSort(list, mid + 1, last, temp);
+
+    // 最后二路归并，使序列成有序
+    // 必须明白的一点，每次中分递归归并都需要二路归并，因为中分后的任意子序列
+    // 在有序后，都要二路归并成一个序列
+    mergeList(list, first, mid, last, temp);
+  }
+}
+
+/**
+ *  二路归并list[first...mid]子序列与list[mid+1...last]
+ *
+ *  @param list 序列
+ *  @param first    左子序列的起点
+ *  @param mid      序列中间分割点
+ *  @param last 右序列终点
+ *  @param temp 临时序列，用于将两个无序的子序列归并到temp中，使之有序
+ */
+void mergeList(int list[], int first, int mid, int last, int temp[]) {
+  int leftIndex = first;
+  int leftEndIndex = mid;
+
+  int rightIndex = mid + 1;
+  int rightEndIndex = last;
+
+  int tempIndex = 0;
+
+  // 寻找两个子序列，顺序遍历，将值小的复制到临时数组中，直到其中一个子序列遍历完毕
+  while (leftIndex &lt;= leftEndIndex &amp;&amp; rightIndex &lt;= rightEndIndex) {
+    // 值小的就复制到临时数组中
+    if (list[leftIndex] &lt;= list[rightIndex]) {
+      temp[tempIndex] = list[leftIndex];
+      tempIndex++;
+      leftIndex++;
+    } else {
+      temp[tempIndex] = list[rightIndex];
+      tempIndex++;
+      rightIndex++;
+    }
+  }
+
+  // 有可能左子序列更长，因此将剩下的部分直接复制到临时数组中
+  while (leftIndex &lt;= leftEndIndex) {
+    temp[tempIndex++] = list[leftIndex++];
+  }
+
+  // 有可能右子序列更长，因此将剩下的部分直接复制到临时数组中
+  while (rightIndex &lt;= rightEndIndex) {
+    temp[tempIndex++] = list[rightIndex++];
+  }
+
+  // 最后还需要将有序的临时数组复制到原始序列中
+  for (int i = 0; i &lt; tempIndex; ++i) {
+    list[first + i] = temp[i];
+  }
+
+ // 这里添加一个打印，记录归并
+ NSMutableString *str = [[NSMutableString alloc] init];
+  for (int i = 0; i &lt; sizeof(list) - 1; ++i) {
+    if (i == 0) {
+      [str appendFormat:@"%d", list[i]];
+    } else {
+      [str appendFormat:@", %d", list[i]];
+    }
+  }
+  NSLog(@"此次二路归并后，得到的序列为：(%@)", str);
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>int list[] = {6, 202, 100, 301, 38, 8, 1};
+int temp[7] = {0};
+mergeSort(list, 0, 7-1, temp);
+</code></pre>
+
+<p>打印效果：</p>
+
+<pre><code>此次二路归并后，得到的序列为：(6, 202, 100, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 202, 100, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 8, 38, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 1, 8, 38)
+此次二路归并后，得到的序列为：(1, 6, 8, 38, 100, 202, 301)
+</code></pre>
+
+<p>从打印结果可以看出来，果然与我们前面的算法分析是一样的。</p>
+
+<h2>插入排序</h2>
+
+<p>插入排序有两种：</p>
+
+<pre><code>直接插入排序
+折半插入排序
+</code></pre>
+
+<p>原理：</p>
+
+<pre><code>第一个元素就认为是有序的
+取第二个元素，判断是否大于第一个元素。若是大于，表示已经有序，不用移动，否则将已经有序的序列整体向后移动一个位置
+依此类推，直到所有元素已经有序。
+</code></pre>
+
+<p>直接插入排序</p>
+
+<p>需要到两层循环来处理，外层循环用于跑多少趟，而内层循环用于移动元素位置，因此时间复杂度仍为 O ( n2 )</p>
+
+<p>伪代码</p>
+
+<pre><code>void insertSort(int a[], int len) {
+  for i = 1; i &lt; len; ++i {     
+     // 后者&gt;前者，才需要移动和插入
+     if a[i] &lt; a[i - 1] {
+        // 记录下要移动的元素
+        int target = a[i];
+
+        // 将前j-1个有序的元素分别后移一个位置
+        int j = i;
+        while j &gt; 0 &amp;&amp; a[j - 1] &gt; target {
+          a[j] = a[j - 1];
+          j--;
+        }
+
+        // 将目标元素插入对应的位置，使之有序
+        a[j] = target;
+     }
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void insertSort(int a[], int len) {
+  for (int i = 1; i &lt; len; ++i) {
+
+    // 遇到不是有序的，才进入移动元素
+    if (a[i] &lt; a[i - 1]) {
+      int target = a[i];
+
+      // 移动前j-1元素，分别向后移动一个位置
+      int j = i;
+      while (j &gt; 0 &amp;&amp; a[j - 1] &gt; target) {
+        a[j] = a[j - 1];
+
+        j--;
+      }
+
+      // 将目标元素放到目标位置，使之有序
+      a[j] = target;
+    }
+  }
+}
+</code></pre>
+
+<p>OjbC版</p>
+
+<pre><code>- (void)insertSort:(int[])a len:(int)len {
+  for (int i = 1; i &lt; len; ++i) {
+
+    // 遇到不是有序的，才进入移动元素
+    if (a[i] &lt; a[i - 1]) {
+      int target = a[i];
+
+      // 移动前j-1元素，分别向后移动一个位置
+      int j = i;
+      while (j &gt; 0 &amp;&amp; a[j - 1] &gt; target) {
+        a[j] = a[j - 1];
+
+        j--;
+      }
+
+      // 将目标元素放到目标位置，使之有序
+      a[j] = target;
+    }
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func insertSort(var a: [Int]) -&gt;[Int] {
+  for var i = 1; i &lt; a.count; ++i {
+    if a[i] &lt; a[i - 1] {
+      let target = a[i]
+
+      var j = i
+      while j &gt; 0 &amp;&amp; a[j - 1] &gt; target {
+        a[j] = a[j - 1]
+
+        j--
+      }
+
+      a[j] = target
+    }
+  }
+
+  return a
+}
+</code></pre>
+
+<p>折半插入排序</p>
+
+<p>从第二个元素开始逐个置入监视哨，使用low、high标签进行折半判断比较大小，并确认插入位置，该位置到最后一个数全部后移一位，然后腾出该位置，把监视哨里面的数置入该位置。依此类推进行排序，直到最后一个数比较完毕。
+时间复杂度</p>
+
+<p>折半插入排序, 即查找插入点的位置, 可以使用折半查找，这样可以减少比较的次数, 但是移动的次数不变，因此，时间复杂度仍为 O(n2) ;
+伪代码</p>
+
+<pre><code>void binaryInsertSort(int a[], int len) {
+  for int i = 2; i &lt; len; ++i {
+     // 将元素放到哨兵的位置
+     a[0] = a[i];
+
+     int low = 1;
+     int high = i - 1;
+
+     // 折半查找位置
+     while low &lt;= high {
+        int mid = (low + high) / 2;
+
+        // 在低半区
+        if a[mid] &gt; a[0] {
+          high = mid - 1;
+        } else { // 在高半区
+          low = mid + 1;
+        }
+     }
+
+     // 将前i - 1个元素后移
+     // 找到high，那么high+1就是i要插入的位置  
+     for int j = i - 1; j &gt;= high + 1; --j {
+        a[j + 1] = a[j];
+     }
+
+     // 将临时放在岗哨的元素放到所查找到的位置处
+     a[high + 1] = a[0];
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void binaryInsertSort(int a[], int len) {
+  for (int i = 2; i &lt; len; ++i) {
+    // 第一个位置永远只是当作哨兵用
+    a[0] = a[i];
+
+    int low = 1;
+    int high = i - 1;
+
+    while (low &lt;= high) {
+      int mid = (low + high) / 2;
+
+      if (a[mid] &gt; a[0]) {
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    }
+
+    // 移动前i - 1个元素
+    for (int j = i - 1; j &gt;= high + 1; --j) {
+      a[j + 1] = a[j];
+    }
+
+    // 放到查找到的位置处
+    a[high + 1] = a[0];
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func binaryInsertSort(var a: [Int]) -&gt;[Int] {
+  for var i = 2; i &lt; a.count; ++i {
+    a[0] = a[i]
+
+    var low = 1
+    var high = i - 1
+    while low &lt;= high {
+      let mid = (low + high) / 2
+
+      if a[mid] &gt; a[0] {
+        high = mid - 1
+      } else {
+        low = mid + 1
+      }
+    }
+
+    for var j = i - 1; j &gt;= high + 1; --j {
+      a[j + 1] = a[j]
+    }
+
+    a[high + 1] = a[0]
+  }
+
+  return a
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Shujujiegou]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/09/shujujiegou/"/>
+    <updated>2017-01-09T00:00:00+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/09/shujujiegou</id>
+    <content type="html"><![CDATA[<hr />
+
+<p>layout: post
+title: &ldquo;修行篇-数据结构&rdquo;
+date: 2016-08-09 23:53:19 +0800
+comments: true
+categories: Developer
+description: iCocos博客
+keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
+
+<hr />
+
+<p>概念：数据元素相互之间的关系称为结构。</p>
+
+<p>有四类基本结构：集合、线性结构、树形结构、图状结构;</p>
+
+<ul>
+<li><p>集合结构:除了同属于一种类型外，别无其它关系</p></li>
+<li><p>线性结构:元素之间存在一对一关系常见类型有: 数组,链表,队列,栈,它们之间在操作上有所区别.例如:链表可在任意位置插入或删除元素,而队列在队尾插入元素,队头删除元素,栈只能在栈顶进行插
+入,删除操作.</p></li>
+<li><p>树形结构:元素之间存在一对多关系,常见类型有:树(有许多特例:二叉树、平衡二叉树、查找树等)</p></li>
+<li><p>图形结构:元素之间存在多对多关系,图形结构中每个结点的前驱结点数和后续结点多个数可以任意</p></li>
+</ul>
+
+
+<p>总结+实战+方案</p>
+
+<ol>
+<li>堆</li>
+<li>栈</li>
+<li>树（二叉树）</li>
+<li>图</li>
+<li>队列（循环队列）</li>
+<li>表（单链表，线性表，hash表）</li>
+</ol>
+
+
+<!--more-->
+
+
+<h2>堆</h2>
+
+<blockquote><p>堆(heap)又被为优先队列(priority queue)。</p></blockquote>
+
+<p>尽管名为优先队列，但堆并不是队列。回忆一下，在队列中，我们可以进行的限定操作是dequeue和enqueue。dequeue是按照进入队列的先后顺序来取出元素。而在堆中，我们不是按照元素进入队列的先后顺序取出元素的，而是按照元素的优先级取出元素。</p>
+
+<ul>
+<li><p>堆是实现调度器(Linux:使用nice控制)的理想数据结构。</p></li>
+<li><p>插入元素，删除最大优先级元素</p></li>
+<li><p>堆的一个经典的实现是完全二叉树(complete binary tree)。这样实现的堆成为二叉堆(binary heap)。</p></li>
+</ul>
+
+
+<p>完全二叉树是增加了限定条件的二叉树。假设一个二叉树的深度为n。为了满足完全二叉树的要求，该二叉树的前n-1层必须填满，第n层也必须按照从左到右的顺序被填满</p>
+
+<h2>栈</h2>
+
+<blockquote><p>特性：后进先出</p></blockquote>
+
+<h6>注意：如果栈为空的时候，会导致下溢</h6>
+
+<p>栈中的每个元素称为一个frame。而最上层元素称为top frame。栈只支持三个操作， pop, top, push。</p>
+
+<pre><code>pop取出栈中最上层元素(8)，栈的最上层元素变为早先进入的元素(9)。
+
+top查看栈的最上层元素(8)。
+
+push将一个新的元素(5)放在栈的最上层。
+</code></pre>
+
+<p>实现方式</p>
+
+<ul>
+<li>数组实现：需要一个变量来标记栈顶位置</li>
+<li>链表实现：插入元素时对表头操作需要注意</li>
+</ul>
+
+
+<p>常见题目</p>
+
+<ul>
+<li>括号匹配</li>
+<li>翻转字符串</li>
+<li>模拟递归（N皇后问题）</li>
+</ul>
+
+
+<p>栈最经典的计算机应用是函数调用。每个进程都会有一个栈，每个frame中记录了调用函数的参数，自动变量和返回地址。当该函数调用一个新的函数时，栈中会 push一个frame。当函数执行完毕返回时，该frame会pop，从而进入调用该函数的原函数，继续执行</p>
+
+<p>+由于栈是限定了操作的有序的元素集合，所以我们既可以在数组的基础上来实现栈，也可以在表的基础上来实现栈。如果使用数组来实现栈，我们需要预留充足的空间供栈使用，并需要一个下标来记录最上层元素的位置</p>
+
+<h2>树</h2>
+
+<blockquote><p>树(Tree)是元素的集合</p></blockquote>
+
+<p>严格的定义树的方法：</p>
+
+<ol>
+<li><p>树是元素的集合。</p></li>
+<li><p>该集合可以为空。这时树中没有元素，我们称树为空树 (empty tree)。</p></li>
+<li><p>如果该集合不为空，那么该集合有一个根节点，以及0个或者多个子树。根节点与它的子树的根节点用一个边(edge)相连。</p></li>
+</ol>
+
+
+<p>上面的第三点是以递归的方式来定义树，也就是在定义树的过程中使用了树自身(子树)。由于树的递归特征，许多树相关的操作也可以方便的使用递归实现</p>
+
+<ul>
+<li><p>二叉树(binary)是一种特殊的树。二叉树的每个节点最多只能有2个子节点</p></li>
+<li><p>二叉搜索树(binary search tree)的特殊二叉树。二叉搜索树要求：每个节点都不比它左子树的任意元素小，而且不比它的右子树的任意元素大</p>
+
+<p>  叉搜索树可以方便的实现搜索算法。在搜索元素x的时候，我们可以将x和根节点比较:</p>
+
+<ol>
+<li><p>如果x等于根节点，那么找到x，停止搜索 (终止条件)</p></li>
+<li><p>如果x小于根节点，那么搜索左子树</p></li>
+<li><p>如果x大于根节点，那么搜索右子树</p></li>
+</ol>
+
+
+<p>  二叉搜索树所需要进行的操作次数最多与树的深度相等。n个节点的二叉搜索树的深度最多为n，最少为log(n)。</p></li>
+</ul>
+
+
+<h2>图</h2>
+
+<p>图(graph)是一种比较松散的数据结构。它有一些节点(vertice)，在某些节点之间，由边(edge)相连。节点的概念在树中也出现过，我们通常在节点中储存数据。边表示两个节点之间的存在关系。在树中，我们用边来表示子节点和父节点的归属关系。树是一种特殊的图，但限制性更强一些</p>
+
+<ul>
+<li>定义：图G=(V,E)是由节点的集合V和边的集合E构成的。一个图的所有节点构成一个集合V。一个边可以表示为(v1,v2)，其中v1,v2∈V，即两个节点。如果(v1,v2)有序，即(v1,v2)与(v2,v1)不同，那么图是有向的(directed)。有序的边可以理解为单行道，只能沿一个方向行进。如果(v1,v2)无序，那么图是无向的(undirected)。无序的边可以理解成双向都可以行进的道路。一个无序的边可以看作连接相同节点的两个反向的有序边，所以无向图可以理解为有向图的一种特殊情况</li>
+</ul>
+
+
+<p>一种简单的实现图的方法是使用二维数组</p>
+
+<blockquote><p>图的组织方式比较松散，自由度比较大，但也造成比较高的算法复杂度</p></blockquote>
+
+<h2>队列</h2>
+
+<blockquote><p>队列最大的特征是First In, First Out (FIFO，先进先出)</p></blockquote>
+
+<p>队列(queue)是一个简单而常见的数据结构。队列也是有序的元素集合。</p>
+
+<ul>
+<li>队首的元素离开队列(dequeue)，和新元素加入队尾(enqueue)。</li>
+</ul>
+
+
+<p>应用</p>
+
+<ul>
+<li>一个经典的应用是消息队列(参考Linux进程间通信)，实际上就是利用队列来分配有限的进程。</li>
+<li>还有FIFO文件(哦，你可以看到，这种文件叫做FIFO，肯定是和队列有关)，用以实现管道传输。</li>
+<li>再比如，我们将多个打印任务发送给打印机，打印机也是使用队列来安排任务的顺序</li>
+</ul>
+
+
+<p>和栈相似，队列也可以有多种实现方式，这里是基于单链表的实现。</p>
+
+<p>与表(list)中的实现方式略有不同的是，这里的head node有两个指针，一个(next)指向下一个元素，一个(end)指向队列的最后一个元素。这样做的目的是方便我们找到队尾，以方便的进行enqueue操作。我们依然可以使用之前定义的表，在需要找到队尾的时候遍历搜索到最后一个元素。</p>
+
+<h2>表</h2>
+
+<blockquote><p>内存中离散分布的有序节点</p></blockquote>
+
+<p>表(list)是常见的数据结构。从数学上来说，表是一个有序的元素集合。在C语言的内存中，表储存为分散的节点(node)。每个节点包含有一个元素，以及一个指向下一个(或者上一个)元素的指针</p>
+
+<p>图中的表中有四个节点。第一个节点是头节点(head node)，这个节点不用于储存元素，只用于标明表的起始。头节点可以让我们方便的插入或者删除表的第一个元素。整个表中包含有三个元素(5， 2， 15)。每个节点都有一个指针，指向下一个节点。最后一个节点的指针为NULL，我们用“接地”来图示该指针。</p>
+
+<ul>
+<li><p>表的功能与数组(array)很类似，数组也是有序的元素集合，但数组在内存中为一段连续内存，而表的每个节点占据的内存可以是离散的。在数组中，我们通过跳过固定的内存长度来寻找某个编号的元素。但在表中，我们必须沿着指针联系起的长链，遍历查询元素。此外，数组有固定的大小，表可以根据运行情况插入或者删除节点，动态的更改大小。表插入节点时需要从进程空间的堆中开辟内存空间，用以储存节点。删除节点可以将节点占据的内存归还给进程空间</p></li>
+<li><p>表有多种变种。上面的表中，指针指向是从前向后的，称为单向链表(linked list)。</p></li>
+<li>还有双向链表(double-linked list)，即每个节点增加一个指向前面一个元素的指针。</li>
+<li>以及循环链表(tabular list)，最后一个元素的指针并不为NULL，而是指向头节点。不同类型的链表有不同的应用场景。</li>
+</ul>
+
+
+<p>一个数据结构的实现有两方面:</p>
+
+<ol>
+<li>数据结构的内存表达方式;</li>
+<li>定义在该数据结构上的操作。</li>
+</ol>
+
+
+<p>我们这里实现最简单的单向链表</p>
+
+<h2>哈希表</h2>
+
+<p>哈希表(hash table)是从一个集合A到另一个集合B的映射(mapping)。映射是一种对应关系，而且集合A的某个元素只能对应集合B中的一个元素。但反过来，集合B中的一个元素可能对应多个集合A中的元素。如果B中的元素只能对应A中的一个元素，这样的映射被称为一一映射</p>
+
+<p>hash只要求从A到B的对应为一个映射，它并没有限定该对应关系为一一映射。</p>
+
+<ul>
+<li>因此会有这样的可能：两个不同的键值对应同一个hash值。这种情况叫做hash碰撞(hash collision)。</li>
+<li>比如网络协议中的checksum就可能出现这种状况，即所要校验的内容与原文并不同，但与原文生成的checksum(hash值)相同。</li>
+<li>再比如，MD5算法常用来计算密码的hash值。已经有实验表明，MD5算法有可能发生碰撞，也就是不同的明文密码生成相同的hash值，这将给系统带来很大的安全漏洞</li>
+</ul>
+
+
+<p>hash表被广泛的用于搜索（区别去数组：遍历整数组，算法复杂度为n），算法复杂度为1</p>
+
+<pre><code>数组虽然可以随机读取，但数组下标是随机的，它与元素值没有任何关系，所以我们要逐次访问各个元素。通过hash函数，我们限定了每个下标位置可能存储的元素。这样，我们利用键值和hash函数，就可以具备相当的先验知识，来选择适当的下标进行搜索。在没有hash碰撞的前提下，我们只需要选择一次，就可以保证该下标指向的元素是我们想要的元素
+</code></pre>
+
+<p>hash函数需要解决hash冲突的问题。</p>
+
+<pre><code>比如，上面的hash函数中，"Obama"和"Oaamb"有相同的hash值一个方案是将发生冲突的记录用链表储存起来，让hash值指向该链表，这叫做open hashing:
+</code></pre>
+
+<ul>
+<li><p>我们在搜索的时候，先根据hash值找到链表，再根据key值遍历搜索链表，直到找到记录。我们可以用其他数据结构代替链表。</p></li>
+<li><p>open hashing需要使用指针。我们有时候想要避免使用指针，以保持随机存储的优势，所以采用closed hashing的方式来解决冲突。（closed hashing的关键在如何探测下一个位置）</p></li>
+</ul>
+
+
+<hr />
+
+<p>说在最后
+一、栈：</p>
+
+<p>1、后缀表达式的求值；
+2、中缀到后缀表达式的转换；
+3、深度优先搜索的非递归实现；
+4、动态规划的优化：用于维护一个凸序列，便于二分查找，如LIS问题的O(nlgn)算法。</p>
+
+<p>二、队列：
+1、树的层序遍历；
+2、广度优先搜索；
+3、Bellman-Ford算法的SPFA实现；
+4、网络流中FF算法的Edmonds-Karp实现，以及Preflow算法的队列优化实现。</p>
+
+<p>三、二叉搜索树：</p>
+
+<p>1、对大量的关键字的索引查找；
+2、有很多平衡策略以改善其平均性能：
+常用平衡树：AVL，红黑树，随机化BST，Splay Tree，Treap（或叫笛卡儿树）。</p>
+
+<p>四、散列表（hash表）：
+1、一般针对值域较大但状态很稀疏的应用，比如状态压缩记忆化搜索；
+2、实现映射功能。</p>
+
+<p>五、检索树（Trie）：
+1、一般用于字符串索引算法，速度快，但占用空间较大（相对hash）；
+2、常用的改进结构：Patricia线索树，多叉检索树（TST）。</p>
+
+<p>六、优先队列：</p>
+
+<p>1、常用的是二叉堆的实现，具体应用如堆排序和Dijkstra算法；
+2、当需要快速合并两个优先队列时，常用二项式队列，实现简单。
+3、注意最大最小堆的配对使用。</p>
+
+<p>七、线段树和树状数组：</p>
+
+<p>1、两者都可以用于离散对象的统计；
+2、后者的步进函数的性质和应用值得注意；
+3、前者基本上适用于任何的区间操作，如求区间最值，改变区间的值等。
+4、线段树还可以用于优化状态的枚举，经常和动态规划结合。</p>
+
+<p>八、后缀树与后缀数组：</p>
+
+<p>1、总体规律是两者的实现都比较复杂，前者更甚，但是前者的功能也更强大；
+2、几乎可以解决所有常见的关于字符串的算法，如最长回文子串，最长重复子串，以及很多的模式匹配问题。</p>
+
+<p>九、并查集：</p>
+
+<p>1、解决无向图的连通性问题，如用于Kruskal算法；
+2、解决等价关系的查询（这是它的主要用武之地），如05年Baidu之星初赛的石头剪子布游戏；
+3、优点是实现异常简单，缺点是合并后无法分离，若需要可以选择用动态树。</p>
+
+<p>十、邻接表和边表：</p>
+
+<p>1、表示图的最直接的方法；
+2、后者更省空间，并且在一定程度上更好用，比如Bellman-Ford算法。
+ps:数组、链表太基础不在考虑之列。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[修行篇-探程序之精华]]></title>
@@ -5228,2265 +9625,6 @@ if (error) {
 <p>在CoreData中所有的托管对象被创建出来后，都是关联着MOC对象的。所以在对象进行任何操作后，都会被记录在MOC中。在最后调用MOC的save方法后，MOC会将操作交给PSC去处理，PSC将会将这个存储任务指派给NSPersistentStore对象。</p>
 
 <p>上面的增删改查操作，看上去大体流程都差不多，都是一些最基础的简单操作，在下一篇文章中将会将一些比较复杂的操作。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[CoreData是什么？]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/04/coredateashishemme/"/>
-    <updated>2016-07-04T02:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/04/coredateashishemme</id>
-    <content type="html"><![CDATA[<p>这段时间公司一直比较忙，和组里小伙伴一起把公司项目按照之前逻辑重写了一下。由于项目比较大，还要兼顾之前项目的迭代和其他项目，目前为止只写完第一阶段。</p>
-
-<p>之前项目本地持久化方案主要用的是SQLite，这次重写项目打算换一种持久化方案，于是我们经过讨论选择了苹果的“亲儿子”CoreData。</p>
-
-<p>在使用CoreData的过程中，我也是一边学习一边实践。在学习的过程中，一些写的质量比较高的博客对我的帮助也很大，例如objc.io等博客，在这里就不一一列举出来了，非常感谢这些作者。</p>
-
-<!--more-->
-
-
-<p>先不说项目中用不用得到，其实很多人都是不了解CoreData的，但是经过我的学习发现CoreData还是挺不错的。所以正如这系列文章的名字一样-认识CoreData，打算写这系列文章来认识一下CoreData。</p>
-
-<p>这系列博客将从简单到复杂的来讲一下CoreData，其中除了基础使用还会包括多线程、批量数据处理等内容，这些很多都是我公司项目开发过程中接触到的，我们也设想了一些极端的情况，解决方案都会体现在这系列博客中。</p>
-
-<p>本人接触CoreData时间并不长，只是专门花了一段时间学习CoreData。</p>
-
-<p>本系列文章偏重于通过图形化界面使用CoreData，不会全部采取纯代码进行CoreData的所有操作，而且那样操作起来也确实比较麻烦，反而就失去了CoreData的优势和本质。</p>
-
-<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
-
-<p>写在前面</p>
-
-<p>在CoreData中有一些常用的类，称呼可能各不相同。所以这里先约定一些关键字，以便理解后面的一些内容，这些约定很多都是出现在苹果的官方文档中的。</p>
-
-<pre><code>NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
-
-NSManagedObjectContext(Managed Object Context)，缩写为MOC。
-
-NSManagedObjectModel(Managed Object Model)，缩写为MOM。
-
-NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
-
-后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
-</code></pre>
-
-<p>什么是CoreData？</p>
-
-<p>简单介绍一下</p>
-
-<p>CoreData出现在iOS 3中，是苹果推出的一个数据存储框架。CoreData提供了一种对象关系映射(ORM)的存储关系，类似于Java的hibernate框架。CoreData可以将OC对象存储到数据库中，也可以将数据库中的数据转化为OC对象，在这个过程中不需要手动编写任何SQL语句，这是系统帮我们完成。</p>
-
-<p>CoreData最大的优势就是使用过程中不需要编写任何SQL语句，CoreData封装了数据库的操作过程，以及数据库中数据和OC对象的转换过程。所以在使用CoreData的过程中，很多操作就像是对数据库进行操作一样，也有过滤条件、排序等操作。</p>
-
-<p>这就相当于CoreData完成了Model层的大量工作，例如Model层的表示和持久化，有效的减少了开发的工作量，使Model层的设计更加面向对象。</p>
-
-<p>CoreData好用吗？</p>
-
-<p>之前听人说过，CoreData比较容易入手，但是很难学精。这也是很多人说CoreData不好用的原因之一，只是因为使用方式有问题，或者说并没有真正掌握CoreData。</p>
-
-<p>如果从性能上来说，CoreData比SQLite确实略差一些。但是对于移动端来说，并不需要大型网站的高并发，所以这点性能差别几乎是没有影响的，所以这点可以忽略不计。在后面的文章中，将会给出CoreData的优点和缺点对比，以及详细的性能测评。</p>
-
-<p>CoreData主要的几个类</p>
-
-<pre><code>NSManagedObjectContext
-</code></pre>
-
-<p>托管对象上下文，进行数据操作时大多都是和这个类打交道。</p>
-
-<pre><code>NSManagedObjectModel
-</code></pre>
-
-<p>托管对象模型，一个托管对象模型关联一个模型文件(.xcdatamodeld)，存储着数据库的数据结构。</p>
-
-<pre><code>NSPersistentStoreCoordinator
-</code></pre>
-
-<p>持久化存储协调器，负责协调存储区和上下文之间的关系。</p>
-
-<pre><code>NSManagedObject
-</code></pre>
-
-<p>托管对象类，所有CoreData中的托管对象都必须继承自当前类，根据实体创建托管对象类文件。</p>
-
-<p>CoreData简单创建流程</p>
-
-<p>模型文件操作</p>
-
-<pre><code>1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
-
-1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
-
-1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
-
-1.4 创建获取请求模板、设置配置模板等。
-
-1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
-</code></pre>
-
-<p>实例化上下文对象</p>
-
-<pre><code>2.1 创建托管对象上下文(NSManagedObjectContext)
-
-2.2 创建托管对象模型(NSManagedObjectModel)
-
-2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
-
-2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
-
-2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
-</code></pre>
-
-<p>CoreData结构</p>
-
-<p>CoreData的结构构成</p>
-
-<p>之前看到过几张介绍CoreData结构的图片，感觉其表示的结构比较清晰。可以通过这几张图片初步认识一下CoreData，在后面的文章中还会对这几个类进行详细解释。</p>
-
-<p><img src="http://al1020119.github.io/images/1001.png" title="Caption" ></p>
-
-<p>整体结构</p>
-
-<p>上图中是初始化MOC所涉及到的一些类，由这些类实例化并最终构成可以使用的MOC。图中编号是实例化一个具备数据处理能力的MOC过程，这个过程和上面介绍过的实例化上下文对象相同。</p>
-
-<p><img src="http://al1020119.github.io/images/1002.png" title="Caption" ></p>
-
-<p>NSManagedObjectContext</p>
-
-<p>在PSC创建并关联本地数据库，并设置为MOC的persistentStoreCoordinator属性后，MOC就具备对当前存储区所有托管对象操作的能力。但是需要注意的是，MOC对托管对象是懒加载的，在使用时才会被加载到MOC的缓存中。</p>
-
-<p><img src="http://al1020119.github.io/images/1003.png" title="Caption" ></p>
-
-<p>NSManagedObjectModel</p>
-
-<p>MOM对象加载模型文件后，获取到模型文件中所有实体的构成结构。由于MOM中存储着模型文件的结构，PSC需要通过MOM对象实例化本地数据库。</p>
-
-<p><img src="http://al1020119.github.io/images/1004.png" title="Caption" ></p>
-
-<p>Entity</p>
-
-<p>所有属性都存在Entity中，以及有关联关系的属性和请求模板，这都会在后面的章节中讲到。</p>
-
-<p><img src="http://al1020119.github.io/images/1005.png" title="Caption" ></p>
-
-<p>NSManagedObject</p>
-
-<p>可以通过Entity创建继承自NSManagedObject类的文件，这个文件就是开发中使用的托管对象，具备模型对象的表示功能，CoreData的本地持久化都是通过这个类及其子类完成的。</p>
-
-<p>持久化存储调度器</p>
-
-<p>在CoreData的整体结构中，主要分为两部分。一个是NSManagedObjectContext管理的模型部分，管理着所有CoreData的托管对象。一个是SQLite实现的本地持久化部分，负责和SQL数据库进行数据交互，主要由NSPersistentStore类操作。这就构成了CoreData的大体结构。</p>
-
-<p><img src="http://al1020119.github.io/images/1006.png" title="Caption" ></p>
-
-<p>结构图</p>
-
-<p>从图中可以看出，这两部分都是比较独立的，两部分的交互由一个持久化存储调度器(NSPersistentStoreCoordinator)来控制。上层NSManagedObjectContext存储的数据都是交给持久化调度器，由调度器调用具体的持久化存储对象(NSPersistentStore)来操作对应的数据库文件，NSPersistentStore负责存储的实现细节。这样就很好的将两部分实现了分离。</p>
-
-<p>个人随想</p>
-
-<p>对于CoreData的整体结构，因为CoreData底层存储本来就是用SQLite实现的，所以我用CoreData的结构和SQLite对比了一下，发现还是很多相似之处的。</p>
-
-<p>.xcdatamodeld文件代表着数据库文件结构，通过.xcdatamodeld编译后的.momd文件生成数据库。每个实体代表一张数据表，实体之间的关联关系就是SQLite的外键。</p>
-
-<p>下图就是CoreData底层存储的结构，用红圈圈住的部分指向关联表的主键下标。例如1就指向关联表的主键下标为1的行。</p>
-
-<p><img src="http://al1020119.github.io/images/1007.png" title="Caption" ></p>
-
-<p>外键</p>
-
-<p>CoreData杂谈</p>
-
-<p>CoreData数据存储安全</p>
-
-<p>CoreData本质还是使用SQLite进行存储，并没有另外提供加密功能，具体的数据加解密还需要自己完成。</p>
-
-<p>CoreData在硬盘上的数据存储结构：</p>
-
-<p><img src="http://al1020119.github.io/images/1008.png" title="Caption" ></p>
-
-<p>数据库存储结构</p>
-
-<p>通过PSC指定创建SQLite目录后，会在指定的目录下生成一个数据库文件，同时还会生成两个同名但后缀不同的文件，其中只有后缀.sqlite的文件是存储数据的文件。</p>
-
-<p>这个数据库文件中会默认生成三个表，Z_METADATA、Z_PRIMARYKEY、Z_MODELCACHE，其他我们自己的表也都是大写Z开头的。</p>
-
-<p>在每个表中，系统还会默认生成三个字段，Z_PK、Z_ENT、Z_OPT三个字段，也都是大写Z开头并且带下划线的。其他字段就是我们自己的字段了，大写Z开头但不带下划线。</p>
-
-<p>CoreData执行效率</p>
-
-<p>现在市面上的大多数项目，都是使用SQLite作为持久化的方案，而CoreData的使用并不是很普遍。对于这个问题，我认为首先是很多项目开始的比较早，那时候好多iOS程序员都是从其他语言转过来的，更加熟悉SQLite，所以用SQLite比较多一些。后面如果不进行大的项目重构，就很难换其他的持久化方案了。</p>
-
-<p>还有就是不熟悉CoreData，也不想去了解和深入学习CoreData，我认为这是很大的原因。所以项目中用CoreData的人并不多，而真正掌握CoreData技术的人更少。</p>
-
-<p>之前听其他人说CoreData的执行效率不如SQLite高，这个如果深究的话，确实CoreData要比SQLite效率差一些，只不过并没有太大区别。CoreData本质也是在底层执行SQL语句，只是CoreData的SQL语句执行逻辑比较耗时，没有手动编写SQL语句更加直接。我们可以将CoreData的调试功能打开，具体看一下SQL语句的执行。</p>
-
-<p>这里要说一点，客户端毕竟不是服务端，不需要像服务器那样大量的数据查询，所以CoreData是完全可以应对客户端的查询量的。如果从灵活性来说，CoreData确实没有SQLite的灵活性高，一些SQLite的复杂功能可能也不能实现，但是就目前大多数项目来说，CoreData已经能够满足项目持久化需求了。</p>
-
-<p>导致执行效率差异的原因还体现在对象转换上，CoreData在执行SQL语句的基础上，还多了一层将数据映射给托管对象的操作，这样得到的就是OC的托管对象，而SQLite得到的则不是。如果给SQLite执行完成后，也加一层创建托管对象并赋值的操作，这时候对比性能两者的差距可能就会更小了。</p>
-
-<p>性能评测</p>
-
-<p>下面是一篇关于CoreData、FMDB、Realm性能测试结果的博客，最后的结果我也没有去验证，只是大致看了一下代码还是比价靠谱的。作者测试Demo和原文地址。</p>
-
-<p>测试数据的数量是以K为单位，最少为1K的数据量。涉及到的操作主要是下面四种：</p>
-
-<pre><code>新建数据库并插入1K条数据。
-
-已有数据库，插入1K条数据。
-
-查询总量为10K条数据，连续查询单次为1K数据。
-
-10K条数据总量，更新其中1K条数据的部分字段性能。
-</code></pre>
-
-<p>性能评测结果：</p>
-
-<p>根据测试结果可以发现，在前面两种插入操作，CoreData的性能比FMDB和Realm要快很多。</p>
-
-<p>而对于查询操作，CoreData比其他两种操作耗时多很多，大概多出三四倍。这很可能和CoreData将查询结果的数据转为托管对象有关系，抛去CoreData这部分转换操作性能会比现在好很多。</p>
-
-<p>而更新操作则直接基于SQLite封装的FMDB有绝对的优势，FMDB和其他两种操作差距大概是十倍左右，而其他两种操作性能差不多。当然CoreData也存在着上面提到的对象转换操作，CoreData抛去这步结果可能会比现在好很多。</p>
-
-<p>测试图表</p>
-
-<p>下面的测试数据中，取得是三次测试结果的平均值。</p>
-
-<p><img src="http://al1020119.github.io/images/1009.png" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/1010.png" title="Caption" ></p>
-
-<p>新建数据库并插入1K条数据</p>
-
-<p><img src="http://al1020119.github.io/images/1011.png" title="Caption" ></p>
-
-<p>已有数据库，插入1K条数据</p>
-
-<p><img src="http://al1020119.github.io/images/1012.png" title="Caption" ></p>
-
-<p>查询总量为10K条数据，连续查询单次为1K数据</p>
-
-<p><img src="http://al1020119.github.io/images/1013.png" title="Caption" ></p>
-
-<p>10K条数据总量，更新其中1K条数据的部分字段性能</p>
-
-<p>CoreData调试</p>
-
-<p>Xcode调试命令</p>
-
-<p>CoreData本质上是对SQLite的一个封装，在内部将对象的持久化转化为SQL语句执行，可以在项目中将CoreData调试打开，从而可以看到CoreData的SQL语句执行和一些其他log信息。</p>
-
-<p>打开Product，选择Edit Scheme.</p>
-
-<p>选择Arguments，在下面的ArgumentsPassed On Launch中添加下面两个选项。</p>
-
-<pre><code>(1)-com.apple.CoreData.SQLDebug
-
-(2)1
-
-    终端调试命令
-
-    如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
-
-    .tables 查看当前数据库文件中所有的表名
-
-    select *from tableName 执行查询的SQL语句
-
-    &lt;img src="http://al1020119.github.io/images/1014.png" title="Caption" &gt; 
-
-    终端调试命令
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Realm精华篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/03/realmjinghuapian/"/>
-    <updated>2016-07-03T22:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/03/realmjinghuapian</id>
-    <content type="html"><![CDATA[<p>Realm 是一个跨平台的移动数据库引擎，于 2014 年 7 月发布，准确来说，它是专门为移动应用所设计的数据持久化解决方案之一。</p>
-
-<p>Realm 可以轻松地移植到您的项目当中，并且绝大部分常用的功能（比如说插入、查询等等）都可以用一行简单的代码轻松完成！</p>
-
-<p>Realm 并不是对 Core Data 的简单封装，相反地， Realm 并不是基于 Core Data ，也不是基于 SQLite 所构建的。它拥有自己的数据库存储引擎，可以高效且快速地完成数据库的构建操作。</p>
-
-<p>之前我们提到过，由于 Realm 使用的是自己的引擎，因此， Realm 就可以在 iOS 和 Android 平台上共同使用（完全无缝），并且支持 Swift 、 Objective-C 以及 Java 语言来编写（ Android 平台和 iOS 平台使用不同的 SDK ）。</p>
-
-<!--more-->
-
-
-<p>数以万计的使用 Realm 的开发者都会发现，使用 Realm 比使用 SQLite 以及 Core Data 要快很多。下面我们给出一个例子，分别展示 Core Data 和 Realm 在执行一个断言查询请求并且排序结果所使用的代码量：</p>
-
-<pre><code>// Core Data
-let fetchRequest = NSFetchRequest(entityName: "Specimen")
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
-fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-fetchRequest.sortDescriptors = [sortDescriptor]
-let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)
-</code></pre>
-
-<p>而换成了 Realm 呢？您会惊叹于 Realm 的简单的：</p>
-
-<pre><code>// Realm
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
-</code></pre>
-
-<p>使用 Realm 可以让代码变得十分简洁，从而让您的代码易读易写。</p>
-
-<p>综上所述，我们之所以使用 Realm 的理由不外乎如下几点：</p>
-
-<pre><code>跨平台 ：现在绝大多数的应用开发并不仅仅只在 iOS 平台上进行开发，还要兼顾到 Android 平台的开发。为两个平台设计不同的数据库是愚蠢的，而使用 Realm 数据库， iOS 和 Android 无需考虑内部数据的架构，调用 Realm 提供的 API 就可以完成数据的交换，实现 “ 一个数据库，两个平台无缝衔接 ” 。
-
-简单易用 ： Core Data 和 SQLite 冗余、繁杂的知识和代码足以吓退绝大多数刚入门的开发者，而换用 Realm ，则可以极大地减少学习代价和学习时间，让应用及早用上数据存储功能。
-
-可视化 ： Realm 还提供了一个轻量级的数据库查看工具，借助这个工具，开发者可以查看数据库当中的内容，执行简单的插入和删除数据的操作。毕竟，很多时候，开发者使用数据库的理由是因为要提供一些所谓的 “ 知识库 ” 。
-</code></pre>
-
-<p>本教程将会向您介绍 Realm 在 iOS 平台上的简单应用，即导入 Realm 框架、创建数据模型、执行查询以及插入、更新和删除记录，以及使用既有的数据库。</p>
-
-<p>提示：原文教程写于 2014 年，而 Realm 的版本更新得十分快，因此，本教程并不会拘泥于原文教程所述内容，而是根据 Realm 的版本更新进行相关修改。
-原文作者提到，要在 Realm 抵达 1.0 版本的时候再来更新这篇教程，大家尽请期待吧！</p>
-
-<p>让我们开始吧</p>
-
-<p>我们将会以一个实际的项目来进行教程：假设您在西双版纳自然保护区觅得了一份职位 “ 监测员 ” ，职责是记录这个 “ 动植物王国 ” 当中所发现物种的相关信息，包括种群数量、发现区域、年龄结构等等。因此，您需要一个助手来帮忙记录您的发现，但是很可惜的是，保护区并没有多余的人手来做您的助手（主要是没钱）。所以没有办法，我们必须为自己制作一个虚拟的 “ 助手 ” ，也就是一个以 “ 物种监测 ” 命名的 APP ，这样就可以随手记录我们的发现了！</p>
-
-<p>点击此处下载本教程所使用的起始项目</p>
-
-<p>在 Xcode 当中打开我们的起始项目。此时， MapKit 已经在项目当中建立好了，而且项目已经拥有了一些简单的创建、更新和删除物种信息的功能。</p>
-
-<p>提示：如果您对 MapKit 的相关知识感兴趣，可以查看 Introduction to MapKit tutorial ，这篇教程将会深入阐述 MapKit 是如何工作的。</p>
-
-<p>现在，让我们前往 Realm 的官网去下载 Realm 的框架吧： <a href="http://static.realm.io/downloads/cocoa/latest">http://static.realm.io/downloads/cocoa/latest</a></p>
-
-<p>Realm 的使用需求如下：</p>
-
-<pre><code>iOS ≥ 7 或者 Mac OS X ≥  10.9
-
-Xcode ≥ 6
-
-现在 Realm 的版本为： 0.91.5
-</code></pre>
-
-<p>解压下载下来的 Realm 压缩包。在压缩包中，我们可以看到一个名为 iOS 的文件夹。打开这个文件夹，然后将 Realm.framework 文件拖入到我们的起始项目中，最好拖放到 “Frameworks” 文件夹中以确保文件有序（强迫症患者 ~ ）。</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0001.png" title="Caption" ></p>
-
-<p>将框架文件拖入到项目当中</p>
-
-<p>之后，一定要确保勾选了 Copy Items if needed 选项，然后单击 Finish 按钮就完成了往项目中添加框架的操作。</p>
-
-<p>之后，定位到项目设置中 SISpeciesNotes 的 General 选项卡，然后在 Link Binary with Libraries 栏目中添加 libc++.dylib 动态库文件。</p>
-
-<p>然后回到解压的 Realm 文件夹中，打开名为 Swift 的文件夹，然后将里面的 RLMSupport.swift 文件拖入到项目当中。这个文件包含了用于 Realm 相关类的 Swift 简便方法，比如说 RLMResults 中的 Generator 方法，这样就可以像使用原生数组一样使用 Realm 数组了。</p>
-
-<p>好的，我们的准备工作就完成了！您可以尝试运行一下起始项目，以确保没有任何错误产生。如果出现错误的话，请仔细查看上面所述的一些步骤，确保没有任何疏漏发生。运行成功后的基本界面如下所示：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0002.png" title="Caption" ></p>
-
-<p>应用界面</p>
-
-<p>Realm Browser 介绍</p>
-
-<p>Realm 资源包中包含了一个很有用的实用工具，可以帮助我们更好地管理 Realm 数据库，那就是 Realm Browser 。</p>
-
-<p>Realm Browser 可以让您轻松地读写 Realm 数据库（以 .realm 结尾），因此我们无需头疼如何去查看 Realm 专有数据库的逻辑结构以及其中的数据，可视化的操作就如同 SQLite 的其他数据库查看工具一样，十分简单、易用（虽然 Realm Browser 的功能还十分简陋，真的只能读写而已）。</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0003.png" title="Caption" ></p>
-
-<p>Realm Browser</p>
-
-<p>Realm Browser 可以在解压的 Realm 文件夹中的 browser 文件夹中找到。您也可以访问 Realm GitHub repository 然后在其中的 tools/RealmBrowser 目录中找到它。</p>
-
-<p>您可以尝试在 Realm Browser 中选择 Tools -> Generate demo database 来试着探索一下 Realm Browser 的功能。</p>
-
-<p>Realm 相关术语和主要类</p>
-
-<p>为了帮助您更好地理解 Realm 的使用，下面我们将会对 Realm 的相关术语和主要类进行一个大致的介绍：</p>
-
-<pre><code>RLMRealm ： RLMRealm 是框架的核心所在，是我们构建数据库的访问点，就如同 Core Data 的管理对象上下文（ managed  object context ）一样。出于简单起见， realm 提供了一个名为 defaultRealm 的单例，在本教程中我们就仅使用这个单例来完成我们所需的功能。当然，我们也可以导入外部已经编写好的 realm 数据库文件，也可以在我们不需要将数据保存在硬盘上时使用 “ 内存实例对象 ” （ in-memory realm instance ），此外，还可以同时使用多个数据库文件。
-
-RLMObject ：这是我们自定义的 realm 数据模型。创建数据模型的行为将会影响到数据库的结构。要创建一个数据模型，我们只需要继承 RLMObject ，然后设计我们想要存储的属性即可。
-
-关系 (Relationships) ：通过简单地在数据模型中声明一个 RLMObject 类型的属性，我们就可以创建一个 “ 一对多 ” 的对象关系。同样地，借助 RLMArray 我们还可以创建 “ 多对一 ” 和 “ 多对多 ” 的关系。
-
-写操作事务 (Write Transactions) ：数据库中的所有操作，比如创建、编辑，或者删除对象，都必须在事务中完成。 “ 事务 ” 是指位于 beginWriteTransaction() 以及 commitWriteTransaction() 操作之间的代码段。
-
-查询 (Queries) ：要在数据库中检索信息，我们需要用到 “ 检索 ” 操作。检索最简单的形式是对 RLMObject 对象发送 allObjects() 消息。如果需要检索更复杂的数据，那么还可以使用断言（ predicates ）、复合查询以及结果排序等等操作。
-
-RLMResults ：这个类是执行任何查询请求后所返回的类，其中包含了一系列的 RLMObjects 对象。和 NSArray 类似，我们可以用下标语法来对其进行访问，并且还可以决定它们之间的关系。不仅如此，它还拥有许多更强大的功能，包括排序、查找等等操作。
-</code></pre>
-
-<p>现在您应该对 Realm 有了一个大概的了解了，现在是时候来试着使用 Realm 来完成起始项目的剩余工作了。</p>
-
-<p>创建第一个数据模型</p>
-
-<p>好了，前面我们废话了这么多，现在终于要开始使用数据库了。首先我们要创建一个数据模型，也相当于创建数据库的一个 “ 表 ” 。</p>
-
-<p>右键选择 Xcode 项目导航器中的 Model 组，然后选择 New File -> iOS -> Source -> Swift File ，创建一个新的 swift 文件，将其命名为 SpeciesModel 并且确保选中了 SISpeciesNotes 对象。</p>
-
-<p>提示：您也许查看过 Realm 的开发文档，它里面介绍说可以使用 “ 插件 ” 来完成数据模型的简单创建（也就是新建文件时，可以像新建 Core Data 数据模型文件一样创建一个既定的模板数据模型），但是很遗憾的是，现在这个功能还只支持创建 OC 版本的数据模型文件，我们为了代码的 “ 干净 ” ，就不采用这种方法。</p>
-
-<p>打开 SpeciesModel.swift 文件，然后用以下代码替换文件中的内容：</p>
-
-<pre><code>import UIKit
-import Realm
-class SpeciesModel: RLMObject {
-dynamic var name = ""
-dynamic var speciesDescription = ""
-dynamic var latitude: Double = 0
-dynamic var longitude: Double = 0
-dynamic var created = NSDate()
-}
-</code></pre>
-
-<p>上面的代码添加了一些属性来存储信息： name 属性存储物种名称， speciesDescription 存储物种的描述信息。对于 Realm 中的一些特定的数据类型，比如说字符串，必须要初始化。在本例中，我们使用空字符串来进行初始化。</p>
-
-<p>latitude 以及 longitude 存储了物种的经纬度信息。在这里我们将其类型设置为 Double （ CLLocationDegrees 是 Double 的别名），并且使用 0 来进行初始化。</p>
-
-<p>最后， created 存储了这个物种所创建的时间信息。 NSDate() 将会返回当前时间，因此我们就用这个值来初始化这个属性</p>
-
-<p>好了，现在我们就成功创建了第一个 Realm 数据模型了，要不要动动脑来完成一个小小的挑战呢？</p>
-
-<p>我们知道，这些物种将会被划分为不同的 “ 类别 ” ，您的任务就是自行创建一个 “ 类别 ” 数据模型，这个文件将被命名为 CategoryModel.swift ，然后这个新的数据模型只要一个字符串类型的属性 ——name 。</p>
-
-<p>以下是解决方案的代码：</p>
-
-<pre><code>import UIKit
-import Realm
-class CategoryModel: RLMObject {
-dynamic var name = ""
-}
-</code></pre>
-
-<p>我们现在拥有了 CategoryModel 数据模型了，下面我们将通过某种方式将其与 SpeciesModel 数据模型关联起来，搭建起 “ 关系 ” 。</p>
-
-<p>重新回顾一下上一节的内容，我们可以通过简单地声明一个属性来创建数据模型之间的关系。</p>
-
-<p>打开 SpeciesModel.swift 文件，然后在 created 属性下面添加如下语句：
-1</p>
-
-<pre><code>dynamic var category = CategoryModel()
-</code></pre>
-
-<p>这个语句设置了 “ 物种 ” 和 “ 类别 ” 之间的 “ 一对多 ” 关系，这就意味着每个物种都只能够拥有一个类别，但是一个类别可以从属于多个物种。</p>
-
-<p>好的，我们创建完了一个基础数据模型了，现在是时候向数据库中添加数据了！</p>
-
-<p>添加数据</p>
-
-<p>每当用户添加了一个新的物种标记，用户就可以对这个标记进行修改，比如说设置物种名字，选择类别等等。打开 CategoriesTableViewController.swift 文件。这个视图控制器将要在这个表视图中显示类别清单，以便用户可以选择。</p>
-
-<p>因此，我们需要在应用初始运行时，给用户提供几个默认的类别以供选择。</p>
-
-<p>在类定义当中添加以下方法，别忘了在文件顶部导入 Realm 框架（ import Realm ）：</p>
-
-<pre><code>private func populateDefaultCategories() {
-self.results = CategoryModel.allObjects() // 1
-if results.count == 0 { // 2
-let realm = RLMRealm.defaultRealm() // 3
-realm.beginWriteTransaction() // 4
-let defaultCategories = Categories.allValues // 5
-for category in defaultCategories {
-// 6
-let newCategory = CategoryModel()
-newCategory.name = category
-realm.addObject(newCategory)
-}
-realm.commitWriteTransaction() // 7
-self.results = CategoryModel.allObjects()
-}
-}
-</code></pre>
-
-<p>对应的标号注释如下：</p>
-
-<pre><code>allobjects() 方法将会返回指定对象的所有元素，在本例中，我们向数据库中的 CategoryModel 对象发送了一个查询请求，返回这个表当中的所有行信息。注意的是，这里我们得到的是一个 RLMResults 对象，这个对象用来存放我们的查询结果。
-
-如果查询结果中的元素数量为 0 ，那么就说明数据库当中没有类别信息的相关记录，那么就意味着这是用户第一次启动应用。
-
-我们访问默认的 realm 单例对象，然后将其用 realm 变量简单表示，以供访问
-
-这一步将在默认 realm 数据库中启动一个事务 —— 现在，我们就可以向数据库当中添加记录了。
-
-这里我们使用已经定义过的 Categories 枚举来创建一个含有全部默认类别的数组。
-
-对于每个类别名称来说，我们创建了一个对应的 CategoryModel 实例对象，然后设置其 name 属性，最后将这个对象添加到 realm 当中。
-
-当我们添加完所有的类别之后，调用 commitWriteTransaction() 方法来关闭事务，并且向数据库提交数据。
-</code></pre>
-
-<p>只有调用了 commitWriteTransaction() 方法，我们之前做的所有关于事务的操作才能够被成功运行，因为这涉及到 Realm 的内部处理的问题了。您可以像上面我们做的那样，执行一些简单的创建操作，或者您可以执行一些复杂的操作，比如说同时创建、更新、删除多个对象等等。</p>
-
-<p>然后在 viewDidLoad() 方法的底部加入以下代码：
-1</p>
-
-<pre><code>populateDefaultCategories()
-</code></pre>
-
-<p>这个方法将会在视图加载的过程中，添加我们的测试用类别，并且执行向数据库写入数据的操作。</p>
-
-<p>好了，现在我们的数据库当中已经有了一些数据了，我们需要更新一下表试图数据源相关方法，以显示这些类别。找到 tableView(_:cellForRowAtIndexPath:) 方法，然后用以下代码替换它：</p>
-
-<pre><code>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell {
-let cell = tableView.dequeueReusableCellWithIdentifier("CategoryCell", forIndexPath: indexPath) as! UITableViewCell
-cell.textLabel?.text = (results[UInt(indexPath.row)] as! CategoryModel).name
-return cell
-}
-</code></pre>
-
-<p>这个声明语句从 results 对象当中读取对应行的名称，然后设置到单元格的文本标签上面显示。</p>
-
-<p>接下来，添加一个新的属性：
-1</p>
-
-<pre><code>var selectedCategory: CategoryModel!
-</code></pre>
-
-<p>我们用这个属性来存储当前选中的类别。</p>
-
-<p>找到 tableView(_: willSelectedRowAtIndexPath:) ，然后用以下代码替换它：
-1
-2
-3
-4</p>
-
-<pre><code>override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -&gt; NSIndexPath? {
-selectedCategories = self.results[UInt(indexPath.row)] as! CategoryModel
-return indexPath
-}
-</code></pre>
-
-<p>上面声明的方法将会在用户点击某个单元格的时候，将用户点击的类别存储在 selectedCategory 属性当中。</p>
-
-<p>编译并运行这个应用，然后尝试定位到某个您感兴趣的位置（使用模拟器的位置模拟），然后点击右上角的 “+” 按钮创建一个新的标记点。点选地图上的这个标记点，然后点击其弹出来的气泡，接下来会弹出这个标记点的详细信息。随后，点击类别文本框，就可以看到如下图所示的类别列表了：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0004.png" title="Caption" ></p>
-
-<p>类别列表</p>
-
-<p>您可以选择其中一个类别，不过这个操作仅仅只是将其保存到属性当中。如果您感兴趣，可以前往模拟器的 Documents 目录下面，使用 Realm Browser 查看我们生成的数据库，在里面就可以看到我们写入的数据了，这是不是很令人激动呢？</p>
-
-<p>使用 Realm Browser</p>
-
-<p>通常情况下，使用 defaultRealm() 方法生成的数据库文件将会存放在 /Users/(Your Account)/Library/Developer/CoreSimulator/Devices/(Simulator ID)/data/Containers/Data/Application/(Application ID)/Documents/ 路径下面，名为 default.realm 。 Simulator ID 指的是您运行的模拟器的 ID ， Application ID 指的是这个应用所分配到的 ID 。</p>
-
-<p>如果您仍然不清楚这个 Realm 数据库在哪儿的话，那么使用如下语句，就可以打印处这个数据库所在的完整位置了：
-1</p>
-
-<pre><code>println(RLMRealm.defaultRealm().path)
-</code></pre>
-
-<p>在这个 Documents 目录下面，我们可能会看到两个文件。一个是 default.realm 文件，这个是数据库文件，里面就是数据的存放点了。而另一个则是 default.realm.lock 文件，这个文件也有可能不会存在，它是用来当数据库文件被使用时，防止其它应用对其进行修改的一个文件。</p>
-
-<p>双击这个 default.realm 文件，就可以使用 Realm Browser 打开了：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0005.png" title="Caption" ></p>
-
-<p>Realm Browser 打开的 default.realm 文件</p>
-
-<p>注意：如果 default.realm 已经在其它应用中打开了，那么强行打开它就可能会出现异常。</p>
-
-<p>.lock 文件就可以防止对 default.realm 文件的重复操作，在使用 Realm Browser 打开数据库文件前，请先确保应用没有在运行，然后删除 .lock 文件，才能打开。</p>
-
-<p>一旦数据库在 Realm Browser 中被打开，您将会看到 CategoryModel 类中拥有 6 个对象，这就意味着这个 “ 表 ” 中已经存放了 6 个记录了。点击这个类就可以查看这个类当中拥有的具体对象信息。</p>
-
-<p>增加类别</p>
-
-<p>好了，现在我们就可以来实现 “ 为某个物种添加类别 ” 的功能了。</p>
-
-<p>打开 AddNewEntryController.swift ，然后向类中添加以下属性：
-1</p>
-
-<pre><code>var selectedCategory: CategoryModel!
-</code></pre>
-
-<p>我们将会用这个属性来存储我们在 CategoriesTableViewController 选中的类别。</p>
-
-<p>接下来，找到 unwindFromCategories(segue:) 方法，然后在方法底部添加以下代码：
-1
-2</p>
-
-<pre><code>selectedCategory = categoriesController.selectedCategories
-categoryTextField.text = selectedCategory.name
-</code></pre>
-
-<p>这个方法会在用户从 categoriesTableViewController 中选择了一个类别后被调用。在这里，我们获取到了这个选择的类别，然后将其存储在本地属性 selectedCategory 当中，接着，我们将它的值填充到文本框里面。</p>
-
-<p>现在，我们已经完成了类别的获取，接下来就是要创建第一个物种了！</p>
-
-<p>仍然还是在 AddNewEntryController.swift 当中，向类中再添加一个属性：
-1</p>
-
-<pre><code>var species: SpeciesModel!
-</code></pre>
-
-<p>这个属性将会存储一个新的物种数据模型对象。</p>
-
-<p>接下来，导入 Realm 框架，然后向类中添加以下方法：</p>
-
-<pre><code>func addNewSpecies() {
-let realm = RLMRealm.defaultRealm() // 1
-realm.beginWriteTransaction() // 2
-let newSpecies = SpeciesModel() // 3
-// 4
-newSpecies.name = nameTextField.text
-newSpecies.category = selectedCategory
-newSpecies.speciesDescription = descriptionTextView.text
-newSpecies.latitude = selectedAnnotation.coordinate.latitude
-newSpecies.longitude = selectedAnnotation.coordinate.longitude
-realm.addObject(newSpecies) // 5
-realm.commitWriteTransaction() // 6
-self.species = newSpecies
-}
-</code></pre>
-
-<p>对应的标号注释如下：</p>
-
-<pre><code>获取默认的 Realm 数据库
-
-开启一个事务序列，准备写入数据
-
-创建一个 Species 对象实例
-
-接着，设置这个对象的相关值。这些值来自于用户界面的文本输入框。
-
-向 realm 中写入新的 Species 对象
-
-最后，使用 commitWriteTransaction() 提交写操作事务
-</code></pre>
-
-<p>在这里，我们需要使用 “ 输入验证 ” ，来确保用户的输入是正确的。在工程中已经有了一个存在的 validateFields() 方法来执行输入验证的工作，以确保物种名称和描述不能为空。我们刚刚增加了设置类别的功能，那么我们应该也要确保类别选择不能为空。</p>
-
-<p>在 validateFields() 方法中找到以下代码：
-1</p>
-
-<pre><code>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty {
-</code></pre>
-
-<p>将其变更为：
-1</p>
-
-<pre><code>if nameTextField.text.isEmpty || descriptionTextView.text.isEmpty || selectedCategory == nil {
-</code></pre>
-
-<p>这个方法经能够确保所有的文本框都有值，并且用户也已经选择了一个类别。</p>
-
-<p>接下来，向类中添加以下方法：</p>
-
-<pre><code>override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -&gt; Bool {
-if validateFields() {
-if species == nil {
-addNewSpecies()
-}
-return true
-} else {
-return false
-}
-}
-</code></pre>
-
-<p>在上面的代码中，我们调用了输入验证的方法，如果所有文本框都有值的话，那么就可以添加一个新的物种。</p>
-
-<p>编译并运行您的应用，单击 “+” 按钮来创建一个新的物种。然后输入其名称和描述，选择一个类别，接着单击 “ 保存 ” 按钮来将这个物种添加到数据库中。</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0006.png" title="Caption" ></p>
-
-<p>添加新的数据</p>
-
-<p>视图消失了 —— 等等，怎么什么都没有发生呢？什么情况？</p>
-
-<p>哦对了，我们已经向 Realm 数据库提交了一个数据，但是我们还没有在地图上做出相应的设置和改变。</p>
-
-<p>检索数据</p>
-
-<p>既然我们已经向数据库中添加了一个物种了，那么现在我们希望它能够在地图上显示出来。</p>
-
-<p>如果您想要检视这个心数据，那么打开 Realm Browser 就可以查看数据了。记住要先退出模拟器。</p>
-
-<p>添加的物种信息</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0007.png" title="Caption" ></p>
-
-<p>添加的物种信息</p>
-
-<p>我们仅仅只能够看见孤零零的一条记录，里面存储了记录的名称、描述信息、经纬度信息、添加的时间。还有最重要的，就是我们看到了连接到 CategoryModel 的 category 记录，这就意味着我们已经创建好了物种和类别的 “ 一对多 ” 关系。点击这个蓝色的超链接，我们就可以查看 CategoryModel 的相关数据了。</p>
-
-<p>好的，回到正题，我们现在需要在地图上显示新添加的数据。</p>
-
-<p>打开 SpeciesAnnotation.swift ，然后向类中添加一个新的属性：
-1</p>
-
-<pre><code>var species: SpeciesModel?
-</code></pre>
-
-<p>这个属性将会为这个标记点保存它所拥有的物种信息。</p>
-
-<p>接下来，用以下代码替换构造器：</p>
-
-<pre><code>init(coordinate: CLLocationCoordinate2D, title: String, sub: Categories, species: SpeciesModel? = nil) {
-self.coordinate = coordinate
-self.title = title
-self.subtitle = sub.rawValue
-self.species = species
-}
-</code></pre>
-
-<p>我们所做的改变，就是给这个构造器方法添加了一个带默认值的构造器参数，以便可以对 species 属性进行赋值。默认值为 nil ，这意味着我们可以忽略这个参数，使用前面三个参数进行初始化也是没有任何问题的。</p>
-
-<p>打开 MapViewController.swift ，然后向类中添加一个新属性（同样地，别忘了导入 Realm ）：
-1</p>
-
-<p>var results: RLMResults?</p>
-
-<p>如果我们想要在用属性来存储一系列物种，那么我们需要将这个属性声明为 RLMResults 类型。要记住，我们是不能够初始化 RLMResults 对象的，我们必须要通过查询操作来获取它的值。</p>
-
-<p>现在我们需要一些方法来获取所有的物种数据。仍然还是在 MapViewController.swift 当中，向类中添加如下方法：</p>
-
-<pre><code>func populateMap() {
-mapView.removeAnnotations(mapView.annotations) // 1
-if let results = SpeciesModel.allObjects() { // 2
-self.results = results
-for result in results {
-let species = result as! SpeciesModel
-let coordinate = CLLocationCoordinate2DMake(species.latitude, species.longitude)
-let speciesAnnotation = SpeciesAnnotation(coordinate: coordinate, title: species.name, sub: Categories(rawValue: species.category.name)!, species: species) // 3
-mapView.addAnnotation(speciesAnnotation) // 4
-}
-}
-}
-</code></pre>
-
-<p>对应的标号注释如下：</p>
-
-<pre><code>首先，我们先清除了地图上所有存在的标记点，这样我们就不用考虑其他的要素
-
-然后，我们从 Realm 数据库中获取 Species 的全部数据
-
-我们在此创建了一个自定义的 SpeciesAnnotation
-
-最后，我们往 MKMapView 上添加这个标记点
-</code></pre>
-
-<p>好的，现在我们可以在某处地方吊用这个方法了。找到 viewDidLoad() 然后将这个方法加入到这个方法底部：
-1</p>
-
-<p>populateMap()</p>
-
-<p>这样就确保了每当地图视图控制器加载的时候，地图就能够显示 Species 标记点。</p>
-
-<p>接着，我们仅需要修改标记点的名称和类别即可。找到 unwindFromAddNewEntry() ，然后使用下列代码替换掉该方法：</p>
-
-<pre><code>@IBAction func unwindFromAddNewEntry(segue: UIStoryboardSegue) {
-let addNewEntryController = segue.sourceViewController as! AddNewEntryController
-let addedSpecies = addNewEntryController.species
-let addedSpeciesCoordinate = CLLocationCoordinate2DMake(addedSpecies.latitude, addedSpecies.longitude)
-if lastAnnotation != nil {
-mapView.removeAnnotation(lastAnnotation)
-} else {
-for annotation in mapView.annotations {
-let currentAnnotation = annotation as! SpeciesAnnotation
-if currentAnnotation.coordinate.latitude == addedSpeciesCoordinate.latitude &amp;&amp; currentAnnotation.coordinate.longitude == addedSpeciesCoordinate.longitude {
-mapView.removeAnnotation(currentAnnotation)
-break
-}
-}
-}
-let annotation = SpeciesAnnotation(coordinate: addedSpeciesCoordinate, title: addedSpecies.name, sub: Categories(rawValue: addedSpecies.category.name)!, species: addedSpecies)
-mapView.addAnnotation(annotation)
-lastAnnotation = nil
-}
-</code></pre>
-
-<p>这个方法将会在我们从 AddNewEntryController 返回的时候被调用，然后这时候就会有一个新的物种被添加到地图上方。当我们添加了一个新的物种到地图上，那么就会产生一个标记图标。然后我们想要根据物种的类别来改变其图标的样式，在这个代码里面，我们就是简单的移除了最后添加的这个标记点，然后将其替换为有名称和类别的标记点。</p>
-
-<p>编译并运行您的应用，创建一些不同的物种种类来查看现在地图是什么样式的吧！</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0008.png" title="Caption" ></p>
-
-<p>添加的标记点效果</p>
-
-<p>另外一个视图</p>
-
-<p>您或许已经注意到在地图视图的左上角有一个 “ 编辑 ” 的按钮。为了更好地管理地图上的记录点，我们这个应用设置了一个基于文本的表视图，用来列出地图上所有的记录点，这个视图我们现在命名为 “ 记录 ” 视图。现在，这个表视图仍然还是空的，现在我们就来向里面填充数据吧！</p>
-
-<p>打开 LogViewController.swift ，然后将 species 属性替换成以下形式（同样地，要导入 Realm ）：
-1</p>
-
-<pre><code>var species: RLMResults!
-</code></pre>
-
-<p>在上面的代码中，我们用 RLMResults 替换掉了之前的一个空数组占位符，这个操作和我们在 MapViewController 所做的一样。</p>
-
-<p>接下来，找到 viewDidLoad() 方法，然后在 super.viewDidLoad() 语句下添加以下代码：
-1</p>
-
-<pre><code>species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
-</code></pre>
-
-<p>这行代码会将数据库中的所有物种全部输出到 species 当中，并且按照名字进行排列。</p>
-
-<p>接下来，用以下代码替换 tableView(_:cellForRowAtIndexPath:) ：</p>
-
-<pre><code>override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -&gt; UITableViewCell {
-var cell = tableView.dequeueReusableCellWithIdentifier("LogCell") as! LogCell
-var speciesModel: SpeciesModel!
-speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-cell.titleLabel.text = speciesModel.name
-cell.subtitleLabel.text = speciesModel.category.name
-cell.iconImageView.image = getImageOfSpecies(speciesModel.category.name)
-return cell
-}
-</code></pre>
-
-<p>这个方法将会展示物种的名字和物种的类别，以及其图标。</p>
-
-<p>编译并运行应用，单击左上角的 “ 编辑 ” 按钮，然后您就会在表视图中看到我们之前录入的物种信息，如图所示：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0009.png" title="Caption" ></p>
-
-<p>记录界面</p>
-
-<p>删除记录</p>
-
-<p>现在我们已经学习了如何在 Realm 中创建记录数据，但是如果我们不小心添加了错误的标记点，或者想要移除之前添加过的物种数据，那么我们应该要怎么做呢？因此，我们就需要添加从 Realm 中删除数据的功能。您会发现这是一个非常简单的操作。</p>
-
-<p>打开 LogViewController.swift 文件，然后添加以下方法：</p>
-
-<pre><code>func deleteRowAtIndexPath(indexPath: NSIndexPath) {
-let realm = RLMRealm.defaultRealm() // 1
-let objectToDelete = species[UInt(indexPath.row)] as! SpeciesModel // 2
-realm.beginWriteTransaction() // 3
-realm.deleteObject(objectToDelete) // 4
-realm.commitWriteTransaction() // 5
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true) // 6
-tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade) // 7
-}
-</code></pre>
-
-<p>对应的标号注释如下：</p>
-
-<pre><code>首先，我们获取到默认的 Realm 数据库
-
-然后，我们从数据中找到我们想要删除的对象
-
-启动写操作事务
-
-调用 deleteObject() 方法，将要删除的对象传递进去， realm 会自动帮我们执行删除操作
-
-接着提交写操作事务，将删除操作提交到数据库当中
-
-一旦我们移除了一个物种，我们需要重新读取数据
-
-最后，我们更新 UITableViewCell ，将单元格移除
-</code></pre>
-
-<p>接着，找到 tableView(_:commitEditingStyle: forRowAtIndexPath:) 方法，然后将以下代码加入到 if 语句块当中：
-1</p>
-
-<pre><code>deleteRowAtIndexPath(indexPath)
-</code></pre>
-
-<p>当表视图执行一个单例删除操作时，会调用这个协议代理，我们所需要做的就是调用我们刚刚创建的那个方法。</p>
-
-<p>编译并运行您的应用，查看 “ 记录 ” 界面，然后在某个记录上面左滑删除。随后关闭模拟器，用 Realm Browser 打开数据库，我们就可以看到我们成功执行了更改：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0010.png" title="Caption" ></p>
-
-<p>执行删除操作</p>
-
-<p>断言匹配</p>
-
-<p>我们仍然还想要给这个应用提供一些碉堡的功能，那么快速查找怎么样？在海量的数据中进行查找还是很麻烦的一件事情，但是有了快速查找，一切就都简单了。我们现在所拥有的这个项目已经包含了一个 UISearchController 控件，您所需要做的就是添加一点小小的修改，让这个功能能够在 Realm 中正常工作。</p>
-
-<p>打开 LogViewController.swift ，然后将 searchResults 属性替换为以下代码：
-1</p>
-
-<pre><code>var searchResults: RLMResults!
-</code></pre>
-
-<p>因为我们仍然是执行 “ 检索 ” 操作，因此我们的数据是存放在 RLMResults 当中的。</p>
-
-<p>向类中添加以下方法：</p>
-
-<pre><code>func filterResultsWithSearchString(searchString: String) {
-let predicate = "name BEGINSWITH [c]'\(searchString)'" // 1
-let scopeIndex = searchController.searchBar.selectedScopeButtonIndex
-searchResults = SpeciesModel.objectsWhere(predicate) // 2
-switch scopeIndex {
-case 0:
-searchResults = searchResults.sortedResultsUsingProperty("name", ascending: true) // 3
-case 1:
-searchResults = searchResults.sortedResultsUsingProperty("distance", ascending: true) // 4
-case 2:
-searchResults = searchResults.sortedResultsUsingProperty("created", ascending: true) 5
-default:
-return
-}
-}
-</code></pre>
-
-<p>对应的标号注释如下：</p>
-
-<pre><code>首先我们创建了一个字符串版本的 “ 断言 (predicate)” ，在这里，我们搜索以 searchString 开头的 name 属性。 [c] 可以让 BEGINSWITH 以不区分大小写的灵敏度来进行查找，要注意， searchString 是被单引号括起来的。
-
-我们根据这个断言，使用 objectsWhere 这个方法来执行断言检索操作。
-
-如果选中的标签是 “ 名字 ” ，那么结果就按照 “ 名字 A-Z” 排列
-
-如果选中的标签是 “ 距离 ” ，那么就按照距离排列结果
-
-如果选中的标签是 “ 创建时间 ” ，那么就按照时间来进行排列。
-</code></pre>
-
-<p>因为搜索会导致表视图调用同样的数据源方法，因此我们需要对 tableView(_:cellForRowAtIndexPath:) 进行小小的修改，以便让其能够处理主要的表视图记录以及查询结果。在这个方法里面，找到以下代码：
-1</p>
-
-<pre><code>speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-</code></pre>
-
-<p>将其替换为以下代码：</p>
-
-<pre><code>if searchController.active {
-speciesModel = searchResults[UInt(indexPath.row)] as! SpeciesModel
-}else {
-speciesModel = species[UInt(indexPath.row)] as! SpeciesModel
-}
-</code></pre>
-
-<p>上面这行代码将会检查 searchController 是否激活。如果激活的话，那么就接收并显示搜索结果的数据；如果不是的话，那么就接收并显示 species 全部数据。</p>
-
-<p>最后，我们需要一个功能，那就是单击范围栏上的按钮时，更变返回结果的排列顺序。</p>
-
-<p>将空 scopeChanged 方法用以下代码来替换：</p>
-
-<pre><code>@IBAction func scopeChanged(sender: UISegmentedControl) {
-switch sender.selectedSegmentIndex {
-case 0:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
-case 1:
-break
-case 2:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("created", ascending: true)
-default:
-species = SpeciesModel.allObjects().sortedResultsUsingProperty("name", ascending: true)
-}
-tableView.reloadData()
-}
-</code></pre>
-
-<p>在上面的代码中，我们将会检查范围栏上的按钮是哪一个被按下（ A-Z ，距离，以及添加日期），然后调用 sortedResultsUsingProperty 来进行排序。通常情况下，这个列表将按照名字来排序。</p>
-
-<p>您可能会注意到，现在按照距离排序这一块中目前还是空的（ case 1 ），那是因为目前数据模型中还不存在 “ 距离 ” 这么一个玩意儿，因此我们暂时还不需要做这个工作，等到以后添加了再来完善。不过现在，我们已经可以看到它的大致功能了！</p>
-
-<p>编译并运行您的应用，尝试一些搜索操作，然后查看结果！</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0011.png" title="Caption" ></p>
-
-<p>查看不同的结果</p>
-
-<p>提示：在作者的原教程中，搜索功能实际上是无法实现的。如果您在 “ 合适 ” 的地方添加了相关方法，那么实际上程序仍然还是无法执行搜索功能的。它会提示 cell 的 titleLabel 的值为 nil 。因为在原教程中， Cell 是在 Storyboard 里面自定义的，而搜索栏则是要显示一个新的表视图。如果需要重用自定义的 Cell ，那么最好需要在 Xib 文件中进行制作。因为如果没有 init(style:reuseIdentifier:) 方法的 Cell 自定义类，是无法进行重用的。</p>
-
-<p>更新记录</p>
-
-<p>我们现在已经实现了添加和删除记录的功能了，剩下就是更新数据功能了。</p>
-
-<p>如果您试着单击 LogViewController 中的一个单元格，那么就会跳转到 AddNewEntryViewController 页面，但是这些区域都是空白的。当然，我们首先要做的就是让这个页面显示数据库中存放的数据，以便让用户编辑。</p>
-
-<p>打开 AddNewEntryViewController.swift 文件，然后向类中添加以下方法：</p>
-
-<pre><code>func fillTextFields() {
-nameTextField.text = species.name
-categoryTextField.text = species.category.name
-descriptionTextView.text = species.speciesDescription
-selectedCategory = species.category
-}
-</code></pre>
-
-<p>这个方法将会使用 species 中的数据来填充用户界面的文本框。记住， AddNewEntryViewController 只有在添加新物种时才会保持文本框为空的状态。</p>
-
-<p>接下来，向 viewDidLoad() 方法的末尾添加以下语句：</p>
-
-<pre><code>if species == nil {
-title = " 添加新的物种 "
-}else {
-title = " 编辑 \(species.name)"
-fillTextFields()
-}
-</code></pre>
-
-<p>上面这些代码段设置了导航栏的标题，以通知用户当前其是在添加新的物种还是在更新一个已存在的物种信息。如果 species 不为空，那么就调用 fillTextFields 方法来填充文本框。</p>
-
-<p>现在我们需要一个更新功能，以便响应用户的更改操作。向类中添加以下方法：</p>
-
-<pre><code>func updateSpecies() {
-let realm = RLMRealm.defaultRealm()
-realm.beginWriteTransaction()
-species.name = nameTextField.text
-species.category = selectedCategory
-species.speciesDescription = descriptionTextView.text
-realm.commitWriteTransaction()
-}
-</code></pre>
-
-<p>通常情况下，这种方法一般都先获得默认的 Realm 数据库，然后将数据写入的操作放在 beginWriteTransaction() 和 commitWriteTransaction() 方法之间。在这个事务中，我们只是简单的更新了这三个数据域的值。</p>
-
-<p>这六行短短的代码就足以完成 Species 记录的更新操作了哦 ~O(∩_∩)O~</p>
-
-<p>现在我们只需要在用户单击保存按钮的时候调用上述代码即可。找到 shouldPerformSegueWithIdentifier(_:sender:) ，然后在 return true 语句之前，第一个 if 代码块之内添加以下代码：</p>
-
-<pre><code>else {
-updateSpecies()
-}
-</code></pre>
-
-<p>当恰当的时候，就会调用这个方法来对数据进行更新。</p>
-
-<p>现在打开 LogViewController.swift ，然后将 prepareForSegue(_:sender:) 用以下代码替换：</p>
-
-<pre><code>override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-if segue.identifier == "Edit" {
-let controller = segue.destinationViewController as! AddNewEntryController
-var selectedSpecies: SpeciesModel!
-let indexPath = tableView.indexPathForSelectedRow()
-if searchController.active {
-let searchResultsController = searchController.searchResultsController as! UITableViewController
-let indexPathSearch = searchResultsController.tableView.indexPathForSelectedRow()
-selectedSpecies = searchResults[UInt(indexPathSearch!.row)] as! SpeciesModel
-}else{
-selectedSpecies = species[UInt(indexPath!.row)] as! SpeciesModel
-}
-controller.species = selectedSpecies
-}
-}
-</code></pre>
-
-<p>我们在这里将选中的物种信息传递给了 AddNewEntryController 。上面的 if/else 代码是因为要根据用户是否是在查看搜索结果来决定的。</p>
-
-<p>编译并运行您的应用，打开记录视图，并且选中一个存在的物种。您应该可以看到文本框中已经填充了数据。</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0012.png" title="Caption" ></p>
-
-<p>更新数据</p>
-
-<p>把剩下的东西结束掉</p>
-
-<p>要让我们的应用变得更加完美，我们就需要实现剩下 的功能。</p>
-
-<p>还记不记得我们没有变法根据距离来排序记录？我们需要在里面添加不少的代码，才能够正常的运行这个功能，但是这个结果是非常值得的。</p>
-
-<p>打开 Species.swift 文件，然后向类中添加一个新的属性。
-1</p>
-
-<pre><code>dynamic var distance: Double = 0
-</code></pre>
-
-<p>这个属性为保存用户位置和该记录点的距离信息。然而，没有必要去存储 distance 信息，因为用户位置会随时发生改变。我们想让距离成为这个模型的一部分，但是我们并不想 Realm 来存储这个数据。</p>
-
-<p>Realm 支持一种被称为忽视属性 (ignored properties) 的东西，然后向类中添加以下代码：</p>
-
-<pre><code>func ignoredProperties() -&gt; NSArray {
-let propertiesToIgnore = [distance]
-return propertiesToIgnore
-}
-</code></pre>
-
-<p>要实现忽视属性，只需要声明一个命名为 ignoredProperties() 的方法，然后返回一个属性数组，里面保存有您不想进行存储的属性。</p>
-
-<p>由于我们并不会存储距离这个属性，很明显地我们需要自己计算距离。</p>
-
-<p>打开 MapViewController.swift ，添加以下方法：</p>
-
-<pre><code>func updateLocationDistance() {
-let realm = RLMRealm.defaultRealm()
-if results != nil {
-for result in results! {
-let currentSpecies = result as! SpeciesModel
-let currentLocation = CLLocation(latitude: currentSpecies.latitude, longitude: currentSpecies.longitude)
-let distance = currentLocation.distanceFromLocation(mapView.userLocation.location)
-realm.beginWriteTransaction()
-currentSpecies.distance = Double(distance)
-realm.commitWriteTransaction()
-}
-}
-}
-</code></pre>
-
-<p>对于每个物种，我们计算了这个标记点与用户当前位置之间的距离。即时我们没有存储这个距离信息，我们仍然需要将其存储在记录当中，然后将其在写操作事务中保存这个变化消息。</p>
-
-<p>接下来，在 prepareForSegue(_:sender:) 方法底部添加以下代码：</p>
-
-<pre><code>else if segue.identifier == "Log" {
-updateLocationDistance()
-}
-</code></pre>
-
-<p>现在，在用户打开 “ 记录界面 ” 之前，我们需要调用这个方法来计算距离。</p>
-
-<p>接下来，打开 LogViewController.swift ，然后找到 tableView(_:cellForRowAtIndexPath:) 方法。然后在这个方法底部附近， return 语句之前添加以下代码：</p>
-
-<pre><code>if speciesModel.distance &lt; 0 {
-cell.distanceLabel.text = "N/A"
-}else {
-cell.distanceLabel.text = String(format: "%.2fkm", speciesModel.distance / 1000)
-}
-</code></pre>
-
-<p>最后，找到 scopeChanged() 然后将 case 1 中的 break 替换成以下代码：</p>
-
-<pre><code>species = SpeciesModel.allObjects().sortedResultsUsingProperty("distance", ascending: true)
-</code></pre>
-
-<p>编译并运行应用，然后 …… 呃？怎么崩溃掉了？</p>
-
-<pre><code>'RLMException`, reason: 'Column count does not match interface - migration required'
-</code></pre>
-
-<h5>什么鬼？</h5>
-
-<p>当我们向 Species 模型中添加了一个新的 distance 属性的时候，我们就对架构（ schema ） 进行了变更，但是我们并没有告诉 Realm 如何处理这个新增的数据段。从旧版本的数据库迁移（ migrate ） 到新版本的数据库的操作超出了本教程的范围。这并不是 Realm 独有的问题， Core Data 同样也需要在添加、变更或者删除新的数据段的时候进行迁移操作。</p>
-
-<p>本教程的简单解决方案就是将模拟器的应用移除掉即可，然后重新编译并运行应用程序。这将会让应用创建一个全新的数据库，使用新的架构。</p>
-
-<p>从模拟器删除这个应用，接下来编译和运行这个应用。然后添加新的物种，接着打开这个记录视图，这时候我们就可以看到如下所示的距离信息：</p>
-
-<p><img src="http://al1020119.github.io/images/realmjinghua0013.png" title="Caption" ></p>
-
-<p>距离信息</p>
-
-<p>您或许需要模拟一个位置以便能够计算当前距离，在模拟器菜单栏上，选择 Debug\Location ，然后选择列表中的一个位置模拟。</p>
-
-<h5>接下来该何去何从？</h5>
-
-<p>您可以点击此处下载完整的项目</p>
-
-<p>在本教程中，我们学习了如何创建、更新、删除以及查找 Realm 数据库中的数据记录，以及如何使用断言来进行查找，还有按属性名对结果进行排序的方法。</p>
-
-<p>您可能要问了： “ 看起来 Realm 似乎是一个新项目，我感觉在一个完备的应用中使用它可能并不稳定 ” 。</p>
-
-<p>Realm 最近才想公众开放，但是早在 2012 年它就已经在公司级别的产品中使用了。我个人已经在我的既有项目中使用 Realm 了，而且似乎运转起来相当不错。</p>
-
-<p>如果您使用 Objective-C ，那么 Realm 是十分稳定的。对于 Swift 来说，由于 Swift 版本并不稳定，因此在使用 Realm 可能会遭遇到版本更迭所引发的一系列语法问题。不过随着 Swift 的更新，相信 Swift 的版本改动会越来越少， Realm 在 Swift 上也会越来越稳定。</p>
-
-<p>对于 Realm 来说，它还有许多在本教程没有介绍到的特点：</p>
-
-<pre><code>迁移（ Migrations ） ：在本教程中，我们看到了对 Realm 架构的修改导致了错误的产生。要学习关于如何在多版本之间迁移数据库的只是，请查看 Realm 说明文档的 “ 迁移（ migrations） ” 部分。
-
-其他类型的 Realm 数据库 ：在本教程中，我们一直都是使用着 “ 默认 ”Realm 数据库，但是我们仍然还可以使用其他类型的 Realm 数据库，比如说不存储数据的 “ 内存数据库（ in-memory realm ） ” 。我们也可以使用多个 Realm 数据库，如果我们享用多个数据库来保存多种类型的数据的话。
-</code></pre>
-
-<p>关于 Realm 的更多信息，您可以查看 官方文档 ，我发现这个文档真的写得十分详尽。</p>
-
-<p>如果您对本教程有什么建议和意见，请到评论区进行讨论，我会尽快处理这些建议和意见的 ~</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Realm基础篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/03/realmjichupian/"/>
-    <updated>2016-07-03T02:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/03/realmjichupian</id>
-    <content type="html"><![CDATA[<p>介绍</p>
-
-<p>realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和Swift）以及Android。</p>
-
-<p>2014年7月发布。由YCombinator孵化的创业团队历时几年打造，是第一个专门针对移动平台设计的数据库。目标是取代SQLite。</p>
-
-<p>为了彻底解决性能问题，核心数据引擎C++打造，并不是建立在SQLite之上的ORM。如果对数据引擎实现想深入了解可以查看：Realm 核心数据库引擎探秘。因此得到的收益就是比普通的ORM要快很多，甚至比单独无封装的SQLite还要快。</p>
-
-<p>因为是ORM，本身在设计时也针对移动设备（iOS、Android），所以非常简单易用，学习成本很低。</p>
-
-<!--more-->
-
-
-<p>碾压级性能</p>
-
-<p>数据引自：introducing-realm</p>
-
-<p>每秒能在20万条数据中进行查询后count的次数。realm每秒可以进行30.9次查询后count。</p>
-
-<p><img src="http://al1020119.github.io/images/benchmarks.001b.png" title="Caption" ></p>
-
-<p>在20万条中进行一次遍历查询，数据和前面的count相似：realm一秒可以遍历20万条数据31次，而coredata只能进行两次查询。</p>
-
-<p><img src="http://al1020119.github.io/images/benchmarks.002b.png" title="Caption" ></p>
-
-<p>这是在一次事务每秒插入数据的对比，realm每秒可以插入9.4万条记录，在这个比较里纯SQLite的性能最好，每秒可以插入17.8万条记录。然而封装了SQLite的FMDB的成绩大概是realm的一半。</p>
-
-<p><img src="http://al1020119.github.io/images/benchmarks.003b.png" title="Caption" ></p>
-
-<p>简单易用</p>
-
-<p>实例代码语言是Objective?C。</p>
-
-<p>Realm对象和其他对象没有太大区别，只是需要继承RLMObject</p>
-
-<pre><code>@interface Dog : RLMObject
-@property NSString *name;
-@property NSInteger age;
-@end
-Dog *mydog = [[Dog alloc] init];
-</code></pre>
-
-<p>存储起来也非常简单，获取数据库实例，在一个事务中进行写入。</p>
-
-<pre><code>RLMRealm *realm = [RLMRealm defaultRealm];
-[realm transactionWithBlock:^{
-    [realm addObject:mydog];
-}];
-</code></pre>
-
-<p>方便的查询，可以在一个查询结果中再进行查询。查询的条件有着丰富的支持。</p>
-
-<pre><code>RLMResults *r = [Dog objectsWhere:@"age &gt; 8"];
-// Queries are chainable
-r = [r objectsWhere:@"name contains 'Rex' AND  name BEGINSWITH '大'"];
-</code></pre>
-
-<p>zero-copy和懒加载</p>
-
-<p>在通常的数据库中，数据大多数时间都静静地呆在硬盘当中。当你访问 NSManagedObject 对象中的某个属性的时候，Core Data 会将这个请求转换为一组 SQL 语句，如果还未连接数据库的话则创建一个数据库连接，然后将这个 SQL 语句发送给硬盘，执行检索，从匹配检索的结果中读取所有的数据，然后将它们放到内存当中（也就是内存分配）。然而，这时候你需要对其格式进行反序列化(deserialize)，因为硬盘上存储的格式不能直接在内存中使用，这意味着你需要调整位，以便 CPU 能够对其进行处理。</p>
-
-<p>然而Realm跳过了整个拷贝数据到内存的过程，称之为zero-copy。做到这点是因为文件始终是内存映射的，无论文件是或否在内存当中，你都能够访问文件的任何内容。关于核心文件格式的重要一点就是，确保硬盘上的文件格式都是内存可读的，这样就无需执行任何反序列化操作了。</p>
-
-<p>这样就带来了一个问题，难道数据全加载到内存里了？所以这里懒加载应运而生，比如在查询到一组数据后，只有当你真正访问对象的时候才真正加载进来。</p>
-
-<p>VS SQLite</p>
-
-<p>SQLite第一个版本发布于2000年，至今已16年。以当今的角度来看，它的编程抽象程度非常低。业务上我们其实只想把这些对象存进去，可以查询出来。</p>
-
-<p>即便已经是封装过的FMDB，要写这样的代码心里也依旧难受:</p>
-
-<pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];
-if (![db open]) {
-[db release];
-return;
-}
-NSString *sql = @"create table bulktest1 (id integer primary key autoincrement, x text);"
-"create table bulktest2 (id integer primary key autoincrement, y text);"
-"create table bulktest3 (id integer primary key autoincrement, z text);"
-"insert into bulktest1 (x) values ('XXX');"
-"insert into bulktest2 (y) values ('YYY');"
-"insert into bulktest3 (z) values ('ZZZ');";
-success = [db executeStatements:sql];
-sql = @"select count(*) as count from bulktest1;"
-"select count(*) as count from bulktest2;"
-"select count(*) as count from bulktest3;";
-success = [self.db executeStatements:sql withResultBlock:^int(NSDictionary *dictionary) {
-NSInteger count = [dictionary[@"count"] integerValue];
-XCTAssertEqual(count, 1, @"expected one record for dictionary %@", dictionary);
-return 0;
-}];
-[db close];
-</code></pre>
-
-<p>VS CoreData</p>
-
-<p>详细的比较推荐看这篇：CoreData VS Realm。</p>
-
-<p>下面给出一个查询的比较：</p>
-
-<pre><code>// Core Data
-let fetchRequest = NSFetchRequest(entityName: "Specimen")
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString)
-fetchRequest.predicate = predicate
-let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-fetchRequest.sortDescriptors = [sortDescriptor]
-let error = NSError()
-let results = managedObjectContext?.executeFetchRequest(fetchRequest, error:&amp;error)
-</code></pre>
-
-<p>Realm则简单的多：</p>
-
-<pre><code>// Realm
-let predicate = NSPredicate(format: "name BEGINSWITH [c]%@", searchString);
-let specimens = Specimen.objectsWithPredicate(predicate).arraySortedByProperty("name", ascending: true)
-</code></pre>
-
-<h3>总结一下Realm对CoreData的优势：</h3>
-
-<pre><code>不需要架构Context那种烦人的东西
-
-CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
-</code></pre>
-
-<hr />
-
-<pre><code>支持 NSPredicate
-</code></pre>
-
-<p>从 CoreData 转过来并没有太多的不适应。</p>
-
-<pre><code>CoreData多个持久化文件很麻烦，Realm轻松支持这个功能
-</code></pre>
-
-<h5>劣势：</h5>
-
-<p>是会增加应用大概1MB的体积。CoreData原生支持，不会增加App体积。</p>
-
-<p>虽然看上去很厉害，但是这么新靠谱吗</p>
-
-<p>Realm大部分源码公开在github上：realm。项目在新建不到两年里，已经得到开源社区大量关注：</p>
-
-<p><img src="http://al1020119.github.io/images/benchmarks.004b.png" title="Caption" ></p>
-
-<p>官方也承诺会持续解决用户反馈的各种问题。也可以直接在他们twitter上去@他们。</p>
-
-<p>就算靠谱，有别人在用吗</p>
-
-<p>推荐阅读这篇博客，作者介绍了他痛下决心抛弃CoreData后，如何安全迁移至Realm：《高速公路换轮胎——为遗留系统替换数据库》（文／凉粉小刀，简书作者）。</p>
-
-<p>在多年以前，人们做了个决策，用CoreData做本地存储，替换掉NSUserDefaults。这之间的历史已经远不可考，但自从我加入项目以来，整个团队已经被它高昂的学习曲线、复杂的数据Migration流程以及过时陈旧的设计折磨的苦不堪言。于是我们决心把CoreData换掉。</p>
-
-<p>再看下SO的情况：</p>
-
-<p><img src="http://al1020119.github.io/images/benchmarks.005b.png" title="Caption" ></p>
-
-<p>已经有大概两万条相关结果，你不是一个人！</p>
-
-<p>需要知道的一些问题</p>
-
-<pre><code>其实我自己觉得这些是可以接受的问题。技术很多时候就是权衡，为了达到一些目的，总是要牺牲掉一些东西。
-</code></pre>
-
-<p>所有的存储对象需要继承RealmObject</p>
-
-<p>比如我现在的项目的数据从网络请求回来都会继承自己写的一个方便解析的基类，在这里就需要做出一些适应。</p>
-
-<p>但是该问题在swift中是不存在的。因为swift是天生的面向协议编程范式。</p>
-
-<pre><code>不能自定义getter、setter
-</code></pre>
-
-<p>realm会自动生成getter、setter，如果自定义getter、setter存储就会有影响。如果要规避这个问题，可以通过设置这个对象的忽略属性。</p>
-
-<p>比如有个属性id，需要自定义setter。可以在对象属性里把id设置为忽略属性，这样realm就不会为它自动生成getter、setter，但是也不会把id存入数据库。接着自定义一个用于存储的属性比如realm_id。在id的setter中可以把把值也赋给realm_id。</p>
-
-<p>这个问题在swift中也是不存在的，因为swfit中使用的是willset、didset这种通知机制。</p>
-
-<pre><code>查询的结果不是数组
-</code></pre>
-
-<p>为了能够支持查询结果的链式查询，realm自定义了一个集合类型。可以枚举，但是不是熟悉的数组了。又因为realm的懒加载机制，所以不建议在数据层把这个枚举转成数组类型。这样的缺点就是上层知道了数据的存储逻辑。严格的说这里不应该让上层知道。但是这样设计也许是为了方便上层进行再次检索，realm有着优越的查询性能。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[FMDB封装篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag/"/>
-    <updated>2016-07-02T22:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag</id>
-    <content type="html"><![CDATA[<p>前言：</p>
-
-<p>在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。</p>
-
-<p>显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。于是就出现了MagicRecord这个对CoreData的封装库。一开始遇到这个库的时候，好用到几乎让我想把所有项目的数据库都换成CoreData了。两句话解决CoreData调用栈的初始化，一句话完成数据库版本升级和自动数据合并更新（虽然我们很少用到）。</p>
-
-<p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
-
-<!--more-->
-
-
-<p>所以，最后还是选择了FMDB进行封装。</p>
-
-<p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
-
-<p>项目简介：</p>
-
-<h5>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</h5>
-
-<p>Description</p>
-
-<pre><code>使用分类的模式，模仿Hibernate，对FMDB进行简易封装
-
-支持pod 安装 『pod 'JRDB'』，Podfile需要添加 use_framework!
-
-使用协议，不用继承基类，对任意NSObject可以进行入库操作
-
-支持swift 和 Objective-C
-
-支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
-</code></pre>
-
-<h5>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</h5>
-
-<p>Installation（安装）</p>
-
-<pre><code>use_frameworks!
-pod 'JRDB'
-@import JRDB;
-</code></pre>
-
-<p>Usage</p>
-
-<p>。。。</p>
-
-<p>Save（保存）</p>
-
-<p>Objective-C</p>
-
-<pre><code>Person *p = [[Person alloc] init];
-p.a_int = 1;
-p.b_unsigned_int = 2;
-p.c_long = 3;
-p.d_long_long = 4;
-p.e_unsigned_long = 5;
-p.f_unsigned_long_long = 6;
-p.g_float = 7.0;
-p.h_double = 8.0;
-p.i_string = @"9";
-p.j_number = @10;
-p.k_data = [NSData data];
-p.l_date = [NSDate date];
-[p jr_save];
-</code></pre>
-
-<p>Swift</p>
-
-<p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
-
-<pre><code>The Object that you want to persistent should inherit from NSObject
-
-let p = Person()
-p.name = "name"
-p.age = 10
-p.birthday = NSDate()
-p.jr_save()
-</code></pre>
-
-<h5>Update（更新）</h5>
-
-<pre><code>Person *p = [Person jr_findAll].firstObject;
-p.name = @"abc";
-[p jr_update columns:nil];
-</code></pre>
-
-<p>column: 需要更新的字段名，传入空为全量更新</p>
-
-<h5>Delete（删除）</h5>
-
-<pre><code>Person *p = [Person jr_findAll].firstObject;
-[p jr_delete];
-</code></pre>
-
-<h5>Select（查找）</h5>
-
-<h5>常规查找</h5>
-
-<pre><code>Person *p = [Person jr_findByPrimaryKey:@"111"];
-NSArray *list = [Person jr_findAll];
-NSArray *list1 = [Person jr_findAllOrderBy:@"_age" isDesc:YES];
-</code></pre>
-
-<h5>条件查询</h5>
-
-<pre><code>NSArray *condis = @[
-     [JRQueryCondition condition:@"_l_date &lt; ?" args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
-     [JRQueryCondition condition:@"_a_int &gt; ?" args:@[@9] type:JRQueryConditionTypeAnd],];
-NSArray *arr = [Person jr_findByConditions:condis
-                      groupBy:@"_room"
-                      orderBy:@"_age"
-                      limit:@" limit 0,13 "
-                      isDesc:YES];
-</code></pre>
-
-<p>SQL</p>
-
-<pre><code>NSString *sql = @"select * from Person where age = ?";
-NSArray *list = [Person jr_executeSql:sql args:@[@10]];
-</code></pre>
-
-<p>Other（其他）</p>
-
-<p>协议：JRPersistent</p>
-
-<pre><code>@protocol JRPersistent @required
-- (void)setID:(NSString * _Nullable)ID;
-- (NSString * _Nullable)ID;
-@optional
-/**
- *  返回不用入库的对象字段数组
- *  The full property names that you want to ignore for persistent
- *  @return array
- */
-+ (NSArray * _Nullable)jr_excludePropertyNames;
-/**
- *  返回自定义主键字段
- *  @return 字段全名
- */
-+ (NSString * _Nullable)jr_customPrimarykey;
-/**
- *  返回自定义主键值
- *  @return 主键值
- */
-- (id _Nullable)jr_customPrimarykeyValue;
-@end
-</code></pre>
-
-<p>主键</p>
-
-<p>默认每个Object的主键为ID， UUID字符串。</p>
-
-<p>可以实现 jr_customPrimarykey 以及 jr_customPrimarykeyValue 方法，自定义主键。</p>
-
-<p>默认NSObject分类实现</p>
-
-<pre><code>@interface NSObject (JRDB) (...methods)
-@end
-JRDBMgr
-@interface JRDBMgr : NSObject
-@property (nonatomic, strong) FMDatabase *defaultDB;
-+ (instancetype)shareInstance;
-+ (FMDatabase *)defaultDB;
-- (FMDatabase *)createDBWithPath:(NSString *)path;
-- (void)deleteDBWithPath:(NSString *)path;
-/**
- *  在这里注册的类，使用本框架的数据库将全部建有这些表
- *  @param clazz 类名
- */
-- (void)registerClazzForUpdateTable:(Class)clazz;
-- (NSArray *)registedClazz;
-/**
- * 更新默认数据库的表（或者新建没有的表）
- * 更新的表需要在本类先注册
- */
-- (void)updateDefaultDB;
-- (void)updateDB:(FMDatabase *)db;
-@end
-</code></pre>
-
-<p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
-
-<p>Method</p>
-
-<pre><code>- (void)registerClazzForUpdateTable:(Class)clazz;
-</code></pre>
-
-<p>在JRDBMgr中注册的类，可以使用</p>
-
-<pre><code>-(void)updateDB:(FMDatabase *)db
-</code></pre>
-
-<p>进行统一更新或者创建表。</p>
-
-<p>Table Operation（表操作）</p>
-
-<p>Create（建表）</p>
-
-<pre><code>// FMDatabase+JRDB 方法
-[[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
-[Person jr_createTable];
-// 删除原有的表，重新创建
-[[JRDBMgr defaultDB] truncateTable4Clazz:[Person class]];
-[Person jr_truncateTable];
-//保存时，若发现没有表，将自动创建
-[person jr_save];
-Update 【更新表】
-[[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
-[Person jr_updateTable];
-</code></pre>
-
-<p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
-
-<p>Drop（删表）</p>
-
-<pre><code>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
-[Person jr_dropTable];
-</code></pre>
-
-<p>Thread Operation（线程操作）</p>
-
-<p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
-
-<pre><code>[person jr_saveWithComplete:^(BOOL success) {
-    NSLog(@"%d", success);
-}];
-</code></pre>
-
-<p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
-
-<p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[FMDB精华篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/02/fmdbjinghua/"/>
-    <updated>2016-07-02T12:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/02/fmdbjinghua</id>
-    <content type="html"><![CDATA[<p>由于FMDB是建立在SQLite的之上的，所以你至少也该把这篇文章从头到尾读一遍。与此同时，把SQLite的文档页 加到你的书签中。自动引用计数（APC）还是手动内存管理呢？</p>
-
-<p>两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。</p>
-
-<h5>使用方法</h5>
-
-<p>FMDB有三个主要的类</p>
-
-<pre><code>1.FMDatabase – 表示一个单独的SQLite数据库。 用来执行SQLite的命令。
-2.FMResultSet – 表示FMDatabase执行查询后结果集
-3.FMDatabaseQueue – 如果你想在多线程中执行多个查询或更新，你应该使用该类。这是线程安全的。
-</code></pre>
-
-<!--more-->
-
-
-<h5>数据库创建</h5>
-
-<p>创建FMDatabase对象时参数为SQLite数据库文件路径。该路径可以是以下三种之一：</p>
-
-<pre><code>1..文件路径。该文件路径无需真实存，如果不存在会自动创建。
-2..空字符串(@”")。表示会在临时目录创建一个空的数据库，当FMDatabase 链接关闭时，文件也被删除。
-3.NULL. 将创建一个内在数据库。同样的，当FMDatabase连接关闭时，数据会被销毁。
-</code></pre>
-
-<p>(如需对临时数据库或内在数据库进行一步了解，请继续阅读：<a href="http://www.sqlite.org/inmemorydb.html">http://www.sqlite.org/inmemorydb.html</a>)</p>
-
-<pre><code>FMDatabase *db = [FMDatabase databaseWithPath:@"/tmp/tmp.db"];   
-</code></pre>
-
-<h5>打开数据库</h5>
-
-<p>在和数据库交互 之前，数据库必须是打开的。如果资源或权限不足无法打开或创建数据库，都会导致打开失败。</p>
-
-<pre><code>if (![db open]) {    
-        [db release];   
-        return;    
-    }  
-</code></pre>
-
-<h5>执行更新</h5>
-
-<p>一切不是SELECT命令的命令都视为更新。这包括  CREATE, UPDATE, INSERT,ALTER,COMMIT, BEGIN, DETACH, DELETE, DROP, END, EXPLAIN, VACUUM, and REPLACE  （等）。
-简单来说，只要不是以SELECT开头的命令都是UPDATE命令。</p>
-
-<p>执行更新返回一个BOOL值。YES表示执行成功，否则表示有那些错误 。你可以调用 -lastErrorMessage 和 -lastErrorCode方法来得到更多信息。</p>
-
-<h5>执行查询</h5>
-
-<p>SELECT命令就是查询，执行查询的方法是以 -excuteQuery开头的。</p>
-
-<p>执行查询时，如果成功返回FMResultSet对象， 错误返回nil. 与执行更新相当，支持使用 NSError**参数。同时，你也可以使用 -lastErrorCode和-lastErrorMessage获知错误信息。</p>
-
-<p>为了遍历查询结果，你可以使用while循环。你还需要知道怎么跳到下一个记录。使用FMDB，很简单实现，就像这样：</p>
-
-<pre><code>FMResultSet *s = [db executeQuery:@"SELECT * FROM myTable"];   
-while ([s next]) {   
-    //retrieve values for each record   
-}   
-</code></pre>
-
-<p>你必须一直调用   -[FMResultSet next]   在你访问查询返回值之前，甚至你只想要一个记录：</p>
-
-<pre><code>FMResultSet *s = [db executeQuery:@"SELECT COUNT(*) FROM myTable"];   
-  if ([s next]) {    
-       int totalCount = [s intForColumnIndex:0];   
-  }   
-</code></pre>
-
-<p>FMResultSet  提供了很多方法来获得所需的格式的值：</p>
-
-<pre><code>intForColumn:
-longForColumn:
-longLongIntForColumn:
-boolForColumn:
-doubleForColumn:
-stringForColumn:
-dataForColumn:
-dataNoCopyForColumn:
-UTF8StringForColumnIndex:
-objectForColumn:
-</code></pre>
-
-<p>这些方法也都包括 {type}ForColumnIndex 的这样子的方法，参数是查询结果集的列的索引位置。</p>
-
-<p>你无需调用  [FMResultSet close]来关闭结果集, 当新的结果集产生，或者其数据库关闭时，会自动关闭。</p>
-
-<h5>关闭数据库</h5>
-
-<p>当使用完数据库，你应该 -close 来关闭数据库连接来释放SQLite使用的资源。
-    [db close];</p>
-
-<h5>事务</h5>
-
-<p>FMDatabase是支持事务的。</p>
-
-<p>数据净化（数据格式化）</p>
-
-<p>使用FMDB，插入数据前，你不要花时间审查你的数据。你可以使用标准的SQLite数据绑定语法。</p>
-
-<pre><code>INSERT INTO myTable VALUES (?, ?, ?)   
-</code></pre>
-
-<p>SQLite会识别 “?” 为一个输入的点位符， 这样的执行会接受一个可变参数（或者表示为其他参数，如NSArray, NSDictionary,或va_list等），会正确为您转义。</p>
-
-<p>你也可以选择使用命名参数语法。</p>
-
-<pre><code>INSERT INTO myTable VALUES (:id, :name, :value)   
-</code></pre>
-
-<p>参数名必须以冒名开头。SQLite本身支持其他字符，当Dictionary key的内部实现是冒号开头。注意你的NSDictionary key不要包含冒号。</p>
-
-<pre><code>NSDictionary *argsDict = [NSDictionary dictionaryWithObjectsAndKeys:@"My Name", @"name", nil];    
-    [db executeUpdate:@"INSERT INTO myTable (name) VALUES (:name)" withParameterDictionary:argsDict];   
-</code></pre>
-
-<p>而且，代码不能这么写（为什么？想想吧。）</p>
-
-<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has \" lots of ' bizarre \" quotes '"]; 
-</code></pre>
-
-<p>你应该：</p>
-
-<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", @"this has " lots of ' bizarre " quotes '"];   
-</code></pre>
-
-<p>提供给 -executeUpdate: 方法的参数都必须是对象。就像以下的代码就无法工作，且会产生崩溃。</p>
-
-<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", 42];   
-</code></pre>
-
-<p> 正确有做法是把数字打包成 NSNumber对象</p>
-
-<pre><code>[db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:42]];   
-</code></pre>
-
-<p>或者，你可以使用  -execute*WithFormat: ，这是NSString风格的参数</p>
-
-<pre><code>[db executeUpdateWithFormat:@"INSERT INTO myTable VALUES (%d)", 42];   
-</code></pre>
-
-<p> -execute*WithFormat:  的方法的内部实现会帮你封装数据， 以下这些修饰符都可以使用： %@, %c, %s, %d, %D,%i, %u, %U, %hi, %hu, %qi, %qu, %f, %g, %ld, %lu, %lld, and %llu.  除此之外的修饰符可能导致无法预知的结果。 一些情况下，你需要在SQL语句中使用 % 字符，你应该使用 %%。</p>
-
-<p>使用FMDatabaseQueue 及线程安全
-在多个线程中同时使用一个FMDatabase实例是不明智的。现在你可以为每个线程创建一个FMDatabase对象。 不要让多个线程分享同一个实例，它无法在多个线程中同时使用。 若此，坏事会经常发生，程序会时不时崩溃，或者报告异常，或者陨石会从天空中掉下来砸到你Mac Pro.  总之很崩溃。所以，不要初始化FMDatabase对象，然后在多个线程中使用。请使用 FMDatabaseQueue，它是你的朋友而且会帮助你。以下是使用方法：</p>
-
-<h5>首先创建队列。</h5>
-
-<pre><code>FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:aPath]; 
-</code></pre>
-
-<h5>这样使用。</h5>
-
-<pre><code>[queue inDatabase:^(FMDatabase *db) {    
-          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
-          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
-          [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
-          FMResultSet *rs = [db executeQuery:@"select * from foo"];    
-         while([rs next]) {   
-            …    
-         }    
-}];   
-</code></pre>
-
-<h5>像这样，轻松地把简单任务包装到事务里：</h5>
-
-<pre><code>[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {    
-            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:1]];    
-            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:2]];    
-            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:3]];    
-            if (whoopsSomethingWrongHappened) {    
-                    *rollback = YES; return;    
-            }   
-            // etc…    
-            [db executeUpdate:@"INSERT INTO myTable VALUES (?)", [NSNumber numberWithInt:4]];    
-    }];   
-</code></pre>
-
-<p> FMDatabaseQueue  后台会建立系列化的G-C-D队列，并执行你传给G-C-D队列的块。这意味着 你从多线程同时调用调用方法，GDC也会按它接收的块的顺序来执行。谁也不会吵到谁的脚 ，每个人都幸福。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[SQLite封装篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/01/sqlzfengzhuang/"/>
-    <updated>2016-07-01T12:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/01/sqlzfengzhuang</id>
-    <content type="html"><![CDATA[<p>最近写的项目中有用到数据库,写了不少蛋疼的sql语句,每次都是好几行代码,而且每次都是重复的没有一点技术含量的代码,虽然也有不少基于sqlite的封装,不过用起来还是感觉不够面向对象! 为了不再写重复的代码,花了几天时间,基于SQLite3简单封装了下,实现了一行代码解决增删改查等常用的功能!并没有太过高深的知识,主要用了runtime和KVC:</p>
-
-<!--more-->
-
-
-<p>首先我们创建个大家都熟悉的Person类,并声明两个属性,下面将以类此展开分析</p>
-
-<pre><code>@interface Person : NSObject
-@property(nonatomic, copy) NSString *name;
-@property(nonatomic, assign) NSInteger age;
-@end
-</code></pre>
-
-<h5>创建表格</h5>
-
-<p>相信下面这句创表语句大家都熟悉吧,就不做介绍了</p>
-
-<pre><code>create table if not exists Person (id integer primary key autoincrement,name text,age integer)
-</code></pre>
-
-<p>然而开发中我们都是基于模型开发的,基本上都是一个模型对应数据库的一张表,那么每个模型的属性都不一样,那么我们又该如何生成类似上面的语句呢? 我想到了runtime,通过runtime获取一个类的属性列表,所以有了下面这个方法:</p>
-
-<pre><code>/// 获取当前类的所有属性
-+ (NSArray *)getAttributeListWithClass:(id)className {
-    // 记录属性个数
-    unsigned int count;
-    objc_property_t *properties = class_copyPropertyList([className class], &amp;count);
-    NSMutableArray *tempArrayM = [NSMutableArray array];
-    for (int i = 0; i &lt; count; i++) {
-        // objc_property_t 属性类型
-        objc_property_t property = properties[i];
-        // 转换为Objective C 字符串
-        NSString *name = [NSString stringWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
-        NSAssert(![name isEqualToString:@"index"], @"禁止在model中使用index作为属性,否则会引起语法错误");
-        if ([name isEqualToString:@"hash"]) {
-            break;
-        }
-        [tempArrayM addObject:name];
-    }
-    free(properties);
-    return [tempArrayM copy];
-}
-</code></pre>
-
-<p>通过这个方法我们可以获取一个类的所有属性列表并将其保存到数组中(index是数据库中保留的关键字,所以在这里用了个断言),然而仅仅是拿到属性列表还是不够的,我们还需要将对应的OC类型转换为SQL对应的数据类型,相信通过上面获取属性名的方法,大家也知道通过runtime能拿到属性对应的数据类型了,那么我们可以通过下面方法将其转换为SQLite需要的类型</p>
-
-<pre><code>/// OC类型转SQL类型
-+ (NSString *)OCConversionTyleToSQLWithString:(NSString *)String {
-    if ([String isEqualToString:@"long"] || [String isEqualToString:@"int"] || [String isEqualToString:@"BOOL"]) {
-        return @"integer";
-    }
-    if ([String isEqualToString:@"NSData"]) {
-        return @"blob";
-    }
-    if ([String isEqualToString:@"double"] || [String isEqualToString:@"float"]) {
-        return @"real";
-    }
-    // 自定义数组标记
-    if ([String isEqualToString:@"NSArray"] || [String isEqualToString:@"NSMutableArray"]) {
-        return @"customArr";
-    }
-    // 自定义字典标记
-    if ([String isEqualToString:@"NSDictionary"] || [String isEqualToString:@"NSMutableDictionary"]) {
-        return @"customDict";
-    }
-    return @"text";
-}
-</code></pre>
-
-<p>通过上面方法我们将OC的数据类型转换为了SQL的数据类型并保存到了数组中(上面有两个自定义的类型,后面使用到的时候再做介绍),通过上面的方法我们成功的拿到了一个模型类的属性名和对应的SQL数据类型,然后使用键值对的形式将其保存到了一个字典中,比如:</p>
-
-<pre><code>@{@"name" : @"text",@"age":"integer"};
-</code></pre>
-
-<p>获取到这些之后那么创表语句就不难了吧,</p>
-
-<p>// 该方法接收一个类型,内部通过遍历类的属性,字符串拼接获取完整的创表语句,并在内部执行sql语句,并返结果</p>
-
-<pre><code>    - (BOOL)creatTableWithClassName:(id)className;
-</code></pre>
-
-<p>介绍完了怎么创表,那么我们再来说说怎么将数据插入到数据库中: 我们先看一看插入数据的sql语句:insert into Person (name,age) values (&lsquo;花菜ChrisCai98&rsquo;,89); 前面都是固定格式的,同样我们可以通过字符串的拼接获取完整的创表语句; 在上面我们已经可以拿到Person类的所有属性列表,那么我们如何拼接sql语句呢? 在这里我定义了这么一个方法</p>
-
-<pre><code>/// 该方法接收一个对象作为参数(模型对象),并返回是否插入成功
-- (BOOL)insertDataFromObject:(id)object;
-/// 我们可以这样
-Person * p = [[Person alloc]init];
-p.name = @"花菜ChrisCai";
-p.age = 18;
-[[GKDatabaseManager sharedManager] insertDataFromObject:p];
-</code></pre>
-
-<h5>插入数据</h5>
-
-<p>通过上面这么简单的一句代码实现将数据插入到数据库中,在该方法内部我们通过上面所述的方法获取Person类的所有属性列表,那么我们可以就可以拼接插入语句的前半句了,然后通过KVC的形式完成后半部分赋值的操作;</p>
-
-<pre><code>/// 插入数据
-- (BOOL)insertDataFromObject:(id)object {
-    // 创建可变字符串用于拼接sql语句
-    NSMutableString * sqlString = [NSMutableString stringWithFormat:@"insert into %@ (",NSStringFromClass([object class])];
-    [[GKObjcProperty getUserNeedAttributeListWithClass:[object class]] enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        // 拼接字段名
-        [sqlString appendFormat:@"%@,",obj];
-    }];
-    // 去掉后面的逗号
-    [sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
-    // 拼接values
-    [sqlString appendString:@") values ("];
-
-    // 拼接字段值
-    [[GKObjcProperty getSQLProperties:[object class]] enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        // 拼接属性
-        if ([object valueForKey:key]){
-            if ([obj isEqualToString:@"text"]) {
-                [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
-            } else if ([obj isEqualToString:@"customArr"] || [obj isEqualToString:@"customDict"]) { // 数组字典转处理
-                NSData * data = [NSJSONSerialization dataWithJSONObject:[object valueForKey:key] options:0 error:nil];
-                NSString * jsonString = [[NSString alloc] initWithData:data encoding:(NSUTF8StringEncoding)];
-                [sqlString appendFormat:@"'%@',",jsonString];
-            }else if ([obj isEqualToString:@"blob"]){ // NSData处理
-                NSString * jsonString = [[NSString alloc] initWithData:[object valueForKey:key] encoding:(NSUTF8StringEncoding)];
-                [sqlString appendFormat:@"'%@',",jsonString];
-            }else {
-                [sqlString appendFormat:@"%@,",[object valueForKey:key]];
-            }
-        }else {// 没有值就存NULL
-            [sqlString appendFormat:@"'%@',",[object valueForKey:key]];
-        }
-    }];
-    // 去掉后面的逗号
-    [sqlString deleteCharactersInRange:NSMakeRange(sqlString.length-1, 1)];
-    // 添加后面的括号
-    [sqlString appendFormat:@");"];
-    // 执行语句
-    return [self executeSqlString:sqlString];
-}
-</code></pre>
-
-<p>在上面方法中,我们用到了之前提到的自定义的类型,通过该自定的类型我们知道需要存储的是字典或者数组,在这里,我们将数组和字典转换为JSON字符串的形式存入数据库中;
-到此我们完成了创表和插入向表格中插入数据的操作,下面我们再看看如何从实现一行代码从数据库中将值取出来,在这里我们提供了6中查询的接口,</p>
-
-<h5>提供的接口如下:</h5>
-
-<pre><code>- (NSArray *)selecteDataWithClass:(id)className;// 根据类名查询对应表格内所有数据
-- (NSInteger)getTotalRowsFormClass:(id)className; // 获取表的总行数
-- (id)selecteFormClass:(id)className index:(NSInteger)index;// 获取指定行数据
-- (NSArray *)selectObject:(Class)className key:(id)key operate:(NSString *)operate value:(id)value;// 指定条件查询
-- (NSArray *)selecteDataWithSqlString:(NSString *)sqlString class:(id)className;// 自定义语句查询
-- (NSArray *)selectObject:(Class)className propertyName:(NSString *)propertyName type:(GKDatabaseSelectLocation)type content:(NSString *)content;// 模糊查询
-</code></pre>
-
-<p>通过第一个方法(该方法接收一个类名作为参数)就能简单的实现一行代码查询表格中的数据了</p>
-
-<pre><code> NSArray * persons = [[GKDatabaseManager sharedManager] selecteDataWithClass:[Person class]];
-</code></pre>
-
-<p>下面我们着重介绍下核心方法,其他所有方法都是基于该方法实现的</p>
-
-<pre><code>/// 自定义语句查询
-- (NSArray *)selecteDataWithSqlString:(NSString *)sqlString class:(id)className  {
-    // 创建模型数组
-    NSMutableArray *models = nil;
-    // 1.准备查询
-    sqlite3_stmt *stmt; // 用于提取数据的变量
-    int result = sqlite3_prepare_v2(database, sqlString.UTF8String, -1, &amp;stmt, NULL);
-    // 2.判断是否准备好
-    if (SQLITE_OK == result) {
-        models = [NSMutableArray array];
-        // 获取属性列表名数组 比如name
-        NSArray * arr = [GKObjcProperty getUserNeedAttributeListWithClass:[className class]];
-        // 获取属性列表名和sql数据类型 比如  name : text
-        NSDictionary * dict = [GKObjcProperty getSQLProperties:[className class]];
-        // 准备好了
-        while (SQLITE_ROW == sqlite3_step(stmt)) { // 提取到一条数据
-            __block id objc = [[[className class] alloc]init];
-            for ( int i = 0; i &lt; arr.count; i++) {
-                // 默认第0个元素为表格主键 所以元素从第一个开始
-                // 使用KVC完成赋值
-                if ([dict[arr[i]] isEqualToString:@"text"]) {
-                    [objc setValue:[NSString stringWithFormat:@"%@",[self textForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
-
-                } else if ([dict[arr[i]] isEqualToString:@"real"]) {
-                    [objc setValue:[NSString stringWithFormat:@"%f",[self doubleForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
-
-                } else if ([dict[arr[i]] isEqualToString:@"integer"]) {
-
-                    [objc setValue:[NSString stringWithFormat:@"%i",[self intForColumn:i + 1  stmt:stmt]] forKey:arr[i]];
-
-                } else if ([dict[arr[i]] isEqualToString:@"customArr"]) { // 数组处理
-
-                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                    NSArray * resultArray = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                    [objc setValue:resultArray forKey:arr[i]];
-                }  else if ([dict[arr[i]] isEqualToString:@"customDict"]) { // 字典处理
-
-                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                    NSDictionary * resultDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                    [objc setValue:resultDict forKey:arr[i]];
-                } else if ([dict[arr[i]] isEqualToString:@"blob"]) { // 二进制处理
-
-                    NSString * str = [self textForColumn:i + 1 stmt:stmt];
-                    NSData * data = [str dataUsingEncoding:NSUTF8StringEncoding];
-                    [objc setValue:data forKey:arr[i]];
-                }
-            }
-            [models addObject:objc];
-        }
-    }
-    return [models copy];
-}
-</code></pre>
-
-<p>在该方法内部,我们根据传递进来的类创建了一个对象(使用__block是因为在block内部需要修改对象的属性),通过之前的方法我们拿到了对应的sql类型,和属性名,这里就不重复介绍了,通过对应的sql类型执行对应的方法从数据中将数据取出来,并通过KVC的形式给对象赋值,值得一提的是这里我们通过自定义的字段(customArr,customDict)可以知道我们取的是数组或者字典,然后数据库中的JSON字符串转换为数组或者字典,然后再利用KVC赋值给对象!</p>
-
-<p>到此基本上所有的功能就都实现了,其他的诸如更新数据,删除数据,删除表格等有提供具体的接口,这里就不一一介绍了,源码中有详细的注释,同时也有DEMO,有需要的可以自行下载,</p>
-
-<p>以上均为个人这段时间的总结,如有不对的地方,可以在下面评论 也可以通过QQ:4593679联系我,如觉得好用记得star一下哦~,谢谢!!! 源码地址:<a href="https://github.com/ChrisCaixx/GKDatabase">https://github.com/ChrisCaixx/GKDatabase</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[SQLite精华篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/01/sqljinghua/"/>
-    <updated>2016-07-01T02:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/01/sqljinghua</id>
-    <content type="html"><![CDATA[<h4>概述</h4>
-
-<p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
-Core Data在后台也是使用SQLite来存储数据的，但是开发人员不能直接访问这些数据，只能通过Core Data提供的API来操作，如果一旦人为的通过SQLite修改这些数据那么使用Core Data再次访问这些数据时就会发生错误。</p>
-
-<!--more-->
-
-
-<h3>SQLite库</h3>
-
-<p>SQLite是使用C语言写的开源库，实现了一个自包含的SQL关系型数据库引擎，可以使用SQLite存储操作大量的数据，作为关系型数据库我们可以在一个数据库中建立多张相关联的表来解决大量数据重复的问题。而且SQLite库也针对移动设备上的使用进行了优化。
-因为SQLite的接口使用C写的，而且Objective-C是C的超集所以可以直接在项目中使用SQLite。</p>
-
-<h3>设计一个数据库</h3>
-
-<p>开始之前首先要想到需要存什么数据，然后怎么设计这个数据库。
-首先我们设计一个数据库用来存储人员信息如下：</p>
-
-<p><img src="http://al1020119.github.io/images/sql0004.png" title="Caption" ></p>
-
-<p>上面是所有的人员信息，实际可能比这个多很多。但是我们发现region这一行中有很多的数据重复出现。很多人可能来自同一个地方，为了避免这种情况我们应该再重新创建一张表来单独存储region这列的信息然后在这个表中引用region表中的信息。当然我们还可以在region表中添加更多的信息比如详细地址。现在创建两张表people与region如下所示</p>
-
-<pre><code>people表
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/sql0001.png" title="Caption" ></p>
-
-<pre><code>region表
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/sql0002.png" title="Caption" ></p>
-
-<h5>使用SQLite创建数据库</h5>
-
-<p>为了熟悉SQLite语句，打开shell使用SQLite命令行来创建一个数据库</p>
-
-<pre><code>打开创建数据库
-
-打开shell切换到指定目录输入
-
-
-
-sqlite3 database.db
-</code></pre>
-
-<p>这行命令是启动sqlite命令行并且创建新的数据库database.db并附加该数据到命令行</p>
-
-<p>此时已经进入sqlite命令行通过输入.help可以显示可以使用哪些命令，通过输入.databases来查看当前有哪些数据库附加到当前的命令行工具中。输入.quit或.exit退出当前命令行工具</p>
-
-<h5>创建表</h5>
-
-<pre><code>create table "main"."people" ("id" integer primary key autoincrement not null, "name" text,"age" integer,"email" text,"region" integer);
-</code></pre>
-
-<p>这条命令是创建一个people的表，并且将id字段设为primary key主键将其指定为一个autoincrement自动增长的字段。表示不用提供id的值数据库将自动生成。后面的表示该张表中所含有的字段。</p>
-
-<p>因为要设计两张表所以还需要创建region表</p>
-
-<pre><code>create table "main"."region" ("regionid" integer primary key autoincrement not null, "regioninfo" text,"address" text not null);
-</code></pre>
-
-<h5>添加数据</h5>
-
-<p>此时已经成功创建了两张表我们要添加数据进去</p>
-
-<pre><code>insert into "main"."people" ("name","age","email","region") values ('jhon','20','jhon@mail','1');
-</code></pre>
-
-<p>这样成功往people表成功的插入了一条数据。这样写效率比较低。每次只能插入一条数据不要担心SQLite支持将文件直接导入数据库中。可以是普通的文件文件也可以是excel文件。下面我们创建一个people.txt文件格式如下：</p>
-
-<pre><code>1 jhon 20 jhon@mail 12 peter 20 peter@mail 23 july 20 july@mail 14 elev 20 elev@mail 35 ribet 20 ribet@mail
-</code></pre>
-
-<p>注意每个字段之间的空隙是用制表符来分割的，也就是创建文件是每个字段用tab键进行分割。字段的顺序必须和表中的顺序相同然后将people.txt文件导入people表中</p>
-
-<p>.separator &ldquo;&rdquo;</p>
-
-<p>根据来分割字段，然后接着输入</p>
-
-<pre><code>.import "people.txt" people
-</code></pre>
-
-<p>导入people.txt文件到people表中此时会提示如下错误信息</p>
-
-<pre><code>people.txt:1: INSERT failed: UNIQUE constraint failed: people.id
-</code></pre>
-
-<p>不用担心这个意思是说已经存在了一个id为1的数据所以这条数据插入失败，是因为我们之前手动了插入了一条数据。可以通过以下指令来查插入的数据</p>
-
-<pre><code>select * from people;
-</code></pre>
-
-<p>然后用同样的方法创建一个region.txt的文件并将其导入region表中。</p>
-
-<h5>注意</h5>
-
-<p>使用SQLite命令行可能会出现&hellip;>这表示指令输入错误，按ctrl+d即可退出</p>
-
-<p>查询数据上面已经添加完数据通过select指令可以查询这些数据</p>
-
-<pre><code>select * from people;11
-</code></pre>
-
-<p>查询popple表中的所有数据</p>
-
-<p>链接表数据</p>
-
-<pre><code>select name,regioninfo from people,region where people.region=region.regionid;
-</code></pre>
-
-<p>输出结果</p>
-
-<pre><code>jhon beijing
-peter shanghai
-july beijing
-elev shenzhen
-ribet beijing
-</code></pre>
-
-<p>从people和region表中查找name与regioninfo字段并且只查询people.region=region.regionid相匹配的结果，如果没有这个条件那么将出现5*3=15条数据</p>
-
-<p>如果要查找某个地区的人使用where来筛选条件</p>
-
-<pre><code>select name,regioninfo from people,region where people.region=region.regionid and region.regioninfo="beijing";
-</code></pre>
-
-<p>输出结果</p>
-
-<pre><code>jhon beijing
-july beijing
-ribet beijing
-</code></pre>
-
-<h3>iOS中SQLite的使用</h3>
-
-<p>开始之前应该在项目中引用SQLite库。TARGETS->General->Linked Frameworks and Libraries如下图所示</p>
-
-<p><img src="http://al1020119.github.io/images/sql0003.png" title="Caption" ></p>
-
-<p>将之前创建好的database.db文件导入项目中，并引入sqlite3.h头文件</p>
-
-<pre><code>#import
-</code></pre>
-
-<p>使用SQLite需要一下几个步骤：</p>
-
-<pre><code>声明类变量sqlite3来保存对数据库的引用
-
-使用sqlite3_open打开数据库
-
-创建SQLite语句
-
-创建SQLite语句对象sqlite3_stmt
-
-准备SQLite语句sqlite3_prepare_v2
-
-开始遍历结果sqlite3_step
-</code></pre>
-
-<h5>初始化打开数据库</h5>
-
-<pre><code>sqlite3 * database;
--(void)initDatabase
-{ NSString *path = [[NSBundle mainBundle] pathForResource:@"database" ofType:@"db"];
-if (sqlite3_open([path UTF8String], &amp;database) == SQLITE_OK) { NSLog(@"open database");
-} else{
-sqlite3_close(database); NSLog(@"error %s",sqlite3_errmsg(database));
-}
-</code></pre>
-
-<p>}</p>
-
-<p>打开数据库如果返回的状态码不是SQLITE_OK那么打开失败关闭数据库并且输出错误信息</p>
-
-<h5>查询数据</h5>
-
-<pre><code>-(void)operateDatabase
-{ const char * sql = "select name,regioninfo from people,region where people.region=region.regionid";
-sqlite3_stmt *statement; //创建sql语句对象
-int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
-if ( sqlResult== SQLITE_OK) //是否准备结束
-{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
-{ NSLog(@"name %s, region %s",sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
-}
-}
-}
-</code></pre>
-
-<p>输出结果：</p>
-
-<pre><code>name jhon, region beijingname peter, region shanghainame july, region beijingname elev, region shenzhenname ribet, region beijing1234512345
-</code></pre>
-
-<p>sqlite3_prepare_v2的参数第一个是数据库连接，第二个是sql语句，第三个是这个语句的长度传入-1表示地道第一个null终止符为止，第四个是返回一个语句对象，第五个是返回一个指向该sql语句的第一个字节的指针。</p>
-
-<p>当sqlite3_prepare_v2返回状态码SQLITE_OK时开始遍历结果。</p>
-
-<p>sqlite3_step用来遍历结果如果返回为SQLITE_ROW表示下一行准备结束可以开始查询。所以此处用一个while来便利所以查询的结果</p>
-
-<p>遍历的过程中要取到结果通过一下的函数获取遍历结果</p>
-
-<pre><code>SQLITE_API const void *SQLITE_STDCALL sqlite3_column_blob(sqlite3_stmt*, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes(sqlite3_stmt*, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
-SQLITE_API double SQLITE_STDCALL sqlite3_column_double(sqlite3_stmt*, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_int(sqlite3_stmt*, int iCol);
-SQLITE_API sqlite3_int64 SQLITE_STDCALL sqlite3_column_int64(sqlite3_stmt*, int iCol);
-SQLITE_API const unsigned char *SQLITE_STDCALL sqlite3_column_text(sqlite3_stmt*, int iCol);
-SQLITE_API const void *SQLITE_STDCALL sqlite3_column_text16(sqlite3_stmt*, int iCol);
-SQLITE_API int SQLITE_STDCALL sqlite3_column_type(sqlite3_stmt*, int iCol);
-SQLITE_API sqlite3_value *SQLITE_STDCALL sqlite3_column_value(sqlite3_stmt*, int iCol);
-</code></pre>
-
-<p>上面是所支持的结果类型，第一个参数为sql语句对象，第二个为获取哪一列的信息。</p>
-
-<h5>参数化查询</h5>
-
-<p>上面的情况每次sql语句都写死了，如果想要改变某个条件就需要重新写一条语句，幸好sqlite支持参数化查询，每次只需要更改查询条件就可以而不用更改整条sql语句，如果现在只想查询北京地区的人口信息使用参数化查询如下：</p>
-
-<pre><code>-(void)operateDatabase
-{ const char * sql = "select name,regioninfo from people,region where people.region=region.regionid and regioninfo=?";
-sqlite3_stmt *statement; //创建sql语句对象
-int sqlResult = sqlite3_prepare_v2(database, sql, -1, &amp;statement, NULL); //准备sql语句
-sqlite3_bind_text(statement, 1, "beijing", -1,SQLITE_TRANSIENT); //绑定参数
-if ( sqlResult== SQLITE_OK) //是否准备结束
-{ while (sqlite3_step(statement) == SQLITE_ROW) //开始遍历查询结果
-{ NSLog(@"name %s, region %s",sqlite3_column_text(statement, 0),sqlite3_column_text(statement, 1));
-}
-}
-}
-</code></pre>
-
-<p>输出结果：</p>
-
-<pre><code>name jhon, regionbeijingname july, regionbeijingname ribet, regionbeijing
-</code></pre>
-
-<p>可见需要更改的条件sql中用?来代替，然后用sqlite3_bind_text函数来绑定参数。根据类型不同绑定的函数也不同</p>
-
-<pre><code>SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob(sqlite3_stmt*, int, const void*, int n, void(*)(void*));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_blob64(sqlite3_stmt*, int, const void*, sqlite3_uint64,void(*)(void*));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_double(sqlite3_stmt*, int, double);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_int(sqlite3_stmt*, int, int);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_null(sqlite3_stmt*, int);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text16(sqlite3_stmt*, int, const void*, int, void(*)(void*));
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_text64(sqlite3_stmt*, int, const char*, sqlite3_uint64,void(*)(void*), unsigned char encoding);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_value(sqlite3_stmt*, int, const sqlite3_value*);
-SQLITE_API int SQLITE_STDCALL sqlite3_bind_zeroblob(sqlite3_stmt*, int, int n);
-</code></pre>
-
-<p>上面列出了所有支持绑定类型的函数。</p>
-
-<blockquote><p>结束</p>
-
-<p>本篇只是列出了SQLite常用的基础方法，实际开发中数据库可能要比这复杂许多，而且还要考虑数据竞争线程安全的问题。具体还是要自己在开发中实践。</p></blockquote>
 ]]></content>
   </entry>
   
