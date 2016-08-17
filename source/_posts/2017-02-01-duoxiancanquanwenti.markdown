@@ -1,4 +1,4 @@
-
+ 
 ---
 
 layout: post
@@ -10,6 +10,7 @@ description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 
 --- 
+
 
 
 + 前言
@@ -30,6 +31,9 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ##二、介绍与使用
 
  
+<!--more-->
+
+
 
 ####2.1、@synchronized
 
