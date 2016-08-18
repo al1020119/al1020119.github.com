@@ -51,3 +51,19 @@ safira 浏览器的收藏夹数据库存放路径是：//private/var/mobile/Libr
 上面的数据库，无论其后缀名是.db也好，.sqlitedb、.sqlite也好，它们的真实面目是，全部都是sqlite数据库。在实际查看这些数据库时，可以将其后缀名统一改成.sqlite，当然也可以不改。查看这些数据库最好的工具是 火狐浏览器上的插件：Sqlite Manager
 
  
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

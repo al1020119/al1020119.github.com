@@ -263,3 +263,21 @@ pxl 格式曾经是1.x时代唯一的安装包格式，给我们留下了太多�
 > 一般的软件还是尽量用 ipa 格式，不要使用 ipa 转换成的 deb 或 pxl 格式，这样可以确保兼容性和安全性。而在系统级的程序（如 SBSettings 和输入法），ipa 是绝无能力的，那么最好的选择还是 deb。pxl 作为快被淘汰的格式，还是果断的放弃比较好。
 至于 ipa 和 deb 的安装方式，ipa 的安装首选 iTunes 同步和 App Store 在线安装，次选 Installous，以保证最佳兼容性。deb 的安装首选 Cydia 在线安装，次选除91外的其它任何安装方式。
 任何情况下都不推荐用91来安装 ipa 和 deb，因为91的安装机制并不完善，很容易出问题。
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

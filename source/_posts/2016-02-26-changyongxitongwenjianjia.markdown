@@ -240,3 +240,21 @@ UpdateSvr：iPhone更新服务，占用12M内存；（可以关闭！）
 Wiki2touchSvr：wiki服务，占用20M内存。（可以关闭！）
 
 上述服务，平时都可关掉，当要用服务时，只需到BossPrefs中启动相应服务即可，无需重启手机。
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

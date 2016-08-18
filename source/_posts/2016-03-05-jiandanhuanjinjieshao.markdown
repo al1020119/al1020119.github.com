@@ -81,3 +81,21 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
     thoes已安装。很多旧的开源项目都是可不是由iOSOpenDev创建的，使用theos可以快速编译他们，同时iOSOpenDev的Logos模板是依托于theos的，而Logos模板，在我看来是tweak开发最优秀的模板，没有之一
 
 接下来就可以安装iOSOpenDev。一直确定下去，假如不需要打包功能，则不需要填写IP等东西。事实上除了学习之外，基本可以忽略打包功能，脚本打包才是王道。 更详细的东西，可以看这里。 安装完毕，打开Xcode，新建工程，发现有iOSOpenDev一项，还有大量模板可选时，说明环境搭建已成功。Enjoy it！ 
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

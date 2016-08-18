@@ -342,6 +342,7 @@ RN总共分为三层，java层，C++层，js层
 更新中，敬请关注。。。。。。
 
 
+
     Q Q：2211523682/790806573
 
     微信：18370997821/13148454507
@@ -352,3 +353,7 @@ RN总共分为三层，java层，C++层，js层
 	
 	github：https://github.com/al1020119
 
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

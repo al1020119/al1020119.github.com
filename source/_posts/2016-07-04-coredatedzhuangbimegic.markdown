@@ -209,3 +209,20 @@ MagicalRecord的使用方法还有很多，这里只是将一些比较常用的�
 在第一篇文章中也说到，我接触CoreData时间也不是很长，这系列文章更像是我学习的一个总结。但是我确实是很认真的在写，文章内容也是检查了很多遍，防止错字或者语法问题。知识点总结的还是比较全面的，在后续我还会更深入的学习CoreData，也可能会推出后续文章。
 
 >许多人对于CoreData有很多意见，认为CoreData有各种各样的问题，这并不是空穴来风。在我学习CoreData的过程中，也发现CoreData确实存在诸多问题，例如查询性能略差、灵活性等。所以在使用CoreData的时候，还是根据公司业务需求来权衡是否使用CoreData。
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

@@ -872,3 +872,20 @@ Realm 最近才想公众开放，但是早在 2012 年它就已经在公司级�
 关于 Realm 的更多信息，您可以查看 官方文档 ，我发现这个文档真的写得十分详尽。
 
 如果您对本教程有什么建议和意见，请到评论区进行讨论，我会尽快处理这些建议和意见的 ~
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

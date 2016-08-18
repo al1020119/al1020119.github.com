@@ -357,3 +357,19 @@ SQLite完全不知道UITypes。但是你可以加核心方法，查看-[FMDataba
 请享受了不起的Core Data的文章（有点难过的摇头）。
  
 接下来，在查完Gus指出的自定义SQLite方法特性后，我会研究SQLite的full-text search extension. 总有更多的内容需要去学习。
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

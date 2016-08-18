@@ -147,3 +147,19 @@ Context
 如果简单说来，就是 Realm 更加适合一些业务逻辑不怎么复杂的场景，团队配置要求不高，有经验的人稍微看一下午就能上手。
 
 CoreData 更加适合业务逻辑复杂的情况，团队配置要求比较高，有经验的老手也需要几周甚至更长的时间才能科学的使用CoreData。
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

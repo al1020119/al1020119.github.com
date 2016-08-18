@@ -139,3 +139,21 @@ Core Data 是一个好的选择吗？
 
     基于以上所有数据，我认为 SDWebImage 在目前是一个很好的解决方案。即使有些工程使用 AFNetworking 或 FastImageCache 更好，但是这些都依赖于项目需求。
 tu
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

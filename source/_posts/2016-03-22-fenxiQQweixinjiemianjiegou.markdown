@@ -143,3 +143,22 @@ nixiang0002
 附：OpenSSH的使用：
        ssh root@192.168.2.5 默认密码alpine
      先通过ssh登录到手机，然后可以通过cycript -p 进程ID   依附在需要分析的应用程序上  ps ax | grep PP
+     
+     
+     
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

@@ -78,3 +78,20 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 	- 非对称加密算法，代表算法RSA，ECC
 	- 电子签名，用于确认消息发送方的身份
 	- 消息摘要生成算法，MD5，SHA，用于检测消息是否被第三方修改过
+	
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

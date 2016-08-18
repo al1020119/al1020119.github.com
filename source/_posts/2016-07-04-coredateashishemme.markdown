@@ -263,3 +263,23 @@ CoreData本质上是对SQLite的一个封装，在内部将对象的持久化转
 		{% img /images/1014.png Caption %} 
 		
 		终端调试命令
+		
+		
+===
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

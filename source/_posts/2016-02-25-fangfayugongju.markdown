@@ -69,3 +69,20 @@ iOS逆向思路进展:使用InspectiveC来查看调用堆栈：
 * 某个类的实例对象的所有方法的调用情况
 * 某个类的实例对象的某个方法的调用情况
 * 某个方法签名的调用情况
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

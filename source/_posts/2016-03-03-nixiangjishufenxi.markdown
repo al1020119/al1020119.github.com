@@ -160,3 +160,21 @@ Conrad: 从法律上讲，我觉得没有太多问题。我们通常会跟所有
 Q: 如何查看苹果框架的反汇编代码？
 
 Conrad: 这个的过程跟我之前展示的一个很像，只不过你不再需要一个越狱后的设备。当你把线插到设备上的时候，iTunes 实际上获取到了设备的符号，你可以在 Xcode 里找到一个大概叫 “device symbol” 文件夹，在 IDA 或者 class-dump 里打开 Apple 的 frameworks，然后展开分析。这些都是没加密的，而且可以直接拿来用。在修复一些 beta 版本的 UIKit 的 bug 的时候很好使。 
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

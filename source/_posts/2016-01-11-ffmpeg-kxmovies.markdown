@@ -323,3 +323,20 @@ OpenAL 是一个跨平台的 API。它提供了位置 (3D) 和低延迟的音频
     所有的通知 API，包括 iOS 中的本地通知或者推送通知、OS X 中的 NSUserNotification 以及 CloudKit 通知，都可以播放声音。
     Audio Toolbox 框架是强大的，但是它的层级却非常的低。在过去，它基于 C++ 所编写，但是其大多数的功能现在都可以通过 AVFoundation 实现。
     QTKit 和 QuickTime 框架现在已经过时了，它们不应该被用在以后的开发中。我们应该使用 AVFoundation (和 AVKit) 来代替它们。
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

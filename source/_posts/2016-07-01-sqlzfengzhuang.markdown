@@ -224,3 +224,20 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 到此基本上所有的功能就都实现了,其他的诸如更新数据,删除数据,删除表格等有提供具体的接口,这里就不一一介绍了,源码中有详细的注释,同时也有DEMO,有需要的可以自行下载,
 
 以上均为个人这段时间的总结,如有不对的地方,可以在下面评论 也可以通过QQ:4593679联系我,如觉得好用记得star一下哦~,谢谢!!! 源码地址:https://github.com/ChrisCaixx/GKDatabase
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

@@ -1171,3 +1171,20 @@ core data允许用户使用代表实体和实体间关系的高层对象来操�
 上面的三种，都是在什么情况下使用呢？
 在编写程序的时候尽量使用core data，这样才是最优的选择。
 至于sqlite和fmdb的使用情况，这个看个人喜好了，个人觉得没什么标准。fmdb就是对sqlite的封装，使用起来有方便的接口，没那么麻烦而已。
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

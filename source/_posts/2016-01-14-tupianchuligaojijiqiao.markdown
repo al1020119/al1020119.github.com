@@ -275,3 +275,21 @@ colormatrix_heibai 这个就是他的调用样式，这里是黑白，大家可�
 
 
 有兴趣的可以去看看关于CoreImage的源码
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

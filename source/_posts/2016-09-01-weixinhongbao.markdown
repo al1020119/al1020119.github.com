@@ -235,5 +235,19 @@ iTools
 {% img /images/weixinhongbao0015.gif Caption %}  
 哈哈，是不是觉得很爽啊，"妈妈再也不用担心我抢红包了。"。大家如果有兴趣可以继续hook微信的其他函数，这样既加强了学习，又满足了自己的特(zhuang)殊(bi)需求嘛。
 
-教程中所涉及到的工具及源代码笔者都上传到Github上。
-Github地址
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

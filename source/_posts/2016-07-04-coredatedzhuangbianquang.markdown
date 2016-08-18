@@ -277,3 +277,20 @@ NSManagedObjectID *objectID = object.objectID;
 在上面这段代码中，mainMOC是backgroundMOC的parentContext。在backgroundMOC执行save方法前，backgroundMOC和mainMOC都不能获取到Employee的数据，在backgroundMOC执行完save方法后，自身上下文发生改变的同时，也将改变push到mainMOC中，mainMOC也具有了Employee对象。
 
 所以在backgroundMOC的save方法执行时，是对内存中的上下文做了改变，当拥有PSC的mainMOC执行save方法后，是对本地存储区做了改变。
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

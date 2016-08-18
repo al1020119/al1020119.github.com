@@ -169,3 +169,21 @@ MVVM不正是MVC的增强版吗？
 
 参考：
 [猿题库 iOS 客户端架构设计](https://mp.weixin.qq.com/s?__biz=MjM5NTIyNTUyMQ==&mid=444322139&idx=1&sn=c7bef4d439f46ee539aa76d612023d43&scene=1&srcid=1230NOb8TaHKmwxS9l8H6ctl&key=62bb001fdbc364e5a1bc589b94bd5aded40e489b2517710a1807b2d4f9e3f8a64fe2eed72590fd83cda13ebebec3002f&ascene=0&uin=MjMzNjU5MzYyMQ%3D%3D&devicetype=iMac+MacBookPro12%2C1+OSX+OSX+10.10.5+build%2814F27%29&version=11020201&pass_ticket=5ku6y9zhut5EyBt%2Bg%2FbjIWyq9HCDh4DuNn5XU5p4pwFMaKTtMfZYlkkNnlZDh11C)
+
+
+===
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  
