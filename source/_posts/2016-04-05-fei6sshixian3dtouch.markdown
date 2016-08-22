@@ -10,6 +10,9 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---
 
+{% img /images/bgHeader.png Caption %}  
+
+
 
 首先先给我这困难的语言表达能力道个歉哈，真的尽力了。
 本章排版是参照http://bbs.pediy.com/showthread.php?t=205133大神的来排的，第一次写心得文，也把所学到的分享给大家

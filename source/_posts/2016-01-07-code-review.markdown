@@ -10,6 +10,9 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---
 
+{% img /images/bgHeader.png Caption %}  
+
+
 
 提高代码质量的方法：
 

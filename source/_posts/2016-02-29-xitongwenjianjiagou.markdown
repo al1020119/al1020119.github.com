@@ -10,6 +10,9 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---
 
+{% img /images/bgHeader.png Caption %}  
+
+
 系统文件架构概述
 
 1.IOS是由Mac OS X演化而来，而Mac OS X则是基于UNIX操作系统的，三者有区别，但血脉相连

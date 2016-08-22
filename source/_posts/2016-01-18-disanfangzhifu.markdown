@@ -10,6 +10,9 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---
  
+{% img /images/bgHeader.png Caption %}  
+
+
 引言：
 随着移动互联的发展，支付功能越来越流行，这也使得各大app公司不得不集成相关支付功能，文本就就此谈谈支付相关。
 
