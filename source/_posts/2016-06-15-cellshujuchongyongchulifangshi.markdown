@@ -11,8 +11,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---  
 
 
-{% img /images/bgHeader.png Caption %}  
-
 
 关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。
 

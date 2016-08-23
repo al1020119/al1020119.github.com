@@ -10,9 +10,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ---
 
-{% img /images/bgHeader.png Caption %}  
-
-
 
 凭良心讲，我不能告诉你不去使用Core Data。它不错，而且也在变好，并且它被很多其他Cocoa开发者所理解，当有新人加入你的组或者需要别人接手你的项目的时候，这点很重要。
 

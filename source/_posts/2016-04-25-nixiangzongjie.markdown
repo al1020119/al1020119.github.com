@@ -10,8 +10,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---
 
 
-{% img /images/bgHeader.png Caption %}  
-
 
 不忍心作结，虽然才刚刚开始，很多东西都没有细细总结，只可惜很多东西并非自己想的那么顺利。
 

@@ -11,8 +11,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---
 
 
-{% img /images/bgHeader.png Caption %}  
-
 
 iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。
 

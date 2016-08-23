@@ -12,9 +12,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
 介绍
 
 realm是一个跨平台移动数据库引擎，支持iOS、OS X（Objective-C和Swift）以及Android。

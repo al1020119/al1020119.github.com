@@ -11,8 +11,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---
 
 
-{% img /images/bgHeader.png Caption %}  
-
 
 
 首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：[API预览](http://objccn.io/issue-24-4/)

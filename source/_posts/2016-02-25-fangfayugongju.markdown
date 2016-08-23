@@ -11,9 +11,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
 
 之前接触过iOS逆向开发，后来工作中没这方面需求，也就没再看了。最近一段时间由于各种原因又需要逆向某些App来用于学习，所以又重新拾起来。
 

@@ -11,10 +11,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
-
 正文：
 
 在之前的文章中，已经讲了很多关于CoreData使用相关的知识点。这篇文章中主要讲两个方面，NSFetchedResultsController和版本迁移。

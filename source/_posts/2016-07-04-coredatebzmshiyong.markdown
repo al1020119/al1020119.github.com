@@ -12,11 +12,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
-
-
 第一篇文章中并没有讲CoreData的具体用法，只是对CoreData做了一个详细的介绍，算是一个开始和总结吧。
 
 这篇文章中会主要讲CoreData的基础使用，以及在使用中需要注意的一些细节。因为文章中会插入代码和图片，内容可能会比较多，比较考验各位耐心。

@@ -14,10 +14,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
-
 ###1. UDP Socket编程
 
 先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。

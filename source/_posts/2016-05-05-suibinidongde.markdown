@@ -13,9 +13,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 ---  
 
 
-{% img /images/bgHeader.png Caption %}  
-
-
 平时在开发中喜欢写一些随笔记录，可能是个人习惯问题，虽然不一定有用。
 
 哈哈
