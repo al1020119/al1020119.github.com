@@ -9,8 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="修改程序图标标示数字 1.修改自身应用图标标示数字： [UIApplication sharedApplication].applicationIconBadgeNumber = 10;
-2. 修改其他应用图标标示数字： ios7.0下的sdk Use class-dump to dump the &hellip;">
+  <meta name="description" content="为了了解支付宝app的源码结构，我们可以使用class-dump-z工具来分析支付宝二进制。
+1.下载配置class_dump_z 前往 https://code.google.com/p/networkpx/wiki/class_dump_z ，下载tar包，然后解压配置到本地环境 $ tar &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +70,383 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/10/nixiangzhifubao/">逆向支付宝</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-10T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/04/10/nixiangzhifubao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>为了了解支付宝app的源码结构，我们可以使用class-dump-z工具来分析支付宝二进制。
+1.下载配置class_dump_z</p>
+
+<p>前往 <a href="https://code.google.com/p/networkpx/wiki/class_dump_z">https://code.google.com/p/networkpx/wiki/class_dump_z</a> ，下载tar包，然后解压配置到本地环境</p>
+
+<p>$ tar -zxvf class-dump-z_0.2a.tar.gz<br/>
+$ sudo cp mac_x86/class-dump-z /usr/bin/
+2.class_dump支付宝app
+$ class-dump-z Portal > Portal-dump.txt</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/04/10/nixiangzhifubao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/05/fei6sshixian3dtouch/">非6S-实现3D Touch</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-05T13:32:08+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/04/05/fei6sshixian3dtouch/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先先给我这困难的语言表达能力道个歉哈，真的尽力了。
+本章排版是参照<a href="http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6">http://bbs.pediy.com/showthread.php?t=205133%E5%A4%A7%E7%A5%9E%E7%9A%84%E6%9D%A5%E6%8E%92%E7%9A%84%EF%BC%8C%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%86%99%E5%BF%83%E5%BE%97%E6%96%87%EF%BC%8C%E4%B9%9F%E6%8A%8A%E6%89%80%E5%AD%A6%E5%88%B0%E7%9A%84%E5%88%86%E4%BA%AB%E7%BB%99%E5%A4%A7%E5%AE%B6</a></p>
+
+<p>最近才接触不久的逆向工程,刷夜,爆肝,把《iOS应用逆向工程》这本书的工具，全部看了一遍，并且尝试了一遍，感觉需要点什么。 那就是实践！  最近6s手机出了3DTouch，无奈手中没有这款机型，恰好最近对逆向小有心得，又听说过已经有插件能实现同样的需求，证明确实有可行性，于是开动。根据点击的判断和出现，初步感觉，这应该不需要多少行代码就能搞定，应该只要添加一个手势，或者是更改一个手势的点击事件，让系统认为发生了3DTouch点击事件，就可以了。</p>
+
+<ul>
+<li>所需工具: cycript，openSSH，class-dump</li>
+<li>测试环境：iOS9.0.2，iPhone5s</li>
+<li>备注：因为自身没有3DTouch，所以需要下载一个插件，让机器拥有3DTouch功能，我使用的是forcy，通过覆盖长按手势，实现</li>
+</ul>
+
+
+<p>通过查阅官方文档，得到关键词  Shortcut Menu peek pop
+这个词将来就是要在找关键方法时刻所要用到的</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/04/05/fei6sshixian3dtouch/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/30/youxifanbianyi/">游戏反编译</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-30T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/30/youxifanbianyi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p> ipa游戏反编译
+看不懂的请飘过，不要继续。
+这不是给新手看的，也代表你不需要解决程序的修改问题。
+这些技巧不只用于游戏的修改。</p>
+
+<p>下載 Windows 工具</p>
+
+<p>Windows :
+winscp <a href="http://winscp.net/eng/download.php">http://winscp.net/eng/download.php</a>
+PuTTY <a href="http://putty.very.rulez.org/latest/x86/putty.exe">http://putty.very.rulez.org/latest/x86/putty.exe</a></p>
+
+<p>Mac / Linux :
+用內置的 Terminal 便可</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/30/youxifanbianyi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/">获取短信-联系人</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-28T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>越狱的 ios 如何 获取 读取 提取 手机上的 短信 通话记录 联系人 等信息</p>
+
+<p><a href="http://willson.sinaapp.com/2011/12/iphone">http://willson.sinaapp.com/2011/12/iphone</a> 获取短信脚本.html  Iphone获取短信脚本
+<a href="http://bbs.9ria.com/thread-209349-1-1.html">http://bbs.9ria.com/thread-209349-1-1.html</a>          IPhone短信相关部分研究（转载）
+<a href="http://blog.csdn.net/slinloss/article/details/8722806">http://blog.csdn.net/slinloss/article/details/8722806</a>       整理：iOS 短信与电话事件的获取
+<a href="http://308812025-qq-com.iteye.com/blog/1549756">http://308812025-qq-com.iteye.com/blog/1549756</a>              IOS 5 拦截手机短信(需越狱)</p>
+
+<p><a href="http://www.iteye.com/problems/84131">http://www.iteye.com/problems/84131</a>                                IOS 短信截取 监听到了事件缺不能往下执行。。。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/28/huoqushoujiduanxintongxunlulianxiren/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/25/springboardjiemianjiegoufenxi/">SpringBoard界面结构分析</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-25T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/25/springboardjiemianjiegoufenxi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>SpringBoard界面层级结构分析</p>
+
+<p>cycript -p 进程ID</p>
+
+<p>通过cycript注入到SpringBoard进程中
+首先SpringBoard有点类似于一般app的结构，只不过它是由好几个window构成的，总共如下：
+  锁屏状态下是SBAlertWindow
+  正常状态下是SBAppWindow
+  通知栏滑下来时显示SBBulletinWindow
+主要分析下正常状态的window</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/25/springboardjiemianjiegoufenxi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/">分析QQ-微信界面结构</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-22T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>使用Reveal分析其他APP（如微信、qq等）的界面结构</p>
+
+<p>特别提醒，现已无需按下面的方式注入libReveal.dlib了，只需把libReveal.dylib上传到设备的/Library/MobileSubstrate/DynamicLibraries，然后同时编辑并上传一个libReveal.plist，格式如下：</p>
+
+<p>nixiang0001</p>
+
+<p> 设定BundleID
+注意，此时是可以指定多个BundleID的，也就是说，你可以同时监控任意多的app；再扩大一步说，如果你愿意，不上传这个libReveal.plist，你可以监控所有app，只要你不觉得机器很慢。。。
+一定确保手机和电脑端处在同一局域网中，不然看不到界面的
+Reveal.app 目前能搞到2.0.3的版本且能用注册机破解，但貌似对ios7.0以上的应用无效，需要Reveal2.0.4版，但又无法破解目前，2.0.3版本百度云下载
+<a href="http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c">http://c.blog.sina.com.cn/profile.php?blogid=cb8a22ea89000gtw&amp;qq-pf-to=pcqq.c2c</a></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/22/fenxiQQweixinjiemianjiegou/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/20/siyouapi/">私有API</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/20/siyouapi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一．基本知识</p>
+
+<p>iPhone中的API除了公开的 API：Published API外（或者叫文档中记录的API：Documented API），还有两类API：私有API：Private API和未公开的API：UnPublished API(或者叫文档中未记录的API：Undocumented API)。其中私有API是指放在PrivateFrameworks框架中的API，未公开的API是指虽然放在Frameworks框架中，但是却没有在苹果的官方文档中有使用说明、代码介绍等记录的API。后两种API是有区别的，按苹果的说法，未公开的API是还不够成熟，可能还会变动的API，等完全成型了后会变成公开的API，但是目前不对其提供承诺，就是系统版本升级后可能会失效。而私有API是苹果明确不能使用的API。虽然两者有所区别，但是在具体使用方法上是类似的。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/20/siyouapi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/19/shiyongtweakgongcheng/">使用Tweak工程</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-19T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/19/shiyongtweakgongcheng/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS逆向 - 使用Tweak工程</p>
+
+<p>创建第一个Tweak工程
+1、创建工程</p>
+
+<p>在目录下面启动NIC /opt/theos/bin/nic.pl ,可以看到有好多个模板可以选择。 1、4、6、8、9 是Theos自带的模板,其他的是 <a href="https://github.com/DHowett/theos-nic-templates">https://github.com/DHowett/theos-nic-templates</a> 下载的。 这里主要学习tweak的用法，选择9</p>
+
+<pre><code>  NIC 2.0 - New Instance Creator
+------------------------------
+  [1.] iphone/application
+  [2.] iphone/cydget
+  [3.] iphone/framework
+  [4.] iphone/library
+  [5.] iphone/notification_center_widget
+  [6.] iphone/preference_bundle
+  [7.] iphone/sbsettingstoggle
+  [8.] iphone/tool
+  [9.] iphone/tweak
+  [10.] iphone/xpc_service
+Choose a Template (required):
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/19/shiyongtweakgongcheng/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -176,393 +553,6 @@ You may have to edit ISOperation.h:
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/12/ziyuanwenjianhuoqu/">资源文件夹获取</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-12T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/12/ziyuanwenjianhuoqu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>用pngcrush反编译ios app 资源文件</p>
-
-<p>时间：2012-12-27 11:56:45 类别：ios开发 访问: 3705 次</p>
-
-<p>要提高app制作水平，最好的方法就是学习领先者，用pngcrush反编译ios app 资源文件，步骤很简单</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/12/ziyuanwenjianhuoqu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/10/jingtaifenxiyushiyong/">静态分析与使用</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-10T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/10/jingtaifenxiyushiyong/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>逆向工程－静态分析及使用</p>
-
-<p>看到一篇装逼技术，有机会好好研究一下。。。。。</p>
-
-<p>最近在学习IOS逆向工程，查看网络上的资料也不是太多，边学边总结一下。</p>
-
-<p>首先学习资料：</p>
-
-<p>念茜（大神）的博客： <a href="http://nianxi.net">http://nianxi.net</a></p>
-
-<p>《ios应用逆向工程 分析与实战》</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/10/jingtaifenxiyushiyong/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/08/fanbianyihefangfanbianyi/">反编译和防反编译</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-08T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/08/fanbianyihefangfanbianyi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>关于反编译和防止反编译</p>
-
-<h3>反编译</h3>
-
-<ul>
-<li><p>内购破解</p>
-
-<ul>
-<li>iOS应用需防反编译风险之一：插件法（仅越狱）、iTools工具替换文件法（常见为存档破解）、八门神器修改</li>
-</ul>
-</li>
-<li><p>网络安全风险</p>
-
-<ul>
-<li>iOS应用需防反编译风险之二：截获网络请求，破解通信协议并模拟客户端登录，伪造用户行为，对用户数据造成危害</li>
-</ul>
-</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/08/fanbianyihefangfanbianyi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/05/jiandanhuanjinjieshao/">简单环境介</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-05T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/05/jiandanhuanjinjieshao/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>知识点准备</h3>
-
-<h6>越狱的三点</h6>
-
-<ul>
-<li><p>第一点——越狱开放了iOS的文件系统，使得用户一下子获得了root权限，获得了整个iOS系统的掌控大权。越狱之后用iFunBox等工具可以可简单地看到iOS的整个文件系统，因此也可以修改系统UI、铃声，或者当U盘用。同样的，越狱之后安装的一些程序，也同样突破了沙盒的限制，甚至获得root权限，程序的行为可以不受用户和系统的限制。权利和责任的对等的，获得了root权限的用户就必须对这个系统对安全和完整性负责。可惜的是很多人越狱了，但又抱怨iPhone出现的耗电、卡机、白苹果等等现象。目测很多Android和越狱用户，确实没这个能力去负起这个责任。</p></li>
-<li><p>第二点——cydia。基本所有人都把它当作越狱的显性标志。cydia表面上看来就是一个AppStore，实际上利用了另外一套软件管理系统——“Debian Package ”，也就是常说的dpkg，使用的安装包是deb，在Ubuntn上很是常见。deb的安装和卸载依靠的是一套完整的脚本，用control作为软件的标识信息，数据用tar压缩。另外，cydia还有软件源这个机制，由于我没搭过源服务器，完全不懂其中原理。</p></li>
-<li><p>第三点——MobileSubstrate。这是越狱必装插件，也是tweak开发的前提。那些让iPhone能拦截黑名单电话的，或者让时间能显示年月日的，或者在状态栏添加个天气图标的程序，基本都依赖与此。</p></li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/05/jiandanhuanjinjieshao/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/05/jianceshifouyueyu/">检测是否越狱</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-05T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/05/jianceshifouyueyu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>底层开发之越狱开发第二篇</p>
-
-<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
-
-<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/05/jianceshifouyueyu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/04/changjianyueyufangfa/">常见越狱方法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-04T15:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/04/changjianyueyufangfa/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS设备的越狱方法</p>
-
-<p>最近公司的事情很忙，在开发一个类似于微信的App，经常加班，所以也没有时间去更新微信公众账号的内容了。iOSJailbreak, 申请这个账号大概有一个多月了吧，发布的内容不多，更多是针对开发者的内容，针对普通iPhone &amp; iPad用户的内容几乎没有，有收听的朋友经常发问，怎样去越狱，怎样去开发越狱的插件或者app。后面都会细细道来。</p>
-
-<h3>一、先说iPhone 5S 和 iPhone5C吧</h3>
-
-<p>最新的iPhone又要出来了，大概是9月21号左右美国和香港应该是可以购买的。新的iOS7应该是在9月16号发布。5C有5个颜色，配截图。</p>
-
-<blockquote><p>其实我是大概在今年3月底4月初的时候听 富士康那边的朋友说的，有一款中端版本的iPhone5C, 价格大概在3000左右，估计香港，美国那边的更便宜，应该是2000+的样子。等待新机的到来，其实iPhone5的感觉就是轻，拿着很舒服。估计5C应该也差不多。</p></blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/04/changjianyueyufangfa/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/03/nixiangjishufenxi/">逆向技术分析</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-03T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/03/nixiangjishufenxi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>iOS App 的逆向工程: Hacking on Lyft
-您的评价:</p>
-
-<p> 收藏该经验</p>
-
-<p>阅读目录</p>
-
-<ol>
-<li>介绍(0:00)</li>
-<li>逆向 Lyft(1:44)</li>
-<li>窥视 Lyft(2:48)</li>
-<li>探测网络流量 - Charles 演示(4:08)</li>
-<li>向 Lyft 里注入代码 - Cycript 演示(7:44)</li>
-<li>解密可执行文件 - dumpdecrypted 演示(11:28)</li>
-<li>分析可执行文件 - IDA 演示(13:47)</li>
-<li>寻找 Lyft 的 URL Scheme(18:23)</li>
-<li>Q&amp;A(22:50)</li>
-</ol>
-
-
-<p>原文  <a href="https://realm.io/cn/news/conrad-kramer-reverse-engineering-ios-apps-lyft/">https://realm.io/cn/news/conrad-kramer-reverse-engineering-ios-apps-lyft/</a></p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/03/nixiangjishufenxi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/02/anzhuangbaogeshi/">安装包格式</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-02T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/02/anzhuangbaogeshi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h5>目录</h5>
-
-<ul>
-<li>deb</li>
-<li>ipa</li>
-<li>pxl</li>
-</ul>
-
-
-<h2>iOS安装包的三种格式 deb、ipa 和 pxl的解释和说明</h2>
-
-<p>目前 iOS 平台上常见的安装包有三种，deb、ipa 和 pxl。
-转自链接：<a href="http://fanlb.blogbus.com/logs/80466716.html">http://fanlb.blogbus.com/logs/80466716.html</a>  多谢作者分享！
-其中 deb 格式是 Debian 系统(包含 Debian 和 Ubuntu )专属安装包格式，配合 APT 软件管理系统，成为了当前在 Linux 下非常流行的一种安装包。进入 2.x 时代之后有 Cydia 作者 Jay Freeman（saurik） 移植到 iPhone 平台上，一起的还有 APT 软件管理系统。</p>
-
-<ul>
-<li>而 ipa 格式则是苹果在 iOS 平台上推出的专属软件安装包，在2.0固件开始才正式使用，是目前 iPhone/iPod Touch/iPad 平台上唯一的官方安装包。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/02/anzhuangbaogeshi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -599,23 +589,23 @@ You may have to edit ISOperation.h:
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/08/08/oneday/">修行篇-探程序之精华</a>
+        <a href="/blog/2017/02/01/duoxiancanquanwenti/">Duoxiancanquanwenti</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/08/01/gezhongdicenshixian/">iOS开发各种底层实现--包你满意😘！</a>
+        <a href="/blog/2017/01/25/shujujiegouchangjiancaozuozongjie/">Shujujiegouchangjiancaozuozongjie</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/08/01/weixinhongbao/">福利：抢红包神器就是这么来的</a>
+        <a href="/blog/2017/01/22/suanfazhijinghua/">Suanfazhijinghua</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a>
+        <a href="/blog/2017/01/20/23zhongshejimoshi/">23zhongshejimoshi</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a>
+        <a href="/blog/2017/01/18/qidachazhaosuanfa/">Qidachazhaosuanfa</a>
       </li>
     
   </ul>
