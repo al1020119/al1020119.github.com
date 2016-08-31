@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Developer | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/developer/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-25T14:05:03+08:00</updated>
+  <updated>2016-08-31T10:07:05+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -99,6 +99,14 @@ github：https://github.com/al1020119
 <ul>
 <li>内存管理</li>
 <li>Runtime</li>
+</ul>
+
+
+<h6>事件篇</h6>
+
+<ul>
+<li>事件传递</li>
+<li>事件响应</li>
 </ul>
 
 
@@ -249,6 +257,47 @@ github：https://github.com/al1020119
 如果都不中，调用doesNotRecognizeSelector抛出异常。</li>
 </ul>
 
+
+<hr />
+
+<h1>事件篇</h1>
+
+<h3>应用如何找到最合适的控件来处理事件？</h3>
+
+<pre><code>1.首先判断主窗口（keyWindow）自己是否能接受触摸事件
+2.判断触摸点是否在自己身上
+3.子控件数组中从后往前遍历子控件，重复前面的两个步骤（所谓从后往前遍历子控件，就是首先查找子控件数组中最后一个元素，然后执行1、2步骤）
+4.view，比如叫做fitView，那么会把这个事件交给这个fitView，再遍历这个fitView的子控件，直至没有更合适的view为止。
+5.如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view
+</code></pre>
+
+<h2>事件的传递和响应的区别：</h2>
+
+<ul>
+<li>事件的传递是从上到下（父控件到子控件），事件的响应是从下到上（顺着响应者链条向上传递：子控件到父控件。</li>
+</ul>
+
+
+<h3>事件响应</h3>
+
+<h5>响应者链的事件传递过程:</h5>
+
+<pre><code>1&gt;如果当前view是控制器的view，那么控制器就是上一个响应者，事件就传递给控制器；如果当前view不是控制器的view，那么父视图就是当前view的上一个响应者，事件就传递给它的父视图
+2&gt;在视图层次结构的最顶级视图，如果也不能处理收到的事件或消息，则其将事件或消息传递给window对象进行处理
+3&gt;如果window对象也不处理，则其将事件或消息传递给UIApplication对象
+4&gt;如果UIApplication也不能处理该事件或消息，则将其丢弃
+</code></pre>
+
+<h3>事件传递</h3>
+
+<h5>事件处理的整个流程总结：</h5>
+
+<pre><code>　　1.触摸屏幕产生触摸事件后，触摸事件会被添加到由UIApplication管理的事件队列中（即，首先接收到事件的是UIApplication）。
+　　2.UIApplication会从事件队列中取出最前面的事件，把事件传递给应用程序的主窗口（keyWindow）。
+　　3.主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件。（至此，第一步已完成)
+　　4.最合适的view会调用自己的touches方法处理事件
+　　5.touches默认做法是把事件顺着响应者链条向上抛。
+</code></pre>
 
 <hr />
 
