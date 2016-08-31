@@ -952,3 +952,28 @@ OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do wh
     老早以前, 我一般是在一个异步请求中的completionBlock或者successBlock中拿到需要的值, 为空判断后,直接在block里面再写一个异步线程...其实这样的写法可能很多人都用过,但是代码的阅读性太弱了,花括号太多,看的眼花缭乱的...
     其实还可以设置flag进行判断等等方法...
     暂时就想到这么多, 还有别的方案的话, 欢迎留言哈,大家共同学习!!!
+
+
+
+
+
+===
+
+
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

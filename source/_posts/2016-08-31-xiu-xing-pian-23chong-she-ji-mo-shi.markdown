@@ -646,3 +646,25 @@ BAD:
 + 7、策略模型：定义了算法族，分别封装起来，让它们之间可以相互替换，此模式让算法的变化独立于使用算法的客户。
 
 + 8、设计模式的名词使用主要为了程序员间交流方便
+
+
+===
+
+
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

@@ -289,3 +289,26 @@ hash函数需要解决hash冲突的问题。
 	1、表示图的最直接的方法； 
 	2、后者更省空间，并且在一定程度上更好用，比如Bellman-Ford算法。 
 ps:数组、链表太基础不在考虑之列。
+
+
+
+===
+
+
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  
