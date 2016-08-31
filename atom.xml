@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-08-31T12:42:00+08:00</updated>
+  <updated>2016-08-31T13:21:24+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -843,6 +843,427 @@ NSConditionLock: 490.04 ms
 其实还可以设置flag进行判断等等方法...
 暂时就想到这么多, 还有别的方案的话, 欢迎留言哈,大家共同学习!!!
 </code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-ios开发中常见设计模式]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/30/xiu-xing-pian-ioskai-fa-zhong-chang-jian-she-ji-mo-shi/"/>
+    <updated>2016-08-30T13:10:04+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/30/xiu-xing-pian-ioskai-fa-zhong-chang-jian-she-ji-mo-shi</id>
+    <content type="html"><![CDATA[<p>本文摘自：<a href="http://ios.jobbole.com/85360/">伯乐在线</a>,因为自己研究并学习ios设计模式的时候寻找了好多相关文章，最后发现这篇才是最适合ios开发的，当然你也可以自己通过C或者java设计模式的规范进行演变。</p>
+
+<p>源码下载地址：<a href="https://github.com/al1020119/iCocosDesignPattern">https://github.com/al1020119/iCocosDesignPattern</a></p>
+
+<h1>对象创建</h1>
+
+<h4>原型（Prototype）</h4>
+
+<p>使用原型实例指定创建对象的种类，并通过复制这个原型创建新的对象。</p>
+
+<pre><code>NSArray *array = [[NSArray alloc] initWithObjects:@1, nil];
+NSArray *array2 = array.copy;
+</code></pre>
+
+<p>array 就是原型了，array2 以 array 为原型，通过 copy 操作创建了 array2。</p>
+
+<p>当创建的实例非常复杂且耗时，或者新实例和已存在的实例值相同，使用原型模式去复制已经存在的实例效率更高。</p>
+
+<h4>工厂方法（Factory Method）</h4>
+
+<pre><code>定义创建对象的接口，让子类决定实例化哪一个类。工厂方法使得类的实例化延迟到其子类。
+</code></pre>
+
+<p>工厂方法是针对每一种产品提供一个工厂类。通过不同的工厂类来创建不同的产品实例。</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi001.png" title="Caption" ></p>
+
+<ul>
+<li>如上图，+ create():Product 就是工厂方法，ConcreatFactoryA 与 ConcreateFactoryB 就是两个工厂类，ConcreateProductA 与 ConcreateProductB 就是两个工厂类对应的产品类，通过不同的工厂生产不同类型的产品，且两个产品类最终返回的是他们的父类 Product，隐藏了对象的具体类型。工厂方法模式让创建的对象拥有一组共同的接口，使我们无需关心做了不同类型接口的具体实现，只需要调用 Product 的接口就行。</li>
+</ul>
+
+
+<blockquote><p>工厂方法模式的扩展性也很好，新增的产品类并不需要修改客户端代码。但每新加一个产品类都需要新建一个工厂类，会造成项目中的类过多。</p></blockquote>
+
+<p>而在 Cocoa Touch 框架中，以 NSNumber 举例，将原有的 alloc+init 拆开写：</p>
+
+<pre><code> id obj1 = [NSNumber alloc];
+    id obj2 = [NSNumber alloc];
+    id obj3 = [obj1 initWithBool:YES];
+</code></pre>
+
+<p>发现 + alloc 后并非生成了我们期望的类实例，而是一个NSPlacehodlerNumber 的中间对象，后面的 – initWithXXXXX 消息都是发送给这个中间对象，再由它做工厂，生成真的对象。如 obj3 的实际类型为 NSCFBoolean，而 obj4 的实际类型为 NSCFNumber 。</p>
+
+<h4>抽象工厂（Abstract Factory）</h4>
+
+<pre><code>提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi002.png" title="Caption" ></p>
+
+<ul>
+<li>如上图，抽象工厂有一个产品族的概念，Factory1 与 Factory2 是继承 AbstractFactory 的两个产品族工厂类， 继承了父类创建 A，B 两个产品的方法，不同产品族工厂类会创建不同类型的产品，最终返回了不同的产品族对象，既 ProductA 和 ProductB。</li>
+</ul>
+
+
+<p>在 Cocoa Touch 框架中，类簇是抽象工厂模式在 iOS 下的一种实现，以 NSArray 举例，将原有的 alloc+init 拆开写：</p>
+
+<pre><code>id obj1 = [NSArray alloc]; // __NSPlacehodlerArray *
+id obj2 = [NSMutableArray alloc];  // __NSPlacehodlerArray *
+id obj3 = [obj1 init];  // __NSArrayI *
+id obj4 = [obj2 init];  // __NSArrayM *
+</code></pre>
+
+<p>发现 + alloc 后并非生成了我们期望的类实例，而是一个NSPlacehodlerArray 的中间对象，后面的 – init 或 – initWithXXXXX 消息都是发送给这个中间对象，再由它做工厂，生成真的对象。这里的 NSArrayI 和 __NSArrayM 分别对应 Immutable 和 Mutable（后面的 I 和 M 的意思）</p>
+
+<blockquote><p>于是顺着思路猜实现，__NSPlacehodlerArray 必定用某种方式存储了它是由谁 alloc 出来的这个信息，才能在 init 的时候知道要创建的是可变数组还是不可变数组。</p></blockquote>
+
+<p>抽象工厂将一系列的产品族统一到一起创建，增加产品族很方便，但增加产品很麻烦，需要改动太多的类的接口。</p>
+
+<h4>生成器（Builder）</h4>
+
+<p>将一个复杂对象的构建与它的表现分离，使得同样的构建过程可以创建不同的表现。
+生成器可以将构建对象的过程分为，客户 – 指导者 – 生成器 的关系，</p>
+
+<pre><code>CharacterBuilder *characterBuilder = [[StandarCharacterBuilder alloc] init];
+ChasingGame *game = [[ChasingGame alloc] init];
+
+Character *player = [chasingGame createPlayer:characterBuilder];
+Character *enemy = [chasingGame createEnemy:characterBuilder];
+</code></pre>
+
+<p>characterBuilder 就是生成器了，而 game 就是指导者。指导者里声明了创建不同表现的对象的方法。而方法里由生成器 characterBuilder 来构建不同的 Character 类型的对象。</p>
+
+<ul>
+<li>生成器模式将复杂的生成对象的过程交给了生成器去完成，作为客户的我们只需要根据简单的接口去生成不同表现的对象。如上述代码中的 player 以及 enemy。玩家和敌人具体的属性数值我们不需要去设置，而是交给生成器去设置。</li>
+</ul>
+
+
+<h4>单例（Singleton）</h4>
+
+<pre><code>保证一个类仅有一个实例，并提供一个访问它的全局访问点。
+</code></pre>
+
+<p>在 Cocoa Touch 框架中，最常见的使用了单例模式的就是 UIApplication 类了。每个应用程序有且仅有一个 UIApplication 的实例，它由 UIApplicationMain 函数在程序启动时创建为单例对象，之后，对同一 UIApplication 实例可以通过其 sharedApplication 类方法进行访问。</p>
+
+<p>单例用来集中管理对类的对象所提供的资源，例如应用程序中需要用集中式的类来协调其服务，这个类就应该生成单一的实例。</p>
+
+<ul>
+<li>单例模式在多线程的应用场合下必须小心使用。如果当唯一实例尚未创建时，有两个线程同时调用创建方法，那么它们同时没有检测到唯一实例的存在，从而同时各自创建了一个实例，这样就有两个实例被构造出来，从而违反了单例模式中实例唯一的原则。 解决这个问题的办法是为指示类是否已经实例化的变量提供一个互斥锁。</li>
+</ul>
+
+
+<h1>接口适配</h1>
+
+<h4>适配器（Adapter）</h4>
+
+<pre><code>将一个类的接口转换成客户希望的另一个接口，适配器模式使得原本由于接口不兼容而不能一起工作的那些类可以一起工作。
+</code></pre>
+
+<p>适配器模式分为类适配器模式和对象适配器模式。
+<img src="http://al1020119.github.io/images/iosshejimoshi003.png" title="Caption" ></p>
+
+<ul>
+<li>上图是对象适配器模式，Adapter（适配器）遵守了 Target（目标接口）协议，拥有一个 Adaptee（被适配者）的对象 adaptee 的引用，当调用 Adapter 的 request 方法，request 方法里会去调用 adapteee 的 specificRequest 方法。</li>
+</ul>
+
+
+<h4>类适配模式</h4>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi004.png" title="Caption" ></p>
+
+<p>类适配器模式中适配器和被适配者是继承关系。request 方法里会去调用 super 的 specificRequest 方法，达到将类的接口转换成客户希望的另一个接口。</p>
+
+<p>适配器模式主要应用于“希望复用一些现存的类，但是接口又与复用环境要求不一致的情况”，在遗留代码复用、类库迁移等方面非常有用。</p>
+
+<h4>桥接（Bridge）</h4>
+
+<pre><code>将抽象部分与它的实现部分分离，使它们都可以独立地变化。
+</code></pre>
+
+<p>桥接模式是软件设计模式中最复杂的模式之一，在软件系统中，某些类型由于自身的逻辑，它具有两个或多个维度的变化。</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi005.png" title="Caption" ></p>
+
+<ul>
+<li>如上图，毛笔和颜色是两个维度的变化，可以选择新建 9 个类去实现不同颜色的不同毛笔，也可以如图所示，去组合两个维度。对于客户端而言，可以针对两个维度的抽象层编程，在程序运行的时候再动态确认两个维度的子类，动态组合对象，将两个独立变化的维度完全解耦，以便能够灵活地扩充任一维度而对另一维度不造成任何影响。比如增加一种毛笔并不需要去改动图中的实现部分，增加一种颜色也不需要去改变抽象部分。（抽象部分是面向我们编程的接口部分，我们绘图的时候是调用毛笔类的绘图方法）。</li>
+</ul>
+
+
+<p>桥接模式可以让抽象与实现之间不形成绑定关系，在运行时可以切换实现，也将抽象和实现完全解耦，可以独立扩展。</p>
+
+<h4>外观（Facade）</h4>
+
+<pre><code>为系统中的一组接口提供一个统一的接口。外观顶一个高层接口，让子系统更易于使用。
+</code></pre>
+
+<p>外观模式主要是使用一个外观类，为复杂的子系统提供一个简单的接口，而子系统的复杂调用交给外观类去做。</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi006.png" title="Caption" ></p>
+
+<ul>
+<li>如上图，数据的来源可能是不同数据库，获取数据可能非常的复杂，所以使用一个外观类提供简单的获取数据的接口，复杂的操作让外观类去做。做到让子系统更加的易用。</li>
+</ul>
+
+
+<h1>对象去耦</h1>
+
+<h4>中介者（Mediator）</h4>
+
+<pre><code>用一个对象来封装一系列对象的交互方式，中介者使各对象不需要显示地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。
+</code></pre>
+
+<p>我们开发的程序是由大量的类来组成的，随着程序功能的不断增加，类和类之间的依赖关系也跟着趋于复杂，而中介者模式便能解决这个问题，</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi007.png" title="Caption" ></p>
+
+<ul>
+<li>如图所示，6 个 VC 类之间的交互可能特别多，如果让他们相互依赖，然后管理这些 VC 之间的关系是一件非常繁琐的事情，我们要处理各个 VC 之间的关系，每当一个 VC 要跳转到另外个 VC，我们需要包含新的 VC 的头文件。而使用中介者模式，让 VC 之间的交互变成 VC 和中介者的交互，用中介者来管理多对多的复杂的对象群，降低了各个对象之间的耦合，减少了对象之间逻辑的复杂度，但也可能导致中介者类中的实现过于复杂。</li>
+</ul>
+
+
+<p>UINavigationController 就是一个中介者，如下图所示</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi008.png" title="Caption" ></p>
+
+<p>视图控制器的切换都是与 UINavigationController 做交互。由 UINavigationController 去做集中管理。</p>
+
+<h4>观察者（Observer）</h4>
+
+<pre><code>定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并自动更新。
+</code></pre>
+
+<p>在 Cocoa Touch 框架中通知和 KVO 都实现了观察者模式。通知是由一个中心对象为所有观察者提供变更通知，KVO 是被观察的对象直接向观察者发送通知。</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi009.png" title="Caption" ></p>
+
+<ul>
+<li>如上图，Subject 的值改变时，通知观察者 ObserverA，ObserverB，ObserverC，我的数据改变了，依赖我的你们需要更新状态了。</li>
+</ul>
+
+
+<p>被观察者不需要知道有多少个观察者和观察者的更新细节，降低被观察者和观察者之间的耦合。</p>
+
+<h1>抽象集合</h1>
+
+<h4>组合（Composite）</h4>
+
+<pre><code>将对象组合成树形结构以表示“部分-整体”的层次结构。组合使得用户对单个对象和组合对象的使用具有一致性。
+</code></pre>
+
+<p>在 Cocoa Touch 框架中，UIView 被组织成一个组合结构。每个 UIView 都可以将其它 UIView 设置为自己的子视图，形成一个树形结构，让客户端可以对单个 UIView 或者对 UIView 组合统一对待。</p>
+
+<p>既平移一个 UIView，可以做到平移这一个 UIView 组合，且操作方法与平移单个 UIView 一致。</p>
+
+<h4>迭代器（Iterator）</h4>
+
+<pre><code>提供一种方法顺序访问一个聚合对象中的各个元素，而又不需要暴露该对象的内部表示，
+</code></pre>
+
+<p>在 Cocoa Touch 中的 NSEnumerator 就实现了迭代器模式，如以下代码</p>
+
+<pre><code> NSArray *anArray = @[@"this", @"is", @"a", @"test"];
+    NSEnumerator *itemEnumerator = [anArray objectEnumerator];
+
+    NSString *item;
+    while (item = [itemEnumerator nextObject]) {
+        NSLog(@"%@", item);
+    }
+</code></pre>
+
+<p>迭代器分为两种，上面使用了一个外部迭代器，外部迭代器让客户端直接操作迭代过程，如上面代码就是使用一个 while 循环去迭代。</p>
+
+<p>下面是使用了内部迭代器，客户端不需要知道实现迭代的方式。</p>
+
+<pre><code> NSArray *anArray = @[@"this", @"is", @"a", @"test"];
+    NSString *string = @"a";
+    [anArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSLog(@"%@", obj);
+        if ([obj isEqualToString:string]) {
+            *stop = YES;
+        }
+    }];
+</code></pre>
+
+<p>客户端不需要手动实现迭代器，只要对每个元素进行处理就行。</p>
+
+<h1>行为扩展</h1>
+
+<h4>访问者（Visitor）</h4>
+
+<pre><code>表示一个作用于某对象结构中的各元素的操作，它让我们可以在不改变各元素的类的前提下定义作用于这些元素的新操作。
+</code></pre>
+
+<p>当一个复杂的对象结构包含很多其他的对象，每个对象都有不同的接口，这个时候如果想添加新的接口进行新的操作，就得修改该对象的类，如果每个对象都需要添加新操作，就需要修改更多的类。而访问者模式就是用来不修改原有类添加新的操作。</p>
+
+<p>访问者模式涉及两个关键元素，访问者和被访问对象。访问者遵从访问协议，访问协议里声明了访问方法。访问方法类似下面</p>
+
+<pre><code>- (void)visitEngine:(NimoEngine *)engine;
+- (void)visitWheel:(NimoWheel *)wheel;
+</code></pre>
+
+<p>访问者模式流程，直接调用访问者里的访问方法，访问方法里实现了新添加的操作，engine 与 wheel 既被访问对象，达到了将新操作集中在访问者里处理的效果。如果再需要新添加一系列对各个元素的操作，只需要再添加一个访问者类就行。</p>
+
+<blockquote><p>访问者能访问复杂元素里的每一个元素，然后由访问者对这些元素进行行为扩展。</p>
+
+<h4>装饰（Decorator）</h4></blockquote>
+
+<pre><code>动态地给一个对象添加一些额外的职责。就扩展功能来说，装饰模式相比生成子类更为灵活。
+</code></pre>
+
+<p>Category 就是实现了装饰的设计模式。Category 是 Objective-C 的语言功能，通过它可以给类添加方法的接口与实现，而不必子类化。 从这个设计模式的描述联想到 Category，就没什么难理解了。
+责任链（Chain of Responsibility）</p>
+
+<pre><code>使多个对象都有机会处理请求，从而避免请求的发送者和接受者之间发生耦合。此模式将这些对象连成一条链，并沿着这条链传递请求，直到有一个对象处理它为止。
+</code></pre>
+
+<p>Cocoa Touch 中的事件处理流程–响应者链就实现了责任链模式。以点击为例，首先通过 hit-test view 的流程找到被点击的视图，被点击的视图如果不处理点击事件，则沿着响应者链向上回溯，比如给父视图发消息，让父视图去处理，父视图不处理则继续沿着响应者链向上回溯，直到有对象处理它为止，如果都不处理，则该事件丢弃。</p>
+
+<h1>算法封装</h1>
+
+<h4>模板方法（Template Method）</h4>
+
+<pre><code>定义一个操作中算法的骨架，而将一些步骤延迟到子类中。模板方法使子类可以重定义算法的某些特定步骤而不改变该算法的结构。
+</code></pre>
+
+<p>模板方法可以提高可扩展性与可复用性，比如 UIView 类中的定制绘图,UIView 的结构不改变，只是继承 UIView,再重载 – (void)drawRect:(CGRect)rect
+方法。所以 – (void)drawRect:(CGRect)rect 就是模板方法，默认什么都不做或者只是做了部分操作，缺少特性操作，用来给子类选择重载与实现的方法。</p>
+
+<h4>策略（Strategy）</h4>
+
+<pre><code>定义一系列算法，把它们一个个封装起来，并且使它们可相互替换。本模式使得算法可独立于使用它的客户而变化。
+</code></pre>
+
+<p>举一个常见的例子，验证 UITextField 输入是否有效。有两个算法分别是验证邮箱的和验证电话号码的。可以通过 if else 这样的判断代码来决定执行哪个算法。也可以通过策略模式，将算法封装起来，如下图
+￼</p>
+
+<p><img src="http://al1020119.github.io/images/iosshejimoshi010.png" title="Caption" ></p>
+
+<p>Strategy 是这一系列算法的父类，ConcreteStrategyA, B, C。是三种算法，给 Context 对象添加一个 Strategy 类型的属性，里面存放着 ConcreteStrategyA 或者 B，C。然后 Context 对象就知道去执行哪个算法。也就知道自己需要执行什么策略。</p>
+
+<blockquote><p>策略模式首先将算法都封装起来了，易于理解，且易于切换和扩展。</p>
+
+<h4>命令（Command）</h4></blockquote>
+
+<pre><code>将请求封装为一个对象，从而可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。
+</code></pre>
+
+<p>Cocoa Touch 框架中的 NSInvocation 就是实现了命令模式。</p>
+
+<pre><code>NSMethodSignature*signature = [ViewController instanceMethodSignatureForSelector:@selector(sendMessageWithNumber:WithContent:)];
+  //1、创建NSInvocation对象
+  NSInvocation*invocation = [NSInvocation invocationWithMethodSignature:signature];
+  invocation.target = self;
+  //invocation中的方法必须和签名中的方法一致。
+  invocation.selector = @selector(sendMessageWithNumber:WithContent:);
+  /*第一个参数：需要给指定方法传递的值
+         第一个参数需要接收一个指针，也就是传递值的时候需要传递地址*/
+  //第二个参数：需要给指定方法的第几个参数传值
+  NSString*number = @"1111";
+  //注意：设置参数的索引时不能从0开始，因为0已经被self占用，1已经被_cmd占用
+  [invocation setArgument:&amp;number atIndex:2];
+  NSString*number2 = @"啊啊啊";
+  [invocation setArgument:&amp;number2 atIndex:3];
+  //2、调用NSInvocation对象的invoke方法
+  //只要调用invocation的invoke方法，就代表需要执行NSInvocation对象中制定对象的指定方法，并且传递指定的参数
+  [invocation invoke];
+</code></pre>
+
+<p>将行为封装成对象，而不是直接触发行为，因为是对象，所以可以很容易的设计一个命令队列，也可以方便的记录进日志里，以及实现行为的撤销。（因为行为对象可以记录进日志里，所以可以根据日志得知上一个操作做了什么，从而进行撤销）。</p>
+
+<h1>性能与对象访问</h1>
+
+<h2>享元（Flyweight）</h2>
+
+<pre><code>利用共享技术有效地支持大量细粒度的对象。
+</code></pre>
+
+<p>tableViewCell 的重用机制就是实现了享元模式。在要使用一个 Cell 的时候，会先去重用池里看看 tableView 有没有可以重用的 cell，如果有重用该 cell，没有创建一个，这就是享元模式。</p>
+
+<p>享元模式主要有两个关键组件，可共享的享元对象和保存它们的享元池。</p>
+
+<blockquote><p>举另一个实现例子，画面上需要显示 100 个相同的图案，可以只生成一个包含该图案 image 的 imageView。其它 99 个只需要去享元池里去拿这个 imageView 实例的信息，然后在页面里直接绘制图案，这样就不需要生成 100 个图案实例。</p></blockquote>
+
+<p>享元模式通过共享一部分必须的对象，减少对象的创建，节省大量的内存。</p>
+
+<h4>代理（Proxy）</h4>
+
+<pre><code>为其它对象提供一种代理以控制对这个对象的访问。
+</code></pre>
+
+<p>代理设计模式的英文名是 Proxy pattern，和我们常见的 delegate（委托） 没关系。</p>
+
+<p>iOS 中常见的代理模式例子为引用计数，当一个复杂对象的多份副本须存在时，代理模式可以结合享元模式以减少内存用量。典型做法是创建一个复杂对象及多个代理者，每个代理者会引用到原本的复杂对象。而作用在代理者的运算会转送到原本对象。一旦所有的代理者都不存在时，复杂对象会被移除。</p>
+
+<blockquote><p>当然，上面的代理模式中的代理者什么都没做，代理对象作为 A 和 C 中间的协调者，可以多做点操作，可以理解为 VPN 中的代理者可以对传输数据加密，而 A 和 C 中的代理者，也可以隐藏 C 的信息，做到对 C 的保护。</p></blockquote>
+
+<h1>对象状态</h1>
+
+<h4>备忘录（Memento）</h4>
+
+<pre><code>在不破坏封装的情况下，捕获一个对象的内部状态，并在该对象之外保存这个状态，这样以后就可将该对象恢复到原先保存的状态。
+</code></pre>
+
+<p>Cocoa Touch 框架中归档可以实现备忘录模式，Cocoa 的归档是对对象及其属性还有同其他对象间的关系进行编码，形成一个文档，该文档可以保存于文件系统，也可在进程或网络间传输，最后又可以通过解档将文档解码成与该对象归档时状态一致的对象。</p>
+
+<blockquote><p>既将对象保存一个备份放置到其它地方，可以随时使用备份将该对象恢复到原先保存的状态，用来储存关键对象的关键状态。</p></blockquote>
+
+<h5>总结：（如果看了这么久您依然不知道上面在扯上面鬼，那么请结合ios开发中遇到的技术点简单粗略的体会一下下面的东西，再返回看看或许你就会明白很多）</h5>
+
+<ul>
+<li>备忘录-归档</li>
+<li>代理-引用计数（非delegate）</li>
+<li>享元-TableView重用机制</li>
+<li>命令-NSInvocation</li>
+<li>策略-文本有效</li>
+<li>模板-drawRect</li>
+<li>装饰-分类</li>
+<li>责任链-响应者</li>
+<li>迭代器-NSEnumerator</li>
+<li>组合-UIView</li>
+<li>观察者-通知、KVO</li>
+<li>中介-导航</li>
+<li>原型-.copy</li>
+<li>工厂方法-initWithBool</li>
+<li>抽象工厂-alloc]initWithXXX</li>
+<li>单利-无处不在哈哈</li>
+<li>适配器-网络请求接口</li>
+</ul>
+
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -1898,6 +2319,23 @@ a1 a2 a3 &hellip; a(i-1) ai &hellip;
         C[ic++] = B[ib++];
 }
 </code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -2108,6 +2546,23 @@ int main(){
 
 }  
 </code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -2862,6 +3317,23 @@ B：抽象不应该依赖细节，细节应该依赖抽象。
 <li><p>8、设计模式的名词使用主要为了程序员间交流方便</p></li>
 </ul>
 
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -3412,6 +3884,23 @@ Linux：ResiserFS，XFS，Ext3FS，JFS文件系统；
 </code></pre>
 
 <blockquote><p>Hash是一种典型以空间换时间的算法，比如原来一个长度为100的数组，对其查找，只需要遍历且匹配相应记录即可，从空间复杂度上来看，假如数组存储的是byte类型数据，那么该数组占用100byte空间。现在我们采用Hash算法，我们前面说的Hash必须有一个规则，约束键与存储位置的关系，那么就需要一个固定长度的hash表，此时，仍然是100byte的数组，假设我们需要的100byte用来记录键与位置的关系，那么总的空间为200byte,而且用于记录规则的表大小会根据规则，大小可能是不定的。</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -3668,6 +4157,23 @@ Linux：ResiserFS，XFS，Ext3FS，JFS文件系统；
 <p>总结</p>
 
 <blockquote><p>多理解，多理解，多理解。。。。</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -4911,6 +5417,23 @@ mergeSort(list, 0, 7-1, temp);
   return a
 }
 </code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -5196,6 +5719,23 @@ push将一个新的元素(5)放在栈的最上层。
 </code></pre>
 
 <p>ps:数组、链表太基础不在考虑之列。</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
 ]]></content>
   </entry>
   
@@ -9624,566 +10164,6 @@ emp.height = @1.9;
 <p>版本迁移总结</p>
 
 <p>版本迁移在需求的变更中肯定是要发生的，但是我们应该尽量避免这样的情况发生。在最开始设计模型文件数据结构的时候，就应该设计一个比较完善并且容易应对变化的结构，这样后面就算发生变化也不会对结构主体造成大的改动。</p>
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[CoreData还有撒？]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/04/coredatechaiyousa/"/>
-    <updated>2016-07-04T06:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/04/coredatechaiyousa</id>
-    <content type="html"><![CDATA[<p>之前两篇文章都比较偏理论，文字表达比较多一些，但都是干货！学习时先理解理论知识，才能更好的帮助后面的理解。在这篇文章中，将会涉及关于CoreData的一些复杂操作，这些操作会涉及分页查询、模糊查询、批处理等高级操作。通过这些操作可以更好的使用CoreData，提升CoreData性能。文章中将会出现大量示例代码，通过代码的方式更有助于理解。</p>
-
-<p>文章内容还会比较多，希望各位耐心看完。文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
-
-<p>NSPredicate</p>
-
-<!--more-->
-
-
-<p>概述</p>
-
-<p>在iOS开发过程中，很多需求都需要用到过滤条件。例如过滤一个集合对象中存储的对象，可以通过Foundation框架下的NSPredicate类来执行这个操作。</p>
-
-<p>CoreData中可以通过设置NSFetchRequest类的predicate属性，来设置一个NSPredicate类型的谓词对象当做过滤条件。通过设置这个过滤条件，可以只获取符合过滤条件的托管对象，不会将所有托管对象都加载到内存中。这样是非常节省内存和加快查找速度的，设计一个好的NSPredicate可以优化CoreData搜索性能。</p>
-
-<p>语法</p>
-
-<p>NSPredicate更加偏向于自然语言，不像SQLite一样有很多固定的语法，看起来也更加清晰易懂。例如下面需要查找条件为年龄30岁以上，并且包括30岁的条件。
-1</p>
-
-<pre><code>[NSPredicate predicateWithFormat:@"age &gt;= 30"]
-</code></pre>
-
-<p>过滤集合对象</p>
-
-<p>可以通过NSPredicate对iOS中的集合对象执行过滤操作，可以是NSArray、NSSet及其子类。</p>
-
-<p>对不可变数组NSArray执行的过滤，过滤后会返回一个NSArray类型的结果数组，其中存储着符合过滤条件的对象。
-1</p>
-
-<pre><code>NSArray *results = [array filteredArrayUsingPredicate:predicate]
-</code></pre>
-
-<p>对可变数组NSMutableArray执行的过滤条件，过滤后会直接改变原集合对象内部存储的对象，删除不符合条件的对象。
-1</p>
-
-<pre><code>[arrayM filterUsingPredicate:predicate]
-</code></pre>
-
-<p>复合过滤条件</p>
-
-<p>谓词不只可以过滤简单条件，还可以过滤复杂条件，设置复合过滤条件。
-1</p>
-
-<pre><code>[NSPredicate predicateWithFormat:@"(age &lt; 25) AND (firstName = XiaoZhuang)"]
-</code></pre>
-
-<p>当然也可以通过NSCompoundPredicate对象来设置复合过滤条件，返回结果是一个NSPredicate的子类NSCompoundPredicate对象。
-1</p>
-
-<pre><code>[[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:@[predicate1, predicate2]]
-</code></pre>
-
-<p>枚举值NSCompoundPredicateType参数，可以设置三种复合条件，枚举值非常直观很容易看懂。</p>
-
-<pre><code>NSNotPredicateType
-
-NSAndPredicateType
-
-NSOrPredicateType
-</code></pre>
-
-<p>基础语法</p>
-
-<p>下面是列举的一些NSPredicate的基础语法，这些语法看起来非常容易理解，更复杂的用法可以去看苹果的官方API。</p>
-
-<p><img src="http://al1020119.github.io/images/3001.png" title="Caption" ></p>
-
-<p>正则表达式</p>
-
-<p>NSPredicate中还可以使用正则表达式，可以通过正则表达式完成一些复杂需求，这使得谓词的功能更加强大，例如下面是一个手机号验证的正则表达式。
-1
-2</p>
-
-<pre><code>NSString *mobile = @"^1(3[0-9]|5[0-35-9]|8[025-9])\\d{8}$";
-NSPredicate *regexmobile = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", mobile];
-</code></pre>
-
-<p>模糊查询</p>
-
-<p>NSPredicate支持对数据的模糊查询，例如下面使用通配符来匹配包含lxz的结果，具体CoreData中的使用在下面会讲到。
-1</p>
-
-<pre><code>[NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"]
-</code></pre>
-
-<p>keyPath</p>
-
-<p>NSPredicate在创建查询条件时，还支持设置被匹配目标的keyPath，也就是设置更深层被匹配的目标。例如下面设置employee的name属性为查找条件，就是用点语法设置的keyPath。
-1</p>
-
-<pre><code>[NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"]
-</code></pre>
-
-<p>设置查询条件</p>
-
-<p>在之前的文章中，执行下面MOC的fetchRequest方法，一般都需要传入一个NSFetchRequest类型的参数。这个request参数可以做一些设置操作，这样就可以以较优的性能获取指定的数据。
-1</p>
-
-<pre><code>- (nullable NSArray *)executeFetchRequest:(NSFetchRequest *)request error:(NSError **)error;
-</code></pre>
-
-<p>NSFetchRequest</p>
-
-<p>在执行fetch操作前，可以给NSFetchRequest设置一些参数，这些参数包括谓词、排序等条件，下面是一些基础的设置。</p>
-
-<pre><code>设置查找哪个实体，从数据库的角度来看就是查找哪张表，通过fetchRequestWithEntityName:或初始化方法来指定表名。
-
-通过NSPredicate类型的属性，可以设置查找条件，这个属性在开发中用得最多。NSPredicate可以包括固定格式的条件以及正则表达式。
-
-通过sortDescriptors属性，可以设置获取结果数组的排序方式，这个属性是一个数组类型，也就是可以设置多种排序条件。(但是注意条件不要冲突)
-
-通过fetchOffset属性设置从查询结果的第几个开始获取，通过fetchLimit属性设置每次获取多少个。主要用于分页查询，后面会讲。
-</code></pre>
-
-<p>MOC执行fetch操作后，获取的结果是以数组的形式存储的，数组中存储的就是托管对象。NSFetchRequest提供了参数resultType，参数类型是一个枚举类型。通过这个参数，可以设置执行fetch操作后返回的数据类型。</p>
-
-<pre><code>NSManagedObjectResultType: 返回值是NSManagedObject的子类，也就是托管对象，这是默认选项
-
-NSManagedObjectIDResultType: 返回NSManagedObjectID类型的对象，也就是NSManagedObject的ID，对内存占用比较小。MOC可以通过NSManagedObjectID对象获取对应的托管对象，并且可以通过缓存NSManagedObjectID参数来节省内存消耗
-
-NSDictionaryResultType: 返回字典类型对象
-
-NSCountResultType: 返回请求结果的count值，这个操作是发生在数据库层级的，并不需要将数据加载到内存中
-</code></pre>
-
-<p>设置获取条件</p>
-
-<pre><code>// 建立获取数据的请求对象，并指明操作Employee表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置请求条件，通过设置的条件，来过滤出需要的数据
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name = %@", @"lxz"];
-request.predicate = predicate;
-// 设置请求结果排序方式，可以设置一个或一组排序方式，最后将所有的排序方式添加到排序数组中
-NSSortDescriptor *sort = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
-// NSSortDescriptor的操作都是在SQLite层级完成的，不会将对象加载到内存中，所以对内存的消耗是非常小的
-request.sortDescriptors = @[sort];
-// 执行获取请求操作，获取的托管对象将会被存储在一个数组中并返回
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Employee Name : %@, Height : %@, Brithday : %@", obj.name, obj.height, obj.brithday);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"CoreData Fetch Data Error : %@", error);
-}
-</code></pre>
-
-<p>这里设置NSFetchRequest对象的一些请求条件，设置查找Employee表中name为lxz的数据，并且将所有符合的数据用height值升序的方式排列。</p>
-
-<p>有实体关联关系</p>
-
-<p>一个模型文件中的不同实体间，可以设置实体间的关联关系，这个在之前的文章中讲过。实体关联关系分为对一或对多，也可以设置是否双向关联。</p>
-
-<p>这里演示的实体只是简单的To One的关系，并且下面会给出设置是否双向关联的区别对比。</p>
-
-<p>插入实体</p>
-
-<pre><code>// 创建托管对象，并将其关联到指定的MOC上
-Employee *zsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-zsEmployee.name = @"zhangsan";
-zsEmployee.height = @1.9f;
-zsEmployee.brithday = [NSDate date];
-Employee *lsEmployee = [NSEntityDescription insertNewObjectForEntityForName:@"Employee" inManagedObjectContext:context];
-lsEmployee.name = @"lisi";
-lsEmployee.height = @1.7f;
-lsEmployee.brithday = [NSDate date];
-Department *iosDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
-iosDepartment.departName = @"iOS";
-iosDepartment.createDate = [NSDate date];
-iosDepartment.employee = zsEmployee;
-Department *androidDepartment = [NSEntityDescription insertNewObjectForEntityForName:@"Department" inManagedObjectContext:context];
-androidDepartment.departName = @"android";
-androidDepartment.createDate = [NSDate date];
-androidDepartment.employee = lsEmployee;
-// 执行存储操作
-NSError *error = nil;
-if (context.hasChanges) {
-    [context save:&amp;error];
-}
-// 错误处理
-if (error) {
-    NSLog(@"Association Table Add Data Error : %@", error);
-}
-</code></pre>
-
-<p>上面创建了四个实体，并且将Employee都关联到Department上，完成关联操作后通过MOC存储到本地。</p>
-
-<p>可以看到上面所有的托管对象创建时，都使用NSEntityDescription的insert方法创建，并和上下文建立关系。这时就想问了，我能直接采用传统的init方法创建吗？</p>
-
-<p>会崩的！创建托管对象时需要指定MOC，在运行时动态的生成set、get方法。但是直接通过init方法初始化的对象，系统是不知道这里是需要系统自身生成set、get方法的，而且系统也不知道应该对应哪个MOC，会导致方法未实现的崩溃。所以就出现了开发中经常出现的错误，如下面崩溃信息：
-1</p>
-
-<pre><code>-[Employee setName:]: unrecognized selector sent to instance 0x7fa665900f60
-</code></pre>
-
-<p>双向关联</p>
-
-<p>在上一篇文章中提到过双向关联的概念，也就是设置Relationship时Inverse是否为空。下面是Employee和Department在数据库中，设置inverse和没有设置inverse的两种数据存储，可以很清晰的对比出设置双向关联的区别。</p>
-
-<p>测试代码还是用上面插入实体的代码，只是更改inverse选项。</p>
-
-<p>设置双向关联</p>
-
-<p><img src="http://al1020119.github.io/images/3002.png" title="Caption" ></p>
-
-<p>Employee</p>
-
-<p><img src="http://al1020119.github.io/images/3003.png" title="Caption" ></p>
-
-<p>Department</p>
-
-<p>未设置双向关联</p>
-
-<p><img src="http://al1020119.github.io/images/3004.png" title="Caption" ></p>
-
-<p>Employee</p>
-
-<p><img src="http://al1020119.github.io/images/3005.png" title="Caption" ></p>
-
-<p>Department</p>
-
-<p>从图中可以看出，未设置双向关联的实体，Department关联Employee为属性并存储后，Department表中的关系是存在的，但Employee表中的关系依然是空的。而设置双向关联后的实体，在Department关联Employee为属性并存储后，Employee在表中自动设置了和Department的关系。</p>
-
-<p>双向关联的关系不只体现在数据库中，在程序运行过程中托管对象的关联属性，也是随着发生变化的。双向关联的双方，一方的关联属性设置关系后，另一方关联属性的关系也会发生变化。用下面的代码打印一下各自的关联属性，结果和上面数据库的变化是一样的。
-1</p>
-
-<pre><code>NSLog(@"Department : %@, Employee : %@", androidDepartment.employee, lsEmployee.department);
-</code></pre>
-
-<p>查询操作</p>
-
-<pre><code>// 创建获取数据的请求对象，并指明操作Department表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Department"];
-// 设置请求条件，设置employee的name为请求条件。NSPredicate的好处在于，可以设置keyPath条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"employee.name = %@", @"lxz"];
-request.predicate = predicate;
-// 执行查找操作
-NSError *error = nil;
-NSArray *departments = [context executeFetchRequest:request error:&amp;error];
-[departments enumerateObjectsUsingBlock:^(Department * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Department Search Result DepartName : %@, employee name : %@", obj.departName, obj.employee.name);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Department Search Error : %@", error);
-}
-</code></pre>
-
-<p>查找Department实体，并打印实体内容。就像上面讲的双向关系一样，有关联关系的实体，自己被查找出来后，也会将与之关联的其他实体也查找出来，并且查找出来的实体都是关联着MOC的。</p>
-
-<p>分页查询</p>
-
-<p>在从本地存储区获取数据时，可以指定从第几个获取，以及本次查询获取多少个数据，联合起来使用就是分页查询。当然也可以根据需求，单独使用这两个API。</p>
-
-<p>这种需求在实际开发中非常常见，例如TableView中，上拉加载数据，每次加载20条数据，就可以利用分页查询轻松实现。</p>
-
-<pre><code>// 创建获取数据的请求对象，并指明操作Employee表
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置查找起始点，这里是从搜索结果的第六个开始获取
-request.fetchOffset = 6;
-// 设置分页，每次请求获取六个托管对象
-request.fetchLimit = 6;
-// 设置排序规则，这里设置身高升序排序
-NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"height" ascending:YES];
-request.sortDescriptors = @[descriptor];
-// 执行查询操作
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Page Search Result Name : %@, height : %@", obj.name, obj.height);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Page Search Data Error : %@", error);
-}
-</code></pre>
-
-<p>上面是一个按照身高升序排序，分页获取搜索结果的例子。查找Employee表中的实体，将结果按照height字段升序排序，并从结果的第六个开始查找，并且设置获取的数量也是六个。</p>
-
-<p>模糊查询</p>
-
-<p>有时需要获取具有某些相同特征的数据，这样就需要对查询的结果做模糊匹配。在CoreData执行模糊匹配时，可以通过NSPredicate执行这个操作。</p>
-
-<pre><code>// 创建获取数据的请求对象，设置对Employee表进行操作
-NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建模糊查询条件。这里设置的带通配符的查询，查询条件是结果包含lxz
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
-request.predicate = predicate;
-// 执行查询操作
-NSError *error = nil;
-NSArray *employees = [context executeFetchRequest:request error:&amp;error];
-[employees enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Fuzzy Search Result Name : %@, height : %@", obj.name, obj.height);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Fuzzy Search Data Error : %@", error);
-}
-</code></pre>
-
-<p>上面是使用通配符的方式进行模糊查询，NSPredicate支持多种形式的模糊查询，下面列举一些简单的匹配方式。模糊查询条件对大小写不敏感，所以查询条件大小写均可。</p>
-
-<pre><code>以lxz开头
-</code></pre>
-
-<p>1</p>
-
-<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"lxz"];
-
-以lxz结尾
-</code></pre>
-
-<p>1</p>
-
-<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name ENDSWITH %@", @"lxz"];
-
-其中包含lxz
-</code></pre>
-
-<p>1</p>
-
-<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name contains %@", @"lxz"];
-
-查询条件结果包含lxz
-</code></pre>
-
-<p>1</p>
-
-<pre><code>NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name LIKE %@", @"*lxz*"];
-</code></pre>
-
-<p>加载请求模板</p>
-
-<p>在之前的文章中谈到在模型文件中设置请求模板，也就是在.xcdatamodeld文件中，设置Fetch Requests，使用时可以通过对应的NSManagedObjectModel获取设置好的模板。</p>
-
-<p>&hellip;. 省略上下文创建步骤 &hellip;.</p>
-
-<pre><code>// 通过MOC获取模型文件对应的托管对象模型
-NSManagedObjectModel *model = context.persistentStoreCoordinator.managedObjectModel;
-// 通过.xcdatamodeld文件中设置的模板名，获取请求对象
-NSFetchRequest *fetchRequest = [model fetchRequestTemplateForName:@"EmployeeFR"];
-// 请求数据，下面的操作和普通请求一样
-NSError *error = nil;
-NSArray *dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
-[dataList enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    NSLog(@"Employee.count = %ld, Employee.height = %f", dataList.count, [obj.height floatValue]);
-}];
-// 错误处理
-if (error) {
-    NSLog(@"Execute Fetch Request Error : %@", error);
-}
-</code></pre>
-
-<p>获取结果Count值</p>
-
-<p>开发过程中有时需要只获取所需数据的Count值，也就是执行获取操作后数组中所存储的对象数量。遇到这个需求，如果像之前一样MOC执行获取操作，获取到数组然后取Count，这样对内存消耗是很大的。</p>
-
-<p>对于这个需求，苹果提供了两种常用的方式获取这个Count值。这两种获取操作，都是在数据库中完成的，并不需要将托管对象加载到内存中，对内存的开销也是很小的。</p>
-
-<pre><code>方法1，设置resultType
-
-
-// 设置过滤条件，可以根据需求设置自己的过滤条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; 2"];
-// 创建请求对象，并指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-fetchRequest.predicate = predicate;
-// 这一步是关键。设置返回结果类型为Count，返回结果为NSNumber类型
-fetchRequest.resultType = NSCountResultType;
-// 执行查询操作，返回的结果还是数组，数组中只存在一个对象，就是计算出的Count值
-NSError *error = nil;
-NSArray *dataList = [context executeFetchRequest:fetchRequest error:&amp;error];
-NSInteger count = [dataList.firstObject integerValue];
-NSLog(@"fetch request result Employee.count = %ld", count);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
-</code></pre>
-
-<p>方法1中设置NSFetchRequest对象的resultType为NSCountResultType，获取到结果的Count值。这个枚举值在之前的文章中提到过，除了Count参数，还可以设置其他三种参数。</p>
-
-<pre><code>方法2，使用MOC提供的方法
-
-
-// 设置过滤条件
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; 2"];
-// 创建请求对象，指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-fetchRequest.predicate = predicate;
-// 通过调用MOC的countForFetchRequest:error:方法，获取请求结果count值，返回结果直接是NSUInteger类型变量
-NSError *error = nil;
-NSUInteger count = [context countForFetchRequest:fetchRequest error:&amp;error];
-NSLog(@"fetch request result count is : %ld", count);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
-</code></pre>
-
-<p>MOC提供了专门获取请求结果Count值的方法，通过这个方法可以直接返回一个NSUInteger类型的Count值，使用起来比上面的方法更方便点，其他都是一样的。</p>
-
-<p>位运算</p>
-
-<p>假设有需求是对Employee表中，所有托管对象的height属性计算总和。这个需求在数据量比较大的情况下，将所有托管对象加载到内存中是非常消耗内存的，就算批量加载也比较耗时耗内存。</p>
-
-<p>CoreData对于这样的需求，提供了位运算的功能。MOC在执行请求时，是支持对数据进行位运算的。这个操作依然是在数据库层完成的，对内存的占用非常小。</p>
-
-<pre><code>// 创建请求对象，指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 设置返回值为字典类型，这是为了结果可以通过设置的name名取出，这一步是必须的
-fetchRequest.resultType = NSDictionaryResultType;
-// 创建描述对象
-NSExpressionDescription *expressionDes = [[NSExpressionDescription alloc] init];
-// 设置描述对象的name，最后结果需要用这个name当做key来取出结果
-expressionDes.name = @"sumOperatin";
-// 设置返回值类型，根据运算结果设置类型
-expressionDes.expressionResultType = NSFloatAttributeType;
-// 创建具体描述对象，用来描述对那个属性进行什么运算(可执行的运算类型很多，这里描述的是对height属性，做sum运算)
-NSExpression *expression = [NSExpression expressionForFunction:@"sum:" arguments:@[[NSExpression expressionForKeyPath:@"height"]]];
-// 只能对应一个具体描述对象
-expressionDes.expression = expression;
-// 给请求对象设置描述对象，这里是一个数组类型，也就是可以设置多个描述对象
-fetchRequest.propertiesToFetch = @[expressionDes];
-// 执行请求，返回值还是一个数组，数组中只有一个元素，就是存储计算结果的字典
-NSError *error = nil;
-NSArray *resultArr = [context executeFetchRequest:fetchRequest error:&amp;error];
-// 通过上面设置的name值，当做请求结果的key取出计算结果
-NSNumber *number = resultArr.firstObject[@"sumOperatin"];
-NSLog(@"fetch request result is %f", [number floatValue]);
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
-</code></pre>
-
-<p>执行结果：</p>
-
-<p><img src="http://al1020119.github.io/images/3006.png" title="Caption" ></p>
-
-<p>从执行结果可以看到，MOC对所有查找到的托管对象height属性执行了求和操作，并将结果放在字典中返回。位运算主要是通过NSFetchRequest对象的propertiesToFetch属性设置，这个属性可以设置多个描述对象，最后通过不同的name当做key来取出结果即可。</p>
-
-<p>NSExpression类可以描述多种运算，可以在NSExpression.h文件中的注释部分，看到所有支持的运算类型，大概看了一下有二十多种运算。而且除了上面NSExpression调用的方法，此类还支持点语法的位运算，例如下面的例子。
-1</p>
-
-<pre><code>[NSExpression expressionWithFormat:@"@sum.height"];
-</code></pre>
-
-<p>批处理</p>
-
-<p>在使用CoreData之前，我和公司同事也讨论过，假设遇到需要大量数据处理的时候怎么办。CoreData对于大量数据处理的灵活性肯定不如SQLite，这时候还需要自己使用其他方式优化数据处理。虽然在移动端这种情况很少出现，但是在持久层设计时还是要考虑这方面。</p>
-
-<p>当需要进行数据的处理时，CoreData需要先将数据加载到内存中，然后才能对数据进行处理。这样对于大量数据来说，都加载到内存中是非常消耗内存的，而且容易导致崩溃的发生。如果遇到更改所有数据的某个字段这样的简单需求，需要将相关的托管对象都加载到内存中，然后进行更改、保存。</p>
-
-<p>对于上面这样的问题，CoreData在iOS8推出了批量更新API，通过这个API可以直接在数据库一层就完成更新操作，而不需要将数据加载到内存。除了批量更新操作，在iOS9中还推出了批量删除API，也是在数据库一层完成的操作。关于批处理的API很多都是iOS8、iOS9出来的，使用时需要注意版本兼容。</p>
-
-<p>但是有个问题，批量更新和批量删除的两个API，都是直接对数据库进行操作，更新完之后会导致MOC缓存和本地持久化数据不同步的问题。所以需要手动刷新受影响的MOC中存储的托管对象，使MOC和本地统一。假设你使用了NSFetchedResultsController，为了保证界面和数据的统一，这一步更新操作更需要做。</p>
-
-<p>批量更新</p>
-
-<pre><code>// 创建批量更新对象，并指明操作Employee表。
-NSBatchUpdateRequest *updateRequest = [NSBatchUpdateRequest batchUpdateRequestWithEntityName:@"Employee"];
-// 设置返回值类型，默认是什么都不返回(NSStatusOnlyResultType)，这里设置返回发生改变的对象Count值
-updateRequest.resultType = NSUpdatedObjectsCountResultType;
-// 设置发生改变字段的字典
-updateRequest.propertiesToUpdate = @{@"height" : [NSNumber numberWithFloat:5.f]};
-// 执行请求后，返回值是一个特定的result对象，通过result的属性获取返回的结果。MOC的这个API是从iOS8出来的，所以需要注意版本兼容。
-NSError *error = nil;
-NSBatchUpdateResult *result = [context executeRequest:updateRequest error:&amp;error];
-NSLog(@"batch update count is %ld", [result.result integerValue]);
-// 错误处理
-if (error) {
-    NSLog(@"batch update request result error : %@", error);
-}
-// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];
-</code></pre>
-
-<p>上面对Employee表中所有的托管对象height值做了批量更新，在更新时通过设置propertiesToUpdate字典来控制更新字段和更新的值，设置格式是字段名 : 新值。通过设置批处理对象的predicate属性，设置一个谓词对象来控制受影响的对象。</p>
-
-<p>还可以对多个存储区(数据库)做同样批处理操作，通过设置其父类的affectedStores属性，类型是一个数组，可以包含受影响的存储区，多个存储区的操作对批量删除同样适用。</p>
-
-<p>MOC在执行请求方法时，发现方法名也不一样了，执行的是executeRequest: error:方法，这个方法是从iOS8之后出来的。方法传入的参数是NSBatchUpdateRequest类，此类并不是继承自NSFetchRequest类，而是直接继承自NSPersistentStoreRequest，和NSFetchRequest是平级关系。</p>
-
-<p>批量删除</p>
-
-<pre><code>// 创建请求对象，并指明对Employee表做操作
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 通过谓词设置过滤条件，设置条件为height小于1.7
-NSPredicate *predicate = [NSPredicate predicateWithFormat:@"height &lt; %f", 1.7f];
-fetchRequest.predicate = predicate;
-// 创建批量删除请求，并使用上面创建的请求对象当做参数进行初始化
-NSBatchDeleteRequest *deleteRequest = [[NSBatchDeleteRequest alloc] initWithFetchRequest:fetchRequest];
-// 设置请求结果类型，设置为受影响对象的Count
-deleteRequest.resultType = NSBatchDeleteResultTypeCount;
-// 使用NSBatchDeleteResult对象来接受返回结果，通过id类型的属性result获取结果
-NSError *error = nil;
-NSBatchDeleteResult *result = [context executeRequest:deleteRequest error:&amp;error];
-NSLog(@"batch delete request result count is %ld", [result.result integerValue]);
-// 错误处理
-if (error) {
-    NSLog(@"batch delete request error : %@", error);
-}
-// 更新MOC中的托管对象，使MOC和本地持久化区数据同步
-[context refreshAllObjects];
-</code></pre>
-
-<p>大多数情况下，涉及到托管对象的操作，都需要将其加载到内存中完成。所以使用CoreData时，需要注意内存的使用，不要在内存中存在过多的托管对象。在已经做系统兼容的情况下，进行大量数据的操作时，应该尽量使用批处理来完成操作。</p>
-
-<p>需要注意的是，refreshAllObjects是从iOS9出来的，在iOS9之前因为要做版本兼容，所以需要使用refreshObject: mergeChanges:方法更新托管对象。</p>
-
-<p>异步请求</p>
-
-<pre><code>// 创建请求对象，并指明操作Employee表
-NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Employee"];
-// 创建异步请求对象，并通过一个block进行回调，返回结果是一个NSAsynchronousFetchResult类型参数
-NSAsynchronousFetchRequest *asycFetchRequest = [[NSAsynchronousFetchRequest alloc] initWithFetchRequest:fetchRequest completionBlock:^(NSAsynchronousFetchResult * _Nonnull result) {
-    [result.finalResult enumerateObjectsUsingBlock:^(Employee * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@"fetch request result Employee.count = %ld, Employee.name = %@", result.finalResult.count, obj.name);
-    }];
-}];
-// 执行异步请求，和批量处理执行同一个请求方法
-NSError *error = nil;
-[context executeRequest:asycFetchRequest error:&amp;error];
-// 错误处理
-if (error) {
-    NSLog(@"fetch request result error : %@", error);
-}
-</code></pre>
-
-<p>上面通过NSAsynchronousFetchRequest对象创建了一个异步请求，并通过block进行回调。如果有多个请求同时发起，不需要担心线程安全的问题，系统会将所有的异步请求添加到一个操作队列中，在前一个任务访问数据库时，CoreData会将数据库加锁，等前面的执行完成才会继续执行后面的操作。</p>
-
-<p>NSAsynchronousFetchRequest提供了cancel方法，也就是可以在请求过程中，将这个请求取消。还可以通过一个NSProgress类型的属性，获取请求完成进度。NSAsynchronousFetchRequest类从iOS8开始可以使用，所以低版本需要做版本兼容。</p>
-
-<p>需要注意的是，执行请求时MOC并发类型不能是NSConfinementConcurrencyType，这个并发类型已经被抛弃，会导致崩溃。</p>
 
 <pre><code>Q Q：2211523682/790806573
 
