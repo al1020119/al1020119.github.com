@@ -90,8 +90,10 @@ footer: true
 
 * 熟悉android（java），C#，C++，
 
-* 最近在研究并学习前端开发：Php5+Css3+JavaScript，逆向工程
-
+* 最近在研究并学习
+	
+	- 算法与数据结构 
+	- 前端开发：H5+Css3+JavaScript，逆向工程，PHP
 
 ######后期规划：
 
