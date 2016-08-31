@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>修行篇-七大查找算法 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="阅读目录 1、顺序查找
+2、二分查找
+3、插值查找
+4、斐波那契查找
+5、树表查找
+6、分块查找
+7、哈希查找 查找是在大量的信息中寻找一个特定的信息元素，在计算机应用中，查找是常用的基本运算，例如编译程序中符号表的查找。 本文简单概括性的介绍了常见的七种查找算法，说是七种，其实二分查找、 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">修行篇-七大查找算法</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-08-20T12:32:08+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:32 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>阅读目录</p>
+
+<ul>
+<li><p>1、顺序查找</p></li>
+<li><p>2、二分查找</p></li>
+<li><p>3、插值查找</p></li>
+<li><p>4、斐波那契查找</p></li>
+<li><p>5、树表查找</p></li>
+<li><p>6、分块查找</p></li>
+<li><p>7、哈希查找</p></li>
+</ul>
+
+
+<p>查找是在大量的信息中寻找一个特定的信息元素，在计算机应用中，查找是常用的基本运算，例如编译程序中符号表的查找。</p>
+
+<!--more-->
+
+
+<blockquote><p>本文简单概括性的介绍了常见的七种查找算法，说是七种，其实二分查找、插值查找以及斐波那契查找都可以归为一类——插值查找。插值查找和斐波那契查找是在二分查找的基础上的优化查找算法。树表查找和哈希查找会在后续的博文中进行详细介绍。</p></blockquote>
+
+<p>查找定义：根据给定的某个值，在查找表中确定一个其关键字等于给定值的数据元素（或记录）。</p>
+
+<p>查找算法分类：</p>
+
+<p>1）静态查找和动态查找；</p>
+
+<pre><code>注：静态或者动态都是针对查找表而言的。动态表指查找表中有删除和插入操作的表。
+</code></pre>
+
+<p>2）无序查找和有序查找。</p>
+
+<pre><code>无序查找：被查找数列有序无序均可；
+
+有序查找：被查找数列必须为有序数列。
+</code></pre>
+
+<p>平均查找长度（Average Search Length，ASL）：</p>
+
+<ul>
+<li>需和指定key进行比较的关键字的个数的期望值，称为查找算法在查找成功时的平均查找长度。</li>
+</ul>
+
+
+<p>对于含有n个数据元素的查找表，查找成功的平均查找长度为：ASL = Pi*Ci的和。</p>
+
+<pre><code>Pi：查找表中第i个数据元素的概率。
+
+Ci：找到第i个数据元素时已经比较过的次数。
+</code></pre>
+
+<h3>1、顺序查找</h3>
+
+<ul>
+<li>说明：顺序查找适合于存储结构为顺序存储或链接存储的线性表。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>顺序查找也称为线形查找，属于无序查找算法。从数据结构线形表的一端开始，顺序扫描，依次将扫描到的结点关键字与给定值k相比较，若相等则表示查找成功；若扫描结束仍没有找到关键字等于k的结点，表示查找失败。
+</code></pre>
+
+<p>复杂度分析：　</p>
+
+<pre><code>查找成功时的平均查找长度为：（假设每个数据元素的概率相等） ASL = 1/n(1+2+3+…+n) = (n+1)/2 ;
+</code></pre>
+
+<p>当查找不成功时，需要n+1次比较，时间复杂度为O(n);</p>
+
+<blockquote><p>所以，顺序查找的时间复杂度为O(n)。</p></blockquote>
+
+<pre><code>//顺序查找
+int SequenceSearch(int a[], int value, int n)
+{
+    int i;
+    for(i=0; i&lt;n; i++)
+        if(a[i]==value)
+            return i;
+    return -1;
+}
+</code></pre>
+
+<h3>2、二分查找</h3>
+
+<blockquote><p>说明：元素必须是有序的，如果是无序的则要先进行排序操作。</p></blockquote>
+
+<p>基本思想：</p>
+
+<pre><code>也称为是折半查找，属于有序查找算法。用给定值k先与中间结点的关键字比较，中间结点把线形表分成两个子表，若相等则查找成功；若不相等，再根据k与该中间结点关键字的比较结果确定下一步查找哪个子表，这样递归进行，直到查找到或查找结束发现表中没有这样的结点。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏情况下，关键词比较次数为log2(n+1)，且期望时间复杂度为O(log2n)；
+</code></pre>
+
+<blockquote><p>注：折半查找的前提条件是需要有序表顺序存储，对于静态查找表，一次排序后不再变化，折半查找能得到不错的效率。但对于需要频繁执行插入或删除操作的数据集来说，维护有序的排序会带来不小的工作量，那就不建议使用。——《大话数据结构》</p></blockquote>
+
+<pre><code>    //二分查找（折半查找），版本1
+int BinarySearch1(int a[], int value, int n)
+{
+    int low, high, mid;
+    low = 0;
+    high = n-1;
+    while(low&lt;=high)
+    {
+        mid = (low+high)/2;
+        if(a[mid]==value)
+            return mid;
+        if(a[mid]&gt;value)
+            high = mid-1;
+        if(a[mid]&lt;value)
+            low = mid+1;
+    }
+    return -1;
+}
+
+//二分查找，递归版本
+int BinarySearch2(int a[], int value, int low, int high)
+{
+    int mid = low+(high-low)/2;
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return BinarySearch2(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return BinarySearch2(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>3、插值查找</h3>
+
+<p>在介绍插值查找之前，首先考虑一个新问题，为什么上述算法一定要是折半，而不是折四分之一或者折更多呢？</p>
+
+<pre><code>打个比方，在英文字典里面查“apple”，你下意识翻开字典是翻前面的书页还是后面的书页呢？如果再让你查“zoo”，你又怎么查？很显然，这里你绝对不会是从中间开始查起，而是有一定目的的往前或往后翻。
+</code></pre>
+
+<p>同样的，比如要在取值范围1 ~ 10000 之间 100 个元素从小到大均匀分布的数组中查找5， 我们自然会考虑从数组下标较小的开始查找。</p>
+
+<p>经过以上分析，折半查找这种查找方式，不是自适应的（也就是说是傻瓜式的）。二分查找中查找点计算如下：</p>
+
+<pre><code>mid=(low+high)/2, 即mid=low+1/2*(high-low);
+</code></pre>
+
+<p>通过类比，我们可以将查找的点改进为如下：</p>
+
+<pre><code>mid=low+(key-a[low])/(a[high]-a[low])*(high-low)，
+</code></pre>
+
+<p>也就是将上述的比例参数1/2改进为自适应的，根据关键字在整个有序表中所处的位置，让mid值的变化更靠近关键字key，这样也就间接地减少了比较次数。</p>
+
+<p>基本思想：</p>
+
+<pre><code>基于二分查找算法，将查找点的选择改进为自适应选择，可以提高查找效率。当然，差值查找也属于有序查找。
+</code></pre>
+
+<blockquote><p>注：对于表长较大，而关键字分布又比较均匀的查找表来说，插值查找算法的平均性能比折半查找要好的多。反之，数组中如果分布非常不均匀，那么插值查找未必是很合适的选择。</p></blockquote>
+
+<p>复杂度分析：查找成功或者失败的时间复杂度均为O(log2(log2n))。</p>
+
+<pre><code>//插值查找
+int InsertionSearch(int a[], int value, int low, int high)
+{
+    int mid = low+(value-a[low])/(a[high]-a[low])*(high-low);
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return InsertionSearch(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return InsertionSearch(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>4、斐波那契查找</h3>
+
+<blockquote><p>在介绍斐波那契查找算法之前，我们先介绍一下很它紧密相连并且大家都熟知的一个概念——黄金分割。</p></blockquote>
+
+<p>黄金比例又称黄金分割，</p>
+
+<pre><code>是指事物各部分间一定的数学比例关系，即将整体一分为二，较大部分与较小部分之比等于整体与较大部分之比，其比值约为1:0.618或1.618:1。
+</code></pre>
+
+<p>0.618被公认为最具有审美意义的比例数字，这个数值的作用不仅仅体现在诸如绘画、雕塑、音乐、建筑等艺术领域，而且在管理、工程设计等方面也有着不可忽视的作用。因此被称为黄金分割。</p>
+
+<p>大家记不记得斐波那契数列：</p>
+
+<ul>
+<li>1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89…….（从第三个数开始，后边每一个数都是前两个数的和）。然后我们会发现，随着斐波那契数列的递增，前后两个数的比值会越来越接近0.618，利用这个特性，我们就可以将黄金比例运用到查找技术中。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>也是二分查找的一种提升算法，通过运用黄金比例的概念在数列中选择查找点进行查找，提高查找效率。同样地，斐波那契查找也属于一种有序查找算法。
+</code></pre>
+
+<p>相对于折半查找，一般将待比较的key值与第mid=（low+high）/2位置的元素比较，比较结果分三种情况：</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1;</p></li>
+<li><p>3）&lt;，high=mid-1。</p></li>
+</ul>
+
+
+<p>斐波那契查找与折半查找很相似，他是根据斐波那契序列的特点对有序表进行分割的。他要求开始表中记录的个数为某个斐波那契数小1，及n=F(k)-1;</p>
+
+<p>开始将k值与第F(k-1)位置的记录进行比较(及mid=low+F(k-1)-1),比较结果也分为三种</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1,k-=2;</p>
+
+<ul>
+<li>说明：low=mid+1说明待查找的元素在[mid+1,high]范围内，k-=2 说明范围[mid+1,high]内的元素个数为n-(F(k-1))= Fk-1-F(k-1)=Fk-F(k-1)-1=F(k-2)-1个，所以可以递归的应用斐波那契查找。</li>
+</ul>
+</li>
+<li><p>3）&lt;，high=mid-1,k-=1。</p></li>
+</ul>
+
+
+<p>说明：low=mid+1说明待查找的元素在[low,mid-1]范围内，k-=1 说明范围[low,mid-1]内的元素个数为F(k-1)-1个，所以可以递归 的应用斐波那契查找。</p>
+
+<p>复杂度分析：最坏情况下，时间复杂度为O(log2n)，且其期望复杂度也为O(log2n)。</p>
+
+<pre><code>// 斐波那契查找.cpp 
+
+#include "stdafx.h"
+#include &lt;memory&gt;
+#include  &lt;iostream&gt;
+using namespace std;
+
+const int max_size=20;//斐波那契数组的长度
+
+/*构造一个斐波那契数组*/ 
+void Fibonacci(int * F)
+{
+    F[0]=0;
+    F[1]=1;
+    for(int i=2;i&lt;max_size;++i)
+        F[i]=F[i-1]+F[i-2];
+}
+
+/*定义斐波那契查找法*/  
+int FibonacciSearch(int *a, int n, int key)  //a为要查找的数组,n为要查找的数组长度,key为要查找的关键字
+{
+  int low=0;
+  int high=n-1;
+
+  int F[max_size];
+  Fibonacci(F);//构造一个斐波那契数组F 
+
+  int k=0;
+  while(n&gt;F[k]-1)//计算n位于斐波那契数列的位置
+      ++k;
+
+  int  * temp;//将数组a扩展到F[k]-1的长度
+  temp=new int [F[k]-1];
+  memcpy(temp,a,n*sizeof(int));
+
+  for(int i=n;i&lt;F[k]-1;++i)
+     temp[i]=a[n-1];
+
+  while(low&lt;=high)
+  {
+    int mid=low+F[k-1]-1;
+    if(key&lt;temp[mid])
+    {
+      high=mid-1;
+      k-=1;
+    }
+    else if(key&gt;temp[mid])
+    {
+     low=mid+1;
+     k-=2;
+    }
+    else
+    {
+       if(mid&lt;n)
+           return mid; //若相等则说明mid即为查找到的位置
+       else
+           return n-1; //若mid&gt;=n则说明是扩展的数值,返回n-1
+    }
+  }  
+  delete [] temp;
+  return -1;
+}
+
+int main()
+{
+    int a[] = {0,16,24,35,47,59,62,73,88,99};
+    int key=100;
+    int index=FibonacciSearch(a,sizeof(a)/sizeof(int),key);
+    cout&lt;&lt;key&lt;&lt;" is located at:"&lt;&lt;index;
+    return 0;
+}
+</code></pre>
+
+<h3>5、树表查找</h3>
+
+<h5>5.1 最简单的树表查找算法——二叉树查找算法。</h5>
+
+<p>基本思想：</p>
+
+<pre><code>二叉查找树是先对待查找的数据进行生成树，确保树的左分支的值小于右分支的值，然后在就行和每个节点的父节点比较大小，查找最适合的范围。 这个算法的查找效率很高，但是如果使用这种查找方法要首先创建树。 
+</code></pre>
+
+<p>二叉查找树（BinarySearch Tree，也叫二叉搜索树，或称二叉排序树Binary Sort Tree）或者是一棵空树，或者是具有下列性质的二叉树：</p>
+
+<ul>
+<li><p>1）若任意节点的左子树不空，则左子树上所有结点的值均小于它的根结点的值；</p></li>
+<li><p>2）若任意节点的右子树不空，则右子树上所有结点的值均大于它的根结点的值；</p></li>
+<li><p>3）任意节点的左、右子树也分别为二叉查找树。</p></li>
+</ul>
+
+
+<p>二叉查找树性质：</p>
+
+<pre><code>对二叉查找树进行中序遍历，即可得到有序的数列。
+</code></pre>
+
+<p>不同形态的二叉查找树如下图所示：</p>
+
+<p>有关二叉查找树的查找、插入、删除等操作的详细讲解，请移步浅谈算法和数据结构: 七 二叉查找树。</p>
+
+<p>复杂度分析：它和二分查找一样，插入和查找的时间复杂度均为O(logn)，但是在最坏的情况下仍然会有O(n)的时间复杂度。原因在于插入和删除元素的时候，树没有保持平衡（比如，我们查找上图（b）中的“93”，我们需要进行n次查找操作）。我们追求的是在最坏的情况下仍然有较好的时间复杂度，这就是平衡查找树设计的初衷。</p>
+
+<p>下图为二叉树查找和顺序查找以及二分查找性能的对比图：</p>
+
+<p>基于二叉查找树进行优化，进而可以得到其他的树表查找算法，如平衡树、红黑树等高效算法。</p>
+
+<h5>5.2 平衡查找树之2-3查找树（2-3 Tree）</h5>
+
+<p>2-3查找树定义：</p>
+
+<pre><code>和二叉树不一样，2-3树运行每个节点保存1个或者两个的值。对于普通的2节点(2-node)，他保存1个key和左右两个自己点。对应3节点(3-node)，保存两个Key，2-3查找树的定义如下：
+</code></pre>
+
+<ul>
+<li><p>1）要么为空，要么：</p></li>
+<li><p>2）对于2节点，该节点保存一个key及对应value，以及两个指向左右节点的节点，左节点也是一个2-3节点，所有的值都比key要小，右节点也是一个2-3节点，所有的值比key要大。</p></li>
+<li><p>3）对于3节点，该节点保存两个key及对应value，以及三个指向左中右的节点。左节点也是一个2-3节点，所有的值均比两个key中的最小的key还要小；中间节点也是一个2-3节点，中间节点的key值在两个跟节点key值之间；右节点也是一个2-3节点，节点的所有key值比两个key中的最大的key还要大。</p></li>
+</ul>
+
+
+<p>2-3查找树的性质：</p>
+
+<ul>
+<li><p>1）如果中序遍历2-3查找树，就可以得到排好序的序列；</p></li>
+<li><p>2）在一个完全平衡的2-3查找树中，根节点到每一个为空节点的距离都相同。（这也是平衡树中“平衡”一词的概念，根节点到叶节点的最长距离对应于查找算法的最坏情况，而平衡树中根节点到叶节点的距离都一样，最坏情况也具有对数复杂度。）</p></li>
+</ul>
+
+
+<p>复杂度分析：</p>
+
+<p>2-3树的查找效率与树的高度是息息相关的。</p>
+
+<pre><code>在最坏的情况下，也就是所有的节点都是2-node节点，查找效率为lgN
+
+在最好的情况下，所有的节点都是3-node节点，查找效率为log3N约等于0.631lgN
+</code></pre>
+
+<p>距离来说，对于1百万个节点的2-3树，树的高度为12-20之间，对于10亿个节点的2-3树，树的高度为18-30之间。</p>
+
+<p>对于插入来说，只需要常数次操作即可完成，因为他只需要修改与该节点关联的节点即可，不需要检查其他节点，所以效率和查找类似。下面是2-3查找树的效率：</p>
+
+<h5>5.3 平衡查找树之红黑树（Red-Black Tree）</h5>
+
+<p>2-3查找树能保证在插入元素之后能保持树的平衡状态，最坏情况下即所有的子节点都是2-node，树的高度为lgn，从而保证了最坏情况下的时间复杂度。但是2-3树实现起来比较复杂，于是就有了一种简单实现2-3树的数据结构，即红黑树（Red-Black Tree）。</p>
+
+<p>基本思想：红黑树的思想就是对2-3查找树进行编码，尤其是对2-3查找树中的3-nodes节点添加额外的信息。红黑树中将节点之间的链接分为两种不同类型，红色链接，他用来链接两个2-nodes节点来表示一个3-nodes节点。黑色链接用来链接普通的2-3节点。特别的，使用红色链接的两个2-nodes来表示一个3-nodes节点，并且向左倾斜，即一个2-node是另一个2-node的左子节点。这种做法的好处是查找的时候不用做任何修改，和普通的二叉查找树相同。</p>
+
+<p>红黑树的定义：红黑树是一种具有红色和黑色链接的平衡查找树，同时满足：</p>
+
+<pre><code>红色节点向左倾斜
+
+一个节点不可能有两个红色链接
+
+整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同。
+</code></pre>
+
+<p>下图可以看到红黑树其实是2-3树的另外一种表现形式：如果我们将红色的连线水平绘制，那么他链接的两个2-node节点就是2-3树中的一个3-node节点了。</p>
+
+<p>红黑树的性质：</p>
+
+<pre><code>整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同（2-3树的第2）性质，从根节点到叶子节点的距离都相等）。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏的情况就是，红黑树中除了最左侧路径全部是由3-node节点组成，即红黑相间的路径长度是全黑路径长度的2倍。
+</code></pre>
+
+<p>下图是一个典型的红黑树，从中可以看到最长的路径(红黑相间的路径)是最短路径的2倍：</p>
+
+<pre><code>　　红黑树的平均高度大约为logn。
+</code></pre>
+
+<p>下图是红黑树在各种情况下的时间复杂度，可以看出红黑树是2-3查找树的一种实现，它能保证最坏情况下仍然具有对数的时间复杂度。</p>
+
+<p>红黑树这种数据结构应用十分广泛，在多种编程语言中被用作符号表的实现，如：</p>
+
+<pre><code>Java中的java.util.TreeMap,java.util.TreeSet；
+
+C++ STL中的：map,multimap,multiset；
+
+.NET中的：SortedDictionary,SortedSet 等。
+</code></pre>
+
+<h5>5.4 B树和B+树（B Tree/B+ Tree）</h5>
+
+<p>平衡查找树中的2-3树以及其实现红黑树。2-3树种，一个节点最多有2个key，而红黑树则使用染色的方式来标识这两个key。</p>
+
+<blockquote><p>维基百科对B树的定义为“在计算机科学中，B树（B-tree）是一种树状数据结构，它能够存储数据、对其进行排序并允许以O(log n)的时间复杂度运行进行查找、顺序读取、插入和删除的数据结构。B树，概括来说是一个节点可以拥有多于2个子节点的二叉查找树。与自平衡二叉查找树不同，B树为系统最优化大块数据的读和写操作。B-tree算法减少定位记录时所经历的中间过程，从而加快存取速度。普遍运用在数据库和文件系统。</p></blockquote>
+
+<h6>B树定义：</h6>
+
+<pre><code>B树可以看作是对2-3查找树的一种扩展，即他允许每个节点有M-1个子节点。
+
+根节点至少有两个子节点
+
+每个节点有M-1个key，并且以升序排列
+
+位于M-1和M key的子节点的值位于M-1 和M key对应的Value之间
+
+其它节点至少有M/2个子节点
+</code></pre>
+
+<p>下图是一个M=4 阶的B树:</p>
+
+<p>可以看到B树是2-3树的一种扩展，他允许一个节点有多于2个的元素。B树的插入及平衡化操作和2-3树很相似，这里就不介绍了。</p>
+
+<h6>B+树定义：</h6>
+
+<p>B+树是对B树的一种变形树，它与B树的差异在于：</p>
+
+<pre><code>有k个子结点的结点必然有k个关键码；
+
+非叶结点仅具有索引作用，跟记录有关的信息均存放在叶结点中。
+
+树的所有叶结点构成一个有序链表，可以按照关键码排序的次序遍历全部记录。
+</code></pre>
+
+<p>如下图，是一个B+树:</p>
+
+<pre><code>B和B+树的区别在于，B+树的非叶子结点只包含导航信息，不包含实际的值，所有的叶子结点和相连的节点使用链表相连，便于区间查找和遍历。
+</code></pre>
+
+<p>B+ 树的优点在于：</p>
+
+<pre><code>由于B+树在内部节点上不好含数据信息，因此在内存页中能够存放更多的key。 数据存放的更加紧密，具有更好的空间局部性。因此访问叶子几点上关联的数据也具有更好的缓存命中率。
+
+B+树的叶子结点都是相链的，因此对整棵树的便利只需要一次线性遍历叶子结点即可。而且由于数据顺序排列并且相连，所以便于区间查找和搜索。而B树则需要进行每一层的递归遍历。相邻的元素可能在内存中不相邻，所以缓存命中性没有B+树好。
+</code></pre>
+
+<p>但是B树也有优点，其优点在于，由于B树的每一个节点都包含key和value，因此经常访问的元素可能离根节点更近，因此访问也更迅速。</p>
+
+<p>B/B+树常用于文件系统和数据库系统中，它通过对每个节点存储个数的扩展，使得对连续的数据能够进行较快的定位和访问，能够有效减少查找时间，提高存储的空间局部性从而减少IO操作。它广泛用于文件系统及数据库中，如：</p>
+
+<pre><code>Windows：HPFS文件系统；
+
+Mac：HFS，HFS+文件系统；
+
+Linux：ResiserFS，XFS，Ext3FS，JFS文件系统；
+
+数据库：ORACLE，MYSQL，SQLSERVER等中。
+</code></pre>
+
+<p>有关B/B+树在数据库索引中的应用，请看张洋的MySQL索引背后的数据结构及算法原理这篇文章，这篇文章对MySQL中的如何使用B+树进行索引有比较详细的介绍，推荐阅读。</p>
+
+<p>树表查找总结：</p>
+
+<pre><code>二叉查找树平均查找性能不错，为O(logn)，但是最坏情况会退化为O(n)。在二叉查找树的基础上进行优化，我们可以使用平衡查找树。平衡查找树中的2-3查找树，这种数据结构在插入之后能够进行自平衡操作，从而保证了树的高度在一定的范围内进而能够保证最坏情况下的时间复杂度。但是2-3查找树实现起来比较困难，红黑树是2-3树的一种简单高效的实现，他巧妙地使用颜色标记来替代2-3树中比较难处理的3-node节点问题。红黑树是一种比较高效的平衡查找树，应用非常广泛，很多编程语言的内部实现都或多或少的采用了红黑树。
+</code></pre>
+
+<p>除此之外，2-3查找树的另一个扩展——B/B+平衡树，在文件系统和数据库系统中有着广泛的应用。</p>
+
+<h3>6、分块查找</h3>
+
+<p>分块查找又称索引顺序查找，它是顺序查找的一种改进方法。</p>
+
+<p>算法思想：</p>
+
+<pre><code>将n个数据元素"按块有序"划分为m块（m ≤ n）。每一块中的结点不必有序，但块与块之间必须"按块有序"；即第1块中任一元素的关键字都必须小于第2块中任一元素的关键字；而第2块中任一元素又都必须小于第3块中的任一元素，……
+</code></pre>
+
+<p>算法流程：</p>
+
+<ol>
+<li>step1 先选取各块中的最大关键字构成一个索引表；</li>
+<li>step2 查找分两个部分：先对索引表进行二分查找或顺序查找，以确定待查记录</li>
+</ol>
+
+
+<p>在哪一块中；然后，在已确定的块中用顺序法进行查找。</p>
+
+<h3>7、哈希查找</h3>
+
+<p>什么是哈希表（Hash）？</p>
+
+<pre><code>我们使用一个下标范围比较大的数组来存储元素。可以设计一个函数（哈希函数， 也叫做散列函数），使得每个元素的关键字都与一个函数值（即数组下标）相对应，于是用这个数组单元来存储这个元素；也可以简单的理解为，按照关键字为每一个元素"分类"，然后将这个元素存储在相应"类"所对应的地方。但是，不能够保证每个元素的关键字与函数值是一一对应的，因此极有可能出现对于不同的元素，却计算出了相同的函数值，这样就产生了"冲突"，换句话说，就是把不同的元素分在了相同的"类"之中。后面我们将看到一种解决"冲突"的简便做法。
+</code></pre>
+
+<p>总的来说，"直接定址"与"解决冲突"是哈希表的两大特点。</p>
+
+<p>什么是哈希函数？哈希函数的规则是：</p>
+
+<pre><code>通过某种转换关系，使关键字适度的分散到指定大小的的顺序结构中，越分散，则以后查找的时间复杂度越小，空间复杂度越高。
+</code></pre>
+
+<p>算法思想：</p>
+
+<pre><code>哈希的思路很简单，如果所有的键都是整数，那么就可以使用一个简单的无序数组来实现：将键作为索引，值即为其对应的值，这样就可以快速访问任意键的值。这是对于简单的键的情况，我们将其扩展到可以处理更加复杂的类型的键。
+</code></pre>
+
+<p>算法流程：</p>
+
+<ul>
+<li><p>1）用给定的哈希函数构造哈希表；</p></li>
+<li><p>2）根据选择的冲突处理方法解决地址冲突；</p>
+
+<ul>
+<li>常见的解决冲突的方法：拉链法和线性探测法。</li>
+</ul>
+</li>
+<li><p>3）在哈希表的基础上执行哈希查找。</p></li>
+</ul>
+
+
+<p>哈希表是一个在时间和空间上做出权衡的经典例子。如果没有内存限制，那么可以直接将键作为数组的索引。那么所有的查找时间复杂度为O(1)；如果没有时间限制，那么我们可以使用无序数组并进行顺序查找，这样只需要很少的内存。哈希表使用了适度的时间和空间来在这两个极端之间找到了平衡。只需要调整哈希函数算法即可在时间和空间上做出取舍。</p>
+
+<p>复杂度分析：</p>
+
+<pre><code>单纯论查找复杂度：对于无冲突的Hash表而言，查找复杂度为O(1)（注意，在查找之前我们需要构建相应的Hash表）。
+</code></pre>
+
+<p>使用Hash，我们付出了什么？</p>
+
+<pre><code>我们在实际编程中存储一个大规模的数据，最先想到的存储结构可能就是map，也就是我们常说的KV pair，经常使用Python的博友可能更有这种体会。使用map的好处就是，我们在后续处理数据处理时，可以根据数据的key快速的查找到对应的value值。map的本质就是Hash表，那我们在获取了超高查找效率的基础上，我们付出了什么？
+</code></pre>
+
+<blockquote><p>Hash是一种典型以空间换时间的算法，比如原来一个长度为100的数组，对其查找，只需要遍历且匹配相应记录即可，从空间复杂度上来看，假如数组存储的是byte类型数据，那么该数组占用100byte空间。现在我们采用Hash算法，我们前面说的Hash必须有一个规则，约束键与存储位置的关系，那么就需要一个固定长度的hash表，此时，仍然是100byte的数组，假设我们需要的100byte用来记录键与位置的关系，那么总的空间为200byte,而且用于记录规则的表大小会根据规则，大小可能是不定的。</p></blockquote>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-08-20T12:32:08+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:32 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/08/18/xiu-xing-pian-wu-da-chang-yong-suan-fa/" title="Previous Post: 修行篇-五大常用算法">&laquo; 修行篇-五大常用算法</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/08/23/xiu-xing-pian-23chong-she-ji-mo-shi/" title="Next Post: 修行篇-23种设计模式">修行篇-23种设计模式 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="修行篇-七大查找算法"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (32)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/08/31/duo-xian-cheng-an-quan-%3Fying-gai-bu-zhi-zhe-xie-%3F!/">多线程安全？应该不止这些😂！</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/28/xiu-xing-pian-shu-ju-jie-gou-chang-jian-cao-zuo-yu-zong-jie/">修行篇-数据结构常见操作与总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/25/xiu-xing-pian-suan-fa-zhi-jing-hua-suan-fa-and-mou-pao/">修行篇-算法之精华-算法&amp;冒泡</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/23/xiu-xing-pian-23chong-she-ji-mo-shi/">修行篇-23种设计模式</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa/">修行篇-七大查找算法</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
