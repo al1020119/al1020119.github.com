@@ -1,0 +1,3415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Data | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/data/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-09-21T19:15:46+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-数据结构常见操作与总结]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/28/xiu-xing-pian-shu-ju-jie-gou-chang-jian-cao-zuo-yu-zong-jie/"/>
+    <updated>2016-08-28T12:33:11+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/28/xiu-xing-pian-shu-ju-jie-gou-chang-jian-cao-zuo-yu-zong-jie</id>
+    <content type="html"><![CDATA[<h1>一、栈</h1>
+
+<p>栈是只能在一端进行插入和删除的线性表。
+（别看只是个定义，非常重要，已经道出了运算方法：只能在一端插入和删除。)</p>
+
+<blockquote><p>栈的特征：后进先出，先进后出。</p></blockquote>
+
+<p>插入和删除元素的一端称为栈顶。（说明了我们在栈顶操作）
+另一端称为栈底。
+插入元素和删除元素的操作称为入栈和出栈。</p>
+
+<!--more-->
+
+
+<h3>1.顺序栈</h3>
+
+<p>结构：(top总是指向数组最后的元素，比如data[n]，而不是前面)</p>
+
+<pre><code>#define MAXSIZE 100
+typedef struct
+{
+    elementtype data[MAXSIZE];
+    int top;
+} seqstack;
+</code></pre>
+
+<p>初始化栈：</p>
+
+<pre><code>void init_stack(seqstack *S)
+{
+    S-&gt;top = -1;    //一个元素也没有，注意因为TOP是下标而不是元素个数，用-1
+}
+</code></pre>
+
+<p>判断栈是否为空：</p>
+
+<pre><code>int stack_empty(seqstack *S)
+{
+    if (S-&gt;top == -1)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取栈顶元素：</p>
+
+<pre><code>elementtype stack_top(seqstack *S)
+{
+    if (stack_empty(S))
+        error("栈为空！");
+    else
+        return S-&gt;data[S-&gt;top];
+}
+</code></pre>
+
+<p>入栈：</p>
+
+<pre><code>void push_stack(seqstack *S, elementtype x)
+{
+    if (S-&gt;top == MAXSIZE -1)
+        error("溢出！");
+    else
+        S-&gt;data[++S-&gt;top] = x;    //注意-&gt;运算符的优先级是最高的
+}
+</code></pre>
+
+<p>出栈：</p>
+
+<pre><code>elementtype pop_stack(seqstack *S)
+{
+    if (stack_empty(S))
+        error("栈为空！");
+    else
+        return S-&gt;data[S-&gt;top--];
+}
+</code></pre>
+
+<p>判断栈是否为满：</p>
+
+<pre><code>int stack_full(seqstack *S)
+{
+    if (S-&gt;top == MAXSIZE -1)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>总体来说，顺序栈很简单，出的时候取最后的元素，进的时候一样进在尾部。</p>
+
+<h3>2.链栈</h3>
+
+<p>栈的链式存储结构称为链栈。
+其插入和删除操作仅限制在表头位置上进行。
+由于只能在链表头部进行操作，故链栈没有必要象单链表那样添加头结点。栈顶指针就是链表的头指针。
+结构：</p>
+
+<pre><code>typedef struct node    //和一般链表的结构一样。
+{
+    elementtype data;
+    struct node *next;
+} linkstack; 
+linkstack *top;
+当top=NULL时，链栈为空栈。
+</code></pre>
+
+<p>入栈：</p>
+
+<pre><code>void push_stack(linkstack *top, elementtype x)
+{
+    linkstack *P = (linkstack *)malloc(sizeof(linkstack));
+    P-&gt;data = x;
+    P-&gt;next = top-&gt;next;
+    top = P;
+}
+</code></pre>
+
+<p>出栈：</p>
+
+<pre><code>elementype pop_stack(linkstack *top)
+{
+    elementtype x;
+    linkstack *P;
+    if (top == NULL)
+        error("栈为空！");
+    else
+    {
+        x = top-&gt;data;
+        P = top;
+        top = top-&gt;next;
+        free(P);
+        return x;
+    }
+}
+</code></pre>
+
+<h1>二、队列</h1>
+
+<p>队列是只能在一端插入，另一端删除的线性表。
+特征是：先进先出，后进后出。</p>
+
+<h1>1.顺序队列</h1>
+
+<p>注意顺序队列多是循环队列，这里要注意几点：</p>
+
+<ul>
+<li>(1)front是队头的前一个位置。</li>
+<li>(2)尾部入队，头部出队。</li>
+<li><p>(3)由于循环，任何的位置移动计算之后要取余：P = (P + 1) % MAXSIZE 。
+结构：</p>
+
+<p>  #define MAXSIZE 100
+  typedef struct
+  {
+      elementtype data[MAXSIZE];
+      int front;    //头序号（注意是队头的前一个位置）
+      int rear;    //尾序号（直接指向尾元素）
+  } seqqueue;</p></li>
+</ul>
+
+
+<p>初始化队列：</p>
+
+<pre><code>void init_queue(seqqueue *Q)
+{
+    Q-&gt;front = 0;
+    Q-&gt;rear = 0;
+}
+</code></pre>
+
+<p>还有一种写法：</p>
+
+<pre><code>void init_queue(seqqueue *Q)
+{
+    Q-&gt;front = MAXSIZE - 1;
+    Q-&gt;rear = MAXSIZE - 1;
+}
+</code></pre>
+
+<p>两种方法的区别是第一种插入第一个元素是data[1]，而第二种是data[0]。
+判断队列是否为空：</p>
+
+<pre><code>int queue_empty(seqqueue *Q)
+{
+    if (Q-&gt;front == Q-&gt;rear)
+        return 1;
+    else
+        return -1;
+}
+</code></pre>
+
+<p>判断队列是否为满：</p>
+
+<pre><code>int queue_full(seqqueue *Q)
+{
+    if ((Q-&gt;rear + 1) % MAXSIZE == Q-&gt;front)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取队头元素：</p>
+
+<pre><code>elementtype queue_front(seqqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+        return Q-&gt;data[(Q-&gt;front + 1) % MAXSIZE];
+}
+</code></pre>
+
+<p>入队：</p>
+
+<pre><code>void Enqueue(seqqueue *Q, elementtype x)
+{
+    if (queue_full(Q))
+        error("队列满！");
+    else
+    {
+        Q-&gt;rear = (Q-&gt;rear + 1) % MAXSIZE;    //千万不能直接用Q-&gt;rear++，在循环队列要特别注意
+        Q-&gt;data[Q-&gt;rear] = x;
+    }
+}
+</code></pre>
+
+<p>出队：</p>
+
+<pre><code>elementtype Outqueue(seqqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+    {
+        Q-&gt;front = (Q-&gt;front + 1) % MAXSIZE;
+        return Q-&gt;data[Q-&gt;front];
+    }
+}
+</code></pre>
+
+<h3>2.链队列</h3>
+
+<p>出队时，删除表头操作，入队时，在表尾添加结点。（也就是头部出，尾部进）
+使用带头结点的单链表形式。（注意链栈是不带头结点的）
+结构：</p>
+
+<pre><code>typedef struct mynode
+{
+    elementtype data;
+    mynode *next;
+} node;    //就是单链表
+typedef struct
+{
+    node *front;
+    node *rear;
+} linkqueue;
+</code></pre>
+
+<p>初始化队列：</p>
+
+<pre><code>void init_queue(linkqueue *Q)
+{
+    Q-&gt;front = (node *)malloc(sizeof(node));    //生成头结点（注意是NODE类型，Q结构是已有的一个结构，这里有点特殊，仔细体会）
+    Q-&gt;rear = Q-&gt;front;
+    Q-&gt;front = NULL;
+}
+</code></pre>
+
+<p>判断队列是否为空：</p>
+
+<pre><code>int queue_empty(linkqueue *Q)
+{
+    if (Q-&gt;front == Q-&gt;rear)
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+
+<p>取队头元素：</p>
+
+<pre><code>elementtype queue_front(linkqueue *Q)
+{
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+        return Q-&gt;front-&gt;next-&gt;data;
+}
+</code></pre>
+
+<p>入队：</p>
+
+<pre><code>void Enqueue(linkqueue *Q, elementtype x)
+{
+    node *P = (node *)malloc(sizeof(node));
+    P-&gt;data = x;
+    P-&gt;next = NULL;
+    Q-&gt;rear-&gt;next = P;
+    Q-&gt;rear = P;
+}
+</code></pre>
+
+<p>出队：</p>
+
+<pre><code>elementtype Outqueue(linkqueue *Q)
+{
+    node *P;
+    elmenttype x;
+    if (queue_empty(Q))
+        error("队列为空！");
+    else
+    {
+        P = Q-&gt;front-&gt;next;
+        Q-&gt;front-&gt;next = P-&gt;next;
+        x = P-&gt;data;
+        free(P);
+    }
+    if (Q-&gt;front-&gt;next == NULL)    //只剩一个结点删除后队列为空时的特殊情况，一定要注意处理
+        Q-&gt;rear = Q-&gt;front;
+    return x;
+}
+</code></pre>
+
+<h1>数组</h1>
+
+<p>主要是稀疏矩阵的压缩存储：
+当数组中非零元素非常少时，称之为稀疏矩阵。
+存储特别如下：</p>
+
+<ul>
+<li>(1)对稀疏矩阵压缩存储时，除了存储非零元素的值v以外，还要存储其行列号i和j，故每个元素对应一个三元组(i, j, v)。将这些元素的三元组组织起来构成三元组表。</li>
+<li>(2)需要在三元组表中增设元素个数、行列数，以唯一确定一个稀疏矩阵。</li>
+</ul>
+
+
+<p>结构如下：</p>
+
+<pre><code>#define MAXSIZE 100
+typedef struct    //三元组结构
+{
+    int i, j;
+    elementtype v;
+} tuple;
+typedef struct
+{
+    int mu, nu, tu;    //行数、列数、非0元素个数
+    tuple data[MAXSIZE];
+} spmatrix;
+</code></pre>
+
+<h1>树</h1>
+
+<h3>一、树</h3>
+
+<p>树中的每个结点最多只有一个前驱（父辈），但可能有多个后继（后代）。
+一个结点的度是指该结点的孩子数目。
+若一个结点的度为0，称为叶子结点或终结点，否则称为分支结点或非终结点。
+一棵树的度是树中最大的结点的度。
+某个结点的子树的根称为其孩子结点，而该结点为其孩子结点的双亲结点或父结点。
+同一个结点的孩子互相称为兄弟结点。
+根的层次为1，其余结点的层次为父结点的层次数加1，而最大的层次数称为树的高度或深度。
+如果树中各兄弟结点之间的排列次序是无关的，则称之为有序树，否则称为无序树。
+称多棵树为森林。</p>
+
+<h3>二叉树</h3>
+
+<p>二叉树和树一样，都可以为空树。
+注意二叉树每个结点的孩子都有左右之分，每个结点都有左右两个子树，这与树结构明显不同。
+二叉树和树本质上是完全不同的两种结构。
+ 定义：满二叉树是指每层都有最大数目结点的二叉树，即高度为k的满二叉树中有2k-1个结点。而完全二叉树则是指在满二叉树的最下层从右到左连续地删除若干个结点所得到的二叉树。</p>
+
+<p>二叉树的性质：</p>
+
+<ul>
+<li>1.在二叉树的第i层上的结点个数&lt;=2i-1(i>0)</li>
+<li>2.深度（高度）为k的二叉树的结点个数&lt;=2k-1</li>
+<li>3.对任一棵非空的二叉树，如果其叶子数为n0, 度为2的结点数为n2, 则有下面的关系式成立：n0=n2+1
+(这个性质很重要。主要是有个概念：除去根结点，每个结点都与一个它上面的分支一一对应，也就是说，结点数＝分支数＋1，所以有：n-1=n1+2*n2)</li>
+<li>4.有n个结点的完全二叉树(n>0)的深度为[log2n]+1([]为取整)</li>
+<li>5.在编号的完全二叉树中，各结点的编号之间的关系为：
+编号为i的结点如果存在左孩子，则其编号为2i，如果存在右孩子，则其编号为2i+1，如果存在父结点，则其编号为[i/2]。</li>
+</ul>
+
+
+<p>二叉树的存储结构：
+1.顺序存储结构：
+按完全二叉树的编号次序进行，即编号为i的结点存储在数组中下标为i的元素中。
+缺点：若二叉树不是完全二叉树，则为了保持结点之间的关系，不得不空出许多元素来，这就造成了空间的浪费。</p>
+
+<p>2.二叉链表存储结构：</p>
+
+<pre><code>typedef struct node
+{
+    datatype data;
+    struct node *lchild, *rchild;
+} bitree;
+</code></pre>
+
+<h3>二叉树的遍历：</h3>
+
+<p>所谓遍历二叉树是指按某种次序访问二叉树中每个结点一次且仅一次。
+根据访问根结点的次序，可以分为先序遍历，中序遍历，后序遍历。
+先序遍历可描述为：
+若二叉树T不为空：</p>
+
+<ul>
+<li>(1)访问T的根结点；</li>
+<li>(2)先序遍历T的左子树；</li>
+<li><p>(3)先序遍历T的右子树。
+遍历的算法非常简单，只写出先序遍历算法：</p>
+
+<p>  void preorder(bitree *T)
+  {
+      if (T != NULL)
+      {
+          visit(T);    //一般用的最多的就是输出
+          preorder(T->lchild);
+          preorder(T->rchild);
+      }
+  }</p></li>
+</ul>
+
+
+<h3>线索二叉树</h3>
+
+<p>线索二叉树主要是为了求解在某种次序下的前驱或后继结点。
+将二叉树各结点中的空的左孩子指针域改为指向其前驱，空的右孩子指针域改为指向其后继。称这种新的指针（前驱或后继）为线索，所得到的二叉树被称为线索二叉树，将二叉树转变成线索二叉树的过程称为线索化。
+同时，为了区分到底指针是指向前驱（后继）还是孩子，要加入两个标志来判断。
+结构：</p>
+
+<pre><code>typedef struct node
+{
+    int ltag, rtag;    //0为孩子，1为前驱或后继
+    datatype data;
+    struct node *lchild, *rchild;
+} ordertree;
+</code></pre>
+
+<p>先序后继的求解：</p>
+
+<pre><code>ordertree *presuc(ordertree *P)
+{
+    if (P-&gt;ltag == 0)
+        return P-&gt;lchild;
+    else
+        return P-&gt;rchild;
+}
+</code></pre>
+
+<p>中序后继：</p>
+
+<pre><code>ordertree *insuc(ordertree *P)
+{
+    ordertree *q = P-&gt;rchild;
+    if (P-&gt;rtag == 1)
+        return q;
+    else
+    {
+        while (q-&gt;ltag == 0)
+            q = q-&gt;lchild;
+        return q;
+    }
+}
+</code></pre>
+
+<p>中序先驱：</p>
+
+<pre><code>ordertree *infore(ordertree *P)
+{
+    ordertree *q = P-&gt;lchild;
+    if (P-&gt;ltag == 1)
+        return q;
+    else
+    {
+        while (q-&gt;rtag == 0)
+            q = q-&gt;rchild;
+        return q;
+    }
+}
+</code></pre>
+
+<p>后序先驱：</p>
+
+<pre><code>ordertree *postfore(ordertree *P)
+{
+    if (P-&gt;rtag == 0)
+        return P-&gt;rchild;
+    else
+        return P-&gt;lchild;
+}
+</code></pre>
+
+<h3>树和森林</h3>
+
+<h5>1.树的存储结构：</h5>
+
+<p>(1)双亲表示法</p>
+
+<pre><code>struct tnode
+{
+    datatype data;
+    int parent;
+}
+struct tnode treelist[MAXSIZE];    //整个树的存储数组说明
+</code></pre>
+
+<p>其中parent指示该结点父结点的下标，data存放结点的值。
+优点：便于搜索相应结点的父结点和祖先结点。
+缺点：若要搜索孩子结点或后代结点需要搜索整个表，浪费时间。</p>
+
+<p>(2)孩子链表表示法
+分别将每个结点的孩子结点连成一个链表，然后将各表头指针放在一个表中构成一个整体结构。</p>
+
+<pre><code>typedef struct node    //链表中每个孩子结点的定义
+{
+    int data;
+    struct node *next;
+} listnode;
+typedef struct    //数组元素的定义，每个数组元素都是一个单链表，单头元素不同
+{
+    datatype info;
+    listnode *firstchild;
+} arrnode;
+arrnode tree[MAXSIZE];    //MAXSIZE为所有结点的个数
+</code></pre>
+
+<p>优缺点：与双亲表示法恰好相反。</p>
+
+<p>(3)孩子－兄弟链表表示法（二叉链表表示法，二叉树表示法）
+树中每个结点用一个链表结点来存储，每个链表结点中除了存放结点的值外，还有两个指针，一个用来指示该结点的第一个孩子，另一个用于指示该结点的下一个兄弟结点。</p>
+
+<pre><code>typedef struct node
+{
+    datatype data;
+    struct node *firstchild, *nextbrother;
+} tnode;
+</code></pre>
+
+<h5>2.树（森林）与二叉树的转换</h5>
+
+<p>树或森林的子树转换为二叉树的左子树，兄弟转化为右子树。</p>
+
+<h5>3.树（森林）的遍历</h5>
+
+<p>树的遍历可分为先序遍历和后序遍历。（注意没有中序，因为树有不只两个孩子）即结点是在其子树之前还是之后访问。
+遍历树（森林）要转换为遍历其对应的二叉树：
+先序遍历：（同二叉树的先序遍历）</p>
+
+<pre><code>void preorder(tnode *T)
+{
+    if (T != NULL)
+    {
+        visit(T);
+        preorder(T-&gt;firstchild);
+        preorder(T-&gt;nextbrother);
+    }
+}
+</code></pre>
+
+<p>后序遍历：（同二叉树的中序遍历）</p>
+
+<pre><code>void postorder(tnode *T)
+{
+    if (T != NULL)
+    {
+        postorder(T-&gt;firstchild);
+        visit(T);
+        postorder(T-&gt;nextbrother);
+    }
+}
+</code></pre>
+
+<h3>哈夫曼树</h3>
+
+<p>哈夫曼树主要用来处理压缩算法。
+一般的判断问题的流程就象是一棵二叉树，其中分支（判断）结点对应于二叉树的分支结点；而最后得出的结论对应于叶子结点；一个结论所需要的判断次数是从根结点到该叶子结点的分支线数（层次数-1）；每个结论成立的次数作为叶子结点的权值。
+(这个权值可能比较少接触,但是其实它非常重要,因为我们平时设计的系统,判断的结果常常都是通过长年的实践会有一个出现机率分配,而不可能是平分的,比如考试,如果常常80-90分的比较多,也许就要换一种算法,当然这是后话,和考试无关了.)</p>
+
+<p>哈夫曼算法步骤如下:</p>
+
+<ul>
+<li>(1)根据给定的n个权值,构成一排结点T,每个的值都是相应的权值.</li>
+<li>(2)从T中选两棵权值最小的二叉树,作为左右子树构成一棵新的二叉树T',并且新二叉树的权值为左右子树权值之和.</li>
+<li>(3)将新二叉树T'并入到T中,删除原来的两棵二叉树.</li>
+<li>(4)重复2,3直到只剩一棵二叉树.这棵树就是哈夫曼树.</li>
+</ul>
+
+
+<p>哈夫曼树的带权路径长度WPL=∑wL
+即所有叶子结点的 权值*比较次数(层次数-1) 之和.
+而WPL也正好等于所有分支结点(不包括叶子结点)的值之和.</p>
+
+<h1>图</h1>
+
+<p>图中将每个对象用一个顶点表示，并常用一个序号来标识一个顶点。
+其中弧表示单向关系，边表示双向关系，用离散数学中的术语来说，则分别表示为非对称关系和对称关系。
+弧用&lt;A, B>表示（A为尾，B为头），边用(A, B)表示。</p>
+
+<pre><code>一个图G由两部分内容构成，即顶点(vertex)集合(V)和边(或弧edge)的集合(E)，并用二元组(V, E)来表示，记做G = (V, E) 
+</code></pre>
+
+<ul>
+<li>根据顶点间的关系是否有向而引入有向图和无向图。</li>
+<li>给每条边或弧加上权值，这样的带权图称为网络。</li>
+<li>若无向图中任意两点间都有一条边，则称此图G为无向完全图。(共有边数 n*(n-1)/2 )</li>
+<li><p>若有向图中任意一个顶点到其余各点间均有一条弧，则称为有向完全图。(共有弧数 n*(n-1) )
+若一个图G1是从G中选取部分顶点和部分边（或弧）组成，则称G1是G的子图。（注意，顶点和边必须都为子关系）</p></li>
+<li><p>若无向图中两个顶点i, j之间存在一条边，则称i, j相邻接，并互为邻接点。
+在有向图中，若存在弧&lt;Vi, Vj>，也做Vi, Vj相邻接，但为区别弧的头、尾顶点，可进一步称做Vi邻接到Vj，Vj邻接于Vi。</p></li>
+</ul>
+
+
+<p>与一个顶点相邻接的顶点数称为该顶点的度。
+在有向图中，进入一个顶点的弧数称为该顶点的入度，从一个顶点发出的弧数为该顶点的出度，并将入度和出度之和作为该顶点的度。</p>
+
+<p>一个顶点经过一定的可经路程到达另一个顶点，就为顶点之间的路径。</p>
+
+<ul>
+<li>若某路径所经过的顶点不重复，则称此路径为简单路径。</li>
+<li>若某路径的首尾相同，则称此路径为回路（或称为环）。</li>
+<li><p>若某回路的中间不重复，则称之为简单回路。</p></li>
+<li><p>若无向图中任意两点之间均存在路径，则称G为连通图，否则不连通，就存在若干个连通分量。</p></li>
+<li>若有向图中任意两点间可以互相到达，则称为强连通图。</li>
+</ul>
+
+
+<p>一个无向图，连通并且无回路，称这样的图为树。
+若有向图中仅有一个顶点的入度为0，其余顶点的入度都为1，称此图为有向树，入度为0的顶点为根。</p>
+
+<h3>图的存储结构：</h3>
+
+<h5>1。邻接矩阵表示</h5>
+
+<p>对n个顶点的图来说，其邻接矩阵为n*n阶的。
+邻接矩阵的元素存放边（弧）的权值，对不存在的边（弧），则用0或∞表示。
+定义格式如下：</p>
+
+<pre><code>#define n 6    /* 图顶点数 */ 
+#define e 8    /* 图的边（弧）数 */
+typedef struct
+{
+    vextype vexs[n];    /* 顶点类型 */
+    datatype arcs[n][n];    /* 权值类型 */
+} graph; 
+</code></pre>
+
+<p>建立一个无向网络的算法：</p>
+
+<pre><code>CreateGraph(graph *G) 
+{ 
+    int i, j, k; 
+    float w; 
+    for (i=0; i&lt;n; i++) 
+        G-&gt;vexs[i] = getchar();    /* 读入顶点信息，创建表，这里用字符型 */ 
+    for (i=0; i&lt;n; i++) 
+        for (j=0; j&lt;n; j++) 
+            G-&gt;arcs[i][j] = 0;    /* 邻接矩阵初始化 */ 
+    for (k=0; k&lt;e; k++) 
+    { 
+        scanf("%d%d%f", &amp;i, &amp;j, &amp;w);    /* 读入边(vi, vj)上的权w(暂用float类型) */ 
+        G-&gt;arcs[i][j] = w; 
+        G-&gt;arcs[j][i] = w; 
+    } 
+}
+</code></pre>
+
+<h5>2.邻接表表示法</h5>
+
+<p>将每个顶点的邻接点连成链表，并将各链表的表头指针合在一起（用数组或链表表示均可），其中每个头指针与该结点的信息合为一个整体结点。
+如果将邻接表中各顶点的邻接表变为其前驱顶点即可，从而得到逆邻接表。
+用邻接表存储网络时，需要将各条边（弧）的权值作为相应邻接结点中的一个字段。
+结构：</p>
+
+<pre><code>typedef struct node
+{
+    int adjvex;    /* 邻接点域 */
+    struct node *next;    /* 链域 */
+    datatype arc;    /* 权值 */
+} edgenode;    /* 边表指针 */
+typedef struct
+{
+    vextype vertex;    /* 顶点信息 */
+    edgenode *link;    /* 边表头指针 */
+} vexnode;    /* 顶点表结点 */
+vexnode gnode[n];    /* 整个图的构成 */
+ 建立无向图的邻接表：
+CreateAdjlist(gnode)
+{
+    int i, j, k;
+    edgenode *s;
+    for (i=0; i&lt;n; i++)    /* 读入顶点信息 */
+    {
+        gnode[i].vertex = getchar();
+        gnode[i].link = NULL;    /* 边表指针初始化 */
+    }
+    for (k=0; k&lt;e; k++)    /* 建立边表 */
+    {
+        scanf("%d%d", &amp;i, &amp;j);    /* 读入边(vi,vj)的顶点序号 */
+        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为j的表结点 */
+        s-&gt;adjvex = j;
+        s-&gt;next = gnode[i].link;
+        gnode[i].link = s;    /* 将*s插入顶点vi的边表头部(插到头部比尾部简单) */
+        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为i的边表结点*s */
+        s-&gt;adjvex = i;
+        s-&gt;next = gnode[j].link;
+        gnode[j].link = s;    /* 将*s插入顶点vj的边表头部(最后四行由于是无向图，所以相互，两次) */
+    }
+}
+</code></pre>
+
+<h3>图的遍历算法及其应用</h3>
+
+<h5>1.深度遍历</h5>
+
+<ul>
+<li>(1)访问V0</li>
+<li>(2)依次从V0 的各个未被访问的邻接点出发深度遍历
+（两句话说的非常清楚。是一种以深度为绝对优先的访问。）</li>
+</ul>
+
+
+<h5>2。深度优先搜索遍历算法</h5>
+
+<p>由于实际算法比较复杂，这里算法依赖两个函数来求解（对于不同的存储结构有不同的写法）
+firstadj(G, v)：返回图G中顶点v的第一个邻接点。若不存在，返回0。
+nextadj(G, v, w)：返回图G中顶点v的邻接点中处于w之后的那个邻接点。若不存在，返回0。
+depth first search:</p>
+
+<pre><code>void dfs(graph G, int v)
+{
+    int w;
+    visit(v);
+    visited[v] = 1;
+    w = firstadj(G, v)
+    while (w != 0)
+    {
+        if (visited[w] == 0)
+            dfs(w);
+        w = nextadj(G, v, w);
+    }
+}
+</code></pre>
+
+<p>如果不是连通图，或者是有向图，那么访问一个v不可能遍历所有顶点。所以，需要再选择未被访问的顶点作为起点再调用dfs.</p>
+
+<p>所以，深度遍历图的算法如下：</p>
+
+<pre><code>void dfs_travel(graph G)
+{
+    int i;
+    for (i=1; i&lt;=n; i++)
+        visited[i] = 0;        //初始化各顶点的访问标志
+    for (i=1; i&lt;=n; i++)
+        if (visited[i] == 0)
+            dfs(G, i);
+}
+</code></pre>
+
+<h5>3.广度优先搜索遍历算法</h5>
+
+<p>广度优先搜索遍历算法(bfs)是一种由近而远的层次遍历算法，从顶点V0出发的广度遍历bfs描述为：</p>
+
+<ul>
+<li>(1)访问V0（可作为访问的第一层）；</li>
+<li>(2)假设最近一层的访问顶点依次为V1, V2, &hellip;, Vk，则依次访问他们的未被访问的邻接点。</li>
+<li>(3)重复2，直到找不到未被访问的邻接点为止。</li>
+</ul>
+
+
+<p>算法</p>
+
+<pre><code>void bfs(graph G, int V0)
+{
+    int w;
+    int v;
+    queue Q;
+    init_queue(Q);
+    visit(V0);
+    visited[V0] = 1;
+    Enqueue(Q, V0);
+    while (!empty(Q))
+    {
+        v = Outqueue(Q);
+        w = firstadj(G, v);
+        while (w != 0)
+        {
+            if (visited[w] == 0)
+            {
+                visit(w);
+                visited[w] = 1;
+                Enqueue(Q, w);
+            }
+            w = nextadj(G, v, w);
+        }
+    }
+}
+</code></pre>
+
+<p>广度遍历图的算法和深度一样：</p>
+
+<pre><code>void bfs_travel(graph G)
+{
+    int i;
+    for (i=1; i&lt;=n; i++)
+        visited[i] = 0;
+    for (i=1; i&lt;=n; i++)
+        if (visited[i] = 0)
+            bfs(G, i);
+}
+</code></pre>
+
+<p>最小生成树：</p>
+
+<pre><code>从图中选取若干条边，将所有顶点连接起来，并且所选取的这些边的权值之和最小。
+</code></pre>
+
+<p>这样所选取的边构成了一棵树，称这样的树为生成树，由于权值最小，称为最小生成树。</p>
+
+<h3>构造最小生成树有两种方法：</h3>
+
+<h6>1.Prim算法：</h6>
+
+<pre><code>首先将所指定的起点作为已选顶点，然后反复在满足如下条件的边中选择一条最小边，直到所有顶点成为已选顶点为止（选择n-1条边）：一端已选，另一端未选。
+</code></pre>
+
+<p>(简单的说，就是先任选一点，然后每次选择一条最小权值的边，而且只连接到一个已选顶点)</p>
+
+<h6>2.Kruskal算法：</h6>
+
+<pre><code>反复在满足如下条件的边中选出一条最小的，和已选边不够成回路。
+(条件就是不够成回路就OK，反复选最小边，知道所有顶点都有连接）
+</code></pre>
+
+<p>最短路径：
+一般即是要一个顶点到其余各个顶点的最短路径。（比如隔很远的顶点，要绕哪几条边走）
+求解方法：</p>
+
+<pre><code>首先，我们要画一个表，每个顶点有path和dist两个值，分别用来存储到各点的最短路径（比如(1,5,6)，就是1-5-6这个路径）和相应的长度（到该点的权值之和）。
+</code></pre>
+
+<ul>
+<li>(1)对V以外的各顶点，若两点间的邻接路径存在，则将其作为最短路径和最短长度存到path[v]和dist[v]中。(实际上也就是最开始对顶点的直接后继进行处理）</li>
+<li>(2)从未解顶点中选择一个dist值最小的顶点v，则当前的path[v]和dist[v]就是顶点v的最终解（从而使v成为已解顶点）。</li>
+<li>(3)如果v的直接后继经过v会更近一些，则修改v的直接后继的path和dist值。</li>
+</ul>
+
+
+<p>(上面的确是很难懂，只能通过例子自己慢慢熟悉。）</p>
+
+<h1>查找</h1>
+
+<blockquote><p>在软件设计中，通常是将待查找的数据元素集以某种表的形式给出，从而构成一种新的数据结构－－查找表。
+表包括一些“元素”，“字段”等等概念。</p></blockquote>
+
+<p>在一个数据表中，若某字段的值可以标识一个数据元素，则称之为关键字（或键）。
+若此关键字的每个值均可以唯一标识一个元素，则称之为主关键字，否则，若该关键字可以标识若干个元素，则称之为次关键字。</p>
+
+<p>查找算法的时间性能一般以查找次数来衡量。所谓查找长度是指查找一个元素所进行的关键字的比较次数。常以平均查找次数、最大查找次数来衡量查找算法的性能。</p>
+
+<h5>一、简单顺序查找</h5>
+
+<pre><code>int seq_seach(elementtype A[], int n, keytype x)
+{
+    int i;
+    A[0].key = x;        //设定监视哨
+    for (i=n; A[i].key!=x; i--);
+    return i;
+}
+</code></pre>
+
+<p>监视哨是一个小技巧，查找失败时，这里设定的数据是A[1]-A[n]，肯定可以在A[0]中找到该元素，并返回0表示查找失败。如果不设定监视哨，则在每次循环中要判断下标是否越界：for (i=1; i!=n&amp;&amp;A[i].key!=x;i&ndash;); 可以节省一半的时间。</p>
+
+<h5>二、有序表的二分查找</h5>
+
+<pre><code>int bin_search(elementtype A[], int n, keytype x)
+{
+    int mid, low, high;
+    low = 0;
+    high = n - 1;
+    while (low &lt;= high)
+    {
+        mid = (low + high) / 2;
+        if (x == A[mid].key)
+            return mid;
+        else if (x &lt; A[mid].key)
+            high = mid - 1;
+        else
+            low = mid + 1;
+    }
+    return -1;
+}
+</code></pre>
+
+<p>也可以使用递归算法：</p>
+
+<pre><code>int bin_search(elementtype A[], int low, int high, keytype x)
+{
+    int mid;
+    if (low &lt; high)
+        return -1;
+    else
+    {
+        mid = (low + high) / 2;
+        if (x == A[mid].key)
+            return mid;
+        else if (x &lt; A[mid],key)
+            return bin_search(A, low, mid - 1, x);
+        else
+            return bin_search(A, mid - 1, high, x);
+    }
+}
+</code></pre>
+
+<h1>排序</h1>
+
+<ul>
+<li>增排序和减排序：如果排序的结果是按关键字从小到大的次序排列的，就是增排序，否则就是减排序。</li>
+<li>内部排序和外部排序：如果在排序过程中，数据表中所有数据均在内存中进行，则这类排序为内部排序，否则就是外部排序。</li>
+<li>稳定排序和不稳定排序：在排序过程中，如果关键字相同的两个元素的相对次序不变，则称为稳定排序，否则是不稳定排序。</li>
+</ul>
+
+
+<p>在分析算法的时间性能时，主要以算法中用的最多的基本操作的执行次数（或者其数量级）来衡量，这些操作主要是比较、移动和交换元素。有时，可能要用这些次数的平均数来表示。</p>
+
+<h3>一、插入排序</h3>
+
+<p>基本思想：</p>
+
+<blockquote><p>把整个待排序子表看作是左右两部分，其中左边为有序区，右边为无序区，整个排序过程就是把右边无序区中的元素逐个插入到左边的有序区中，以构成新的有序区。
+实际中，开始排序时把第一个元素A[0]（或A[1]）看作左边的有序区，然后把剩下的2～N个元素依次插入到有序表中。</p></blockquote>
+
+<pre><code>void insert_sort(elementtype A[n+1])
+{
+    int i;
+    for (i=2; i&lt;=n; i++)
+    {
+        A[0] = A[i];        //设置监视哨，这个数组同样是从1开始，A[0]就设为监视哨
+        j = i - 1;
+        while (A[j].key &gt; A[0].key)
+        {
+            A[j + 1] = A[j];
+            j--;
+        }
+        A[j + 1] = A[0];
+    }
+}
+</code></pre>
+
+<p>明白这种方法的简单原理：
+a1 a2 a3 &hellip; a(i-1) ai &hellip;
+先将ai临时保存起来，然后把a(i-1)向前只要是比ai大的向后移，再把ai填进去即可。</p>
+
+<h3>二、快速排序</h3>
+
+<p>速度最快的办法！一定要掌握，考试重点。</p>
+
+<p>基本思想：</p>
+
+<blockquote><p>首先，选定一个元素作为中间元素，然后将表中所有元素与该中间元素相比较，将表中比中间元素小的元素调到表的前面，将比中间元素大的元素调到后面，再将中间数放在这两部分之间作为分界点，这样便得到一个划分；然后再对左右两部分分别进行快速排序，如此反复，直到每个子表仅有一个元素或空表为止。
+中间数一般选择部分的第一个元素。</p></blockquote>
+
+<pre><code>int partition(elementtype A[n], int s, int t)    //s,t是要排序元素的起点和终点,并返回最后中间元素位置
+{
+    elementtype x = A[s];    //保存中间元素到临时变量x,以腾出空位
+    int i = s;                        //置两端搜索位置的初值
+    int j = t;
+    while (i != j)        //两端位置重和再停止
+    {
+        while (i &lt; j &amp;&amp; A[j].key &gt; x.key) j--;    //从后面搜索“小”的元素
+        if (i &lt; j)        //如果找到，就调到前面的空位中
+        {
+            A[i] = A[j];
+            i++;
+        }
+        while (i &lt; j &amp;&amp; A[i].key &lt; x.key) i++;    //从前面搜索“大”的元素
+        if (i &lt; j)        //如果找到，调到后面的空位中
+        {
+            A[j] = A[i];
+            j--;
+        }
+    }
+    A[i] = x;        //将中间数移到最终位置上
+    return i;
+}
+</code></pre>
+
+<p>整个算法：</p>
+
+<pre><code>void quick_sort(elementtype A[n], int s, int t)    //对数组中下标从s到t的部分进行快速排序，如果是整个表就是0, n-1
+{
+    int i;
+    if (s &lt; t)    //表中至少有两个元素时
+    {
+        i = partition(A, s, t);    //划分排序一次
+        quick_sort(A, i + 1, t);    //对后面部分快速排序
+        quick_sort(A, s, i - 1);    //对前面部分快速排序
+    }
+}
+</code></pre>
+
+<h3>三、选择排序：</h3>
+
+<p>在待排序子表中完整地比较一遍以确定最大（小）元素，并将该元素放在子表的最前（后）面。
+【注：可能发觉和冒泡法比较类似，但注意选择法是全部比较一遍，找到最小元素的下标，再进行一次交换，而冒泡则是进行多次交换】</p>
+
+<pre><code>void select_sort(elementtype A[n])
+{
+   int min, i, j;
+   elementtype temp;
+   for (i=0; i&lt;n-1; i++)
+   {
+      min = i;
+      for (j=i+1; j&lt;n; j++)
+         if (A[min].key &gt; A[j].key) min = j;
+      if (min != i)
+      {
+         temp = A[i];
+         A[i] = A[min];
+         A[min] = temp;
+      }
+   }
+}
+</code></pre>
+
+<h3>四、归并排序</h3>
+
+<p>所谓归并是指将两个或两个以上的有序表合并成一个新的有序表。
+归并算法：</p>
+
+<p>假设两个序列A[m]和B[n]为非降序列（即存在相同元素的升序列），现要把他们合并为一个非降序列C[m+n]。</p>
+
+<pre><code>void merge(elementtype A[], elementtype B[], elementtype C[], int m, int n)
+{
+    int ia = 0, ib = 0, ic = 0;
+    while (ia &lt; m &amp;&amp; ib &lt; n)
+        if (A[ia] &lt;= B[ib])
+            C[ic++] = A[ia++];
+        else
+            C[ic++] = B[ib++];
+    while (ia &lt; m)
+        C[ic++] = A[ia++];
+    while (ib &lt; n)
+        C[ic++] = B[ib++];
+}
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-算法之精华-算法&amp;冒泡]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/25/xiu-xing-pian-suan-fa-zhi-jing-hua-suan-fa-and-mou-pao/"/>
+    <updated>2016-08-25T12:32:56+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/25/xiu-xing-pian-suan-fa-zhi-jing-hua-suan-fa-and-mou-pao</id>
+    <content type="html"><![CDATA[<ul>
+<li><p>冒泡排序（交换）</p>
+
+<ul>
+<li>改进</li>
+</ul>
+</li>
+<li><p>快速排序（交换）</p>
+
+<ul>
+<li>改进</li>
+</ul>
+</li>
+</ul>
+
+
+<h2>交换排序—冒泡排序（Bubble Sort）</h2>
+
+<p>基本思想：</p>
+
+<blockquote><p>在要排序的一组数中，对当前还未排好序的范围内的全部数，自上而下对相邻的两个数依次进行比较和调整，让较大的数往下沉，较小的往上冒。即：每当两相邻的数比较后发现它们的排序与排序要求相反时，就将它们互换。
+算法的实现：</p></blockquote>
+
+<pre><code>void bubbleSort(int a[], int n){  
+    for(int i =0 ; i&lt; n-1; ++i) {  
+        for(int j = 0; j &lt; n-i-1; ++j) {  
+            if(a[j] &gt; a[j+1])  
+            {  
+                int tmp = a[j] ; a[j] = a[j+1] ;  a[j+1] = tmp;  
+            }  
+        }  
+    }  
+}  
+</code></pre>
+
+<h4>改进</h4>
+
+<!--more-->
+
+
+<blockquote><p>对冒泡排序常见的改进方法是加入一标志性变量exchange，用于标志某一趟排序过程中是否有数据交换，如果进行某一趟排序时并没有进行数据交换，则说明数据已经按要求排列好，可立即结束排序，避免不必要的比较过程。本文再提供以下两种改进算法：</p></blockquote>
+
+<p>1．设置一标志性变量pos,用于记录每趟排序中最后一次进行交换的位置。由于pos位置之后的记录均已交换到位,故在进行下一趟排序时只要扫描到pos位置即可。
+改进后算法如下:</p>
+
+<pre><code>void Bubble_1 ( int r[], int n) {  
+    int i= n -1;  //初始时,最后位置保持不变  
+    while ( i&gt; 0) {   
+        int pos= 0; //每趟开始时,无记录交换  
+        for (int j= 0; j&lt; i; j++)  
+            if (r[j]&gt; r[j+1]) {  
+                pos= j; //记录交换的位置   
+                int tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
+            }   
+        i= pos; //为下一趟排序作准备  
+     }   
+}    
+</code></pre>
+
+<p>2．传统冒泡排序中每一趟排序操作只能找到一个最大值或最小值,我们考虑利用在每趟排序中进行正向和反向两遍冒泡的方法一次可以得到两个最终值(最大者和最小者) , 从而使排序趟数几乎减少了一半。
+改进后的算法实现为:</p>
+
+<pre><code>void Bubble_2 ( int r[], int n){  
+    int low = 0;   
+    int high= n -1; //设置变量的初始值  
+    int tmp,j;  
+    while (low &lt; high) {  
+        for (j= low; j&lt; high; ++j) //正向冒泡,找到最大者  
+            if (r[j]&gt; r[j+1]) {  
+                tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
+            }   
+        --high;                 //修改high值, 前移一位  
+        for ( j=high; j&gt;low; --j) //反向冒泡,找到最小者  
+            if (r[j]&lt;r[j-1]) {  
+                tmp = r[j]; r[j]=r[j-1];r[j-1]=tmp;  
+            }  
+        ++low;                  //修改low值,后移一位  
+    }   
+}   
+</code></pre>
+
+<h2>交换排序—快速排序（Quick Sort）</h2>
+
+<p>基本思想：</p>
+
+<ul>
+<li><p>1）选择一个基准元素,通常选择第一个元素或者最后一个元素,</p></li>
+<li><p>2）通过一趟排序讲待排序的记录分割成独立的两部分，其中一部分记录的元素值均比基准元素值小。另一部分记录的 元素值比基准值大。</p></li>
+<li><p>3）此时基准元素在其排好序后的正确位置</p></li>
+<li><p>4）然后分别对这两部分记录用同样的方法继续进行排序，直到整个序列有序。</p></li>
+</ul>
+
+
+<p>算法的实现：
+ 递归实现：</p>
+
+<pre><code>void print(int a[], int n){  
+    for(int j= 0; j&lt;n; j++){  
+        cout&lt;&lt;a[j] &lt;&lt;"  ";  
+    }  
+    cout&lt;&lt;endl;  
+}  
+
+void swap(int *a, int *b)  
+{  
+    int tmp = *a;  
+    *a = *b;  
+    *b = tmp;  
+}  
+int partition(int a[], int low, int high)  
+{  
+    int privotKey = a[low];                             //基准元素  
+    while(low &lt; high){                                   //从表的两端交替地向中间扫描  
+        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high;  //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
+        swap(&amp;a[low], &amp;a[high]);  
+        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
+        swap(&amp;a[low], &amp;a[high]);  
+    }  
+    print(a,10);  
+    return low;  
+}  
+void quickSort(int a[], int low, int high){  
+    if(low &lt; high){  
+        int privotLoc = partition(a,  low,  high);  //将表一分为二  
+        quickSort(a,  low,  privotLoc -1);          //递归对低子表递归排序  
+        quickSort(a,   privotLoc + 1, high);        //递归对高子表递归排序  
+    }  
+}  
+int main(){  
+    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
+    cout&lt;&lt;"初始值：";  
+    print(a,10);  
+    quickSort(a,0,9);  
+    cout&lt;&lt;"结果：";  
+    print(a,10);  
+
+}  
+</code></pre>
+
+<p>分析：</p>
+
+<blockquote><p>快速排序是通常被认为在同数量级（O(nlog2n)）的排序方法中平均性能最好的。但若初始序列按关键码有序或基本有序时，快排序反而蜕化为冒泡排序。为改进之，通常以“三者取中法”来选取基准记录，即将排序区间的两个端点与中点三个记录关键码居中的调整为支点记录。快速排序是一个不稳定的排序方法。
+快速排序的改进</p></blockquote>
+
+<h4>改进</h4>
+
+<p>在本改进算法中,只对长度大于k的子序列递归调用快速排序,让原序列基本有序，然后再对整个基本有序序列用插入排序算法排序。实践证明，改进后的算法时间复杂度有所降低，且当k取值为 8 左右时,改进算法的性能最佳。算法思想如下：</p>
+
+<pre><code>void print(int a[], int n){  
+    for(int j= 0; j&lt;n; j++){  
+        cout&lt;&lt;a[j] &lt;&lt;"  ";  
+    }  
+    cout&lt;&lt;endl;  
+}  
+void swap(int *a, int *b)  
+{  
+    int tmp = *a;  
+    *a = *b;  
+    *b = tmp;  
+}  
+int partition(int a[], int low, int high)  
+{  
+    int privotKey = a[low];                 //基准元素  
+    while(low &lt; high){                   //从表的两端交替地向中间扫描  
+        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high; //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
+        swap(&amp;a[low], &amp;a[high]);  
+        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
+        swap(&amp;a[low], &amp;a[high]);  
+    }  
+    print(a,10);  
+    return low;  
+}  
+void qsort_improve(int r[ ],int low,int high, int k){  
+    if( high -low &gt; k ) { //长度大于k时递归, k为指定的数  
+        int pivot = partition(r, low, high); // 调用的Partition算法保持不变  
+        qsort_improve(r, low, pivot - 1,k);  
+        qsort_improve(r, pivot + 1, high,k);  
+    }   
+}   
+void quickSort(int r[], int n, int k){  
+    qsort_improve(r,0,n,k);//先调用改进算法Qsort使之基本有序  
+    //再用插入排序对基本有序序列排序  
+    for(int i=1; i&lt;=n;i ++){  
+        int tmp = r[i];   
+        int j=i-1;  
+        while(tmp &lt; r[j]){  
+            r[j+1]=r[j]; j=j-1;   
+        }  
+        r[j+1] = tmp;  
+    }   
+
+}   
+int main(){  
+    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
+    cout&lt;&lt;"初始值：";  
+    print(a,10);  
+    quickSort(a,9,4);  
+    cout&lt;&lt;"结果：";  
+    print(a,10);  
+
+}  
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-七大查找算法]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa/"/>
+    <updated>2016-08-20T12:32:08+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/20/xiu-xing-pian-qi-da-cha-zhao-suan-fa</id>
+    <content type="html"><![CDATA[<p>阅读目录</p>
+
+<ul>
+<li><p>1、顺序查找</p></li>
+<li><p>2、二分查找</p></li>
+<li><p>3、插值查找</p></li>
+<li><p>4、斐波那契查找</p></li>
+<li><p>5、树表查找</p></li>
+<li><p>6、分块查找</p></li>
+<li><p>7、哈希查找</p></li>
+</ul>
+
+
+<p>查找是在大量的信息中寻找一个特定的信息元素，在计算机应用中，查找是常用的基本运算，例如编译程序中符号表的查找。</p>
+
+<!--more-->
+
+
+<blockquote><p>本文简单概括性的介绍了常见的七种查找算法，说是七种，其实二分查找、插值查找以及斐波那契查找都可以归为一类——插值查找。插值查找和斐波那契查找是在二分查找的基础上的优化查找算法。树表查找和哈希查找会在后续的博文中进行详细介绍。</p></blockquote>
+
+<p>查找定义：根据给定的某个值，在查找表中确定一个其关键字等于给定值的数据元素（或记录）。</p>
+
+<p>查找算法分类：</p>
+
+<p>1）静态查找和动态查找；</p>
+
+<pre><code>注：静态或者动态都是针对查找表而言的。动态表指查找表中有删除和插入操作的表。
+</code></pre>
+
+<p>2）无序查找和有序查找。</p>
+
+<pre><code>无序查找：被查找数列有序无序均可；
+
+有序查找：被查找数列必须为有序数列。
+</code></pre>
+
+<p>平均查找长度（Average Search Length，ASL）：</p>
+
+<ul>
+<li>需和指定key进行比较的关键字的个数的期望值，称为查找算法在查找成功时的平均查找长度。</li>
+</ul>
+
+
+<p>对于含有n个数据元素的查找表，查找成功的平均查找长度为：ASL = Pi*Ci的和。</p>
+
+<pre><code>Pi：查找表中第i个数据元素的概率。
+
+Ci：找到第i个数据元素时已经比较过的次数。
+</code></pre>
+
+<h3>1、顺序查找</h3>
+
+<ul>
+<li>说明：顺序查找适合于存储结构为顺序存储或链接存储的线性表。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>顺序查找也称为线形查找，属于无序查找算法。从数据结构线形表的一端开始，顺序扫描，依次将扫描到的结点关键字与给定值k相比较，若相等则表示查找成功；若扫描结束仍没有找到关键字等于k的结点，表示查找失败。
+</code></pre>
+
+<p>复杂度分析：　</p>
+
+<pre><code>查找成功时的平均查找长度为：（假设每个数据元素的概率相等） ASL = 1/n(1+2+3+…+n) = (n+1)/2 ;
+</code></pre>
+
+<p>当查找不成功时，需要n+1次比较，时间复杂度为O(n);</p>
+
+<blockquote><p>所以，顺序查找的时间复杂度为O(n)。</p></blockquote>
+
+<pre><code>//顺序查找
+int SequenceSearch(int a[], int value, int n)
+{
+    int i;
+    for(i=0; i&lt;n; i++)
+        if(a[i]==value)
+            return i;
+    return -1;
+}
+</code></pre>
+
+<h3>2、二分查找</h3>
+
+<blockquote><p>说明：元素必须是有序的，如果是无序的则要先进行排序操作。</p></blockquote>
+
+<p>基本思想：</p>
+
+<pre><code>也称为是折半查找，属于有序查找算法。用给定值k先与中间结点的关键字比较，中间结点把线形表分成两个子表，若相等则查找成功；若不相等，再根据k与该中间结点关键字的比较结果确定下一步查找哪个子表，这样递归进行，直到查找到或查找结束发现表中没有这样的结点。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏情况下，关键词比较次数为log2(n+1)，且期望时间复杂度为O(log2n)；
+</code></pre>
+
+<blockquote><p>注：折半查找的前提条件是需要有序表顺序存储，对于静态查找表，一次排序后不再变化，折半查找能得到不错的效率。但对于需要频繁执行插入或删除操作的数据集来说，维护有序的排序会带来不小的工作量，那就不建议使用。——《大话数据结构》</p></blockquote>
+
+<pre><code>    //二分查找（折半查找），版本1
+int BinarySearch1(int a[], int value, int n)
+{
+    int low, high, mid;
+    low = 0;
+    high = n-1;
+    while(low&lt;=high)
+    {
+        mid = (low+high)/2;
+        if(a[mid]==value)
+            return mid;
+        if(a[mid]&gt;value)
+            high = mid-1;
+        if(a[mid]&lt;value)
+            low = mid+1;
+    }
+    return -1;
+}
+
+//二分查找，递归版本
+int BinarySearch2(int a[], int value, int low, int high)
+{
+    int mid = low+(high-low)/2;
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return BinarySearch2(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return BinarySearch2(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>3、插值查找</h3>
+
+<p>在介绍插值查找之前，首先考虑一个新问题，为什么上述算法一定要是折半，而不是折四分之一或者折更多呢？</p>
+
+<pre><code>打个比方，在英文字典里面查“apple”，你下意识翻开字典是翻前面的书页还是后面的书页呢？如果再让你查“zoo”，你又怎么查？很显然，这里你绝对不会是从中间开始查起，而是有一定目的的往前或往后翻。
+</code></pre>
+
+<p>同样的，比如要在取值范围1 ~ 10000 之间 100 个元素从小到大均匀分布的数组中查找5， 我们自然会考虑从数组下标较小的开始查找。</p>
+
+<p>经过以上分析，折半查找这种查找方式，不是自适应的（也就是说是傻瓜式的）。二分查找中查找点计算如下：</p>
+
+<pre><code>mid=(low+high)/2, 即mid=low+1/2*(high-low);
+</code></pre>
+
+<p>通过类比，我们可以将查找的点改进为如下：</p>
+
+<pre><code>mid=low+(key-a[low])/(a[high]-a[low])*(high-low)，
+</code></pre>
+
+<p>也就是将上述的比例参数1/2改进为自适应的，根据关键字在整个有序表中所处的位置，让mid值的变化更靠近关键字key，这样也就间接地减少了比较次数。</p>
+
+<p>基本思想：</p>
+
+<pre><code>基于二分查找算法，将查找点的选择改进为自适应选择，可以提高查找效率。当然，差值查找也属于有序查找。
+</code></pre>
+
+<blockquote><p>注：对于表长较大，而关键字分布又比较均匀的查找表来说，插值查找算法的平均性能比折半查找要好的多。反之，数组中如果分布非常不均匀，那么插值查找未必是很合适的选择。</p></blockquote>
+
+<p>复杂度分析：查找成功或者失败的时间复杂度均为O(log2(log2n))。</p>
+
+<pre><code>//插值查找
+int InsertionSearch(int a[], int value, int low, int high)
+{
+    int mid = low+(value-a[low])/(a[high]-a[low])*(high-low);
+    if(a[mid]==value)
+        return mid;
+    if(a[mid]&gt;value)
+        return InsertionSearch(a, value, low, mid-1);
+    if(a[mid]&lt;value)
+        return InsertionSearch(a, value, mid+1, high);
+}
+</code></pre>
+
+<h3>4、斐波那契查找</h3>
+
+<blockquote><p>在介绍斐波那契查找算法之前，我们先介绍一下很它紧密相连并且大家都熟知的一个概念——黄金分割。</p></blockquote>
+
+<p>黄金比例又称黄金分割，</p>
+
+<pre><code>是指事物各部分间一定的数学比例关系，即将整体一分为二，较大部分与较小部分之比等于整体与较大部分之比，其比值约为1:0.618或1.618:1。
+</code></pre>
+
+<p>0.618被公认为最具有审美意义的比例数字，这个数值的作用不仅仅体现在诸如绘画、雕塑、音乐、建筑等艺术领域，而且在管理、工程设计等方面也有着不可忽视的作用。因此被称为黄金分割。</p>
+
+<p>大家记不记得斐波那契数列：</p>
+
+<ul>
+<li>1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89…….（从第三个数开始，后边每一个数都是前两个数的和）。然后我们会发现，随着斐波那契数列的递增，前后两个数的比值会越来越接近0.618，利用这个特性，我们就可以将黄金比例运用到查找技术中。</li>
+</ul>
+
+
+<p>基本思想：</p>
+
+<pre><code>也是二分查找的一种提升算法，通过运用黄金比例的概念在数列中选择查找点进行查找，提高查找效率。同样地，斐波那契查找也属于一种有序查找算法。
+</code></pre>
+
+<p>相对于折半查找，一般将待比较的key值与第mid=（low+high）/2位置的元素比较，比较结果分三种情况：</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1;</p></li>
+<li><p>3）&lt;，high=mid-1。</p></li>
+</ul>
+
+
+<p>斐波那契查找与折半查找很相似，他是根据斐波那契序列的特点对有序表进行分割的。他要求开始表中记录的个数为某个斐波那契数小1，及n=F(k)-1;</p>
+
+<p>开始将k值与第F(k-1)位置的记录进行比较(及mid=low+F(k-1)-1),比较结果也分为三种</p>
+
+<ul>
+<li><p>1）相等，mid位置的元素即为所求</p></li>
+<li><p>2）>，low=mid+1,k-=2;</p>
+
+<ul>
+<li>说明：low=mid+1说明待查找的元素在[mid+1,high]范围内，k-=2 说明范围[mid+1,high]内的元素个数为n-(F(k-1))= Fk-1-F(k-1)=Fk-F(k-1)-1=F(k-2)-1个，所以可以递归的应用斐波那契查找。</li>
+</ul>
+</li>
+<li><p>3）&lt;，high=mid-1,k-=1。</p></li>
+</ul>
+
+
+<p>说明：low=mid+1说明待查找的元素在[low,mid-1]范围内，k-=1 说明范围[low,mid-1]内的元素个数为F(k-1)-1个，所以可以递归 的应用斐波那契查找。</p>
+
+<p>复杂度分析：最坏情况下，时间复杂度为O(log2n)，且其期望复杂度也为O(log2n)。</p>
+
+<pre><code>// 斐波那契查找.cpp 
+
+#include "stdafx.h"
+#include &lt;memory&gt;
+#include  &lt;iostream&gt;
+using namespace std;
+
+const int max_size=20;//斐波那契数组的长度
+
+/*构造一个斐波那契数组*/ 
+void Fibonacci(int * F)
+{
+    F[0]=0;
+    F[1]=1;
+    for(int i=2;i&lt;max_size;++i)
+        F[i]=F[i-1]+F[i-2];
+}
+
+/*定义斐波那契查找法*/  
+int FibonacciSearch(int *a, int n, int key)  //a为要查找的数组,n为要查找的数组长度,key为要查找的关键字
+{
+  int low=0;
+  int high=n-1;
+
+  int F[max_size];
+  Fibonacci(F);//构造一个斐波那契数组F 
+
+  int k=0;
+  while(n&gt;F[k]-1)//计算n位于斐波那契数列的位置
+      ++k;
+
+  int  * temp;//将数组a扩展到F[k]-1的长度
+  temp=new int [F[k]-1];
+  memcpy(temp,a,n*sizeof(int));
+
+  for(int i=n;i&lt;F[k]-1;++i)
+     temp[i]=a[n-1];
+
+  while(low&lt;=high)
+  {
+    int mid=low+F[k-1]-1;
+    if(key&lt;temp[mid])
+    {
+      high=mid-1;
+      k-=1;
+    }
+    else if(key&gt;temp[mid])
+    {
+     low=mid+1;
+     k-=2;
+    }
+    else
+    {
+       if(mid&lt;n)
+           return mid; //若相等则说明mid即为查找到的位置
+       else
+           return n-1; //若mid&gt;=n则说明是扩展的数值,返回n-1
+    }
+  }  
+  delete [] temp;
+  return -1;
+}
+
+int main()
+{
+    int a[] = {0,16,24,35,47,59,62,73,88,99};
+    int key=100;
+    int index=FibonacciSearch(a,sizeof(a)/sizeof(int),key);
+    cout&lt;&lt;key&lt;&lt;" is located at:"&lt;&lt;index;
+    return 0;
+}
+</code></pre>
+
+<h3>5、树表查找</h3>
+
+<h5>5.1 最简单的树表查找算法——二叉树查找算法。</h5>
+
+<p>基本思想：</p>
+
+<pre><code>二叉查找树是先对待查找的数据进行生成树，确保树的左分支的值小于右分支的值，然后在就行和每个节点的父节点比较大小，查找最适合的范围。 这个算法的查找效率很高，但是如果使用这种查找方法要首先创建树。 
+</code></pre>
+
+<p>二叉查找树（BinarySearch Tree，也叫二叉搜索树，或称二叉排序树Binary Sort Tree）或者是一棵空树，或者是具有下列性质的二叉树：</p>
+
+<ul>
+<li><p>1）若任意节点的左子树不空，则左子树上所有结点的值均小于它的根结点的值；</p></li>
+<li><p>2）若任意节点的右子树不空，则右子树上所有结点的值均大于它的根结点的值；</p></li>
+<li><p>3）任意节点的左、右子树也分别为二叉查找树。</p></li>
+</ul>
+
+
+<p>二叉查找树性质：</p>
+
+<pre><code>对二叉查找树进行中序遍历，即可得到有序的数列。
+</code></pre>
+
+<p>不同形态的二叉查找树如下图所示：</p>
+
+<p>有关二叉查找树的查找、插入、删除等操作的详细讲解，请移步浅谈算法和数据结构: 七 二叉查找树。</p>
+
+<p>复杂度分析：它和二分查找一样，插入和查找的时间复杂度均为O(logn)，但是在最坏的情况下仍然会有O(n)的时间复杂度。原因在于插入和删除元素的时候，树没有保持平衡（比如，我们查找上图（b）中的“93”，我们需要进行n次查找操作）。我们追求的是在最坏的情况下仍然有较好的时间复杂度，这就是平衡查找树设计的初衷。</p>
+
+<p>下图为二叉树查找和顺序查找以及二分查找性能的对比图：</p>
+
+<p>基于二叉查找树进行优化，进而可以得到其他的树表查找算法，如平衡树、红黑树等高效算法。</p>
+
+<h5>5.2 平衡查找树之2-3查找树（2-3 Tree）</h5>
+
+<p>2-3查找树定义：</p>
+
+<pre><code>和二叉树不一样，2-3树运行每个节点保存1个或者两个的值。对于普通的2节点(2-node)，他保存1个key和左右两个自己点。对应3节点(3-node)，保存两个Key，2-3查找树的定义如下：
+</code></pre>
+
+<ul>
+<li><p>1）要么为空，要么：</p></li>
+<li><p>2）对于2节点，该节点保存一个key及对应value，以及两个指向左右节点的节点，左节点也是一个2-3节点，所有的值都比key要小，右节点也是一个2-3节点，所有的值比key要大。</p></li>
+<li><p>3）对于3节点，该节点保存两个key及对应value，以及三个指向左中右的节点。左节点也是一个2-3节点，所有的值均比两个key中的最小的key还要小；中间节点也是一个2-3节点，中间节点的key值在两个跟节点key值之间；右节点也是一个2-3节点，节点的所有key值比两个key中的最大的key还要大。</p></li>
+</ul>
+
+
+<p>2-3查找树的性质：</p>
+
+<ul>
+<li><p>1）如果中序遍历2-3查找树，就可以得到排好序的序列；</p></li>
+<li><p>2）在一个完全平衡的2-3查找树中，根节点到每一个为空节点的距离都相同。（这也是平衡树中“平衡”一词的概念，根节点到叶节点的最长距离对应于查找算法的最坏情况，而平衡树中根节点到叶节点的距离都一样，最坏情况也具有对数复杂度。）</p></li>
+</ul>
+
+
+<p>复杂度分析：</p>
+
+<p>2-3树的查找效率与树的高度是息息相关的。</p>
+
+<pre><code>在最坏的情况下，也就是所有的节点都是2-node节点，查找效率为lgN
+
+在最好的情况下，所有的节点都是3-node节点，查找效率为log3N约等于0.631lgN
+</code></pre>
+
+<p>距离来说，对于1百万个节点的2-3树，树的高度为12-20之间，对于10亿个节点的2-3树，树的高度为18-30之间。</p>
+
+<p>对于插入来说，只需要常数次操作即可完成，因为他只需要修改与该节点关联的节点即可，不需要检查其他节点，所以效率和查找类似。下面是2-3查找树的效率：</p>
+
+<h5>5.3 平衡查找树之红黑树（Red-Black Tree）</h5>
+
+<p>2-3查找树能保证在插入元素之后能保持树的平衡状态，最坏情况下即所有的子节点都是2-node，树的高度为lgn，从而保证了最坏情况下的时间复杂度。但是2-3树实现起来比较复杂，于是就有了一种简单实现2-3树的数据结构，即红黑树（Red-Black Tree）。</p>
+
+<p>基本思想：红黑树的思想就是对2-3查找树进行编码，尤其是对2-3查找树中的3-nodes节点添加额外的信息。红黑树中将节点之间的链接分为两种不同类型，红色链接，他用来链接两个2-nodes节点来表示一个3-nodes节点。黑色链接用来链接普通的2-3节点。特别的，使用红色链接的两个2-nodes来表示一个3-nodes节点，并且向左倾斜，即一个2-node是另一个2-node的左子节点。这种做法的好处是查找的时候不用做任何修改，和普通的二叉查找树相同。</p>
+
+<p>红黑树的定义：红黑树是一种具有红色和黑色链接的平衡查找树，同时满足：</p>
+
+<pre><code>红色节点向左倾斜
+
+一个节点不可能有两个红色链接
+
+整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同。
+</code></pre>
+
+<p>下图可以看到红黑树其实是2-3树的另外一种表现形式：如果我们将红色的连线水平绘制，那么他链接的两个2-node节点就是2-3树中的一个3-node节点了。</p>
+
+<p>红黑树的性质：</p>
+
+<pre><code>整个树完全黑色平衡，即从根节点到所以叶子结点的路径上，黑色链接的个数都相同（2-3树的第2）性质，从根节点到叶子节点的距离都相等）。
+</code></pre>
+
+<p>复杂度分析：</p>
+
+<pre><code>最坏的情况就是，红黑树中除了最左侧路径全部是由3-node节点组成，即红黑相间的路径长度是全黑路径长度的2倍。
+</code></pre>
+
+<p>下图是一个典型的红黑树，从中可以看到最长的路径(红黑相间的路径)是最短路径的2倍：</p>
+
+<pre><code>　　红黑树的平均高度大约为logn。
+</code></pre>
+
+<p>下图是红黑树在各种情况下的时间复杂度，可以看出红黑树是2-3查找树的一种实现，它能保证最坏情况下仍然具有对数的时间复杂度。</p>
+
+<p>红黑树这种数据结构应用十分广泛，在多种编程语言中被用作符号表的实现，如：</p>
+
+<pre><code>Java中的java.util.TreeMap,java.util.TreeSet；
+
+C++ STL中的：map,multimap,multiset；
+
+.NET中的：SortedDictionary,SortedSet 等。
+</code></pre>
+
+<h5>5.4 B树和B+树（B Tree/B+ Tree）</h5>
+
+<p>平衡查找树中的2-3树以及其实现红黑树。2-3树种，一个节点最多有2个key，而红黑树则使用染色的方式来标识这两个key。</p>
+
+<blockquote><p>维基百科对B树的定义为“在计算机科学中，B树（B-tree）是一种树状数据结构，它能够存储数据、对其进行排序并允许以O(log n)的时间复杂度运行进行查找、顺序读取、插入和删除的数据结构。B树，概括来说是一个节点可以拥有多于2个子节点的二叉查找树。与自平衡二叉查找树不同，B树为系统最优化大块数据的读和写操作。B-tree算法减少定位记录时所经历的中间过程，从而加快存取速度。普遍运用在数据库和文件系统。</p></blockquote>
+
+<h6>B树定义：</h6>
+
+<pre><code>B树可以看作是对2-3查找树的一种扩展，即他允许每个节点有M-1个子节点。
+
+根节点至少有两个子节点
+
+每个节点有M-1个key，并且以升序排列
+
+位于M-1和M key的子节点的值位于M-1 和M key对应的Value之间
+
+其它节点至少有M/2个子节点
+</code></pre>
+
+<p>下图是一个M=4 阶的B树:</p>
+
+<p>可以看到B树是2-3树的一种扩展，他允许一个节点有多于2个的元素。B树的插入及平衡化操作和2-3树很相似，这里就不介绍了。</p>
+
+<h6>B+树定义：</h6>
+
+<p>B+树是对B树的一种变形树，它与B树的差异在于：</p>
+
+<pre><code>有k个子结点的结点必然有k个关键码；
+
+非叶结点仅具有索引作用，跟记录有关的信息均存放在叶结点中。
+
+树的所有叶结点构成一个有序链表，可以按照关键码排序的次序遍历全部记录。
+</code></pre>
+
+<p>如下图，是一个B+树:</p>
+
+<pre><code>B和B+树的区别在于，B+树的非叶子结点只包含导航信息，不包含实际的值，所有的叶子结点和相连的节点使用链表相连，便于区间查找和遍历。
+</code></pre>
+
+<p>B+ 树的优点在于：</p>
+
+<pre><code>由于B+树在内部节点上不好含数据信息，因此在内存页中能够存放更多的key。 数据存放的更加紧密，具有更好的空间局部性。因此访问叶子几点上关联的数据也具有更好的缓存命中率。
+
+B+树的叶子结点都是相链的，因此对整棵树的便利只需要一次线性遍历叶子结点即可。而且由于数据顺序排列并且相连，所以便于区间查找和搜索。而B树则需要进行每一层的递归遍历。相邻的元素可能在内存中不相邻，所以缓存命中性没有B+树好。
+</code></pre>
+
+<p>但是B树也有优点，其优点在于，由于B树的每一个节点都包含key和value，因此经常访问的元素可能离根节点更近，因此访问也更迅速。</p>
+
+<p>B/B+树常用于文件系统和数据库系统中，它通过对每个节点存储个数的扩展，使得对连续的数据能够进行较快的定位和访问，能够有效减少查找时间，提高存储的空间局部性从而减少IO操作。它广泛用于文件系统及数据库中，如：</p>
+
+<pre><code>Windows：HPFS文件系统；
+
+Mac：HFS，HFS+文件系统；
+
+Linux：ResiserFS，XFS，Ext3FS，JFS文件系统；
+
+数据库：ORACLE，MYSQL，SQLSERVER等中。
+</code></pre>
+
+<p>有关B/B+树在数据库索引中的应用，请看张洋的MySQL索引背后的数据结构及算法原理这篇文章，这篇文章对MySQL中的如何使用B+树进行索引有比较详细的介绍，推荐阅读。</p>
+
+<p>树表查找总结：</p>
+
+<pre><code>二叉查找树平均查找性能不错，为O(logn)，但是最坏情况会退化为O(n)。在二叉查找树的基础上进行优化，我们可以使用平衡查找树。平衡查找树中的2-3查找树，这种数据结构在插入之后能够进行自平衡操作，从而保证了树的高度在一定的范围内进而能够保证最坏情况下的时间复杂度。但是2-3查找树实现起来比较困难，红黑树是2-3树的一种简单高效的实现，他巧妙地使用颜色标记来替代2-3树中比较难处理的3-node节点问题。红黑树是一种比较高效的平衡查找树，应用非常广泛，很多编程语言的内部实现都或多或少的采用了红黑树。
+</code></pre>
+
+<p>除此之外，2-3查找树的另一个扩展——B/B+平衡树，在文件系统和数据库系统中有着广泛的应用。</p>
+
+<h3>6、分块查找</h3>
+
+<p>分块查找又称索引顺序查找，它是顺序查找的一种改进方法。</p>
+
+<p>算法思想：</p>
+
+<pre><code>将n个数据元素"按块有序"划分为m块（m ≤ n）。每一块中的结点不必有序，但块与块之间必须"按块有序"；即第1块中任一元素的关键字都必须小于第2块中任一元素的关键字；而第2块中任一元素又都必须小于第3块中的任一元素，……
+</code></pre>
+
+<p>算法流程：</p>
+
+<ol>
+<li>step1 先选取各块中的最大关键字构成一个索引表；</li>
+<li>step2 查找分两个部分：先对索引表进行二分查找或顺序查找，以确定待查记录</li>
+</ol>
+
+
+<p>在哪一块中；然后，在已确定的块中用顺序法进行查找。</p>
+
+<h3>7、哈希查找</h3>
+
+<p>什么是哈希表（Hash）？</p>
+
+<pre><code>我们使用一个下标范围比较大的数组来存储元素。可以设计一个函数（哈希函数， 也叫做散列函数），使得每个元素的关键字都与一个函数值（即数组下标）相对应，于是用这个数组单元来存储这个元素；也可以简单的理解为，按照关键字为每一个元素"分类"，然后将这个元素存储在相应"类"所对应的地方。但是，不能够保证每个元素的关键字与函数值是一一对应的，因此极有可能出现对于不同的元素，却计算出了相同的函数值，这样就产生了"冲突"，换句话说，就是把不同的元素分在了相同的"类"之中。后面我们将看到一种解决"冲突"的简便做法。
+</code></pre>
+
+<p>总的来说，"直接定址"与"解决冲突"是哈希表的两大特点。</p>
+
+<p>什么是哈希函数？哈希函数的规则是：</p>
+
+<pre><code>通过某种转换关系，使关键字适度的分散到指定大小的的顺序结构中，越分散，则以后查找的时间复杂度越小，空间复杂度越高。
+</code></pre>
+
+<p>算法思想：</p>
+
+<pre><code>哈希的思路很简单，如果所有的键都是整数，那么就可以使用一个简单的无序数组来实现：将键作为索引，值即为其对应的值，这样就可以快速访问任意键的值。这是对于简单的键的情况，我们将其扩展到可以处理更加复杂的类型的键。
+</code></pre>
+
+<p>算法流程：</p>
+
+<ul>
+<li><p>1）用给定的哈希函数构造哈希表；</p></li>
+<li><p>2）根据选择的冲突处理方法解决地址冲突；</p>
+
+<ul>
+<li>常见的解决冲突的方法：拉链法和线性探测法。</li>
+</ul>
+</li>
+<li><p>3）在哈希表的基础上执行哈希查找。</p></li>
+</ul>
+
+
+<p>哈希表是一个在时间和空间上做出权衡的经典例子。如果没有内存限制，那么可以直接将键作为数组的索引。那么所有的查找时间复杂度为O(1)；如果没有时间限制，那么我们可以使用无序数组并进行顺序查找，这样只需要很少的内存。哈希表使用了适度的时间和空间来在这两个极端之间找到了平衡。只需要调整哈希函数算法即可在时间和空间上做出取舍。</p>
+
+<p>复杂度分析：</p>
+
+<pre><code>单纯论查找复杂度：对于无冲突的Hash表而言，查找复杂度为O(1)（注意，在查找之前我们需要构建相应的Hash表）。
+</code></pre>
+
+<p>使用Hash，我们付出了什么？</p>
+
+<pre><code>我们在实际编程中存储一个大规模的数据，最先想到的存储结构可能就是map，也就是我们常说的KV pair，经常使用Python的博友可能更有这种体会。使用map的好处就是，我们在后续处理数据处理时，可以根据数据的key快速的查找到对应的value值。map的本质就是Hash表，那我们在获取了超高查找效率的基础上，我们付出了什么？
+</code></pre>
+
+<blockquote><p>Hash是一种典型以空间换时间的算法，比如原来一个长度为100的数组，对其查找，只需要遍历且匹配相应记录即可，从空间复杂度上来看，假如数组存储的是byte类型数据，那么该数组占用100byte空间。现在我们采用Hash算法，我们前面说的Hash必须有一个规则，约束键与存储位置的关系，那么就需要一个固定长度的hash表，此时，仍然是100byte的数组，假设我们需要的100byte用来记录键与位置的关系，那么总的空间为200byte,而且用于记录规则的表大小会根据规则，大小可能是不定的。</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-五大常用算法]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/18/xiu-xing-pian-wu-da-chang-yong-suan-fa/"/>
+    <updated>2016-08-18T12:31:31+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/18/xiu-xing-pian-wu-da-chang-yong-suan-fa</id>
+    <content type="html"><![CDATA[<h3>分治算法</h3>
+
+<h6>概念：分而治之</h6>
+
+<pre><code>把一个复杂的问题分成两个或更多的相同或相似的子问题，再把子问题分成更小的子问题……直到最后子问题可以简单的直接求解，原问题的解即子问题的解的合并
+
+排序算法(快速排序，归并排序)，傅立叶变换(快速傅立叶变换)……
+</code></pre>
+
+<p>思想：将一个难以直接解决的大问题，分割成一些规模较小的相同问题，以便各个击破，分而治之</p>
+
+<pre><code>分治策略是：对于一个规模为n的问题，若该问题可以容易地解决（比如说规模n较小）则直接解决，否则将其分解为k个规模较小的子问题，这些子问题互相独立且与原问题形式相同，递归地解这些子问题，然后将各子问题的解合并得到原问题的解。这种算法设计策略叫做分治法
+
+这自然导致递归过程的产生。分治与递归像一对孪生兄弟
+</code></pre>
+
+<!--more-->
+
+
+<h6>特征：</h6>
+
+<p>分治法所能解决的问题一般具有以下几个特征：</p>
+
+<pre><code>1) 该问题的规模缩小到一定的程度就可以容易地解决
+
+2) 该问题可以分解为若干个规模较小的相同问题，即该问题具有最优子结构性质。
+
+3) 利用该问题分解出的子问题的解可以合并为该问题的解；
+
+4) 该问题所分解出的各个子问题是相互独立的，即子问题之间不包含公共的子子问题。
+</code></pre>
+
+<p>综上：</p>
+
+<ul>
+<li><p>第一条特征是绝大多数问题都可以满足的，因为问题的计算复杂性一般是随着问题规模的增加而增加；</p></li>
+<li><p>第二条特征是应用分治法的前提它也是大多数问题可以满足的，此特征反映了递归思想的应用；、</p></li>
+<li><p>第三条特征是关键，能否利用分治法完全取决于问题是否具有第三条特征，如果具备了第一条和第二条特征，而不具备第三条特征，则可以考虑用贪心法或动态规划法。</p></li>
+<li><p>第四条特征涉及到分治法的效率，如果各子问题是不独立的则分治法要做许多不必要的工作，重复地解公共的子问题，此时虽然可用分治法，但一般用动态规划法较好。</p></li>
+</ul>
+
+
+<h6>性能：</h6>
+
+<p> 一个分治法将规模为n的问题分成k个规模为n／m的子问题去解。设分解阀值n0=1，且adhoc解规模为1的问题耗费1个单位时间。再设将原问题分解为k个子问题以及用merge将k个子问题的解合并为原问题的解需用f(n)个单位时间。用T(n)表示该分治法解规模为|P|=n的问题所需的计算时间，则有：</p>
+
+<p> T（n）= k T(n/m)+f(n)</p>
+
+<pre><code>通过迭代法求得方程的解：
+递归方程及其解只给出n等于m的方幂时T(n)的值，但是如果认为T(n)足够平滑，那么由n等于m的方幂时T(n)的值可以估计T(n)的增长速度。通常假定T(n)是单调上升的，从而当                  mi≤n&lt;mi+1时，T(mi)≤T(n)&lt;T(mi+1)。 
+</code></pre>
+
+<h6>经典问题</h6>
+
+<ul>
+<li>（1）二分搜索</li>
+<li>（2）大整数乘法</li>
+<li>（3）Strassen矩阵乘法</li>
+<li>（4）棋盘覆盖</li>
+<li>（5）合并排序</li>
+<li>（6）快速排序</li>
+<li>（7）线性时间选择</li>
+<li>（8）最接近点对问题</li>
+<li>（9）循环赛日程表</li>
+<li>（10）汉诺塔</li>
+</ul>
+
+
+<h6>思维过程</h6>
+
+<pre><code>实际上就是类似于数学归纳法，找到解决本问题的求解方程公式，然后根据方程公式设计递归程序。
+</code></pre>
+
+<ol>
+<li>一定是先找到最小问题规模时的求解方法</li>
+<li>然后考虑随着问题规模增大时的求解方法</li>
+<li>找到求解的递归函数式后（各种规模或因子），设计递归程序即可。</li>
+</ol>
+
+
+<h3>动态规划</h3>
+
+<h6>概念</h6>
+
+<pre><code>每次决策依赖于当前状态，又随即引起状态的转移。一个决策序列就是在变化的状态中产生出来的，所以，这种多阶段最优化决策解决问题的过程就称为动态规划
+</code></pre>
+
+<h6>思想</h6>
+
+<pre><code>基本思想与分治法类似，也是将待求解的问题分解为若干个子问题（阶段），按顺序求解子阶段，前一子问题的解，为后一子问题的求解提供了有用的信息。在求解任一子问题时，列出各种可能的局部解，通过决策保留那些有可能达到最优的局部解，丢弃其他局部解。依次解决各子问题，最后一个子问题就是初始问题的解
+</code></pre>
+
+<h6>特点：</h6>
+
+<pre><code>叠子问题这个特点，为减少重复计算，对每一个子问题只解一次，将其不同阶段的不同状态保存在一个二维数组中
+</code></pre>
+
+<h6>与分治法最大的差别是：</h6>
+
+<pre><code>适合于用动态规划法求解的问题，经分解后得到的子问题往往不是互相独立的（即下一个子阶段的求解是建立在上一个子阶段的解的基础上，进行进一步的求解）。
+</code></pre>
+
+<h6>使用</h6>
+
+<ul>
+<li><p>(1) 最优化原理：如果问题的最优解所包含的子问题的解也是最优的，就称该问题具有最优子结构，即满足最优化原理。</p></li>
+<li><p>(2) 无后效性：即某阶段状态一旦确定，就不受这个状态以后决策的影响。也就是说，某状态以后的过程不会影响以前的状态，只与当前状态有关。</p></li>
+<li><p>（3）有重叠子问题：即子问题之间是不独立的，一个子问题在下一阶段决策中可能被多次使用到。（该性质并不是动态规划适用的必要条件，但是如果没有这条性质，动态规划算法同其他算法相比就不具备优势）
+实际应用</p></li>
+</ul>
+
+
+<h6>三要素：</h6>
+
+<p>使用动态规划求解问题，最重要的就是确定动态规划三要素：</p>
+
+<pre><code>（1）问题的阶段 
+
+（2）每个阶段的状态
+
+（3）从前一个阶段转化到后一个阶段之间的递推关系。
+</code></pre>
+
+<h6>总结</h6>
+
+<p>递推关系必须是从次小的问题开始到较大的问题之间的转化，从这个角度来说，动态规划往往可以用递归程序来实现，不过因为递推可以充分利用前面保存的子问题的解来减少重复计算，所以对于大规模问题来说，有递归不可比拟的优势，这也是动态规划算法的核心之处。</p>
+
+<pre><code>确定了动态规划的这三要素，整个求解过程就可以用一个最优决策表来描述，最优决策表是一个二维表，其中行表示决策的阶段，列表示问题状态，表格需要填写的数据一般对应此问题的在某个阶段某个状态下的最优值（如最短路径，最长公共子序列，最大价值等），填表的过程就是根据递推关系，从1行1列开始，以行或者列优先的顺序，依次填写表格，最后根据整个表格的数据通过简单的取舍或者运算求得问题的最优解。
+
+      f(n,m)=max{f(n-1,m), f(n-1,m-w[n])+P(n,m)}
+</code></pre>
+
+<h3>贪心算法</h3>
+
+<h6>概念</h6>
+
+<pre><code>在对问题求解时，总是做出在当前看来是最好的选择。也就是说，不从整体最优上加以考虑，他所做出的仅是在某种意义上的局部最优解。
+</code></pre>
+
+<blockquote><p>贪心算法不是对所有问题都能得到整体最优解，选择的贪心策略必须具备无后效性，即某个状态以后的过程不会影响以前的状态，只与当前状态有关。</p></blockquote>
+
+<h6>思想</h6>
+
+<ol>
+<li>建立数学模型来描述问题。</li>
+<li>把求解的问题分成若干个子问题。</li>
+<li>对每一子问题求解，得到子问题的局部最优解。</li>
+<li>把子问题的解局部最优解合成原来解问题的一个解。</li>
+</ol>
+
+
+<h6>使用</h6>
+
+<p>局部最优策略能导致产生全局最优解。</p>
+
+<pre><code>实际上，贪心算法适用的情况很少。一般，对一个问题分析是否适用于贪心算法，可以先选择该问题下的几个实际数据进行分析，就可做出判断。
+</code></pre>
+
+<p>实际应用</p>
+
+<p>实现框架
+    从问题的某一初始解出发；
+    while （能朝给定总目标前进一步）
+    {
+          利用可行的决策，求出可行解的一个解元素；
+    }
+    由所有解元素组合成问题的一个可行解；</p>
+
+<pre><code>    因为用贪心算法只能通过解局部最优解的策略来达到全局最优解，因此，一定要注意判断问题是否适合采用贪心算法策略，找到的解是否一定是问题的最优解。
+</code></pre>
+
+<h6>总结</h6>
+
+<blockquote><p>贪心算法并不是完全不可以使用，贪心策略一旦经过证明成立后，它就是一种高效的算法。</p></blockquote>
+
+<ul>
+<li>需要证明: 贪心算法的证明围绕着：整个问题的最优解一定由在贪心策略中存在的子问题的最优解得来的。</li>
+</ul>
+
+
+<h3>回溯算法</h3>
+
+<h6>概念</h6>
+
+<pre><code>一个类似枚举的搜索尝试过程，主要是在搜索尝试过程中寻找问题的解，当发现已不满足求解条件时，就“回溯”返回，尝试别的路径
+
+回溯法是一种选优搜索法，按选优条件向前搜索，以达到目标。但当探索到某一步时，发现原先选择并不优或达不到目标，就退回一步重新选择，这种走不通就退回再走的技术为回溯法，而满足回溯条件的某个状态的点称为“回溯点”。
+</code></pre>
+
+<p>特点：有“通用解题方法”的美称。</p>
+
+<h6>思想</h6>
+
+<p>在包含问题的所有解的解空间树中，按照深度优先搜索的策略，从根结点出发深度探索解空间树。当探索到某一结点时，要先判断该结点是否包含问题的解，如果包含，就从该结点出发继续探索下去，如果该结点不包含问题的解，则逐层向其祖先结点回溯。（其实回溯法就是对隐式图的深度优先搜索算法）。</p>
+
+<pre><code>   若用回溯法求问题的所有解时，要回溯到根，且根结点的所有可行的子树都要已被搜索遍才结束。
+
+   而若使用回溯法求任一个解时，只要搜索到问题的一个解就可以结束。
+</code></pre>
+
+<h6>使用</h6>
+
+<pre><code>（1）针对所给问题，确定问题的解空间：首先应明确定义问题的解空间，问题的解空间应至少包含问题的一个（最优）解。
+
+（2）确定结点的扩展搜索规则
+
+（3）以深度优先方式搜索解空间，并在搜索过程中用剪枝函数避免无效搜索。实际应用
+</code></pre>
+
+<h3>分支限界法</h3>
+
+<h6>概念</h6>
+
+<pre><code> 类似于回溯法，也是一种在问题的解空间树T上搜索问题解的算法。但在一般情况下，分支限界法与回溯法的求解目标不同。回溯法的求解目标是找出T中满足约束条件的所有解，而分支限界法的求解目标则是找出满足约束条件的一个解，或是在满足约束条件的解中找出使某一目标函数值达到极大或极小的解，即在某种意义下的最优解。
+</code></pre>
+
+<p>回溯法和分支限界法的一些区别</p>
+
+<pre><code>有一些问题其实无论用回溯法还是分支限界法都可以得到很好的解决，但是另外一些则不然。也许我们需要具体一些的分析——到底何时使用分支限界而何时使用回溯呢？
+</code></pre>
+
+<h6>搜索算法</h6>
+
+<pre><code>所谓“分支”就是采用广度优先的策略，依次搜索E-结点的所有分支，也就是所有相邻结点，抛弃不满足约束条件的结点，其余结点加入活结点表。然后从表中选择一个结点作为下一个E-结点，继续搜索。
+
+ 选择下一个E-结点的方式不同，则会有几种不同的分支搜索方式。
+</code></pre>
+
+<p>   1）FIFO搜索</p>
+
+<p>   2）LIFO搜索</p>
+
+<p>   3）优先队列式搜索</p>
+
+<h6>回溯法和分支限界法的区别：</h6>
+
+<ul>
+<li><p>方法对解空间树的搜索方式       存储结点的常用数据结构      结点存储特性常用应用</p></li>
+<li><p>回溯法深度优先搜索堆栈活结点的所有可行子结点被遍历后才被从栈中弹出找出满足约束条件的所有解</p></li>
+<li><p>分支限界法广度优先或最小消耗优先搜索队列、优先队列每个结点只有一次成为活结点的机会找出满足约束条件的一个解或特定意义下的最优解</p></li>
+</ul>
+
+
+<hr />
+
+<p>总结</p>
+
+<blockquote><p>多理解，多理解，多理解。。。。</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[修行篇-八大排序算法]]></title>
+    <link href="http://al1020119.github.io/blog/2016/08/16/xiu-xing-pian-chang-jian-pai-xu-suan-fa/"/>
+    <updated>2016-08-16T12:31:14+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/08/16/xiu-xing-pian-chang-jian-pai-xu-suan-fa</id>
+    <content type="html"><![CDATA[<p>常用排序算法</p>
+
+<blockquote><p>这里我们大概按照重要性的先后顺序介绍</p></blockquote>
+
+<h2>快速排序</h2>
+
+<ul>
+<li><p>快速排序是不稳定的，其时间平均时间复杂度是O ( nlgn )。</p></li>
+<li><p>快速排序采用的思想是分治思想。</p></li>
+</ul>
+
+
+<p>思路:快速排序是找出一个元素（理论上可以随便找一个）作为基准(pivot),然后对数组进行分区操作,使基准左边元素的值都不大于基准值,基准右边的元素值 都不小于基准值，如此作为基准的元素调整到排序后的正确位置。递归快速排序，将其他n-1个元素也调整到排序后的正确位置。最后每个元素都是在排序后的正 确位置，排序完成。所以快速排序算法的核心算法是分区操作，即如何调整基准的位置以及调整返回基准的最终位置以便分治递归。</p>
+
+<!--more-->
+
+
+<p>伪代码</p>
+
+<pre><code>void quickSort(int a[], int len, int left, int right) {
+   // 所有都排序完毕了，就退出递归
+   if left &gt;= right {
+     return;
+   }
+
+   // 每一趟划分，使左边的比基准小，右边的比基准大，并返回新的基准的位置
+   int baseIndex = partition(a, len, left, right);
+
+   // 递归排序左部分
+   quickSort(a, len, left, baseIndex - 1);
+   // 递归排序右部分
+   quickSort(a, len, baseIndex + 1, right)
+}
+
+int partition(int a[], int len, int left, int right) {
+   // 记录哪个是基准数
+   int base = a[left];
+   // 记录当前基准数的位置
+   int baseIndex = left;
+
+   while left &lt; right {
+     // 先从右边往左边扫描，找到第一个比base还要小的数，但是不能与left相遇
+     while left &lt; right &amp;&amp; a[right] &gt;= base {
+       right--;
+     }
+
+     // 再从左边往右边扫描，找到第一个比base还要大的数，但是不能与right相遇
+     while left &lt; right &amp;&amp; a[left] &lt;= base {
+       left++;
+     }
+
+     // 将所扫描到的第一个比基准数小和第一个比基准数大的数交换
+     swap(a, left, right);
+   }
+
+   // 交换left与baseIndex对应的元素，将left位置的元素作为新的基准数
+   swap(a, baseIndex, left);
+
+   // 返回新的基准位置
+   return left;
+}
+
+void swap(int a[], int i, int j) {
+   int temp = a[i];
+
+   a[i] = a[j];
+   a[j] = temp;
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void quickSort(int a[], int len, int left, int right) {
+  if (left &gt;= right) {
+    return;
+  }
+
+  // 一次划分后，得到基准数据的位置
+ int baseIndex = partition(a, len, left, right);
+
+  // 快排左边部分
+  quickSort(a, len, left, baseIndex - 1);
+  // 快排右边部分
+  quickSort(a, len, baseIndex + 1, right);
+}
+
+int partition(int a[], int len, int left, int right) {
+  // 每一次的划分，都让第一个元素作为基准
+  int base = a[left];
+  // 记下刚开始的基准的位置， 便于最后相遇时交换
+  int baseIndex = left;
+
+  while (left &lt; right) {
+    // 查找右部分比base还小的元素的下标
+    while (left &lt; right &amp;&amp; a[right] &gt;= base) {
+      right--;
+    }
+
+    // 查找左部分比base还大的元素的下标
+    while (left &lt; right &amp;&amp; a[left] &lt;= base) {
+      left++;
+    }
+
+    // 将这一趟比基准大和比基准小的所找到的第一个值，互相交换
+    swap(a, left, right);
+  }
+
+  // 在left与right相遇时，将基准数与相遇点交换
+  // 这样这一次划分，就可以保证左边的比基准数小，右边的比基准数大
+  swap(a, baseIndex, left);
+
+  // 划分完成后，以left位置的元素作为新的基准，分成左右序列，分别递归排序
+  return left;
+}
+
+void swap(int a[], int i, int j) {
+  int temp = a[i];
+  a[i] = a[j];
+  a[j] = temp;
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func quickSort(inout a: [Int], left: Int, right: Int) {
+  if left &gt;= right {
+    return
+  }
+
+  let baseIndex = partition(&amp;a, left: left, right: right)
+
+  quickSort(&amp;a, left: left, right: baseIndex - 1)
+  quickSort(&amp;a, left: baseIndex + 1, right: right)
+}
+
+func partition(inout a: [Int], var left: Int, var right: Int) -&gt;Int {
+  let base = a[left]
+  let baseIndex = left
+
+  while left &lt; right {
+    while left &lt; right &amp;&amp; a[right] &gt;= base {
+      right--
+    }
+
+    while left &lt; right &amp;&amp; a[left] &lt;= base {
+      left++
+    }
+
+    swapInt(&amp;a, i: left, j: right)
+  }
+
+  swapInt(&amp;a, i: baseIndex, j: left)
+
+  return left
+}
+
+func swapInt(inout a: [Int], i: Int, j: Int) {
+  let temp = a[i]
+  a[i] = a[j]
+  a[j] = temp
+}
+</code></pre>
+
+<hr />
+
+<h2>冒泡排序</h2>
+
+<p>算法思路：冒泡排序的核心思想就是通过与相邻元素的比较和交换，把小的数交换到最前面。因为这个过程类似于水泡向上升一样，因此被命名为冒泡排序。</p>
+
+<blockquote><p>冒泡排序需要两个循环来控制遍历，也就是需要n * n趟才能判断、交换完成。</p></blockquote>
+
+<p>冒泡排序的时间复杂度为O ( n2 )。</p>
+
+<p>伪代码</p>
+
+<pre><code>void bubbleSort(int a[], int len) {
+   for i = 0; i &lt; len - 1; ++i {
+      for j = len - 1; j &gt; i; --j {
+         if a[j] &lt; a[j - 1] {
+            swap(a, j, j - 1);
+         }
+      }
+   }
+}
+
+void swap(int a[], int i, int j) {
+   int temp = a[i];
+   a[i] = a[j];
+   a[j] = temp;
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void bubbleSortUsingC(int arr[], int len) {
+  // 代表走多少趟，最后一趟就不用再走了
+  for (int i = 0; i &lt; len - 1; ++i) {
+
+    // 从后往前走，相当于泡从水底冒出来到水面
+    for (int j = len - 1; j &gt; i; --j) {
+
+      // 如果后面的比前面一个的值还要小，则需要交换
+      if (arr[j] &lt; arr[j - 1]) {
+        swap(arr, j, j - 1);
+      }
+    }
+  }
+}
+
+void swap(int arr[], int i, int j) {
+  int temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+}
+</code></pre>
+
+<p>测试一下：</p>
+
+<pre><code>int a[5] = {5,3,8,6,4};
+
+bubbleSortUsingC(a, sizeof(a) / sizeof(int));
+
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@"%d", a[i]);
+}
+
+// 打印: 3, 4, 5, 6, 8 初步如期效果
+
+ObjC版
+
+- (void)bubbleSort:(int [])array len:(size_t)len {
+  for (size_t i = 0; i &lt; len - 1; ++i) {
+    for (size_t j = len - 1; j &gt; i; --j) {
+      if (array[j] &lt; array[j - 1]) {
+        // 交换
+        int temp = array[j];
+        array[j] = array[j - 1];
+        array[j - 1] = temp;
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>测试使用：</p>
+
+<p>int a[5] = {5,3,8,6,4};
+[self bubbleSort:a len:sizeof(a) / sizeof(int)];
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@&ldquo;%d&rdquo;, a[i]);
+}</p>
+
+<p>Swift版</p>
+
+<pre><code>func bubbleSort(var arr: [Int]) -&gt;[Int] {
+  // 走多少趟
+  for var i = 0; i &lt; arr.count - 1; ++i {
+
+    // 从后往前
+    for var j = arr.count - 1; j &gt; i; --j {
+
+      // 后者 &lt; 前者 ？ 交换 ： 不交换
+      if arr[j] &lt; arr[j - 1] {
+        let temp = arr[j]
+
+        arr[j] = arr[j - 1]
+        arr[j - 1] = temp
+      }
+    }
+  }
+
+  return arr
+}
+</code></pre>
+
+<p>测试使用：</p>
+
+<pre><code>// 由于swift中数组也是结构体，是值类型，因此需要接收返回值才能得到排序后的数组
+var arr = [5, 3, 8, 6, 4]
+arr = bubbleSort(arr)
+print(arr)
+
+尝试给Model排序
+
+- (void)bubbleSort:(NSMutableArray *)array {
+  for (NSUInteger i = 0; i &lt; array.count - 1; ++i) {
+
+    for (NSUInteger j = array.count - 1; j &gt; i; --j) {
+      HYBTestModel *modelj = [array objectAtIndex:j];
+      HYBTestModel *modelj_1 = [array objectAtIndex:j - 1];
+
+      // 前者 &lt; 后者 ？ 交换 ： 不交换
+      if ([modelj.uid compare:modelj_1.uid options:NSCaseInsensitiveSearch] == NSOrderedAscending) {
+        [array exchangeObjectAtIndex:j withObjectAtIndex:j - 1];
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>NSMutableArray *array = [[NSMutableArray alloc] init];
+for (NSUInteger i = 0; i &lt; 10; ++i) {
+  HYBTestModel *model = [[HYBTestModel alloc] init];
+  model.title = [NSString stringWithFormat:@"标哥的技术博客：%ld", 10 - (i + 1)];
+  model.uid = [NSString stringWithFormat:@"%ld", 10 - (i + 1)];
+
+  [array addObject:model];
+}
+
+[self bubbleSort:array];
+
+for (HYBTestModel *model in array) {
+  NSLog(@"%@ %@", model.uid, model.title);
+}
+</code></pre>
+
+<p>// 打印:</p>
+
+<pre><code>2016-03-10 22:57:37.524 DataAgorithmDemos[96148:3779265] 0 标哥的技术博客：0
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 1 标哥的技术博客：1
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 2 标哥的技术博客：2
+2016-03-10 22:57:37.526 DataAgorithmDemos[96148:3779265] 3 标哥的技术博客：3
+2016-03-10 22:57:37.582 DataAgorithmDemos[96148:3779265] 4 标哥的技术博客：4
+2016-03-10 22:57:37.588 DataAgorithmDemos[96148:3779265] 5 标哥的技术博客：5
+2016-03-10 22:57:37.589 DataAgorithmDemos[96148:3779265] 6 标哥的技术博客：6
+2016-03-10 22:57:37.593 DataAgorithmDemos[96148:3779265] 7 标哥的技术博客：7
+2016-03-10 22:57:37.594 DataAgorithmDemos[96148:3779265] 8 标哥的技术博客：8
+2016-03-10 22:57:37.596 DataAgorithmDemos[96148:3779265] 9 标哥的技术博客：9
+</code></pre>
+
+<p>说明排序正常的~</p>
+
+<h2>选择排序</h2>
+
+<ul>
+<li>选择排序:的思想其实和冒泡排序有点类似，都是在一次排序后把最小的元素放到最前面。但是过程不同，冒泡排序是通过相邻的比较和交换。而选择排序是通过对整体的选择</li>
+</ul>
+
+
+<p>算法思想：每一趟从前往后查找出值最小的索引（下标），最后通过比较是否需要交换。每一趟都将最小的元素交换到最前面。</p>
+
+<p>其实选择排序可以看成是冒泡排序的优化，因为其目的相同，只是选择排序只有在确定了最小数的前提下才进行交换，大大减少了交换的次数，而比较次数是一样的。</p>
+
+<blockquote><p>注意：冒泡排序是从后往前扫，使大的往下沉，而小的往上浮；选择排序是从前往后扫，每趟找出值最小的索引，使每趟最小值都交换到该趟的最前面，从而得到升序序列</p></blockquote>
+
+<p>选择排序可以看作冒泡排序的优化版本，一样要两层循环才能排序完成。</p>
+
+<p>所以，选择排序的时间复杂度为O ( n2 )</p>
+
+<p>伪代码</p>
+
+<pre><code>void selectSort(int arr[], int len) {
+  int min = 0;
+
+  // 只需要n-1趟即可，到最后一趟只有一个元素，一定是最小的了
+  for i = 0; i &lt; len - 1; ++i {
+
+    // 每一趟的开始，假设该趟的第一个元素是最小的
+    min = i;
+
+    // 查找该趟有没有更小的，如果找到更小的，则更新最小值的下标
+    for j = i + 1; j &lt; len; ++j {
+       if arr[j] &lt; arr[min] {
+          min = j;
+       } 
+    }
+
+    // 如果该趟的第一个元素不是最小的，说明需要交换
+    if min != i {
+       int temp = arr[i];
+       arr[i] = arr[min];
+       arr[min] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void selectSort(int arr[], int len) {
+  int min = 0;
+
+  // 只需要n-1趟
+  for (int i = 0; i &lt; len - 1; ++i) {
+    min = i;
+
+    // 从第n+1趟起始找到末尾
+    for (int j = i + 1; j &lt; len; ++j) {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if (arr[j] &lt; arr[min]) {
+        min = j;
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if (min != i) {
+      int temp = arr[min];
+      arr[min] = arr[i];
+      arr[i] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>ObjC版</p>
+
+<pre><code>- (void)selectSort:(int [])arr len:(int)len {
+  int min = 0;
+
+  // 只需要n-1趟
+  for (int i = 0; i &lt; len - 1; ++i) {
+    min = i;
+
+    // 从第n+1趟起始找到末尾
+    for (int j = i + 1; j &lt; len; ++j) {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if (arr[j] &lt; arr[min]) {
+        min = j;
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if (min != i) {
+      int temp = arr[min];
+      arr[min] = arr[i];
+      arr[i] = temp;
+    }
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func selectSort(var arr: [Int]) -&gt;[Int] {
+  var min = 0
+
+  // 只需要n-1趟
+  for var i = 0; i &lt; arr.count - 1; ++i {
+    min = i
+
+    // 从第n+1趟起始找到末尾
+    for var j = i + 1; j &lt; arr.count; ++j {
+
+      // 找到比min位置更小的，就更新这一趟所找到的最小值的位置
+      if arr[j] &lt; arr[min] {
+        min = j
+      }
+    }
+
+    // 如果min与i不相等，说明有比i位置更小的，所以需要交换
+    if min != i {
+      let temp = arr[i]
+      arr[i] = arr[min]
+      arr[min] = temp
+    }
+  }
+
+  return arr
+}
+</code></pre>
+
+<p>尝试ObjC实现模型选择排序</p>
+
+<pre><code>- (void)selectSort:(NSMutableArray *)array {
+  NSUInteger minIndex = 0;
+
+  for (NSUInteger i = 0; i &lt; array.count - 1; ++i) {
+    minIndex = i;
+
+    for (NSUInteger j = i + 1; j &lt; array.count; ++j) {
+      HYBTestModel *modelj = [array objectAtIndex:j];
+      HYBTestModel *model = [array objectAtIndex:minIndex];
+
+      // 比min下的还要小，则更新min
+      if ([modelj.uid compare:model.uid options:NSCaseInsensitiveSearch] == NSOrderedAscending) {
+        minIndex = j;
+      }
+    }
+
+    if (minIndex != i) {
+      [array exchangeObjectAtIndex:minIndex withObjectAtIndex:i];
+    }
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>NSMutableArray *array = [[NSMutableArray alloc] init];
+for (NSUInteger i = 0; i &lt; 10; ++i) {
+  HYBTestModel *model = [[HYBTestModel alloc] init];
+  model.title = [NSString stringWithFormat:@"标哥的技术博客：%ld", 10 - (i + 1)];
+  model.uid = [NSString stringWithFormat:@"%ld", 10 - (i + 1)];
+
+  [array addObject:model];
+
+}
+
+[self selectSort:array];
+
+for (HYBTestModel *model in array) {
+  NSLog(@"%@ %@", model.uid, model.title);
+}
+</code></pre>
+
+<p>// 打印:</p>
+
+<pre><code>2016-03-11 11:52:47.482 DataAgorithmDemos[97923:4012461] 0 标哥的技术博客：0
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 1 标哥的技术博客：1
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 2 标哥的技术博客：2
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 3 标哥的技术博客：3
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 4 标哥的技术博客：4
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 5 标哥的技术博客：5
+2016-03-11 11:52:47.484 DataAgorithmDemos[97923:4012461] 6 标哥的技术博客：6
+2016-03-11 11:52:47.485 DataAgorithmDemos[97923:4012461] 7 标哥的技术博客：7
+2016-03-11 11:52:47.487 DataAgorithmDemos[97923:4012461] 8 标哥的技术博客：8
+2016-03-11 11:52:47.487 DataAgorithmDemos[97923:4012461] 9 标哥的技术博客：9
+</code></pre>
+
+<h2>堆排序</h2>
+
+<p>堆是指二叉堆，二叉堆又称完全二叉树或者叫近似完全二叉树。二叉堆又分为最大堆和最小堆。</p>
+
+<p>堆排序(Heapsort)是指利用堆这种数据结构所设计的一种排序算法，它是选择排序的一种。可以利用数组的特点快速定位指定索引的元素。数组可以根据索引直接获取元素，时间复杂度为O（1），也就是常量，因此对于取值效率极高。</p>
+
+<p>最大堆的特性如下：</p>
+
+<pre><code>父结点的键值总是大于或者等于任何一个子节点的键值
+每个结点的左子树和右子树都是一个最大堆
+</code></pre>
+
+<p>最小堆的特性如下：</p>
+
+<pre><code>父结点的键值总是小于或者等于任何一个子节点的键值
+每个结点的左子树和右子树都是一个最小堆
+</code></pre>
+
+<p>堆排序的时间，主要由建立初始堆和反复调整堆这两部分的时间开销构成.由于堆排序是不稳定的，它得扭到的时间复杂度会根据实际情况较大，因此只能取平均时间复杂度。</p>
+
+<p>平均时间复杂度为：O( N * log2(N) )</p>
+
+<p>使用建议：</p>
+
+<pre><code>由于初始化堆需要比较的次数较多，因此，堆排序比较适合于数据量非常大的场合（百万数据或更多）。由于高效的快速排序是基于递归实现的，所以在数据量非常大时会发生堆栈溢出错误。
+</code></pre>
+
+<p>基于最大堆实现升序排序</p>
+
+<pre><code>// 初始化堆
+void initHeap(int a[], int len) {
+  // 从完全二叉树最后一个非子节点开始
+  // 在数组中第一个元素的索引是0
+  // 第n个元素的左孩子为2n+1，右孩子为2n+2，
+  // 最后一个非子节点位置在(n - 1) / 2
+  for (int i = (len - 1) / 2; i &gt;= 0; --i) {
+    adjustMaxHeap(a, len, i);
+  }
+}
+
+void adjustMaxHeap(int a[], int len, int parentNodeIndex) {
+  // 若只有一个元素，那么只能是堆顶元素，也没有必要再排序了
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 记录比父节点大的左孩子或者右孩子的索引
+  int targetIndex = -1;
+
+  // 获取左、右孩子的索引
+  int leftChildIndex = 2 * parentNodeIndex + 1;
+  int rightChildIndex = 2 * parentNodeIndex + 2;
+
+  // 没有左孩子
+  if (leftChildIndex &gt;= len) {
+    return;
+  }
+
+  // 有左孩子，但是没有右孩子
+  if (rightChildIndex &gt;= len) {
+    targetIndex = leftChildIndex;
+  }
+  // 有左孩子和右孩子
+  else {
+    // 取左、右孩子两者中最大的一个
+    targetIndex = a[leftChildIndex] &gt; a[rightChildIndex] ? leftChildIndex : rightChildIndex;
+  }
+
+  // 只有孩子比父节点的值还要大，才需要交换
+  if (a[targetIndex] &gt; a[parentNodeIndex]) {
+    int temp = a[targetIndex];
+
+    a[targetIndex] = a[parentNodeIndex];
+    a[parentNodeIndex] = temp;
+
+
+    // 交换完成后，有可能会导致a[targetIndex]结点所形成的子树不满足堆的条件，
+    // 若不满足堆的条件，则调整之使之也成为堆
+    adjustMaxHeap(a, len, targetIndex);
+  }
+}
+
+void heapSort(int a[], int len) {
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 初始堆成无序最大堆
+  initHeap(a, len);
+
+  for (int i = len - 1; i &gt; 0; --i) {
+    // 将当前堆顶元素与最后一个元素交换，保证这一趟所查找到的堆顶元素与最后一个元素交换
+    // 注意：这里所说的最后不是a[len - 1]，而是每一趟的范围中最后一个元素
+    // 为什么要加上&gt;0判断？每次不是说堆顶一定是最大值吗？没错，每一趟调整后，堆顶是最大值的
+    // 但是，由于len的范围不断地缩小，导致某些特殊的序列出现异常
+    // 比如说，5, 3, 8, 6, 4序列，当调整i=1时，已经调整为3,4,5,6,8序列，已经有序了
+    // 但是导致了a[i]与a[0]交换，由于变成了4,3,5,6,8反而变成无序了!
+    if (a[0] &gt; a[i]) {
+      int temp = a[0];
+      a[0] = a[i];
+      a[i] = temp;
+    }
+
+    // 范围变成为：
+    // 0...len-1
+    // 0...len-1-1
+    // 0...1 // 结束
+    // 其中，0是堆顶，每次都是找出在指定的范围内比堆顶还大的元素，然后与堆顶元素交换
+    adjustMaxHeap(a, i - 1, 0);
+  }
+}
+</code></pre>
+
+<p>基于最小堆实现降序排序</p>
+
+<pre><code>// 初始化堆
+void initHeap(int a[], int len) {
+  // 从完全二叉树最后一个非子节点开始
+  // 在数组中第一个元素的索引是0
+  // 第n个元素的左孩子为2n+1，右孩子为2n+2，
+  // 最后一个非子节点位置在(n - 1) / 2
+  for (int i = (len - 1) / 2; i &gt;= 0; --i) {
+    adjustMinHeap(a, len, i);
+  }
+}
+
+void adjustMinHeap(int a[], int len, int parentNodeIndex) {
+  // 若只有一个元素，那么只能是堆顶元素，也没有必要再排序了
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 记录比父节点大的左孩子或者右孩子的索引
+  int targetIndex = -1;
+
+  // 获取左、右孩子的索引
+  int leftChildIndex = 2 * parentNodeIndex + 1;
+  int rightChildIndex = 2 * parentNodeIndex + 2;
+
+  // 没有左孩子
+  if (leftChildIndex &gt;= len) {
+    return;
+  }
+
+  // 有左孩子，但是没有右孩子
+  if (rightChildIndex &gt;= len) {
+    targetIndex = leftChildIndex;
+  }
+  // 有左孩子和右孩子
+  else {
+    // 取左、右孩子两者中最上的一个
+    targetIndex = a[leftChildIndex] &lt; a[rightChildIndex] ? leftChildIndex : rightChildIndex;
+  }
+
+  // 只有孩子比父节点的值还要小，才需要交换
+  if (a[targetIndex] &lt; a[parentNodeIndex]) {
+    int temp = a[targetIndex];
+
+    a[targetIndex] = a[parentNodeIndex];
+    a[parentNodeIndex] = temp;
+
+
+    // 交换完成后，有可能会导致a[targetIndex]结点所形成的子树不满足堆的条件，
+    // 若不满足堆的条件，则调整之使之也成为堆
+    adjustMinHeap(a, len, targetIndex);
+  }
+}
+
+void heapSort(int a[], int len) {
+  if (len &lt;= 1) {
+    return;
+  }
+
+  // 初始堆成无序最小堆
+  initHeap(a, len);
+
+  for (int i = len - 1; i &gt; 0; --i) {
+    // 将当前堆顶元素与最后一个元素交换，保证这一趟所查找到的堆顶元素与最后一个元素交换
+    // 注意：这里所说的最后不是a[len - 1]，而是每一趟的范围中最后一个元素
+    // 为什么要加上&gt;0判断？每次不是说堆顶一定是最小值吗？没错，每一趟调整后，堆顶是最小值的
+    // 但是，由于len的范围不断地缩小，导致某些特殊的序列出现异常
+    // 比如说，5, 3, 8, 6, 4序列，当调整i=1时，已经调整为3,4,5,6,8序列，已经有序了
+    // 但是导致了a[i]与a[0]交换，由于变成了4,3,5,6,8反而变成无序了!
+    if (a[0] &lt; a[i]) {
+      int temp = a[0];
+      a[0] = a[i];
+      a[i] = temp;
+    }
+
+    // 范围变成为：
+    // 0...len-1
+    // 0...len-1-1
+    // 0...1 // 结束
+    // 其中，0是堆顶，每次都是找出在指定的范围内比堆顶还小的元素，然后与堆顶元素交换
+    adjustMinHeap(a, i - 1, 0);
+  }
+}
+</code></pre>
+
+<p>C语言版测试</p>
+
+<p>大家可以测试一下：</p>
+
+<pre><code>//  int a[] = {5, 3, 8, 6, 4};
+int a[] = {89,-7,999,-89,7,0,-888,7,-7};
+heapSort(a, sizeof(a) / sizeof(int));
+
+for (int i = 0; i &lt; sizeof(a) / sizeof(int); ++i) {
+    NSLog(@"%d", a[i]);
+}
+</code></pre>
+
+<p>Swift版实现
+基于最大堆实现升序排序</p>
+
+<pre><code>func initHeap(inout a: [Int]) {
+  for var i = (a.count - 1) / 2; i &gt;= 0; --i {
+    adjustMaxHeap(&amp;a, len: a.count, parentNodeIndex: i)
+  }
+}
+
+func adjustMaxHeap(inout a: [Int], len: Int, parentNodeIndex: Int) {
+  // 如果len &lt;= 0，说明已经无序区已经缩小到0
+  guard len &gt; 1 else {
+    return
+  }
+
+  // 父结点的左、右孩子的索引
+  let leftChildIndex = 2 * parentNodeIndex + 1
+
+  // 如果连左孩子都没有， 一定没有右孩子，说明已经不用再往下了
+  guard leftChildIndex &lt; len else {
+    return
+  }
+
+  let rightChildIndex = 2 * parentNodeIndex + 2
+
+  // 用于记录需要与父结点交换的孩子的索引
+  var targetIndex = -1
+
+  // 若没有右孩子，但有左孩子，只能选择左孩子
+  if rightChildIndex &gt; len {
+    targetIndex = leftChildIndex
+  } else {
+    // 左、右孩子都有，则需要找出最大的一个
+    targetIndex = a[leftChildIndex] &gt; a[rightChildIndex] ? leftChildIndex : rightChildIndex
+  }
+
+  // 只有孩子比父结点还要大，再需要交换
+  if a[targetIndex] &gt; a[parentNodeIndex] {
+    let temp = a[targetIndex]
+
+    a[targetIndex] = a[parentNodeIndex]
+    a[parentNodeIndex] = temp
+
+    // 由于交换后，可能会破坏掉新的子树堆的性质，因此需要调整以a[targetIndex]为父结点的子树，使之满足堆的性质
+    adjustMaxHeap(&amp;a, len: len, parentNodeIndex: targetIndex)
+  }
+}
+
+func maxHeapSort(inout a: [Int]) {
+  guard a.count &gt; 1 else {
+    return
+  }
+
+  initHeap(&amp;a)
+
+  for var i = a.count - 1; i &gt; 0; --i {
+    // 每一趟都将堆顶交换到指定范围内的最后一个位置
+    if a[0] &gt; a[i] {
+      let temp = a[0]
+
+      a[0] = a[i]
+      a[i] = temp
+    }
+    print(a)
+    print(i - 1)
+    // 有序区长度+1，而无序区长度-1，继续缩小无序区，所以i-1
+    // 堆顶永远是在0号位置，所以父结点调整从堆顶开始就可以了
+    adjustMaxHeap(&amp;a, len: i - 1, parentNodeIndex: 0)
+    print(a)
+  }
+}
+</code></pre>
+
+<p>基于最小堆降序排序</p>
+
+<pre><code>func initHeap(inout a: [Int]) {
+  for var i = (a.count - 1) / 2; i &gt;= 0; --i {
+    adjustMinHeap(&amp;a, len: a.count, parentNodeIndex: i)
+  }
+}
+
+func adjustMinHeap(inout a: [Int], len: Int, parentNodeIndex: Int) {
+  // 如果len &lt;= 0，说明已经无序区已经缩小到0
+  guard len &gt; 1 else {
+    return
+  }
+
+  // 父结点的左、右孩子的索引
+  let leftChildIndex = 2 * parentNodeIndex + 1
+
+  // 如果连左孩子都没有， 一定没有右孩子，说明已经不用再往下了
+  guard leftChildIndex &lt; len else {
+    return
+  }
+
+  let rightChildIndex = 2 * parentNodeIndex + 2
+
+  // 用于记录需要与父结点交换的孩子的索引
+  var targetIndex = -1
+
+  // 若没有右孩子，但有左孩子，只能选择左孩子
+  if rightChildIndex &gt; len {
+    targetIndex = leftChildIndex
+  } else {
+    // 左、右孩子都有，则需要找出最大的一个
+    targetIndex = a[leftChildIndex] &lt; a[rightChildIndex] ? leftChildIndex : rightChildIndex
+  }
+
+  // 只有孩子比父结点还要大，再需要交换
+  if a[targetIndex] &lt; a[parentNodeIndex] {
+    let temp = a[targetIndex]
+
+    a[targetIndex] = a[parentNodeIndex]
+    a[parentNodeIndex] = temp
+
+    // 由于交换后，可能会破坏掉新的子树堆的性质，因此需要调整以a[targetIndex]为父结点的子树，使之满足堆的性质
+    adjustMinHeap(&amp;a, len: len, parentNodeIndex: targetIndex)
+  }
+}
+
+func minHeapSort(inout a: [Int]) {
+  guard a.count &gt; 1 else {
+    return
+  }
+
+  initHeap(&amp;a)
+
+  for var i = a.count - 1; i &gt; 0; --i {
+    // 每一趟都将堆顶交换到指定范围内的最后一个位置
+    if a[0] &lt; a[i] {
+      let temp = a[0]
+
+      a[0] = a[i]
+      a[i] = temp
+    } else {
+       return // 可以直接退出了，因为已经全部有序了
+    }
+
+    // 有序区长度+1，而无序区长度-1，继续缩小无序区，所以i-1
+    // 堆顶永远是在0号位置，所以父结点调整从堆顶开始就可以了
+    adjustMinHeap(&amp;a, len: i - 1, parentNodeIndex: 0)
+  }
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>var arr = [5, 3, 8, 6, 4]
+//var arr = [89,-7,999,-89,7,0,-888,7,-7]
+maxHeapSort(&amp;arr)
+
+print(arr)
+
+// 打印日志如下：
+[4, 6, 5, 3, 8]
+3
+[6, 4, 5, 3, 8]
+
+[3, 4, 5, 6, 8]
+2
+[5, 4, 3, 6, 8]
+
+[3, 4, 5, 6, 8]
+1
+[3, 4, 5, 6, 8]
+
+[3, 4, 5, 6, 8]
+0
+[3, 4, 5, 6, 8]
+
+[3, 4, 5, 6, 8]
+</code></pre>
+
+<h2>归并排序</h2>
+
+<p>归并排序（MERGE-SORT）是建立在归并操作上的一种有效的排序算法,该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为二路归并。</p>
+
+<p>归并排序的效率是比较高的，假设数列长度为N，采用中分法的方式将数列分开成若干个小数列一共要log2N 步，每步都是一个合并有序数列的过程，时间复杂度可以记为O ( N )，故一共为O ( N * log2N )。</p>
+
+<p>因为归并排序每次都是在相邻的数据中进行操作，所以归并排序在常用的几种排序方法（快速排序，归并排序，希尔排序，堆排序）中也是效率比较高的。</p>
+
+<p>时间复杂度：O ( N * log2N )</p>
+
+<p>C语言实现</p>
+
+<pre><code>/**
+ *  归并排序算法
+ *
+ *  @param list   待排序的序列
+ *  @param first    子序列的起点索引
+ *  @param last   子序列的终点索引
+ *  @param temp   临时数组，用于将两个子序列二路归并时存储
+ */
+void mergeSort(int list[], int first, int last, int temp[]) {
+  if (first &lt; last) {
+    int mid = (first + last) / 2;
+
+    // 递归归并中分左子序列，使子序列有序
+    mergeSort(list, first, mid, temp);
+
+    // 递归归并中分右子序列，使子序列有序
+    mergeSort(list, mid + 1, last, temp);
+
+    // 最后二路归并，使序列成有序
+    // 必须明白的一点，每次中分递归归并都需要二路归并，因为中分后的任意子序列
+    // 在有序后，都要二路归并成一个序列
+    mergeList(list, first, mid, last, temp);
+  }
+}
+
+/**
+ *  二路归并list[first...mid]子序列与list[mid+1...last]
+ *
+ *  @param list 序列
+ *  @param first    左子序列的起点
+ *  @param mid      序列中间分割点
+ *  @param last 右序列终点
+ *  @param temp 临时序列，用于将两个无序的子序列归并到temp中，使之有序
+ */
+void mergeList(int list[], int first, int mid, int last, int temp[]) {
+  int leftIndex = first;
+  int leftEndIndex = mid;
+
+  int rightIndex = mid + 1;
+  int rightEndIndex = last;
+
+  int tempIndex = 0;
+
+  // 寻找两个子序列，顺序遍历，将值小的复制到临时数组中，直到其中一个子序列遍历完毕
+  while (leftIndex &lt;= leftEndIndex &amp;&amp; rightIndex &lt;= rightEndIndex) {
+    // 值小的就复制到临时数组中
+    if (list[leftIndex] &lt;= list[rightIndex]) {
+      temp[tempIndex] = list[leftIndex];
+      tempIndex++;
+      leftIndex++;
+    } else {
+      temp[tempIndex] = list[rightIndex];
+      tempIndex++;
+      rightIndex++;
+    }
+  }
+
+  // 有可能左子序列更长，因此将剩下的部分直接复制到临时数组中
+  while (leftIndex &lt;= leftEndIndex) {
+    temp[tempIndex++] = list[leftIndex++];
+  }
+
+  // 有可能右子序列更长，因此将剩下的部分直接复制到临时数组中
+  while (rightIndex &lt;= rightEndIndex) {
+    temp[tempIndex++] = list[rightIndex++];
+  }
+
+  // 最后还需要将有序的临时数组复制到原始序列中
+  for (int i = 0; i &lt; tempIndex; ++i) {
+    list[first + i] = temp[i];
+  }
+
+ // 这里添加一个打印，记录归并
+ NSMutableString *str = [[NSMutableString alloc] init];
+  for (int i = 0; i &lt; sizeof(list) - 1; ++i) {
+    if (i == 0) {
+      [str appendFormat:@"%d", list[i]];
+    } else {
+      [str appendFormat:@", %d", list[i]];
+    }
+  }
+  NSLog(@"此次二路归并后，得到的序列为：(%@)", str);
+}
+</code></pre>
+
+<p>测试：</p>
+
+<pre><code>int list[] = {6, 202, 100, 301, 38, 8, 1};
+int temp[7] = {0};
+mergeSort(list, 0, 7-1, temp);
+</code></pre>
+
+<p>打印效果：</p>
+
+<pre><code>此次二路归并后，得到的序列为：(6, 202, 100, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 202, 100, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 38, 8, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 8, 38, 1)
+此次二路归并后，得到的序列为：(6, 100, 202, 301, 1, 8, 38)
+此次二路归并后，得到的序列为：(1, 6, 8, 38, 100, 202, 301)
+</code></pre>
+
+<p>从打印结果可以看出来，果然与我们前面的算法分析是一样的。</p>
+
+<h2>插入排序</h2>
+
+<p>插入排序有两种：</p>
+
+<pre><code>直接插入排序
+折半插入排序
+</code></pre>
+
+<p>原理：</p>
+
+<pre><code>第一个元素就认为是有序的
+取第二个元素，判断是否大于第一个元素。若是大于，表示已经有序，不用移动，否则将已经有序的序列整体向后移动一个位置
+依此类推，直到所有元素已经有序。
+</code></pre>
+
+<p>直接插入排序</p>
+
+<p>需要到两层循环来处理，外层循环用于跑多少趟，而内层循环用于移动元素位置，因此时间复杂度仍为 O ( n2 )</p>
+
+<p>伪代码</p>
+
+<pre><code>void insertSort(int a[], int len) {
+  for i = 1; i &lt; len; ++i {     
+     // 后者&gt;前者，才需要移动和插入
+     if a[i] &lt; a[i - 1] {
+        // 记录下要移动的元素
+        int target = a[i];
+
+        // 将前j-1个有序的元素分别后移一个位置
+        int j = i;
+        while j &gt; 0 &amp;&amp; a[j - 1] &gt; target {
+          a[j] = a[j - 1];
+          j--;
+        }
+
+        // 将目标元素插入对应的位置，使之有序
+        a[j] = target;
+     }
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void insertSort(int a[], int len) {
+  for (int i = 1; i &lt; len; ++i) {
+
+    // 遇到不是有序的，才进入移动元素
+    if (a[i] &lt; a[i - 1]) {
+      int target = a[i];
+
+      // 移动前j-1元素，分别向后移动一个位置
+      int j = i;
+      while (j &gt; 0 &amp;&amp; a[j - 1] &gt; target) {
+        a[j] = a[j - 1];
+
+        j--;
+      }
+
+      // 将目标元素放到目标位置，使之有序
+      a[j] = target;
+    }
+  }
+}
+</code></pre>
+
+<p>OjbC版</p>
+
+<pre><code>- (void)insertSort:(int[])a len:(int)len {
+  for (int i = 1; i &lt; len; ++i) {
+
+    // 遇到不是有序的，才进入移动元素
+    if (a[i] &lt; a[i - 1]) {
+      int target = a[i];
+
+      // 移动前j-1元素，分别向后移动一个位置
+      int j = i;
+      while (j &gt; 0 &amp;&amp; a[j - 1] &gt; target) {
+        a[j] = a[j - 1];
+
+        j--;
+      }
+
+      // 将目标元素放到目标位置，使之有序
+      a[j] = target;
+    }
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func insertSort(var a: [Int]) -&gt;[Int] {
+  for var i = 1; i &lt; a.count; ++i {
+    if a[i] &lt; a[i - 1] {
+      let target = a[i]
+
+      var j = i
+      while j &gt; 0 &amp;&amp; a[j - 1] &gt; target {
+        a[j] = a[j - 1]
+
+        j--
+      }
+
+      a[j] = target
+    }
+  }
+
+  return a
+}
+</code></pre>
+
+<p>折半插入排序</p>
+
+<p>从第二个元素开始逐个置入监视哨，使用low、high标签进行折半判断比较大小，并确认插入位置，该位置到最后一个数全部后移一位，然后腾出该位置，把监视哨里面的数置入该位置。依此类推进行排序，直到最后一个数比较完毕。
+时间复杂度</p>
+
+<p>折半插入排序, 即查找插入点的位置, 可以使用折半查找，这样可以减少比较的次数, 但是移动的次数不变，因此，时间复杂度仍为 O(n2) ;
+伪代码</p>
+
+<pre><code>void binaryInsertSort(int a[], int len) {
+  for int i = 2; i &lt; len; ++i {
+     // 将元素放到哨兵的位置
+     a[0] = a[i];
+
+     int low = 1;
+     int high = i - 1;
+
+     // 折半查找位置
+     while low &lt;= high {
+        int mid = (low + high) / 2;
+
+        // 在低半区
+        if a[mid] &gt; a[0] {
+          high = mid - 1;
+        } else { // 在高半区
+          low = mid + 1;
+        }
+     }
+
+     // 将前i - 1个元素后移
+     // 找到high，那么high+1就是i要插入的位置  
+     for int j = i - 1; j &gt;= high + 1; --j {
+        a[j + 1] = a[j];
+     }
+
+     // 将临时放在岗哨的元素放到所查找到的位置处
+     a[high + 1] = a[0];
+  }
+}
+</code></pre>
+
+<p>C语言版</p>
+
+<pre><code>void binaryInsertSort(int a[], int len) {
+  for (int i = 2; i &lt; len; ++i) {
+    // 第一个位置永远只是当作哨兵用
+    a[0] = a[i];
+
+    int low = 1;
+    int high = i - 1;
+
+    while (low &lt;= high) {
+      int mid = (low + high) / 2;
+
+      if (a[mid] &gt; a[0]) {
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    }
+
+    // 移动前i - 1个元素
+    for (int j = i - 1; j &gt;= high + 1; --j) {
+      a[j + 1] = a[j];
+    }
+
+    // 放到查找到的位置处
+    a[high + 1] = a[0];
+  }
+}
+</code></pre>
+
+<p>Swift版</p>
+
+<pre><code>func binaryInsertSort(var a: [Int]) -&gt;[Int] {
+  for var i = 2; i &lt; a.count; ++i {
+    a[0] = a[i]
+
+    var low = 1
+    var high = i - 1
+    while low &lt;= high {
+      let mid = (low + high) / 2
+
+      if a[mid] &gt; a[0] {
+        high = mid - 1
+      } else {
+        low = mid + 1
+      }
+    }
+
+    for var j = i - 1; j &gt;= high + 1; --j {
+      a[j + 1] = a[j]
+    }
+
+    a[high + 1] = a[0]
+  }
+
+  return a
+}
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+</feed>

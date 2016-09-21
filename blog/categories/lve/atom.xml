@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Lve | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/lve/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-09-21T19:15:46+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[直播-实战篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/20/zhi-bo-shi-zhan-pian/"/>
+    <updated>2016-09-20T14:42:57+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/20/zhi-bo-shi-zhan-pian</id>
+    <content type="html"><![CDATA[<p>前言</p>
+
+<p>在看这篇之前，如果您还不了解直播原理，请查看上篇文章如何快速的开发一个完整的iOS直播app(原理篇)</p>
+
+<p>开发一款直播app，集成ijkplayer成功后，就算完成直播功能一半的工程了，只要有拉流url，就能播放直播啦</p>
+
+<p>本篇主要讲解的是直播app中，需要用到的一个很重要的开源框架ijkplayer，然后集成这个框架可能对大多数初学者还是比较有难度的，所以本篇主要教你解决集成【ijkplayer】遇见的各种坑。</p>
+
+<p>很多文章，可能讲解的是如何做，我比较注重讲解为什么这样做,大家有什么不明白，还可以多多提出来。</p>
+
+<p>如果喜欢我的文章，可以关注我微博:吖了个峥,也可以来小码哥，了解下我们的iOS培训课程。后续还会更新更多内容,有任何问题，欢迎简书留言峥吖。。。
+效果</p>
+
+<p><img src="/images/zhiboshizhan001.gif" title="Caption" ></p>
+
+<h3>一、基本知识</h3>
+
+<p>README.md文件：框架的描述文件，描述这个框架怎么使用</p>
+
+<p>编译语言:程序在被执行之前，需要一个专门的编译过程，把程序编译成为机器语言的文件，运行时不需要翻译，所以编译型语言的程序执行效率高，比如OC,C,C++</p>
+
+<p>解释性语言:解释性语言的程序不需要编译，在运行程序的时候才翻译，每个语句都是执行的时候才翻译。这样解释性语言每执行一次就需要逐行翻译一次，效率比较低</p>
+
+<p>解释性语言执行和编译语言执行的区别：</p>
+
+<pre><code>解释性语言一行一行的解析，如果有错误，就不会执行，直接执行下一行。
+编译语言，只要有错，就不能编译，一行都不能执行。
+</code></pre>
+
+<p>脚本语言:属于解析语言，必须通过解释器解析，将其一条条的翻译成机器可识别的指令，并按程序顺序执行。</p>
+
+<pre><code>python：脚本语言，适合网络应用程序的开发，有利于开发效率，现在显得越来越强大
+PHP：服务器端脚本语言，适合做动态网站
+JS：作为客户端的脚本语言，在浏览中解释执行，
+shell：操作系统脚本语言，一般指Unix/Linux中使用的命令行
+编译语言，执行文件是二进制。脚本语言是解释执行的，执行文件是文本
+</code></pre>
+
+<p>shell解释器:shell是一个命令行解释器，相当于windows的cmd,处于内核和用户之间，负责把用户的指令传递给内核并且把执行结果回显给用户.</p>
+
+<pre><code>默认Unix都有shell,OS基于Unix,因此OS自带shell。
+</code></pre>
+
+<p>bash: bash是一种shell解释器版本，shell有很多种版本，就像人，也分不同国家的人。</p>
+
+<pre><code>牛程序员看到不爽的Shell解释器，就会自己重新写一套，慢慢形成了一些标准，常用的Shell解释器有这么几种，sh、bash、csh等
+</code></pre>
+
+<p>shell:通常我们说的shell,指的是shell脚本语言，而不是shell解释器。</p>
+
+<pre><code>在编写shell时，第一行一定要指明系统需要哪种shell解释器解释你的shell脚本，如：#! /bin/bash，使用bash解析脚本语言
+什么时候使用shell命令，比如有些系统命令经常需要用到，可以把命令封装到一个脚本文件，以后就不用再敲一遍了，直接执行脚本语言。
+比如ijkplayer,就用脚本文件下载ffmpeg,因为下载ffmpeg需要执行很多命令，全部封装到脚本文件中。
+在导入一些第三方框架的时候，经常需要用到一些命令，所以一般都会封装到一个脚本文件中，以后只要执行脚本，就会自动执行集成第三方框架的命令。
+</code></pre>
+
+<p>sh:sheel脚本文件后缀名</p>
+
+<h3>二、下载ijkPlayer</h3>
+
+<pre><code>去到B站得github主页，找到ijkplayer项目，下载源码 ijkplayer下载地址
+打开Demo，查看用法，一般学习第三方库，都是先查看Demo
+</code></pre>
+
+<p><img src="/images/zhiboshizhan002.png" title="Caption" ></p>
+
+<h3>三、编译ijkPlayer的步骤</h3>
+
+<p>1、找到ijkPlayerMediaDemo并运行</p>
+
+<pre><code>提示'libavformat/avformat.h' file not found
+</code></pre>
+
+<p><img src="/images/zhiboshizhan003.png" title="Caption" ></p>
+
+<p>原因：因为libavformat是ffmpeg中的库，而ijkplayer是基于ffmpeg这个库的，因此需要导入ffmpeg</p>
+
+<p>解决：查看ijkplayer的README.md，一般都会有说明。</p>
+
+<p><img src="/images/zhiboshizhan004.png" title="Caption" ></p>
+
+<p>init-ios.sh脚本的作用：下载ffmpeg源码</p>
+
+<pre><code>想了解脚本具体怎么做的，可以查看之前写的文章带你走进脚本世界，ijkplayer之【init-ios.sh】脚本分析，全面剖析了init-ios.sh这个脚本做了哪些事情。
+</code></pre>
+
+<p>如何执行init-ios.sh脚本文件</p>
+
+<pre><code>步骤一：找到init-ios.sh脚本文件
+</code></pre>
+
+<p><img src="/images/zhiboshizhan005.png" title="Caption" ></p>
+
+<pre><code>步骤二：打开终端，cd进入到ijkplayer-master的目录中
+</code></pre>
+
+<p><img src="/images/zhiboshizhan006.png" title="Caption" ></p>
+
+<pre><code>注意是 cd 这个文件夹
+</code></pre>
+
+<p><img src="/images/zhiboshizhan007.png" title="Caption" ></p>
+
+<pre><code>步骤三：输入./init-ios.sh，就会执行当前脚本了。
+</code></pre>
+
+<p><img src="/images/zhiboshizhan008.png" title="Caption" ></p>
+
+<pre><code>执行完脚本后，就会发现ijkplayer中有ffmpeg了
+</code></pre>
+
+<p><img src="/images/zhiboshizhan009.png" title="Caption" >
+2、下载好ffmpeg源码后，再次运行Demo</p>
+
+<pre><code>发现还是报'libavformat/avformat.h' file not found错误
+原因:执行init-ios.sh，仅仅是下载源码，但是源码并没有参与编译，需要把源码编译成.a文件
+    Demo依赖于IJKMediaPlayer库
+</code></pre>
+
+<p><img src="/images/zhiboshizhan010.png" title="Caption" ></p>
+
+<pre><code>打开 IJKMediaPlayer库，查看下源码
+</code></pre>
+
+<p><img src="/images/zhiboshizhan011.png" title="Caption" ></p>
+
+<pre><code>打开 IJKMediaPlayer库
+</code></pre>
+
+<p><img src="/images/zhiboshizhan012.png" title="Caption" ></p>
+
+<pre><code>右击，发现FFMPEG中的库都是红的，表示不存在
+</code></pre>
+
+<p><img src="/images/zhiboshizhan013.png" title="Caption" ></p>
+
+<pre><code>解决:查看ijkplayer的README.md
+</code></pre>
+
+<p><img src="/images/zhiboshizhan014.png" title="Caption" >
+编译ffmpeg库</p>
+
+<pre><code>步骤一：进入到脚本文件的目录下
+</code></pre>
+
+<p><img src="/images/zhiboshizhan015.png" title="Caption" ></p>
+
+<pre><code>步骤二：执行./compile-ffmpeg.sh clean
+    步骤二功能：删除一些文件和文件夹，为编译ffmpeg.sh做准备，在编译ffmpeg.sh的时候，会自动创建刚刚删除的那些文件，为避免文件名冲突，因此在编译ffmpeg.sh之前先删除等会会自动创建的文件夹或者文件
+</code></pre>
+
+<p><img src="/images/zhiboshizhan016.png" title="Caption" ></p>
+
+<pre><code>步骤三：执行./compile-ffmpeg.sh all,真正的编译各个平台的ffmpeg库，并生成所以平台的通用库.
+</code></pre>
+
+<p><img src="/images/zhiboshizhan017.png" title="Caption" ></p>
+
+<p>执行./compile-ffmpeg.sh all
+执行compile-ffmpeg.sh all前</p>
+
+<p><img src="/images/zhiboshizhan018.png" title="Caption" >
+执行compile-ffmpeg.sh all后</p>
+
+<p><img src="/images/zhiboshizhan019.png" title="Caption" >
+3.再次运行Demo,就能成功了,因为IJKMediaPlayer库获取到ffmpeg库了</p>
+
+<pre><code>编译完ffmpeg后，IJKMediaPlayer库中显示
+</code></pre>
+
+<p><img src="/images/zhiboshizhan020.png" title="Caption" ></p>
+
+<pre><code>cmd+r,Demo运行成功
+</code></pre>
+
+<p><img src="/images/zhiboshizhan021.png" title="Caption" ></p>
+
+<h3>四、如何集成到ijkplayer到自己的项目中</h3>
+
+<pre><code>注意：ijkplayer的README中的方法比较麻烦，不方便携带，不推荐。
+</code></pre>
+
+<p><img src="/images/zhiboshizhan022.png" title="Caption" >
+1.推荐自己把IJKMediaPlayer打包成静态库,在导入到自己的项目中。</p>
+
+<pre><code>如何打包，请参考，iOS中集成ijkplayer视频直播框架，写的非常不错，就不一一详细介绍了,但是只有发布版本的库。
+我自己打包了ijkplayer两个版本库，分别用于调试和发布(DEBUG和Release),点击下载
+由于文件太大上传不了GitHUb,就上传到百度云了
+</code></pre>
+
+<p>2.直接把ijkplayer库拖入到自己的工程中，</p>
+
+<pre><code>调试的话，拖入调试版本的ijkplayer库，发布的话，拖入发布版本的ijkplayer库
+</code></pre>
+
+<p><img src="/images/zhiboshizhan023.png" title="Caption" >
+3.导入ijkplayer依赖的库，具体可以查看ijkplayer的README</p>
+
+<p><img src="/images/zhiboshizhan024.png" title="Caption" >
+<img src="/images/zhiboshizhan025.png" title="Caption" ></p>
+
+<h3>五、使用ijkplayer直播</h3>
+
+<p>1.ijkplayer用法简介</p>
+
+<pre><code>ijkplayer用法比较简单，其实只要有直播地址，就能直播了
+注意：最好真机测试，模拟器测试比较卡,不流畅，真机就没有问题了
+</code></pre>
+
+<p>2.抓取数据</p>
+
+<pre><code>抓了很多直播app的数据，发现映客主播的质量是最高的。
+映客主播url:http://116.211.167.106/api/live/aggregation?uid=133825214&amp;interest=1
+    uid=账号ID，这里是我的账号ID
+    interest=兴趣 ，1表示只查看女生，哈哈
+    上下拉刷新的接口没抓到，就一下加载200条数据，哈哈
+
+- (void)loadData
+{
+    // 映客数据url
+    NSString *urlStr = @"http://116.211.167.106/api/live/aggregation?uid=133825214&amp;interest=1";
+
+    // 请求数据
+    AFHTTPSessionManager *mgr = [AFHTTPSessionManager manager];
+    mgr.responseSerializer = [AFJSONResponseSerializer serializer];
+    mgr.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/plain", nil];
+    [mgr GET:urlStr parameters:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary * _Nullable responseObject) {
+
+        _lives = [YZLiveItem mj_objectArrayWithKeyValuesArray:responseObject[@"lives"]];
+
+        [_tableView reloadData];
+
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+
+        NSLog(@"%@",error);
+
+    }];
+}
+</code></pre>
+
+<p>3.获取拉流url,直播</p>
+
+<p>IJKFFMoviePlayerController：用来做直播的类</p>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor whiteColor];
+
+    // 设置直播占位图片
+    NSURL *imageUrl = [NSURL URLWithString:[NSString stringWithFormat:@"http://img.meelive.cn/%@",_live.creator.portrait]];
+    [self.imageView sd_setImageWithURL:imageUrl placeholderImage:nil];
+
+    // 拉流地址
+    NSURL *url = [NSURL URLWithString:_live.stream_addr];
+
+    // 创建IJKFFMoviePlayerController：专门用来直播，传入拉流地址就好了
+    IJKFFMoviePlayerController *playerVc = [[IJKFFMoviePlayerController alloc] initWithContentURL:url withOptions:nil];
+
+    // 准备播放
+    [playerVc prepareToPlay];
+
+    // 强引用，反正被销毁
+    _player = playerVc;
+
+    playerVc.view.frame = [UIScreen mainScreen].bounds;
+
+    [self.view insertSubview:playerVc.view atIndex:1];
+
+}
+</code></pre>
+
+<p>4.结束播放</p>
+
+<pre><code>界面不播放，一定要记得结束播放，否则会报内存溢出
+</code></pre>
+
+<p><img src="/images/zhiboshizhan026.png" title="Caption" ></p>
+
+<pre><code>- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+
+    // 界面消失，一定要记得停止播放
+    [_player pause];
+    [_player stop];
+}
+</code></pre>
+
+<p>结束语</p>
+
+<p>后续还会更新更多有关直播的资料，希望做到教会每一个朋友从零开始做一款直播app，并且Demo也会慢慢完善.
+Demo点击下载</p>
+
+<pre><code>由于FFMPEG库比较大，大概100M。
+本来想自己上传所有代码了，上传了1个小时，还没成功，就放弃了。
+提供另外一种方案，需要你们自己导入IJKPlayer库
+具体步骤：
+下载Demo后，打开YZLiveApp.xcworkspace问题
+</code></pre>
+
+<p>打开YZLiveApp.xcworkspace问题</p>
+
+<p><img src="/images/zhiboshizhan027.png" title="Caption" ></p>
+
+<pre><code>pod install就能解决
+</code></pre>
+
+<p><img src="/images/zhiboshizhan028.png" title="Caption" ></p>
+
+<pre><code>下载jkplayer库，点击下载
+把jkplayer直接拖入到与Classes同一级目录下，直接运行程序，就能成功了
+</code></pre>
+
+<p><img src="/images/zhiboshizhan029.png" title="Caption" ></p>
+
+<pre><code>注意不需要打开工程，把jkplayer拖入到工程中，而是直接把jkplayer库拷贝到与Classes同一级目录下就可以了。
+错误示范:不要向下面这样操作
+</code></pre>
+
+<p><img src="/images/zhiboshizhan030.png" title="Caption" ></p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[直播-原理篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/15/zhi-bo-yuan-li-pian/"/>
+    <updated>2016-09-15T14:42:49+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/15/zhi-bo-yuan-li-pian</id>
+    <content type="html"><![CDATA[<p>前言</p>
+
+<p>本系列文章引自一个朋友（讲师）的精华：<a href="http://www.jianshu.com/users/b09c3959ab3b/latest_articles">袁峥Seemygo</a></p>
+
+<h2>一、个人见解（直播难与易）</h2>
+
+<p>直播难：个人认为要想把直播从零开始做出来，绝对是牛逼中的牛逼，大牛中的大牛，因为直播中运用到的技术难点非常之多，视频/音频处理，图形处理，视频/音频压缩，CDN分发，即时通讯等技术，每一个技术都够你学几年的。</p>
+
+<p>直播易：已经有各个领域的大牛，封装好了许多牛逼的框架，我们只需要用别人写好的框架，就能快速的搭建一个直播app，也就是传说中的站在大牛肩膀上编程。</p>
+
+<h2>二、了解直播</h2>
+
+<p>热门直播产品</p>
+
+<p>映客，斗鱼，熊猫，虎牙，花椒等等
+直播效果图</p>
+
+<p><img src="/images/zhiboyuanli001.png" title="Caption" >
+1.一个完整直播app功能(来自落影loyinglin分享)</p>
+
+<pre><code>1、聊天
+    私聊、聊天室、点亮、推送、黑名单等;
+
+2、礼物
+    普通礼物、豪华礼物、红包、排行榜、第三方充值、内购、礼物动态更新、提现等；
+
+3、直播列表
+    关注、热门、最新、分类直播用户列表等；
+
+4、自己直播
+    录制、推流、解码、播放、美颜、心跳、后台切换、主播对管理员操作、管理员对用户等；
+
+5、房间逻辑
+    创建房间、进入房间、退出房间、关闭房间、切换房间、房间管理员设置、房间用户列表等；
+
+6、用户逻辑
+    普通登陆、第三方登陆、注册、搜索、修改个人信息、关注列表、粉丝列表、忘记密码、查看个人信息、收入榜、关注和取关、检索等；
+
+7、观看直播
+    聊天信息、滚屏弹幕、礼物显示、加载界面等；
+
+8、统计
+    APP业务统计、第三方统计等；
+
+9、超管
+    禁播、隐藏、审核等；
+</code></pre>
+
+<p>2.一个完整直播app原理</p>
+
+<p>直播原理：把主播录制的视频，推送到服务器，在由服务器分发给观众观看。</p>
+
+<p>直播环节：推流端（采集、美颜处理、编码、推流）、服务端处理（转码、录制、截图、鉴黄）、播放器（拉流、解码、渲染）、互动系统（聊天室、礼物系统、赞）
+3.一个完整直播app实现流程</p>
+
+<p>1.采集、2.滤镜处理、3.编码、4.推流、5.CDN分发、6.拉流、7.解码、8.播放、9.聊天互动</p>
+
+<p><img src="/images/zhiboyuanli002.png" title="Caption" >
+4.一个完整直播app架构</p>
+
+<p><img src="/images/zhiboyuanli003.png" title="Caption" >
+5.一个完整直播app技术点</p>
+
+<p><img src="/images/zhiboyuanli004.png" title="Caption" ></p>
+
+<h2>三、了解流媒体（直播需要用到流媒体）</h2>
+
+<pre><code>流媒体开发:网络层(socket或st)负责传输，协议层(rtmp或hls)负责网络打包，封装层(flv、ts)负责编解码数据的封装，编码层(h.264和aac)负责图像，音频压缩。
+帧:每帧代表一幅静止的图像
+GOP:（Group of Pictures）画面组，一个GOP就是一组连续的画面，每个画面都是一帧，一个GOP就是很多帧的集合
+    直播的数据，其实是一组图片，包括I帧、P帧、B帧，当用户第一次观看的时候，会寻找I帧，而播放器会到服务器寻找到最近的I帧反馈给用户。因此，GOP Cache增加了端到端延迟，因为它必须要拿到最近的I帧
+    GOP Cache的长度越长，画面质量越好
+码率：图片进行压缩后每秒显示的数据量。
+帧率：每秒显示的图片数。影响画面流畅度，与画面流畅度成正比：帧率越大，画面越流畅；帧率越小，画面越有跳动感。
+    由于人类眼睛的特殊生理结构，如果所看画面之帧率高于16的时候，就会认为是连贯的，此现象称之为视觉暂留。并且当帧速达到一定数值后，再增长的话，人眼也不容易察觉到有明显的流畅度提升了。
+分辨率：(矩形)图片的长度和宽度，即图片的尺寸
+压缩前的每秒数据量:帧率X分辨率(单位应该是若干个字节)
+压缩比:压缩前的每秒数据量/码率 （对于同一个视频源并采用同一种视频编码算法，则：压缩比越高，画面质量越差。）　
+
+视频文件格式：文件的后缀，比如.wmv,.mov,.mp4,.mp3,.avi,
+    主要用处，根据文件格式，系统会自动判断用什么软件打开,
+    注意: 随意修改文件格式，对文件的本身不会造成太大的影响，比如把avi改成mp4,文件还是avi.
+
+视频封装格式：一种储存视频信息的容器，流式封装可以有TS、FLV等，索引式的封装有MP4,MOV,AVI等，
+    主要作用：一个视频文件往往会包含图像和音频，还有一些配置信息(如图像和音频的关联，如何解码它们等)：这些内容需要按照一定的规则组织、封装起来.
+    注意：会发现封装格式跟文件格式一样，因为一般视频文件格式的后缀名即采用相应的视频封装格式的名称,所以视频文件格式就是视频封装格式。
+视频封装格式和视频压缩编码标准：就好像项目工程和编程语言，封装格式就是一个项目的工程，视频编码方式就是编程语言，一个项目工程可以用不同语言开发。
+</code></pre>
+
+<h2>四、直播基础知识介绍：</h2>
+
+<h4>1.采集视频、音频</h4>
+
+<ul>
+<li><p>1.1 采集视频、音频编码框架 *</p>
+
+<p>  AVFoundation:AVFoundation是用来播放和创建实时的视听媒体数据的框架，同时提供Objective-C接口来操作这些视听数据，比如编辑，旋转，重编码</p></li>
+<li><p>1.2 视频、音频硬件设备 *</p>
+
+<p>  CCD:图像传感器： 用于图像采集和处理的过程，把图像转换成电信号。
+  拾音器:声音传感器： 用于声音采集和处理的过程，把声音转换成电信号。
+  音频采样数据:一般都是PCM格式
+  视频采样数据: 一般都是YUV,或RGB格式，采集到的原始音视频的体积是非常大的，需要经过压缩技术处理来提高传输效率</p></li>
+</ul>
+
+
+<h4>2.视频处理（美颜，水印）</h4>
+
+<pre><code>视频处理原理:因为视频最终也是通过GPU，一帧一帧渲染到屏幕上的，所以我们可以利用OpenGL ES，对视频帧进行各种加工，从而视频各种不同的效果，就好像一个水龙头流出的水，经过若干节管道，然后流向不同的目标
+    现在的各种美颜和视频添加特效的app都是利用GPUImage这个框架实现的,.
+</code></pre>
+
+<ul>
+<li><p>视频处理框架 *</p>
+
+<p>  GPUImage : GPUImage是一个基于OpenGL ES的一个强大的图像/视频处理框架,封装好了各种滤镜同时也可以编写自定义的滤镜,其本身内置了多达120多种常见的滤镜效果。
+  OpenGL:OpenGL（全写Open Graphics Library）是个定义了一个跨编程语言、跨平台的编程接口的规格，它用于三维图象（二维的亦可）。OpenGL是个专业的图形程序接口，是一个功能强大，调用方便的底层图形库。
+  OpenGL ES:OpenGL ES (OpenGL for Embedded Systems) 是 OpenGL三维图形 API 的子集，针对手机、PDA和游戏主机等嵌入式设备而设计。</p></li>
+</ul>
+
+
+<h4>3.视频编码解码</h4>
+
+<ul>
+<li><p>3.1 视频编码框架 *</p>
+
+<p>  FFmpeg:是一个跨平台的开源视频框架,能实现如视频编码,解码,转码,串流,播放等丰富的功能。其支持的视频格式以及播放协议非常丰富,几乎包含了所有音视频编解码、封装格式以及播放协议。
+      -Libswresample:可以对音频进行重采样,rematrixing 以及转换采样格式等操 作。
+      -Libavcodec:提供了一个通用的编解码框架,包含了许多视频,音频,字幕流 等编码/解码器。
+      -Libavformat:用于对视频进行封装/解封装。
+      -Libavutil:包含一些共用的函数,如随机数生成,数据结构,数学运算等。
+      -Libpostproc:用于进行视频的一些后期处理。
+      -Libswscale:用于视频图像缩放,颜色空间转换等。
+      -Libavfilter:提供滤镜功能。
+  X264:把视频原数据YUV编码压缩成H.264格式
+  VideoToolbox:苹果自带的视频硬解码和硬编码API，但是在iOS8之后才开放。
+  AudioToolbox:苹果自带的音频硬解码和硬编码API</p></li>
+<li><p>3.2 视频编码技术 *</p>
+
+<p>  视频压缩编码标准：对视频进行压缩(视频编码)或者解压缩（视频解码）的编码技术,比如MPEG，H.264,这些视频编码技术是压缩编码视频的</p>
+
+<pre><code>  主要作用:是将视频像素数据压缩成为视频码流，从而降低视频的数据量。如果视频不经过压缩编码的话，体积通常是非常大的，一部电影可能就要上百G的空间。
+  注意:最影响视频质量的是其视频编码数据和音频编码数据，跟封装格式没有多大关系
+</code></pre>
+
+<p>  MPEG:一种视频压缩方式，它采用了帧间压缩，仅存储连续帧之间有差别的地方 ，从而达到较大的压缩比</p></li>
+</ul>
+
+
+<p> H.264/AVC:一种视频压缩方式,采用事先预测和与MPEG中的P-B帧一样的帧预测方法压缩，它可以根据需要产生适合网络情况传输的视频流,还有更高的压缩比，有更好的图象质量</p>
+
+<pre><code>    注意1:如果是从单个画面清晰度比较，MPEG4有优势；从动作连贯性上的清晰度，H.264有优势
+    注意2:由于264的算法更加复杂，程序实现烦琐，运行它需要更多的处理器和内存资源。因此，运行264对系统要求是比较高的。
+    注意3:由于264的实现更加灵活，它把一些实现留给了厂商自己去实现，虽然这样给实现带来了很多好处，但是不同产品之间互通成了很大的问题，造成了通过A公司的编码器编出的数据，必须通过A公司的解码器去解这样尴尬的事情
+</code></pre>
+
+<p>H.265/HEVC:一种视频压缩方式,基于H.264，保留原来的某些技术，同时对一些相关的技术加以改进，以改善码流、编码质量、延时和算法复杂度之间的关系，达到最优化设置。</p>
+
+<pre><code>    H.265 是一种更为高效的编码标准，能够在同等画质效果下将内容的体积压缩得更小，传输时更快更省带宽
+    I帧:(关键帧)保留一副完整的画面，解码时只需要本帧数据就可以完成（因为包含完整画面）
+P帧:(差别帧)保留这一帧跟之前帧的差别，解码时需要用之前缓存的画面叠加上本帧定义的差别，生成最终画面。（P帧没有完整画面数据，只有与前一帧的画面差别的数据）
+B帧:(双向差别帧)保留的是本帧与前后帧的差别，解码B帧，不仅要取得之前的缓存画面，还要解码之后的画面，通过前后画面的与本帧数据的叠加取得最终的画面。B帧压缩率高，但是解码时CPU会比较累
+帧内（Intraframe）压缩:当压缩一帧图像时，仅考虑本帧的数据而不考虑相邻帧之间的冗余信息,帧内一般采用有损压缩算法
+帧间（Interframe）压缩:时间压缩（Temporal compression），它通过比较时间轴上不同帧之间的数据进行压缩。帧间压缩一般是无损的
+muxing（合成）：将视频流、音频流甚至是字幕流封装到一个文件中(容器格式（FLV，TS）)，作为一个信号进行传输。
+</code></pre>
+
+<ul>
+<li><p>3.3 音频编码技术 *</p>
+
+<p>  AAC，mp3：这些属于音频编码技术,压缩音频用</p></li>
+<li><p>3.4码率控制 *</p>
+
+<p>  多码率:观众所处的网络情况是非常复杂的，有可能是WiFi，有可能4G、3G、甚至2G，那么怎么满足多方需求呢？多搞几条线路，根据当前网络环境自定义码率。
+      列如：常常看见视频播放软件中的1024，720，高清，标清，流畅等，指的就是各种码率。</p></li>
+<li><p>3.5 视频封装格式 *</p>
+
+<p>  TS : 一种流媒体封装格式，流媒体封装有一个好处，就是不需要加载索引再播放，大大减少了首次载入的延迟，如果片子比较长，mp4文件的索引相当大，影响用户体验
+      为什么要用TS:这是因为两个TS片段可以无缝拼接，播放器能连续播放</p>
+
+<p>  FLV: 一种流媒体封装格式,由于它形成的文件极小、加载速度极快，使得网络观看视频文件成为可能,因此FLV格式成为了当今主流视频格式</p></li>
+</ul>
+
+
+<h4>4.推流</h4>
+
+<ul>
+<li>4.1 数据传输框架 *</li>
+</ul>
+
+
+<p>librtmp:用来传输RTMP协议格式的数据</p>
+
+<ul>
+<li><p>4.2 流媒体数据传输协议 *</p>
+
+<p>  RTMP:实时消息传输协议,Adobe Systems公司为Flash播放器和服务器之间音频、视频和数据传输开发的开放协议，因为是开放协议所以都可以使用了。
+      RTMP协议用于对象、视频、音频的传输。
+      这个协议建立在TCP协议或者轮询HTTP协议之上。
+      RTMP协议就像一个用来装数据包的容器，这些数据可以是FLV中的视音频数据。一个单一的连接可以通过不同的通道传输多路网络流，这些通道中的包都是按照固定大小的包传输的</p>
+
+<p>  chunk:消息包</p></li>
+</ul>
+
+
+<h4>5.流媒体服务器</h4>
+
+<ul>
+<li><p>5.1常用服务器 *</p>
+
+<p>  SRS：一款国人开发的优秀开源流媒体服务器系统
+  BMS:也是一款流媒体服务器系统，但不开源，是SRS的商业版，比SRS功能更多
+  nginx:免费开源web服务器，常用来配置流媒体服务器。</p></li>
+<li><p>5.2数据分发 *</p>
+
+<p>  CDN：(Content Delivery Network)，即内容分发网络,将网站的内容发布到最接近用户的网络”边缘”，使用户可以就近取得所需的内容，解决 Internet网络拥挤的状况，提高用户访问网站的响应速度.
+      CDN：代理服务器，相当于一个中介。
+      CDN工作原理：比如请求流媒体数据
+          1.上传流媒体数据到服务器（源站）
+          2.源站存储流媒体数据
+          3.客户端播放流媒体，向CDN请求编码后的流媒体数据
+          4.CDN的服务器响应请求，若节点上没有该流媒体数据存在，则向源站继续请求流媒体数据；若节点上已经缓存了该视频文件，则跳到第6步。
+          5.源站响应CDN的请求，将流媒体分发到相应的CDN节点上
+          6.CDN将流媒体数据发送到客户端
+  回源：当有用户访问某一个URL的时候，如果被解析到的那个CDN节点没有缓存响应的内容，或者是缓存已经到期，就会回源站去获取搜索。如果没有人访问，那么CDN节点不会主动去源站拿.
+  带宽:在固定的时间可传输的数据总量，
+      比如64位、800MHz的前端总线，它的数据传输率就等于64bit×800MHz÷8(Byte)=6.4GB/s
+  负载均衡: 由多台服务器以对称的方式组成一个服务器集合，每台服务器都具有等价的地位，都可以单独对外提供服务而无须其他服务器的辅助.
+      通过某种负载分担技术，将外部发送来的请求均匀分配到对称结构中的某一台服务器上，而接收到请求的服务器独立地回应客户的请求。
+      均衡负载能够平均分配客户请求到服务器列阵，籍此提供快速获取重要数据，解决大量并发访问服务问题。
+      这种群集技术可以用最少的投资获得接近于大型主机的性能。
+  QoS（带宽管理）:限制每一个组群的带宽，让有限的带宽发挥最大的效用</p></li>
+</ul>
+
+
+<h4>6.拉流</h4>
+
+<pre><code>直播协议选择：
+    即时性要求较高或有互动需求的可以采用RTMP,RTSP
+    对于有回放或跨平台需求的，推荐使用HLS
+直播协议对比 :
+</code></pre>
+
+<p><img src="/images/zhiboyuanli005.png" title="Caption" ></p>
+
+<pre><code>HLS:由Apple公司定义的用于实时流传输的协议,HLS基于HTTP协议实现，传输内容包括两部分，一是M3U8描述文件，二是TS媒体文件。可实现流媒体的直播和点播，主要应用在iOS系统
+    HLS是以点播的技术方式来实现直播
+    HLS是自适应码率流播，客户端会根据网络状况自动选择不同码率的视频流，条件允许的情况下使用高码率，网络繁忙的时候使用低码率，并且自动在二者间随意切
+    换。这对移动设备网络状况不稳定的情况下保障流畅播放非常有帮助。
+    实现方法是服务器端提供多码率视频流，并且在列表文件中注明，播放器根据播放进度和下载速度自动调整。
+HLS与RTMP对比:HLS主要是延时比较大，RTMP主要优势在于延时低
+    HLS协议的小切片方式会生成大量的文件，存储或处理这些文件会造成大量资源浪费
+    相比使用RTSP协议的好处在于，一旦切分完成，之后的分发过程完全不需要额外使用任何专门软件，普通的网络服务器即可，大大降低了CDN边缘服务器的配置要求，可以使用任何现成的CDN,而一般服务器很少支持RTSP。
+HTTP-FLV:基于HTTP协议流式的传输媒体内容。
+    相对于RTMP，HTTP更简单和广为人知，内容延迟同样可以做到1~3秒，打开速度更快，因为HTTP本身没有复杂的状态交互。所以从延迟角度来看，HTTP-FLV要优于RTMP。
+RTSP:实时流传输协议,定义了一对多应用程序如何有效地通过IP网络传送多媒体数据.
+RTP:实时传输协议,RTP是建立在UDP协议上的，常与RTCP一起使用，其本身并没有提供按时发送机制或其它服务质量（QoS）保证，它依赖于低层服务去实现这一过程。
+RTCP:RTP的配套协议,主要功能是为RTP所提供的服务质量（QoS）提供反馈，收集相关媒体连接的统计信息，例如传输字节数，传输分组数，丢失分组数，单向和双向网络延迟等等。
+</code></pre>
+
+<h4>7.解码</h4>
+
+<ul>
+<li><p>7.1 解封装 *</p>
+
+<p>  demuxing（分离）：从视频流、音频流，字幕流合成的文件(容器格式（FLV，TS）)中， 分解出视频、音频或字幕，各自进行解码。</p></li>
+<li><p>7.2 音频编码框架 *</p>
+
+<p>  fdk_aac:音频编码解码框架，PCM音频数据和AAC音频数据互转</p></li>
+<li><p>7.3 解码介绍 *</p>
+
+<p>  硬解码：用GPU来解码，减少CPU运算
+      　优点：播放流畅、低功耗，解码速度快，
+      　　 * 缺点：兼容不好
+  软解码：用CPU来解码
+      优点：兼容好
+      　　 * 缺点：加大CPU负担，耗电增加、没有硬解码流畅，解码速度相对慢</p></li>
+</ul>
+
+
+<h4>8.播放</h4>
+
+<pre><code>ijkplayer:一个基于FFmpeg的开源Android/iOS视频播放器
+    API易于集成；
+    编译配置可裁剪，方便控制安装包大小；
+    支持硬件加速解码，更加省电
+    简单易用，指定拉流URL，自动解码播放.
+</code></pre>
+
+<h4>9.聊天互动</h4>
+
+<pre><code>IM:(InstantMessaging)即时通讯:是一个实时通信系统，允许两人或多人使用网络实时的传递文字消息、文件、语音与视频交流.
+    IM在直播系统中的主要作用是实现观众与主播、观众与观众之间的文字互动.
+    * 第三方SDK *
+腾讯云：腾讯提供的即时通讯SDK，可作为直播的聊天室
+融云：一个比较常用的即时通讯SDK，可作为直播的聊天室
+</code></pre>
+
+<h2>五、如何快速的开发一个完整的iOS直播app</h2>
+
+<h4>1、利用第三方直播SDK快速的开发</h4>
+
+<p>七牛云:七牛直播云是专为直播平台打造的全球化直播流服务和一站式实现SDK端到端直播场景的企业级直播云服务平台.</p>
+
+<ul>
+<li> 熊猫TV,龙珠TV等直播平台都是用的七牛云</li>
+</ul>
+
+
+<p>网易视频云：基于专业的跨平台视频编解码技术和大规模视频内容分发网络，提供稳定流畅、低延时、高并发的实时音视频服务，可将视频直播无缝对接到自身App.</p>
+
+<h4>2、第三方SDK公司为什么要提供SDK给我们？</h4>
+
+<pre><code>希望把我们的产品和它绑在一条船上，更加的依赖它。
+技术生钱，帮养一大批牛B的程序员
+</code></pre>
+
+<h4>3、直播功能：自研还是使用第三方直播SDK开发？</h4>
+
+<p>第三方SDK开发: 对于一个初创团队来讲，自研直播不管在技术门槛、CDN、带宽上都是有很大的门槛的，而且需要耗费大量的时间才能做出成品，不利于拉投资。</p>
+
+<p>自研：公司直播平台大，从长远看，自研可以节省成本，技术成面比直接用SDK可控多了。</p>
+
+<h6>4.第三方SDK好处</h6>
+
+<pre><code>降低成本
+    使用好的第三方企业服务，将不用再花高价请猎头去挖昂贵的大牛，也不用去安抚大牛们个性化的脾气
+提升效率
+    第三方服务的专注与代码集成所带来的方便，所花费的时间可能仅仅是1-2个小时，节约近99%的时间，足够换取更多的时间去和竞争对手斗智斗勇，增加更大的成功可能性
+降低风险
+    借助专业的第三方服务，由于它的快速、专业、稳定等特点，能够极大地加强产品的竞争能力（优质服务、研发速度等），缩短试错时间，必将是创业中保命的手段之一
+专业的事，找专业的人来做
+    第三方服务最少是10-20人的团队专注地解决同一个问题，做同一件事情。第三方服务所带来的支持效果，绝不是通过1-2个人处理所能对比的，难道不是吗
+</code></pre>
+
+<p>结束语</p>
+
+<p>后续还会有讲解视频采集，美颜，聊天室，礼物系统等更多功能，敬请关注！！！</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[直播-iJKPlayer]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/10/zhi-bo-ijkplayer/"/>
+    <updated>2016-09-10T14:42:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/10/zhi-bo-ijkplayer</id>
+    <content type="html"><![CDATA[<p>demo:<a href="https://github.com/al1020119/iCocosIJKPlayer">iCocosIJKPlayer</a></p>
+
+<p>网上讨论比较多并且支持Android/iOS的项目</p>
+
+<pre><code>Vitamio
+IJKPlayer
+</code></pre>
+
+<p>首先说下Vitamio目前可以拿到的版本是4.20，商业使用需要付费。</p>
+
+<p>这里只介绍IJKPlayer，为什么？用了你就知道了！</p>
+
+<p>ijkplayer 是一款做视频直播的框架, 基于ffmpeg, 支持 Android 和 iOS, 网上也有很多集成说明, 但是个人觉得还是不够详细, 在这里详细的讲一下在 iOS 中如何集成ijkplayer, 即便以前从没有接触过, 按着下面做也可以集成成功!</p>
+
+<p><a href="https://github.com/Bilibili/ijkplayer">ijkPlayer下载地址</a></p>
+
+<p><a href="http://blog.csdn.net/zc639143029/article/details/51191886">ijkPlayer详解</a></p>
+
+<p>必备条件:</p>
+
+<pre><code># install homebrew, git, yasm
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install git
+brew install yasm
+</code></pre>
+
+<h3>一. 下载ijkplayer</h3>
+
+<p><a href="https://github.com/Bilibili/ijkplayer">ijkplayer下载地址</a></p>
+
+<p>下载完成后解压, 解压后文件夹内部目录如下图:</p>
+
+<p><img src="/images/ijkplayer001.png" title="Caption" ></p>
+
+<h3>二. 编译 ijkplayer</h3>
+
+<p>说是编译 ijkplayer, 其实是编译 ffmpeg, 在这里我们已经下载好了ijkplayer, 所以 github 上README.md中的Build iOS那一步中有一些步骤是不需要的.</p>
+
+<p>下面开始一步一步编译:</p>
+
+<ol>
+<li>打开终端, cd 到jkplayer-master文件夹中, 也就是下载完解压后的文件夹, 如下图:</li>
+</ol>
+
+
+<p><img src="/images/ijkplayer002.png" title="Caption" >
+2. 执行命令行./init-ios.sh, 这一步是去下载 ffmpeg 的, 时间会久一点, 耐心等一下.如下图:</p>
+
+<p><img src="/images/ijkplayer003.png" title="Caption" >
+3. 在第2步中下载完成后, 执行cd ios, 也就是进入到 ios目录中, 如下图:</p>
+
+<p><img src="/images/ijkplayer004.png" title="Caption" >
+4. 进入 ios 文件夹后, 在终端依次执行./compile-ffmpeg.sh clean和./compile-ffmpeg.sh all命令, 编译 ffmpeg, 也就是README.md中这两步, 如下图:</p>
+
+<p><img src="/images/ijkplayer005.png" title="Caption" >
+编译时间较久, 耐心等待一下.</p>
+
+<pre><code>./init-ios.sh
+cd ios
+./compile-ffmpeg.sh clean
+./compile-ffmpeg.sh all
+</code></pre>
+
+<h3>三. 打包IJKMediaFramework.framework框架</h3>
+
+<p>集成 ijkplayer 有两种方法: 一种方法是按照IJKMediaDemo工程中那样, 直接导入工程IJKMediaPlayer.xcodeproj, 在这里不做介绍, 如下图:</p>
+
+<p><img src="/images/ijkplayer006.png" title="Caption" >
+第二种集成方法是把 ijkplayer 打包成framework导入工程中使用. 下面开始介绍如何打包IJKMediaFramework.framework, 按下面步骤开始一步一步做:</p>
+
+<ol>
+<li>首先打开工程IJKMediaPlayer.xcodeproj, 位置如下图:</li>
+</ol>
+
+
+<p><img src="/images/ijkplayer007.png" title="Caption" >
+打开后是这样的, 如下图:</p>
+
+<p><img src="/images/ijkplayer008.png" title="Caption" >
+2. 工程打开后设置工程的 scheme, 具体步骤如下图:</p>
+
+<p><img src="/images/ijkplayer009.png" title="Caption" >
+<img src="/images/ijkplayer010.png" title="Caption" >
+3. 设置好 scheme 后, 分别选择真机和模拟器进行编译, 编译完成后, 进入 Finder, 如下图:</p>
+
+<p><img src="/images/ijkplayer011.png" title="Caption" >
+进入 Finder 后, 可以看到有真机和模拟器两个版本的编译结果, 如下图:</p>
+
+<p><img src="/images/ijkplayer012.png" title="Caption" >
+下面开始合并真机和模拟器版本的 framework, 注意不要合并错了, 合并的是这个文件, 如下图:</p>
+
+<p><img src="/images/ijkplayer013.png" title="Caption" >
+打开终端, 进行合并, 命令行具体格式为:</p>
+
+<p>lipo -create &ldquo;真机版本路径&rdquo; &ldquo;模拟器版本路径&rdquo; -output &ldquo;合并后的文件路径&rdquo;</p>
+
+<p>合并后如下图:</p>
+
+<p><img src="/images/ijkplayer014.png" title="Caption" >
+下面很重要, 需要用合并后的IJKMediaFramework把原来的IJKMediaFramework替换掉, 如下图, 希望你能看懂:</p>
+
+<p><img src="/images/ijkplayer015.png" title="Caption" >
+上图中的1、2两步完成后, 绿色框住的那个IJKMediaFramework.framework文件就是我们需要的框架了, 可以复制出来, 稍后我们需要导入工程使用.</p>
+
+<h3>四. iOS工程中集成ijkplayer</h3>
+
+<p>新建工程, 导入合并后的IJKMediaFramework.framework以及相关依赖框架以及相关依赖框架,如下图:</p>
+
+<p><img src="/images/ijkplayer016.png" title="Caption" >
+导入框架后, 在ViewController.m进行测试, 首先导入IJKMediaFramework.h头文件, 编译看有没有错, 如果没有错说明集成成功.</p>
+
+<p>接着开始在ViewController.m文件中使用IJKMediaFramework框架进行测试使用, 写一个简单的直播视频进行测试, 在这里看一下运行后的结果, 后面会放上 Demo 供下载.</p>
+
+<p><img src="/images/ijkplayer0017.png" title="Caption" ></p>
+
+<p><img src="/images/ijkplayer018.png" title="Caption" ></p>
+
+<pre><code>为苦于各种奇怪原因而无法玩耍的小伙伴们提供了包装了ijkplayer的pod，仅供测试体验。
+1.基于ijkplayer 5737ccc提交制作成的framework，需要注意的是需要iOS8+。
+2.如果使用ijkplayer过程中遇到BUG什么的，可以移步去ijkplayer作者的GitHub上提issue或者PR。
+哦对了，地址在这里https://coding.net/u/shirokuma/p/IJKMediaLibrary/git，因framework超过100MB无法传到GitHub上，就放到Coding上了。祝各位玩的愉快！
+</code></pre>
+
+<p>项目源码：（在集成或者使用之前请细细品读，也许你会发现不一样的乐趣）</p>
+
+<pre><code>//
+//  ViewController.m
+//  iCocosIjkPlayer
+//
+//  Created by tqy on 16/8/8.
+//  Copyright © 2016年 iCocos. All rights reserved.
+//
+
+#import "ViewController.h"
+
+#import &lt;IJKMediaFramework/IJKMediaFramework.h&gt;
+
+@interface ViewController ()
+
+@property (nonatomic, strong) NSURL *url;
+
+@property (nonatomic, retain) id&lt;IJKMediaPlayback&gt; player;
+
+@property (nonatomic, weak) UIView *PlayerView;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+
+
+    //网络视频
+    //    self.url = [NSURL URLWithString:@"https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"];
+    //    _player = [[IJKAVMoviePlayerController alloc] initWithContentURL:self.url];
+
+    //直播视频
+    self.url = [NSURL URLWithString:@"http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8"];
+    _player = [[IJKFFMoviePlayerController alloc] initWithContentURL:self.url withOptions:nil];
+
+    UIView *playerView = [self.player view];
+
+    UIView *displayView = [[UIView alloc] initWithFrame:CGRectMake(0, 50, self.view.bounds.size.width, 180)];
+    self.PlayerView = displayView;
+    self.PlayerView.backgroundColor = [UIColor blackColor];
+    [self.view addSubview:self.PlayerView];
+
+    playerView.frame = self.PlayerView.bounds;
+    playerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+    [self.PlayerView insertSubview:playerView atIndex:1];
+    [_player setScalingMode:IJKMPMovieScalingModeAspectFill];
+    [self installMovieNotificationObservers];
+
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    if (![self.player isPlaying]) {
+        [self.player prepareToPlay];
+    }
+}
+
+#pragma Selector func
+
+- (void)loadStateDidChange:(NSNotification*)notification {
+    IJKMPMovieLoadState loadState = _player.loadState;
+
+    if ((loadState &amp; IJKMPMovieLoadStatePlaythroughOK) != 0) {
+        NSLog(@"LoadStateDidChange: IJKMovieLoadStatePlayThroughOK: %d\n",(int)loadState);
+    }else if ((loadState &amp; IJKMPMovieLoadStateStalled) != 0) {
+        NSLog(@"loadStateDidChange: IJKMPMovieLoadStateStalled: %d\n", (int)loadState);
+    } else {
+        NSLog(@"loadStateDidChange: ???: %d\n", (int)loadState);
+    }
+}
+
+- (void)moviePlayBackFinish:(NSNotification*)notification {
+    int reason =[[[notification userInfo] valueForKey:IJKMPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
+    switch (reason) {
+        case IJKMPMovieFinishReasonPlaybackEnded:
+            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonPlaybackEnded: %d\n", reason);
+            break;
+
+        case IJKMPMovieFinishReasonUserExited:
+            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonUserExited: %d\n", reason);
+            break;
+
+        case IJKMPMovieFinishReasonPlaybackError:
+            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonPlaybackError: %d\n", reason);
+            break;
+
+        default:
+            NSLog(@"playbackPlayBackDidFinish: ???: %d\n", reason);
+            break;
+    }
+}
+
+- (void)mediaIsPreparedToPlayDidChange:(NSNotification*)notification {
+    NSLog(@"mediaIsPrepareToPlayDidChange\n");
+}
+
+- (void)moviePlayBackStateDidChange:(NSNotification*)notification {
+    switch (_player.playbackState) {
+        case IJKMPMoviePlaybackStateStopped:
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: stoped", (int)_player.playbackState);
+            break;
+
+        case IJKMPMoviePlaybackStatePlaying:
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: playing", (int)_player.playbackState);
+            break;
+
+        case IJKMPMoviePlaybackStatePaused:
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: paused", (int)_player.playbackState);
+            break;
+
+        case IJKMPMoviePlaybackStateInterrupted:
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: interrupted", (int)_player.playbackState);
+            break;
+
+        case IJKMPMoviePlaybackStateSeekingForward:
+        case IJKMPMoviePlaybackStateSeekingBackward: {
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: seeking", (int)_player.playbackState);
+            break;
+        }
+
+        default: {
+            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: unknown", (int)_player.playbackState);
+            break;
+        }
+    }
+}
+
+#pragma Install Notifiacation
+
+- (void)installMovieNotificationObservers {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(loadStateDidChange:)
+                                                 name:IJKMPMoviePlayerLoadStateDidChangeNotification
+                                               object:_player];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(moviePlayBackFinish:)
+                                                 name:IJKMPMoviePlayerPlaybackDidFinishNotification
+                                               object:_player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(mediaIsPreparedToPlayDidChange:)
+                                                 name:IJKMPMediaPlaybackIsPreparedToPlayDidChangeNotification
+                                               object:_player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(moviePlayBackStateDidChange:)
+                                                 name:IJKMPMoviePlayerPlaybackStateDidChangeNotification
+                                               object:_player];
+
+}
+
+- (void)removeMovieNotificationObservers {
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:IJKMPMoviePlayerLoadStateDidChangeNotification
+                                                  object:_player];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:IJKMPMoviePlayerPlaybackDidFinishNotification
+                                                  object:_player];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:IJKMPMediaPlaybackIsPreparedToPlayDidChangeNotification
+                                                  object:_player];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:IJKMPMoviePlayerPlaybackStateDidChangeNotification
+                                                  object:_player];
+
+}
+
+
+- (IBAction)play_btn:(id)sender {
+
+    if (![self.player isPlaying]) {
+        [self.player play];
+    }else{
+        [self.player pause];
+    }
+}
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[原理总结-H264-ACC-FLV]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/08/yuan-li-zong-jie-h264-acc-flv/"/>
+    <updated>2016-09-08T14:42:11+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/08/yuan-li-zong-jie-h264-acc-flv</id>
+    <content type="html"><![CDATA[<p>H.264原理</p>
+
+<pre><code>H.264原始码流（又称为“裸流”）是由一个一个的NALU组成的。他们的结构如下图所示。
+
+其中每个NALU之间通过startcode（起始码）进行分隔，起始码分成两种：0x000001（3Byte）或者0x00000001（4Byte）。如果NALU对应的Slice为一帧的开始就用0x00000001，否则就用0x000001。
+
+H.264码流解析的步骤就是首先从码流中搜索0x000001和0x00000001，分离出NALU；然后再分析NALU的各个字段。本文的程序即实现了上述的两个步骤。
+</code></pre>
+
+<p>ACC原理</p>
+
+<pre><code>AAC原始码流（又称为“裸流”）是由一个一个的ADTS frame组成的。他们的结构如下图所示。
+
+其中每个ADTS frame之间通过syncword（同步字）进行分隔。同步字为0xFFF（二进制“111111111111”）。AAC码流解析的步骤就是首先从码流中搜索0x0FFF，分离出ADTS frame；然后再分析ADTS frame的首部各个字段。本文的程序即实现了上述的两个步骤。
+</code></pre>
+
+<p>FLV原理</p>
+
+<pre><code>FLV封装格式是由一个FLV Header文件头和一个一个的Tag组成的。Tag中包含了音频数据以及视频数据。FLV的结构如下图所示。
+
+
+有关FLV的格式本文不再做记录。可以参考文章《视音频编解码学习工程：FLV封装格式分析器》。本文的程序实现了FLV中的FLV Header和Tag的解析，并可以分离出其中的音频流。
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[M3U8]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/06/m3u8/"/>
+    <updated>2016-09-06T14:41:56+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/06/m3u8</id>
+    <content type="html"><![CDATA[<p>引用：<a href="http://log.fyscu.com/index.php/archives/28/">http://log.fyscu.com/index.php/archives/28/</a></p>
+
+<pre><code>文件格式
+m3u文件是用来描述一个或多个媒体文件地址的纯文本文件，通常以 M3U 或 m3u 作为扩展名。
+
+m3u文件里描述的最小单位（元素/行/记录），可以是一下三者之一：
+
+1.一个文件的绝对路径
+2.相对于m3u文件的相对路径
+3.一个网络url
+
+以#好开头的，是m3u的注释，而一些m3u扩展指令也是由#号开头
+
+m3u的一个常见用途是作为一个指向网络中一个流媒体的播放列表，比如在线视频、广播等等。
+
+你可以直接用文本编辑器编写一个m3u文件，但需要保存为 window-1252格式（ASCII的一个扩展集）。
+
+M3U指令的扩展
+
+#EXTM3U    文件头，必须出现在第一行            如：略
+#EXTINF    引导信息，包含播放时间（时长）和标题     如：#EXTINF:191,Artist Name - Track Title
+
+M3U8
+所谓的M3U8就是用unicode编写的M3U文件，这最初是用在IOS设备上播放http实时流的基础格式。
+</code></pre>
+
+<h6>1. HLS</h6>
+
+<p>HLS是为移动设备开发的基于HTTP的流媒体解决方案。</p>
+
+<pre><code>HLS，Http Live Streaming 是由Apple公司定义的用于实时流传输的协议，HLS基于HTTP协议实现，传输内容包括两部分，一是M3U8描述文件，二是TS媒体文件。
+
+1、M3U8文件
+
+   用文本方式对媒体文件进行描述，由一系列标签组成。
+
+2、ts文件
+
+    ts文件为传输流文件，视频编码主要格式h264/mpeg4，音频为acc/MP3。
+
+   ts文件分为三层：ts层Transport Stream、pes层 Packet Elemental Stream、es层 Elementary Stream. es层就是音视频数据，pes层是在音视频数据上加了时间戳等对数据帧的说明信息，ts层就是在pes层加入数据流的识别和传输必须的信息
+（1）ts层     ts包大小固定为188字节，ts层分为三个部分：ts header、adaptation field、payload。ts header固定4个字节；adaptation field可能存在也可能不存在，主要作用是给不足188字节的数据做填充；payload是pes数据。
+</code></pre>
+
+<h6>2. 原理：</h6>
+
+<p>将视频或流切分成小片（TS）， 并建立索引（M3U8）.</p>
+
+<p>支持视频流：H.264； 音频流：AAC</p>
+
+<h6>3. M3U8文件解析</h6>
+
+<p>M3U8文件在很多地方也叫做Playlist file。</p>
+
+<pre><code>m3u8，是HTTP Live Streaming直播的索引文件。
+
+m3u8基本上可以认为就是.m3u格式文件，区别在于，m3u8文件使用UTF-8字符编码。
+</code></pre>
+
+<h6>4.  Playlist file</h6>
+
+<pre><code>一个M3U的 Playlist 就是一个由多个独立行组成的文本文件，每行由回车/换行区分。每一行可以是一个URI  空白行或
+</code></pre>
+
+<p>是以”#“号开头的字符串，并且空格只能存在于一行中不同元素间的分隔。
+   一个URI 表示一个媒体段或是”variant Playlist file“（最多支持一层嵌套，即一个mm3u8文件中嵌套另一个m3u8），
+以”#EXT“开头的表示一个”tag“，否则表示注释，直接忽略</p>
+
+<blockquote><p>多码率的适配，根据网络带宽，客户端会选择一个适合自己码率的文件进行播放，保证视频流的流畅。</p></blockquote>
+
+<p>在IOS device和mac上可以用http的方式进行分发，其中playlist标准为由m3u扩展而来的m3u8文件，媒体文件为MPEG2-TS或者AAC文件(audio only)</p>
+
+<h6>5. m3u8文件有两种应用场景：</h6>
+
+<pre><code>- 多码率适配流，
+
+- 单码率适配流
+</code></pre>
+
+<p>客户端默认会首先选择码率最高的请求，如果发现码率达不到，会请求郊低码率的流</p>
+
+<h6>6. m3u8分类</h6>
+
+<p>M3U8分顶级M3U8和二级M3U8， 顶级M3U8主要是做多码率适配的， 二级M3U8才是真正的切片文件，</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+</feed>
