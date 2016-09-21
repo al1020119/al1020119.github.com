@@ -1,0 +1,112 @@
+---
+layout: post
+title: "M3U8"
+date: 2016-09-06 14:41:56 +0800
+comments: true
+categories: Audio  Video and Lve Radio
+---
+
+引用：[http://log.fyscu.com/index.php/archives/28/](http://log.fyscu.com/index.php/archives/28/)
+
+	文件格式
+	m3u文件是用来描述一个或多个媒体文件地址的纯文本文件，通常以 M3U 或 m3u 作为扩展名。
+	
+	m3u文件里描述的最小单位（元素/行/记录），可以是一下三者之一：
+	
+	1.一个文件的绝对路径
+	2.相对于m3u文件的相对路径
+	3.一个网络url
+	
+	以#好开头的，是m3u的注释，而一些m3u扩展指令也是由#号开头
+	
+	m3u的一个常见用途是作为一个指向网络中一个流媒体的播放列表，比如在线视频、广播等等。
+	
+	你可以直接用文本编辑器编写一个m3u文件，但需要保存为 window-1252格式（ASCII的一个扩展集）。
+	
+	M3U指令的扩展
+	
+	#EXTM3U    文件头，必须出现在第一行            如：略
+	#EXTINF    引导信息，包含播放时间（时长）和标题     如：#EXTINF:191,Artist Name - Track Title
+	
+	M3U8
+	所谓的M3U8就是用unicode编写的M3U文件，这最初是用在IOS设备上播放http实时流的基础格式。
+
+
+######1. HLS
+
+HLS是为移动设备开发的基于HTTP的流媒体解决方案。
+
+	HLS，Http Live Streaming 是由Apple公司定义的用于实时流传输的协议，HLS基于HTTP协议实现，传输内容包括两部分，一是M3U8描述文件，二是TS媒体文件。
+	
+	1、M3U8文件
+	
+	   用文本方式对媒体文件进行描述，由一系列标签组成。
+	
+	2、ts文件
+	
+	    ts文件为传输流文件，视频编码主要格式h264/mpeg4，音频为acc/MP3。
+	
+	   ts文件分为三层：ts层Transport Stream、pes层 Packet Elemental Stream、es层 Elementary Stream. es层就是音视频数据，pes层是在音视频数据上加了时间戳等对数据帧的说明信息，ts层就是在pes层加入数据流的识别和传输必须的信息
+	（1）ts层     ts包大小固定为188字节，ts层分为三个部分：ts header、adaptation field、payload。ts header固定4个字节；adaptation field可能存在也可能不存在，主要作用是给不足188字节的数据做填充；payload是pes数据。
+	
+######2. 原理：
+
+将视频或流切分成小片（TS）， 并建立索引（M3U8）.
+
+支持视频流：H.264； 音频流：AAC
+
+######3. M3U8文件解析
+
+M3U8文件在很多地方也叫做Playlist file。
+
+	m3u8，是HTTP Live Streaming直播的索引文件。
+	
+	m3u8基本上可以认为就是.m3u格式文件，区别在于，m3u8文件使用UTF-8字符编码。
+
+######4.  Playlist file
+    一个M3U的 Playlist 就是一个由多个独立行组成的文本文件，每行由回车/换行区分。每一行可以是一个URI  空白行或
+是以”#“号开头的字符串，并且空格只能存在于一行中不同元素间的分隔。
+   一个URI 表示一个媒体段或是”variant Playlist file“（最多支持一层嵌套，即一个mm3u8文件中嵌套另一个m3u8），
+以”#EXT“开头的表示一个”tag“，否则表示注释，直接忽略
+
+>多码率的适配，根据网络带宽，客户端会选择一个适合自己码率的文件进行播放，保证视频流的流畅。
+
+在IOS device和mac上可以用http的方式进行分发，其中playlist标准为由m3u扩展而来的m3u8文件，媒体文件为MPEG2-TS或者AAC文件(audio only)
+
+
+######5. m3u8文件有两种应用场景：
+
+	- 多码率适配流，
+
+	- 单码率适配流
+
+客户端默认会首先选择码率最高的请求，如果发现码率达不到，会请求郊低码率的流
+
+######6. m3u8分类
+
+M3U8分顶级M3U8和二级M3U8， 顶级M3U8主要是做多码率适配的， 二级M3U8才是真正的切片文件，
+
+
+
+
+
+===
+
+
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

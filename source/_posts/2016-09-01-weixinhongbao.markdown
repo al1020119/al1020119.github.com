@@ -4,7 +4,7 @@ layout: post
 title: "福利：抢红包神器就是这么来的"
 date: 2016-08-01 11:52:15 +0800
 comments: true
-categories: Foundation
+categories: Practical Application
 description: iCocos博客
 keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
 

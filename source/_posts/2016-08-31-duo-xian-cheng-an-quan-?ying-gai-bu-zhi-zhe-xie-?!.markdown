@@ -845,53 +845,53 @@ OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do wh
     
 	    CFRunLoopGetCurrent : Returns the CFRunLoop object for the current thread.
 	    CFRunLoopGetMain: Returns the main CFRunLoop object.
-	
-	NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-	        NSLog(@"A");
-	        CFRunLoopStop(CFRunLoopGetMain());
-	    }] ;
-	    [task resume];
-	 CFRunLoopRun();
-	 NSLog(@"B");
+		
+		NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+		        NSLog(@"A");
+		        CFRunLoopStop(CFRunLoopGetMain());
+		    }] ;
+		    [task resume];
+		 CFRunLoopRun();
+		 NSLog(@"B");
 
 2. GCD的group
 
     dispatch_group_notify就是需要等queue里面的子线程都执行完毕之后才会执行
     这种方法比较常见, 不多说
 	
-	dispatch_group_t group = dispatch_group_create();
-	    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-	    dispatch_group_async(group, queue, ^{
-	        NSLog(@"A");
-	    });
-	    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-	        NSLog(@"B");
-	    });
+		dispatch_group_t group = dispatch_group_create();
+		    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+		    dispatch_group_async(group, queue, ^{
+		        NSLog(@"A");
+		    });
+		    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+		        NSLog(@"B");
+		    });
 
 3. dispatch_barrier_async
 
     barrier的中文意思就是障碍, 屏障
     一般使用dispatch_barrier_async, 会让barrier之前的线程执行完成之后才会执行barrier后面的操作
 
-	 dispatch_queue_t queue =  dispatch_queue_create(0, DISPATCH_QUEUE_CONCURRENT);
-	    dispatch_async(queue, ^{
-	        NSLog(@"A");
-	    });
-	    dispatch_async(queue, ^{
-	        NSLog(@"C");
-	    });
-	    dispatch_barrier_async(queue, ^{
-	        NSLog(@"拿到了A的值");
-	    });
-	
-	    dispatch_async(queue, ^{
-	        NSLog(@"D");
-	    });
-	    dispatch_async(queue, ^{
-	        NSLog(@"E");
-	    });dispatch_async(queue, ^{
-	        NSLog(@"F");
-	    });
+		 dispatch_queue_t queue =  dispatch_queue_create(0, DISPATCH_QUEUE_CONCURRENT);
+		    dispatch_async(queue, ^{
+		        NSLog(@"A");
+		    });
+		    dispatch_async(queue, ^{
+		        NSLog(@"C");
+		    });
+		    dispatch_barrier_async(queue, ^{
+		        NSLog(@"拿到了A的值");
+		    });
+		
+		    dispatch_async(queue, ^{
+		        NSLog(@"D");
+		    });
+		    dispatch_async(queue, ^{
+		        NSLog(@"E");
+		    });dispatch_async(queue, ^{
+		        NSLog(@"F");
+		    });
 
 4.NSOperationQueue
 

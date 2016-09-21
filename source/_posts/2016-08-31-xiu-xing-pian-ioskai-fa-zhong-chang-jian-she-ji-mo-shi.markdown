@@ -3,7 +3,7 @@ layout: post
 title: "修行篇-ios开发中常见设计模式"
 date: 2016-08-30 13:10:04 +0800
 comments: true
-categories: 
+categories: Architecture
 ---
 
 

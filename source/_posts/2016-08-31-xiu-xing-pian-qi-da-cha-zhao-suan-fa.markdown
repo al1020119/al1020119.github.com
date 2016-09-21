@@ -3,7 +3,7 @@ layout: post
 title: "修行篇-七大查找算法"
 date: 2016-08-20 12:32:08 +0800
 comments: true
-categories: 
+categories: Algorithms and Data Structures
 ---
 
 
