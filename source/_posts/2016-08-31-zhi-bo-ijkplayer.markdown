@@ -19,6 +19,12 @@ demo:[iCocosIJKPlayer](https://github.com/al1020119/iCocosIJKPlayer)
 这里只介绍IJKPlayer，为什么？用了你就知道了！
 
 
+
+
+<!--more-->
+
+
+
 ijkplayer 是一款做视频直播的框架, 基于ffmpeg, 支持 Android 和 iOS, 网上也有很多集成说明, 但是个人觉得还是不够详细, 在这里详细的讲一下在 iOS 中如何集成ijkplayer, 即便以前从没有接触过, 按着下面做也可以集成成功!
 
 [ijkPlayer下载地址](https://github.com/Bilibili/ijkplayer)

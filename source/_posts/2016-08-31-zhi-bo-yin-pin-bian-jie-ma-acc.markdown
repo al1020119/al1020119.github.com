@@ -13,6 +13,12 @@ categories: Audio  Video and Lve Radio
 
 
 
+
+<!--more-->	
+
+
+
+
 ACC是更优于MP3的音频格式。
 
 	AAC可以在对比MP3文件缩小30%的前题下提供更好的音质。

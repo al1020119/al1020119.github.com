@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "原理总结-H264-ACC-FLV"
+title: "原理-H264-ACC-FLV😂总结"
 date: 2016-09-08 14:42:11 +0800
 comments: true
 categories: Audio  Video and Lve Radio
@@ -14,6 +14,13 @@ H.264原理
 	其中每个NALU之间通过startcode（起始码）进行分隔，起始码分成两种：0x000001（3Byte）或者0x00000001（4Byte）。如果NALU对应的Slice为一帧的开始就用0x00000001，否则就用0x000001。
 	
 	H.264码流解析的步骤就是首先从码流中搜索0x000001和0x00000001，分离出NALU；然后再分析NALU的各个字段。本文的程序即实现了上述的两个步骤。
+
+
+
+
+
+<!--more-->
+
 
 
 ACC原理
