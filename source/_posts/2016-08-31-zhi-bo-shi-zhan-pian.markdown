@@ -23,7 +23,6 @@ categories: Audio  Video and Lve Radio
 
 很多文章，可能讲解的是如何做，我比较注重讲解为什么这样做,大家有什么不明白，还可以多多提出来。
 
-如果喜欢我的文章，可以关注我微博:吖了个峥,也可以来小码哥，了解下我们的iOS培训课程。后续还会更新更多内容,有任何问题，欢迎简书留言峥吖。。。
 效果
 
 {% img /images/zhiboshizhan001.gif Caption %} 
