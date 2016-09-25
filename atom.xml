@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-09-22T11:26:09+08:00</updated>
+  <updated>2016-09-25T22:58:32+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,223 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[直播-美颜篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/26/zhi-bo-mei-yan-pian/"/>
+    <updated>2016-09-26T22:56:04+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/26/zhi-bo-mei-yan-pian</id>
+    <content type="html"><![CDATA[<p>在看这篇之前，如果您还不了解直播原理，请查看这篇文章如何快速的开发一个完整的iOS直播app(原理篇)</p>
+
+<p>开发一款直播app，美颜功能是很重要的，如果没有美颜功能，可能分分钟钟掉粉千万，本篇主要讲解直播中美颜功能的实现原理，并且实现美颜功能。</p>
+
+<p>利用GPUImage处理直播过程中美颜的流程</p>
+
+<pre><code>采集视频 =&gt; 获取每一帧图片 =&gt; 滤镜处理 =&gt; GPUImageView展示
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/zhibomeiyuanpian001.png" title="Caption" ></p>
+
+<!--more-->
+
+
+<p></p>
+
+<h4>美颜基本概念</h4>
+
+<pre><code>GPU：（Graphic Processor Unit图形处理单元）手机或者电脑用于图像处理和渲染的硬件
+
+GPU工作原理：CPU指定显示控制器工作，显示控制器根据CPU的控制到指定的地方去取数据和指令， 目前的数据一般是从显存里取，如果显存里存不下，则从内存里取， 内存也放不下，则从硬盘里取，当然也不是内存放不下，而是为了节省内存的话，可以放在硬盘里，然后通过指令控制显示控制器去取。
+
+OpenGL ES：（Open Graphics Library For Embedded(嵌入的) Systems 开源嵌入式系统图形处理框架），一套图形与硬件接口，用于把处理好的图片显示到屏幕上。
+
+GPUImage:是一个基于OpenGL ES 2.0图像和视频处理的开源iOS框架，提供各种各样的图像处理滤镜，并且支持照相机和摄像机的实时滤镜，内置120多种滤镜效果，并且能够自定义图像滤镜。
+
+滤镜处理的原理:就是把静态图片或者视频的每一帧进行图形变换再显示出来。它的本质就是像素点的坐标和颜色变化
+</code></pre>
+
+<h4>GPUImage处理画面原理</h4>
+
+<pre><code>GPUImage采用链式方式来处理画面,通过addTarget:方法为链条添加每个环节的对象，处理完一个target,就会把上一个环节处理好的图像数据传递下一个target去处理，称为GPUImage处理链。
+    比如：墨镜原理，从外界传来光线，会经过墨镜过滤，在传给我们的眼睛，就能感受到大白天也是乌黑一片，哈哈。
+    一般的target可分为两类
+        中间环节的target, 一般是各种filter, 是GPUImageFilter或者是子类.
+        最终环节的target, GPUImageView：用于显示到屏幕上, 或者GPUImageMovieWriter：写成视频文件。
+GPUImage处理主要分为3个环节
+    source(视频、图片源) -&gt; filter（滤镜） -&gt; final target (处理后视频、图片)
+    GPUImaged的Source:都继承GPUImageOutput的子类，作为GPUImage的数据源,就好比外界的光线，作为眼睛的输出源
+        GPUImageVideoCamera：用于实时拍摄视频
+        GPUImageStillCamera：用于实时拍摄照片
+        GPUImagePicture：用于处理已经拍摄好的图片，比如png,jpg图片
+        GPUImageMovie：用于处理已经拍摄好的视频,比如mp4文件
+    GPUImage的filter:GPUimageFilter类或者子类，这个类继承自GPUImageOutput,并且遵守GPUImageInput协议，这样既能流进，又能流出，就好比我们的墨镜，光线通过墨镜的处理，最终进入我们眼睛
+    GPUImage的final target:GPUImageView,GPUImageMovieWriter就好比我们眼睛，最终输入目标。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/zhibomeiyuanpian002.png" title="Caption" ></p>
+
+<h4>美颜原理</h4>
+
+<pre><code>磨皮(GPUImageBilateralFilter)：本质就是让像素点模糊，可以使用高斯模糊，但是可能导致边缘会不清晰，用双边滤波(Bilateral Filter) ，有针对性的模糊像素点，能保证边缘不被模糊。
+美白(GPUImageBrightnessFilter)：本质就是提高亮度。
+</code></pre>
+
+<h2>GPUImage实战</h2>
+
+<h4>GPUImage原生美颜</h4>
+
+<pre><code>步骤一：使用Cocoapods导入GPUImage
+步骤二：创建视频源GPUImageVideoCamera
+步骤三：创建最终目的源：GPUImageView
+步骤四：创建滤镜组(GPUImageFilterGroup)，需要组合亮度(GPUImageBrightnessFilter)和双边滤波(GPUImageBilateralFilter)这两个滤镜达到美颜效果.
+步骤五：设置滤镜组链
+步骤六：设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+步骤七：开始采集视频
+</code></pre>
+
+<blockquote><p>注意点：</p>
+
+<p>SessionPreset最好使用AVCaptureSessionPresetHigh，会自动识别，如果用太高分辨率，当前设备不支持会直接报错</p>
+
+<p>GPUImageVideoCamera必须要强引用，否则会被销毁，不能持续采集视频.</p>
+
+<p>必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。</p>
+
+<p>GPUImageBilateralFilter的distanceNormalizationFactor值越小，磨皮效果越好,distanceNormalizationFactor取值范围: 大于1。</p></blockquote>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    // 创建视频源
+    // SessionPreset:屏幕分辨率，AVCaptureSessionPresetHigh会自适应高分辨率
+    // cameraPosition:摄像头方向
+    GPUImageVideoCamera *videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:AVCaptureDevicePositionFront];
+     videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+    _videoCamera = videoCamera;
+
+    // 创建最终预览View
+    GPUImageView *captureVideoPreview = [[GPUImageView alloc] initWithFrame:self.view.bounds];
+    [self.view insertSubview:captureVideoPreview atIndex:0];
+
+    // 创建滤镜：磨皮，美白，组合滤镜
+    GPUImageFilterGroup *groupFilter = [[GPUImageFilterGroup alloc] init];
+
+    // 磨皮滤镜
+    GPUImageBilateralFilter *bilateralFilter = [[GPUImageBilateralFilter alloc] init];
+    [groupFilter addTarget:bilateralFilter];
+    _bilateralFilter = bilateralFilter;
+
+    // 美白滤镜
+    GPUImageBrightnessFilter *brightnessFilter = [[GPUImageBrightnessFilter alloc] init];
+    [groupFilter addTarget:brightnessFilter];
+    _brightnessFilter = brightnessFilter;
+
+    // 设置滤镜组链
+    [bilateralFilter addTarget:brightnessFilter];
+    [groupFilter setInitialFilters:@[bilateralFilter]];
+    groupFilter.terminalFilter = brightnessFilter;
+
+    // 设置GPUImage响应链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+    [videoCamera addTarget:groupFilter];
+    [groupFilter addTarget:captureVideoPreview];
+
+    // 必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。
+    // 开始采集视频
+    [videoCamera startCameraCapture];
+}
+
+- (IBAction)brightnessFilter:(UISlider *)sender {
+    _brightnessFilter.brightness = sender.value;
+}
+
+- (IBAction)bilateralFilter:(UISlider *)sender {
+    // 值越小，磨皮效果越好
+    CGFloat maxValue = 10;
+    [_bilateralFilter setDistanceNormalizationFactor:(maxValue - sender.value)];
+}
+</code></pre>
+
+<h4>利用美颜滤镜实现</h4>
+
+<pre><code>步骤一：使用Cocoapods导入GPUImage
+步骤二：导入GPUImageBeautifyFilter文件夹
+步骤三：创建视频源GPUImageVideoCamera
+步骤四：创建最终目的源：GPUImageView
+步骤五：创建最终美颜滤镜：GPUImageBeautifyFilter
+步骤六：设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+</code></pre>
+
+<blockquote><p>注意：</p>
+
+<p>切换美颜效果原理：移除之前所有处理链，重新设置处理链</p></blockquote>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    // 创建视频源
+    // SessionPreset:屏幕分辨率，AVCaptureSessionPresetHigh会自适应高分辨率
+    // cameraPosition:摄像头方向
+    GPUImageVideoCamera *videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:AVCaptureDevicePositionFront];
+    videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+    _videoCamera = videoCamera;
+
+    // 创建最终预览View
+    GPUImageView *captureVideoPreview = [[GPUImageView alloc] initWithFrame:self.view.bounds];
+    [self.view insertSubview:captureVideoPreview atIndex:0];
+    _captureVideoPreview = captureVideoPreview;
+
+    // 设置处理链
+    [_videoCamera addTarget:_captureVideoPreview];
+
+    // 必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。
+    // 开始采集视频
+    [videoCamera startCameraCapture];
+
+}
+
+- (IBAction)openBeautifyFilter:(UISwitch *)sender {
+
+    // 切换美颜效果原理：移除之前所有处理链，重新设置处理链
+    if (sender.on) {
+
+        // 移除之前所有处理链
+        [_videoCamera removeAllTargets];
+
+        // 创建美颜滤镜
+        GPUImageBeautifyFilter *beautifyFilter = [[GPUImageBeautifyFilter alloc] init];
+
+        // 设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+        [_videoCamera addTarget:beautifyFilter];
+        [beautifyFilter addTarget:_captureVideoPreview];
+
+    } else {
+
+        // 移除之前所有处理链
+        [_videoCamera removeAllTargets];
+        [_videoCamera addTarget:_captureVideoPreview];
+    }
+
+
+}
+</code></pre>
+
+<h4>GPUImage扩展</h4>
+
+<p>  <a href="http://www.tuicool.com/articles/6bIbQbQ">GPUImage所有滤镜介绍</a></p>
+
+<p>  <a href="http://www.jianshu.com/p/945fc806a9b4">美颜滤镜</a></p>
+
+<p>  <a href="http://www.360doc.com/content/15/0907/10/19175681_497418716.shtml">美图秀秀滤镜大汇总</a></p>
+
+<h2>源码下载</h2>
+
+<p><a href="https://github.com/iThinkerYZ/GPUImgeDemo">源码</a></p>
+
+<h2>结束语</h2>
+
+<p>后续还会讲解GPUImage原理openGL ES，视频编码，推流，聊天室，礼物系统等更多功能，敬请关注！！！</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[直播-采集篇]]></title>
@@ -7565,459 +7782,6 @@ github：https://github.com/al1020119
 <li>相关总结</li>
 </ol>
 
-
-<hr />
-
-<p>更新中，敬请关注。。。。。。</p>
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[iOS开发各种底层实现--包你满意😘！]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/01/gezhongdicenshixian/"/>
-    <updated>2016-08-01T23:30:19+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/01/gezhongdicenshixian</id>
-    <content type="html"><![CDATA[<p>iOS开发常用技术底层实现（精简概述）</p>
-
-<p>本章将对ios开发技术底层实现的总结，其实关于ios开发中各种底层的实现，网上相关文章多到数不过来，而不且非常不错，我也没有自信我能比他们做的更好，因为毕竟每个人专研的东西不一样，本文主要正对三类用户！</p>
-
-<ol>
-<li>资深的ios开发者，对底层做过专门研究，但是没有一个系统整理，或者说不能很清楚的表达。</li>
-<li>ios开发初学者，没有专门研究过底层或者相关源码的初学者，但是不太建议一开始就看，因为如果你没有过一点接触，看了也看不懂，或者看了也白看，最多就是留个印象在脑子了，对初学者来说，切记不能靠背或者了解，而且细细研究每一个技术点，再慢慢深入挖掘。</li>
-<li>ios开发待业程序员（面试）专用，不管你有没有接触过ios开发相关的底层，只要你是在准备找工作的程序员，我相信你看了绝对有用，但是并不能正面你就真的理解了，所以希望这对你来说只是短暂的，后续得花大量时间去专门研究才能在这条路上走得更远，不然你永远只是个码农！</li>
-</ol>
-
-
-<p>好了，废话也不多说了，我们开始吧。。。。。</p>
-
-<h6>系统篇</h6>
-
-<ul>
-<li>内存管理</li>
-<li>Runtime</li>
-</ul>
-
-
-<h6>事件篇</h6>
-
-<ul>
-<li>事件传递</li>
-<li>事件响应</li>
-</ul>
-
-
-<h6>代码篇</h6>
-
-<ul>
-<li>Block</li>
-<li>__Block</li>
-</ul>
-
-
-<!--more-->
-
-
-<h6>实战</h6>
-
-<ul>
-<li>KVO</li>
-<li>KVC</li>
-</ul>
-
-
-<h6>高级</h6>
-
-<ul>
-<li>GCD</li>
-</ul>
-
-
-<h6>全栈篇</h6>
-
-<ul>
-<li>JSPatch</li>
-<li>React Native</li>
-</ul>
-
-
-<h6>必备篇</h6>
-
-<ul>
-<li>多线程</li>
-<li>网络</li>
-<li>数据持久化</li>
-</ul>
-
-
-<h6>通用篇</h6>
-
-<ul>
-<li>数组</li>
-<li>字典</li>
-<li>集合</li>
-</ul>
-
-
-<h6>#写在最后</h6>
-
-<hr />
-
-<h1>系统篇</h1>
-
-<hr />
-
-<h3>内存管理</h3>
-
-<ul>
-<li><p>黄金法则</p>
-
-<ul>
-<li>如果一个对象使用了alloc，[mutable] copy，retain，那么你必须使用相应的release或autonrelease</li>
-</ul>
-</li>
-</ul>
-
-
-<p>MRC:</p>
-
-<pre><code> 手动管理内存（retain, release, autorelease,不多说） 持有对象,retain +1 ,引用计数加1, 释放对象:release -1, 引用计数减1,当引用计数为0时,会自动释放内存.  autorelease对象内存的管理放到autoreleasepool中, 当pool drain时,回收内存. (这是基于 objective-c的运行时特性和垃圾回收机制)
-</code></pre>
-
-<p>ARC:</p>
-
-<pre><code> 手动管理内存, 这是xcode4.x版本的特性,(4.1及以前没有,我从4.6开始的), 原理是:在编译代码的时候为你自动在合适的位置插入release 和 autorelease, (运行时处理垃圾回收就如何MRC一样).
-</code></pre>
-
-<p>总结: ARC机制拥有和MRC一样的效率, ARC通过在部分优化和在最合适的地方完成引用计数的维护,所以支持使用ARC.</p>
-
-<p>规则</p>
-
-<p>规则：</p>
-
-<ul>
-<li><p>1、Objective-C类中实现了引用计数器，对象知道自己当前被引用的次数</p></li>
-<li><p>2、最初对象的计数器为1</p></li>
-<li><p>3、如果需要引用对象，可以给对象发送一个retain消息，这样对象的计数器就加1</p></li>
-<li><p>4、当不需要引用对象了，可以给对象发送release消息，这样对象计数器就减1</p></li>
-<li><p>5、当计数器减到0，自动调用对象的dealloc函数，对象就会释放内存</p></li>
-<li><p>6、计数器为0的对象不能再使用release和其他方法</p></li>
-</ul>
-
-
-<h3>Runtime</h3>
-
-<p>一套纯低层的C语言库
-平时我们编写的OC代码都会转成Runtime去执行</p>
-
-<p>特性：</p>
-
-<pre><code>动态类型：程序直到执行时才能确定所属的类。
-
-动态绑定：程序直到执行时才能确定实际要调用的方法。
-
-动态加载：根据需求加载所需要的资源
-</code></pre>
-
-<p>Runtime消息机制</p>
-
-<p>首先通过obj的isa指针找到obj对应的class。</p>
-
-<ul>
-<li>首先检测这个 selector 是不是要忽略。比如 Mac OS X 开发，有了垃圾回收就不理会 retain，release 这些函数。</li>
-<li>检测这个 selector 的 target 是不是 nil，Objc 允许我们对一个 nil 对象执行任何方法不会 Crash，因为运行时会被忽略掉。</li>
-<li>如果上面两步都通过了，那么就开始查找这个类的实现 IMP，</li>
-<li>在Class中先去cache中 通过SEL查找对应函数method，找到就执行对应的实现。</li>
-<li>若cache中未找到，再去methodList中查找，找到就执行对应的实现。</li>
-<li>若methodlist中未找到，则取superClass中查找（重复执行以上两个步骤），直到找到最根的类为止。</li>
-<li>若任何一部能找到，则将method加 入到cache中，以方便下次查找，并通过method中的函数指针跳转到对应的函数中去执行。</li>
-<li>如果以上都不能找到，则会开始进行消息转发</li>
-</ul>
-
-
-<p>消息转发</p>
-
-<ul>
-<li>1.动态方法解析：向当前类发送 resolveInstanceMethod: 信号，检查是否动态向该类添加了方法。（迷茫请搜索：@dynamic）</li>
-<li>2.快速消息转发：检查该类是否实现了 forwardingTargetForSelector: 方法，若实现了则调用这个方法。若该方法返回值对象非nil或非self，则向该返回对象重新发送消息。</li>
-<li>3.标准消息转发：runtime发送methodSignatureForSelector:消息获取Selector对应的方法签名。返回值非空则通过forwardInvocation:转发消息，返回值为空则向当前对象发送doesNotRecognizeSelector:消息，程序崩溃退出</li>
-</ul>
-
-
-<p>总结就是：
-在一个函数找不到时，OC提供了三种方式去补救：</p>
-
-<ul>
-<li>1、调用resolveInstanceMethod给个机会让类添加这个实现这个函数</li>
-<li>2、调用forwardingTargetForSelector让别的对象去执行这个函数</li>
-<li>3、调用forwardInvocation（函数执行器）灵活的将目标函数以其他形式执行。
-如果都不中，调用doesNotRecognizeSelector抛出异常。</li>
-</ul>
-
-
-<hr />
-
-<h1>事件篇</h1>
-
-<h3>应用如何找到最合适的控件来处理事件？</h3>
-
-<pre><code>1.首先判断主窗口（keyWindow）自己是否能接受触摸事件
-2.判断触摸点是否在自己身上
-3.子控件数组中从后往前遍历子控件，重复前面的两个步骤（所谓从后往前遍历子控件，就是首先查找子控件数组中最后一个元素，然后执行1、2步骤）
-4.view，比如叫做fitView，那么会把这个事件交给这个fitView，再遍历这个fitView的子控件，直至没有更合适的view为止。
-5.如果没有符合条件的子控件，那么就认为自己最合适处理这个事件，也就是自己是最合适的view
-</code></pre>
-
-<h2>事件的传递和响应的区别：</h2>
-
-<ul>
-<li>事件的传递是从上到下（父控件到子控件），事件的响应是从下到上（顺着响应者链条向上传递：子控件到父控件。</li>
-</ul>
-
-
-<h3>事件响应</h3>
-
-<h5>响应者链的事件传递过程:</h5>
-
-<pre><code>1&gt;如果当前view是控制器的view，那么控制器就是上一个响应者，事件就传递给控制器；如果当前view不是控制器的view，那么父视图就是当前view的上一个响应者，事件就传递给它的父视图
-2&gt;在视图层次结构的最顶级视图，如果也不能处理收到的事件或消息，则其将事件或消息传递给window对象进行处理
-3&gt;如果window对象也不处理，则其将事件或消息传递给UIApplication对象
-4&gt;如果UIApplication也不能处理该事件或消息，则将其丢弃
-</code></pre>
-
-<h3>事件传递</h3>
-
-<h5>事件处理的整个流程总结：</h5>
-
-<pre><code>　　1.触摸屏幕产生触摸事件后，触摸事件会被添加到由UIApplication管理的事件队列中（即，首先接收到事件的是UIApplication）。
-　　2.UIApplication会从事件队列中取出最前面的事件，把事件传递给应用程序的主窗口（keyWindow）。
-　　3.主窗口会在视图层次结构中找到一个最合适的视图来处理触摸事件。（至此，第一步已完成)
-　　4.最合适的view会调用自己的touches方法处理事件
-　　5.touches默认做法是把事件顺着响应者链条向上抛。
-</code></pre>
-
-<hr />
-
-<h1>代码篇</h1>
-
-<hr />
-
-<h3>Block的底层实现</h3>
-
-<p>一句话:</p>
-
-<pre><code>栈地址和对地址值的拷贝
-
-block就是一个里面存储了指向函数体中包含定义block时的代码块的函数指针，以及block外部上下文变量等信息的结构体。
-</code></pre>
-
-<p>Block结构体中含有isa指针，这就证明了Block其实就是对象，并具有一般对象的所有功能。这个isa指针被初始化为 <em>NSConcreteStackBlock 或者 </em>NSConcreteGlobalBlock 类的地址。在没有开启ARC的情况下，如果Block中包含有局部变量则isa被初始化为前者，否则就被初始化为后者。而当ARC开启后，如果Block中包含有局部变量则isa被初始化为 <em>NSConcreteMallocBlock ，否则就被初始化为 </em>NSConcreteGlobalBlock 。invoke是一个函数指针，它指向的是Block被转换成函数的地址。最后的imported variables部分是Block需要访问的外部的局部变量，他们在编译就会被拷贝到Block中，这样一来Block就是成为一个闭包了。</p>
-
-<h3>__block底层实现</h3>
-
-<pre><code>一句话：传值 和传址
-</code></pre>
-
-<p><strong>block打印C++源码可以看到</strong>Block_byref_a_0结构体，这个结构体中含有isa指针，所以也是一个对象，它是用来包装局部变量a的。当block被copy到堆中时，<strong>Person</strong>test_block_impl_0的拷贝辅助函数<strong>Person</strong>test_block_copy_0会将__Block_byref_a_0拷贝至堆中，所以即使局部变量所在堆被销毁，block依然能对堆中的局部变量进行操作</p>
-
-<pre><code>这样做是为了保证操作的值始终是堆中的拷贝，而不是栈中的值。（处理在局部变量所在栈还没销毁，就调用block来改变局部变量值的情况，如果没有__forwarding指针，则修改无效）
-</code></pre>
-
-<hr />
-
-<h1>实战篇</h1>
-
-<hr />
-
-<h2>KVO/KVC</h2>
-
-<p>VC/KVO是观察者模式的一种实现，在Cocoa中是以被万物之源NSObject类实现的NSKeyValueCoding/NSKeyValueObserving非正式协议的形式被定义为基础框架的一部分。从协议的角度来说，KVC/KVO本质上是定义了一套让我们去遵守和实现的方法。
-当然，KVC/KVO实现的根本是Objective-C的动态性和runtime，这在后文的原理部分会有详述。
-另外，KVC/KVO机制离不开访问器方法的实现，这在后文中也有解释。</p>
-
-<p>1、KVC简介</p>
-
-<pre><code>全称是Key-value coding，翻译成键值编码。顾名思义，在某种程度上跟map的关系匪浅。它提供了一种使用字符串而不是访问器方法去访问一个对象实例变量的机制。
-</code></pre>
-
-<p>2、KVO简介</p>
-
-<pre><code>全称是Key-value observing，翻译成键值观察。提供了一种当其它对象属性被修改的时候能通知当前对象的机制。再MVC大行其道的Cocoa中，KVO机制很适合实现model和controller类之间的通讯。
-</code></pre>
-
-<h3>KVO的底层实现（基于KVC-》运行时）</h3>
-
-<p>当某个类的对象第一次被观察时，系统就会在运行期动态地创建该类的一个派生类，在这个派生类中重写基类中任何被观察属性的 setter 方法。</p>
-
-<pre><code>派生类在被重写的 setter 方法实现真正的通知机制，就如前面手动实现键值观察那样。这么做是基于设置属性会调用 setter 方法，而通过重写就获得了 KVO 需要的通知机制。当然前提是要通过遵循 KVO 的属性设置方式来变更属性值，如果仅是直接修改属性对应的成员变量，是无法实现 KVO 的。
-
-同时派生类还重写了 class 方法以“欺骗”外部调用者它就是起初的那个类。然后系统将这个对象的 isa 指针指向这个新诞生的派生类，因此这个对象就成为该派生类的对象了，因而在该对象上对 setter 的调用就会调用重写的 setter，从而激活键值通知机制。此外，派生类还重写了 dealloc 方法来释放资源
-</code></pre>
-
-<p>isa指针指向的其实是类的元类，如果之前的类名为：Person，那么被runtime更改以后的类名会变成：NSKVONotifying_Person。
-新的NSKVONotifying_Person类会重写以下方法：
-增加了监听的属性对应的set方法，class，dealloc，_isKVOA</p>
-
-<h3>KVC的底层实现</h3>
-
-<p>KVC运用了一个isa-swizzling技术。isa-swizzling就是类型混合指针机制。KVC主要通过isa-swizzling，来实现其内部查找定位的。isa指针，如其名称所指，（就是is a kind of的意思），指向维护分发表的对象的类。该分发表实际上包含了指向实现类中的方法的指针，和其它数据。</p>
-
-<p>一个对象在调用setValue的时候，</p>
-
-<ul>
-<li>（1）首先根据方法名找到运行方法的时候所需要的环境参数。</li>
-<li>（2）他会从自己isa指针结合环境参数，找到具体的方法实现的接口。</li>
-<li>（3）再直接查找得来的具体的方法实现。</li>
-</ul>
-
-
-<hr />
-
-<h1>高级</h1>
-
-<hr />
-
-<h3>GCD底层实现</h3>
-
-<p>GCD内部是怎么实现的</p>
-
-<ul>
-<li>1 IOS和OS X的核心是XNU内核，GCD是基于XUN内核实现的</li>
-<li>2 GCD的API全部在libdispatch库中</li>
-<li><p>3 GCD的底层实现主要有Dispatch Queue 和Dispatch Source</p>
-
-<ul>
-<li>Dispatch Queue ：管理block操作</li>
-<li>Dispatch Source :处理事件(比如线程间通信)</li>
-</ul>
-</li>
-</ul>
-
-
-<p>NSOperationQueue 和GCD的区别和类似的地方</p>
-
-<ul>
-<li>1 GCD是纯C语言的API， NSOperationQueue是基于GCD的OC版本封装</li>
-<li>2 GCD只支持FIFO的队列，NSOperationQueue可以很方便地调整执行顺序 设置最大并发数量</li>
-<li>3 NSOperationQueue 可以轻松地在operation 间设置依赖关系，而GCD需要写很多的代码</li>
-<li>4 NSOperationQueue支持KVO，可以监测operation是否正在执行(is Executed),是否结束(is finished),是否取消( is canceld);</li>
-<li>5 GCD的执行速度比NSOperationQueue快</li>
-</ul>
-
-
-<hr />
-
-<h1>全栈篇</h1>
-
-<hr />
-
-<h3>JSpatch底层实现</h3>
-
-<p>JSPatch 能做到通过 JS 调用和改写 OC 方法最根本的原因是 Objective-C 是动态语言，OC 上所有方法的调用/类的生成都通过 Objective-C Runtime 在运行时进行，我们可以通过类名/方法名反射得到相应的类和方法：</p>
-
-<pre><code>Class class = NSClassFromString("UIViewController");
-id viewController = [[class alloc] init];
-SEL selector = NSSelectorFromString("viewDidLoad");
-[viewController performSelector:selector];
-</code></pre>
-
-<p>也可以替换某个类的方法为新的实现：</p>
-
-<pre><code>static void newViewDidLoad(id slf, SEL sel) {}
-class_replaceMethod(class, selector, newViewDidLoad, @"");
-</code></pre>
-
-<p>还可以新注册一个类，为类添加方法：</p>
-
-<pre><code>Class cls = objc_allocateClassPair(superCls, "JPObject", 0);
-objc_registerClassPair(cls);
-class_addMethod(cls, selector, implement, typedesc);
-</code></pre>
-
-<p>对于 Objective-C 对象模型和动态消息发送的原理已有很多文章阐述得很详细，这里就不详细阐述了。理论上你可以在运行时通过类名/方法名调用到任何 OC 方法，替换任何类的实现以及新增任意类。所以 JSPatch 的基本原理就是：JS 传递字符串给 OC，OC 通过 Runtime 接口调用和替换 OC 方法。这是最基础的原理，实际实现过程还有很多怪要打，接下来看看具体是怎样实现的。</p>
-
-<h6>总结：</h6>
-
-<p>使用JS利用OC的动态特性，执行我们想要执行的代码</p>
-
-<h3>React Native</h3>
-
-<p>RN主要的通信在于java与js之间，平常我们写的jsx代码最终会调用到原生的View。上一篇博客我们也了解到了要新建一个原生模块需要在java层和js层分别写一个Module</p>
-
-<p>特点：</p>
-
-<ul>
-<li><p>可以基于 React Native使用 JavaScript 编写应用逻辑，UI 则可以保持全是原生的。这样的话就没有必要就 HTML5 的 UI 做出常见的妥协；</p></li>
-<li><p>React 引入了一种与众不同的、略显激进但具备高可用性的方案来构建用户界面。长话短说，应用的 UI 简单通过一个基于应用目前状态的函数来表达。</p></li>
-</ul>
-
-
-<p>RN总共分为三层，java层，C++层，js层</p>
-
-<ul>
-<li>Java层：java层就是app原生代码，它通过启动C++层的javascript解析器javascriptCore来执行js代码，从而构建原生UI等。java层依赖于众多优秀开源库，在图片处理使用的是Fresco，网络通信使用的是okhttp，Json解析工具用jackson,动画库用NineOldAndroids等，在java层原生的功能均封装为Module，如Toast和Log等。</li>
-<li>C++层：c++层最主要是封装了JavaScriptCore，它是一个全新的支持ES6的webKit。Bridge连接了java与js之间的通信。解析js文件是通过JSCExectutor进行的。</li>
-<li>Js层：主要处理事件分发及UI Layout，平常开发最常用的。通用jsx来写业务代码，通过flexbox来实现布局。不依赖DOM。由于react有 DOM diff这个算法，所以它的效率非常高。
-通信机制</li>
-</ul>
-
-
-<p>在Java层与Js层的bridge分别存有相同一份模块配置表，Java与Js互相通信时，通过将里配置表中的moduleID，methodID转换成json数据的形式传递给到C++层，C++层传送到js层，通过js层的的模块配置表找到对应的方法进行执行，如果有callback，则回传给java层。这里只是大概介绍。</p>
-
-<p>总结：</p>
-
-<ul>
-<li>在程序启动的时候，首先会调用ReactActivity的onCreate函数中，我们会去创建一个ReactInstanceManagerImpl对象。通过ReactRootView的startReactApplication方法开启整个RN世界的大门。</li>
-<li>在这个方法中，我们会通过一个AsyncTask去创建ReactContext</li>
-<li>在创建ReactContext中，我们把我们自己注入和CoreModulesPackage通过processPackage方法将其中的各个modules注入到了对应的Registry中。最后通过CatalystInstanceImpl中的ReactBridge将NativeModule和JSModule注册表通过jni传输到了JS层。</li>
-<li>java调用js时，会在ReactApplicationContext创建的时候存入注册表类JavaScriptModuleRegistry中，同时通过动态代理生成代理实例，并在代理拦截类JavaScriptModuleInvocationHandler中统一处理发向Javascript的所有通信请求。</li>
-<li>JSCExecutor将所有来自Java层的通信请求封装成Javascript执行语句。</li>
-<li>接着在js层中的MessageQueue里匹配ModuleId和MethodId。找到调用模块。</li>
-<li>如果是js层调用java层，js最终都会调用<em>_nativeCall方法，通过flushedQueue将this.</em>queue返回给Bridger。</li>
-<li>C++层调用PlatformBridgeCallback对象的onCallNativeModules方法，执行makeJavaCall方法，里面最终通过env->CallVoidMethod调用了Java层的方法。</li>
-<li>调用Java层NativeModulesReactCallback的call方法，通过moduleID从保存在其内部的NativeModule映射表，匹配到需要被执行的NativeModule对象，再通过methodID匹配到所要调用的方法。通过invoke反射方式执行NativeModule的方法。</li>
-</ul>
-
-
-<hr />
-
-<h1>必备篇</h1>
-
-<hr />
-
-<h5>多线程</h5>
-
-<h5>网络</h5>
-
-<h5>数据持久化</h5>
-
-<hr />
-
-<hr />
-
-<h1>通用篇</h1>
-
-<hr />
-
-<h5>数组</h5>
-
-<h5>字典</h5>
-
-<h5>集合</h5>
 
 <hr />
 

@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="首先申明这里虽然是关于ios开发中视频开发，但是并不会涉及到什么苹果官方的视频框架，这里主要将目前比较主流的两个第三方，如果你需要了解苹果相关请参考：API预览 好了开始吧！ 首先介绍两个概念： FFmpeg：是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。 &hellip;">
+  <meta name="description" content="iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。 这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！ 目录 获取图片
+比例缩放
+圆角 化 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +71,58 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/14/tupianchulichangyongjiqiao/">图片处理-常用技巧</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-14T09:21:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:21 am</span></time>
+        
+        
+        |   <a href="/blog/2016/01/14/tupianchulichangyongjiqiao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS开发中关于图片的处理是最常见的，就和你使用TableView的频率一样，本篇文章总结了一下iOS开发中常见的图片处理及相关源码。</p>
+
+<p>这里就结合开发与学习中遇到的一一些图片处理问题，再结合其他大牛的一些干货，做了一系列的总结，希望能最你有实际开发意义！</p>
+
+<p>目录</p>
+
+<ul>
+<li>获取图片</li>
+<li>比例缩放</li>
+<li>圆角 化</li>
+<li>添加阴影</li>
+<li>压缩大小</li>
+<li>格式的转换</li>
+<li>图片上传</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/14/tupianchulichangyongjiqiao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -575,74 +629,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">iOS9+Xcode7总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-12-20T23:56:09+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:56 pm</span></time>
-        
-        
-        |   <a href="/blog/2015/12/20/ios9-plus-xcodezong-jie/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>刚更新了Xcode 9 beat 2，运行了之前的工程，发现了一些问题，就针对性的做了一下iOS9的适配。</p>
-
-<h4>1，默认使用HTTPS请求</h4>
-
-<p>如果在Xcode 9之前使用的时http请求，那么在XCode 9上编译的App是不能联网的，会提示如下错误:</p>
-
-<pre><code>App Transport Security has blocked a cleartext HTTP (http://) resource load since it is insecure. Temporary exceptions can be configured via your app's Info.plist file.
-</code></pre>
-
-<p>修改方法是要么使服务器支持https访问，要么关闭https的使用。第一种方法对于个人开发者来说代价还是比较大的，因此推荐使用后面一种方法，具体的做法是:在工程的Info.plist文件里添加NSAppTransportSecurity字典类型的，添加一个元素：key为NSAllowsArbitraryLoads，值为YES。</p>
-
-<p>Apple介绍了iOS9中的App Transport Security，它要求所有App在默认情况下使用HTTPS来进行网络请求。由于不是所有的服务器都运行在HTTPS环境下，Apple也提供了相关的方法来禁用ATS。</p>
-
-<ul>
-<li>最后：出于数据安全考虑，在完全禁用ATS的情况下，你也应该为某些重要的站点打开ATS。你可以通过NSExceptionDomainskey来禁用/启用特定的站点的ATS。参照如下图片:</li>
-</ul>
-
-
-<p><img src="/images/ats001.png" title="Caption" ></p>
-
-<ul>
-<li>该plist文件允许用户在HTTP环境下下载文件，但是只能在HTTPS情况下访问"workflow.is"</li>
-</ul>
-
-
-<p>需要提醒的是，ATS的设置只针对当前bundle。这意味着你不仅需要在你主项目的info.plist中添加ATS相关的Key,同时也需要在其他bundle下的info.plist中添加相关配置。</p>
-
-<blockquote><p>关于iOS9的适配，github上有一个中文项目iOS9AdaptationTips可以提供很大的帮助。</p></blockquote>
-
-<h4>2，iOS 9使用URL scheme必须将其加入白名单</h4>
-
-<p>否则会提示类似如下错误:</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/20/ios9-plus-xcodezong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/10">&larr; Older</a>
@@ -690,6 +676,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/09/25/zhi-bo-cai-ji-pian/">直播-采集篇</a>
       </li>
     
@@ -703,10 +693,6 @@
     
       <li class="post">
         <a href="/blog/2016/09/10/zhi-bo-ijkplayer/">直播-iJKPlayer</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/08/yuan-li-zong-jie-h264-acc-flv/">原理-H264-ACC-FLV😂总结</a>
       </li>
     
   </ul>

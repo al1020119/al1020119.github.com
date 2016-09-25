@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>直播-美颜篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="在看这篇之前，如果您还不了解直播原理，请查看这篇文章如何快速的开发一个完整的iOS直播app(原理篇) 开发一款直播app，美颜功能是很重要的，如果没有美颜功能，可能分分钟钟掉粉千万，本篇主要讲解直播中美颜功能的实现原理，并且实现美颜功能。 利用GPUImage处理直播过程中美颜的流程 采集视频 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/09/26/zhi-bo-mei-yan-pian/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">直播-美颜篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-09-26T22:56:04+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:56 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>在看这篇之前，如果您还不了解直播原理，请查看这篇文章如何快速的开发一个完整的iOS直播app(原理篇)</p>
+
+<p>开发一款直播app，美颜功能是很重要的，如果没有美颜功能，可能分分钟钟掉粉千万，本篇主要讲解直播中美颜功能的实现原理，并且实现美颜功能。</p>
+
+<p>利用GPUImage处理直播过程中美颜的流程</p>
+
+<pre><code>采集视频 =&gt; 获取每一帧图片 =&gt; 滤镜处理 =&gt; GPUImageView展示
+</code></pre>
+
+<p><img src="/images/zhibomeiyuanpian001.png" title="Caption" ></p>
+
+<!--more-->
+
+
+<p></p>
+
+<h4>美颜基本概念</h4>
+
+<pre><code>GPU：（Graphic Processor Unit图形处理单元）手机或者电脑用于图像处理和渲染的硬件
+
+GPU工作原理：CPU指定显示控制器工作，显示控制器根据CPU的控制到指定的地方去取数据和指令， 目前的数据一般是从显存里取，如果显存里存不下，则从内存里取， 内存也放不下，则从硬盘里取，当然也不是内存放不下，而是为了节省内存的话，可以放在硬盘里，然后通过指令控制显示控制器去取。
+
+OpenGL ES：（Open Graphics Library For Embedded(嵌入的) Systems 开源嵌入式系统图形处理框架），一套图形与硬件接口，用于把处理好的图片显示到屏幕上。
+
+GPUImage:是一个基于OpenGL ES 2.0图像和视频处理的开源iOS框架，提供各种各样的图像处理滤镜，并且支持照相机和摄像机的实时滤镜，内置120多种滤镜效果，并且能够自定义图像滤镜。
+
+滤镜处理的原理:就是把静态图片或者视频的每一帧进行图形变换再显示出来。它的本质就是像素点的坐标和颜色变化
+</code></pre>
+
+<h4>GPUImage处理画面原理</h4>
+
+<pre><code>GPUImage采用链式方式来处理画面,通过addTarget:方法为链条添加每个环节的对象，处理完一个target,就会把上一个环节处理好的图像数据传递下一个target去处理，称为GPUImage处理链。
+    比如：墨镜原理，从外界传来光线，会经过墨镜过滤，在传给我们的眼睛，就能感受到大白天也是乌黑一片，哈哈。
+    一般的target可分为两类
+        中间环节的target, 一般是各种filter, 是GPUImageFilter或者是子类.
+        最终环节的target, GPUImageView：用于显示到屏幕上, 或者GPUImageMovieWriter：写成视频文件。
+GPUImage处理主要分为3个环节
+    source(视频、图片源) -&gt; filter（滤镜） -&gt; final target (处理后视频、图片)
+    GPUImaged的Source:都继承GPUImageOutput的子类，作为GPUImage的数据源,就好比外界的光线，作为眼睛的输出源
+        GPUImageVideoCamera：用于实时拍摄视频
+        GPUImageStillCamera：用于实时拍摄照片
+        GPUImagePicture：用于处理已经拍摄好的图片，比如png,jpg图片
+        GPUImageMovie：用于处理已经拍摄好的视频,比如mp4文件
+    GPUImage的filter:GPUimageFilter类或者子类，这个类继承自GPUImageOutput,并且遵守GPUImageInput协议，这样既能流进，又能流出，就好比我们的墨镜，光线通过墨镜的处理，最终进入我们眼睛
+    GPUImage的final target:GPUImageView,GPUImageMovieWriter就好比我们眼睛，最终输入目标。
+</code></pre>
+
+<p><img src="/images/zhibomeiyuanpian002.png" title="Caption" ></p>
+
+<h4>美颜原理</h4>
+
+<pre><code>磨皮(GPUImageBilateralFilter)：本质就是让像素点模糊，可以使用高斯模糊，但是可能导致边缘会不清晰，用双边滤波(Bilateral Filter) ，有针对性的模糊像素点，能保证边缘不被模糊。
+美白(GPUImageBrightnessFilter)：本质就是提高亮度。
+</code></pre>
+
+<h2>GPUImage实战</h2>
+
+<h4>GPUImage原生美颜</h4>
+
+<pre><code>步骤一：使用Cocoapods导入GPUImage
+步骤二：创建视频源GPUImageVideoCamera
+步骤三：创建最终目的源：GPUImageView
+步骤四：创建滤镜组(GPUImageFilterGroup)，需要组合亮度(GPUImageBrightnessFilter)和双边滤波(GPUImageBilateralFilter)这两个滤镜达到美颜效果.
+步骤五：设置滤镜组链
+步骤六：设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+步骤七：开始采集视频
+</code></pre>
+
+<blockquote><p>注意点：</p>
+
+<p>SessionPreset最好使用AVCaptureSessionPresetHigh，会自动识别，如果用太高分辨率，当前设备不支持会直接报错</p>
+
+<p>GPUImageVideoCamera必须要强引用，否则会被销毁，不能持续采集视频.</p>
+
+<p>必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。</p>
+
+<p>GPUImageBilateralFilter的distanceNormalizationFactor值越小，磨皮效果越好,distanceNormalizationFactor取值范围: 大于1。</p></blockquote>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    // 创建视频源
+    // SessionPreset:屏幕分辨率，AVCaptureSessionPresetHigh会自适应高分辨率
+    // cameraPosition:摄像头方向
+    GPUImageVideoCamera *videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:AVCaptureDevicePositionFront];
+     videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+    _videoCamera = videoCamera;
+
+    // 创建最终预览View
+    GPUImageView *captureVideoPreview = [[GPUImageView alloc] initWithFrame:self.view.bounds];
+    [self.view insertSubview:captureVideoPreview atIndex:0];
+
+    // 创建滤镜：磨皮，美白，组合滤镜
+    GPUImageFilterGroup *groupFilter = [[GPUImageFilterGroup alloc] init];
+
+    // 磨皮滤镜
+    GPUImageBilateralFilter *bilateralFilter = [[GPUImageBilateralFilter alloc] init];
+    [groupFilter addTarget:bilateralFilter];
+    _bilateralFilter = bilateralFilter;
+
+    // 美白滤镜
+    GPUImageBrightnessFilter *brightnessFilter = [[GPUImageBrightnessFilter alloc] init];
+    [groupFilter addTarget:brightnessFilter];
+    _brightnessFilter = brightnessFilter;
+
+    // 设置滤镜组链
+    [bilateralFilter addTarget:brightnessFilter];
+    [groupFilter setInitialFilters:@[bilateralFilter]];
+    groupFilter.terminalFilter = brightnessFilter;
+
+    // 设置GPUImage响应链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+    [videoCamera addTarget:groupFilter];
+    [groupFilter addTarget:captureVideoPreview];
+
+    // 必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。
+    // 开始采集视频
+    [videoCamera startCameraCapture];
+}
+
+- (IBAction)brightnessFilter:(UISlider *)sender {
+    _brightnessFilter.brightness = sender.value;
+}
+
+- (IBAction)bilateralFilter:(UISlider *)sender {
+    // 值越小，磨皮效果越好
+    CGFloat maxValue = 10;
+    [_bilateralFilter setDistanceNormalizationFactor:(maxValue - sender.value)];
+}
+</code></pre>
+
+<h4>利用美颜滤镜实现</h4>
+
+<pre><code>步骤一：使用Cocoapods导入GPUImage
+步骤二：导入GPUImageBeautifyFilter文件夹
+步骤三：创建视频源GPUImageVideoCamera
+步骤四：创建最终目的源：GPUImageView
+步骤五：创建最终美颜滤镜：GPUImageBeautifyFilter
+步骤六：设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+</code></pre>
+
+<blockquote><p>注意：</p>
+
+<p>切换美颜效果原理：移除之前所有处理链，重新设置处理链</p></blockquote>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    // 创建视频源
+    // SessionPreset:屏幕分辨率，AVCaptureSessionPresetHigh会自适应高分辨率
+    // cameraPosition:摄像头方向
+    GPUImageVideoCamera *videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPresetHigh cameraPosition:AVCaptureDevicePositionFront];
+    videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+    _videoCamera = videoCamera;
+
+    // 创建最终预览View
+    GPUImageView *captureVideoPreview = [[GPUImageView alloc] initWithFrame:self.view.bounds];
+    [self.view insertSubview:captureVideoPreview atIndex:0];
+    _captureVideoPreview = captureVideoPreview;
+
+    // 设置处理链
+    [_videoCamera addTarget:_captureVideoPreview];
+
+    // 必须调用startCameraCapture，底层才会把采集到的视频源，渲染到GPUImageView中，就能显示了。
+    // 开始采集视频
+    [videoCamera startCameraCapture];
+
+}
+
+- (IBAction)openBeautifyFilter:(UISwitch *)sender {
+
+    // 切换美颜效果原理：移除之前所有处理链，重新设置处理链
+    if (sender.on) {
+
+        // 移除之前所有处理链
+        [_videoCamera removeAllTargets];
+
+        // 创建美颜滤镜
+        GPUImageBeautifyFilter *beautifyFilter = [[GPUImageBeautifyFilter alloc] init];
+
+        // 设置GPUImage处理链，从数据源 =&gt; 滤镜 =&gt; 最终界面效果
+        [_videoCamera addTarget:beautifyFilter];
+        [beautifyFilter addTarget:_captureVideoPreview];
+
+    } else {
+
+        // 移除之前所有处理链
+        [_videoCamera removeAllTargets];
+        [_videoCamera addTarget:_captureVideoPreview];
+    }
+
+
+}
+</code></pre>
+
+<h4>GPUImage扩展</h4>
+
+<p>  <a href="http://www.tuicool.com/articles/6bIbQbQ">GPUImage所有滤镜介绍</a></p>
+
+<p>  <a href="http://www.jianshu.com/p/945fc806a9b4">美颜滤镜</a></p>
+
+<p>  <a href="http://www.360doc.com/content/15/0907/10/19175681_497418716.shtml">美图秀秀滤镜大汇总</a></p>
+
+<h2>源码下载</h2>
+
+<p><a href="https://github.com/iThinkerYZ/GPUImgeDemo">源码</a></p>
+
+<h2>结束语</h2>
+
+<p>后续还会讲解GPUImage原理openGL ES，视频编码，推流，聊天室，礼物系统等更多功能，敬请关注！！！</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-09-26T22:56:04+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:56 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/09/25/zhi-bo-cai-ji-pian/" title="Previous Post: 直播-采集篇">&laquo; 直播-采集篇</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="直播-美颜篇"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/25/zhi-bo-cai-ji-pian/">直播-采集篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">直播-实战篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/15/zhi-bo-yuan-li-pian/">直播-原理篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/10/zhi-bo-ijkplayer/">直播-iJKPlayer</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/09/26/zhi-bo-mei-yan-pian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/09/26/zhi-bo-mei-yan-pian/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
