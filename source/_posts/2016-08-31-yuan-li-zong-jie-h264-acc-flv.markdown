@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "原理-H264-ACC-FLV😂总结"
+title: "直播-H264-ACC-FLV😂总结"
 date: 2016-09-08 14:42:11 +0800
 comments: true
 categories: Audio  Video and Lve Radio
