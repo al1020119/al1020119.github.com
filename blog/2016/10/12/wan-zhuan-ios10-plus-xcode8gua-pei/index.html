@@ -1,0 +1,519 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>玩转iOS10+Xcode8适配 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="最近因为公司App在iOS10上出现很多问题，结果花了一天时间适配了一下，其中也遇到了不少坑，有些网上直接有方法，但是有些却需要细心琢磨。这里整理了一下。 其中有两个比较麻烦的
+1：关于导航栏的适配
+当导航栏是透明或者半透明的实现，显示不正常，全白。 2：关于tabBar的适配 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">玩转iOS10+Xcode8适配</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-12T11:34:34+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:34 am</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近因为公司App在iOS10上出现很多问题，结果花了一天时间适配了一下，其中也遇到了不少坑，有些网上直接有方法，但是有些却需要细心琢磨。这里整理了一下。</p>
+
+<p>其中有两个比较麻烦的
+1：关于导航栏的适配
+当导航栏是透明或者半透明的实现，显示不正常，全白。</p>
+
+<p>2：关于tabBar的适配
+tabbar中第一个子控制器的Item重复出现</p>
+
+<p>下面一个个整理了一下！</p>
+
+<!--more-->
+
+
+<h2>1.Xcode8运行项目之后，控制台打印了一堆东西;</h2>
+
+<p>去除方法：选择Xcode ->Product ->Scheme -> Edit Scheme 或者按command + shift + &lt; 快捷键，</p>
+
+<p>在弹出的窗口中Environment Variables 下添加 0S_ACTIVITY_MODE=disable</p>
+
+<p><img src="/images/ios10shipei001.png" title="Caption" ></p>
+
+<blockquote><p>注：真机调试不输出NSlog了，所以我真机调试的时候，把此处对号去除，就好了</p></blockquote>
+
+<h2>2.Xcode8 打开工程后，出现下图，苹果新特性</h2>
+
+<p><img src="/images/ios10shipei002.png" title="Caption" ></p>
+
+<p>我勾选了Automatically manage signing，并且选择配置了Team，就好了。</p>
+
+<blockquote><p>注：或者另外一种方式  点击打开链接</p></blockquote>
+
+<h2>3.用Xcode8 运行项目在真机上，打开相机相册功能，程序崩溃；</h2>
+
+<p>解决办法：项目中访问了隐私数据，需要在info.plist中添加这些权限：</p>
+
+<p>相机权限</p>
+
+<pre><code>&lt;key&gt;NSCameraUsageDescription&lt;/key&gt;
+
+&lt;string&gt;cameraDesciption&lt;/string&gt;
+</code></pre>
+
+<p>相册权限</p>
+
+<pre><code>&lt;key&gt;NSPhotoLibraryUsageDescription&lt;/key&gt;
+
+&lt;string&gt;photoLibraryDesciption&lt;/string&gt;
+</code></pre>
+
+<p>注：
+在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>&lt;!-- 相册 --&gt;   
+&lt;key&gt;NSPhotoLibraryUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问相册&lt;/string&gt;   
+&lt;!-- 相机 --&gt;   
+&lt;key&gt;NSCameraUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问相机&lt;/string&gt;   
+&lt;!-- 麦克风 --&gt;   
+&lt;key&gt;NSMicrophoneUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问麦克风&lt;/string&gt;   
+&lt;!-- 位置 --&gt;   
+&lt;key&gt;NSLocationUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问位置&lt;/string&gt;   
+&lt;!-- 在使用期间访问位置 --&gt;   
+&lt;key&gt;NSLocationWhenInUseUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能在使用期间访问位置&lt;/string&gt;   
+&lt;!-- 始终访问位置 --&gt;   
+&lt;key&gt;NSLocationAlwaysUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能始终访问位置&lt;/string&gt;   
+&lt;!-- 日历 --&gt;   
+&lt;key&gt;NSCalendarsUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问日历&lt;/string&gt;   
+&lt;!-- 提醒事项 --&gt;   
+&lt;key&gt;NSRemindersUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问提醒事项&lt;/string&gt;   
+&lt;!-- 运动与健身 --&gt;   
+&lt;key&gt;NSMotionUsageDescription&lt;/key&gt; &lt;string&gt;App需要您的同意,才能访问运动与健身&lt;/string&gt;   
+&lt;!-- 健康更新 --&gt;   
+&lt;key&gt;NSHealthUpdateUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问健康更新 &lt;/string&gt;   
+&lt;!-- 健康分享 --&gt;   
+&lt;key&gt;NSHealthShareUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问健康分享&lt;/string&gt;   
+&lt;!-- 蓝牙 --&gt;   
+&lt;key&gt;NSBluetoothPeripheralUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问蓝牙&lt;/string&gt;   
+&lt;!-- 媒体资料库 --&gt;   
+&lt;key&gt;NSAppleMusicUsageDescription&lt;/key&gt;   
+&lt;string&gt;App需要您的同意,才能访问媒体资料库&lt;/string&gt;  
+</code></pre>
+
+<p>如果没有用，需配置一下</p>
+
+<p><img src="/images/ios10shipei003.png" title="Caption" ></p>
+
+<h2>4.字体变大，原有的fream需要适配，智能逐一排查啦</h2>
+
+<h2>5.Nib问题：警告</h2>
+
+<p>在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>- (void)awakeFromNib {  
+    // Initialization code  
+}  
+</code></pre>
+
+<p>需要添加：
+在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>[super awakeFromNib];  
+</code></pre>
+
+<h2>6.UIApplication对象中openUrl被废弃</h2>
+
+<p>在iOS 10以前，我们要想使用应用程序去打开一个网页或者进行跳转，直接使用[[UIApplication sharedApplication] openURL 方法就可以了，但是在iOS 10 已经被废弃了，因为使用这种方式，处理的结果我们不能拦截到也不能获取到，对于开发是非常不利的，在iOS 10全新的退出了</p>
+
+<pre><code>[[UIApplication sharedApplication] openURL:nil options:nil completionHandler:nil];
+</code></pre>
+
+<p>有一个成功的回调block 可以进行监视。</p>
+
+<blockquote><p>注：仍然可以用，只不过会出现警告</p></blockquote>
+
+<h2>7.系统判断失效</h2>
+
+<p>现在改用：
+在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>#define LIOS10_OR_LATER  ([[[UIDevice currentDevice]systemVersion]compare:@"10.0" options:NSNumericSearch] !=NSOrderedAscending)  
+</code></pre>
+
+<h2>8.代码注释不能用</h2>
+
+<p>解决方法：</p>
+
+<pre><code>打开终端，命令运行： sudo /usr/libexec/xpccachectl
+</code></pre>
+
+<p>然后必须重启电脑后生效</p>
+
+<h2>9.导航栏适配</h2>
+
+<p>因为使用了"UINavigationBar+Awesome.h"这个框架，所以，最后找来找去，找到了这个框架的底层，修改代码发现既然可以。</p>
+
+<pre><code>if (!self.overlay) {
+    [self setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+    self.overlay = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) + 20)];
+    self.overlay.userInteractionEnabled = NO;
+    self.overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth;    // Should not set `UIViewAutoresizingFlexibleHeight`
+    [[self.subviews firstObject] insertSubview:self.overlay atIndex:0];
+}
+self.overlay.backgroundColor = backgroundColor;
+</code></pre>
+
+<h2>10.导航的图片不显示了,使用的是系统导航,怎么调整都不显示.</h2>
+
+<p>解决问题
+找到原因了,修改代码就比较容易了,你可以在添加视图时,将bgView指定到UIVisualEffectView,将新的视图添加到UIVisualEffectView上:</p>
+
+<pre><code>for (UIView  * v in subs)
+    {
+        NSString * classname = NSStringFromClass([v class]);
+        if ([classname isEqualToString:@"_UINavigationBarBackground"] || [classname isEqualToString:@"UINavigationBarBackground"])
+        {
+
+            bgview=v;
+            break;
+        }  else if ([classname isEqualToString:@"_UIBarBackground"]) {
+            //适配iOS10导航
+            for (UIView *vi in v.subviews) {
+
+                NSString *viName = NSStringFromClass([vi class]);
+                if ([viName isEqualToString:@"UIVisualEffectView"]) {
+
+                    bgview = vi;
+                    break;
+                }
+            }
+        }
+    }
+</code></pre>
+
+<p>也可以还添加到_UIBarBackground上,但是找到UIVisualEffectView,将其隐藏掉:</p>
+
+<pre><code>if ([classname isEqualToString:@"_UINavigationBarBackground"] || [classname isEqualToString:@"UINavigationBarBackground"])
+        {
+
+            bgview=v;
+            break;
+        } else if ([classname isEqualToString:@"_UIBarBackground"]) {
+
+            bgview = v;
+
+            for (UIView *vi in v.subviews) {
+                // 适配iOS10
+                NSString *viName = NSStringFromClass([vi class]);
+                if ([viName isEqualToString:@"UIVisualEffectView"]) {
+
+                    vi.hidden = YES;
+                    break;
+                }
+            }
+        }
+</code></pre>
+
+<h2>11.tabBarItem第一个重复出现</h2>
+
+<p>这个问题实在没有找到好的方法解决。不过庆幸的是，公司决定将TabBar中的Item四个变成，既然好了，我就想不通。</p>
+
+<p>如果你也遇到了这样的问题，或者已经解决了此问题，欢迎联系我，在此致谢！</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-10-12T11:34:34+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:34 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/09/26/zui-xin-shu-dan/" title="Previous Post: 最新书单">&laquo; 最新书单</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="玩转iOS10+Xcode8适配"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">玩转iOS10+Xcode8适配</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/26/zui-xin-shu-dan/">最新书单</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/25/zhi-bo-cai-ji-pian/">直播-采集篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">直播-实战篇</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
