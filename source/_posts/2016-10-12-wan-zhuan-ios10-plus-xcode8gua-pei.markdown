@@ -36,12 +36,24 @@ categories:
 
 > 注：真机调试不输出NSlog了，所以我真机调试的时候，把此处对号去除，就好了
 
+#####最新Log方式：（会定位某各类，某个方法，某一行）
+
+
+	#ifdef DEBUG
+	#define iCocosLog(format, ...) printf("\n[%s] %s [第%d行] %s\n", __TIME__, __FUNCTION__, __LINE__, [[NSString stringWithFormat:format, ## __VA_ARGS__] UTF8String]);
+	#else
+	#define iCocosLog(format, ...)
+	#endif
+
+
+
+
 ##2.Xcode8 打开工程后，出现下图，苹果新特性
 
 
 {% img /images/ios10shipei002.png Caption %}  
 
-我勾选了Automatically manage signing，并且选择配置了Team，就好了。
+我勾选了Automatically manage signing(需要在Xcode的偏好设置中，添加苹果账号)，并且选择配置了Team，就好了。
 
 > 注：或者另外一种方式  点击打开链接
 
@@ -108,6 +120,11 @@ categories:
 
 {% img /images/ios10shipei003.png Caption %}  
 
+> 注意，添加的时候，末尾不要有空格，值得说明必须要要写不写也会崩溃
+
+
+我们需要打开info.plist文件添加相应权限的说明，否则程序在iOS10上会出现崩溃。
+
 ##4.字体变大，原有的fream需要适配，智能逐一排查啦
 
 ##5.Nib问题：警告
@@ -148,6 +165,11 @@ categories:
 	打开终端，命令运行： sudo /usr/libexec/xpccachectl
 
 然后必须重启电脑后生效
+
+> Xcode8已经不能再使用第三方插件了，但是Xcode8已经完善了一部分第三方插件才能实现的功能（抹杀了第三方插件作者，掠夺别人的劳动成果），比如语法提示、代码注释。
+
+
+> Xcode8代码注释快捷键为 Command + Option + / 。
 
 ##9.导航栏适配
 
@@ -213,7 +235,100 @@ categories:
 	            }
 	        }
 
-##11.tabBarItem第一个重复出现
+##11.Xcode7 8SB兼容问题
+
+控制器报如下错误：
+	
+	This version does not support documents saved in the Xcode 8 format. Open this document with Xcode 8.0 or later.
+
+右键SB，选择Open As -> Source Code，并删除下面代码即可：
+	
+	<capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+
+{% img /images/ios10shipei004.png Caption %}  
+
+##12.字体变大，原有frame需要适配
+
+经有的朋友提醒，发现程序内原来2个字的宽度是24，现在2个字需要27的宽度来显示了。。
+
++ 希望有解决办法的朋友，评论告我一下耶，谢谢啦
+
+
+##13.推送
+
+如下图的部分，不要忘记打开。所有的推送平台，不管是极光还是什么的，要想收到推送，这个是必须打开的哟✌️
+
+{% img /images/ios10shipei005.png Caption %}  
+
+之后就应该可以收到推送了。另外，极光推送也推出新版本了，大家也可以更新下。
+
+PS.苹果这次对推送做了很大的变化，希望大家多查阅查阅，处理推送的代理方法也变化了。
+
+// 推送的代理
+
+	[<UNUserNotificationCenterDelegate>]
+
+iOS10收到通知不再是在
+
+	[application: didReceiveRemoteNotification:]
+
+方法去处理， iOS10推出新的代理方法，接收和处理
+
+各类通知（本地或者远程）
+
+	- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler 
+	{ 
+	//应用在前台收到通知 NSLog(@"========%@", notification);
+	}
+	
+	
+	- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler { 
+	//点击通知进入应用 NSLog(@"response:%@", response);
+	}
+
+##14.代码及Api注意
+
+使用Xcode8之后，有些代码可能就编译不过去了，具体我就说说我碰到的问题。
+
+1.UIWebView的代理方法：
+
+> **注意要删除NSError前面的 nullable，否则报错。
+
+	- (void)webView:(UIWebView *)webView didFailLoadWithError:(nullable NSError *)error
+	{
+	    [self hideHud];
+	}
+
+##15.Xib文件的注意事项
+
+使用Xcode8打开xib文件后，会出现下图的提示。
+
+
+{% img /images/ios10shipei006.png Caption %}  
+
+
+大家选择Choose Device即可。
+之后大家会发现布局啊，frame乱了，只需要更新一下frame即可。如下图
+
+
+{% img /images/ios10shipei007.png Caption %}  
+
+    注意：如果按上面的步骤操作后，在用Xcode7打开Xib会报一下错误，
+
+
+
+{% img /images/ios10shipei008.png Caption %}  
+
+ 
+#####解决办法：需要删除Xib里面
+
+    <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+
+    这句话，以及把< document >中的toolsVersion和< plugIn >中的version改成你正常的xib文件中的值
+    ，不过不建议这么做，在Xcode8出来后，希望大家都快速上手，全员更新。这就跟Xcode5到Xcode6一样，有变动，但是还是要尽早学习，尽快适应哟！
+
+
+##16.tabBarItem第一个重复出现
 
 这个问题实在没有找到好的方法解决。不过庆幸的是，公司决定将TabBar中的Item四个变成，既然好了，我就想不通。
 
