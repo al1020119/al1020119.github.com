@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。 这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面: ">
+  <meta name="description" content="一，决定当前UIViewController显示方向的因素 1，全局控制 工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。实际上就是设置工程plist文件的Supported &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,209 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/">屏幕旋转的奥妙</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-01-10T23:51:52+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:51 pm</span></time>
+        
+        
+        |   <a href="/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一，决定当前UIViewController显示方向的因素</h3>
+
+<h6>1，全局控制</h6>
+
+<p>工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。实际上就是设置工程plist文件的Supported interface orientations属性。</p>
+
+<h6>2，配置AppDelegate</h6>
+
+<p>配置AppDelegate的如下方法返回需要用到的全部方向集合，如果要支持多个方向，一般都返回UIInterfaceOrientationMaskAll</p>
+
+<pre><code>- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(nullable UIWindow *)window{
+    return UIInterfaceOrientationMaskAll;
+}
+</code></pre>
+
+<p>似乎该方法默认值为Info.plist中配置的Supported interface orientations项的值。</p>
+
+<h6>3，自定义UIViewController，并实现如下orientation相关的三个方法（iOS6以后）:</h6>
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>//是否支持多方向旋转屏，会考察当前设备方向和支持的方向。一些文档上说shouldAutorotate如果返回NO则不会执行下面两个方法纯属扯淡。  
+-(BOOL)shouldAutorotate  
+{  
+    return YES;  
+}  
+//第二个方法返回支持的旋转方向  
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations  
+{  
+    return [self.viewControllers.lastObject supportedInterfaceOrientations];  
+}  
+</code></pre>
+
+<p>返回最优先显示的屏幕方向，比如同时支持Portrait和Landscape方向，但想优先显示Landscape方向，那软件启动的时候就会先显示Landscape，在手机切换旋转方向的时候仍然可以在Portrait和Landscape之间切换；  </p>
+
+<pre><code>-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
+{  
+    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
+}  
+</code></pre>
+
+<p> 
+以上三个规则在每一个UIViewController中都会得到一个方向的交集集合，就是最终显示的方向。如果交集为空，会抛出UIApplicationInvalidInterfaceOrientationException崩溃异常。</p>
+
+<h3>二，典型的控制方案</h3>
+
+<p>另外一个非常重要的点就是并不是每一个UIViewController都会主动执行以上三个方法，根据特酷吧的实验，发现：</p>
+
+<ul>
+<li>1，当UIViewController是rootViewController（Device Orientation方向变化时会主动执行）</li>
+<li>2，当UIViewController是UINavigationController（Device Orientation方向变化时会主动执行）</li>
+<li>3，当UIViewController以modal模态形式弹出时会主动执行。
+一个典型的方案是，我们就可以在UINavigationController中这样写：</li>
+</ul>
+
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>-(BOOL)shouldAutorotate  
+{  
+    return YES;  
+}  
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations  
+{  
+    return [self.viewControllers.lastObject supportedInterfaceOrientations];//主动调用UIViewController对应的方法，达到在UIViewController中自定义的效果  
+}  
+-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
+{  
+    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
+}  
+</code></pre>
+
+<p> 
+接下来就只需要自定义各自的VC</p>
+
+<pre><code>-(UIInterfaceOrientationMask)supportedInterfaceOrientations{
+    return UIInterfaceOrientationMaskPortrait;//根据需要
+}
+- (BOOL)shouldAutorotate
+{
+    return NO;//根据需要
+}
+-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+{
+    return UIInterfaceOrientationPortrait;//根据需要
+}
+</code></pre>
+
+<p>事实上在作为一个UINavigationController的堆栈系统，普通的UIViewController的orientation方法只是一个配置项，最终决定屏幕方向的还是UINavigationController控制器，也就是UINavigationController拿UIViewController得配置决定当前控制器的方向。</p>
+
+<h3>三，强制屏幕旋转</h3>
+
+<p>如果UIInterfaceOrientation和UIDeviceOrientation方向不一样，想强制将UIInterfaceOrientation旋转成UIDeviceOrientation的方向，可以通过l类方法attemptRotationToDeviceOrientation，但是如果想将interface强制旋转成任一指定方向，就不太好实现了。目前大致有以下几种方式：</p>
+
+<h6>1，使用私有方法</h6>
+
+<p>折叠复制内容到剪贴板</p>
+
+<pre><code>[[UIDevice currentDevice] setOrientation:UIInterfaceOrientationPortrait];  
+</code></pre>
+
+<p>具体可以这样：  </p>
+
+<pre><code>         if ([[UIDevice currentDevice] respondsToSelector:@selector(setOrientation:)]) {  
+        SEL selector = NSSelectorFromString(@"setOrientation:");  
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[UIDevice instanceMethodSignatureForSelector:selector]];  
+        [invocation setSelector:selector];  
+        [invocation setTarget:[UIDevice currentDevice]];  
+        int val = UIInterfaceOrientationLandscapeRight;  
+        [invocation setArgument:&amp;val atIndex:2];  
+        [invocation invoke];  
+    }  
+</code></pre>
+
+<p> </p>
+
+<h6>2，主动触发orientation相关方法</h6>
+
+<p>只要提前设置好想要支持的orientation，然后主动触发orientation机制，使新设置的orientation起作用便能实现将 interface orientation旋转至任意方向的目的。像这样：</p>
+
+<pre><code>UIViewController *vc = [[UIViewController alloc]init]; 
+[self presentModalViewController:vc animated:NO]; 
+[self dismissModalViewControllerAnimated:NO]; 
+</code></pre>
+
+<h6>3、旋转view的transform</h6>
+
+<p>前两种都是试图触发orientation相关方法，第三种可能会造成一些不可预知的风险不推荐。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-01-05T14:53:45+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>一、底层实现</h6>
+
+<ul>
+<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
+<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
+<li><p>3> ASI的运行性能 高于 AFN</p></li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -323,7 +526,7 @@
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#111;&#x3a;&#x6d;&#97;&#x6a;&#105;&#x61;&#48;&#51;&#x40;&#x6d;&#x65;&#x69;&#x74;&#x75;&#97;&#x6e;&#x2e;&#99;&#x6f;&#x6d;">&#109;&#97;&#x6a;&#x69;&#97;&#48;&#51;&#64;&#109;&#x65;&#105;&#x74;&#117;&#x61;&#110;&#46;&#99;&#x6f;&#109;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#111;&#x3a;&#109;&#x61;&#106;&#x69;&#97;&#48;&#x33;&#64;&#109;&#101;&#x69;&#116;&#117;&#97;&#110;&#46;&#x63;&#111;&#109;">&#109;&#x61;&#x6a;&#105;&#x61;&#48;&#51;&#x40;&#x6d;&#x65;&#x69;&#x74;&#x75;&#x61;&#x6e;&#46;&#x63;&#x6f;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -443,117 +646,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-10-19T02:32:36+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:32 am</span></time>
-        
-        
-        |   <a href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ul>
-<li>简单总结
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<ul>
-<li>简单实用
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-10-05T14:56:39+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:56 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
-
-<ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/15">&larr; Older</a>
@@ -601,6 +693,14 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian/">iOS大神之路——精华篇</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">玩转iOS10+Xcode8适配</a>
       </li>
     
@@ -610,14 +710,6 @@
     
       <li class="post">
         <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/25/zhi-bo-cai-ji-pian/">直播-采集篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">直播-实战篇</a>
       </li>
     
   </ul>

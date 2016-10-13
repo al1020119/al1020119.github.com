@@ -9,14 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="交换值 1）算术运算；
-2）指针地址操作；
-3）位运算；
-4）栈实现。 1） 算术运算 int a,b;
-a=10;b=12;
-a=b-a; //a=2;b=12
-b=b-a; //a=2;b=10
-a=b+a; //a=10;b=10 ">
+  <meta name="description" content="这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend, 此类报错往往来的莫明奇妙. 原因往往是内存过度释放导致, 即多写了release; 至于是哪里多写了release, 很难查知, 出现这种情况， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +70,99 @@ a=b+a; //a=10;b=10 ">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/08/badaccess-error/">EXC_BAD_ACCESS无处不在</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-12-08T13:53:19+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/12/08/badaccess-error/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend,</p>
+
+<p>此类报错往往来的莫明奇妙.</p>
+
+<p>原因往往是内存过度释放导致, 即多写了release;</p>
+
+<p>至于是哪里多写了release, 很难查知,</p>
+
+<p>出现这种情况， 也就是对指针对象的过度释放，导致次指针为野指针报错， （注意：如：[nil release] 操作空指针是不会报错的，在java中是有问题， [野指针 release] 报错  crash  很危险，）解决中bug，有很多中，暂时简单的说下几种简单的：</p>
+
+<h5>一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到</h5>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/12/08/badaccess-error/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/11/26/xcode-settingfile/">Xcode配置文件</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-11-26T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/11/26/xcode-settingfile/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一个xcodeproj文件，其实是一个目录，它的格式大体上是这样的：</p>
+
+<p>这里写图片描述</p>
+
+<p>有的文件，比如user.mode1v3，在没有多个用户操作项目的时候，是没有的。Apple并没有提供.xcodeproj文件的文档，而且它也没有准备提供，更坑爹的是，xcodeproj的格式、内容都是随时可变的，比如一个Xcode版本上来，可能其目录就会变化，而没有任何通知。这可苦了那些为.xcodeproj开发每三方库的同学，不仅要一点一点摸索各个文件的内容，修改方法，还要忍受Apple没有任何通知地修改格式。</p>
+
+<p>Stackoverflow中这位就在抱怨苹果开发人员的傲慢：</p>
+
+<p><a href="http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580">http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580</a></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/11/26/xcode-settingfile/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -452,95 +539,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/">自己写套缓存机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-07-07T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>2:59 am</span></time>
-        
-        
-        |   <a href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><ul>
-<li>前言</li>
-</ul>
-
-
-<p>大家都知道UITableView，最经典在于循环利用，这里我自己模仿UITableView循环利用,写了一套自己的TableView实现方案，希望大家看了我的文章，循环利用思想有显著提升。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/07/07/huan-cun-ji-zhi-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/06/30/iossheng-ming-zhou-qi/">iOS生命周期</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-06-30T21:52:15+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>9:52 pm</span></time>
-        
-        
-        |   <a href="/blog/2013/06/30/iossheng-ming-zhou-qi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>控制器（View）生命周期</h3>
-
-<p>当一个视图控制器被创建，并在屏幕上显示的时候。 代码的执行顺序</p>
-
-<pre><code>1、 alloc                                   创建对象，分配空间
-2、init (initWithNibName) 初始化对象，初始化数据
-3、loadView                          从nib载入视图 ，通常这一步不需要去干涉。除非你没有使用xib文件创建视图
-4、viewDidLoad                   载入完成，可以进行自定义数据以及动态创建其他控件
-5、viewWillAppear              视图将出现在屏幕之前，马上这个视图就会被展现在屏幕上了
-6、viewDidAppear               视图已在屏幕上渲染完成
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/06/30/iossheng-ming-zhou-qi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/19">&larr; Older</a>
@@ -588,6 +586,14 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian/">iOS大神之路——精华篇</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">玩转iOS10+Xcode8适配</a>
       </li>
     
@@ -597,14 +603,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
     
       <li class="post">
         <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/25/zhi-bo-cai-ji-pian/">直播-采集篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">直播-实战篇</a>
       </li>
     
   </ul>
