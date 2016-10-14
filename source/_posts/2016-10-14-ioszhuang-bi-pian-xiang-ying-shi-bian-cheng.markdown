@@ -15,6 +15,8 @@ categories:
 Reactive Cocoa就是一个响应式编程的经典作品！
 ###一、简介
 
+<!--more-->
+
 ReactiveCocoa（其简称为RAC）是函数响应式编程框架。RAC具有函数式编程和响应式编程的特性。它主要吸取了.Net的 Reactive Extensions的设计和实现。
 函数式编程 (Functional Programming)
 
