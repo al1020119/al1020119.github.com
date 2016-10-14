@@ -1,0 +1,344 @@
+---
+layout: post
+title: "iOS装逼篇——函数式编程"
+date: 2016-10-14 18:49:32 +0800
+comments: true
+categories: 
+
+---
+
+
+##开篇
+
+    如果想再去调用别的方法，那么就需要返回一个对象；
+    如果想用()去执行，那么需要返回一个block；
+    如果想让返回的block再调用对象的方法，那么这个block就需要返回一个对象（即返回值为一个对象的block）。
+
+函数式编程一般是结合响应式一起实现更多强大的功能，所有后面会介绍关于响应式编程和函数式编程及他们共同的使用。
+
+
+<!--more-->
+
+###背景
+在iOS7引入了新特性自定义View Controller转场，自定义视图控制器转场的API基本上都以协议的方式提供的，使用非常灵活，在这篇文章就不详细介绍了。
+
+函数式编程对于解耦有着明显的效果，所以使用上非常灵活，我举个例子。
+
+	当App升级时，数据需要迁移，那么就会有一段等待时间，那么我们会考虑一个Loading，或者一个Progress来提示用户，所以我们就会想到做一个动画，那么问题来了，与其同时我们需要做Loading、Progress，无论是Loading还是Progress。
+
+都具有的共性就是show出来，然后再dismiss，所以我们会想到写一个基类，不同的动画就多写几个子类来实现不一样的动画效果。
+
+>至此，我早已放弃这种解决方案了，该解决方案并没有解决解耦的问题，子类必须依赖于父类。
+
+所以我已经使用函数式编程，把有共性的、通用的抽象成一个个协议，仅仅遵守协议，实现协议方法就能实现效果从而达到解耦。
+
+大家对CAReplicatorLayer这个类熟悉吗？它在iOS3.0的SDK已经出现了，iOS9的SDK都已经逐步完善，为何我今天还来讲呢？
+
+主要CAReplicatorLayer能给动画带来生机。
+
++ 个例子
+
+App某个页面上有29个小圆圈有规则性地运动，你觉得你会如何去实现呢？
+
+以下是CAReplicatorLayer来实现这个效果的过程。
+
+	1、我们先初始化一个CAReplicatorLayer的实例，添加到Layer容器上。
+	
+	2、在CAReplicatorLayer上添加一个带有规则性运动地小圆圈Layer，在Layer上做关键帧动画，既是有规则性运动效果。
+	
+	接下来只需要通过设置CAReplicatorLayer的几个属性值，即可完成这个效果.
+	
+	3、设置instanceCount ＝ 29; // 拷贝29个具有相同特性的小圆圈Layer
+	
+	4、设置instanceDelay ＝ 0.14; // 我的理解是：相对于前一个对象延迟拷贝的时间
+	
+	5、设置instanceColor = [UIColor ReaColor]; // 为复制的Layer添加颜色
+
+到此为止，已经把这个效果实现了，CAReplicatorLayer提供了较丰富的Property，具体请到[该链接]，逐一摸索吧！
+
+######函数式编程初级设计
+
+我将会通过一个比较完整的Demo来展现函数式编程的好处。
+
+从原定需求到需求变动有着明显效果。
+
+> 接下来我们先简单的浏览整个设计过程。很多人会讲，不就几个动画吗？叫设计师搞几个gif，然后做一个gif展示组件就好啦！产品经理爱怎么换，就叫设计师去做就好咯！嘎嘎嘎！是可以的，但是我还是决定去开拓一下大脑，捣鼓一下咯！
+
+######公开API：
+
+我们先从效果的基本状态入手
+
+	1、需要提供一个startAnimating或者showAnimating的方法来展示Loading或者Progress
+	
+	2、再者等待时间已经过去了，需要提供一个stopAnimating或者dismissAnimating的方法来隐藏Loading或者Progress
+	
+	3、当外部操作Loading次数较多的时候，那么外部可能需要知道是否已经在展示了，需要提供一个只读属性，animating
+	
+	4、我们有多种动画效果，那么会定义一个枚举来标识不同的动画效果
+	
+	5、其实在初始化方法里面，我们还可以提供一些构造方法，比如样式、颜色，可以在初始化的时候就预先设定
+
+######私有化API：
+
+需要提供一个构造方法，根据枚举变量获取不同的动画处理类，就类似自定义iOS7转场的做法。
+
+在实现动画之前，我们必须把有共性的、通用的抽象成一个个协议方法，在这个Demo里面，我仅仅抽象了一个协议 
+
+	- (void)configureAnimationInLayer:(CALayer *)layer withSize:(CGSize)size tintColor:(UIColor *)tintColor;（protocol）
+
+各位请自行根据实际情况去抽象吧！
+
+那实现一个动画有几个步骤呢？
+
+	1、该动画处理类继承与NSObject，并且需要遵守动画协议（protocol）。
+	
+	2、接下来就是实现协议方法。
+	
+	3、在协议方法里面实现动画效果。
+
+##Swift中的应用
+
+Swift 相比原先的 Objective-C 最重要的优点之一，就是对函数式编程提供了更好的支持。 Swift 提供了更多的语法糖和一些新特性来增强函数式编程的能力，本文就在这方面进行一些讨论。
+######Swift 概览
+
+对编程语言有了一些经验的程序员，尤其是那些对多种不同类型的编程语言都有经验的开发者， 在学习新的语言的时候更加得心应手。原因在于编程语言本身也是有各种范式的， 把握住这些特点就可以比较容易的上手了。
+
+在入手一门新的语言的时候，一般关注的内容有：
+
+    原生数据结构
+    运算符
+    分支控制
+    如果是面向对象的编程语言，其面向对象的实现是怎样的
+    如果是函数式编程语言，其面向函数式编程的实现是怎样的
+
+通过这几个点，其实只要阅读 Swift 文档的第一章，你就可以对这个语言有一个大概的印象。 比如对于数据结构，Swift 和其他的编程语言大体一样，有 Int, Float, Array, Dictionary 等， 运算符也基本与 C 语言一致等。 本文主要集中于对 Swift 函数式编程方面的特点进行一些盘点，因此在这里假设大家对 Swift 的基本语法已经有所了解。
+
+对于一种编程范式，要掌握它也要抓住一些要点。对于支持函数式编程的语言，其一般的特点可能包含以下几种：
+
+    支持递归
+    函数本身是语言 First Class 的组成要素，且支持高阶函数和闭包
+    函数调用尽可能没有副作用 (Side Effect) 的条件
+
+接下来我们来逐个盘点这些内容。
+######递归
+
+Swift 是支持递归的，事实上现在不支持递归的编程语言已经很难找到了。在 Swift 里写一个递归调用和其他编程语言并没有什么区别：
+
+	func fib(n: Int) -> Int {
+	  if n <= 1 {
+	    return 1
+	  }
+	  else {
+	    return fib(n-1) + fib(n-2)
+	  }
+	}
+	fib(6) // output 13
+
+关于 Swift 的递归没有什么好说的。作为一个常识，我们知道递归是需要消耗栈空间的。 在函数式编程语言中，递归是一个非常常用的方法，然而使用不慎很容易导致栈溢出的问题。 如果将代码改写为非递归实现，又可能会导致代码的可读性变差，因此有一个技巧是使用“尾递归”， 然后让编译器来优化代码。
+
+一个 Common Lisp 的尾递归的例子是
+
+	(defun fib(n)
+	    (fib-iter 1 0 n))
+	
+	(defun fib-iter(a b count)
+	    (if (= count 0)
+	        b
+	        (fib-iter (+ a b) a (- count 1))))                        
+
+
+我们可以把我们上述的 Swift 代码也改写成相同形式
+
+
+	func fibiter(a: Int, b: Int, count: Int) -> Int {
+	  if count==0 {
+	    return b
+	  }
+	  else {
+	    return fibiter(a + b, a, count-1)
+	  }
+	}
+	
+	func fib(n: Int) -> Int {
+	  return fibiter(1, 1, n);
+	}
+
+
+我们可以 Playground 里观察是否使用尾递归时的迭代结果变化。
+
+	recurrence-fib
+
+值得注意的是，这里出现了一个 Swift 的问题。虽然 Swift 支持嵌套函数，但是当我们将fibiter 作为一个高阶函数包含在fib函数之内的时候却发生了 EXC_BAD_ACCESS 报错， 并不清楚这是语言限制还是 Bug。
+Swift 的高阶函数和闭包
+
+> 在 Objective-C 时代，使用 block 来实现高阶函数或者闭包已经是非常成熟的技术了。 Swift 相比 Objective-C 的提高在于为函数式编程添加了诸多语法上的方便。
+
+首先是高阶函数的支持，可以在函数内定义函数，下面就是一个很简洁的例子。
+
+	func greetingGenerator(object:String) -> (greeting:String) -> String {
+	  func sayGreeting(greeting:String) -> String {
+	    return greeting + ", " + object
+	  }
+	  return sayGreeting
+	}
+	
+	let sayToWorld = greetingGenerator("world")
+	sayToWorld(greeting: "Hello") // "Hello, World"
+	sayToWorld(greeting: " 你好 ") // " 你好, World"
+
+
+如果使用 block 实现上述功能，可读性就不会有这么好。而且 block 的语法本身也比较怪异， 之前没少被人吐槽。Swift 从这个角度来看比较方便。事实上，在 Swift 里可以将函数当做对象赋值， 这和很多函数式编程语言是一样的。
+
+作为一盘大杂烩，Swift 的函数系统也很有 JavaScript 的影子在里面。比如可以向下面这样定义函数：
+
+
+	let add = {
+	  (a:Int, b:Int) -> Int in
+	  return a+b
+	}
+	
+	add(1, 2) // 3
+
+
+等号之后被赋予变量add的是一个闭包表达式，因此更准确的说， 这是将一个闭包赋值给常量了。注意在闭包表达式中，in关键字之前是闭包的形式定义，之后是具体代码实现。 Swift 中的闭包跟匿名函数没有什么区别。 如果你将它赋值给对象，就跟 JavaScript 中相同的实践是一样的了。幸好 Swift 作为 C 系列的语言， 其分支语句 if 等本身是有作用域的，因此不会出现下列 JavaScript 的坑：
+
+
+	if (someNum>0) {
+	  function a(){ alert("one") };
+	}
+	else {
+	  function a(){ alert("two") };
+	}
+	
+	a() // will always alert "two" in most of browsers
+
+
+Swift 的闭包表达式和函数都可以作为函数的参数，从下面的代码我们可以看出闭包和函数的一致性：
+
+	func function() {
+	  println("this is a function")
+	}
+	
+	let closure = {
+	  () -> () in
+	  println("this is a closure")
+	}
+	
+	func run(somethingCanRun:()-> ()) {
+	  somethingCanRun()
+	}
+	
+	run(function)
+	run(closure)
+
+
+类似于 Ruby，Swift 作为函数参数的闭包做了一点语法糖。 在 Ruby 中使用 Block 的时候，我们可以这样写:
+
+	(1...5).map {|x| x*2} // => [2, 4, 6, 8]
+
+
+在 Swift 当中我们可以得到几乎一样的表达式。
+
+	var a = Array(1..5).map {x in x*2}
+	// a = [2, 4, 6, 8]
+
+
+也就是说， 如果一个函数的最后一个参数是闭包，那么它在语法上可以放在函数调用的外面。 闭包还可以用$0、$1等分别来表示第 0、第 1 个参数等。 基本的运算符也可以看做函数。 下面的几种方式都可以实现逆序倒排的功能。
+
+	let thingsToSort = Array(1..5)
+	var reversed1 = sort(thingsToSort) { a, b in a<b}
+	var reversed2 = sort(thingsToSort) { $0 < $1}
+	var reversed3 = sort(thingsToSort, <) // operator as a function
+	// all the above are [5, 4, 3, 2, 1]
+
+
+总体来说，Swift 在添加方便函数操作、添加相关语法糖方面走的很远，基本上整合了目前各种语言中比较方便的特性。 实用性较好。
+######Side Effects
+
+在计算机科学中，函数副作用指当调用函数时，除了返回函数值之外，还对主调用函数产生附加的影响。例如修改全局变量 (函数外的变量) 或修改参数 (wiki)。 函数副作用会给程序带来一些不必要的麻烦。
+
+为了减少函数副作用，很多函数式编程语言都力求达到所谓的“纯函数”。 纯函数是指函数与外界交换数据的唯一渠道是参数和返回值， 而不会受到函数的外部变量的干扰。 乍看起来这似乎跟闭包的概念相抵触，因为闭包本身的一个重要特点就是可以访问到函数定义时的上下文环境。
+
+> 事实上，为了在这种情况下支持纯函数，一些编程语言如 Clojure 等提供的数据结构都是不可变 (或者说 Persist) 的。 因此其实也就没有我们传统意义上的所认为的“变量”的概念。比如说，在 Python 中，字符串str就是一类不可变的数据结构。 你不能在原来的字符串上进行修改，每次想要进行类似的操作，其实都是生成了一个新的str对象。 然而 Python 中的链表结构则是可变的。且看下面的代码，在 Python 中对a字符串进行修改并不会影响b， 但是同样的操作作用于链表就会产生不一样的结果：
+
+	a = "hello, "
+	b = a
+	a += "world"
+	print a # hello, world
+	print b # hello,
+
+
+Swift 的数据结构的 Persist 性质跟 Python 有点类似。需要注意的是，Swift 有变量和常量两种概念， 变量使用var声明，常量使用let声明，使用var声明的时候，Swift 中的字符串的行为跟 Python 相似， 因此修改字符串可以被理解为生成了一个新的字符串并修改了指针。同样， 使用var声明的数组和字典也都是可变的。
+
+在 Swift 中使用let声明的对象不能被赋值，基本数据结果也会变得不可变，但是情况更复杂一点。
+
+	let aDict = ["k1":"v1"]
+	let anArray = [1, 2, 3, 4]
+	
+	aDict["k1"] = "newVal" // !! will fail !!
+	anArray.append(5) // !! will fail !!
+	anArray[0] = 5 // anArray = [5, 2, 3, 4] now !
+
+从上面的代码中可以看出，使用let声明的字典是完全不可变的，但是数组虽然不可以改变长度， 却可以改变数组元素的值！Swift 的文档中指出这里其实是将 Array 理解为定长数组从而方便编译优化， 来获得更好的访问性能。
+
+######综上所述
+
+对象是否可变的关系其实略有复杂的，可以总结为：
+
+    使用var和let，Int和String类型都是不可变的，但是var时可以对变量重新赋值
+    使用let声明的常量不可以被重新赋值
+    使用let声明的Dictionary是完全不可变的
+    使用let声明的Array长度不可变，但是可以修改元素的值
+    使用let声明的类对象是可变的
+
+######综上所述，
+
+即使是使用let声明的对象也有可能可变，因此在多线程情况下就无法达到“无副作用”的要求了。
+
+
+> 此外 Swift 的函数虽然没有指针，但是仍通过参数来修改变量的。只要在函数的参数定义中加入inout关键字即可。 这个特性很有 C 的风格。
+
+个人觉得在支持通过元组来实现多返回值的情况下，这个特性不但显得鸡肋，也是一个导致程序产生“副作用”的特性。 Swift 支持这样的特性，恐怕更多的是为了兼容 Objective-C 以及方便在两个语言之间搭建 Bridge。
+	
+	func inc(inout a:Int) {
+	  a += 1
+	}
+	var num = 1
+	inc(&num) // num = 2 now!
+
+######综上所述，
+
+使用 Swift 自带的数据结构并不能很好的实现“无副作用”的“纯函数式”编程， 它并没有比 Python、Ruby 这类语言走的更远。幸好作为一种关注度很高的语言， 已经有开发者为其实现了一套完全满足不可变要求的数据结构和库：Swiftz。 坚持使用let和 Swiftz 提供的数据结构来操作，就可以实现“纯函数式”编程。
+
+
+>总结
+
+> 在我看来，Swift 虽然实现了很多其他语言的亮点特性，但是总体实现来说并不是很整齐。 它在函数式编程方面添加了很多特性，但在控制副作用方面仅能达到平均水准。 有些特性看起来像是为了兼容原来的 Objective-C 才加入的。
+
+Swift 写起来相对比 Objective-C 更方便一点，脱离 Xcode 这样的 IDE 来写也是应该是可以的。 目前 Swift 只支持集中少量的原生数据结构而没有标准库，更不具备跨平台特性，这是一个缺点。 在仔细阅读了文档之后发现 Swift 本身的语法细节还是很多的，就比如switch分置语句的用法就有很多内容。 入门学习的容易程度并没有原来想象的那么好。我个人并不觉得这门语言会对其他平台的开发者有很大吸引力。
+
+>Swift 是一门很强大的语言，在其稳定版本发布之后我认为我会从 Objective-C 专向 Swift 来进行编程， 它在未来很可能成为 iOS 和 Mac 开发的首选。
+
+
+
+
+===
+
+
+
+
+
+    Q Q：2211523682/790806573
+
+    微信：18370997821/13148454507
+    
+    微博WB:http://weibo.com/u/3288975567?is_hot=1
+    
+	git博文：http://al1020119.github.io/
+	
+	github：https://github.com/al1020119
+
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  
