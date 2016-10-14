@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
-EXC_BAD_ACCESS, objc_msgSend, 此类报错往往来的莫明奇妙. 原因往往是内存过度释放导致, 即多写了release; 至于是哪里多写了release, 很难查知, 出现这种情况， &hellip;">
+  <meta name="description" content="用ARC管理内存 ARC(Automatic Reference Counting, 自动引用计数)和iOS5一起发布，它避免了最常见的也就是经常是由于我们忘记释放内存所造成的内存泄露。它自动为你管理retain和release的过程，所以你就不必去手动干预了。 除了帮你避免内存泄露， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +69,53 @@ EXC_BAD_ACCESS, objc_msgSend, 此类报错往往来的莫明奇妙. 原因往往
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/25/xingnengyouhua-xiaojie/">性能优化小结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-12-25T13:53:19+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/12/25/xingnengyouhua-xiaojie/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ol>
+<li>用ARC管理内存
+ ARC(Automatic Reference Counting, 自动引用计数)和iOS5一起发布，它避免了最常见的也就是经常是由于我们忘记释放内存所造成的内存泄露。它自动为你管理retain和release的过程，所以你就不必去手动干预了。
+ 除了帮你避免内存泄露，ARC还可以帮你提高性能，它能保证释放掉不再需要的对象的内存</li>
+<li>在正确的地方使用reuseIdentifier
+ 这个方法把那些已经存在的cell从队列中排除，或者在必要时使用先前注册的nib或者class创造新的cell。如果没有可重用的cell，你也没有注册一个class或者nib的话，这个方法返回nil。</li>
+<li>尽可能使Views不透明
+ 如果你有不透明的Views，你应该设置它们的opaque属性为YES。
+ (opaque)这个属性给渲染系统提供了一个如何处理这个view的提示。如果设为YES， 渲染系统就认为这个view是完全不透明的，这使得渲染系统优化一些渲染过程和提高性能。如果设置为NO，渲染系统正常地和其它内容组成这个View。默认值是YES。</li>
+</ol>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/12/25/xingnengyouhua-xiaojie/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -495,50 +541,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/14/kan-wo-zen-yao-na-dao-she-bei-xin-xi/">看我怎么拿到设备信息</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-07-14T13:36:55+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:36 pm</span></time>
-        
-        
-        |   <a href="/blog/2013/07/14/kan-wo-zen-yao-na-dao-she-bei-xin-xi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h4>设备唯一标识符：</h4>
-
-<ul>
-<li>1.已禁用-[UIDevice uniqueIdentifier]</li>
-</ul>
-
-
-<p>　　苹果总是把用户的隐私看的很重要。-[UIDevice uniqueIdentifier]在iOS5实际在iOS5的时候已经被遗弃了，但是iOS7中已经完全的禁用了它。Xcode5甚至不会允许你编译包含了指引到-[UIDevice uniqueIdentifier]的app。此外，iOS7之前的使用了-[UIDevice uniqueIdentifier] 的app如果在iOS7上运行，它不会返回设备的UUID，而是会返回一串字符串，以FFFFFFFF开头，跟着-[UIDevice identifierForVendor]的十六进制值。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/07/14/kan-wo-zen-yao-na-dao-she-bei-xin-xi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/19">&larr; Older</a>
@@ -586,6 +588,10 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
       </li>
     
@@ -599,10 +605,6 @@ GifView *dataView = [[GifView alloc] initWithFrame:CGRectMake(0, 0, 100, 100) da
     
       <li class="post">
         <a href="/blog/2016/09/26/zui-xin-shu-dan/">最新书单</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
       </li>
     
   </ul>

@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS装逼篇——APO编程 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="实现原理 用Objective-C强大的runtime. 我们知道当给一个对象发送一个方法的时候, 如果当前类和父类都没实现该方法的时候就会走转发流程 动态方法解析 -&gt; 快速消息转发 -&gt; 标准消息转发 准备知识 准备知识一：Method,SEL,IMP概念 SEL &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS装逼篇——APO编程</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T11:45:17+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:45 am</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h4>实现原理</h4>
+
+<ul>
+<li>用Objective-C强大的runtime.</li>
+</ul>
+
+
+<p>我们知道当给一个对象发送一个方法的时候, 如果当前类和父类都没实现该方法的时候就会走转发流程</p>
+
+<pre><code>动态方法解析 -&gt; 快速消息转发 -&gt; 标准消息转发
+</code></pre>
+
+<!--more-->
+
+
+<h2>准备知识</h2>
+
+<h3>准备知识一：Method,SEL,IMP概念</h3>
+
+<h6>SEL</h6>
+
+<pre><code> 先看一下SEL的概念，Objective-C在编译时，会依据每一个方法的名字、参数序列，生成一个唯一的整型标识(Int类型的地址)，这个标识就是SEL。
+
+ SEL也是@selector的类型，用来表示OC运行时的方法的名字。来看一下OC中的定义
+</code></pre>
+
+<p><img src="/images/iosapo001.png" title="Caption" ></p>
+
+<pre><code>  本质上，SEL只是一个指向方法的指针（准确的说，只是一个根据方法名hash化了的KEY值，能唯一代表一个方法），它的存在只是为了加快方法的查询速度。这个查找过程我们将在下面说明。
+  我们可以在运行时添加新的selector，也可以在运行时获取已存在的selector。
+</code></pre>
+
+<h6>IMP</h6>
+
+<pre><code>  实际上是一个函数指针，指向方法实现的首地址，定义如下：
+</code></pre>
+
+<p><img src="/images/iosapo002.png" title="Caption" ></p>
+
+<h6>关于IMP的几点说明：</h6>
+
+<p>使用当前CPU架构实现的标准的C调用约定</p>
+
+<pre><code>第一个参数是指向self的指针（如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针）
+第二个参数是方法选择器(selector)，
+第三个参数开始是方法的实际参数列表。
+</code></pre>
+
+<p>通过取得IMP，我们可以跳过Runtime的消息传递机制，直接执行IMP指向的函数实现，这样省去了Runtime消息传递过程中所做的一系列查找操作，会比直接向对象发送消息高效一些，当然必须说明的是，这种方式只适用于极特殊的优化场景，如效率敏感的场景下大量循环的调用某方法。</p>
+
+<h6>Method</h6>
+
+<pre><code>  直接上定义：
+</code></pre>
+
+<p><img src="/images/iosapo003.png" title="Caption" ></p>
+
+<pre><code>  Method = SEL + IMP + method_types，相当于在SEL和IMP之间建立了一个映射
+</code></pre>
+
+<p>相关方法：</p>
+
+<pre><code>// 给 cls 添加一个新方法  
+BOOL class_addMethod (  
+   Class cls,  
+   SEL name,  
+   IMP imp,  
+   const charchar *types  
+);  
+
+// 替换 cls 里的一个方法的实现  
+IMP class_replaceMethod (  
+   Class cls,  
+   SEL name,  
+   IMP imp,  
+   const charchar *types  
+);  
+
+// 返回 cls 的指定方法  
+Method class_getInstanceMethod (  
+   Class cls,  
+   SEL name  
+);  
+
+// 设置一个方法的实现  
+IMP method_setImplementation (  
+   Method m,  
+   IMP imp  
+);  
+
+// 返回 cls 里的 name 方法的实现  
+IMP class_getMethodImplementation (  
+   Class cls,  
+   SEL name  
+);  
+</code></pre>
+
+<h3>准备知识二：iOS方法调用流程</h3>
+
+<h6>方法调用的核心是objc_msgSend方法：</h6>
+
+<pre><code>         objc_msgSend(receiver, selector, arg1,arg2,…)
+</code></pre>
+
+<p>具体的过程如下：</p>
+
+<pre><code>        先找到selector 对应的方法实现(IMP)，因为同一个方法可能在不同的类中有不同的实现，所以需要receiver的类来找到确切的IMP
+
+        IMP class_getMethodImplementation(Class class, SEL selector)
+</code></pre>
+
+<p>如同其文档所说：</p>
+
+<pre><code>The function pointer returned may be a function internal to the runtime instead of an actual method implementation. For example, if instances of the class do not respond to the selector, the function pointer returned will be part of the runtime's message forwarding machinery.
+</code></pre>
+
+<p>具体来说，当找不到IMP的时候，方法返回一个 _objc_msgForward 对象，用来标记需要转入消息转发流程，我们现在用的AOP框架也是利用了这个机制来人为的制造找不到IMP的假象来触发消息转发的流程</p>
+
+<p><img src="/images/iosapo004.png" title="Caption" ></p>
+
+<pre><code>    如果实在对_objc_msgFroward的内部实现感兴趣，只能看看源码了，只不过都是汇编实现的....感兴趣的同学可以想想为什么是用汇编来实现
+    这里有个源码的镜像https://github.com/opensource-apple ，如果翻墙费劲的话
+</code></pre>
+
+<p>根据查找结果</p>
+
+<pre><code>    找到了IMP，调用找到的IMP，传入参数
+    没找到IMP，转入消息转发流程
+    将IMP的返回值作为自己的返回值
+</code></pre>
+
+<p>补充说明一下IMP的查找过程，消息传递的关键在于objc_class结构体中的以下几个东西：</p>
+
+<pre><code>Class *isa
+Class *super_class
+objc_method_list **methodLists
+objc_cache *cache
+</code></pre>
+
+<p>当消息发送给一个对象时，objc_msgSend通过对象的isa获取到类的结构体，然后在cache和methodLists中查找，如果没找到就找其父类，以此类推知道找到NSObject类，如果还没找到，就走消息转发流程。</p>
+
+<h3>准备知识三：iOS方法转发流程</h3>
+
+<pre><code>  从上文中我们看到当obj无法查找到 IMP时，会返回一个特定的IMP _objc_msgForward , 然后会进入消息转发流程，具体流程如下：
+</code></pre>
+
+<h6>动态方法解析</h6>
+
+<pre><code>    resolveInstanceMethod:解析实例方法 
+    resolveClassMethod:解析类方法
+</code></pre>
+
+<p>通过class_addMethod的方式将缺少的selector动态创建出来，前提是有提前实现好的IMP（method_types一致）</p>
+
+<pre><code>    这种方案更多的是位@dynamic属性准备的
+</code></pre>
+
+<h6>备用接受者（AOP中有使用）</h6>
+
+<p>如果上一步没有处理，runtime会调用以下方法</p>
+
+<pre><code>        -(id)forwardingTargetForSelector:(SEL)aSelector
+</code></pre>
+
+<p>如果该方法返回非nil的对象，则使用该对象作为新的消息接收者，不能返回self，会出现无限循环</p>
+
+<p>如果不知道该返回什么，应该使用[super forwardingTargetForSelector:aSelector]</p>
+
+<p>这种方法属于单纯的转发，无法对消息的参数和返回值进行处理</p>
+
+<h6>完整转发（AOP中有使用）</h6>
+
+<pre><code>    - (void)forwardInvocation:(NSInvocation *)anInvocation
+</code></pre>
+
+<p>对象需要创建一个NSInvocation对象，把消息调用的全部细节封装进去，包括selector, target, arguments 等参数，还能够对返回结果进行处理
+为了使用完整转发，需要重写以下方法</p>
+
+<pre><code>        -(NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector，如果2中return nil,执行methodSignatureForSelector：
+</code></pre>
+
+<p>因为消息转发机制为了创建NSInvocation需要使用这个方法吗获取信息，重写它为了提供合适的方法签名</p>
+
+<h2>AOP核心逻辑解析</h2>
+
+<pre><code>    到了有意思的戏肉部分，打算用流程图的方式解析一下核心的两个流程：拦截器(intercepter)注册流程和拦截器(intercepter)执行流程。
+</code></pre>
+
+<h4>拦截器(intercepter)注册流程</h4>
+
+<p><img src="/images/iosapo005.png" title="Caption" ></p>
+
+<p>说明：（图中m:代表Method，ClassA是AOP的目标类，X是AOP的目标方法，AOPAspect是AOP处理类-单例）</p>
+
+<pre><code>1. 将原始的X的IMP拿出来，以特定的命名规则动态加入AOPAspect
+2. 将X的IMP替换为_objc_msgForward，用这种比较tricky的方式来触发消息转发流程
+3. 将ClassA中原有的forwardingTargetForSelector:的IMP以特定的命名规则存入AOPAspect
+4. 将ClassA的forwardingTargetForSelector：的IMP用AOPApect中的baseClassForwardingTargetForSelector替换，其中的具体逻辑见下面的代码
+
+后边的就是将拦截器的信息和block存入到AOPAspect中，细节就不讲了，有兴趣的同学可以到github上看看原始版
+</code></pre>
+
+<p><img src="/images/iosapo006.png" title="Caption" ></p>
+
+<h4>拦截器(intercepter)执行流程</h4>
+
+<p><img src="/images/iosapo007.png" title="Caption" ></p>
+
+<p>说明：（图中m:代表Method，ClassA是AOP的目标类，X是AOP的目标方法，AOPAspect是AOP处理类-单例,IMP是方法对应的实现）</p>
+
+<p>开始调用，objc_msgSend开始查找SEL为X的IMP，查到结果为_objc_msgForward，触发ClassA的转发流程</p>
+
+<pre><code>1. ClassA中转发流程调用forwardingTargetForSelector:，实际会调用替换上去的baseClassForwardingTargetForSelector:的IMP，这个IMP正常情况下会返回AOPAspect的单例作为target（代码见上文图）
+2. 接下来开始在AOPAspect的单例中执行转发流程，经过一系列的3.1-3.5的跳转查找，最终会触发转发流程的forwardingInvocation方法
+
+3. 在forwardingInvocation中触发一系列的interceptors的执行（包括原始的X的IMP），代码见下图
+4. 后边的interceptor的执行细节也略过了，有兴趣的同学可以到github上看看原始版
+</code></pre>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+
+<h2>AOP案例</h2>
+
+<p>这里举个例子,我们有个方法sumA:andB:, 用来返回ab之和的一个字串,我们在这个方法前和方法后都增加个一段代码</p>
+
+<pre><code>在运行方法前我们把参数改成2和3, 当然这里是演示用,实际用的时候别改参数,不然其他同事真的要骂人了
+在运行方法后我们输出传入的参数和返回值
+</code></pre>
+
+<p>在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>- (void)clickTestAop:(id)sender  
+{  
+    AopTestM *test = [[AopTestM alloc] init];  
+    NSLog(@"run1");  
+    [test sumA:1 andB:2];  
+
+    NSString *before = [XYAOP interceptClass:[AopTestM class] beforeExecutingSelector:@selector(sumA:andB:) usingBlock:^(NSInvocation *invocation) {  
+        int a = 3;  
+        int b = 4;  
+
+        [invocation setArgument:&amp;a atIndex:2];  
+        [invocation setArgument:&amp;b atIndex:3];  
+
+        NSLog(@"berore fun. a = %d, b = %d", a , b);  
+    }];  
+
+    NSString *after =  [XYAOP interceptClass:[AopTestM class] afterExecutingSelector:@selector(sumA:andB:) usingBlock:^(NSInvocation *invocation) {  
+        int a;  
+        int b;  
+        NSString *str;  
+
+        [invocation getArgument:&amp;a atIndex:2];  
+        [invocation getArgument:&amp;b atIndex:3];  
+        [invocation getReturnValue:&amp;str];  
+
+        NSLog(@"after fun. a = %d, b = %d, sum = %@", a , b, str);  
+    }];  
+
+    NSLog(@"run2");  
+    [test sumA:1 andB:2];  
+
+    [XYAOP removeInterceptorWithIdentifier:before];  
+    [XYAOP removeInterceptorWithIdentifier:after];  
+
+    NSLog(@"run3");  
+    [test sumA:1 andB:2];  
+}   
+
+- (NSString *)sumA:(int)a andB:(int)b  
+{  
+    int value = a + b;  
+    NSString *str = [NSString stringWithFormat:@"fun running. sum : %d", value];  
+    NSLog(@"%@", str);  
+
+    return str;  
+}  
+</code></pre>
+
+<p>我们执行这段代码的时候,大伙猜猜结果是啥.结果如下</p>
+
+<pre><code>2014-10-28 22:52:47.215 JoinShow[3751:79389] run1  
+2014-10-28 22:52:52.744 JoinShow[3751:79389] fun running. sum : 3  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] run2  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] berore fun. a = 3, b = 4  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] fun running. sum : 7  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] after fun. a = 3, b = 4, sum = fun running. sum : 7  
+2014-10-28 22:52:52.746 JoinShow[3751:79389] run3  
+2014-10-28 22:52:52.746 JoinShow[3751:79389] fun running. sum : 3  
+</code></pre>
+
+<h2>AOP库</h2>
+
+<p>一个简洁高效的用于使iOS支持AOP面向切面编程的库.它可以帮助你在不改变一个类或类实例的代码的前提下,有效更改类的行为.比iOS传统的 AOP方法,更加简单高效.支持在方法执行的前/后或替代原方法执行.曾经是 PSPDFKit 的一部分,PSPDFKit,在Dropbox和Evernote中都有应用,现在单独单独开源出来给大家使用.</p>
+
+<h4>项目主页: Aspects</h4>
+
+<p>最新实例:<a href="https://github.com/steipete/Aspects/archive/master.zip">点击下载</a></p>
+
+<blockquote><p>注: AOP是一种完全不同于OOP的设计模式.更多信息,可以参考这里: AOP 百度百科</p></blockquote>
+
+<h5>安装使用</h5>
+
+<p>CocoaPods 安装</p>
+
+<pre><code>pod "Aspects"
+</code></pre>
+
+<p>手动安装</p>
+
+<pre><code>把文件 Aspects.h/m 拖到工程中即可.
+</code></pre>
+
+<h5>使用</h5>
+
+<p>Aspects 用于支持AOP(面向切面编程)模式,用于部分解决OOP(面向对象)模式无法解决的特定问题.具体指的是那些在多个方法有交叉,无法或很难被有效归类的操作,比如:</p>
+
+<pre><code>不论何时用户通过客户端获取服务器端数据,权限检查总是必须的.
+不论何时用户和市场交互,总应该更具用户的操作提供相应地购买参考或相关商品.
+所有需要日志记录的操作.
+</code></pre>
+
+<h5>接口概述</h5>
+
+<p>Aspects 给 NSObject 扩展了下面的方法:</p>
+
+<pre><code>/// 为一个指定的类的某个方法执行前/替换/后,添加一段代码块.对这个类的所有对象都会起作用.
+///
+/// @param block  方法被添加钩子时,Aspectes会拷贝方法的签名信息.
+/// 第一个参数将会是 `id&lt;AspectInfo&gt;`,余下的参数是此被调用的方法的参数.
+/// 这些参数是可选的,并将被用于传递给block代码块对应位置的参数.
+/// 你甚至使用一个没有任何参数或只有一个`id&lt;AspectInfo&gt;`参数的block代码块.
+///
+/// @注意 不支持给静态方法添加钩子.
+/// @return 返回一个唯一值,用于取消此钩子.
++ (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector
+                      withOptions:(AspectOptions)options
+                       usingBlock:(id)block
+                            error:(NSError **)error;
+
+/// 为一个指定的对象的某个方法执行前/替换/后,添加一段代码块.只作用于当前对象.
+ - (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector withOptions:(AspectOptions)options usingBlock:(id)block error:(NSError **)error; - (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector withOptions:(AspectOptions)options usingBlock:(id)block error:(NSError **)error; 
+/// 撤销一个Aspect 钩子.
+/// @return YES 撤销成功, 否则返回 NO. 
+id&lt;AspectToken&gt; aspect = ...; 
+[aspect remove];
+</code></pre>
+
+<p>所有的调用,都会是线程安全的.Aspects 使用了Objective-C 的消息转发机会,会有一定的性能消耗.所有对于过于频繁的调用,不建议使用 Aspects.Aspects更适用于视图/控制器相关的等每秒调用不超过1000次的代码.</p>
+
+<p>可以在调试应用时,使用Aspects动态添加日志记录功能.</p>
+
+<pre><code>[UIViewController aspect_hookSelector:@selector(viewWillAppear:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo, BOOL animated) {
+    NSLog(@"控制器 %@ 将要显示: %tu", aspectInfo.instance, animated);
+} error:NULL];
+</code></pre>
+
+<p>使用它,分析功能的设置会很简单:</p>
+
+<pre><code>https://github.com/orta/ARAnalytics
+</code></pre>
+
+<p>你可以在你的测试用例中用它来检查某个方法是否被真正调用(当涉及到继承或类目扩展时,很容易发生某个父类/子类方法未按预期调用的情况):</p>
+
+<pre><code>- (void)testExample {
+    TestClass *testClass = [TestClass new];
+    TestClass *testClass2 = [TestClass new];
+
+    __block BOOL testCallCalled = NO;
+    [testClass aspect_hookSelector:@selector(testCall) withOptions:AspectPositionAfter usingBlock:^{
+        testCallCalled = YES;
+    } error:NULL];
+
+    [testClass2 testCallAndExecuteBlock:^{
+        [testClass testCall];
+    } error:NULL];
+    XCTAssertTrue(testCallCalled, @"调用testCallAndExecuteBlock 必须调用 testCall");
+}
+</code></pre>
+
+<p>它对调试应用真的会提供很大的作用.这里我想要知道究竟何时轻击手势的状态发生变化(如果是某个你自定义的手势的子类,你可以重写setState:方法来达到类似的效果;但这里的真正目的是,捕捉所有的各类控件的轻击手势,以准确分析原因):</p>
+
+<pre><code>[_singleTapGesture aspect_hookSelector:@selector(setState:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo) {
+    NSLog(@"%@: %@", aspectInfo.instance, aspectInfo.arguments);
+} error:NULL];
+</code></pre>
+
+<p>下面是一个你监测一个模态显示的控制器何时消失的示例.通常,你也可以写一个子类,来实现相似的效果,但使用 Aspects 可以有效减小你的代码量:</p>
+
+<pre><code>@implementation UIViewController (DismissActionHook)
+
+// Will add a dismiss action once the controller gets dismissed.
+- (void)pspdf_addWillDismissAction:(void (^)(void))action {
+    PSPDFAssert(action != NULL);
+
+    [self aspect_hookSelector:@selector(viewWillDisappear:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo) {
+        if ([aspectInfo.instance isBeingDismissed]) {
+            action();
+        }
+    } error:NULL];
+}
+
+@end
+</code></pre>
+
+<h5>对调试的好处</h5>
+
+<p>Aspectes 会自动标记自己,所有很容易在调用栈中查看某个方法是否已经调用:</p>
+
+<p>在返回值不为void的方法上使用 Aspects</p>
+
+<p>你可以使用 NSInvocation 对象类自定义返回值:</p>
+
+<pre><code>[PSPDFDrawView aspect_hookSelector:@selector(shouldProcessTouches:withEvent:) withOptions:AspectPositionInstead usingBlock:^(id&lt;AspectInfo&gt; info, NSSet *touches, UIEvent *event) {
+    // 调用方法原来的实现.
+    BOOL processTouches;
+    NSInvocation *invocation = info.originalInvocation;
+    [invocation invoke];
+    [invocation getReturnValue:&amp;processTouches];
+
+    if (processTouches) {
+        processTouches = pspdf_stylusShouldProcessTouches(touches, event);
+        [invocation setReturnValue:&amp;processTouches];
+    }
+} error:NULL];
+</code></pre>
+
+<h5>兼容性与限制</h5>
+
+<p>当应用于某个类时(使用类方法添加钩子),不能同时hook父类和子类的同一个方法;否则会引起循环调用问题.但是,当应用于某个类的示例时(使用实例方法添加钩子),不受此限制.
+使用KVO时,最好在 aspect_hookSelector: 调用之后添加观察者;否则可能会引起崩溃.</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T11:45:17+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:45 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/" title="Previous Post: iOS大神之路——应有尽有">&laquo; iOS大神之路——应有尽有</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="iOS装逼篇——APO编程"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian/">iOS大神之路——精华篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">玩转iOS10+Xcode8适配</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/26/zui-xin-shu-dan/">最新书单</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

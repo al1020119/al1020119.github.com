@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="底层开发之越狱开发第二篇 今天项目中要用到检查iPhone是否越狱的方法。 Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用 ">
+  <meta name="description" content="知识点准备 越狱的三点 第一点——越狱开放了iOS的文件系统，使得用户一下子获得了root权限，获得了整个iOS系统的掌控大权。越狱之后用iFunBox等工具可以可简单地看到iOS的整个文件系统，因此也可以修改系统UI、铃声，或者当U盘用。同样的，越狱之后安装的一些程序，也同样突破了沙盒的限制， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,52 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/05/jiandanhuanjinjieshao/">简单环境介</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-05T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/03/05/jiandanhuanjinjieshao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>知识点准备</h3>
+
+<h6>越狱的三点</h6>
+
+<ul>
+<li><p>第一点——越狱开放了iOS的文件系统，使得用户一下子获得了root权限，获得了整个iOS系统的掌控大权。越狱之后用iFunBox等工具可以可简单地看到iOS的整个文件系统，因此也可以修改系统UI、铃声，或者当U盘用。同样的，越狱之后安装的一些程序，也同样突破了沙盒的限制，甚至获得root权限，程序的行为可以不受用户和系统的限制。权利和责任的对等的，获得了root权限的用户就必须对这个系统对安全和完整性负责。可惜的是很多人越狱了，但又抱怨iPhone出现的耗电、卡机、白苹果等等现象。目测很多Android和越狱用户，确实没这个能力去负起这个责任。</p></li>
+<li><p>第二点——cydia。基本所有人都把它当作越狱的显性标志。cydia表面上看来就是一个AppStore，实际上利用了另外一套软件管理系统——“Debian Package ”，也就是常说的dpkg，使用的安装包是deb，在Ubuntn上很是常见。deb的安装和卸载依靠的是一套完整的脚本，用control作为软件的标识信息，数据用tar压缩。另外，cydia还有软件源这个机制，由于我没搭过源服务器，完全不懂其中原理。</p></li>
+<li><p>第三点——MobileSubstrate。这是越狱必装插件，也是tweak开发的前提。那些让iPhone能拦截黑名单电话的，或者让时间能显示年月日的，或者在状态栏添加个天气图标的程序，基本都依赖与此。</p></li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/05/jiandanhuanjinjieshao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -587,49 +633,6 @@ github：https://github.com/al1020119
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/21/keyChain/">Keychain介绍与使用</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-21T10:05:08+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>10:05 am</span></time>
-        
-        
-        |   <a href="/blog/2016/01/21/keyChain/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>介绍</h3>
-
-<p>引言：</p>
-
-<blockquote><p>Mac OS可以利用KeyChain保存各应用中用户的账号密码，让用户不用重复输入。其实在iOS中也有KeyChain，也可以用KeyChain在应用间共享数据，只是有一些限制，无法像Mac OS一样开放，也无法让用户手动控制。那么KeyChain到底如何使用呢？</p></blockquote>
-
-<p>我们可以把KeyChain理解为一个Dictionary，所有数据都以key-value的形式存储，可以对这个Dictionary进行add、update、get、delete这四个操作。对于每一个应用来说，KeyChain都有两个访问区，私有区和公共区。私有区是一个sandbox，本程序存储的任何数据都对其他程序不可见。而要想在将存储的内容放在公共区，需要先声明公共区的名称，官方文档管这个名称叫“keychain access group”</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/21/keyChain/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/9">&larr; Older</a>
@@ -677,6 +680,10 @@ github：https://github.com/al1020119
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
       </li>
     
@@ -690,10 +697,6 @@ github：https://github.com/al1020119
     
       <li class="post">
         <a href="/blog/2016/09/26/zui-xin-shu-dan/">最新书单</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/26/zhi-bo-mei-yan-pian/">直播-美颜篇</a>
       </li>
     
   </ul>

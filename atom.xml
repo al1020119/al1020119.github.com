@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-10-13T18:42:45+08:00</updated>
+  <updated>2016-10-14T11:47:02+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,462 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS装逼篇——APO编程]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/"/>
+    <updated>2016-10-14T11:45:17+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng</id>
+    <content type="html"><![CDATA[<h4>实现原理</h4>
+
+<ul>
+<li>用Objective-C强大的runtime.</li>
+</ul>
+
+
+<p>我们知道当给一个对象发送一个方法的时候, 如果当前类和父类都没实现该方法的时候就会走转发流程</p>
+
+<pre><code>动态方法解析 -&gt; 快速消息转发 -&gt; 标准消息转发
+</code></pre>
+
+<!--more-->
+
+
+<h2>准备知识</h2>
+
+<h3>准备知识一：Method,SEL,IMP概念</h3>
+
+<h6>SEL</h6>
+
+<pre><code> 先看一下SEL的概念，Objective-C在编译时，会依据每一个方法的名字、参数序列，生成一个唯一的整型标识(Int类型的地址)，这个标识就是SEL。
+
+ SEL也是@selector的类型，用来表示OC运行时的方法的名字。来看一下OC中的定义
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosapo001.png" title="Caption" ></p>
+
+<pre><code>  本质上，SEL只是一个指向方法的指针（准确的说，只是一个根据方法名hash化了的KEY值，能唯一代表一个方法），它的存在只是为了加快方法的查询速度。这个查找过程我们将在下面说明。
+  我们可以在运行时添加新的selector，也可以在运行时获取已存在的selector。
+</code></pre>
+
+<h6>IMP</h6>
+
+<pre><code>  实际上是一个函数指针，指向方法实现的首地址，定义如下：
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosapo002.png" title="Caption" ></p>
+
+<h6>关于IMP的几点说明：</h6>
+
+<p>使用当前CPU架构实现的标准的C调用约定</p>
+
+<pre><code>第一个参数是指向self的指针（如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针）
+第二个参数是方法选择器(selector)，
+第三个参数开始是方法的实际参数列表。
+</code></pre>
+
+<p>通过取得IMP，我们可以跳过Runtime的消息传递机制，直接执行IMP指向的函数实现，这样省去了Runtime消息传递过程中所做的一系列查找操作，会比直接向对象发送消息高效一些，当然必须说明的是，这种方式只适用于极特殊的优化场景，如效率敏感的场景下大量循环的调用某方法。</p>
+
+<h6>Method</h6>
+
+<pre><code>  直接上定义：
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosapo003.png" title="Caption" ></p>
+
+<pre><code>  Method = SEL + IMP + method_types，相当于在SEL和IMP之间建立了一个映射
+</code></pre>
+
+<p>相关方法：</p>
+
+<pre><code>// 给 cls 添加一个新方法  
+BOOL class_addMethod (  
+   Class cls,  
+   SEL name,  
+   IMP imp,  
+   const charchar *types  
+);  
+
+// 替换 cls 里的一个方法的实现  
+IMP class_replaceMethod (  
+   Class cls,  
+   SEL name,  
+   IMP imp,  
+   const charchar *types  
+);  
+
+// 返回 cls 的指定方法  
+Method class_getInstanceMethod (  
+   Class cls,  
+   SEL name  
+);  
+
+// 设置一个方法的实现  
+IMP method_setImplementation (  
+   Method m,  
+   IMP imp  
+);  
+
+// 返回 cls 里的 name 方法的实现  
+IMP class_getMethodImplementation (  
+   Class cls,  
+   SEL name  
+);  
+</code></pre>
+
+<h3>准备知识二：iOS方法调用流程</h3>
+
+<h6>方法调用的核心是objc_msgSend方法：</h6>
+
+<pre><code>         objc_msgSend(receiver, selector, arg1,arg2,…)
+</code></pre>
+
+<p>具体的过程如下：</p>
+
+<pre><code>        先找到selector 对应的方法实现(IMP)，因为同一个方法可能在不同的类中有不同的实现，所以需要receiver的类来找到确切的IMP
+
+        IMP class_getMethodImplementation(Class class, SEL selector)
+</code></pre>
+
+<p>如同其文档所说：</p>
+
+<pre><code>The function pointer returned may be a function internal to the runtime instead of an actual method implementation. For example, if instances of the class do not respond to the selector, the function pointer returned will be part of the runtime's message forwarding machinery.
+</code></pre>
+
+<p>具体来说，当找不到IMP的时候，方法返回一个 _objc_msgForward 对象，用来标记需要转入消息转发流程，我们现在用的AOP框架也是利用了这个机制来人为的制造找不到IMP的假象来触发消息转发的流程</p>
+
+<p><img src="http://al1020119.github.io/images/iosapo004.png" title="Caption" ></p>
+
+<pre><code>    如果实在对_objc_msgFroward的内部实现感兴趣，只能看看源码了，只不过都是汇编实现的....感兴趣的同学可以想想为什么是用汇编来实现
+    这里有个源码的镜像https://github.com/opensource-apple ，如果翻墙费劲的话
+</code></pre>
+
+<p>根据查找结果</p>
+
+<pre><code>    找到了IMP，调用找到的IMP，传入参数
+    没找到IMP，转入消息转发流程
+    将IMP的返回值作为自己的返回值
+</code></pre>
+
+<p>补充说明一下IMP的查找过程，消息传递的关键在于objc_class结构体中的以下几个东西：</p>
+
+<pre><code>Class *isa
+Class *super_class
+objc_method_list **methodLists
+objc_cache *cache
+</code></pre>
+
+<p>当消息发送给一个对象时，objc_msgSend通过对象的isa获取到类的结构体，然后在cache和methodLists中查找，如果没找到就找其父类，以此类推知道找到NSObject类，如果还没找到，就走消息转发流程。</p>
+
+<h3>准备知识三：iOS方法转发流程</h3>
+
+<pre><code>  从上文中我们看到当obj无法查找到 IMP时，会返回一个特定的IMP _objc_msgForward , 然后会进入消息转发流程，具体流程如下：
+</code></pre>
+
+<h6>动态方法解析</h6>
+
+<pre><code>    resolveInstanceMethod:解析实例方法 
+    resolveClassMethod:解析类方法
+</code></pre>
+
+<p>通过class_addMethod的方式将缺少的selector动态创建出来，前提是有提前实现好的IMP（method_types一致）</p>
+
+<pre><code>    这种方案更多的是位@dynamic属性准备的
+</code></pre>
+
+<h6>备用接受者（AOP中有使用）</h6>
+
+<p>如果上一步没有处理，runtime会调用以下方法</p>
+
+<pre><code>        -(id)forwardingTargetForSelector:(SEL)aSelector
+</code></pre>
+
+<p>如果该方法返回非nil的对象，则使用该对象作为新的消息接收者，不能返回self，会出现无限循环</p>
+
+<p>如果不知道该返回什么，应该使用[super forwardingTargetForSelector:aSelector]</p>
+
+<p>这种方法属于单纯的转发，无法对消息的参数和返回值进行处理</p>
+
+<h6>完整转发（AOP中有使用）</h6>
+
+<pre><code>    - (void)forwardInvocation:(NSInvocation *)anInvocation
+</code></pre>
+
+<p>对象需要创建一个NSInvocation对象，把消息调用的全部细节封装进去，包括selector, target, arguments 等参数，还能够对返回结果进行处理
+为了使用完整转发，需要重写以下方法</p>
+
+<pre><code>        -(NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector，如果2中return nil,执行methodSignatureForSelector：
+</code></pre>
+
+<p>因为消息转发机制为了创建NSInvocation需要使用这个方法吗获取信息，重写它为了提供合适的方法签名</p>
+
+<h2>AOP核心逻辑解析</h2>
+
+<pre><code>    到了有意思的戏肉部分，打算用流程图的方式解析一下核心的两个流程：拦截器(intercepter)注册流程和拦截器(intercepter)执行流程。
+</code></pre>
+
+<h4>拦截器(intercepter)注册流程</h4>
+
+<p><img src="http://al1020119.github.io/images/iosapo005.png" title="Caption" ></p>
+
+<p>说明：（图中m:代表Method，ClassA是AOP的目标类，X是AOP的目标方法，AOPAspect是AOP处理类-单例）</p>
+
+<pre><code>1. 将原始的X的IMP拿出来，以特定的命名规则动态加入AOPAspect
+2. 将X的IMP替换为_objc_msgForward，用这种比较tricky的方式来触发消息转发流程
+3. 将ClassA中原有的forwardingTargetForSelector:的IMP以特定的命名规则存入AOPAspect
+4. 将ClassA的forwardingTargetForSelector：的IMP用AOPApect中的baseClassForwardingTargetForSelector替换，其中的具体逻辑见下面的代码
+
+后边的就是将拦截器的信息和block存入到AOPAspect中，细节就不讲了，有兴趣的同学可以到github上看看原始版
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosapo006.png" title="Caption" ></p>
+
+<h4>拦截器(intercepter)执行流程</h4>
+
+<p><img src="http://al1020119.github.io/images/iosapo007.png" title="Caption" ></p>
+
+<p>说明：（图中m:代表Method，ClassA是AOP的目标类，X是AOP的目标方法，AOPAspect是AOP处理类-单例,IMP是方法对应的实现）</p>
+
+<p>开始调用，objc_msgSend开始查找SEL为X的IMP，查到结果为_objc_msgForward，触发ClassA的转发流程</p>
+
+<pre><code>1. ClassA中转发流程调用forwardingTargetForSelector:，实际会调用替换上去的baseClassForwardingTargetForSelector:的IMP，这个IMP正常情况下会返回AOPAspect的单例作为target（代码见上文图）
+2. 接下来开始在AOPAspect的单例中执行转发流程，经过一系列的3.1-3.5的跳转查找，最终会触发转发流程的forwardingInvocation方法
+
+3. 在forwardingInvocation中触发一系列的interceptors的执行（包括原始的X的IMP），代码见下图
+4. 后边的interceptor的执行细节也略过了，有兴趣的同学可以到github上看看原始版
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+
+<h2>AOP案例</h2>
+
+<p>这里举个例子,我们有个方法sumA:andB:, 用来返回ab之和的一个字串,我们在这个方法前和方法后都增加个一段代码</p>
+
+<pre><code>在运行方法前我们把参数改成2和3, 当然这里是演示用,实际用的时候别改参数,不然其他同事真的要骂人了
+在运行方法后我们输出传入的参数和返回值
+</code></pre>
+
+<p>在CODE上查看代码片派生到我的代码片</p>
+
+<pre><code>- (void)clickTestAop:(id)sender  
+{  
+    AopTestM *test = [[AopTestM alloc] init];  
+    NSLog(@"run1");  
+    [test sumA:1 andB:2];  
+
+    NSString *before = [XYAOP interceptClass:[AopTestM class] beforeExecutingSelector:@selector(sumA:andB:) usingBlock:^(NSInvocation *invocation) {  
+        int a = 3;  
+        int b = 4;  
+
+        [invocation setArgument:&amp;a atIndex:2];  
+        [invocation setArgument:&amp;b atIndex:3];  
+
+        NSLog(@"berore fun. a = %d, b = %d", a , b);  
+    }];  
+
+    NSString *after =  [XYAOP interceptClass:[AopTestM class] afterExecutingSelector:@selector(sumA:andB:) usingBlock:^(NSInvocation *invocation) {  
+        int a;  
+        int b;  
+        NSString *str;  
+
+        [invocation getArgument:&amp;a atIndex:2];  
+        [invocation getArgument:&amp;b atIndex:3];  
+        [invocation getReturnValue:&amp;str];  
+
+        NSLog(@"after fun. a = %d, b = %d, sum = %@", a , b, str);  
+    }];  
+
+    NSLog(@"run2");  
+    [test sumA:1 andB:2];  
+
+    [XYAOP removeInterceptorWithIdentifier:before];  
+    [XYAOP removeInterceptorWithIdentifier:after];  
+
+    NSLog(@"run3");  
+    [test sumA:1 andB:2];  
+}   
+
+- (NSString *)sumA:(int)a andB:(int)b  
+{  
+    int value = a + b;  
+    NSString *str = [NSString stringWithFormat:@"fun running. sum : %d", value];  
+    NSLog(@"%@", str);  
+
+    return str;  
+}  
+</code></pre>
+
+<p>我们执行这段代码的时候,大伙猜猜结果是啥.结果如下</p>
+
+<pre><code>2014-10-28 22:52:47.215 JoinShow[3751:79389] run1  
+2014-10-28 22:52:52.744 JoinShow[3751:79389] fun running. sum : 3  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] run2  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] berore fun. a = 3, b = 4  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] fun running. sum : 7  
+2014-10-28 22:52:52.745 JoinShow[3751:79389] after fun. a = 3, b = 4, sum = fun running. sum : 7  
+2014-10-28 22:52:52.746 JoinShow[3751:79389] run3  
+2014-10-28 22:52:52.746 JoinShow[3751:79389] fun running. sum : 3  
+</code></pre>
+
+<h2>AOP库</h2>
+
+<p>一个简洁高效的用于使iOS支持AOP面向切面编程的库.它可以帮助你在不改变一个类或类实例的代码的前提下,有效更改类的行为.比iOS传统的 AOP方法,更加简单高效.支持在方法执行的前/后或替代原方法执行.曾经是 PSPDFKit 的一部分,PSPDFKit,在Dropbox和Evernote中都有应用,现在单独单独开源出来给大家使用.</p>
+
+<h4>项目主页: Aspects</h4>
+
+<p>最新实例:<a href="https://github.com/steipete/Aspects/archive/master.zip">点击下载</a></p>
+
+<blockquote><p>注: AOP是一种完全不同于OOP的设计模式.更多信息,可以参考这里: AOP 百度百科</p></blockquote>
+
+<h5>安装使用</h5>
+
+<p>CocoaPods 安装</p>
+
+<pre><code>pod "Aspects"
+</code></pre>
+
+<p>手动安装</p>
+
+<pre><code>把文件 Aspects.h/m 拖到工程中即可.
+</code></pre>
+
+<h5>使用</h5>
+
+<p>Aspects 用于支持AOP(面向切面编程)模式,用于部分解决OOP(面向对象)模式无法解决的特定问题.具体指的是那些在多个方法有交叉,无法或很难被有效归类的操作,比如:</p>
+
+<pre><code>不论何时用户通过客户端获取服务器端数据,权限检查总是必须的.
+不论何时用户和市场交互,总应该更具用户的操作提供相应地购买参考或相关商品.
+所有需要日志记录的操作.
+</code></pre>
+
+<h5>接口概述</h5>
+
+<p>Aspects 给 NSObject 扩展了下面的方法:</p>
+
+<pre><code>/// 为一个指定的类的某个方法执行前/替换/后,添加一段代码块.对这个类的所有对象都会起作用.
+///
+/// @param block  方法被添加钩子时,Aspectes会拷贝方法的签名信息.
+/// 第一个参数将会是 `id&lt;AspectInfo&gt;`,余下的参数是此被调用的方法的参数.
+/// 这些参数是可选的,并将被用于传递给block代码块对应位置的参数.
+/// 你甚至使用一个没有任何参数或只有一个`id&lt;AspectInfo&gt;`参数的block代码块.
+///
+/// @注意 不支持给静态方法添加钩子.
+/// @return 返回一个唯一值,用于取消此钩子.
++ (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector
+                      withOptions:(AspectOptions)options
+                       usingBlock:(id)block
+                            error:(NSError **)error;
+
+/// 为一个指定的对象的某个方法执行前/替换/后,添加一段代码块.只作用于当前对象.
+ - (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector withOptions:(AspectOptions)options usingBlock:(id)block error:(NSError **)error; - (id&lt;AspectToken&gt;)aspect_hookSelector:(SEL)selector withOptions:(AspectOptions)options usingBlock:(id)block error:(NSError **)error; 
+/// 撤销一个Aspect 钩子.
+/// @return YES 撤销成功, 否则返回 NO. 
+id&lt;AspectToken&gt; aspect = ...; 
+[aspect remove];
+</code></pre>
+
+<p>所有的调用,都会是线程安全的.Aspects 使用了Objective-C 的消息转发机会,会有一定的性能消耗.所有对于过于频繁的调用,不建议使用 Aspects.Aspects更适用于视图/控制器相关的等每秒调用不超过1000次的代码.</p>
+
+<p>可以在调试应用时,使用Aspects动态添加日志记录功能.</p>
+
+<pre><code>[UIViewController aspect_hookSelector:@selector(viewWillAppear:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo, BOOL animated) {
+    NSLog(@"控制器 %@ 将要显示: %tu", aspectInfo.instance, animated);
+} error:NULL];
+</code></pre>
+
+<p>使用它,分析功能的设置会很简单:</p>
+
+<pre><code>https://github.com/orta/ARAnalytics
+</code></pre>
+
+<p>你可以在你的测试用例中用它来检查某个方法是否被真正调用(当涉及到继承或类目扩展时,很容易发生某个父类/子类方法未按预期调用的情况):</p>
+
+<pre><code>- (void)testExample {
+    TestClass *testClass = [TestClass new];
+    TestClass *testClass2 = [TestClass new];
+
+    __block BOOL testCallCalled = NO;
+    [testClass aspect_hookSelector:@selector(testCall) withOptions:AspectPositionAfter usingBlock:^{
+        testCallCalled = YES;
+    } error:NULL];
+
+    [testClass2 testCallAndExecuteBlock:^{
+        [testClass testCall];
+    } error:NULL];
+    XCTAssertTrue(testCallCalled, @"调用testCallAndExecuteBlock 必须调用 testCall");
+}
+</code></pre>
+
+<p>它对调试应用真的会提供很大的作用.这里我想要知道究竟何时轻击手势的状态发生变化(如果是某个你自定义的手势的子类,你可以重写setState:方法来达到类似的效果;但这里的真正目的是,捕捉所有的各类控件的轻击手势,以准确分析原因):</p>
+
+<pre><code>[_singleTapGesture aspect_hookSelector:@selector(setState:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo) {
+    NSLog(@"%@: %@", aspectInfo.instance, aspectInfo.arguments);
+} error:NULL];
+</code></pre>
+
+<p>下面是一个你监测一个模态显示的控制器何时消失的示例.通常,你也可以写一个子类,来实现相似的效果,但使用 Aspects 可以有效减小你的代码量:</p>
+
+<pre><code>@implementation UIViewController (DismissActionHook)
+
+// Will add a dismiss action once the controller gets dismissed.
+- (void)pspdf_addWillDismissAction:(void (^)(void))action {
+    PSPDFAssert(action != NULL);
+
+    [self aspect_hookSelector:@selector(viewWillDisappear:) withOptions:AspectPositionAfter usingBlock:^(id&lt;AspectInfo&gt; aspectInfo) {
+        if ([aspectInfo.instance isBeingDismissed]) {
+            action();
+        }
+    } error:NULL];
+}
+
+@end
+</code></pre>
+
+<h5>对调试的好处</h5>
+
+<p>Aspectes 会自动标记自己,所有很容易在调用栈中查看某个方法是否已经调用:</p>
+
+<p>在返回值不为void的方法上使用 Aspects</p>
+
+<p>你可以使用 NSInvocation 对象类自定义返回值:</p>
+
+<pre><code>[PSPDFDrawView aspect_hookSelector:@selector(shouldProcessTouches:withEvent:) withOptions:AspectPositionInstead usingBlock:^(id&lt;AspectInfo&gt; info, NSSet *touches, UIEvent *event) {
+    // 调用方法原来的实现.
+    BOOL processTouches;
+    NSInvocation *invocation = info.originalInvocation;
+    [invocation invoke];
+    [invocation getReturnValue:&amp;processTouches];
+
+    if (processTouches) {
+        processTouches = pspdf_stylusShouldProcessTouches(touches, event);
+        [invocation setReturnValue:&amp;processTouches];
+    }
+} error:NULL];
+</code></pre>
+
+<h5>兼容性与限制</h5>
+
+<p>当应用于某个类时(使用类方法添加钩子),不能同时hook父类和子类的同一个方法;否则会引起循环调用问题.但是,当应用于某个类的示例时(使用实例方法添加钩子),不受此限制.
+使用KVO时,最好在 aspect_hookSelector: 调用之后添加观察者;否则可能会引起崩溃.</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS大神之路——应有尽有]]></title>
@@ -1417,7 +1873,7 @@ github：https://github.com/al1020119
     <link href="http://al1020119.github.io/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian/"/>
     <updated>2016-10-13T18:38:38+08:00</updated>
     <id>http://al1020119.github.io/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian</id>
-    <content type="html"><![CDATA[<h1>LearningIOS</h1>
+    <content type="html"><![CDATA[<h1>iCocos</h1>
 
 <p>iOS初学者面对网上浩瀚的资料往往不知所措，为了让iOS初学者们少走弯路，少花时间在搜索资料上，个人为iOS初学者整理了一份学习资料。希望能帮助到大家。</p>
 
@@ -7361,777 +7817,6 @@ int main(){
 
 }  
 </code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[修行篇-23种设计模式]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/23/xiu-xing-pian-23chong-she-ji-mo-shi/"/>
-    <updated>2016-08-23T12:32:39+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/23/xiu-xing-pian-23chong-she-ji-mo-shi</id>
-    <content type="html"><![CDATA[<h2>设计模式</h2>
-
-<p>总体来说设计模式分为三大类：</p>
-
-<ul>
-<li><p>创建型模式，共五种：工厂方法模式、抽象工厂模式、单例模式、建造者模式、原型模式。</p></li>
-<li><p>结构型模式，共七种：适配器模式、装饰器模式、代理模式、外观模式、桥接模式、组合模式、享元模式。</p></li>
-<li><p>行为型模式，共十一种：策略模式、模板方法模式、观察者模式、迭代子模式、责任链模式、命令模式、备忘录模式、状态模式、访问者模式、中介者模式、解释器模式。</p>
-
-<ul>
-<li>其实还有两类：并发型模式和线程池模式。</li>
-</ul>
-</li>
-</ul>
-
-
-<!--more-->
-
-
-<h2>创建型模式</h2>
-
-<h3>工厂方法模式</h3>
-
-<p>简单工厂模式的最大优点在于工厂类中包含了必要的逻辑判断，根据客户端输入的选择条件动态的实例化相关的类，对于客户端来说，去除了与具体产品的依赖。</p>
-
-<p>但是简单工厂方法违背了开放——封闭模式。</p>
-
-<h6>1、思想</h6>
-
-<pre><code>工厂方法模式：定义一个用于创建对象的接口，让子类决定实例化哪一个类。工厂方法使一个类的实例化延迟到其子类。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 核心工厂类不再负责所有产品的创建，而是将具体创建的工作交给了子类去做，成为一个抽象工厂角色，仅仅负责具体工厂类必须实现的接口，而不接触哪一个产品类应当被实例化的细节。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：修正了简单工厂模式中不遵守开放－封闭原则。工厂方法模式把选择判断移到了客户端去实现，如果想添加新功能就不用修改原来的类，直接修改客户端即可，从而保持了封装对象创建过程的优点。使得更换对象时，不需要做大的改动就可以实现，降低了客户程序与产品对象的耦合。</p>
-
-<p>BAD：每增加一个产品，就需要增加一个产品工厂类，即增加了额外的开发量</p>
-
-<h3>抽象工厂模式</h3>
-
-<h6>一、思想</h6>
-
-<pre><code> 定义一个用于创建对象的接口，让子类决定实例化哪一个类。Factory使一个类的实例化延迟到其子类。（四人团）
-
-实际上： 工厂模式主要就是用于创建对象。新添加类时，不会影响以前的系统代码。
-</code></pre>
-
-<h6>二、基本思想</h6>
-
-<p>   核心思想：是用一个工厂来根据输入的条件产生不同的类，然后根据不同类的virtual函数得到不同的结果。</p>
-
-<pre><code> 客户类和工厂类分开，消费者任何时候需要某种产品类对象，只需要向工厂类（有静态成员函数接收）提交参数和请求即可。消费者无需修改（直接用所有产品共同的父类指针指向）就可以接纳和使用新产品类的对象。
-</code></pre>
-
-<h6>三、优缺点分析</h6>
-
-<p>GOOD: 适用于不同情况创建不同的类时</p>
-
-<p>BAD：  客户端必须要知道基类和工厂类，耦合性差，而且当产品修改时，工厂类也要做相应修改（如：如何创建及如何向客户端提供）</p>
-
-<h3>单例模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>保证一个类仅有一个实例，并提供一个访问它的全局访问点
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<p>确保某个类只有一个实例（类的静态成员变量），而且自行实例化并向整个系统提供这个实例单例模式。</p>
-
-<p>直接将类的构造方法改成私有的（所有类都有构造方法，不编码则系统默认生成空的构造方法，若有显示定义的构造方法，默认的构造方法就会失效），然后在一个public的实例化函数中调用私有构造函数，完成仅有的一次实例化。</p>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD:单例模式只应在有真正的“单一实例”的需求时才可使用。</p>
-
-<p>单例模式因为Singleton类封装它的唯一实例，这样它可以严格地控制客户怎样访问它以及何时访问它，简单的说就是对唯一实例的受控访问。</p>
-
-<h3>建造者模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>建造者模式：将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 将产品的内部表象和产品的生成过程分割开来，从而使一个建造过程生成具有不同的内部表象的产品对象。建造模式使得产品内部表象可以独立的变化，客户不必知道产品内部组成的细节。
-</code></pre>
-
-<p>即用户就只需要指定需要建造的类型就可以得到产品，而具体的建造过程和细节就不需要知道了。</p>
-
-<p>建造模式可以强制实行一种分步骤进行的建造过程。</p>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：使得建造代码与表示代码分离，由于建造者隐藏了该产品是如何组装的，所以若需要改变一个产品的内部表示，只需要再定义一个具体的建造者就可以了。</p>
-
-<h6>适用于：</h6>
-
-<p>（1）在当创建复杂对象的算法应该独立于该对象的组成部分以及它们的装配方式时适用。</p>
-
-<p>就是说：主要用于创建一些复杂的对象，这些对象内部的构建顺序通常是稳定的，但是对象内部的具体各个构建方法通常面临着复杂的变化。</p>
-
-<p>（2）当构造过程必须允许被构造的对象有不同的表示时。</p>
-
-<h3>原型模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>原型模式：用原型实例指定创建对象的种类，并且通过拷贝这些原型创建新的对象。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 通过给出一个原型对象来指明所要创建的对象的类型，然后用复制这个原型对象的方法创建出更多同类型的对象。原型模式允许动态的增加或减少产品类，产品类不需要非得有任何事先确定的等级结构。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<p>从一个对象再创建另外一个可定制的对象，而无需知道任何创建的细节。并能提高创建的性能。 说白了就COPY技术，把一个对象完整的COPY出一份。</p>
-
-<p>一般在初始化的信息不发生变化的情况下，克隆是最好的办法。这既隐藏了对象创建的细节，又对性能是大大的提高。
-BAD：</p>
-
-<p>缺点是每一个类都必须配备一个复制方法。
-必须注意：</p>
-
-<p>浅复制和深复制的问题：如果字段是基本数据类型的，则用拷贝构造函数即可进行逐位复制，但如果字段是指针或引用类型的，则复制就不仅仅要复制指针和引用本身，还需要对其所指的实际数据对象进行复制。</p>
-
-<h2>结构型模式</h2>
-
-<h3>适配器模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>把一个类的接口变换成客户端所期待的另一种接口，从而使原本因接口不兼容而无法一起工作的两个类能够一起工作。
-</code></pre>
-
-<h6>2、优缺点分析</h6>
-
-<p>适用情况：当系统的数据和行为都正确，但接口不符时，我们应该考虑使用适配器，目的是使控制范围之外的一个原有对象与某个接口匹配。适配器模式主要应用于希望复用一些现存的类，但是接口又与复用环境要求不一致的情况。
-装饰器模式</p>
-
-<h3>装饰模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>装饰模式：动态的给一个对象添加一些额外的职责（不重要的功能，只是偶然一次要执行）。就增加功能来说，Decorator模式比使用继承生成子类更为灵活。
-
- 建造过程不稳定，需要把所需的功能按正确的顺序串联起来进行控制。
-</code></pre>
-
-<h6>2、优缺点分析</h6>
-
-<p>GOOD:当你向旧的类中添加新代码时，一般是为了添加核心职责或主要行为。而当需要加入的仅仅是一些特定情况下才会执行的特定的功能时（简单点就是不是核心应用的功能），就会增加类的复杂度。</p>
-
-<pre><code>装饰模式就是把要添加的附加功能分别放在单独的类中，并让这个类包含它要装饰的对象，
-
-当需要执行时，客户端就可以有选择地、按顺序地使用装饰功能包装对象。
-</code></pre>
-
-<h3>代理模式</h3>
-
-<h6>一、思想</h6>
-
-<pre><code>代理模式：为其他对象提供一种代理以控制对这个对象的访问
-</code></pre>
-
-<h6>二、基本思想</h6>
-
-<pre><code> 代理模式实际就是在访问对象时引入一定程度的间接性，因为这种间接性，可以附加多种用途。
-</code></pre>
-
-<h6>三、优缺点分析</h6>
-
-<p>GOOD：（适用场合）</p>
-
-<p>远程代理：也就是为一个对象在不同的地址空间提供局部代表，这样可以隐藏一个对象在不同地址空间的事实。</p>
-
-<pre><code>              例如：客户端程序调用代理就可以解决远程访问的问题
-</code></pre>
-
-<p>虚拟代理：是根据需要创建开销很大的对象，通过代理来存放实例化需要很长时间的真实对象，从而达到性能的最优化（例如浏览器使用代理模式来优化下载）。</p>
-
-<pre><code>              例如：打开大网页时，未马上打开的图片就是通过虚拟代理来替代了真实的图片，而代理存储了真实图片的路径和尺寸。
-</code></pre>
-
-<p>安全代理：用来控制真实对象的访问权限</p>
-
-<p>智能引用：当调用真实对象时，代理处理另外一些事</p>
-
-<h3>外观模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>外观模式：为子系统中的一组接口提供一个一致的界面，此模式定义了一个高层接口，这个接口使得这一子系统更加容易使用。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 外部与一个子系统的通信必须通过一个统一的外观对象进行。外观模式提供一个高层次的接口，使得子系统更易于使用。每一个子系统只有一个外观类，而且此外观类只有一个实例，也就是还说它是一个单例模式。但整个系统可以有多个外观类。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<p>为子系统的一组接口提供一个一致的界面。使用户使用起来更加方便。</p>
-
-<pre><code>完美体现了依赖倒转原则和迪米特原则
-</code></pre>
-
-<p>适用情况：</p>
-
-<pre><code>分三个阶段：
-
-1、首先，在设计初期阶段，应该有意识的将不同的两个层分离，即在层与层之间建立外观Facade
-
-2、其次，在开发阶段，子系统往往因为不断的重构演化，而变得越来越复杂，增加外观Facade可以提供一个简单的接口，减少它们之间的依赖。
-
-3、在维护一个遗留的大型系统时，可能这个系统已经非常难以维护和扩展了，就可以为新系统开发一个外观Facade类，来提供设计粗糙或高度复杂的遗留代码的比较清晰简单的接口，让新系统与Facade对象交互，Facade与遗留代码交互所有复杂的工作。
-</code></pre>
-
-<h3>桥接模式</h3>
-
-<h6>1、合成聚合原则</h6>
-
-<p>缘由：对象的继承关系是在编译时就定义好了，所以无法在运行时改变从父类继承的实现。子类的实现与它的父类有非常紧密的依赖关系，以至于父类实现中的任何变化必然会导致子类发生变化。当你需要复用子类时，如果继承下来的实现不适合解决新的问题，则父类必须重写或被其他更适合的类替换。这种依赖关系限制了灵活性并最终限制了复用性。</p>
-
-<p>原则：</p>
-
-<pre><code>合成/聚合原则(CARP)：尽量使用合成/聚合，尽量不要使用类继承
-</code></pre>
-
-<ul>
-<li><p>聚合：一种弱的’拥有’关系，体现的是A对象可以包含B对象，但B对象不是A对象的一部分</p></li>
-<li><p>合成：一种强的’拥有’关系，体现了严格的部分和整体的关系，部分和整体的生命周期一样。</p></li>
-</ul>
-
-
-<h6>合成聚合的好处：</h6>
-
-<p>优先使用对象的合成/聚合将有助于你保持每个类被封装，并被集中在单个任务上，这样类和类继承层次会保持较小规模，并且不太可能增长为不可控制的庞然大物。</p>
-
-<h6>2、桥模式思想</h6>
-
-<pre><code>桥接模式(Bridge)：将抽象部分与它的实现部分分离，使它们都可以独立地变化
-</code></pre>
-
-<p>抽象与实现分离：指的是抽象类和它的派生类用来实现自己的对象</p>
-
-<h6>3、核心思想</h6>
-
-<p>桥模式就是将抽象化与实现化脱耦，使得二者可以独立的变化，也就是说将他们之间的强关联变成弱关联，也就是指在一个软件系统的抽象化与实现化之间使用组合/聚合关系而不是继承关系，从而让二者独立的变化。</p>
-
-<h6>4、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>将抽象部分与实现部分分离，使它们可以独立变化。
-
-这里说的意思不是让抽象基类与具体类分离，而是现实系统可能有多角度分类，每一种分类都有可能变化，那么把这种多角度分离出来让它们独立变化，减少它们之间的耦合性，即如果继承不能实现“开放－封闭原则”的话，就应该考虑用桥接模式 
-</code></pre>
-
-<h3>组合模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>组合模式：将对象组合成树形结构以表示“部分——整体”的层次结构。组合模式使得用户对单个对象和组合对象的使用具有一致性
-</code></pre>
-
-<h6>2、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>整体和部分可以被一致对待（如WORD中复制一个文字、一段文字、一篇文章都是一样的操作）
-
-用户不用关心到底是处理一个叶结点还是处理一个组合组件，也就不用为定义组合而写一些选择判断语句，即用户可以一致的使用组合结构和单个对象。
-</code></pre>
-
-<h6>适用情况：</h6>
-
-<p>当需求中是体现部分与整体层次的结构时，以及希望用户可以忽略组合对象与单个对象的不同，统一地使用组合结构中的所有对象时，就应该考虑用组合模式</p>
-
-<h3>享元模式。</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>享元模式：运用共享技术有效地支持大量细粒度的对象
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code>  享元模式以共享的方式高效的支持大量的细粒度对象。享元模式能做到共享的关键是区分内蕴状态和外蕴状态。
-
- 内蕴状态存储在享元内部，不会随环境的改变而有所不同。外蕴状态是随环境的改变而改变的。外蕴状态不能影响内蕴状态，它们是相互独立的。
-
-  将可以共享的状态和不可以共享的状态从常规类中区分开来，将不可以共享的状态从类里剔除出去。
-
-  客户端不可以直接创建被共享的对象，而应当使用一个工厂对象负责创建被共享的对象。享元模式大幅度的降低内存中对象的数量。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>（1）运用共享技术有效地支持大量细粒度的对象（对于C++来说就是共用一个内存块啦，对象指针指向同一个地方）。
-
-（2）如果一个应用程序使用了大量的对象，而这些对象造成了很大的存储开销就应该考虑使用。
-
-（3）还有就是对象的大多数状态可以外部状态，如果删除对象的外部状态，那么可以用较少的共享对象取代多组对象，此时可以考虑使用享元。 
-</code></pre>
-
-<h2>行为型模式</h2>
-
-<h3>策略模式</h3>
-
-<h6>一、思想</h6>
-
-<pre><code> 定义一系列的算法，把它们一个个封装起来，并且使它们可相互替换，本模式使得算法可独立于使用它的客户而变化——四人团
-</code></pre>
-
-<h6>二、基本思想</h6>
-
-<pre><code>定义算法家族，分别封装起来，让它们之间可以互相替换，让算法的变化，不会影响到使用算法的用户。
-</code></pre>
-
-<h6>三、优缺点分析</h6>
-
-<p>GOOD:</p>
-
-<p>（1）策略模式是一种定义一系列算法的方法，从概念上看，所有这些算法完成的都是相同的工作，只是实现不同。</p>
-
-<pre><code>   所以使用策略模式，就可以以相同的方式调用所有的算法，减少了各种算法类与使用算法类之间的耦合。
-</code></pre>
-
-<p>（2）策略模式的Strategy类层次为Context定义了一系列的可供重用的算法或行为。继承有助于析取出这些算法中的公共功能</p>
-
-<p>（3）简化了单元测试（因为每个算法都有自己的类，可以通过自己的接口单独测试）</p>
-
-<p>BUG:客户端要做出判断使用哪个具体算法（可通过在context中与工厂模式的结合来消除这个问题，虽然当新增加需求时，还是要改context中的代码，但是任何需求的变更本身就是需要成本的）
-四、适用情况</p>
-
-<pre><code> 策略模式和简单工厂基本相同，但简单工厂模式只能解决对象创建问题，对于类中的成员以方法为主，而且算法经常变动的类，应使用策略模式。
-
- 在实践中，策略模式实际上可以封装几乎任何类型的规则，只要在分析过程中听到需要不同时间应用不同的业务规则，就可以考虑使用策略模式处理这种变化的可能性。
-</code></pre>
-
-<h3>模板方法模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>定义一个操作中的算法的骨架，而将一些步骤延迟到子类中。template method使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 模板方法模式准备一个抽象类，将部分逻辑以具体方法以及具体构造子类的形式实现，然后声明一些抽象方法来迫使子类剩余的逻辑。不同的子类可以以不同的方式实现这些抽象方法，从而对剩余的逻辑有不同的实现。先制定一个顶级逻辑框架，而将逻辑的细节留给具体的子类去实现。
-
- 当要完成在某一细节层次一致的一个过程或一系列步骤，但其个别步骤在更详细的层次上的实现可能不同时，通常考虑用模板方法来处理。也就是说：有时候，我们遇到由一系列步骤构成的过程需要执行。这个过程从高层次上看是相同的，但从底层看有些具体步骤实现又可能不同，这时候，就要考虑使用模板方法模式。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>把不变的代码部分都转移到父类中，将可变的代码用virtual留到子类重写，从而提供了一个很好的代码复用平台。
-</code></pre>
-
-<p>即当不变的和可变的行为在方法的子类实现中混合在一起的时候，不变的行为就会在子类中重复出现。我们就可以通过模板方法模式把这些行为搬移到单一的地方，这样就帮助子类摆脱重复的不变行为的纠缠。</p>
-
-<h3>观察者模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>定义对象间的一种一对多的依赖关系，让多个观察者对象同时监听某一个主题对象。这个主题对象在状态发生改变时，会通知所有观察者对象，使它们能够自动更新自己。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 观察者模式定义了一种一对多的依赖关系，让多个观察者对象同时监听某一个主题对象。这个主题对象在状态上发生变化时，会通知所有观察者对象，使他们能够自动更新自己。
-</code></pre>
-
-<h6>使用动机：</h6>
-
-<p>　　将一个系统分割成一系列相互协作的类有一个很不好的副作用，那就是需要维护相关对象间的一致性。我们不希望为了维持一致性而使各类紧密耦合，这样会给维护、扩展和重用都带来不便。</p>
-
-<h6>本模式适用情况：</h6>
-
-<p>（1）当一个对象的改变需要同时改变其他对象的时候，而且它不知道具体有多少对象有待改变时，应该考虑使用观察者模式。</p>
-
-<p>（2）当一个抽象模型有两个方面，其中一方面依赖于另一方面，这时用观察者模式可以将这两者封装在独立的对象中，使它们各自独立地改变和复用。
-总结：</p>
-
-<pre><code>观察者模式所做的工作其实就是解除耦合，让耦合的双方都依赖于抽象，而不是依赖于具体。从而使得各自的变化都不会影响另一边的变化。
-
-本模式是依赖倒置原则的最佳体现！
-
-设计原则：为了交互对象之间的松耦合设计而奋斗到底！
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>定义了一种一对多的关系，让多个观察对象（公司员工）同时监听一个主题对象（秘书），主题对象状态发生变化时，会通知所有的观察者，使它们能够更新自己。
-</code></pre>
-
-<p>BAD:</p>
-
-<pre><code>尽管使用了“依赖倒置原则”，但是“抽象通知者”还是依赖于“抽象观察者”。而且每个具体观察者不一定是“更新”方法需要调用。
-
-在.net中可通过事件委托方法，使得通知者和观察者之间根本就互相不知道。  
-</code></pre>
-
-<h3>迭代子模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>迭代器模式：提供一种方法顺序访问一个聚合对象中各个元素，而又不暴露该对象的内部表示。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<h6>3、优缺点分析</h6>
-
-<p>适用情况：</p>
-
-<p>（1）当需要访问一个聚集对象，而且不管这些对象是什么都需要遍历的时候，就应该考虑使用迭代器模式</p>
-
-<p>（2）当需要对聚集有多种方式遍历时，可以考虑使用迭代器模式</p>
-
-<p>GOOD：</p>
-
-<pre><code>提供一种方法顺序访问一个聚敛对象的各个元素，而又不暴露该对象的内部表示。
-
-为遍历不同的聚集结构提供如开始，下一个，是否结束，当前一项等统一接口。 
-</code></pre>
-
-<h3>责任链模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>使多个对象都有机会处理请求，从而避免请求的发送者和接收者之间的耦合关系，将这些对象连成一条链，并沿着这条链传递该请求，直到有一个对象处理它为止。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<p>在责任链模式中，很多对象由每一个对象对其下家的引用而接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。客户并不知道链上具体的哪一个对象最终处理了这个请求，系统可以在不影响客户端的情况下，动态的重新组织链和分配责任。处理者有两个选择：承担责任或者把责任推给下家。一个请求可以最终不被任何接收端对象所接受。</p>
-
-<h6>3、优缺点分析</h6>
-
-<p>关键点：当客户提交一个请求时，请求是沿链传递直至有一个ConcreteHandler对象负责处理它。</p>
-
-<p>GOOD：</p>
-
-<pre><code>（1）这就使得接受者和发送者之间都没有对方明确的信息，且链中的对象自己也并不知道整个链的结构。结果是职责链可简化对象的相互连接，它们仅需保持一个指向其后继者的引用，而不需要保持它所有的候选接受者的引用。
-
-（2）可以随时地增加或修改一个请求的结构，增强了给对象指派职责的灵活性
-
-（3）一个请求极有可能到了链的末端都得不到处理，或者因为没有正确配置而得不到处理
-</code></pre>
-
-<h3>命令模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>命令模式：将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化；对请求排队或记录请求日志，以及支持可撤销的操作
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<p>命令模式：把一个请求或者操作封装到一个对象中，命令模式把发出命令的责任和执行命令的责任分割开来，委派给不同的对象。命令模式允许请求的一方和发送的一方独立开来，使得请求的一方不必知道接收请求的一方的接口，更不必知道请求是怎么被接收，以及操作是否执行，何时被执行以及是怎么被执行的。</p>
-
-<h6>3、优缺点分析</h6>
-
-<p>GOOD：</p>
-
-<pre><code>一、能较容易地建立一个命令队列；
-
-二、在需要的情况下，可以较容易地将命令记入日志；
-
-三、允许接收请求的一方是否拒绝请求；
-
-四、可以容易地实现对请求的撤销和重做，
-
-五、由于加进新的具体命令类不影响其他的类，因此添加一个新命令类不影响其它类；
-</code></pre>
-
-<p>最关键的优点：命令模式把请求一个操作的对象与知道怎么操行一个操作的对象分开</p>
-
-<p>适用原则：敏捷开发原则告诉我们，不要为代码添加基于猜测的、实际不需要的功能。如果不清楚一个系统是否需要命令模式，一般不要着急去实现它，事实上、在需要的时候通过重构实现这个模式并不困难，只有在真正需要如撤销、恢复等操作功能时，才把原有的代码重构为命令模式才有意义。</p>
-
-<h3>备忘录模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>在不破坏封装的条件下，将一个对象的状态捉住，并在该对象外部保存这个状态，从而可以在将来合适的时候把这个对象还原到存储起来的状态。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 备忘录对象是一个用来存储另外一个对象内部状态的快照的对象。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<p>适用于功能比较复杂的，但需要记录或维护属性历史的类；或者需要保存的属性只是众多属性中的一小部分时Originator可以根据保存的Memo还原到前一状态。</p>
-
-<h3>状态模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>状态模式：当一个对象的内在状态改变时允许改变其行为，这个对象看起来像是改变了其类。
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<pre><code> 状态模式允许一个对象在其内部状态改变的时候改变行为。这个对象看上去像是改变了它的类一样。状态模式把所研究的对象的行为包装在不同的状态对象里，每一个状态对象都属于一个抽象状态类的一个子类。状态模式的思想是让一个对象在其内部状态改变的时候，其行为也随之改变。状态模式需要对每一个系统可能取得的状态创立一个状态类的子类。当系统的状态变化时，系统便改变所选的子类。
-
- 状态模式主要解决的是当控制一个对象状态转换的条件表达式过于复杂时的情况。把状态的判断逻辑转移到表示不同状态的一系列类当中，可以把复杂的判断逻辑简化。
-</code></pre>
-
-<h6>3、优缺点分析</h6>
-
-<ul>
-<li><p>优点：</p>
-
-<ul>
-<li><p>状态模式的好处是将与特定状态相关的行为局部化，并且将不同状态的行为分割开来。</p>
-
-<pre><code>  即：将特定的状态相关的行为都放入一个对象中，由于所有与状态相关的代码都存在于某个ConcreteState中，所以通过定义新的子类可以很容易地增加新的状态和转换。
-</code></pre></li>
-<li><p>消除了庞大的条件分支语句，并且通过把各种状态转移逻辑分布到State的子类之间，来减少相互间的依赖。
-适用情况：</p></li>
-<li><p>当一个对象的行为取决于它的状态，并且它必须在运行时刻根据状态改变它的行为时，可考虑用到状态模式。</p></li>
-</ul>
-</li>
-</ul>
-
-
-<h3>中介者模式</h3>
-
-<h6>1、思想</h6>
-
-<pre><code>中介者模式：用一个中介对象来封装一系列的对象交互。中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互
-</code></pre>
-
-<h6>2、核心思想</h6>
-
-<p>包装了一系列对象相互作用的方式，使得这些对象不必相互明显作用。从而使他们可以松散耦合。当某些对象之间的作用发生改变时，不会立即影响其他的一些对象之间的作用。保证这些作用可以彼此独立的变化。调停者模式将多对多的相互作用转化为一对多的相互作用。调停者模式将对象的行为和协作抽象化，把对象在小尺度的行为上与其他对象的相互作用分开处理。</p>
-
-<h6>3、优缺点分析</h6>
-
-<p>中介者模式很容易在系统中应用，也很容易在系统中误用。当系统中出现了’多对多’交互复杂的对象群时，不要急于使用中介者模式，而要反思你的系统在设计上是不是合理。</p>
-
-<p>GOOD:</p>
-
-<p>（1）Mediator的出现减少了各个Colleague的耦合，使得可以独立地改变和复用各个Colleague类和Mediator</p>
-
-<p>（2）由于把对象如何协作进行了抽象，将中介作为一个独立的概念并将其封装在一个对象中，这样关注的对象就从对象各自本身的行为转移到了它们之间的交互上来，也就是站在一个更宏观的角度去看待系统。</p>
-
-<p>BAD:</p>
-
-<p>由于ConcreteMediator控制了集中化，于是就把交互复杂性变为了中介者的复杂性，这就使得中介者会变得比任何一个ConcreteColleague都复杂。</p>
-
-<h6>适用场合：</h6>
-
-<p>中介者模式一般应用于一组对象以定义良好但是复杂的方式进行通信的场合，以及想定义一个分布在多个类中的行为，而又不想生成太多的子类的场合。</p>
-
-<h3>解释器模式</h3>
-
-<h6>思想</h6>
-
-<pre><code>Interpreter是一种特殊的设计模式，它建立一个解释器，对于特定的计算机程序设计语言，用来解释预先定义的文法。简单地说，Interpreter模式是一种简单的语法解释器构架。
-
-给定一个语言，定义它的文法表示，并定义一个解释器，这个解释器使用该标识来解释语言中的句子。
-</code></pre>
-
-<h6>适用场景：</h6>
-
-<pre><code>    1.当有一个语言需要解释执行，并且你可将该语言中的句子表示为一个抽象语法树，可以使用解释器模式。而当存在以下情况时该模式效果最好
-
-    2.该文法的类层次结构变得庞大而无法管理。此时语法分析程序生成器这样的工具是最好的选择。他们无需构建抽象语法树即可解释表达式，这样可以节省空间而且还可能节省时间。
-
-    3.效率不是一个关键问题，最高效的解释器通常不是通过直接解释语法分析树实现的，而是首先将他们装换成另一种形式，例如，正则表达式通常被装换成状态机，即使在这种情况下，转换器仍可用解释器模式实现，该模式仍是有用的
-</code></pre>
-
-<h6>优缺点：</h6>
-
-<ul>
-<li><p>优点： 1、可扩展性比较好，灵活。 2、增加了新的解释表达式的方式。 3、易于实现简单文法。</p></li>
-<li><p>缺点： 1、可利用场景比较少。 2、对于复杂的文法比较难维护。 3、解释器模式会引起类膨胀。 4、解释器模式采用递归调用方法。</p></li>
-</ul>
-
-
-<h3>访问者模式</h3>
-
-<h6>思想：</h6>
-
-<pre><code>封装某些作用于某种数据结构中各元素的操作，它可以在不改变数据结构的前提下定义作用于这些元素的新的操作。
-</code></pre>
-
-<h6>优点</h6>
-
-<pre><code>符合单一职责原则：凡是适用访问者模式的场景中，元素类中需要封装在访问者中的操作必定是与元素类本身关系不大且是易变的操作，使用访问者模式一方面符合单一职责原则，另一方面，因为被封装的操作通常来说都是易变的，所以当发生变化时，就可以在不改变元素类本身的前提下，实现对变化部分的扩展。
-扩展性良好：元素类可以通过接受不同的访问者来实现对不同操作的扩展。
-</code></pre>
-
-<h6>访问者模式的适用场景</h6>
-
-<pre><code>   假如一个对象中存在着一些与本对象不相干（或者关系较弱）的操作，为了避免这些操作污染这个对象，则可以使用访问者模式来把这些操作封装到访问者中去。
-
-   假如一组对象中，存在着相似的操作，为了避免出现大量重复的代码，也可以将这些重复的操作封装到访问者中去。
-</code></pre>
-
-<hr />
-
-<h4>其他：</h4>
-
-<h3>单一职责原则</h3>
-
-<pre><code>就一个类而言，应该仅有一个引起它变化的原因。
-</code></pre>
-
-<p>　　如果一个类承担的职责过多，就等于把这些职责耦合在一起，一个职责的变化可能会削弱或者抑制这个类完成其它职责能力。这种耦合会导制脆弱的设计，当变化发生时，设计会遭受到意想不到的破坏。</p>
-
-<pre><code>软件设计真正要做的许多内容，就是发现职责并把那些职责相互分离。
-
-如果你能够想到多于一个的动机去改变一个类，那么这个类就具有多于一个的职责。
-</code></pre>
-
-<h3>开放——封闭原则</h3>
-
-<h6>一、基本概念</h6>
-
-<pre><code>  OCP: 软件实体（类、模块、函数等）应该可以扩展，但是不可修改。
-
- 解释：即对于扩展是开放的，对于修改是封闭的。
-</code></pre>
-
-<h6>二、实际技巧</h6>
-
-<pre><code> 实际上，无论模式多么的‘封闭’，都会存在一些无法对之封闭的变化，既然不可能完全封闭，设计人员必须对于他设计的模块应该对哪种变化封闭做出选择。他必须先猜测出最有可能发生的变化种类，然后构造抽象来隔离那些变化。
-
- 即：当变化发生时，我们就创建抽象来隔离以后发生同类的变化。（等到变化发生时立即采取行动）    
-
- 面对需求，对程序的改动是通过增加代码来完成的，而不是改动现有的代码。（例如简单工厂模式思想）
-</code></pre>
-
-<h6>三、优点</h6>
-
-<pre><code> 开放――封闭原则是面向对象的核心所在。这个原则所带来的优点就是可维护、可扩展、可复用、灵活型好。
-
- 开发人员应该对程序中呈现出频繁变化的那部分做出抽象，拒绝对任何部分都刻意抽象及不成熟的抽象。
-</code></pre>
-
-<h3>里氏代换原则</h3>
-
-<h6>一、基本概念</h6>
-
-<pre><code>  抽象不应该依赖细节，细节应该依赖抽象。即针对接口编程，不要对实现编程。
-
-A：高层模块不能依赖低层模块，两者都应依赖抽象。
-
-B：抽象不应该依赖细节，细节应该依赖抽象。 
-</code></pre>
-
-<h6>二、里氏代换原则（LSP）</h6>
-
-<pre><code>子类型必须能够替换掉它们的父类型
-</code></pre>
-
-<p>解释：一个软件实体如果使用的是一个父类的话，那么一定适用于其子类，而且它察觉不出父类对象和子类对象的区别。</p>
-
-<pre><code>   也就是说，在软件里面，把父类都替换成它的子类，程序的行为没有变化。
-
-   只有当子类可以替换父类，软件单位的功能不受到影响时，父类才真正被复用，而子类也能够在父类的基础上增加新的行为。
-
-   所以，正是由于子类型的可替换性才使得使用父类类型的模块在无需修改的情况下就可以扩展。
-</code></pre>
-
-<h3>最少知识原则</h3>
-
-<h6>一、基本概念</h6>
-
-<pre><code>迪米特法则：如果两个类不直接通信，那么这两个类就不应当发生直接的相互作用。如果一个类需要调用另一个类的某个方法的话，可以通过第三个类转发这个调用。
-</code></pre>
-
-<h6>二、核心思想</h6>
-
-<pre><code> 在类的结构设计上，每一个类都应该尽量降低成员的访问权限。也就是说：一个类包装好自己的private状态，不需要让别的类知道的字段或行为就不要公开。
-
-迪米特原则的根本思想：强调了类之间的松耦合。     
-
- 类之间的耦合越弱，越有利于复用，一个处在弱耦合的类被修改，不会对有关系的类造成波及。
-
-  该法则在后面的适配器模式、解释模式等中有强烈的体现。    
-</code></pre>
-
-<hr />
-
-<hr />
-
-<h2>总结：</h2>
-
-<ul>
-<li><p>1、当涉及到“维护”时，为了“复用”目的而使用继承，并不是最好的方法。</p></li>
-<li><p>2、利用继承来提供对象的行为，会导致以下缺点：</p>
-
-<ul>
-<li><p>1）代码在多个子类中重复；</p></li>
-<li><p>2）运行时的行为不容易改变；</p></li>
-<li><p>3）很难知道所有子类的全部行为；</p></li>
-<li><p>4）改变父类会牵一发而动全身，造成其他子类不想要的改变；</p></li>
-</ul>
-</li>
-<li><p>3、使用接口（JAVA）或虚基类加多重继承（C++）方法，则会需要对需要维护的代码中的每个子类都分别考虑其特有方法的继承来源。</p></li>
-<li><p>4、设计原则：找出应用中可能需要变化之处，把它们独立出来，不要和那些不需要变化的代码混在一起。即：把会变化的部分取出并“封装”起来，以便以后可以轻易的改动或扩充此部分，而不影响不需要变化的部分。</p></li>
-<li><p>5、设计原则：针对接口编程，而不是针对实现编程。</p></li>
-</ul>
-
-
-<p>将对象的行为放在分开的类中，此类专门提供某行为接口的实现，并且在对象类中包含可设定行为的方法，使得程序可在“运行时”动态的改变特定对象的行为。</p>
-
-<ul>
-<li>6、封装行为的大局观</li>
-</ul>
-
-
-<p>设计原则：多用组合，少用继承</p>
-
-<ul>
-<li><p>7、策略模型：定义了算法族，分别封装起来，让它们之间可以相互替换，此模式让算法的变化独立于使用算法的客户。</p></li>
-<li><p>8、设计模式的名词使用主要为了程序员间交流方便</p></li>
-</ul>
-
 
 <hr />
 
