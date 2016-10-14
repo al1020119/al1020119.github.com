@@ -9,7 +9,11 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="实现原理 用Objective-C强大的runtime. 我们知道当给一个对象发送一个方法的时候, 如果当前类和父类都没实现该方法的时候就会走转发流程 动态方法解析 -&gt; 快速消息转发 -&gt; 标准消息转发 ">
+  <meta name="description" content="开篇 在网上流传一个非常经典的解释｀响应式编程的概念｀
+在程序开发中：
+a ＝ b ＋ c
+赋值之后 b 或者 c 的值变化后，a 的值不会跟着变化
+响应式编程，目标就是，如果 b 或者 c 的数值发生变化，a 的数值会同时发生变化； Reactive Cocoa就是一个响应式编程的经典作品！ 一 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +73,473 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/">iOS装逼篇——响应式编程</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T23:49:39+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:49 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>开篇</h2>
+
+<pre><code>在网上流传一个非常经典的解释｀响应式编程的概念｀
+在程序开发中：
+a ＝ b ＋ c
+赋值之后 b 或者 c 的值变化后，a 的值不会跟着变化
+响应式编程，目标就是，如果 b 或者 c 的数值发生变化，a 的数值会同时发生变化；
+</code></pre>
+
+<p>Reactive Cocoa就是一个响应式编程的经典作品！</p>
+
+<h3>一、简介</h3>
+
+<p>ReactiveCocoa（其简称为RAC）是函数响应式编程框架。RAC具有函数式编程和响应式编程的特性。它主要吸取了.Net的 Reactive Extensions的设计和实现。
+函数式编程 (Functional Programming)</p>
+
+<p>函数式编程也可以写N篇,它是完全不同于OO的编程模式，这里主要讲一下这个框架使用到的函数式思想。</p>
+
+<h6>1) 高阶函数：在函数式编程中，把函数当参数来回传递，而这个，说成术语，我们把他叫做高阶函数。在oc中，blocks是被广泛使用的参数传递，它实际上是匿名函数。</h6>
+
+<p>高阶函数调用过程有点像linux命令里的pipeline（管道），一个命令调用后的输出当作另一个命令输入，多个命令之间可以串起来操作。来个例子:</p>
+
+<pre><code>    RACSequence *numbers = [@"1 2 3 4 5 6 7 8 9" componentsSeparatedByString:@" "].rac_sequence;      
+// Contains: 22 44 66 88  
+RACSequence *doubleNumber = [[numbers filter:^ BOOL (NSString *value) {  
+    return (value.intValue % 2) == 0;  
+}] map:^id(id value) {  
+    return [value stringByAppendingString:value];  
+}];  
+</code></pre>
+
+<p>上面的例子是数组里的值先进行过滤，得到偶数，然后再将每个值进行stringByAppendingString，最终输出</p>
+
+<pre><code>22 44 66 88.
+</code></pre>
+
+<h6>2),惰性（或延迟）求值：Sequences对象等，只有当被使用到时，才会对其求值。</h6>
+
+<p>关于函数编程，有兴趣的大家可以研究下haskell或者clojure，不过目前好多语言都在借用函数式的思想。
+响应式编程(Functional Reactive Programming:FRP)</p>
+
+<pre><code>响应式编程是一种和事件流有关的编程模式，关注导致状态值改变的行为事件，一系列事件组成了事件流。
+</code></pre>
+
+<p>一系列事件是导致属性值发生变化的原因。FRP非常类似于设计模式里的观察者模式。</p>
+
+<blockquote><p>响应式编程是一种针对数据流和变化传递的编程模式，其执行引擎可以自动的在数据流之间传递数据的变化。比如说，在一种命令式编程语言中，a: = b + c 表示 a 是 b + c 表达式的值，但是在RP语言中，它可能意味着一个动态的数据流关系：当c或者b的值发生变化时，a的值自动的发生变化。</p></blockquote>
+
+<p>RP已经被证实是一种最有效的处理交互式用户界面、实时模式下的动画的开发模式，但本质上是一种基本的编程模式。现在最为热门的JavaFX脚本语言中，引入的bind就是RP的一个概念实现。
+响应式编程其关键点包括：</p>
+
+<pre><code> 输入被视为"行为"，或者说一个随时间而变化的事件流
+
+ 连续的、随时间而变化的值
+
+ 按时间排序的离散事件序列
+</code></pre>
+
+<p>FRP与普通的函数式编程相似，但是每个函数可以接收一个输入值的流，如果其中，一个新的输入值到达的话，这个函数将根据最新的输入值重新计算，并且产生一个新的输出。这是一种”数据流"编程模式。</p>
+
+<h3>二、为什么我们要用它</h3>
+
+<pre><code>1） 开发过程中，状态以及状态之间依赖过多,RAC更加有效率地处理事件流，而无需显式去管理状态。在OO或者过程式编程中，状态变化是最难跟踪，最头痛的事。这个也是最重要的一点。
+
+2） 减少变量的使用，由于它跟踪状态和值的变化，因此不需要再申明变量不断地观察状态和更新值。
+
+3） 提供统一的消息传递机制，将oc中的通知，action，KVO以及其它所有UIControl事件的变化都进行监控，当变化发生时，就会传递事件和值。
+
+4） 当值随着事件变换时，可以使用map，filter，reduce等函数便利地对值进行变换操作。
+</code></pre>
+
+<h3>三、何时使用</h3>
+
+<h6>1） 处理异步或者事件驱动的数据变化</h6>
+
+<pre><code>static voidvoid *ObservationContext = &amp;ObservationContext;  
+
+- (void)viewDidLoad {  
+    [super viewDidLoad];  
+
+    [LoginManager.sharedManager addObserver:self forKeyPath:@"loggingIn" options:NSKeyValueObservingOptionInitial context:&amp;ObservationContext];  
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(loggedOut:) name:UserDidLogOutNotification object:LoginManager.sharedManager];  
+
+    [self.usernameTextField addTarget:self action:@selector(updateLogInButton) forControlEvents:UIControlEventEditingChanged];  
+    [self.passwordTextField addTarget:self action:@selector(updateLogInButton) forControlEvents:UIControlEventEditingChanged];  
+    [self.logInButton addTarget:self action:@selector(logInPressed:) forControlEvents:UIControlEventTouchUpInside];  
+}  
+
+- (void)dealloc {  
+    [LoginManager.sharedManager removeObserver:self forKeyPath:@"loggingIn" context:ObservationContext];  
+    [NSNotificationCenter.defaultCenter removeObserver:self];  
+}  
+
+- (void)updateLogInButton {  
+    BOOL textFieldsNonEmpty = self.usernameTextField.text.length &gt; 0 &amp;&amp; self.passwordTextField.text.length &gt; 0;  
+    BOOL readyToLogIn = !LoginManager.sharedManager.isLoggingIn &amp;&amp; !self.loggedIn;  
+    self.logInButton.enabled = textFieldsNonEmpty &amp;&amp; readyToLogIn;  
+}  
+
+- (IBAction)logInPressed:(UIButton *)sender {  
+    [[LoginManager sharedManager]  
+        logInWithUsername:self.usernameTextField.text  
+        password:self.passwordTextField.text  
+        success:^{  
+            self.loggedIn = YES;  
+        } failure:^(NSError *error) {  
+            [self presentError:error];  
+        }];  
+}  
+
+- (void)loggedOut:(NSNotification *)notification {  
+    self.loggedIn = NO;  
+}  
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(voidvoid *)context {  
+    if (context == ObservationContext) {  
+        [self updateLogInButton];  
+    } else {  
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];  
+    }  
+}  
+
+// RAC实现：  
+
+- (void)viewDidLoad {  
+    [super viewDidLoad];  
+
+    @weakify(self);  
+
+    RAC(self.logInButton, enabled) = [RACSignal  
+        combineLatest:@[  
+            self.usernameTextField.rac_textSignal,  
+            self.passwordTextField.rac_textSignal,  
+            RACObserve(LoginManager.sharedManager, loggingIn),  
+            RACObserve(self, loggedIn)  
+        ] reduce:^(NSString *username, NSString *password, NSNumber *loggingIn, NSNumber *loggedIn) {  
+            return @(username.length &gt; 0 &amp;&amp; password.length &gt; 0 &amp;&amp; !loggingIn.boolValue &amp;&amp; !loggedIn.boolValue);  
+        }];  
+
+    [[self.logInButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(UIButton *sender) {  
+        @strongify(self);  
+
+        RACSignal *loginSignal = [LoginManager.sharedManager  
+            logInWithUsername:self.usernameTextField.text  
+            password:self.passwordTextField.text];  
+
+            [loginSignal subscribeError:^(NSError *error) {  
+                @strongify(self);  
+                [self presentError:error];  
+            } completed:^{  
+                @strongify(self);  
+                self.loggedIn = YES;  
+            }];  
+    }];  
+
+    RAC(self, loggedIn) = [[NSNotificationCenter.defaultCenter  
+        rac_addObserverForName:UserDidLogOutNotification object:nil]  
+        mapReplace:@NO];  
+}  
+</code></pre>
+
+<h6>2） 链式的依赖操作</h6>
+
+<pre><code>[client logInWithSuccess:^{  
+    [client loadCachedMessagesWithSuccess:^(NSArray *messages) {  
+        [client fetchMessagesAfterMessage:messages.lastObject success:^(NSArray *nextMessages) {  
+            NSLog(@"Fetched all messages.");  
+        } failure:^(NSError *error) {  
+            [self presentError:error];  
+        }];  
+    } failure:^(NSError *error) {  
+        [self presentError:error];  
+    }];  
+} failure:^(NSError *error) {  
+    [self presentError:error];  
+}];  
+       // RAC实现：  
+[[[[client logIn]  
+    then:^{  
+        return [client loadCachedMessages];  
+    }]  
+    flattenMap:^(NSArray *messages) {  
+        return [client fetchMessagesAfterMessage:messages.lastObject];  
+    }]  
+    subscribeError:^(NSError *error) {  
+        [self presentError:error];  
+    } completed:^{  
+        NSLog(@"Fetched all messages.");  
+    }];  
+</code></pre>
+
+<h3>3） 并行依赖操作：</h3>
+
+<pre><code>__block NSArray *databaseObjects;  
+__block NSArray *fileContents;  
+
+NSOperationQueue *backgroundQueue = [[NSOperationQueue alloc] init];  
+NSBlockOperation *databaseOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    databaseObjects = [databaseClient fetchObjectsMatchingPredicate:predicate];  
+}];  
+
+NSBlockOperation *filesOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    fileContents = [filesInProgress copy];  
+}];  
+
+NSBlockOperation *finishOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+    NSLog(@"Done processing");  
+}];  
+
+[finishOperation addDependency:databaseOperation];  
+[finishOperation addDependency:filesOperation];  
+[backgroundQueue addOperation:databaseOperation];  
+[backgroundQueue addOperation:filesOperation];  
+[backgroundQueue addOperation:finishOperation];  
+//RAC  
+RACSignal *databaseSignal = [[databaseClient  
+    fetchObjectsMatchingPredicate:predicate]  
+    subscribeOn:[RACScheduler scheduler]];  
+
+RACSignal *fileSignal = [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id&lt;RACSubscriber&gt; subscriber) {  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    [subscriber sendNext:[filesInProgress copy]];  
+    [subscriber sendCompleted];  
+}];  
+
+[[RACSignal  
+    combineLatest:@[ databaseSignal, fileSignal ]  
+    reduce:^ id (NSArray *databaseObjects, NSArray *fileContents) {  
+        [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+        return nil;  
+    }]  
+    subscribeCompleted:^{  
+        NSLog(@"Done processing");  
+    }];  
+
+__block NSArray *databaseObjects;  
+__block NSArray *fileContents;  
+
+NSOperationQueue *backgroundQueue = [[NSOperationQueue alloc] init];  
+NSBlockOperation *databaseOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    databaseObjects = [databaseClient fetchObjectsMatchingPredicate:predicate];  
+}];  
+
+NSBlockOperation *filesOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    fileContents = [filesInProgress copy];  
+}];  
+
+NSBlockOperation *finishOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+    NSLog(@"Done processing");  
+}];  
+
+[finishOperation addDependency:databaseOperation];  
+[finishOperation addDependency:filesOperation];  
+[backgroundQueue addOperation:databaseOperation];  
+[backgroundQueue addOperation:filesOperation];  
+[backgroundQueue addOperation:finishOperation];  
+//RAC  
+RACSignal *databaseSignal = [[databaseClient  
+    fetchObjectsMatchingPredicate:predicate]  
+    subscribeOn:[RACScheduler scheduler]];  
+
+RACSignal *fileSignal = [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id&lt;RACSubscriber&gt; subscriber) {  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    [subscriber sendNext:[filesInProgress copy]];  
+    [subscriber sendCompleted];  
+}];  
+
+[[RACSignal  
+    combineLatest:@[ databaseSignal, fileSignal ]  
+    reduce:^ id (NSArray *databaseObjects, NSArray *fileContents) {  
+        [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+        return nil;  
+    }]  
+    subscribeCompleted:^{  
+        NSLog(@"Done processing");  
+    }];  
+</code></pre>
+
+<h3>4）简化集合操作</h3>
+
+<pre><code>NSMutableArray *results = [NSMutableArray array];  
+for (NSString *str in strings) {  
+    if (str.length &lt; 2) {  
+        continue;  
+    }  
+
+    NSString *newString = [str stringByAppendingString:@"foobar"];  
+    [results addObject:newString];  
+}  
+
+RAC实现：  
+RACSequence *results = [[strings.rac_sequence  
+    filter:^ BOOL (NSString *str) {  
+        return str.length &gt;= 2;  
+    }]  
+    map:^(NSString *str) {  
+        return [str stringByAppendingString:@"foobar"];  
+    }];  
+</code></pre>
+
+<p>下载地址：</p>
+
+<p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">https://github.com/ReactiveCocoa/ReactiveCocoa</a></p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">iOS装逼篇——函数式编程</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T18:49:32+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:49 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>开篇</h2>
+
+<pre><code>如果想再去调用别的方法，那么就需要返回一个对象；
+如果想用()去执行，那么需要返回一个block；
+如果想让返回的block再调用对象的方法，那么这个block就需要返回一个对象（即返回值为一个对象的block）。
+</code></pre>
+
+<p>函数式编程一般是结合响应式一起实现更多强大的功能，所有后面会介绍关于响应式编程和函数式编程及他们共同的使用。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T12:49:24+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:49 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>开篇</h3>
+
+<p>在使用 masonry 框架实现自动布局时，在程序里为一个布局穿插着6行左右这样的代码</p>
+
+<p>[View mas_makeConstraints:^(MASConstraintMaker *make) {</p>
+
+<pre><code>  make.top.equalTo(anotherView);
+
+  make.left.equalTo(anotherView);
+
+  make.width.mas_equalTo(@60);
+
+  make.height.mas_equalTo(@60);
+</code></pre>
+
+<p>}];</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -1817,139 +2288,6 @@ github：https://github.com/al1020119
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">直播-实战篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-09-20T14:42:57+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:42 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>前言</p>
-
-<p>在看这篇之前，如果您还不了解直播原理，请查看上篇文章如何快速的开发一个完整的iOS直播app(原理篇)</p>
-
-<p>开发一款直播app，集成ijkplayer成功后，就算完成直播功能一半的工程了，只要有拉流url，就能播放直播啦</p>
-
-<p>本篇主要讲解的是直播app中，需要用到的一个很重要的开源框架ijkplayer，然后集成这个框架可能对大多数初学者还是比较有难度的，所以本篇主要教你解决集成【ijkplayer】遇见的各种坑。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/09/20/zhi-bo-shi-zhan-pian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/09/15/zhi-bo-yuan-li-pian/">直播-原理篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-09-15T14:42:49+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:42 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/09/15/zhi-bo-yuan-li-pian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>前言</p>
-
-<p>本系列文章引自一个朋友（讲师）的精华：<a href="http://www.jianshu.com/users/b09c3959ab3b/latest_articles">袁峥Seemygo</a></p>
-
-<h2>一、个人见解（直播难与易）</h2>
-
-<p>直播难：个人认为要想把直播从零开始做出来，绝对是牛逼中的牛逼，大牛中的大牛，因为直播中运用到的技术难点非常之多，视频/音频处理，图形处理，视频/音频压缩，CDN分发，即时通讯等技术，每一个技术都够你学几年的。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/09/15/zhi-bo-yuan-li-pian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/09/10/zhi-bo-ijkplayer/">直播-iJKPlayer</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-09-10T14:42:37+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:42 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/09/10/zhi-bo-ijkplayer/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>demo:<a href="https://github.com/al1020119/iCocosIJKPlayer">iCocosIJKPlayer</a></p>
-
-<p>网上讨论比较多并且支持Android/iOS的项目</p>
-
-<pre><code>Vitamio
-IJKPlayer
-</code></pre>
-
-<p>首先说下Vitamio目前可以拿到的版本是4.20，商业使用需要付费。</p>
-
-<p>这里只介绍IJKPlayer，为什么？用了你就知道了！</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/09/10/zhi-bo-ijkplayer/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -1995,23 +2333,23 @@ IJKPlayer
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/">iOS装逼篇——响应式编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">iOS装逼篇——函数式编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
       </li>
     
       <li class="post">
         <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-jing-hua-pian/">iOS大神之路——精华篇</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/12/wan-zhuan-ios10-plus-xcode8gua-pei/">玩转iOS10+Xcode8适配</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/26/zui-xin-shu-dan/">最新书单</a>
       </li>
     
   </ul>

@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-10-14T11:47:02+08:00</updated>
+  <updated>2016-10-14T12:54:50+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,991 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS装逼篇——响应式编程]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/"/>
+    <updated>2016-10-14T23:49:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng</id>
+    <content type="html"><![CDATA[<h2>开篇</h2>
+
+<pre><code>在网上流传一个非常经典的解释｀响应式编程的概念｀
+在程序开发中：
+a ＝ b ＋ c
+赋值之后 b 或者 c 的值变化后，a 的值不会跟着变化
+响应式编程，目标就是，如果 b 或者 c 的数值发生变化，a 的数值会同时发生变化；
+</code></pre>
+
+<p>Reactive Cocoa就是一个响应式编程的经典作品！</p>
+
+<h3>一、简介</h3>
+
+<p>ReactiveCocoa（其简称为RAC）是函数响应式编程框架。RAC具有函数式编程和响应式编程的特性。它主要吸取了.Net的 Reactive Extensions的设计和实现。
+函数式编程 (Functional Programming)</p>
+
+<p>函数式编程也可以写N篇,它是完全不同于OO的编程模式，这里主要讲一下这个框架使用到的函数式思想。</p>
+
+<h6>1) 高阶函数：在函数式编程中，把函数当参数来回传递，而这个，说成术语，我们把他叫做高阶函数。在oc中，blocks是被广泛使用的参数传递，它实际上是匿名函数。</h6>
+
+<p>高阶函数调用过程有点像linux命令里的pipeline（管道），一个命令调用后的输出当作另一个命令输入，多个命令之间可以串起来操作。来个例子:</p>
+
+<pre><code>    RACSequence *numbers = [@"1 2 3 4 5 6 7 8 9" componentsSeparatedByString:@" "].rac_sequence;      
+// Contains: 22 44 66 88  
+RACSequence *doubleNumber = [[numbers filter:^ BOOL (NSString *value) {  
+    return (value.intValue % 2) == 0;  
+}] map:^id(id value) {  
+    return [value stringByAppendingString:value];  
+}];  
+</code></pre>
+
+<p>上面的例子是数组里的值先进行过滤，得到偶数，然后再将每个值进行stringByAppendingString，最终输出</p>
+
+<pre><code>22 44 66 88.
+</code></pre>
+
+<h6>2),惰性（或延迟）求值：Sequences对象等，只有当被使用到时，才会对其求值。</h6>
+
+<p>关于函数编程，有兴趣的大家可以研究下haskell或者clojure，不过目前好多语言都在借用函数式的思想。
+响应式编程(Functional Reactive Programming:FRP)</p>
+
+<pre><code>响应式编程是一种和事件流有关的编程模式，关注导致状态值改变的行为事件，一系列事件组成了事件流。
+</code></pre>
+
+<p>一系列事件是导致属性值发生变化的原因。FRP非常类似于设计模式里的观察者模式。</p>
+
+<blockquote><p>响应式编程是一种针对数据流和变化传递的编程模式，其执行引擎可以自动的在数据流之间传递数据的变化。比如说，在一种命令式编程语言中，a: = b + c 表示 a 是 b + c 表达式的值，但是在RP语言中，它可能意味着一个动态的数据流关系：当c或者b的值发生变化时，a的值自动的发生变化。</p></blockquote>
+
+<p>RP已经被证实是一种最有效的处理交互式用户界面、实时模式下的动画的开发模式，但本质上是一种基本的编程模式。现在最为热门的JavaFX脚本语言中，引入的bind就是RP的一个概念实现。
+响应式编程其关键点包括：</p>
+
+<pre><code> 输入被视为"行为"，或者说一个随时间而变化的事件流
+
+ 连续的、随时间而变化的值
+
+ 按时间排序的离散事件序列
+</code></pre>
+
+<p>FRP与普通的函数式编程相似，但是每个函数可以接收一个输入值的流，如果其中，一个新的输入值到达的话，这个函数将根据最新的输入值重新计算，并且产生一个新的输出。这是一种”数据流"编程模式。</p>
+
+<h3>二、为什么我们要用它</h3>
+
+<pre><code>1） 开发过程中，状态以及状态之间依赖过多,RAC更加有效率地处理事件流，而无需显式去管理状态。在OO或者过程式编程中，状态变化是最难跟踪，最头痛的事。这个也是最重要的一点。
+
+2） 减少变量的使用，由于它跟踪状态和值的变化，因此不需要再申明变量不断地观察状态和更新值。
+
+3） 提供统一的消息传递机制，将oc中的通知，action，KVO以及其它所有UIControl事件的变化都进行监控，当变化发生时，就会传递事件和值。
+
+4） 当值随着事件变换时，可以使用map，filter，reduce等函数便利地对值进行变换操作。
+</code></pre>
+
+<h3>三、何时使用</h3>
+
+<h6>1） 处理异步或者事件驱动的数据变化</h6>
+
+<pre><code>static voidvoid *ObservationContext = &amp;ObservationContext;  
+
+- (void)viewDidLoad {  
+    [super viewDidLoad];  
+
+    [LoginManager.sharedManager addObserver:self forKeyPath:@"loggingIn" options:NSKeyValueObservingOptionInitial context:&amp;ObservationContext];  
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(loggedOut:) name:UserDidLogOutNotification object:LoginManager.sharedManager];  
+
+    [self.usernameTextField addTarget:self action:@selector(updateLogInButton) forControlEvents:UIControlEventEditingChanged];  
+    [self.passwordTextField addTarget:self action:@selector(updateLogInButton) forControlEvents:UIControlEventEditingChanged];  
+    [self.logInButton addTarget:self action:@selector(logInPressed:) forControlEvents:UIControlEventTouchUpInside];  
+}  
+
+- (void)dealloc {  
+    [LoginManager.sharedManager removeObserver:self forKeyPath:@"loggingIn" context:ObservationContext];  
+    [NSNotificationCenter.defaultCenter removeObserver:self];  
+}  
+
+- (void)updateLogInButton {  
+    BOOL textFieldsNonEmpty = self.usernameTextField.text.length &gt; 0 &amp;&amp; self.passwordTextField.text.length &gt; 0;  
+    BOOL readyToLogIn = !LoginManager.sharedManager.isLoggingIn &amp;&amp; !self.loggedIn;  
+    self.logInButton.enabled = textFieldsNonEmpty &amp;&amp; readyToLogIn;  
+}  
+
+- (IBAction)logInPressed:(UIButton *)sender {  
+    [[LoginManager sharedManager]  
+        logInWithUsername:self.usernameTextField.text  
+        password:self.passwordTextField.text  
+        success:^{  
+            self.loggedIn = YES;  
+        } failure:^(NSError *error) {  
+            [self presentError:error];  
+        }];  
+}  
+
+- (void)loggedOut:(NSNotification *)notification {  
+    self.loggedIn = NO;  
+}  
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(voidvoid *)context {  
+    if (context == ObservationContext) {  
+        [self updateLogInButton];  
+    } else {  
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];  
+    }  
+}  
+
+// RAC实现：  
+
+- (void)viewDidLoad {  
+    [super viewDidLoad];  
+
+    @weakify(self);  
+
+    RAC(self.logInButton, enabled) = [RACSignal  
+        combineLatest:@[  
+            self.usernameTextField.rac_textSignal,  
+            self.passwordTextField.rac_textSignal,  
+            RACObserve(LoginManager.sharedManager, loggingIn),  
+            RACObserve(self, loggedIn)  
+        ] reduce:^(NSString *username, NSString *password, NSNumber *loggingIn, NSNumber *loggedIn) {  
+            return @(username.length &gt; 0 &amp;&amp; password.length &gt; 0 &amp;&amp; !loggingIn.boolValue &amp;&amp; !loggedIn.boolValue);  
+        }];  
+
+    [[self.logInButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(UIButton *sender) {  
+        @strongify(self);  
+
+        RACSignal *loginSignal = [LoginManager.sharedManager  
+            logInWithUsername:self.usernameTextField.text  
+            password:self.passwordTextField.text];  
+
+            [loginSignal subscribeError:^(NSError *error) {  
+                @strongify(self);  
+                [self presentError:error];  
+            } completed:^{  
+                @strongify(self);  
+                self.loggedIn = YES;  
+            }];  
+    }];  
+
+    RAC(self, loggedIn) = [[NSNotificationCenter.defaultCenter  
+        rac_addObserverForName:UserDidLogOutNotification object:nil]  
+        mapReplace:@NO];  
+}  
+</code></pre>
+
+<h6>2） 链式的依赖操作</h6>
+
+<pre><code>[client logInWithSuccess:^{  
+    [client loadCachedMessagesWithSuccess:^(NSArray *messages) {  
+        [client fetchMessagesAfterMessage:messages.lastObject success:^(NSArray *nextMessages) {  
+            NSLog(@"Fetched all messages.");  
+        } failure:^(NSError *error) {  
+            [self presentError:error];  
+        }];  
+    } failure:^(NSError *error) {  
+        [self presentError:error];  
+    }];  
+} failure:^(NSError *error) {  
+    [self presentError:error];  
+}];  
+       // RAC实现：  
+[[[[client logIn]  
+    then:^{  
+        return [client loadCachedMessages];  
+    }]  
+    flattenMap:^(NSArray *messages) {  
+        return [client fetchMessagesAfterMessage:messages.lastObject];  
+    }]  
+    subscribeError:^(NSError *error) {  
+        [self presentError:error];  
+    } completed:^{  
+        NSLog(@"Fetched all messages.");  
+    }];  
+</code></pre>
+
+<h3>3） 并行依赖操作：</h3>
+
+<pre><code>__block NSArray *databaseObjects;  
+__block NSArray *fileContents;  
+
+NSOperationQueue *backgroundQueue = [[NSOperationQueue alloc] init];  
+NSBlockOperation *databaseOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    databaseObjects = [databaseClient fetchObjectsMatchingPredicate:predicate];  
+}];  
+
+NSBlockOperation *filesOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    fileContents = [filesInProgress copy];  
+}];  
+
+NSBlockOperation *finishOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+    NSLog(@"Done processing");  
+}];  
+
+[finishOperation addDependency:databaseOperation];  
+[finishOperation addDependency:filesOperation];  
+[backgroundQueue addOperation:databaseOperation];  
+[backgroundQueue addOperation:filesOperation];  
+[backgroundQueue addOperation:finishOperation];  
+//RAC  
+RACSignal *databaseSignal = [[databaseClient  
+    fetchObjectsMatchingPredicate:predicate]  
+    subscribeOn:[RACScheduler scheduler]];  
+
+RACSignal *fileSignal = [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id&lt;RACSubscriber&gt; subscriber) {  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    [subscriber sendNext:[filesInProgress copy]];  
+    [subscriber sendCompleted];  
+}];  
+
+[[RACSignal  
+    combineLatest:@[ databaseSignal, fileSignal ]  
+    reduce:^ id (NSArray *databaseObjects, NSArray *fileContents) {  
+        [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+        return nil;  
+    }]  
+    subscribeCompleted:^{  
+        NSLog(@"Done processing");  
+    }];  
+
+__block NSArray *databaseObjects;  
+__block NSArray *fileContents;  
+
+NSOperationQueue *backgroundQueue = [[NSOperationQueue alloc] init];  
+NSBlockOperation *databaseOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    databaseObjects = [databaseClient fetchObjectsMatchingPredicate:predicate];  
+}];  
+
+NSBlockOperation *filesOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    fileContents = [filesInProgress copy];  
+}];  
+
+NSBlockOperation *finishOperation = [NSBlockOperation blockOperationWithBlock:^{  
+    [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+    NSLog(@"Done processing");  
+}];  
+
+[finishOperation addDependency:databaseOperation];  
+[finishOperation addDependency:filesOperation];  
+[backgroundQueue addOperation:databaseOperation];  
+[backgroundQueue addOperation:filesOperation];  
+[backgroundQueue addOperation:finishOperation];  
+//RAC  
+RACSignal *databaseSignal = [[databaseClient  
+    fetchObjectsMatchingPredicate:predicate]  
+    subscribeOn:[RACScheduler scheduler]];  
+
+RACSignal *fileSignal = [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id&lt;RACSubscriber&gt; subscriber) {  
+    NSMutableArray *filesInProgress = [NSMutableArray array];  
+    for (NSString *path in files) {  
+        [filesInProgress addObject:[NSData dataWithContentsOfFile:path]];  
+    }  
+
+    [subscriber sendNext:[filesInProgress copy]];  
+    [subscriber sendCompleted];  
+}];  
+
+[[RACSignal  
+    combineLatest:@[ databaseSignal, fileSignal ]  
+    reduce:^ id (NSArray *databaseObjects, NSArray *fileContents) {  
+        [self finishProcessingDatabaseObjects:databaseObjects fileContents:fileContents];  
+        return nil;  
+    }]  
+    subscribeCompleted:^{  
+        NSLog(@"Done processing");  
+    }];  
+</code></pre>
+
+<h3>4）简化集合操作</h3>
+
+<pre><code>NSMutableArray *results = [NSMutableArray array];  
+for (NSString *str in strings) {  
+    if (str.length &lt; 2) {  
+        continue;  
+    }  
+
+    NSString *newString = [str stringByAppendingString:@"foobar"];  
+    [results addObject:newString];  
+}  
+
+RAC实现：  
+RACSequence *results = [[strings.rac_sequence  
+    filter:^ BOOL (NSString *str) {  
+        return str.length &gt;= 2;  
+    }]  
+    map:^(NSString *str) {  
+        return [str stringByAppendingString:@"foobar"];  
+    }];  
+</code></pre>
+
+<p>下载地址：</p>
+
+<p><a href="https://github.com/ReactiveCocoa/ReactiveCocoa">https://github.com/ReactiveCocoa/ReactiveCocoa</a></p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS装逼篇——函数式编程]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/"/>
+    <updated>2016-10-14T18:49:32+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng</id>
+    <content type="html"><![CDATA[<h2>开篇</h2>
+
+<pre><code>如果想再去调用别的方法，那么就需要返回一个对象；
+如果想用()去执行，那么需要返回一个block；
+如果想让返回的block再调用对象的方法，那么这个block就需要返回一个对象（即返回值为一个对象的block）。
+</code></pre>
+
+<p>函数式编程一般是结合响应式一起实现更多强大的功能，所有后面会介绍关于响应式编程和函数式编程及他们共同的使用。</p>
+
+<!--more-->
+
+
+<h3>背景</h3>
+
+<p>在iOS7引入了新特性自定义View Controller转场，自定义视图控制器转场的API基本上都以协议的方式提供的，使用非常灵活，在这篇文章就不详细介绍了。</p>
+
+<p>函数式编程对于解耦有着明显的效果，所以使用上非常灵活，我举个例子。</p>
+
+<pre><code>当App升级时，数据需要迁移，那么就会有一段等待时间，那么我们会考虑一个Loading，或者一个Progress来提示用户，所以我们就会想到做一个动画，那么问题来了，与其同时我们需要做Loading、Progress，无论是Loading还是Progress。
+</code></pre>
+
+<p>都具有的共性就是show出来，然后再dismiss，所以我们会想到写一个基类，不同的动画就多写几个子类来实现不一样的动画效果。</p>
+
+<blockquote><p>至此，我早已放弃这种解决方案了，该解决方案并没有解决解耦的问题，子类必须依赖于父类。</p></blockquote>
+
+<p>所以我已经使用函数式编程，把有共性的、通用的抽象成一个个协议，仅仅遵守协议，实现协议方法就能实现效果从而达到解耦。</p>
+
+<p>大家对CAReplicatorLayer这个类熟悉吗？它在iOS3.0的SDK已经出现了，iOS9的SDK都已经逐步完善，为何我今天还来讲呢？</p>
+
+<p>主要CAReplicatorLayer能给动画带来生机。</p>
+
+<ul>
+<li>个例子</li>
+</ul>
+
+
+<p>App某个页面上有29个小圆圈有规则性地运动，你觉得你会如何去实现呢？</p>
+
+<p>以下是CAReplicatorLayer来实现这个效果的过程。</p>
+
+<pre><code>1、我们先初始化一个CAReplicatorLayer的实例，添加到Layer容器上。
+
+2、在CAReplicatorLayer上添加一个带有规则性运动地小圆圈Layer，在Layer上做关键帧动画，既是有规则性运动效果。
+
+接下来只需要通过设置CAReplicatorLayer的几个属性值，即可完成这个效果.
+
+3、设置instanceCount ＝ 29; // 拷贝29个具有相同特性的小圆圈Layer
+
+4、设置instanceDelay ＝ 0.14; // 我的理解是：相对于前一个对象延迟拷贝的时间
+
+5、设置instanceColor = [UIColor ReaColor]; // 为复制的Layer添加颜色
+</code></pre>
+
+<p>到此为止，已经把这个效果实现了，CAReplicatorLayer提供了较丰富的Property，具体请到[该链接]，逐一摸索吧！</p>
+
+<h6>函数式编程初级设计</h6>
+
+<p>我将会通过一个比较完整的Demo来展现函数式编程的好处。</p>
+
+<p>从原定需求到需求变动有着明显效果。</p>
+
+<blockquote><p>接下来我们先简单的浏览整个设计过程。很多人会讲，不就几个动画吗？叫设计师搞几个gif，然后做一个gif展示组件就好啦！产品经理爱怎么换，就叫设计师去做就好咯！嘎嘎嘎！是可以的，但是我还是决定去开拓一下大脑，捣鼓一下咯！</p></blockquote>
+
+<h6>公开API：</h6>
+
+<p>我们先从效果的基本状态入手</p>
+
+<pre><code>1、需要提供一个startAnimating或者showAnimating的方法来展示Loading或者Progress
+
+2、再者等待时间已经过去了，需要提供一个stopAnimating或者dismissAnimating的方法来隐藏Loading或者Progress
+
+3、当外部操作Loading次数较多的时候，那么外部可能需要知道是否已经在展示了，需要提供一个只读属性，animating
+
+4、我们有多种动画效果，那么会定义一个枚举来标识不同的动画效果
+
+5、其实在初始化方法里面，我们还可以提供一些构造方法，比如样式、颜色，可以在初始化的时候就预先设定
+</code></pre>
+
+<h6>私有化API：</h6>
+
+<p>需要提供一个构造方法，根据枚举变量获取不同的动画处理类，就类似自定义iOS7转场的做法。</p>
+
+<p>在实现动画之前，我们必须把有共性的、通用的抽象成一个个协议方法，在这个Demo里面，我仅仅抽象了一个协议</p>
+
+<pre><code>- (void)configureAnimationInLayer:(CALayer *)layer withSize:(CGSize)size tintColor:(UIColor *)tintColor;（protocol）
+</code></pre>
+
+<p>各位请自行根据实际情况去抽象吧！</p>
+
+<p>那实现一个动画有几个步骤呢？</p>
+
+<pre><code>1、该动画处理类继承与NSObject，并且需要遵守动画协议（protocol）。
+
+2、接下来就是实现协议方法。
+
+3、在协议方法里面实现动画效果。
+</code></pre>
+
+<h2>Swift中的应用</h2>
+
+<p>Swift 相比原先的 Objective-C 最重要的优点之一，就是对函数式编程提供了更好的支持。 Swift 提供了更多的语法糖和一些新特性来增强函数式编程的能力，本文就在这方面进行一些讨论。</p>
+
+<h6>Swift 概览</h6>
+
+<p>对编程语言有了一些经验的程序员，尤其是那些对多种不同类型的编程语言都有经验的开发者， 在学习新的语言的时候更加得心应手。原因在于编程语言本身也是有各种范式的， 把握住这些特点就可以比较容易的上手了。</p>
+
+<p>在入手一门新的语言的时候，一般关注的内容有：</p>
+
+<pre><code>原生数据结构
+运算符
+分支控制
+如果是面向对象的编程语言，其面向对象的实现是怎样的
+如果是函数式编程语言，其面向函数式编程的实现是怎样的
+</code></pre>
+
+<p>通过这几个点，其实只要阅读 Swift 文档的第一章，你就可以对这个语言有一个大概的印象。 比如对于数据结构，Swift 和其他的编程语言大体一样，有 Int, Float, Array, Dictionary 等， 运算符也基本与 C 语言一致等。 本文主要集中于对 Swift 函数式编程方面的特点进行一些盘点，因此在这里假设大家对 Swift 的基本语法已经有所了解。</p>
+
+<p>对于一种编程范式，要掌握它也要抓住一些要点。对于支持函数式编程的语言，其一般的特点可能包含以下几种：</p>
+
+<pre><code>支持递归
+函数本身是语言 First Class 的组成要素，且支持高阶函数和闭包
+函数调用尽可能没有副作用 (Side Effect) 的条件
+</code></pre>
+
+<p>接下来我们来逐个盘点这些内容。</p>
+
+<h6>递归</h6>
+
+<p>Swift 是支持递归的，事实上现在不支持递归的编程语言已经很难找到了。在 Swift 里写一个递归调用和其他编程语言并没有什么区别：</p>
+
+<pre><code>func fib(n: Int) -&gt; Int {
+  if n &lt;= 1 {
+    return 1
+  }
+  else {
+    return fib(n-1) + fib(n-2)
+  }
+}
+fib(6) // output 13
+</code></pre>
+
+<p>关于 Swift 的递归没有什么好说的。作为一个常识，我们知道递归是需要消耗栈空间的。 在函数式编程语言中，递归是一个非常常用的方法，然而使用不慎很容易导致栈溢出的问题。 如果将代码改写为非递归实现，又可能会导致代码的可读性变差，因此有一个技巧是使用“尾递归”， 然后让编译器来优化代码。</p>
+
+<p>一个 Common Lisp 的尾递归的例子是</p>
+
+<pre><code>(defun fib(n)
+    (fib-iter 1 0 n))
+
+(defun fib-iter(a b count)
+    (if (= count 0)
+        b
+        (fib-iter (+ a b) a (- count 1))))                        
+</code></pre>
+
+<p>我们可以把我们上述的 Swift 代码也改写成相同形式</p>
+
+<pre><code>func fibiter(a: Int, b: Int, count: Int) -&gt; Int {
+  if count==0 {
+    return b
+  }
+  else {
+    return fibiter(a + b, a, count-1)
+  }
+}
+
+func fib(n: Int) -&gt; Int {
+  return fibiter(1, 1, n);
+}
+</code></pre>
+
+<p>我们可以 Playground 里观察是否使用尾递归时的迭代结果变化。</p>
+
+<pre><code>recurrence-fib
+</code></pre>
+
+<p>值得注意的是，这里出现了一个 Swift 的问题。虽然 Swift 支持嵌套函数，但是当我们将fibiter 作为一个高阶函数包含在fib函数之内的时候却发生了 EXC_BAD_ACCESS 报错， 并不清楚这是语言限制还是 Bug。
+Swift 的高阶函数和闭包</p>
+
+<blockquote><p>在 Objective-C 时代，使用 block 来实现高阶函数或者闭包已经是非常成熟的技术了。 Swift 相比 Objective-C 的提高在于为函数式编程添加了诸多语法上的方便。</p></blockquote>
+
+<p>首先是高阶函数的支持，可以在函数内定义函数，下面就是一个很简洁的例子。</p>
+
+<pre><code>func greetingGenerator(object:String) -&gt; (greeting:String) -&gt; String {
+  func sayGreeting(greeting:String) -&gt; String {
+    return greeting + ", " + object
+  }
+  return sayGreeting
+}
+
+let sayToWorld = greetingGenerator("world")
+sayToWorld(greeting: "Hello") // "Hello, World"
+sayToWorld(greeting: " 你好 ") // " 你好, World"
+</code></pre>
+
+<p>如果使用 block 实现上述功能，可读性就不会有这么好。而且 block 的语法本身也比较怪异， 之前没少被人吐槽。Swift 从这个角度来看比较方便。事实上，在 Swift 里可以将函数当做对象赋值， 这和很多函数式编程语言是一样的。</p>
+
+<p>作为一盘大杂烩，Swift 的函数系统也很有 JavaScript 的影子在里面。比如可以向下面这样定义函数：</p>
+
+<pre><code>let add = {
+  (a:Int, b:Int) -&gt; Int in
+  return a+b
+}
+
+add(1, 2) // 3
+</code></pre>
+
+<p>等号之后被赋予变量add的是一个闭包表达式，因此更准确的说， 这是将一个闭包赋值给常量了。注意在闭包表达式中，in关键字之前是闭包的形式定义，之后是具体代码实现。 Swift 中的闭包跟匿名函数没有什么区别。 如果你将它赋值给对象，就跟 JavaScript 中相同的实践是一样的了。幸好 Swift 作为 C 系列的语言， 其分支语句 if 等本身是有作用域的，因此不会出现下列 JavaScript 的坑：</p>
+
+<pre><code>if (someNum&gt;0) {
+  function a(){ alert("one") };
+}
+else {
+  function a(){ alert("two") };
+}
+
+a() // will always alert "two" in most of browsers
+</code></pre>
+
+<p>Swift 的闭包表达式和函数都可以作为函数的参数，从下面的代码我们可以看出闭包和函数的一致性：</p>
+
+<pre><code>func function() {
+  println("this is a function")
+}
+
+let closure = {
+  () -&gt; () in
+  println("this is a closure")
+}
+
+func run(somethingCanRun:()-&gt; ()) {
+  somethingCanRun()
+}
+
+run(function)
+run(closure)
+</code></pre>
+
+<p>类似于 Ruby，Swift 作为函数参数的闭包做了一点语法糖。 在 Ruby 中使用 Block 的时候，我们可以这样写:</p>
+
+<pre><code>(1...5).map {|x| x*2} // =&gt; [2, 4, 6, 8]
+</code></pre>
+
+<p>在 Swift 当中我们可以得到几乎一样的表达式。</p>
+
+<pre><code>var a = Array(1..5).map {x in x*2}
+// a = [2, 4, 6, 8]
+</code></pre>
+
+<p>也就是说， 如果一个函数的最后一个参数是闭包，那么它在语法上可以放在函数调用的外面。 闭包还可以用$0、$1等分别来表示第 0、第 1 个参数等。 基本的运算符也可以看做函数。 下面的几种方式都可以实现逆序倒排的功能。</p>
+
+<pre><code>let thingsToSort = Array(1..5)
+var reversed1 = sort(thingsToSort) { a, b in a&lt;b}
+var reversed2 = sort(thingsToSort) { $0 &lt; $1}
+var reversed3 = sort(thingsToSort, &lt;) // operator as a function
+// all the above are [5, 4, 3, 2, 1]
+</code></pre>
+
+<p>总体来说，Swift 在添加方便函数操作、添加相关语法糖方面走的很远，基本上整合了目前各种语言中比较方便的特性。 实用性较好。</p>
+
+<h6>Side Effects</h6>
+
+<p>在计算机科学中，函数副作用指当调用函数时，除了返回函数值之外，还对主调用函数产生附加的影响。例如修改全局变量 (函数外的变量) 或修改参数 (wiki)。 函数副作用会给程序带来一些不必要的麻烦。</p>
+
+<p>为了减少函数副作用，很多函数式编程语言都力求达到所谓的“纯函数”。 纯函数是指函数与外界交换数据的唯一渠道是参数和返回值， 而不会受到函数的外部变量的干扰。 乍看起来这似乎跟闭包的概念相抵触，因为闭包本身的一个重要特点就是可以访问到函数定义时的上下文环境。</p>
+
+<blockquote><p>事实上，为了在这种情况下支持纯函数，一些编程语言如 Clojure 等提供的数据结构都是不可变 (或者说 Persist) 的。 因此其实也就没有我们传统意义上的所认为的“变量”的概念。比如说，在 Python 中，字符串str就是一类不可变的数据结构。 你不能在原来的字符串上进行修改，每次想要进行类似的操作，其实都是生成了一个新的str对象。 然而 Python 中的链表结构则是可变的。且看下面的代码，在 Python 中对a字符串进行修改并不会影响b， 但是同样的操作作用于链表就会产生不一样的结果：</p></blockquote>
+
+<pre><code>a = "hello, "
+b = a
+a += "world"
+print a # hello, world
+print b # hello,
+</code></pre>
+
+<p>Swift 的数据结构的 Persist 性质跟 Python 有点类似。需要注意的是，Swift 有变量和常量两种概念， 变量使用var声明，常量使用let声明，使用var声明的时候，Swift 中的字符串的行为跟 Python 相似， 因此修改字符串可以被理解为生成了一个新的字符串并修改了指针。同样， 使用var声明的数组和字典也都是可变的。</p>
+
+<p>在 Swift 中使用let声明的对象不能被赋值，基本数据结果也会变得不可变，但是情况更复杂一点。</p>
+
+<pre><code>let aDict = ["k1":"v1"]
+let anArray = [1, 2, 3, 4]
+
+aDict["k1"] = "newVal" // !! will fail !!
+anArray.append(5) // !! will fail !!
+anArray[0] = 5 // anArray = [5, 2, 3, 4] now !
+</code></pre>
+
+<p>从上面的代码中可以看出，使用let声明的字典是完全不可变的，但是数组虽然不可以改变长度， 却可以改变数组元素的值！Swift 的文档中指出这里其实是将 Array 理解为定长数组从而方便编译优化， 来获得更好的访问性能。</p>
+
+<h6>综上所述</h6>
+
+<p>对象是否可变的关系其实略有复杂的，可以总结为：</p>
+
+<pre><code>使用var和let，Int和String类型都是不可变的，但是var时可以对变量重新赋值
+使用let声明的常量不可以被重新赋值
+使用let声明的Dictionary是完全不可变的
+使用let声明的Array长度不可变，但是可以修改元素的值
+使用let声明的类对象是可变的
+</code></pre>
+
+<h6>综上所述，</h6>
+
+<p>即使是使用let声明的对象也有可能可变，因此在多线程情况下就无法达到“无副作用”的要求了。</p>
+
+<blockquote><p>此外 Swift 的函数虽然没有指针，但是仍通过参数来修改变量的。只要在函数的参数定义中加入inout关键字即可。 这个特性很有 C 的风格。</p></blockquote>
+
+<p>个人觉得在支持通过元组来实现多返回值的情况下，这个特性不但显得鸡肋，也是一个导致程序产生“副作用”的特性。 Swift 支持这样的特性，恐怕更多的是为了兼容 Objective-C 以及方便在两个语言之间搭建 Bridge。</p>
+
+<pre><code>func inc(inout a:Int) {
+  a += 1
+}
+var num = 1
+inc(&amp;num) // num = 2 now!
+</code></pre>
+
+<h6>综上所述，</h6>
+
+<p>使用 Swift 自带的数据结构并不能很好的实现“无副作用”的“纯函数式”编程， 它并没有比 Python、Ruby 这类语言走的更远。幸好作为一种关注度很高的语言， 已经有开发者为其实现了一套完全满足不可变要求的数据结构和库：Swiftz。 坚持使用let和 Swiftz 提供的数据结构来操作，就可以实现“纯函数式”编程。</p>
+
+<blockquote><p>总结</p>
+
+<p>在我看来，Swift 虽然实现了很多其他语言的亮点特性，但是总体实现来说并不是很整齐。 它在函数式编程方面添加了很多特性，但在控制副作用方面仅能达到平均水准。 有些特性看起来像是为了兼容原来的 Objective-C 才加入的。</p></blockquote>
+
+<p>Swift 写起来相对比 Objective-C 更方便一点，脱离 Xcode 这样的 IDE 来写也是应该是可以的。 目前 Swift 只支持集中少量的原生数据结构而没有标准库，更不具备跨平台特性，这是一个缺点。 在仔细阅读了文档之后发现 Swift 本身的语法细节还是很多的，就比如switch分置语句的用法就有很多内容。 入门学习的容易程度并没有原来想象的那么好。我个人并不觉得这门语言会对其他平台的开发者有很大吸引力。</p>
+
+<blockquote><p>Swift 是一门很强大的语言，在其稳定版本发布之后我认为我会从 Objective-C 专向 Swift 来进行编程， 它在未来很可能成为 iOS 和 Mac 开发的首选。</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[iOS装逼篇——链式编程]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/"/>
+    <updated>2016-10-14T12:49:24+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng</id>
+    <content type="html"><![CDATA[<h3>开篇</h3>
+
+<p>在使用 masonry 框架实现自动布局时，在程序里为一个布局穿插着6行左右这样的代码</p>
+
+<p>[View mas_makeConstraints:^(MASConstraintMaker *make) {</p>
+
+<pre><code>  make.top.equalTo(anotherView);
+
+  make.left.equalTo(anotherView);
+
+  make.width.mas_equalTo(@60);
+
+  make.height.mas_equalTo(@60);
+</code></pre>
+
+<p>}];</p>
+
+<!--more-->
+
+
+<p>一直觉得不够漂亮，希望有个一行代码设置约束的框架，我曾尝试过在masonry上封装一个类别 UIView+HKSetConstraints ，用起来也不顺手，总觉得不够味，直到我见到了 SDAutoLayout , 真正的实现了一句代码实现自动布局，加上研究ReactiveCocoa时看到的最快让你上手之ReactiveCocoa基础篇（下面会给出链接）提到编程思想，才明了Masonry 和 SDAutoLayout一点实现思路：链式编程思想。</p>
+
+<h4>先简单介绍下目前咱们已知的编程思想。</h4>
+
+<ul>
+<li><p>1 面向过程：处理事情以过程为核心，一步一步的实现。</p></li>
+<li><p>2 面向对象：万物皆对象</p></li>
+<li><p>3 链式编程思想：是将多个操作（多行代码）通过点号(.)链接在一起成为一句代码,使代码可读性好。 a(1).b(2).c(3)</p>
+
+<ul>
+<li><p>链式编程特点：方法的返回值是block,block必须有返回值（本身对象），block参数（需要操作的值）</p></li>
+<li><p>代表：Masonry框架。</p></li>
+</ul>
+</li>
+<li><p>4 响应式编程思想：不需要考虑调用顺序，只需要知道考虑结果，类似于蝴蝶效应，产生一个事件，会影响很多东西，这些事件像流一样的传播出去，然后影响结果，借用面向对象的一句话，万物皆是流。</p>
+
+<ul>
+<li>代表：KVO运用。</li>
+</ul>
+</li>
+<li><p>5 函数式编程思想：是把操作尽量写成一系列嵌套的函数或者方法调用。</p>
+
+<ul>
+<li><p>函数式编程特点：每个方法必须有返回值（本身对象）,把函数或者Block当做参数,block参数（需要操作的值）block返回值（操作结果）</p></li>
+<li><p>代表：ReactiveCocoa。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h3>自己实现</h3>
+
+<p>我们这里以链式编程思想代码实现一个计算器:</p>
+
+<pre><code>#import
+
+@class CaculatorMaker;
+
+@interface NSObject (CaculatorMaker)
+
+
+//计算
+
++ (int)makeCaculators:(void(^)(CaculatorMaker *make))caculatorMaker;
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import "NSObject+CaculatorMaker.h"
+
+#import "CaculatorMaker.h"
+
+
+@implementation NSObject (CaculatorMaker)
+
+
+//计算
+
++ (int)makeCaculators:(void(^)(CaculatorMaker *make))block
+
+{
+
+    CaculatorMaker *mgr = [[CaculatorMaker alloc] init];
+
+    block(mgr);
+
+    return mgr.iResult;
+
+}
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import
+
+
+@interface CaculatorMaker : NSObject
+
+
+@property (nonatomic, assign) int iResult;
+
+
+//加法
+
+- (CaculatorMaker *(^)(int))add;
+
+
+//减法
+
+- (CaculatorMaker *(^)(int))sub;
+
+
+//乘法
+
+- (CaculatorMaker *(^)(int))muilt;
+
+
+//除法
+
+- (CaculatorMaker *(^)(int))divide;
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import "CaculatorMaker.h"
+
+
+@implementation CaculatorMaker
+
+
+- (CaculatorMaker *(^)(int))add
+
+{
+
+   return ^(int value)
+
+    {
+
+        _iResult += value;
+
+        return self;
+
+    };
+
+}
+</code></pre>
+
+<p>@end</p>
+
+<p>调用：</p>
+
+<pre><code>int iResult = [NSObject makeCaculators:^(CaculatorMaker *make) {
+
+     make.add(1).add(2).add(3).divide(2);
+
+   }];
+</code></pre>
+
+<p>分析下这个方法执行过程：</p>
+
+<pre><code>第一步：NSObject 创建了一个block, 这个block里创建了一个CaculatorMaker对象make，并返回出来
+
+第二步：这个对象make调用方法add时，里面持有的属性iResult做了一个加法，并且返回自己，以便可以接下去继续调用方法。 
+</code></pre>
+
+<p>这就是链式编程思想的一个很小但很明了的例子。</p>
+
+<p><img src="http://al1020119.github.io/images/ioslianshibiancheng001.png" title="Caption" ></p>
+
+<h3>现在我们以 Masonry 举例：</h3>
+
+<p>我们看看Masonry的</p>
+
+<pre><code>- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *make))block;
+
+- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *))block {
+
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+
+    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:self];
+
+    block(constraintMaker);
+
+    return [constraintMaker install];
+
+}
+</code></pre>
+
+<p>是不是跟我们的计算器的类别一个样？????</p>
+
+<p>我们再来看看它的</p>
+
+<pre><code>- (MASConstraint * (^)(id attr))mas_equalTo;
+
+- (MASConstraint * (^)(id))mas_equalTo {
+
+    return ^id(id attribute) {
+
+        return self.equalToWithRelation(attribute, NSLayoutRelationEqual);
+
+    };
+
+}
+</code></pre>
+
+<p>看看它的self.equalToWithRelation实现：</p>
+
+<pre><code>- (MASConstraint * (^)(id, NSLayoutRelation))equalToWithRelation {
+
+    return ^id(id attribute, NSLayoutRelation relation) {
+
+        if ([attribute isKindOfClass:NSArray.class]) {
+
+            NSAssert(!self.hasLayoutRelation, @"Redefinition of constraint relation");
+
+            NSMutableArray *children = NSMutableArray.new;
+
+            for (id attr in attribute) {
+
+                MASViewConstraint *viewConstraint = [self copy];
+
+                viewConstraint.secondViewAttribute = attr;
+
+                [children addObject:viewConstraint];
+
+            }
+
+            MASCompositeConstraint *compositeConstraint = [[MASCompositeConstraint alloc] initWithChildren:children];
+
+            compositeConstraint.delegate = self.delegate;
+
+            [self.delegate constraint:self shouldBeReplacedWithConstraint:compositeConstraint];
+
+            return compositeConstraint;
+
+        } else {
+
+            NSAssert(!self.hasLayoutRelation || self.layoutRelation == relation &amp;&amp; [attribute isKindOfClass:NSValue.class], @"Redefinition of constraint relation");
+
+            self.layoutRelation = relation;
+
+            self.secondViewAttribute = attribute;
+
+            return self;
+
+        }
+
+    };
+
+}
+</code></pre>
+
+<p>的确是返回自己，所以这正是它的链式编程思想的体现。</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS装逼篇——APO编程]]></title>
@@ -6113,1709 +7098,6 @@ NSConditionLock: 490.04 ms
 <pre><code>老早以前, 我一般是在一个异步请求中的completionBlock或者successBlock中拿到需要的值, 为空判断后,直接在block里面再写一个异步线程...其实这样的写法可能很多人都用过,但是代码的阅读性太弱了,花括号太多,看的眼花缭乱的...
 其实还可以设置flag进行判断等等方法...
 暂时就想到这么多, 还有别的方案的话, 欢迎留言哈,大家共同学习!!!
-</code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[修行篇-ios开发中常见设计模式]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/30/xiu-xing-pian-ioskai-fa-zhong-chang-jian-she-ji-mo-shi/"/>
-    <updated>2016-08-30T13:10:04+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/30/xiu-xing-pian-ioskai-fa-zhong-chang-jian-she-ji-mo-shi</id>
-    <content type="html"><![CDATA[<p>本文摘自：<a href="http://ios.jobbole.com/85360/">伯乐在线</a>,因为自己研究并学习ios设计模式的时候寻找了好多相关文章，最后发现这篇才是最适合ios开发的，当然你也可以自己通过C或者java设计模式的规范进行演变。</p>
-
-<p>源码下载地址：<a href="https://github.com/al1020119/iCocosDesignPattern">https://github.com/al1020119/iCocosDesignPattern</a></p>
-
-<h1>对象创建</h1>
-
-<h4>原型（Prototype）</h4>
-
-<p>使用原型实例指定创建对象的种类，并通过复制这个原型创建新的对象。</p>
-
-<pre><code>NSArray *array = [[NSArray alloc] initWithObjects:@1, nil];
-NSArray *array2 = array.copy;
-</code></pre>
-
-<p>array 就是原型了，array2 以 array 为原型，通过 copy 操作创建了 array2。</p>
-
-<p>当创建的实例非常复杂且耗时，或者新实例和已存在的实例值相同，使用原型模式去复制已经存在的实例效率更高。</p>
-
-<h4>工厂方法（Factory Method）</h4>
-
-<pre><code>定义创建对象的接口，让子类决定实例化哪一个类。工厂方法使得类的实例化延迟到其子类。
-</code></pre>
-
-<p>工厂方法是针对每一种产品提供一个工厂类。通过不同的工厂类来创建不同的产品实例。</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi001.png" title="Caption" ></p>
-
-<ul>
-<li>如上图，+ create():Product 就是工厂方法，ConcreatFactoryA 与 ConcreateFactoryB 就是两个工厂类，ConcreateProductA 与 ConcreateProductB 就是两个工厂类对应的产品类，通过不同的工厂生产不同类型的产品，且两个产品类最终返回的是他们的父类 Product，隐藏了对象的具体类型。工厂方法模式让创建的对象拥有一组共同的接口，使我们无需关心做了不同类型接口的具体实现，只需要调用 Product 的接口就行。</li>
-</ul>
-
-
-<blockquote><p>工厂方法模式的扩展性也很好，新增的产品类并不需要修改客户端代码。但每新加一个产品类都需要新建一个工厂类，会造成项目中的类过多。</p></blockquote>
-
-<p>而在 Cocoa Touch 框架中，以 NSNumber 举例，将原有的 alloc+init 拆开写：</p>
-
-<pre><code> id obj1 = [NSNumber alloc];
-    id obj2 = [NSNumber alloc];
-    id obj3 = [obj1 initWithBool:YES];
-</code></pre>
-
-<p>发现 + alloc 后并非生成了我们期望的类实例，而是一个NSPlacehodlerNumber 的中间对象，后面的 – initWithXXXXX 消息都是发送给这个中间对象，再由它做工厂，生成真的对象。如 obj3 的实际类型为 NSCFBoolean，而 obj4 的实际类型为 NSCFNumber 。</p>
-
-<h4>抽象工厂（Abstract Factory）</h4>
-
-<pre><code>提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi002.png" title="Caption" ></p>
-
-<ul>
-<li>如上图，抽象工厂有一个产品族的概念，Factory1 与 Factory2 是继承 AbstractFactory 的两个产品族工厂类， 继承了父类创建 A，B 两个产品的方法，不同产品族工厂类会创建不同类型的产品，最终返回了不同的产品族对象，既 ProductA 和 ProductB。</li>
-</ul>
-
-
-<p>在 Cocoa Touch 框架中，类簇是抽象工厂模式在 iOS 下的一种实现，以 NSArray 举例，将原有的 alloc+init 拆开写：</p>
-
-<pre><code>id obj1 = [NSArray alloc]; // __NSPlacehodlerArray *
-id obj2 = [NSMutableArray alloc];  // __NSPlacehodlerArray *
-id obj3 = [obj1 init];  // __NSArrayI *
-id obj4 = [obj2 init];  // __NSArrayM *
-</code></pre>
-
-<p>发现 + alloc 后并非生成了我们期望的类实例，而是一个NSPlacehodlerArray 的中间对象，后面的 – init 或 – initWithXXXXX 消息都是发送给这个中间对象，再由它做工厂，生成真的对象。这里的 NSArrayI 和 __NSArrayM 分别对应 Immutable 和 Mutable（后面的 I 和 M 的意思）</p>
-
-<blockquote><p>于是顺着思路猜实现，__NSPlacehodlerArray 必定用某种方式存储了它是由谁 alloc 出来的这个信息，才能在 init 的时候知道要创建的是可变数组还是不可变数组。</p></blockquote>
-
-<p>抽象工厂将一系列的产品族统一到一起创建，增加产品族很方便，但增加产品很麻烦，需要改动太多的类的接口。</p>
-
-<h4>生成器（Builder）</h4>
-
-<p>将一个复杂对象的构建与它的表现分离，使得同样的构建过程可以创建不同的表现。
-生成器可以将构建对象的过程分为，客户 – 指导者 – 生成器 的关系，</p>
-
-<pre><code>CharacterBuilder *characterBuilder = [[StandarCharacterBuilder alloc] init];
-ChasingGame *game = [[ChasingGame alloc] init];
-
-Character *player = [chasingGame createPlayer:characterBuilder];
-Character *enemy = [chasingGame createEnemy:characterBuilder];
-</code></pre>
-
-<p>characterBuilder 就是生成器了，而 game 就是指导者。指导者里声明了创建不同表现的对象的方法。而方法里由生成器 characterBuilder 来构建不同的 Character 类型的对象。</p>
-
-<ul>
-<li>生成器模式将复杂的生成对象的过程交给了生成器去完成，作为客户的我们只需要根据简单的接口去生成不同表现的对象。如上述代码中的 player 以及 enemy。玩家和敌人具体的属性数值我们不需要去设置，而是交给生成器去设置。</li>
-</ul>
-
-
-<h4>单例（Singleton）</h4>
-
-<pre><code>保证一个类仅有一个实例，并提供一个访问它的全局访问点。
-</code></pre>
-
-<p>在 Cocoa Touch 框架中，最常见的使用了单例模式的就是 UIApplication 类了。每个应用程序有且仅有一个 UIApplication 的实例，它由 UIApplicationMain 函数在程序启动时创建为单例对象，之后，对同一 UIApplication 实例可以通过其 sharedApplication 类方法进行访问。</p>
-
-<p>单例用来集中管理对类的对象所提供的资源，例如应用程序中需要用集中式的类来协调其服务，这个类就应该生成单一的实例。</p>
-
-<ul>
-<li>单例模式在多线程的应用场合下必须小心使用。如果当唯一实例尚未创建时，有两个线程同时调用创建方法，那么它们同时没有检测到唯一实例的存在，从而同时各自创建了一个实例，这样就有两个实例被构造出来，从而违反了单例模式中实例唯一的原则。 解决这个问题的办法是为指示类是否已经实例化的变量提供一个互斥锁。</li>
-</ul>
-
-
-<h1>接口适配</h1>
-
-<h4>适配器（Adapter）</h4>
-
-<pre><code>将一个类的接口转换成客户希望的另一个接口，适配器模式使得原本由于接口不兼容而不能一起工作的那些类可以一起工作。
-</code></pre>
-
-<p>适配器模式分为类适配器模式和对象适配器模式。
-<img src="http://al1020119.github.io/images/iosshejimoshi003.png" title="Caption" ></p>
-
-<ul>
-<li>上图是对象适配器模式，Adapter（适配器）遵守了 Target（目标接口）协议，拥有一个 Adaptee（被适配者）的对象 adaptee 的引用，当调用 Adapter 的 request 方法，request 方法里会去调用 adapteee 的 specificRequest 方法。</li>
-</ul>
-
-
-<h4>类适配模式</h4>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi004.png" title="Caption" ></p>
-
-<p>类适配器模式中适配器和被适配者是继承关系。request 方法里会去调用 super 的 specificRequest 方法，达到将类的接口转换成客户希望的另一个接口。</p>
-
-<p>适配器模式主要应用于“希望复用一些现存的类，但是接口又与复用环境要求不一致的情况”，在遗留代码复用、类库迁移等方面非常有用。</p>
-
-<h4>桥接（Bridge）</h4>
-
-<pre><code>将抽象部分与它的实现部分分离，使它们都可以独立地变化。
-</code></pre>
-
-<p>桥接模式是软件设计模式中最复杂的模式之一，在软件系统中，某些类型由于自身的逻辑，它具有两个或多个维度的变化。</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi005.png" title="Caption" ></p>
-
-<ul>
-<li>如上图，毛笔和颜色是两个维度的变化，可以选择新建 9 个类去实现不同颜色的不同毛笔，也可以如图所示，去组合两个维度。对于客户端而言，可以针对两个维度的抽象层编程，在程序运行的时候再动态确认两个维度的子类，动态组合对象，将两个独立变化的维度完全解耦，以便能够灵活地扩充任一维度而对另一维度不造成任何影响。比如增加一种毛笔并不需要去改动图中的实现部分，增加一种颜色也不需要去改变抽象部分。（抽象部分是面向我们编程的接口部分，我们绘图的时候是调用毛笔类的绘图方法）。</li>
-</ul>
-
-
-<p>桥接模式可以让抽象与实现之间不形成绑定关系，在运行时可以切换实现，也将抽象和实现完全解耦，可以独立扩展。</p>
-
-<h4>外观（Facade）</h4>
-
-<pre><code>为系统中的一组接口提供一个统一的接口。外观顶一个高层接口，让子系统更易于使用。
-</code></pre>
-
-<p>外观模式主要是使用一个外观类，为复杂的子系统提供一个简单的接口，而子系统的复杂调用交给外观类去做。</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi006.png" title="Caption" ></p>
-
-<ul>
-<li>如上图，数据的来源可能是不同数据库，获取数据可能非常的复杂，所以使用一个外观类提供简单的获取数据的接口，复杂的操作让外观类去做。做到让子系统更加的易用。</li>
-</ul>
-
-
-<h1>对象去耦</h1>
-
-<h4>中介者（Mediator）</h4>
-
-<pre><code>用一个对象来封装一系列对象的交互方式，中介者使各对象不需要显示地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。
-</code></pre>
-
-<p>我们开发的程序是由大量的类来组成的，随着程序功能的不断增加，类和类之间的依赖关系也跟着趋于复杂，而中介者模式便能解决这个问题，</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi007.png" title="Caption" ></p>
-
-<ul>
-<li>如图所示，6 个 VC 类之间的交互可能特别多，如果让他们相互依赖，然后管理这些 VC 之间的关系是一件非常繁琐的事情，我们要处理各个 VC 之间的关系，每当一个 VC 要跳转到另外个 VC，我们需要包含新的 VC 的头文件。而使用中介者模式，让 VC 之间的交互变成 VC 和中介者的交互，用中介者来管理多对多的复杂的对象群，降低了各个对象之间的耦合，减少了对象之间逻辑的复杂度，但也可能导致中介者类中的实现过于复杂。</li>
-</ul>
-
-
-<p>UINavigationController 就是一个中介者，如下图所示</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi008.png" title="Caption" ></p>
-
-<p>视图控制器的切换都是与 UINavigationController 做交互。由 UINavigationController 去做集中管理。</p>
-
-<h4>观察者（Observer）</h4>
-
-<pre><code>定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并自动更新。
-</code></pre>
-
-<p>在 Cocoa Touch 框架中通知和 KVO 都实现了观察者模式。通知是由一个中心对象为所有观察者提供变更通知，KVO 是被观察的对象直接向观察者发送通知。</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi009.png" title="Caption" ></p>
-
-<ul>
-<li>如上图，Subject 的值改变时，通知观察者 ObserverA，ObserverB，ObserverC，我的数据改变了，依赖我的你们需要更新状态了。</li>
-</ul>
-
-
-<p>被观察者不需要知道有多少个观察者和观察者的更新细节，降低被观察者和观察者之间的耦合。</p>
-
-<h1>抽象集合</h1>
-
-<h4>组合（Composite）</h4>
-
-<pre><code>将对象组合成树形结构以表示“部分-整体”的层次结构。组合使得用户对单个对象和组合对象的使用具有一致性。
-</code></pre>
-
-<p>在 Cocoa Touch 框架中，UIView 被组织成一个组合结构。每个 UIView 都可以将其它 UIView 设置为自己的子视图，形成一个树形结构，让客户端可以对单个 UIView 或者对 UIView 组合统一对待。</p>
-
-<p>既平移一个 UIView，可以做到平移这一个 UIView 组合，且操作方法与平移单个 UIView 一致。</p>
-
-<h4>迭代器（Iterator）</h4>
-
-<pre><code>提供一种方法顺序访问一个聚合对象中的各个元素，而又不需要暴露该对象的内部表示，
-</code></pre>
-
-<p>在 Cocoa Touch 中的 NSEnumerator 就实现了迭代器模式，如以下代码</p>
-
-<pre><code> NSArray *anArray = @[@"this", @"is", @"a", @"test"];
-    NSEnumerator *itemEnumerator = [anArray objectEnumerator];
-
-    NSString *item;
-    while (item = [itemEnumerator nextObject]) {
-        NSLog(@"%@", item);
-    }
-</code></pre>
-
-<p>迭代器分为两种，上面使用了一个外部迭代器，外部迭代器让客户端直接操作迭代过程，如上面代码就是使用一个 while 循环去迭代。</p>
-
-<p>下面是使用了内部迭代器，客户端不需要知道实现迭代的方式。</p>
-
-<pre><code> NSArray *anArray = @[@"this", @"is", @"a", @"test"];
-    NSString *string = @"a";
-    [anArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@"%@", obj);
-        if ([obj isEqualToString:string]) {
-            *stop = YES;
-        }
-    }];
-</code></pre>
-
-<p>客户端不需要手动实现迭代器，只要对每个元素进行处理就行。</p>
-
-<h1>行为扩展</h1>
-
-<h4>访问者（Visitor）</h4>
-
-<pre><code>表示一个作用于某对象结构中的各元素的操作，它让我们可以在不改变各元素的类的前提下定义作用于这些元素的新操作。
-</code></pre>
-
-<p>当一个复杂的对象结构包含很多其他的对象，每个对象都有不同的接口，这个时候如果想添加新的接口进行新的操作，就得修改该对象的类，如果每个对象都需要添加新操作，就需要修改更多的类。而访问者模式就是用来不修改原有类添加新的操作。</p>
-
-<p>访问者模式涉及两个关键元素，访问者和被访问对象。访问者遵从访问协议，访问协议里声明了访问方法。访问方法类似下面</p>
-
-<pre><code>- (void)visitEngine:(NimoEngine *)engine;
-- (void)visitWheel:(NimoWheel *)wheel;
-</code></pre>
-
-<p>访问者模式流程，直接调用访问者里的访问方法，访问方法里实现了新添加的操作，engine 与 wheel 既被访问对象，达到了将新操作集中在访问者里处理的效果。如果再需要新添加一系列对各个元素的操作，只需要再添加一个访问者类就行。</p>
-
-<blockquote><p>访问者能访问复杂元素里的每一个元素，然后由访问者对这些元素进行行为扩展。</p>
-
-<h4>装饰（Decorator）</h4></blockquote>
-
-<pre><code>动态地给一个对象添加一些额外的职责。就扩展功能来说，装饰模式相比生成子类更为灵活。
-</code></pre>
-
-<p>Category 就是实现了装饰的设计模式。Category 是 Objective-C 的语言功能，通过它可以给类添加方法的接口与实现，而不必子类化。 从这个设计模式的描述联想到 Category，就没什么难理解了。
-责任链（Chain of Responsibility）</p>
-
-<pre><code>使多个对象都有机会处理请求，从而避免请求的发送者和接受者之间发生耦合。此模式将这些对象连成一条链，并沿着这条链传递请求，直到有一个对象处理它为止。
-</code></pre>
-
-<p>Cocoa Touch 中的事件处理流程–响应者链就实现了责任链模式。以点击为例，首先通过 hit-test view 的流程找到被点击的视图，被点击的视图如果不处理点击事件，则沿着响应者链向上回溯，比如给父视图发消息，让父视图去处理，父视图不处理则继续沿着响应者链向上回溯，直到有对象处理它为止，如果都不处理，则该事件丢弃。</p>
-
-<h1>算法封装</h1>
-
-<h4>模板方法（Template Method）</h4>
-
-<pre><code>定义一个操作中算法的骨架，而将一些步骤延迟到子类中。模板方法使子类可以重定义算法的某些特定步骤而不改变该算法的结构。
-</code></pre>
-
-<p>模板方法可以提高可扩展性与可复用性，比如 UIView 类中的定制绘图,UIView 的结构不改变，只是继承 UIView,再重载 – (void)drawRect:(CGRect)rect
-方法。所以 – (void)drawRect:(CGRect)rect 就是模板方法，默认什么都不做或者只是做了部分操作，缺少特性操作，用来给子类选择重载与实现的方法。</p>
-
-<h4>策略（Strategy）</h4>
-
-<pre><code>定义一系列算法，把它们一个个封装起来，并且使它们可相互替换。本模式使得算法可独立于使用它的客户而变化。
-</code></pre>
-
-<p>举一个常见的例子，验证 UITextField 输入是否有效。有两个算法分别是验证邮箱的和验证电话号码的。可以通过 if else 这样的判断代码来决定执行哪个算法。也可以通过策略模式，将算法封装起来，如下图
-￼</p>
-
-<p><img src="http://al1020119.github.io/images/iosshejimoshi010.png" title="Caption" ></p>
-
-<p>Strategy 是这一系列算法的父类，ConcreteStrategyA, B, C。是三种算法，给 Context 对象添加一个 Strategy 类型的属性，里面存放着 ConcreteStrategyA 或者 B，C。然后 Context 对象就知道去执行哪个算法。也就知道自己需要执行什么策略。</p>
-
-<blockquote><p>策略模式首先将算法都封装起来了，易于理解，且易于切换和扩展。</p>
-
-<h4>命令（Command）</h4></blockquote>
-
-<pre><code>将请求封装为一个对象，从而可用不同的请求对客户进行参数化，对请求排队或记录请求日志，以及支持可撤销的操作。
-</code></pre>
-
-<p>Cocoa Touch 框架中的 NSInvocation 就是实现了命令模式。</p>
-
-<pre><code>NSMethodSignature*signature = [ViewController instanceMethodSignatureForSelector:@selector(sendMessageWithNumber:WithContent:)];
-  //1、创建NSInvocation对象
-  NSInvocation*invocation = [NSInvocation invocationWithMethodSignature:signature];
-  invocation.target = self;
-  //invocation中的方法必须和签名中的方法一致。
-  invocation.selector = @selector(sendMessageWithNumber:WithContent:);
-  /*第一个参数：需要给指定方法传递的值
-         第一个参数需要接收一个指针，也就是传递值的时候需要传递地址*/
-  //第二个参数：需要给指定方法的第几个参数传值
-  NSString*number = @"1111";
-  //注意：设置参数的索引时不能从0开始，因为0已经被self占用，1已经被_cmd占用
-  [invocation setArgument:&amp;number atIndex:2];
-  NSString*number2 = @"啊啊啊";
-  [invocation setArgument:&amp;number2 atIndex:3];
-  //2、调用NSInvocation对象的invoke方法
-  //只要调用invocation的invoke方法，就代表需要执行NSInvocation对象中制定对象的指定方法，并且传递指定的参数
-  [invocation invoke];
-</code></pre>
-
-<p>将行为封装成对象，而不是直接触发行为，因为是对象，所以可以很容易的设计一个命令队列，也可以方便的记录进日志里，以及实现行为的撤销。（因为行为对象可以记录进日志里，所以可以根据日志得知上一个操作做了什么，从而进行撤销）。</p>
-
-<h1>性能与对象访问</h1>
-
-<h2>享元（Flyweight）</h2>
-
-<pre><code>利用共享技术有效地支持大量细粒度的对象。
-</code></pre>
-
-<p>tableViewCell 的重用机制就是实现了享元模式。在要使用一个 Cell 的时候，会先去重用池里看看 tableView 有没有可以重用的 cell，如果有重用该 cell，没有创建一个，这就是享元模式。</p>
-
-<p>享元模式主要有两个关键组件，可共享的享元对象和保存它们的享元池。</p>
-
-<blockquote><p>举另一个实现例子，画面上需要显示 100 个相同的图案，可以只生成一个包含该图案 image 的 imageView。其它 99 个只需要去享元池里去拿这个 imageView 实例的信息，然后在页面里直接绘制图案，这样就不需要生成 100 个图案实例。</p></blockquote>
-
-<p>享元模式通过共享一部分必须的对象，减少对象的创建，节省大量的内存。</p>
-
-<h4>代理（Proxy）</h4>
-
-<pre><code>为其它对象提供一种代理以控制对这个对象的访问。
-</code></pre>
-
-<p>代理设计模式的英文名是 Proxy pattern，和我们常见的 delegate（委托） 没关系。</p>
-
-<p>iOS 中常见的代理模式例子为引用计数，当一个复杂对象的多份副本须存在时，代理模式可以结合享元模式以减少内存用量。典型做法是创建一个复杂对象及多个代理者，每个代理者会引用到原本的复杂对象。而作用在代理者的运算会转送到原本对象。一旦所有的代理者都不存在时，复杂对象会被移除。</p>
-
-<blockquote><p>当然，上面的代理模式中的代理者什么都没做，代理对象作为 A 和 C 中间的协调者，可以多做点操作，可以理解为 VPN 中的代理者可以对传输数据加密，而 A 和 C 中的代理者，也可以隐藏 C 的信息，做到对 C 的保护。</p></blockquote>
-
-<h1>对象状态</h1>
-
-<h4>备忘录（Memento）</h4>
-
-<pre><code>在不破坏封装的情况下，捕获一个对象的内部状态，并在该对象之外保存这个状态，这样以后就可将该对象恢复到原先保存的状态。
-</code></pre>
-
-<p>Cocoa Touch 框架中归档可以实现备忘录模式，Cocoa 的归档是对对象及其属性还有同其他对象间的关系进行编码，形成一个文档，该文档可以保存于文件系统，也可在进程或网络间传输，最后又可以通过解档将文档解码成与该对象归档时状态一致的对象。</p>
-
-<blockquote><p>既将对象保存一个备份放置到其它地方，可以随时使用备份将该对象恢复到原先保存的状态，用来储存关键对象的关键状态。</p></blockquote>
-
-<h5>总结：（如果看了这么久您依然不知道上面在扯上面鬼，那么请结合ios开发中遇到的技术点简单粗略的体会一下下面的东西，再返回看看或许你就会明白很多）</h5>
-
-<ul>
-<li>备忘录-归档</li>
-<li>代理-引用计数（非delegate）</li>
-<li>享元-TableView重用机制</li>
-<li>命令-NSInvocation</li>
-<li>策略-文本有效</li>
-<li>模板-drawRect</li>
-<li>装饰-分类</li>
-<li>责任链-响应者</li>
-<li>迭代器-NSEnumerator</li>
-<li>组合-UIView</li>
-<li>观察者-通知、KVO</li>
-<li>中介-导航</li>
-<li>原型-.copy</li>
-<li>工厂方法-initWithBool</li>
-<li>抽象工厂-alloc]initWithXXX</li>
-<li>单利-无处不在哈哈</li>
-<li>适配器-网络请求接口</li>
-</ul>
-
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[修行篇-数据结构常见操作与总结]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/28/xiu-xing-pian-shu-ju-jie-gou-chang-jian-cao-zuo-yu-zong-jie/"/>
-    <updated>2016-08-28T12:33:11+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/28/xiu-xing-pian-shu-ju-jie-gou-chang-jian-cao-zuo-yu-zong-jie</id>
-    <content type="html"><![CDATA[<h1>一、栈</h1>
-
-<p>栈是只能在一端进行插入和删除的线性表。
-（别看只是个定义，非常重要，已经道出了运算方法：只能在一端插入和删除。)</p>
-
-<blockquote><p>栈的特征：后进先出，先进后出。</p></blockquote>
-
-<p>插入和删除元素的一端称为栈顶。（说明了我们在栈顶操作）
-另一端称为栈底。
-插入元素和删除元素的操作称为入栈和出栈。</p>
-
-<!--more-->
-
-
-<h3>1.顺序栈</h3>
-
-<p>结构：(top总是指向数组最后的元素，比如data[n]，而不是前面)</p>
-
-<pre><code>#define MAXSIZE 100
-typedef struct
-{
-    elementtype data[MAXSIZE];
-    int top;
-} seqstack;
-</code></pre>
-
-<p>初始化栈：</p>
-
-<pre><code>void init_stack(seqstack *S)
-{
-    S-&gt;top = -1;    //一个元素也没有，注意因为TOP是下标而不是元素个数，用-1
-}
-</code></pre>
-
-<p>判断栈是否为空：</p>
-
-<pre><code>int stack_empty(seqstack *S)
-{
-    if (S-&gt;top == -1)
-        return 1;
-    else
-        return 0;
-}
-</code></pre>
-
-<p>取栈顶元素：</p>
-
-<pre><code>elementtype stack_top(seqstack *S)
-{
-    if (stack_empty(S))
-        error("栈为空！");
-    else
-        return S-&gt;data[S-&gt;top];
-}
-</code></pre>
-
-<p>入栈：</p>
-
-<pre><code>void push_stack(seqstack *S, elementtype x)
-{
-    if (S-&gt;top == MAXSIZE -1)
-        error("溢出！");
-    else
-        S-&gt;data[++S-&gt;top] = x;    //注意-&gt;运算符的优先级是最高的
-}
-</code></pre>
-
-<p>出栈：</p>
-
-<pre><code>elementtype pop_stack(seqstack *S)
-{
-    if (stack_empty(S))
-        error("栈为空！");
-    else
-        return S-&gt;data[S-&gt;top--];
-}
-</code></pre>
-
-<p>判断栈是否为满：</p>
-
-<pre><code>int stack_full(seqstack *S)
-{
-    if (S-&gt;top == MAXSIZE -1)
-        return 1;
-    else
-        return 0;
-}
-</code></pre>
-
-<p>总体来说，顺序栈很简单，出的时候取最后的元素，进的时候一样进在尾部。</p>
-
-<h3>2.链栈</h3>
-
-<p>栈的链式存储结构称为链栈。
-其插入和删除操作仅限制在表头位置上进行。
-由于只能在链表头部进行操作，故链栈没有必要象单链表那样添加头结点。栈顶指针就是链表的头指针。
-结构：</p>
-
-<pre><code>typedef struct node    //和一般链表的结构一样。
-{
-    elementtype data;
-    struct node *next;
-} linkstack; 
-linkstack *top;
-当top=NULL时，链栈为空栈。
-</code></pre>
-
-<p>入栈：</p>
-
-<pre><code>void push_stack(linkstack *top, elementtype x)
-{
-    linkstack *P = (linkstack *)malloc(sizeof(linkstack));
-    P-&gt;data = x;
-    P-&gt;next = top-&gt;next;
-    top = P;
-}
-</code></pre>
-
-<p>出栈：</p>
-
-<pre><code>elementype pop_stack(linkstack *top)
-{
-    elementtype x;
-    linkstack *P;
-    if (top == NULL)
-        error("栈为空！");
-    else
-    {
-        x = top-&gt;data;
-        P = top;
-        top = top-&gt;next;
-        free(P);
-        return x;
-    }
-}
-</code></pre>
-
-<h1>二、队列</h1>
-
-<p>队列是只能在一端插入，另一端删除的线性表。
-特征是：先进先出，后进后出。</p>
-
-<h1>1.顺序队列</h1>
-
-<p>注意顺序队列多是循环队列，这里要注意几点：</p>
-
-<ul>
-<li>(1)front是队头的前一个位置。</li>
-<li>(2)尾部入队，头部出队。</li>
-<li><p>(3)由于循环，任何的位置移动计算之后要取余：P = (P + 1) % MAXSIZE 。
-结构：</p>
-
-<p>  #define MAXSIZE 100
-  typedef struct
-  {
-      elementtype data[MAXSIZE];
-      int front;    //头序号（注意是队头的前一个位置）
-      int rear;    //尾序号（直接指向尾元素）
-  } seqqueue;</p></li>
-</ul>
-
-
-<p>初始化队列：</p>
-
-<pre><code>void init_queue(seqqueue *Q)
-{
-    Q-&gt;front = 0;
-    Q-&gt;rear = 0;
-}
-</code></pre>
-
-<p>还有一种写法：</p>
-
-<pre><code>void init_queue(seqqueue *Q)
-{
-    Q-&gt;front = MAXSIZE - 1;
-    Q-&gt;rear = MAXSIZE - 1;
-}
-</code></pre>
-
-<p>两种方法的区别是第一种插入第一个元素是data[1]，而第二种是data[0]。
-判断队列是否为空：</p>
-
-<pre><code>int queue_empty(seqqueue *Q)
-{
-    if (Q-&gt;front == Q-&gt;rear)
-        return 1;
-    else
-        return -1;
-}
-</code></pre>
-
-<p>判断队列是否为满：</p>
-
-<pre><code>int queue_full(seqqueue *Q)
-{
-    if ((Q-&gt;rear + 1) % MAXSIZE == Q-&gt;front)
-        return 1;
-    else
-        return 0;
-}
-</code></pre>
-
-<p>取队头元素：</p>
-
-<pre><code>elementtype queue_front(seqqueue *Q)
-{
-    if (queue_empty(Q))
-        error("队列为空！");
-    else
-        return Q-&gt;data[(Q-&gt;front + 1) % MAXSIZE];
-}
-</code></pre>
-
-<p>入队：</p>
-
-<pre><code>void Enqueue(seqqueue *Q, elementtype x)
-{
-    if (queue_full(Q))
-        error("队列满！");
-    else
-    {
-        Q-&gt;rear = (Q-&gt;rear + 1) % MAXSIZE;    //千万不能直接用Q-&gt;rear++，在循环队列要特别注意
-        Q-&gt;data[Q-&gt;rear] = x;
-    }
-}
-</code></pre>
-
-<p>出队：</p>
-
-<pre><code>elementtype Outqueue(seqqueue *Q)
-{
-    if (queue_empty(Q))
-        error("队列为空！");
-    else
-    {
-        Q-&gt;front = (Q-&gt;front + 1) % MAXSIZE;
-        return Q-&gt;data[Q-&gt;front];
-    }
-}
-</code></pre>
-
-<h3>2.链队列</h3>
-
-<p>出队时，删除表头操作，入队时，在表尾添加结点。（也就是头部出，尾部进）
-使用带头结点的单链表形式。（注意链栈是不带头结点的）
-结构：</p>
-
-<pre><code>typedef struct mynode
-{
-    elementtype data;
-    mynode *next;
-} node;    //就是单链表
-typedef struct
-{
-    node *front;
-    node *rear;
-} linkqueue;
-</code></pre>
-
-<p>初始化队列：</p>
-
-<pre><code>void init_queue(linkqueue *Q)
-{
-    Q-&gt;front = (node *)malloc(sizeof(node));    //生成头结点（注意是NODE类型，Q结构是已有的一个结构，这里有点特殊，仔细体会）
-    Q-&gt;rear = Q-&gt;front;
-    Q-&gt;front = NULL;
-}
-</code></pre>
-
-<p>判断队列是否为空：</p>
-
-<pre><code>int queue_empty(linkqueue *Q)
-{
-    if (Q-&gt;front == Q-&gt;rear)
-        return 1;
-    else
-        return 0;
-}
-</code></pre>
-
-<p>取队头元素：</p>
-
-<pre><code>elementtype queue_front(linkqueue *Q)
-{
-    if (queue_empty(Q))
-        error("队列为空！");
-    else
-        return Q-&gt;front-&gt;next-&gt;data;
-}
-</code></pre>
-
-<p>入队：</p>
-
-<pre><code>void Enqueue(linkqueue *Q, elementtype x)
-{
-    node *P = (node *)malloc(sizeof(node));
-    P-&gt;data = x;
-    P-&gt;next = NULL;
-    Q-&gt;rear-&gt;next = P;
-    Q-&gt;rear = P;
-}
-</code></pre>
-
-<p>出队：</p>
-
-<pre><code>elementtype Outqueue(linkqueue *Q)
-{
-    node *P;
-    elmenttype x;
-    if (queue_empty(Q))
-        error("队列为空！");
-    else
-    {
-        P = Q-&gt;front-&gt;next;
-        Q-&gt;front-&gt;next = P-&gt;next;
-        x = P-&gt;data;
-        free(P);
-    }
-    if (Q-&gt;front-&gt;next == NULL)    //只剩一个结点删除后队列为空时的特殊情况，一定要注意处理
-        Q-&gt;rear = Q-&gt;front;
-    return x;
-}
-</code></pre>
-
-<h1>数组</h1>
-
-<p>主要是稀疏矩阵的压缩存储：
-当数组中非零元素非常少时，称之为稀疏矩阵。
-存储特别如下：</p>
-
-<ul>
-<li>(1)对稀疏矩阵压缩存储时，除了存储非零元素的值v以外，还要存储其行列号i和j，故每个元素对应一个三元组(i, j, v)。将这些元素的三元组组织起来构成三元组表。</li>
-<li>(2)需要在三元组表中增设元素个数、行列数，以唯一确定一个稀疏矩阵。</li>
-</ul>
-
-
-<p>结构如下：</p>
-
-<pre><code>#define MAXSIZE 100
-typedef struct    //三元组结构
-{
-    int i, j;
-    elementtype v;
-} tuple;
-typedef struct
-{
-    int mu, nu, tu;    //行数、列数、非0元素个数
-    tuple data[MAXSIZE];
-} spmatrix;
-</code></pre>
-
-<h1>树</h1>
-
-<h3>一、树</h3>
-
-<p>树中的每个结点最多只有一个前驱（父辈），但可能有多个后继（后代）。
-一个结点的度是指该结点的孩子数目。
-若一个结点的度为0，称为叶子结点或终结点，否则称为分支结点或非终结点。
-一棵树的度是树中最大的结点的度。
-某个结点的子树的根称为其孩子结点，而该结点为其孩子结点的双亲结点或父结点。
-同一个结点的孩子互相称为兄弟结点。
-根的层次为1，其余结点的层次为父结点的层次数加1，而最大的层次数称为树的高度或深度。
-如果树中各兄弟结点之间的排列次序是无关的，则称之为有序树，否则称为无序树。
-称多棵树为森林。</p>
-
-<h3>二叉树</h3>
-
-<p>二叉树和树一样，都可以为空树。
-注意二叉树每个结点的孩子都有左右之分，每个结点都有左右两个子树，这与树结构明显不同。
-二叉树和树本质上是完全不同的两种结构。
- 定义：满二叉树是指每层都有最大数目结点的二叉树，即高度为k的满二叉树中有2k-1个结点。而完全二叉树则是指在满二叉树的最下层从右到左连续地删除若干个结点所得到的二叉树。</p>
-
-<p>二叉树的性质：</p>
-
-<ul>
-<li>1.在二叉树的第i层上的结点个数&lt;=2i-1(i>0)</li>
-<li>2.深度（高度）为k的二叉树的结点个数&lt;=2k-1</li>
-<li>3.对任一棵非空的二叉树，如果其叶子数为n0, 度为2的结点数为n2, 则有下面的关系式成立：n0=n2+1
-(这个性质很重要。主要是有个概念：除去根结点，每个结点都与一个它上面的分支一一对应，也就是说，结点数＝分支数＋1，所以有：n-1=n1+2*n2)</li>
-<li>4.有n个结点的完全二叉树(n>0)的深度为[log2n]+1([]为取整)</li>
-<li>5.在编号的完全二叉树中，各结点的编号之间的关系为：
-编号为i的结点如果存在左孩子，则其编号为2i，如果存在右孩子，则其编号为2i+1，如果存在父结点，则其编号为[i/2]。</li>
-</ul>
-
-
-<p>二叉树的存储结构：
-1.顺序存储结构：
-按完全二叉树的编号次序进行，即编号为i的结点存储在数组中下标为i的元素中。
-缺点：若二叉树不是完全二叉树，则为了保持结点之间的关系，不得不空出许多元素来，这就造成了空间的浪费。</p>
-
-<p>2.二叉链表存储结构：</p>
-
-<pre><code>typedef struct node
-{
-    datatype data;
-    struct node *lchild, *rchild;
-} bitree;
-</code></pre>
-
-<h3>二叉树的遍历：</h3>
-
-<p>所谓遍历二叉树是指按某种次序访问二叉树中每个结点一次且仅一次。
-根据访问根结点的次序，可以分为先序遍历，中序遍历，后序遍历。
-先序遍历可描述为：
-若二叉树T不为空：</p>
-
-<ul>
-<li>(1)访问T的根结点；</li>
-<li>(2)先序遍历T的左子树；</li>
-<li><p>(3)先序遍历T的右子树。
-遍历的算法非常简单，只写出先序遍历算法：</p>
-
-<p>  void preorder(bitree *T)
-  {
-      if (T != NULL)
-      {
-          visit(T);    //一般用的最多的就是输出
-          preorder(T->lchild);
-          preorder(T->rchild);
-      }
-  }</p></li>
-</ul>
-
-
-<h3>线索二叉树</h3>
-
-<p>线索二叉树主要是为了求解在某种次序下的前驱或后继结点。
-将二叉树各结点中的空的左孩子指针域改为指向其前驱，空的右孩子指针域改为指向其后继。称这种新的指针（前驱或后继）为线索，所得到的二叉树被称为线索二叉树，将二叉树转变成线索二叉树的过程称为线索化。
-同时，为了区分到底指针是指向前驱（后继）还是孩子，要加入两个标志来判断。
-结构：</p>
-
-<pre><code>typedef struct node
-{
-    int ltag, rtag;    //0为孩子，1为前驱或后继
-    datatype data;
-    struct node *lchild, *rchild;
-} ordertree;
-</code></pre>
-
-<p>先序后继的求解：</p>
-
-<pre><code>ordertree *presuc(ordertree *P)
-{
-    if (P-&gt;ltag == 0)
-        return P-&gt;lchild;
-    else
-        return P-&gt;rchild;
-}
-</code></pre>
-
-<p>中序后继：</p>
-
-<pre><code>ordertree *insuc(ordertree *P)
-{
-    ordertree *q = P-&gt;rchild;
-    if (P-&gt;rtag == 1)
-        return q;
-    else
-    {
-        while (q-&gt;ltag == 0)
-            q = q-&gt;lchild;
-        return q;
-    }
-}
-</code></pre>
-
-<p>中序先驱：</p>
-
-<pre><code>ordertree *infore(ordertree *P)
-{
-    ordertree *q = P-&gt;lchild;
-    if (P-&gt;ltag == 1)
-        return q;
-    else
-    {
-        while (q-&gt;rtag == 0)
-            q = q-&gt;rchild;
-        return q;
-    }
-}
-</code></pre>
-
-<p>后序先驱：</p>
-
-<pre><code>ordertree *postfore(ordertree *P)
-{
-    if (P-&gt;rtag == 0)
-        return P-&gt;rchild;
-    else
-        return P-&gt;lchild;
-}
-</code></pre>
-
-<h3>树和森林</h3>
-
-<h5>1.树的存储结构：</h5>
-
-<p>(1)双亲表示法</p>
-
-<pre><code>struct tnode
-{
-    datatype data;
-    int parent;
-}
-struct tnode treelist[MAXSIZE];    //整个树的存储数组说明
-</code></pre>
-
-<p>其中parent指示该结点父结点的下标，data存放结点的值。
-优点：便于搜索相应结点的父结点和祖先结点。
-缺点：若要搜索孩子结点或后代结点需要搜索整个表，浪费时间。</p>
-
-<p>(2)孩子链表表示法
-分别将每个结点的孩子结点连成一个链表，然后将各表头指针放在一个表中构成一个整体结构。</p>
-
-<pre><code>typedef struct node    //链表中每个孩子结点的定义
-{
-    int data;
-    struct node *next;
-} listnode;
-typedef struct    //数组元素的定义，每个数组元素都是一个单链表，单头元素不同
-{
-    datatype info;
-    listnode *firstchild;
-} arrnode;
-arrnode tree[MAXSIZE];    //MAXSIZE为所有结点的个数
-</code></pre>
-
-<p>优缺点：与双亲表示法恰好相反。</p>
-
-<p>(3)孩子－兄弟链表表示法（二叉链表表示法，二叉树表示法）
-树中每个结点用一个链表结点来存储，每个链表结点中除了存放结点的值外，还有两个指针，一个用来指示该结点的第一个孩子，另一个用于指示该结点的下一个兄弟结点。</p>
-
-<pre><code>typedef struct node
-{
-    datatype data;
-    struct node *firstchild, *nextbrother;
-} tnode;
-</code></pre>
-
-<h5>2.树（森林）与二叉树的转换</h5>
-
-<p>树或森林的子树转换为二叉树的左子树，兄弟转化为右子树。</p>
-
-<h5>3.树（森林）的遍历</h5>
-
-<p>树的遍历可分为先序遍历和后序遍历。（注意没有中序，因为树有不只两个孩子）即结点是在其子树之前还是之后访问。
-遍历树（森林）要转换为遍历其对应的二叉树：
-先序遍历：（同二叉树的先序遍历）</p>
-
-<pre><code>void preorder(tnode *T)
-{
-    if (T != NULL)
-    {
-        visit(T);
-        preorder(T-&gt;firstchild);
-        preorder(T-&gt;nextbrother);
-    }
-}
-</code></pre>
-
-<p>后序遍历：（同二叉树的中序遍历）</p>
-
-<pre><code>void postorder(tnode *T)
-{
-    if (T != NULL)
-    {
-        postorder(T-&gt;firstchild);
-        visit(T);
-        postorder(T-&gt;nextbrother);
-    }
-}
-</code></pre>
-
-<h3>哈夫曼树</h3>
-
-<p>哈夫曼树主要用来处理压缩算法。
-一般的判断问题的流程就象是一棵二叉树，其中分支（判断）结点对应于二叉树的分支结点；而最后得出的结论对应于叶子结点；一个结论所需要的判断次数是从根结点到该叶子结点的分支线数（层次数-1）；每个结论成立的次数作为叶子结点的权值。
-(这个权值可能比较少接触,但是其实它非常重要,因为我们平时设计的系统,判断的结果常常都是通过长年的实践会有一个出现机率分配,而不可能是平分的,比如考试,如果常常80-90分的比较多,也许就要换一种算法,当然这是后话,和考试无关了.)</p>
-
-<p>哈夫曼算法步骤如下:</p>
-
-<ul>
-<li>(1)根据给定的n个权值,构成一排结点T,每个的值都是相应的权值.</li>
-<li>(2)从T中选两棵权值最小的二叉树,作为左右子树构成一棵新的二叉树T',并且新二叉树的权值为左右子树权值之和.</li>
-<li>(3)将新二叉树T'并入到T中,删除原来的两棵二叉树.</li>
-<li>(4)重复2,3直到只剩一棵二叉树.这棵树就是哈夫曼树.</li>
-</ul>
-
-
-<p>哈夫曼树的带权路径长度WPL=∑wL
-即所有叶子结点的 权值*比较次数(层次数-1) 之和.
-而WPL也正好等于所有分支结点(不包括叶子结点)的值之和.</p>
-
-<h1>图</h1>
-
-<p>图中将每个对象用一个顶点表示，并常用一个序号来标识一个顶点。
-其中弧表示单向关系，边表示双向关系，用离散数学中的术语来说，则分别表示为非对称关系和对称关系。
-弧用&lt;A, B>表示（A为尾，B为头），边用(A, B)表示。</p>
-
-<pre><code>一个图G由两部分内容构成，即顶点(vertex)集合(V)和边(或弧edge)的集合(E)，并用二元组(V, E)来表示，记做G = (V, E) 
-</code></pre>
-
-<ul>
-<li>根据顶点间的关系是否有向而引入有向图和无向图。</li>
-<li>给每条边或弧加上权值，这样的带权图称为网络。</li>
-<li>若无向图中任意两点间都有一条边，则称此图G为无向完全图。(共有边数 n*(n-1)/2 )</li>
-<li><p>若有向图中任意一个顶点到其余各点间均有一条弧，则称为有向完全图。(共有弧数 n*(n-1) )
-若一个图G1是从G中选取部分顶点和部分边（或弧）组成，则称G1是G的子图。（注意，顶点和边必须都为子关系）</p></li>
-<li><p>若无向图中两个顶点i, j之间存在一条边，则称i, j相邻接，并互为邻接点。
-在有向图中，若存在弧&lt;Vi, Vj>，也做Vi, Vj相邻接，但为区别弧的头、尾顶点，可进一步称做Vi邻接到Vj，Vj邻接于Vi。</p></li>
-</ul>
-
-
-<p>与一个顶点相邻接的顶点数称为该顶点的度。
-在有向图中，进入一个顶点的弧数称为该顶点的入度，从一个顶点发出的弧数为该顶点的出度，并将入度和出度之和作为该顶点的度。</p>
-
-<p>一个顶点经过一定的可经路程到达另一个顶点，就为顶点之间的路径。</p>
-
-<ul>
-<li>若某路径所经过的顶点不重复，则称此路径为简单路径。</li>
-<li>若某路径的首尾相同，则称此路径为回路（或称为环）。</li>
-<li><p>若某回路的中间不重复，则称之为简单回路。</p></li>
-<li><p>若无向图中任意两点之间均存在路径，则称G为连通图，否则不连通，就存在若干个连通分量。</p></li>
-<li>若有向图中任意两点间可以互相到达，则称为强连通图。</li>
-</ul>
-
-
-<p>一个无向图，连通并且无回路，称这样的图为树。
-若有向图中仅有一个顶点的入度为0，其余顶点的入度都为1，称此图为有向树，入度为0的顶点为根。</p>
-
-<h3>图的存储结构：</h3>
-
-<h5>1。邻接矩阵表示</h5>
-
-<p>对n个顶点的图来说，其邻接矩阵为n*n阶的。
-邻接矩阵的元素存放边（弧）的权值，对不存在的边（弧），则用0或∞表示。
-定义格式如下：</p>
-
-<pre><code>#define n 6    /* 图顶点数 */ 
-#define e 8    /* 图的边（弧）数 */
-typedef struct
-{
-    vextype vexs[n];    /* 顶点类型 */
-    datatype arcs[n][n];    /* 权值类型 */
-} graph; 
-</code></pre>
-
-<p>建立一个无向网络的算法：</p>
-
-<pre><code>CreateGraph(graph *G) 
-{ 
-    int i, j, k; 
-    float w; 
-    for (i=0; i&lt;n; i++) 
-        G-&gt;vexs[i] = getchar();    /* 读入顶点信息，创建表，这里用字符型 */ 
-    for (i=0; i&lt;n; i++) 
-        for (j=0; j&lt;n; j++) 
-            G-&gt;arcs[i][j] = 0;    /* 邻接矩阵初始化 */ 
-    for (k=0; k&lt;e; k++) 
-    { 
-        scanf("%d%d%f", &amp;i, &amp;j, &amp;w);    /* 读入边(vi, vj)上的权w(暂用float类型) */ 
-        G-&gt;arcs[i][j] = w; 
-        G-&gt;arcs[j][i] = w; 
-    } 
-}
-</code></pre>
-
-<h5>2.邻接表表示法</h5>
-
-<p>将每个顶点的邻接点连成链表，并将各链表的表头指针合在一起（用数组或链表表示均可），其中每个头指针与该结点的信息合为一个整体结点。
-如果将邻接表中各顶点的邻接表变为其前驱顶点即可，从而得到逆邻接表。
-用邻接表存储网络时，需要将各条边（弧）的权值作为相应邻接结点中的一个字段。
-结构：</p>
-
-<pre><code>typedef struct node
-{
-    int adjvex;    /* 邻接点域 */
-    struct node *next;    /* 链域 */
-    datatype arc;    /* 权值 */
-} edgenode;    /* 边表指针 */
-typedef struct
-{
-    vextype vertex;    /* 顶点信息 */
-    edgenode *link;    /* 边表头指针 */
-} vexnode;    /* 顶点表结点 */
-vexnode gnode[n];    /* 整个图的构成 */
- 建立无向图的邻接表：
-CreateAdjlist(gnode)
-{
-    int i, j, k;
-    edgenode *s;
-    for (i=0; i&lt;n; i++)    /* 读入顶点信息 */
-    {
-        gnode[i].vertex = getchar();
-        gnode[i].link = NULL;    /* 边表指针初始化 */
-    }
-    for (k=0; k&lt;e; k++)    /* 建立边表 */
-    {
-        scanf("%d%d", &amp;i, &amp;j);    /* 读入边(vi,vj)的顶点序号 */
-        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为j的表结点 */
-        s-&gt;adjvex = j;
-        s-&gt;next = gnode[i].link;
-        gnode[i].link = s;    /* 将*s插入顶点vi的边表头部(插到头部比尾部简单) */
-        s = malloc(sizeof(edgenode));    /* 生成邻接点序号为i的边表结点*s */
-        s-&gt;adjvex = i;
-        s-&gt;next = gnode[j].link;
-        gnode[j].link = s;    /* 将*s插入顶点vj的边表头部(最后四行由于是无向图，所以相互，两次) */
-    }
-}
-</code></pre>
-
-<h3>图的遍历算法及其应用</h3>
-
-<h5>1.深度遍历</h5>
-
-<ul>
-<li>(1)访问V0</li>
-<li>(2)依次从V0 的各个未被访问的邻接点出发深度遍历
-（两句话说的非常清楚。是一种以深度为绝对优先的访问。）</li>
-</ul>
-
-
-<h5>2。深度优先搜索遍历算法</h5>
-
-<p>由于实际算法比较复杂，这里算法依赖两个函数来求解（对于不同的存储结构有不同的写法）
-firstadj(G, v)：返回图G中顶点v的第一个邻接点。若不存在，返回0。
-nextadj(G, v, w)：返回图G中顶点v的邻接点中处于w之后的那个邻接点。若不存在，返回0。
-depth first search:</p>
-
-<pre><code>void dfs(graph G, int v)
-{
-    int w;
-    visit(v);
-    visited[v] = 1;
-    w = firstadj(G, v)
-    while (w != 0)
-    {
-        if (visited[w] == 0)
-            dfs(w);
-        w = nextadj(G, v, w);
-    }
-}
-</code></pre>
-
-<p>如果不是连通图，或者是有向图，那么访问一个v不可能遍历所有顶点。所以，需要再选择未被访问的顶点作为起点再调用dfs.</p>
-
-<p>所以，深度遍历图的算法如下：</p>
-
-<pre><code>void dfs_travel(graph G)
-{
-    int i;
-    for (i=1; i&lt;=n; i++)
-        visited[i] = 0;        //初始化各顶点的访问标志
-    for (i=1; i&lt;=n; i++)
-        if (visited[i] == 0)
-            dfs(G, i);
-}
-</code></pre>
-
-<h5>3.广度优先搜索遍历算法</h5>
-
-<p>广度优先搜索遍历算法(bfs)是一种由近而远的层次遍历算法，从顶点V0出发的广度遍历bfs描述为：</p>
-
-<ul>
-<li>(1)访问V0（可作为访问的第一层）；</li>
-<li>(2)假设最近一层的访问顶点依次为V1, V2, &hellip;, Vk，则依次访问他们的未被访问的邻接点。</li>
-<li>(3)重复2，直到找不到未被访问的邻接点为止。</li>
-</ul>
-
-
-<p>算法</p>
-
-<pre><code>void bfs(graph G, int V0)
-{
-    int w;
-    int v;
-    queue Q;
-    init_queue(Q);
-    visit(V0);
-    visited[V0] = 1;
-    Enqueue(Q, V0);
-    while (!empty(Q))
-    {
-        v = Outqueue(Q);
-        w = firstadj(G, v);
-        while (w != 0)
-        {
-            if (visited[w] == 0)
-            {
-                visit(w);
-                visited[w] = 1;
-                Enqueue(Q, w);
-            }
-            w = nextadj(G, v, w);
-        }
-    }
-}
-</code></pre>
-
-<p>广度遍历图的算法和深度一样：</p>
-
-<pre><code>void bfs_travel(graph G)
-{
-    int i;
-    for (i=1; i&lt;=n; i++)
-        visited[i] = 0;
-    for (i=1; i&lt;=n; i++)
-        if (visited[i] = 0)
-            bfs(G, i);
-}
-</code></pre>
-
-<p>最小生成树：</p>
-
-<pre><code>从图中选取若干条边，将所有顶点连接起来，并且所选取的这些边的权值之和最小。
-</code></pre>
-
-<p>这样所选取的边构成了一棵树，称这样的树为生成树，由于权值最小，称为最小生成树。</p>
-
-<h3>构造最小生成树有两种方法：</h3>
-
-<h6>1.Prim算法：</h6>
-
-<pre><code>首先将所指定的起点作为已选顶点，然后反复在满足如下条件的边中选择一条最小边，直到所有顶点成为已选顶点为止（选择n-1条边）：一端已选，另一端未选。
-</code></pre>
-
-<p>(简单的说，就是先任选一点，然后每次选择一条最小权值的边，而且只连接到一个已选顶点)</p>
-
-<h6>2.Kruskal算法：</h6>
-
-<pre><code>反复在满足如下条件的边中选出一条最小的，和已选边不够成回路。
-(条件就是不够成回路就OK，反复选最小边，知道所有顶点都有连接）
-</code></pre>
-
-<p>最短路径：
-一般即是要一个顶点到其余各个顶点的最短路径。（比如隔很远的顶点，要绕哪几条边走）
-求解方法：</p>
-
-<pre><code>首先，我们要画一个表，每个顶点有path和dist两个值，分别用来存储到各点的最短路径（比如(1,5,6)，就是1-5-6这个路径）和相应的长度（到该点的权值之和）。
-</code></pre>
-
-<ul>
-<li>(1)对V以外的各顶点，若两点间的邻接路径存在，则将其作为最短路径和最短长度存到path[v]和dist[v]中。(实际上也就是最开始对顶点的直接后继进行处理）</li>
-<li>(2)从未解顶点中选择一个dist值最小的顶点v，则当前的path[v]和dist[v]就是顶点v的最终解（从而使v成为已解顶点）。</li>
-<li>(3)如果v的直接后继经过v会更近一些，则修改v的直接后继的path和dist值。</li>
-</ul>
-
-
-<p>(上面的确是很难懂，只能通过例子自己慢慢熟悉。）</p>
-
-<h1>查找</h1>
-
-<blockquote><p>在软件设计中，通常是将待查找的数据元素集以某种表的形式给出，从而构成一种新的数据结构－－查找表。
-表包括一些“元素”，“字段”等等概念。</p></blockquote>
-
-<p>在一个数据表中，若某字段的值可以标识一个数据元素，则称之为关键字（或键）。
-若此关键字的每个值均可以唯一标识一个元素，则称之为主关键字，否则，若该关键字可以标识若干个元素，则称之为次关键字。</p>
-
-<p>查找算法的时间性能一般以查找次数来衡量。所谓查找长度是指查找一个元素所进行的关键字的比较次数。常以平均查找次数、最大查找次数来衡量查找算法的性能。</p>
-
-<h5>一、简单顺序查找</h5>
-
-<pre><code>int seq_seach(elementtype A[], int n, keytype x)
-{
-    int i;
-    A[0].key = x;        //设定监视哨
-    for (i=n; A[i].key!=x; i--);
-    return i;
-}
-</code></pre>
-
-<p>监视哨是一个小技巧，查找失败时，这里设定的数据是A[1]-A[n]，肯定可以在A[0]中找到该元素，并返回0表示查找失败。如果不设定监视哨，则在每次循环中要判断下标是否越界：for (i=1; i!=n&amp;&amp;A[i].key!=x;i&ndash;); 可以节省一半的时间。</p>
-
-<h5>二、有序表的二分查找</h5>
-
-<pre><code>int bin_search(elementtype A[], int n, keytype x)
-{
-    int mid, low, high;
-    low = 0;
-    high = n - 1;
-    while (low &lt;= high)
-    {
-        mid = (low + high) / 2;
-        if (x == A[mid].key)
-            return mid;
-        else if (x &lt; A[mid].key)
-            high = mid - 1;
-        else
-            low = mid + 1;
-    }
-    return -1;
-}
-</code></pre>
-
-<p>也可以使用递归算法：</p>
-
-<pre><code>int bin_search(elementtype A[], int low, int high, keytype x)
-{
-    int mid;
-    if (low &lt; high)
-        return -1;
-    else
-    {
-        mid = (low + high) / 2;
-        if (x == A[mid].key)
-            return mid;
-        else if (x &lt; A[mid],key)
-            return bin_search(A, low, mid - 1, x);
-        else
-            return bin_search(A, mid - 1, high, x);
-    }
-}
-</code></pre>
-
-<h1>排序</h1>
-
-<ul>
-<li>增排序和减排序：如果排序的结果是按关键字从小到大的次序排列的，就是增排序，否则就是减排序。</li>
-<li>内部排序和外部排序：如果在排序过程中，数据表中所有数据均在内存中进行，则这类排序为内部排序，否则就是外部排序。</li>
-<li>稳定排序和不稳定排序：在排序过程中，如果关键字相同的两个元素的相对次序不变，则称为稳定排序，否则是不稳定排序。</li>
-</ul>
-
-
-<p>在分析算法的时间性能时，主要以算法中用的最多的基本操作的执行次数（或者其数量级）来衡量，这些操作主要是比较、移动和交换元素。有时，可能要用这些次数的平均数来表示。</p>
-
-<h3>一、插入排序</h3>
-
-<p>基本思想：</p>
-
-<blockquote><p>把整个待排序子表看作是左右两部分，其中左边为有序区，右边为无序区，整个排序过程就是把右边无序区中的元素逐个插入到左边的有序区中，以构成新的有序区。
-实际中，开始排序时把第一个元素A[0]（或A[1]）看作左边的有序区，然后把剩下的2～N个元素依次插入到有序表中。</p></blockquote>
-
-<pre><code>void insert_sort(elementtype A[n+1])
-{
-    int i;
-    for (i=2; i&lt;=n; i++)
-    {
-        A[0] = A[i];        //设置监视哨，这个数组同样是从1开始，A[0]就设为监视哨
-        j = i - 1;
-        while (A[j].key &gt; A[0].key)
-        {
-            A[j + 1] = A[j];
-            j--;
-        }
-        A[j + 1] = A[0];
-    }
-}
-</code></pre>
-
-<p>明白这种方法的简单原理：
-a1 a2 a3 &hellip; a(i-1) ai &hellip;
-先将ai临时保存起来，然后把a(i-1)向前只要是比ai大的向后移，再把ai填进去即可。</p>
-
-<h3>二、快速排序</h3>
-
-<p>速度最快的办法！一定要掌握，考试重点。</p>
-
-<p>基本思想：</p>
-
-<blockquote><p>首先，选定一个元素作为中间元素，然后将表中所有元素与该中间元素相比较，将表中比中间元素小的元素调到表的前面，将比中间元素大的元素调到后面，再将中间数放在这两部分之间作为分界点，这样便得到一个划分；然后再对左右两部分分别进行快速排序，如此反复，直到每个子表仅有一个元素或空表为止。
-中间数一般选择部分的第一个元素。</p></blockquote>
-
-<pre><code>int partition(elementtype A[n], int s, int t)    //s,t是要排序元素的起点和终点,并返回最后中间元素位置
-{
-    elementtype x = A[s];    //保存中间元素到临时变量x,以腾出空位
-    int i = s;                        //置两端搜索位置的初值
-    int j = t;
-    while (i != j)        //两端位置重和再停止
-    {
-        while (i &lt; j &amp;&amp; A[j].key &gt; x.key) j--;    //从后面搜索“小”的元素
-        if (i &lt; j)        //如果找到，就调到前面的空位中
-        {
-            A[i] = A[j];
-            i++;
-        }
-        while (i &lt; j &amp;&amp; A[i].key &lt; x.key) i++;    //从前面搜索“大”的元素
-        if (i &lt; j)        //如果找到，调到后面的空位中
-        {
-            A[j] = A[i];
-            j--;
-        }
-    }
-    A[i] = x;        //将中间数移到最终位置上
-    return i;
-}
-</code></pre>
-
-<p>整个算法：</p>
-
-<pre><code>void quick_sort(elementtype A[n], int s, int t)    //对数组中下标从s到t的部分进行快速排序，如果是整个表就是0, n-1
-{
-    int i;
-    if (s &lt; t)    //表中至少有两个元素时
-    {
-        i = partition(A, s, t);    //划分排序一次
-        quick_sort(A, i + 1, t);    //对后面部分快速排序
-        quick_sort(A, s, i - 1);    //对前面部分快速排序
-    }
-}
-</code></pre>
-
-<h3>三、选择排序：</h3>
-
-<p>在待排序子表中完整地比较一遍以确定最大（小）元素，并将该元素放在子表的最前（后）面。
-【注：可能发觉和冒泡法比较类似，但注意选择法是全部比较一遍，找到最小元素的下标，再进行一次交换，而冒泡则是进行多次交换】</p>
-
-<pre><code>void select_sort(elementtype A[n])
-{
-   int min, i, j;
-   elementtype temp;
-   for (i=0; i&lt;n-1; i++)
-   {
-      min = i;
-      for (j=i+1; j&lt;n; j++)
-         if (A[min].key &gt; A[j].key) min = j;
-      if (min != i)
-      {
-         temp = A[i];
-         A[i] = A[min];
-         A[min] = temp;
-      }
-   }
-}
-</code></pre>
-
-<h3>四、归并排序</h3>
-
-<p>所谓归并是指将两个或两个以上的有序表合并成一个新的有序表。
-归并算法：</p>
-
-<p>假设两个序列A[m]和B[n]为非降序列（即存在相同元素的升序列），现要把他们合并为一个非降序列C[m+n]。</p>
-
-<pre><code>void merge(elementtype A[], elementtype B[], elementtype C[], int m, int n)
-{
-    int ia = 0, ib = 0, ic = 0;
-    while (ia &lt; m &amp;&amp; ib &lt; n)
-        if (A[ia] &lt;= B[ib])
-            C[ic++] = A[ia++];
-        else
-            C[ic++] = B[ib++];
-    while (ia &lt; m)
-        C[ic++] = A[ia++];
-    while (ib &lt; n)
-        C[ic++] = B[ib++];
-}
-</code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[修行篇-算法之精华-算法&amp;冒泡]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/25/xiu-xing-pian-suan-fa-zhi-jing-hua-suan-fa-and-mou-pao/"/>
-    <updated>2016-08-25T12:32:56+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/25/xiu-xing-pian-suan-fa-zhi-jing-hua-suan-fa-and-mou-pao</id>
-    <content type="html"><![CDATA[<ul>
-<li><p>冒泡排序（交换）</p>
-
-<ul>
-<li>改进</li>
-</ul>
-</li>
-<li><p>快速排序（交换）</p>
-
-<ul>
-<li>改进</li>
-</ul>
-</li>
-</ul>
-
-
-<h2>交换排序—冒泡排序（Bubble Sort）</h2>
-
-<p>基本思想：</p>
-
-<blockquote><p>在要排序的一组数中，对当前还未排好序的范围内的全部数，自上而下对相邻的两个数依次进行比较和调整，让较大的数往下沉，较小的往上冒。即：每当两相邻的数比较后发现它们的排序与排序要求相反时，就将它们互换。
-算法的实现：</p></blockquote>
-
-<pre><code>void bubbleSort(int a[], int n){  
-    for(int i =0 ; i&lt; n-1; ++i) {  
-        for(int j = 0; j &lt; n-i-1; ++j) {  
-            if(a[j] &gt; a[j+1])  
-            {  
-                int tmp = a[j] ; a[j] = a[j+1] ;  a[j+1] = tmp;  
-            }  
-        }  
-    }  
-}  
-</code></pre>
-
-<h4>改进</h4>
-
-<!--more-->
-
-
-<blockquote><p>对冒泡排序常见的改进方法是加入一标志性变量exchange，用于标志某一趟排序过程中是否有数据交换，如果进行某一趟排序时并没有进行数据交换，则说明数据已经按要求排列好，可立即结束排序，避免不必要的比较过程。本文再提供以下两种改进算法：</p></blockquote>
-
-<p>1．设置一标志性变量pos,用于记录每趟排序中最后一次进行交换的位置。由于pos位置之后的记录均已交换到位,故在进行下一趟排序时只要扫描到pos位置即可。
-改进后算法如下:</p>
-
-<pre><code>void Bubble_1 ( int r[], int n) {  
-    int i= n -1;  //初始时,最后位置保持不变  
-    while ( i&gt; 0) {   
-        int pos= 0; //每趟开始时,无记录交换  
-        for (int j= 0; j&lt; i; j++)  
-            if (r[j]&gt; r[j+1]) {  
-                pos= j; //记录交换的位置   
-                int tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
-            }   
-        i= pos; //为下一趟排序作准备  
-     }   
-}    
-</code></pre>
-
-<p>2．传统冒泡排序中每一趟排序操作只能找到一个最大值或最小值,我们考虑利用在每趟排序中进行正向和反向两遍冒泡的方法一次可以得到两个最终值(最大者和最小者) , 从而使排序趟数几乎减少了一半。
-改进后的算法实现为:</p>
-
-<pre><code>void Bubble_2 ( int r[], int n){  
-    int low = 0;   
-    int high= n -1; //设置变量的初始值  
-    int tmp,j;  
-    while (low &lt; high) {  
-        for (j= low; j&lt; high; ++j) //正向冒泡,找到最大者  
-            if (r[j]&gt; r[j+1]) {  
-                tmp = r[j]; r[j]=r[j+1];r[j+1]=tmp;  
-            }   
-        --high;                 //修改high值, 前移一位  
-        for ( j=high; j&gt;low; --j) //反向冒泡,找到最小者  
-            if (r[j]&lt;r[j-1]) {  
-                tmp = r[j]; r[j]=r[j-1];r[j-1]=tmp;  
-            }  
-        ++low;                  //修改low值,后移一位  
-    }   
-}   
-</code></pre>
-
-<h2>交换排序—快速排序（Quick Sort）</h2>
-
-<p>基本思想：</p>
-
-<ul>
-<li><p>1）选择一个基准元素,通常选择第一个元素或者最后一个元素,</p></li>
-<li><p>2）通过一趟排序讲待排序的记录分割成独立的两部分，其中一部分记录的元素值均比基准元素值小。另一部分记录的 元素值比基准值大。</p></li>
-<li><p>3）此时基准元素在其排好序后的正确位置</p></li>
-<li><p>4）然后分别对这两部分记录用同样的方法继续进行排序，直到整个序列有序。</p></li>
-</ul>
-
-
-<p>算法的实现：
- 递归实现：</p>
-
-<pre><code>void print(int a[], int n){  
-    for(int j= 0; j&lt;n; j++){  
-        cout&lt;&lt;a[j] &lt;&lt;"  ";  
-    }  
-    cout&lt;&lt;endl;  
-}  
-
-void swap(int *a, int *b)  
-{  
-    int tmp = *a;  
-    *a = *b;  
-    *b = tmp;  
-}  
-int partition(int a[], int low, int high)  
-{  
-    int privotKey = a[low];                             //基准元素  
-    while(low &lt; high){                                   //从表的两端交替地向中间扫描  
-        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high;  //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
-        swap(&amp;a[low], &amp;a[high]);  
-        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
-        swap(&amp;a[low], &amp;a[high]);  
-    }  
-    print(a,10);  
-    return low;  
-}  
-void quickSort(int a[], int low, int high){  
-    if(low &lt; high){  
-        int privotLoc = partition(a,  low,  high);  //将表一分为二  
-        quickSort(a,  low,  privotLoc -1);          //递归对低子表递归排序  
-        quickSort(a,   privotLoc + 1, high);        //递归对高子表递归排序  
-    }  
-}  
-int main(){  
-    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
-    cout&lt;&lt;"初始值：";  
-    print(a,10);  
-    quickSort(a,0,9);  
-    cout&lt;&lt;"结果：";  
-    print(a,10);  
-
-}  
-</code></pre>
-
-<p>分析：</p>
-
-<blockquote><p>快速排序是通常被认为在同数量级（O(nlog2n)）的排序方法中平均性能最好的。但若初始序列按关键码有序或基本有序时，快排序反而蜕化为冒泡排序。为改进之，通常以“三者取中法”来选取基准记录，即将排序区间的两个端点与中点三个记录关键码居中的调整为支点记录。快速排序是一个不稳定的排序方法。
-快速排序的改进</p></blockquote>
-
-<h4>改进</h4>
-
-<p>在本改进算法中,只对长度大于k的子序列递归调用快速排序,让原序列基本有序，然后再对整个基本有序序列用插入排序算法排序。实践证明，改进后的算法时间复杂度有所降低，且当k取值为 8 左右时,改进算法的性能最佳。算法思想如下：</p>
-
-<pre><code>void print(int a[], int n){  
-    for(int j= 0; j&lt;n; j++){  
-        cout&lt;&lt;a[j] &lt;&lt;"  ";  
-    }  
-    cout&lt;&lt;endl;  
-}  
-void swap(int *a, int *b)  
-{  
-    int tmp = *a;  
-    *a = *b;  
-    *b = tmp;  
-}  
-int partition(int a[], int low, int high)  
-{  
-    int privotKey = a[low];                 //基准元素  
-    while(low &lt; high){                   //从表的两端交替地向中间扫描  
-        while(low &lt; high  &amp;&amp; a[high] &gt;= privotKey) --high; //从high 所指位置向前搜索，至多到low+1 位置。将比基准元素小的交换到低端  
-        swap(&amp;a[low], &amp;a[high]);  
-        while(low &lt; high  &amp;&amp; a[low] &lt;= privotKey ) ++low;  
-        swap(&amp;a[low], &amp;a[high]);  
-    }  
-    print(a,10);  
-    return low;  
-}  
-void qsort_improve(int r[ ],int low,int high, int k){  
-    if( high -low &gt; k ) { //长度大于k时递归, k为指定的数  
-        int pivot = partition(r, low, high); // 调用的Partition算法保持不变  
-        qsort_improve(r, low, pivot - 1,k);  
-        qsort_improve(r, pivot + 1, high,k);  
-    }   
-}   
-void quickSort(int r[], int n, int k){  
-    qsort_improve(r,0,n,k);//先调用改进算法Qsort使之基本有序  
-    //再用插入排序对基本有序序列排序  
-    for(int i=1; i&lt;=n;i ++){  
-        int tmp = r[i];   
-        int j=i-1;  
-        while(tmp &lt; r[j]){  
-            r[j+1]=r[j]; j=j-1;   
-        }  
-        r[j+1] = tmp;  
-    }   
-
-}   
-int main(){  
-    int a[10] = {3,1,5,7,2,4,9,6,10,8};  
-    cout&lt;&lt;"初始值：";  
-    print(a,10);  
-    quickSort(a,9,4);  
-    cout&lt;&lt;"结果：";  
-    print(a,10);  
-
-}  
 </code></pre>
 
 <hr />

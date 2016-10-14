@@ -1,0 +1,569 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>iOS装逼篇——链式编程 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="开篇 在使用 masonry 框架实现自动布局时，在程序里为一个布局穿插着6行左右这样的代码 [View mas_makeConstraints:^(MASConstraintMaker *make) { make.top.equalTo(anotherView); make.left. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">iOS装逼篇——链式编程</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T12:49:24+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:49 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>开篇</h3>
+
+<p>在使用 masonry 框架实现自动布局时，在程序里为一个布局穿插着6行左右这样的代码</p>
+
+<p>[View mas_makeConstraints:^(MASConstraintMaker *make) {</p>
+
+<pre><code>  make.top.equalTo(anotherView);
+
+  make.left.equalTo(anotherView);
+
+  make.width.mas_equalTo(@60);
+
+  make.height.mas_equalTo(@60);
+</code></pre>
+
+<p>}];</p>
+
+<!--more-->
+
+
+<p>一直觉得不够漂亮，希望有个一行代码设置约束的框架，我曾尝试过在masonry上封装一个类别 UIView+HKSetConstraints ，用起来也不顺手，总觉得不够味，直到我见到了 SDAutoLayout , 真正的实现了一句代码实现自动布局，加上研究ReactiveCocoa时看到的最快让你上手之ReactiveCocoa基础篇（下面会给出链接）提到编程思想，才明了Masonry 和 SDAutoLayout一点实现思路：链式编程思想。</p>
+
+<h4>先简单介绍下目前咱们已知的编程思想。</h4>
+
+<ul>
+<li><p>1 面向过程：处理事情以过程为核心，一步一步的实现。</p></li>
+<li><p>2 面向对象：万物皆对象</p></li>
+<li><p>3 链式编程思想：是将多个操作（多行代码）通过点号(.)链接在一起成为一句代码,使代码可读性好。 a(1).b(2).c(3)</p>
+
+<ul>
+<li><p>链式编程特点：方法的返回值是block,block必须有返回值（本身对象），block参数（需要操作的值）</p></li>
+<li><p>代表：Masonry框架。</p></li>
+</ul>
+</li>
+<li><p>4 响应式编程思想：不需要考虑调用顺序，只需要知道考虑结果，类似于蝴蝶效应，产生一个事件，会影响很多东西，这些事件像流一样的传播出去，然后影响结果，借用面向对象的一句话，万物皆是流。</p>
+
+<ul>
+<li>代表：KVO运用。</li>
+</ul>
+</li>
+<li><p>5 函数式编程思想：是把操作尽量写成一系列嵌套的函数或者方法调用。</p>
+
+<ul>
+<li><p>函数式编程特点：每个方法必须有返回值（本身对象）,把函数或者Block当做参数,block参数（需要操作的值）block返回值（操作结果）</p></li>
+<li><p>代表：ReactiveCocoa。</p></li>
+</ul>
+</li>
+</ul>
+
+
+<h3>自己实现</h3>
+
+<p>我们这里以链式编程思想代码实现一个计算器:</p>
+
+<pre><code>#import
+
+@class CaculatorMaker;
+
+@interface NSObject (CaculatorMaker)
+
+
+//计算
+
++ (int)makeCaculators:(void(^)(CaculatorMaker *make))caculatorMaker;
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import "NSObject+CaculatorMaker.h"
+
+#import "CaculatorMaker.h"
+
+
+@implementation NSObject (CaculatorMaker)
+
+
+//计算
+
++ (int)makeCaculators:(void(^)(CaculatorMaker *make))block
+
+{
+
+    CaculatorMaker *mgr = [[CaculatorMaker alloc] init];
+
+    block(mgr);
+
+    return mgr.iResult;
+
+}
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import
+
+
+@interface CaculatorMaker : NSObject
+
+
+@property (nonatomic, assign) int iResult;
+
+
+//加法
+
+- (CaculatorMaker *(^)(int))add;
+
+
+//减法
+
+- (CaculatorMaker *(^)(int))sub;
+
+
+//乘法
+
+- (CaculatorMaker *(^)(int))muilt;
+
+
+//除法
+
+- (CaculatorMaker *(^)(int))divide;
+
+
+@end
+</code></pre>
+
+<hr />
+
+<pre><code>#import "CaculatorMaker.h"
+
+
+@implementation CaculatorMaker
+
+
+- (CaculatorMaker *(^)(int))add
+
+{
+
+   return ^(int value)
+
+    {
+
+        _iResult += value;
+
+        return self;
+
+    };
+
+}
+</code></pre>
+
+<p>@end</p>
+
+<p>调用：</p>
+
+<pre><code>int iResult = [NSObject makeCaculators:^(CaculatorMaker *make) {
+
+     make.add(1).add(2).add(3).divide(2);
+
+   }];
+</code></pre>
+
+<p>分析下这个方法执行过程：</p>
+
+<pre><code>第一步：NSObject 创建了一个block, 这个block里创建了一个CaculatorMaker对象make，并返回出来
+
+第二步：这个对象make调用方法add时，里面持有的属性iResult做了一个加法，并且返回自己，以便可以接下去继续调用方法。 
+</code></pre>
+
+<p>这就是链式编程思想的一个很小但很明了的例子。</p>
+
+<p><img src="/images/ioslianshibiancheng001.png" title="Caption" ></p>
+
+<h3>现在我们以 Masonry 举例：</h3>
+
+<p>我们看看Masonry的</p>
+
+<pre><code>- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *make))block;
+
+- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *))block {
+
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+
+    MASConstraintMaker *constraintMaker = [[MASConstraintMaker alloc] initWithView:self];
+
+    block(constraintMaker);
+
+    return [constraintMaker install];
+
+}
+</code></pre>
+
+<p>是不是跟我们的计算器的类别一个样？????</p>
+
+<p>我们再来看看它的</p>
+
+<pre><code>- (MASConstraint * (^)(id attr))mas_equalTo;
+
+- (MASConstraint * (^)(id))mas_equalTo {
+
+    return ^id(id attribute) {
+
+        return self.equalToWithRelation(attribute, NSLayoutRelationEqual);
+
+    };
+
+}
+</code></pre>
+
+<p>看看它的self.equalToWithRelation实现：</p>
+
+<pre><code>- (MASConstraint * (^)(id, NSLayoutRelation))equalToWithRelation {
+
+    return ^id(id attribute, NSLayoutRelation relation) {
+
+        if ([attribute isKindOfClass:NSArray.class]) {
+
+            NSAssert(!self.hasLayoutRelation, @"Redefinition of constraint relation");
+
+            NSMutableArray *children = NSMutableArray.new;
+
+            for (id attr in attribute) {
+
+                MASViewConstraint *viewConstraint = [self copy];
+
+                viewConstraint.secondViewAttribute = attr;
+
+                [children addObject:viewConstraint];
+
+            }
+
+            MASCompositeConstraint *compositeConstraint = [[MASCompositeConstraint alloc] initWithChildren:children];
+
+            compositeConstraint.delegate = self.delegate;
+
+            [self.delegate constraint:self shouldBeReplacedWithConstraint:compositeConstraint];
+
+            return compositeConstraint;
+
+        } else {
+
+            NSAssert(!self.hasLayoutRelation || self.layoutRelation == relation &amp;&amp; [attribute isKindOfClass:NSValue.class], @"Redefinition of constraint relation");
+
+            self.layoutRelation = relation;
+
+            self.secondViewAttribute = attribute;
+
+            return self;
+
+        }
+
+    };
+
+}
+</code></pre>
+
+<p>的确是返回自己，所以这正是它的链式编程思想的体现。</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-10-14T12:49:24+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:49 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/" title="Previous Post: iOS装逼篇——APO编程">&laquo; iOS装逼篇——APO编程</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/" title="Next Post: iOS装逼篇——函数式编程">iOS装逼篇——函数式编程 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="iOS装逼篇——链式编程"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/">iOS装逼篇——响应式编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">iOS装逼篇——函数式编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/iosda-shen-zhi-lu-ying-you-jin-you/">iOS大神之路——应有尽有</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section>
+<h1>扫一扫<abbr title="The word '扫一扫' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '扫一扫', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
