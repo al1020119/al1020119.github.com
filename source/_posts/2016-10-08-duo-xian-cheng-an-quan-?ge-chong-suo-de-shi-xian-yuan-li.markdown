@@ -13,8 +13,12 @@ categories:
 在 ibireme 的 不再安全的 OSSpinLock 一文中，有一张图片简单的比较了各种锁的加解锁性能:
 
 
-
 {% img /images/duoxianchengsuoshixianyuanli001.png Caption %}  
+
+
+
+<!--more-->
+
 
 
 本文会按照从上至下(速度由快至慢)的顺序分析每个锁的实现原理。需要说明的是，加解锁速度不表示锁的效率，只表示加解锁操作在执行时的复杂程度，下文会通过具体的例子来解释。
