@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-10-14T14:05:15+08:00</updated>
+  <updated>2016-10-16T12:56:31+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,1822 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[iOS开发——常用功能代码集锦（友秀篇）]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)/"/>
+    <updated>2016-10-16T12:47:16+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)</id>
+    <content type="html"><![CDATA[<p>本次总结，是因为一次上线App被拒之后的冲动，因为有一个功能代码自己之前经常写，但是写多了就快，搞得手速练得超快（不要想污咯哦😂），所以写的时候就没有多想，也没有找找之前的代码，结果导致悲催的结局。</p>
+
+<p>之前没有整理过项目中遇到或者写过，或者经常要用的代码，可能觉得多写几遍就没事了，或者网上一找就有了。可是事实并非如果，首先，网上找的永远不是你的。其次，写得再多还是有粗心或者注意不到的地方。最后，整理成自己的能最快速度的找到并实现，提高效率。何乐而不为呢？</p>
+
+<p>好了，废话不多说，理论也没有，大部分只要两个操作：copy-paste。有些还是需要做小小的改动的，根据项目需求。</p>
+
+<ol>
+<li>取消tableView头部和底部悬浮效果</li>
+<li>获取随机数</li>
+<li>去除tableView分组头部多余间距</li>
+<li>图片截取</li>
+<li>模糊图片</li>
+<li>获取文件大小</li>
+<li>手机号验证</li>
+<li>邮箱验证</li>
+<li>网址验证</li>
+<li>JSON转字典</li>
+<li>iPhone设备类型判断</li>
+<li>iPhone系统版本判断</li>
+<li>日志打印</li>
+<li>颜色获取</li>
+<li>弱引用</li>
+<li>获取屏幕尺寸</li>
+<li>获取view的控制</li>
+<li>字典防崩溃</li>
+<li>数组防崩溃</li>
+<li>本文输入错误提示</li>
+<li>获取当前时间</li>
+<li>获取当前版本</li>
+<li>tabBar红点显示</li>
+<li>Log日志.m</li>
+<li>MD5加密</li>
+<li>按钮背景颜色</li>
+<li>判断对象是否为空</li>
+<li>键盘退出与隐藏通知</li>
+<li>获取设备唯一ID</li>
+<li>MOV转Mp4</li>
+<li>上传图片</li>
+<li>上传视频</li>
+<li>获取视频帧图</li>
+<li>压缩并导出视频</li>
+<li>保存视频到相册</li>
+<li>获取当前最顶层的ViewController</li>
+<li>数组拆分</li>
+<li>图片压缩</li>
+</ol>
+
+
+<!--more-->
+
+
+<h2>1：取消tableView头部和底部悬浮效果</h2>
+
+<pre><code>- (void)scrollViewDidScroll:(UIScrollView *)scrollView {  
+    CGFloat sectionHeaderHeight = 10; //这里是我的headerView和footerView的高度  
+    if (_tableView.contentOffset.y&lt;=sectionHeaderHeight&amp;&amp;_tableView.contentOffset.y&gt;=0) {  
+        _tableView.contentInset = UIEdgeInsetsMake(-_tableView.contentOffset.y, 0, 0, 0);  
+    } else if (_tableView.contentOffset.y&gt;=sectionHeaderHeight) {  
+        _tableView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);  
+    }  
+}  
+
+
+    -(void)scrollViewDidScroll:(UIScrollView *)scrollView {
+
+    if (scrollView == self.tableView)
+
+        {
+
+        UITableView *tableview = (UITableView *)scrollView;
+
+        CGFloat sectionHeaderHeight = 64;
+
+        CGFloat sectionFooterHeight = 120;
+
+        CGFloat offsetY = tableview.contentOffset.y;
+
+        if (offsetY &gt;= 0 &amp;&amp; offsetY &lt;= sectionHeaderHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= sectionHeaderHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight)
+
+        {
+
+            tableview.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, -sectionFooterHeight, 0);
+
+        }else if (offsetY &gt;= tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight &amp;&amp; offsetY &lt;= tableview.contentSize.height - tableview.frame.size.height)         {
+
+            tableview.contentInset = UIEdgeInsetsMake(-offsetY, 0, -(tableview.contentSize.height - tableview.frame.size.height - sectionFooterHeight), 0);
+
+        }
+
+    }
+
+}
+</code></pre>
+
+<h2>2：获取随机数</h2>
+
+<pre><code>//第一种
+srand((unsigned)time(0)); //不加这句每次产生的随机数不变
+int i = rand() % 5;
+//第二种
+srandom(time(0));
+int i = random() % 5;
+//第三种
+int i = arc4random() % 5 ; 
+</code></pre>
+
+<h2>3：去除tableView分组头部多余间距</h2>
+
+<h4>一：</h4>
+
+<pre><code>- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, CGFLOAT_MIN)];
+}
+</code></pre>
+
+<h4>二：</h4>
+
+<pre><code>- (void)viewWillAppear:(BOOL)animated{
+
+    [super viewWillAppear:animated];
+
+    CGRect frameH = self.tableView.tableHeaderView.frame;
+    frameH.size.height = 5;
+    UIView *headerView = [[UIView alloc] initWithFrame:frameH];
+    [self.tableView setTableHeaderView:headerView];
+
+
+    CGRect frameF = self.tableView.tableHeaderView.frame;
+    frameF.size.height = 1;
+    UIView *footerView = [[UIView alloc] initWithFrame:frameF];
+    [self.tableView setTableFooterView:footerView];
+
+}
+</code></pre>
+
+<h2>4：图片截取</h2>
+
+<pre><code>CGSize itemSize = CGSizeMake(self.image.size.width, self.image.size.height);
+
+dispatch_async(dispatch_get_global_queue(0, 0), ^{
+
+    UIImage *dynamicCellImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:model.cover]]];
+            UIGraphicsBeginImageContextWithOptions(itemSize, NO, [UIScreen mainScreen].scale);
+
+            //压缩图片
+            CGSize newSize;
+            CGImageRef imageRef = nil;
+
+            if ((dynamicCellImage.size.width / dynamicCellImage.size.height) &lt; (self.image.size.width / self.image.size.height)) {
+                newSize.width = dynamicCellImage.size.width;
+                newSize.height = dynamicCellImage.size.width * self.image.size.height / self.image.size.width;
+
+                imageRef = CGImageCreateWithImageInRect([dynamicCellImage CGImage], CGRectMake(0, fabs(dynamicCellImage.size.height - newSize.height) / 2, newSize.width, newSize.height));
+
+            } else {
+                newSize.height = dynamicCellImage.size.height;
+                newSize.width = dynamicCellImage.size.height * self.image.size.width / self.image.size.height;
+
+                imageRef = CGImageCreateWithImageInRect([dynamicCellImage CGImage], CGRectMake(fabs(dynamicCellImage.size.width - newSize.width) / 2, 0, newSize.width, newSize.height));
+            }
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.image.image = [UIImage imageWithCGImage:imageRef];
+            });
+
+            UIGraphicsEndImageContext();
+
+});
+</code></pre>
+
+<h2>5：模糊图片</h2>
+
+<pre><code>//加模糊效果，image是图片，blur是模糊度
++ (UIImage *)blurryImage:(UIImage *)image withBlurLevel:(CGFloat)blur {
+    //模糊度,
+    if ((blur &lt; 0.1f) || (blur &gt; 2.0f)) {
+        blur = 0.5f;
+    }
+
+    //boxSize必须大于0
+    int boxSize = (int)(blur * 100);
+    boxSize -= (boxSize % 2) + 1;
+//    iCocosLog(@"boxSize:%i",boxSize);
+    //图像处理
+    CGImageRef img = image.CGImage;
+
+    //图像缓存,输入缓存，输出缓存
+    vImage_Buffer inBuffer, outBuffer;
+    vImage_Error error;
+    //像素缓存
+    void *pixelBuffer;
+
+    //数据源提供者，Defines an opaque type that supplies Quartz with data.
+    CGDataProviderRef inProvider = CGImageGetDataProvider(img);
+    // provider’s data.
+    CFDataRef inBitmapData = CGDataProviderCopyData(inProvider);
+
+    //宽，高，字节/行，data
+    inBuffer.width = CGImageGetWidth(img);
+    inBuffer.height = CGImageGetHeight(img);
+    inBuffer.rowBytes = CGImageGetBytesPerRow(img);
+    inBuffer.data = (void*)CFDataGetBytePtr(inBitmapData);
+
+    //像数缓存，字节行*图片高
+    pixelBuffer = malloc(CGImageGetBytesPerRow(img) * CGImageGetHeight(img));
+
+    outBuffer.data = pixelBuffer;
+    outBuffer.width = CGImageGetWidth(img);
+    outBuffer.height = CGImageGetHeight(img);
+    outBuffer.rowBytes = CGImageGetBytesPerRow(img);
+
+
+    // 第三个中间的缓存区,抗锯齿的效果
+    void *pixelBuffer2 = malloc(CGImageGetBytesPerRow(img) * CGImageGetHeight(img));
+    vImage_Buffer outBuffer2;
+    outBuffer2.data = pixelBuffer2;
+    outBuffer2.width = CGImageGetWidth(img);
+    outBuffer2.height = CGImageGetHeight(img);
+    outBuffer2.rowBytes = CGImageGetBytesPerRow(img);
+
+
+    //Convolves a region of interest within an ARGB8888 source image by an implicit M x N kernel that has the effect of a box filter.
+    error = vImageBoxConvolve_ARGB8888(&amp;inBuffer, &amp;outBuffer2, NULL, 0, 0, boxSize, boxSize, NULL, kvImageEdgeExtend);
+    error = vImageBoxConvolve_ARGB8888(&amp;outBuffer2, &amp;inBuffer, NULL, 0, 0, boxSize, boxSize, NULL, kvImageEdgeExtend);
+    error = vImageBoxConvolve_ARGB8888(&amp;inBuffer, &amp;outBuffer, NULL, 0, 0, boxSize, boxSize, NULL, kvImageEdgeExtend);
+
+    if (error) {
+        iCocosLog(@"error from convolution %ld", error);
+    }
+
+    //    iCocosLog(@"字节组成部分：%zu",CGImageGetBitsPerComponent(img));
+    //颜色空间DeviceRGB
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    //用图片创建上下文,CGImageGetBitsPerComponent(img),7,8
+    CGContextRef ctx = CGBitmapContextCreate(
+                                             outBuffer.data,
+                                             outBuffer.width,
+                                             outBuffer.height,
+                                             8,
+                                             outBuffer.rowBytes,
+                                             colorSpace,
+                                             CGImageGetBitmapInfo(image.CGImage));
+
+    //根据上下文，处理过的图片，重新组件
+    CGImageRef imageRef = CGBitmapContextCreateImage (ctx);
+    UIImage *returnImage = [UIImage imageWithCGImage:imageRef];
+
+    //clean up
+    CGContextRelease(ctx);
+    CGColorSpaceRelease(colorSpace);
+
+    free(pixelBuffer);
+    free(pixelBuffer2);
+    CFRelease(inBitmapData);
+
+    CGColorSpaceRelease(colorSpace);
+    CGImageRelease(imageRef);
+
+    return returnImage;
+}
+</code></pre>
+
+<h2>6：文件大小</h2>
+
+<pre><code>/**
+ *  通常用于删除缓存的时，计算缓存大小
+ */
+//单个文件的大小
++ (long long) fileSizeAtPath:(NSString*) filePath{
+    NSFileManager* manager = [NSFileManager defaultManager];
+    if ([manager fileExistsAtPath:filePath]){
+        return [[manager attributesOfItemAtPath:filePath error:nil] fileSize];
+    }
+    return 0;
+}
+</code></pre>
+
+<h2>7：手机号</h2>
+
+<pre><code>/**
+ *  手机号判断
+ *
+ *  @param mobileNum 号码字符串
+ *
+ *  @return BOOL
+ */
++ (BOOL)isMobileNumber:(NSString *)mobileNum
+{
+        /**
+         * 移动号段正则表达式
+         */
+        NSString *CM_NUM = @"^((13[4-9])|(147)|(15[0-2,7-9])|(178)|(18[2-4,7-8]))\\d{8}|(1705)\\d{7}$";
+        /**
+         * 联通号段正则表达式
+         */
+        NSString *CU_NUM = @"^((13[0-2])|(145)|(15[5-6])|(176)|(18[5,6]))\\d{8}|(1709)\\d{7}$";
+        /**
+         * 电信号段正则表达式
+         */
+        NSString *CT_NUM = @"^((133)|(153)|(177)|(18[0,1,9]))\\d{8}$";
+
+        NSPredicate *pred1 = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", CM_NUM];
+        BOOL isMatch1 = [pred1 evaluateWithObject:mobileNum];
+        NSPredicate *pred2 = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", CU_NUM];
+        BOOL isMatch2 = [pred2 evaluateWithObject:mobileNum];
+        NSPredicate *pred3 = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", CT_NUM];
+        BOOL isMatch3 = [pred3 evaluateWithObject:mobileNum];
+
+        if (isMatch1 || isMatch2 || isMatch3) {
+            return YES;
+        }else{
+            return NO;
+        }
+}
+</code></pre>
+
+<h2>8：邮箱</h2>
+
+<h4>通过区分字符串</h4>
+
+<pre><code>-(BOOL)validateEmail:(NSString*)email
+
+{
+
+    if((0 != [email rangeOfString:@"@"].length) &amp;&amp;
+
+       (0 != [email rangeOfString:@"."].length))
+
+    {
+
+        NSCharacterSet* tmpInvalidCharSet = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+
+        NSMutableCharacterSet* tmpInvalidMutableCharSet = [[tmpInvalidCharSet mutableCopy] autorelease];
+
+        [tmpInvalidMutableCharSet removeCharactersInString:@"_-"];
+
+
+
+
+
+        NSRange range1 = [email rangeOfString:@"@"
+
+                                      options:NSCaseInsensitiveSearch];
+
+
+
+        //取得用户名部分
+
+        NSString* userNameString = [email substringToIndex:range1.location];
+
+        NSArray* userNameArray   = [userNameString componentsSeparatedByString:@"."];
+
+
+
+        for(NSString* string in userNameArray)
+
+        {
+
+            NSRange rangeOfInavlidChars = [string rangeOfCharacterFromSet: tmpInvalidMutableCharSet];
+
+            if(rangeOfInavlidChars.length != 0 || [string isEqualToString:@""])
+
+                return NO;
+
+        }
+
+
+
+        //取得域名部分
+
+        NSString *domainString = [email substringFromIndex:range1.location+1];
+
+        NSArray *domainArray   = [domainString componentsSeparatedByString:@"."];
+
+
+
+        for(NSString *string in domainArray)
+
+        {
+
+            NSRange rangeOfInavlidChars=[string rangeOfCharacterFromSet:tmpInvalidMutableCharSet];
+
+            if(rangeOfInavlidChars.length !=0 || [string isEqualToString:@""])
+
+                return NO;
+
+        }
+
+
+
+        return YES;
+
+    }
+
+    else {
+
+       return NO;
+
+    }
+
+}
+</code></pre>
+
+<h4>利用正则表达式验证</h4>
+
+<pre><code>-(BOOL)isValidateEmail:(NSString *)email {
+
+    NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}"; 
+
+    NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex]; 
+
+    return [emailTest evaluateWithObject:email];
+
+}
+</code></pre>
+
+<h2>9：网址</h2>
+
+<h4>1.首先进行第一步判断传入的字符串是否符合HTTP路径的语法规则,即”<a href="HTTPS://%E2%80%9D">HTTPS://%E2%80%9D</a> 或 “<a href="HTTP://%E2%80%9D">HTTP://%E2%80%9D</a> ,从封装的一个函数,传入即可判断</h4>
+
+<pre><code>- (NSURL *)smartURLForString:(NSString *)str
+{
+    NSURL *     result;
+    NSString *  trimmedStr;
+    NSRange     schemeMarkerRange;
+    NSString *  scheme;
+
+    assert(str != nil);
+
+    result = nil;
+
+    trimmedStr = [str stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    if ( (trimmedStr != nil) &amp;&amp; (trimmedStr.length != 0) ) {
+        schemeMarkerRange = [trimmedStr rangeOfString:@"://"];
+
+        if (schemeMarkerRange.location == NSNotFound) {
+            result = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@", trimmedStr]];
+        } else {
+            scheme = [trimmedStr substringWithRange:NSMakeRange(0, schemeMarkerRange.location)];
+            assert(scheme != nil);
+
+            if ( ([scheme compare:@"http"  options:NSCaseInsensitiveSearch] == NSOrderedSame)
+                || ([scheme compare:@"https" options:NSCaseInsensitiveSearch] == NSOrderedSame) ) {
+                result = [NSURL URLWithString:trimmedStr];
+            } else {
+                // It looks like this is some unsupported URL scheme.
+            }
+        }
+    }
+
+    return result;
+}
+</code></pre>
+
+<h4>第二步,判断此路径是否能够请求成功,直接进行HTTP请求,观察返回结果-></h4>
+
+<pre><code>//判断
+-(void) validateUrl: (NSURL *) candidate {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:candidate];
+    [request setHTTPMethod:@"HEAD"];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSLog(@"error %@",error);
+        if (error) {
+            NSLog(@"不可用");
+        }else{
+            NSLog(@"可用");
+        }
+    }];
+    [task resume];
+}
+</code></pre>
+
+<h2>10：JSON转字典</h2>
+
+<pre><code>/*!
+ * @brief 把格式化的JSON格式的字符串转换成字典
+ * @param jsonString JSON格式的字符串
+ * @return 返回字典
+ */
+- (NSDictionary *)dictionaryWithJsonString:(NSString *)jsonString {
+    if (jsonString == nil) {
+        return nil;
+    }
+    iCocosLog(@"%@", jsonString);
+
+    NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *err;
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                        options:NSJSONReadingMutableContainers
+                                                          error:&amp;err];
+    if(err) {
+        iCocosLog(@"json解析失败：%@",err);
+        return nil;
+    }
+    return dic;
+}
+</code></pre>
+
+<h4>数组转JSON</h4>
+
+<pre><code>    NSArray *uids = [self.allModelUID objectAtIndexCheck:range];
+
+    NSError *error = nil;
+    NSData *picsJsonData = [NSJSONSerialization dataWithJSONObject:uids
+                                                           options:NSJSONWritingPrettyPrinted
+                                                             error:&amp;error];
+    NSString *JSONString = [[NSString alloc] initWithData:picsJsonData encoding:NSUTF8StringEncoding];
+</code></pre>
+
+<h2>11：iPhone设备类型</h2>
+
+<pre><code>typedef NS_ENUM(char, iPhoneModel){//0~3
+    iPhone4,//320*480
+    iPhone5,//320*568
+    iPhone6,//375*667
+    iPhone6Plus,//414*736
+    UnKnown
+};
+
+
+
+/**
+ *  return current running iPhone model
+ *
+ *  @return iPhone model
+ */
++ (iPhoneModel)iPhonesModel {
+    //bounds method gets the points not the pixels!!!
+    CGRect rect = [[UIScreen mainScreen] bounds];
+
+    CGFloat width = rect.size.width;
+    CGFloat height = rect.size.height;
+
+    //get current interface Orientation
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    //unknown
+    if (UIInterfaceOrientationUnknown == orientation) {
+        return UnKnown;
+    }
+    /**
+     //    portrait   width * height
+     //    iPhone4:320*480
+     //    iPhone5:320*568
+     //    iPhone6:375*667
+     //    iPhone6Plus:414*736
+     */
+
+    //portrait
+    if (UIInterfaceOrientationPortrait == orientation) {
+        if (width ==  320.0f) {
+            if (height == 480.0f) {
+                return iPhone4;
+            } else {
+                return iPhone5;
+            }
+        } else if (width == 375.0f) {
+            return iPhone6;
+        } else if (width == 414.0f) {
+            return iPhone6Plus;
+        }
+    } else if (UIInterfaceOrientationLandscapeLeft == orientation || UIInterfaceOrientationLandscapeRight == orientation) {//landscape
+        if (height == 320.0) {
+            if (width == 480.0f) {
+                return iPhone4;
+            } else {
+                return iPhone5;
+            }
+        } else if (height == 375.0f) {
+            return iPhone6;
+        } else if (height == 414.0f) {
+            return iPhone6Plus;
+        }
+    }
+
+    return UnKnown;
+}
+</code></pre>
+
+<h2>12：iPhone系统版本</h2>
+
+<pre><code>//获取当前系统版本
+#define __ios10_0__ ([[UIDevice currentDevice].systemVersion floatValue] &gt;= 10.0)
+#define __ios9_0__ ([[UIDevice currentDevice].systemVersion floatValue] &gt;= 9.0)
+#define __ios8_0__ ([[UIDevice currentDevice].systemVersion floatValue] &gt;= 8.0)
+</code></pre>
+
+<h2>13：日志</h2>
+
+<pre><code>// 日志输出
+#ifdef DEBUG // 开发阶段-DEBUG阶段:使用Log
+#define iCocosLog(...) NSLog(__VA_ARGS__)
+#else // 发布阶段-上线阶段:移除Log
+#define iCocosLog(...)
+#endif
+</code></pre>
+
+<p>详细</p>
+
+<pre><code>#ifdef DEBUG
+#define iCocosLog(format, ...) printf("\n[%s] %s [第%d行] %s\n", __TIME__, __FUNCTION__, __LINE__, [[NSString stringWithFormat:format, ## __VA_ARGS__] UTF8String]);
+#else
+#define iCocosLog(format, ...)
+#endif
+</code></pre>
+
+<h2>14：颜色</h2>
+
+<pre><code>// 颜色
+#define iCocosARGBColor(r, g, b, a) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:a]
+#define iCocosColor(r, g, b) iCocosARGBColor((r), (g), (b), 255)
+
+
+#define random(r, g, b, a) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:(a)/255.0]
+#define iCocosRandomColor (random(arc4random_uniform(256), arc4random_uniform(256), arc4random_uniform(256), arc4random_uniform(256)))
+</code></pre>
+
+<h2>15：弱引用</h2>
+
+<pre><code>// 弱引用
+#define iCocosWeakSelf __weak typeof(self) weakSelf = self;
+</code></pre>
+
+<h2>16：屏幕尺寸</h2>
+
+<pre><code>// 屏幕尺寸
+#define iCocosScreenH [UIScreen mainScreen].bounds.size.height
+#define iCocosScreenW [UIScreen mainScreen].bounds.size.width
+</code></pre>
+
+<h2>17：获取view的控制</h2>
+
+<pre><code>/** 获取当前View的控制器对象 */
+-(UIViewController *)getCurrentViewController{
+    UIResponder *next = [self nextResponder];
+    do {
+        if ([next isKindOfClass:[UIViewController class]]) {
+            return (UIViewController *)next;
+        }
+        next = [next nextResponder];
+    } while (next != nil);
+    return nil;
+}
+</code></pre>
+
+<h2>18：字典防蹦</h2>
+
+<h4>不可变</h4>
+
+<pre><code>/*!
+ @method objectAtIndexCheck:
+ @abstract 检查是否越界和NSNull如果是返回nil
+ @result 返回对象
+ */
+- (id)objectStringForKey:(NSString *)key
+{
+    if ([self objectForKey:key] == nil) {
+//        iCocosLog(@"键值对不存在");
+        return nil;
+    }
+    id value = [self objectForKey:key];
+
+    return value;
+}
+</code></pre>
+
+<h4>可变</h4>
+
+<pre><code>/*!
+ @method objectAtIndexCheck:
+ @abstract 检查是否越界和NSNull如果是返回nil
+ @result 返回对象
+ */
+- (id)objectStringForKey:(NSString *)key
+{
+    if ([self objectForKey:key] == nil) {
+
+//        iCocosLog(@"键值对不存在");
+
+        return nil;
+//        return 0;
+    }
+    id value = [self objectForKey:key];
+
+    return value;
+}
+</code></pre>
+
+<h2>19：数组防蹦</h2>
+
+<h4>不可变</h4>
+
+<pre><code>/*!
+ @method objectAtIndexCheck:
+ @abstract 检查是否越界和NSNull如果是返回nil
+ @result 返回对象
+ */
+- (id)objectAtIndexCheck:(NSUInteger)index  {
+
+    if (index &gt;= [self count]) {
+        iCocosLog(@"数组越界");
+        return nil;
+    }
+    id value = [self objectAtIndex:index];
+    if (value == [NSNull null]) {
+        iCocosLog(@"数组为空");
+        return nil;
+    }
+    return value;
+}
+</code></pre>
+
+<h4>可变</h4>
+
+<pre><code>/*!
+ @method objectAtIndexCheck:
+ @abstract 检查是否越界和NSNull如果是返回nil
+ @result 返回对象
+ */
+- (id)objectAtIndexCheck:(NSUInteger)index  {
+
+    if (index &gt;= [self count]) {
+        iCocosLog(@"数组越界");
+        return nil;
+    }
+    id value = [self objectAtIndex:index];
+    if (value == [NSNull null]) {
+        iCocosLog(@"数组为空");
+        return nil;
+    }
+    return value;
+}
+
+
+
+- (void)removeObjectAtCheckIndex:(NSInteger)index
+{
+    if (index &gt;= [self count]) {
+        iCocosLog(@"数组越界");
+        return ;
+    }
+    id value = [self objectAtIndex:index];
+    if (value == [NSNull null]) {
+        iCocosLog(@"数组为空");
+        return ;
+    }
+
+    [self removeObjectAtIndex:index];
+
+}
+</code></pre>
+
+<h2>20：本文输入错误提示</h2>
+
+<pre><code>- (void)shake {
+    CAKeyframeAnimation *keyFrame = [CAKeyframeAnimation animationWithKeyPath:@"position.x"];
+    keyFrame.duration = 0.3;
+    CGFloat x = self.layer.position.x;
+    keyFrame.values = @[@(x - 30), @(x - 30), @(x + 20), @(x - 20), @(x + 10), @(x - 10), @(x + 5), @(x - 5)];
+    [self.layer addAnimation:keyFrame forKey:@"shake"];
+
+}
+</code></pre>
+
+<h2>21：当前时间</h2>
+
+<pre><code>+ (NSString *)nowTimes{
+    NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+    int a=(int)([dat timeIntervalSince1970] + 0.5);
+    NSString *timeString = [NSString stringWithFormat:@"%d", a];//转为字符型
+    return timeString;
+}
+</code></pre>
+
+<h2>22:当前版本</h2>
+
+<pre><code>/*
+ *  当前程序的版本号
+ */
+-(NSString *)version{
+    //系统直接读取的版本号
+    NSString *versionValueStringForSystemNow=[[NSBundle mainBundle].infoDictionary valueForKey:(NSString *)kCFBundleVersionKey];
+    return versionValueStringForSystemNow;
+}
+</code></pre>
+
+<h2>23:tabBar红点</h2>
+
+<pre><code>- (void)showBadgeOnItemIndex:(int)index{
+
+    //移除之前的小红点
+    [self removeBadgeOnItemIndex:index];
+
+    //新建小红点
+    UIView *badgeView = [[UIView alloc]init];
+    badgeView.tag = 888 + index;
+    badgeView.backgroundColor = [UIColor redColor];
+    CGRect tabFrame = self.frame;
+
+    //确定小红点的位置
+    float percentX = (index +0.6) / TabbarItemNums;
+    CGFloat x = ceilf(percentX * tabFrame.size.width);
+    CGFloat y = ceilf(0.1 * tabFrame.size.height);
+    badgeView.frame = CGRectMake(x, y, 8, 8);
+    badgeView.layer.cornerRadius = badgeView.frame.size.width/2;
+
+    [self addSubview:badgeView];
+
+}
+
+- (void)hideBadgeOnItemIndex:(int)index{
+
+    //移除小红点
+    [self removeBadgeOnItemIndex:index];
+
+}
+
+- (void)removeBadgeOnItemIndex:(int)index{
+
+    //按照tag值进行移除
+    for (UIView *subView in self.subviews) {
+        if (subView.tag == 888+index) {
+            [subView removeFromSuperview];
+        }
+    }
+}
+</code></pre>
+
+<h2>24:Log日志.m</h2>
+
+<pre><code>@implementation UIView(Log)
++ (NSString *)searchAllSubviews:(UIView *)superview
+{
+    NSMutableString *xml = [NSMutableString string];
+
+    NSString *class = NSStringFromClass(superview.class);
+    class = [class stringByReplacingOccurrencesOfString:@"_" withString:@""];
+    [xml appendFormat:@"&lt;%@ frame=\"%@\"&gt;\n", class, NSStringFromCGRect(superview.frame)];
+    for (UIView *childView in superview.subviews) {
+        NSString *subviewXml = [self searchAllSubviews:childView];
+        [xml appendString:subviewXml];
+    }
+    [xml appendFormat:@"&lt;/%@&gt;\n", class];
+    return xml;
+}
+
+- (NSString *)description
+{
+    return [UIView searchAllSubviews:self];
+}
+@end
+
+@implementation NSDictionary (Log)
+- (NSString *)descriptionWithLocale:(id)locale
+{
+    NSMutableString *str = [NSMutableString string];
+
+    [str appendString:@"{\n"];
+
+    // 遍历字典的所有键值对
+    [self enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [str appendFormat:@"\t%@ = %@,\n", key, obj];
+    }];
+
+    [str appendString:@"}"];
+
+    // 查出最后一个,的范围
+    NSRange range = [str rangeOfString:@"," options:NSBackwardsSearch];
+    if (range.length) {
+        // 删掉最后一个,
+        [str deleteCharactersInRange:range];
+    }
+
+    return str;
+}
+@end
+
+@implementation NSArray (Log)
+- (NSString *)descriptionWithLocale:(id)locale
+{
+    NSMutableString *str = [NSMutableString string];
+
+    [str appendString:@"[\n"];
+
+    // 遍历数组的所有元素
+    [self enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [str appendFormat:@"%@,\n", obj];
+    }];
+
+    [str appendString:@"]"];
+
+    // 查出最后一个,的范围
+    NSRange range = [str rangeOfString:@"," options:NSBackwardsSearch];
+    if (range.length) {
+        // 删掉最后一个,
+        [str deleteCharactersInRange:range];
+    }
+
+    return str;
+}
+@end
+</code></pre>
+
+<h2>25:MD5</h2>
+
+<pre><code>//16位MD5加密方式
+- (NSString *)getMd5_16Bit_String:(NSString *)srcString{
+    //提取32位MD5散列的中间16位
+    NSString *md5_32Bit_String=[self getMd5_32Bit_String:srcString];
+    NSString *result = [[md5_32Bit_String substringToIndex:24] substringFromIndex:8];//即9～25位
+
+    return result;
+}
+
+
+//32位MD5加密方式
+- (NSString *)getMd5_32Bit_String:(NSString *)srcString{
+    const char *cStr = [srcString UTF8String];
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5( cStr, strlen(cStr), digest );
+    NSMutableString *result = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for(int i = 0; i &lt; CC_MD5_DIGEST_LENGTH; i++)
+        [result appendFormat:@"%02x", digest[i]];
+
+    return result;
+}
+</code></pre>
+
+<h2>26:按钮背景颜色</h2>
+
+<pre><code>/**
+ *  使用背景颜色设置按钮不同状态的图片
+ *
+ *  @param color 颜色
+ *
+ *  @return 背景图片
+ */
++ (UIImage *)imageWithColor:(UIColor *)color {
+    CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return image;
+}
+</code></pre>
+
+<h2>27：对象是否为空</h2>
+
+<pre><code>// 判断对象是否为空
+- (BOOL)isBlanceObject:(id)object{
+    if (object == nil || object == NULL) {
+        return YES;
+    }
+    if ([object isKindOfClass:[NSNull class]]) {
+        return YES;
+    }
+    return NO;
+}
+</code></pre>
+
+<h2>28：键盘退出与隐藏</h2>
+
+<pre><code>[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+</code></pre>
+
+<p>}</p>
+
+<pre><code>- (void)keyboardWillShow:(NSNotification *)notification {
+
+    // 获取通知的信息字典
+    NSDictionary *userInfo = [notification userInfo];
+
+    // 获取键盘弹出后的rect
+    NSValue* aValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardRect = [aValue CGRectValue];
+
+    // 获取键盘弹出动画时间
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    NSTimeInterval animationDuration;
+    [animationDurationValue getValue:&amp;animationDuration];
+
+}
+
+
+- (void)keyboardWillHide:(NSNotification *)notification {
+
+    // 获取通知信息字典
+    NSDictionary* userInfo = [notification userInfo];
+
+    // 获取键盘隐藏动画时间
+    NSValue *animationDurationValue = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    NSTimeInterval animationDuration;
+    [animationDurationValue getValue:&amp;animationDuration];
+
+
+}
+</code></pre>
+
+<h2>29：获取设备唯一ID</h2>
+
+<p>-(NSString <em>)getUniqueDeviceIdentifierAsString
+{
+    NSString </em>appName=[[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey];</p>
+
+<pre><code>NSString *strApplicationUUID =  [SAMKeychain passwordForService:appName account:@"incoding"];
+if (strApplicationUUID == nil)
+{
+    strApplicationUUID  = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+
+    NSError *error = nil;
+    SAMKeychainQuery *query = [[SAMKeychainQuery alloc] init];
+    query.service = appName;
+    query.account = @"incoding";
+    query.password = strApplicationUUID;
+    query.synchronizationMode = SAMKeychainQuerySynchronizationModeNo;
+    [query save:&amp;error];
+
+}
+
+return strApplicationUUID;
+</code></pre>
+
+<p>}</p>
+
+<h2>30：MOV转Mp4</h2>
+
+<pre><code>- (void)movFileTransformToMP4WithSourceUrl:(NSURL *)sourceUrl completion:(void(^)(NSString *Mp4FilePath))comepleteBlock
+{
+    /**
+     *  mov格式转mp4格式
+     */
+    AVURLAsset *avAsset = [AVURLAsset URLAssetWithURL:sourceUrl options:nil];
+
+    NSArray *compatiblePresets = [AVAssetExportSession exportPresetsCompatibleWithAsset:avAsset];
+
+    NSLog(@"%@",compatiblePresets);
+
+    if ([compatiblePresets containsObject:AVAssetExportPresetHighestQuality]) {
+
+        AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+
+
+        NSDate *date = [NSDate date];
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"yyyyMMddHHmmss"];
+        NSString *uniqueName = [NSString stringWithFormat:@"%@.mp4",[formatter stringFromDate:date]];
+        NSString * resultPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:uniqueName];//PATH_OF_DOCUMENT为documents路径
+
+        NSLog(@"output File Path : %@",resultPath);
+
+        exportSession.outputURL = [NSURL fileURLWithPath:resultPath];
+
+        exportSession.outputFileType = AVFileTypeMPEG4;//可以配置多种输出文件格式
+
+        exportSession.shouldOptimizeForNetworkUse = YES;
+
+        [exportSession exportAsynchronouslyWithCompletionHandler:^(void)
+         {
+             switch (exportSession.status) {
+
+                 case AVAssetExportSessionStatusUnknown:
+
+                     break;
+
+                 case AVAssetExportSessionStatusWaiting:
+
+                     break;
+
+                 case AVAssetExportSessionStatusExporting:
+
+                     break;
+
+                 case AVAssetExportSessionStatusCompleted:
+                 {
+                     comepleteBlock(resultPath);
+
+
+                     NSLog(@"mp4 file size:%lf MB",[NSData dataWithContentsOfURL:exportSession.outputURL].length/1024.f/1024.f);
+                 }
+                     break;
+
+                 case AVAssetExportSessionStatusFailed:
+
+                     break;
+
+                 case AVAssetExportSessionStatusCancelled:
+
+                     break;
+
+             }  
+
+         }];
+    }  
+}
+</code></pre>
+
+<h2>31:上传图片</h2>
+
+<pre><code>+ (void)uploadImage:(UIImage *)imageIcon successUpload:(void (^)(id responseObject))successUpload failureUpload:(void (^)(NSError *error))failureUpload;
+{
+
+    //    拿到文件
+    NSString *NSDocmentsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+    NSString *iconPath       = [NSDocmentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"faceUrl.png"]];
+    //NSURL *url = [NSURL fileURLWithPath:iconPath];
+
+    long long size = [iCocosGetSize fileSizeAtPath:iconPath];
+
+    if (size &gt;= 7000000) {
+        [SVProgressHUD showInfoWithStatus:@"图片过大，请重新上传 \n 请不要上传超过7Mb文件"];
+        NSDictionary *errDict = [NSDictionary dictionaryWithObject:@"big" forKey:@"state"];
+        failureUpload((NSError *)errDict);
+        return;
+    }
+
+    //1:文件的32位MD5值
+    NSString *strForEight = [iCocosFormatFileGetEight getStringWithEight:iconPath];
+    //2:文件的前8个字节的16位+文件的后8个字节的16位
+    NSString *str32MD5    = [NSString getMd5_32Bit_String:iconPath];
+
+    NSString *str64       = [NSString stringWithFormat:@"%@%@", str32MD5,strForEight];
+
+    //存图片
+    //    NSData *imageData = UIImageJPEGRepresentation(imageIcon, 1.0);//将UIImage转为NSData，1.0表示不压缩图片质量。
+    NSData *imageData = [iCocosFileCondenseTools resetSizeOfImageData:imageIcon maxSize:50];
+
+
+    [imageData writeToFile:iconPath atomically:YES];
+
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html", nil];
+
+    //    NSString *urlStrIF        = [NSString stringWithFormat:@"%@file/exist%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl, [iCocosURLRequestExtension getURLRequestExtension]];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    //文件的32位MD5+前8个字节的16位+后8个字节的16位
+    dict[@"file_md5"] = str64;
+    dict[@"is_blur"] = @(1);
+    dict[@"file_size"] = @([iCocosGetSize fileSizeAtPath:iconPath]);
+    dict[@"ext"] = @"png";
+
+    /**
+     *  超时时间
+     */
+    [manager.requestSerializer willChangeValueForKey:@"timeoutInterval"];
+    manager.requestSerializer.timeoutInterval = 10.f;
+    [manager.requestSerializer didChangeValueForKey:@"timeoutInterval"];
+
+    //    [manager POST:urlStrIF parameters:dict progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+    [iCocosAFNPOSTRequestData iCocos_POST_HostSecurity:@"file/exist" hostHeaderValue:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileHost firstRequestWithUrl:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl secondRequestWithIp:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileIp params:dict success:^(id response) {
+
+        NSString *state = [NSString stringWithFormat:@"%@", [response objectStringForKey:@"state"]];
+        NSString *msg= [NSString stringWithFormat:@"%@", [response objectStringForKey:@"msg"]];
+        if ([state isEqualToString:@"0"]) {
+            NSString *exist = [NSString stringWithFormat:@"%@", [[response objectStringForKey:@"data"] objectStringForKey:@"exist"]];
+            /**
+             *  注意这里需要换成真实服务器地址
+             */
+            if ([exist isEqualToString:@"0"]) { //不存在就需要发送请求
+                NSString *imageUrl          = [NSString stringWithFormat:@"%@file/up%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl,[iCocosURLRequestExtension getURLRequestExtension]];
+                NSMutableDictionary *params = [NSMutableDictionary dictionary];
+                params[@"blur"]          = @(1);
+
+
+                AFHTTPSessionManager *mger = [AFHTTPSessionManager manager];
+
+                AFJSONResponseSerializer *response = [AFJSONResponseSerializer serializer];
+                response.removesKeysWithNullValues = YES;
+                manager.responseSerializer = response;
+
+                manager.requestSerializer = [AFHTTPRequestSerializer serializer];//响应
+
+
+
+                mger.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"image/png", @"text/html", nil];
+
+                /**
+                 *  超时时间
+                 */
+                [manager.requestSerializer willChangeValueForKey:@"timeoutInterval"];
+                manager.requestSerializer.timeoutInterval = 10.f;
+                [manager.requestSerializer didChangeValueForKey:@"timeoutInterval"];
+
+
+                [mger POST:imageUrl parameters:params constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+                    // 上传文件
+                    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                    formatter.dateFormat       = @"yyyyMMddHHmmss";
+                    NSString *str              = [formatter stringFromDate:[NSDate date]];
+                    NSString *fileName         = [NSString stringWithFormat:@"%@.png", str];
+
+                    [formData appendPartWithFileData:imageData name:@"file" fileName:fileName mimeType:@"image/png"];
+
+                } progress:^(NSProgress * _Nonnull uploadProgress) {
+
+                    iCocosLog(@"封面图片================%@", uploadProgress);
+
+                } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+                    NSDictionary *dataDic    = [responseObject objectStringForKey:@"data"]; 
+
+
+                    successUpload(dataDic);
+
+                    iCocosLog(@"%@", responseObject);
+                } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+                    iCocosLog(@"上传错误:%@", error);
+
+                    failureUpload(error);
+                }];
+
+            } else {
+
+                NSDictionary *dataDic    = [response objectStringForKey:@"data"];
+
+                successUpload(dataDic);
+            }
+
+        } else {
+            successUpload(response);
+        }
+    } failure:^(NSError *error) {
+        failureUpload(error);
+    }];
+
+}
+</code></pre>
+
+<h2>32：上传视频</h2>
+
+<h4>上传MOV</h4>
+
+<pre><code>+ (void)updateMOVVideo:(NSURL *)url successUpload:(void (^)(id responseObject))successUpload failureUpload:(void (^)(NSError *error))failureUpload;
+{
+    //保存数据
+    //    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    //    NSURL *url = [defaults URLForKey:@"RecordVideoUrl"];
+
+    NSData *videoData = [NSData dataWithContentsOfURL:url];
+
+    //   NSString *videoUrl = [iCocosUpLoadVideoTools upLoadVideoGetVideoUrlWithFileUrlInSandbox:url];
+
+    //    NSString *strUrl = [NSString stringWithContentsOfURL:url usedEncoding:0 error:nil];
+
+    //    //1:文件的32位MD5值
+    //    NSString *strForEight = [iCocosFormatFileGetEight getStringWithEight:strUrl];
+    //
+    //    //2:文件的前8个字节的16位+文件的后8个字节的16位
+    //    NSString *str32MD5 = [NSString getMd5_32Bit_String:strUrl];
+
+    NSString *str32MD5 = [iCocosRandomSix getSixRandom];
+
+    NSString *str64 = [NSString stringWithFormat:@"%@%@", str32MD5,str32MD5];
+
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html", nil];
+
+    //    NSString *urlStrIF = [NSString stringWithFormat:@"%@file/exist%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl, [iCocosURLRequestExtension getURLRequestExtension]];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    dict[@"file_md5"] = str64;
+    dict[@"is_blur"] = 0;
+    dict[@"file_size"] = @([iCocosGetSize fileSizeAtPath:[url absoluteString]]);
+    dict[@"ext"] = @"MOV";
+
+    /**
+     *  超时时间
+     */
+    [manager.requestSerializer willChangeValueForKey:@"timeoutInterval"];
+    manager.requestSerializer.timeoutInterval = 10.f;
+    [manager.requestSerializer didChangeValueForKey:@"timeoutInterval"];
+
+    /** 获取视频是否上传 */
+    //    [manager POST:urlStrIF parameters:dict progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+    [iCocosAFNPOSTRequestData iCocos_POST_HostSecurity:@"file/exist" hostHeaderValue:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileHost firstRequestWithUrl:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl secondRequestWithIp:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileIp params:dict success:^(id response) {
+
+        NSString *state = [NSString stringWithFormat:@"%@", [response objectStringForKey:@"state"]];
+        if ([state isEqualToString:@"0"]) {
+            NSString *exist = [response objectStringForKey:@"exist"];
+            /**
+             *  注意这里需要换成真实服务器地址
+             */
+            if (exist == 0) { //不存在就需要发送请求
+                NSString *vidUrl = [NSString stringWithFormat:@"%@file/up%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl, [iCocosURLRequestExtension getURLRequestExtension]];
+                NSMutableDictionary *params = [NSMutableDictionary dictionary];
+                //            params[@"name:file"] = @""; //Content-Disposition: form-data; name="file"; filename="1.txt"
+                params[@"is_blur"] = @0;
+                params[@"need_mp4"] = @1;
+                AFHTTPSessionManager *mger = [AFHTTPSessionManager manager];
+
+                AFJSONResponseSerializer *response = [AFJSONResponseSerializer serializer];
+                response.removesKeysWithNullValues = YES;
+                manager.responseSerializer = response;
+
+                manager.requestSerializer = [AFHTTPRequestSerializer serializer];//响应
+
+
+                [mger.securityPolicy setAllowInvalidCertificates:YES];
+
+                /** 上传视频 */
+                [mger POST:vidUrl parameters:params constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+
+                    // 上传文件
+                    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                    formatter.dateFormat = @"yyyyMMddHHmmss";
+                    NSString *str = [formatter stringFromDate:[NSDate date]];
+                    NSString *fileName = [NSString stringWithFormat:@"%@.mov", str];
+
+                    if (videoData != nil) {
+                        [formData appendPartWithFileData:videoData name:@"file" fileName:fileName mimeType:@"video/quicktime"];
+                    } else {
+
+                    }
+
+                } progress:^(NSProgress * _Nonnull uploadProgress) {
+
+//                    iCocosLog(@"%@", uploadProgress);
+
+                } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+                    NSString *state = [NSString stringWithFormat:@"%@", [responseObject objectStringForKey:@"state"]];
+                    if ([state isEqualToString:@"0"]) {
+
+                        NSDictionary *dataDic = [responseObject objectStringForKey:@"data"];
+
+                        successUpload(dataDic);
+                    }
+
+                } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+                    iCocosLog(@"上传错误:%@", error);
+                    failureUpload(error);
+                }];
+
+            } else {
+                /**
+                 *  已经上传
+                 */
+                NSDictionary *dataDic    = [response objectStringForKey:@"data"];
+                NSString *file_url       = [NSString stringWithFormat:@"%@", [dataDic objectStringForKey:@"file_url"]];
+                NSString *mp4_file_url       = [NSString stringWithFormat:@"%@", [dataDic objectStringForKey:@"mp4_file_url"]];
+
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                [defaults setValue:file_url forKey:@"video_url"];
+                [defaults setValue:mp4_file_url forKey:@"mp4_file_url"];
+                [defaults synchronize];
+
+                successUpload(dataDic);
+            }
+
+        } else {
+            successUpload(response);
+        }
+    } failure:^(NSError *error) { //上传错误
+        failureUpload(error);
+    }];
+}
+</code></pre>
+
+<h4>上传MP4</h4>
+
+<pre><code>+ (void)updateMP4Video:(NSURL *)url successUpload:(void (^)(id responseObject))successUpload failureUpload:(void (^)(NSError *error))failureUpload
+{
+    //保存数据
+    //    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    //    NSURL *url = [defaults URLForKey:@"RecordVideoUrl"];
+
+    NSData *videoData = [NSData dataWithContentsOfURL:url];
+
+    //   NSString *videoUrl = [iCocosUpLoadVideoTools upLoadVideoGetVideoUrlWithFileUrlInSandbox:url];
+
+    //    NSString *strUrl = [NSString stringWithContentsOfURL:url usedEncoding:0 error:nil];
+
+    //    //1:文件的32位MD5值
+    //    NSString *strForEight = [iCocosFormatFileGetEight getStringWithEight:strUrl];
+    //
+    //    //2:文件的前8个字节的16位+文件的后8个字节的16位
+    //    NSString *str32MD5 = [NSString getMd5_32Bit_String:strUrl];
+
+    NSString *str32MD5 = [iCocosRandomSix getSixRandom];
+
+    NSString *str64 = [NSString stringWithFormat:@"%@%@", str32MD5,str32MD5];
+
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html", nil];
+
+    //    NSString *urlStrIF = [NSString stringWithFormat:@"%@file/exist%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl, [iCocosURLRequestExtension getURLRequestExtension]];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    dict[@"file_md5"] = str64;
+    dict[@"is_blur"] = 0;
+    dict[@"file_size"] = @([iCocosGetSize fileSizeAtPath:[url absoluteString]]);
+    dict[@"ext"] = @"mp4";
+
+    /**
+     *  超时时间
+     */
+    [manager.requestSerializer willChangeValueForKey:@"timeoutInterval"];
+    manager.requestSerializer.timeoutInterval = 10.f;
+    [manager.requestSerializer didChangeValueForKey:@"timeoutInterval"];
+
+    /** 获取视频是否上传 */
+    //    [manager POST:urlStrIF parameters:dict progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+    [iCocosAFNPOSTRequestData iCocos_POST_HostSecurity:@"file/exist" hostHeaderValue:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileHost firstRequestWithUrl:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl secondRequestWithIp:[iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileIp params:dict success:^(id response) {
+
+        NSString *state = [NSString stringWithFormat:@"%@", [response objectStringForKey:@"state"]];
+        if ([state isEqualToString:@"0"]) {
+            NSString *exist = [response objectStringForKey:@"exist"];
+            /**
+             *  注意这里需要换成真实服务器地址
+             */
+            if (exist == 0) { //不存在就需要发送请求
+                NSString *vidUrl = [NSString stringWithFormat:@"%@file/up%@", [iCocosUrlOperationTools shareiCocosUrlOperationTools].iCocosFileUrl, [iCocosURLRequestExtension getURLRequestExtension]];
+                NSMutableDictionary *params = [NSMutableDictionary dictionary];
+                //            params[@"name:file"] = @""; //Content-Disposition: form-data; name="file"; filename="1.txt"
+                params[@"is_blur"] = @0;
+                params[@"need_mp4"] = @1;
+                AFHTTPSessionManager *mger = [AFHTTPSessionManager manager];
+
+                AFJSONResponseSerializer *response = [AFJSONResponseSerializer serializer];
+                response.removesKeysWithNullValues = YES;
+                manager.responseSerializer = response;
+
+                manager.requestSerializer = [AFHTTPRequestSerializer serializer];//响应
+
+
+                [mger.securityPolicy setAllowInvalidCertificates:YES];
+
+                /** 上传视频 */
+                [mger POST:vidUrl parameters:params constructingBodyWithBlock:^(id&lt;AFMultipartFormData&gt; formData) {
+
+                    // 上传文件
+                    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+                    formatter.dateFormat = @"yyyyMMddHHmmss";
+                    NSString *str = [formatter stringFromDate:[NSDate date]];
+                    NSString *fileName = [NSString stringWithFormat:@"%@.mp4", str];
+
+                    if (videoData != nil) {
+                        [formData appendPartWithFileData:videoData name:@"file" fileName:fileName mimeType:@"video/mp4"];
+                    } else {
+
+                    }
+
+                } progress:^(NSProgress * _Nonnull uploadProgress) {
+
+
+//                    iCocosLog(@"%@", uploadProgress);
+
+
+                } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+                    NSString *state = [NSString stringWithFormat:@"%@", [responseObject objectStringForKey:@"state"]];
+                    if ([state isEqualToString:@"0"]) {
+
+                        NSDictionary *dataDic = [responseObject objectStringForKey:@"data"];
+
+                        successUpload(dataDic);
+                    }
+
+
+                } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+                    iCocosLog(@"上传错误:%@", error);
+                    failureUpload(error);
+                }];
+
+            } else {
+
+                /**
+                 *  已经上传
+                 */
+                NSDictionary *dataDic    = [response objectStringForKey:@"data"];
+                NSString *file_url       = [NSString stringWithFormat:@"%@", [dataDic objectStringForKey:@"file_url"]];
+                NSString *mp4_file_url       = [NSString stringWithFormat:@"%@", [dataDic objectStringForKey:@"mp4_file_url"]];
+
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                [defaults setValue:file_url forKey:@"video_url"];
+                [defaults setValue:mp4_file_url forKey:@"mp4_file_url"];
+                [defaults synchronize];
+
+                successUpload(dataDic);
+            }
+
+        } else {
+            successUpload(response);
+        }
+    } failure:^(NSError *error) { //上传错误
+        failureUpload(error);
+    }];
+}
+</code></pre>
+
+<h2>33:获取视频帧图</h2>
+
+<h4>同步获取帧图</h4>
+
+<p>同步获取中间帧，需要指定哪个时间点的帧，当获取到以后，返回来的图片对象是CFRetained过的，需要外面手动CGImageRelease一下，释放内存。通过AVAsset来访问具体的视频资源，然后通过AVAssetImageGenerator图片生成器来生成某个帧图片：
+    // Get the video&rsquo;s center frame as video poster image
+    - (UIImage <em>)frameImageFromVideoURL:(NSURL </em>)videoURL {
+      // result
+      UIImage *image = nil;</p>
+
+<pre><code>  // AVAssetImageGenerator
+  AVAsset *asset = [AVAsset assetWithURL:videoURL];
+  AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+  imageGenerator.appliesPreferredTrackTransform = YES;
+
+  // calculate the midpoint time of video
+  Float64 duration = CMTimeGetSeconds([asset duration]);
+  // 取某个帧的时间，参数一表示哪个时间（秒），参数二表示每秒多少帧
+  // 通常来说，600是一个常用的公共参数，苹果有说明:
+  // 24 frames per second (fps) for film, 30 fps for NTSC (used for TV in North America and
+  // Japan), and 25 fps for PAL (used for TV in Europe).
+  // Using a timescale of 600, you can exactly represent any number of frames in these systems
+  CMTime midpoint = CMTimeMakeWithSeconds(duration / 2.0, 600);
+
+  // get the image from
+  NSError *error = nil;
+  CMTime actualTime;
+  // Returns a CFRetained CGImageRef for an asset at or near the specified time.
+  // So we should mannully release it
+  CGImageRef centerFrameImage = [imageGenerator copyCGImageAtTime:midpoint
+                                                       actualTime:&amp;actualTime
+                                                            error:&amp;error];
+
+  if (centerFrameImage != NULL) {
+    image = [[UIImage alloc] initWithCGImage:centerFrameImage];
+    // Release the CFRetained image
+    CGImageRelease(centerFrameImage);
+  }
+
+  return image;
+}
+</code></pre>
+
+<h4>异步获取帧图</h4>
+
+<p>异步获取某个帧的图片，与同步相比，只是调用API不同，可以传多个时间点，然后计算出实际的时间并返回图片，但是返回的图片不需要我们手动再release了。有可能取不到图片，所以还需要判断是否是AVAssetImageGeneratorSucceeded，是才转换图片：</p>
+
+<pre><code>// 异步获取帧图片，可以一次获取多帧图片
+- (void)centerFrameImageWithVideoURL:(NSURL *)videoURL completion:(void (^)(UIImage *image))completion {
+  // AVAssetImageGenerator
+  AVAsset *asset = [AVAsset assetWithURL:videoURL];
+  AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+  imageGenerator.appliesPreferredTrackTransform = YES;
+
+  // calculate the midpoint time of video
+  Float64 duration = CMTimeGetSeconds([asset duration]);
+  // 取某个帧的时间，参数一表示哪个时间（秒），参数二表示每秒多少帧
+  // 通常来说，600是一个常用的公共参数，苹果有说明:
+  // 24 frames per second (fps) for film, 30 fps for NTSC (used for TV in North America and
+  // Japan), and 25 fps for PAL (used for TV in Europe).
+  // Using a timescale of 600, you can exactly represent any number of frames in these systems
+  CMTime midpoint = CMTimeMakeWithSeconds(duration / 2.0, 600);
+
+  // 异步获取多帧图片
+  NSValue *midTime = [NSValue valueWithCMTime:midpoint];
+  [imageGenerator generateCGImagesAsynchronouslyForTimes:@[midTime] completionHandler:^(CMTime requestedTime, CGImageRef  _Nullable image, CMTime actualTime, AVAssetImageGeneratorResult result, NSError * _Nullable error) {
+    if (result == AVAssetImageGeneratorSucceeded &amp;&amp; image != NULL) {
+      UIImage *centerFrameImage = [[UIImage alloc] initWithCGImage:image];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        if (completion) {
+          completion(centerFrameImage);
+        }
+      });
+    } else {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        if (completion) {
+          completion(nil);
+        }
+      });
+    }
+  }];
+}
+</code></pre>
+
+<h2>34:压缩并导出视频</h2>
+
+<p>压缩视频是因为视频分辨率过高所生成的视频的大小太大了，对于移动设备来说，内存是不能太大的，如果不支持分片上传到服务器，或者不支持流上传、文件上传，而只能支持表单上传，那么必须要限制大小，压缩视频。</p>
+
+<p>就像我们在使用某平台的视频的上传的时候，到现在还没有支持流上传，也不支持文件上传，只支持表单上传，导致视频大一点就会闪退。流上传是上传成功了，但是人家后台不识别，这一次让某平台坑坏了。直接用file上传，也传过去了，上传进度100%了，但是人家那边还是作为失败处理，无奈！</p>
+
+<blockquote><p>言归正传，压缩、导出视频，需要通过AVAssetExportSession来实现，我们需要指定一个preset，并判断是否支持这个preset，只有支持才能使用。</p></blockquote>
+
+<p>我们这里设置的preset为AVAssetExportPreset640x480，属于压缩得比较厉害的了，这需要根据服务器视频上传的支持程度而选择的。然后通过调用异步压缩并导出视频：</p>
+
+<pre><code>- (void)compressVideoWithVideoURL:(NSURL *)videoURL
+                        savedName:(NSString *)savedName
+                       completion:(void (^)(NSString *savedPath))completion {
+  // Accessing video by URL
+  AVURLAsset *videoAsset = [[AVURLAsset alloc] initWithURL:videoURL options:nil];
+
+  // Find compatible presets by video asset.
+  NSArray *presets = [AVAssetExportSession exportPresetsCompatibleWithAsset:videoAsset];
+
+  // Begin to compress video
+  // Now we just compress to low resolution if it supports
+  // If you need to upload to the server, but server does't support to upload by streaming,
+  // You can compress the resolution to lower. Or you can support more higher resolution.
+  if ([presets containsObject:AVAssetExportPreset640x480]) {
+    AVAssetExportSession *session = [[AVAssetExportSession alloc] initWithAsset:videoAsset  presetName:AVAssetExportPreset640x480];
+
+    NSString *doc = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+    NSString *folder = [doc stringByAppendingPathComponent:@"HYBVideos"];
+    BOOL isDir = NO;
+    BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:folder isDirectory:&amp;isDir];
+    if (!isExist || (isExist &amp;&amp; !isDir)) {
+      NSError *error = nil;
+      [[NSFileManager defaultManager] createDirectoryAtPath:folder
+                                withIntermediateDirectories:YES
+                                                 attributes:nil
+                                                      error:&amp;error];
+      if (error == nil) {
+        NSLog(@"目录创建成功");
+      } else {
+        NSLog(@"目录创建失败");
+      }
+    }
+
+    NSString *outPutPath = [folder stringByAppendingPathComponent:savedName];
+    session.outputURL = [NSURL fileURLWithPath:outPutPath];
+
+    // Optimize for network use.
+    session.shouldOptimizeForNetworkUse = true;
+
+    NSArray *supportedTypeArray = session.supportedFileTypes;
+    if ([supportedTypeArray containsObject:AVFileTypeMPEG4]) {
+      session.outputFileType = AVFileTypeMPEG4;
+    } else if (supportedTypeArray.count == 0) {
+      NSLog(@"No supported file types");
+      return;
+    } else {
+      session.outputFileType = [supportedTypeArray objectAtIndex:0];
+    }
+
+    // Begin to export video to the output path asynchronously.
+    [session exportAsynchronouslyWithCompletionHandler:^{
+      if ([session status] == AVAssetExportSessionStatusCompleted) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          if (completion) {
+            completion([session.outputURL path]);
+          }
+        });
+      } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          if (completion) {
+            completion(nil);
+          }
+        });
+      }
+    }];
+  }
+}
+</code></pre>
+
+<h2>35:保存视频到相册</h2>
+
+<p>写入相册可以通过ALAssetsLibrary类来实现，它提供了写入相册的API，异步写入，完成是要回到主线程更新UI：</p>
+
+<pre><code>NSURL *videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
+ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+dispatch_async(dispatch_get_global_queue(0, 0), ^{
+  // 判断相册是否兼容视频，兼容才能保存到相册
+  if ([library videoAtPathIsCompatibleWithSavedPhotosAlbum:videoURL]) {
+    [library writeVideoAtPathToSavedPhotosAlbum:videoURL completionBlock:^(NSURL *assetURL, NSError *error) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        // 写入相册
+        if (error == nil) {
+            NSLog(@"写入相册成功");
+        } else {
+           NSLog(@"写入相册失败");
+        }
+      }
+    }];
+  }
+});
+</code></pre>
+
+<h2>36:获取当前最顶层的ViewController</h2>
+
+<pre><code>    - (UIViewController *)topViewController {
+    UIViewController *resultVC;
+    resultVC = [self _topViewController:[[UIApplication sharedApplication].keyWindow rootViewController]];
+    while (resultVC.presentedViewController) {
+        resultVC = [self _topViewController:resultVC.presentedViewController];
+    }
+    return resultVC;
+}
+
+- (UIViewController *)_topViewController:(UIViewController *)vc {
+    if ([vc isKindOfClass:[UINavigationController class]]) {
+        return [self _topViewController:[(UINavigationController *)vc topViewController]];
+    } else if ([vc isKindOfClass:[UITabBarController class]]) {
+        return [self _topViewController:[(UITabBarController *)vc selectedViewController]];
+    } else {
+        return vc;
+    }
+    return nil;
+}
+</code></pre>
+
+<p>使用方法</p>
+
+<pre><code>UIViewController *topmostVC = [self topViewController];
+</code></pre>
+
+<h2>37:数组拆分</h2>
+
+<pre><code>/**
+ *  数组拆分
+ *
+ *  @param array   数组
+ *  @param subSize 大小
+ *
+ *  @return 多个数组
+ */
+- (NSMutableArray *)splitArray: (NSArray *)array withSubSize : (int)subSize{
+    //  数组将被拆分成指定长度数组的个数
+    unsigned long count = array.count % subSize == 0 ? (array.count / subSize) : (array.count / subSize + 1);
+    //  用来保存指定长度数组的可变数组对象
+    NSMutableArray *arr = [[NSMutableArray alloc] init];
+
+    //利用总个数进行循环，将指定长度的元素加入数组
+    for (int i = 0; i &lt; count; i ++) {
+        //数组下标
+        int index = i * subSize;
+        //保存拆分的固定长度的数组元素的可变数组
+        NSMutableArray *arr1 = [[NSMutableArray alloc] init];
+        //移除子数组的所有元素
+        [arr1 removeAllObjects];
+
+        int j = index;
+        //将数组下标乘以1、2、3，得到拆分时数组的最大下标值，但最大不能超过数组的总大小
+        while (j &lt; subSize*(i + 1) &amp;&amp; j &lt; array.count) {
+            [arr1 addObject:[array objectAtIndexCheck:j]];
+            j += 1;
+        }
+        //将子数组添加到保存子数组的数组中
+        [arr addObject:[arr1 copy]];  
+    }  
+
+    return arr;
+}
+</code></pre>
+
+<h2>38.图片压缩</h2>
+
+<p>用法：UIImage *yourImage= [self imageWithImageSimple:image scaledToSize:CGSizeMake(210.0, 210.0)];</p>
+
+<pre><code>//压缩图片
+- (UIImage*)imageWithImageSimple:(UIImage*)image scaledToSize:(CGSize)newSize
+
+{
+
+// Create a graphics image context
+
+UIGraphicsBeginImageContext(newSize);
+
+// Tell the old image to draw in this newcontext, with the desired
+
+// new size
+
+[image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+
+// Get the new image from the context
+
+UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+
+// End the context
+
+UIGraphicsEndImageContext();
+
+// Return the new image.
+
+return newImage;
+
+}
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS装逼篇——响应式编程]]></title>
@@ -5887,6 +7703,9 @@ github：https://github.com/al1020119
 
 <p><img src="http://al1020119.github.io/images/duoxianchengsuoshixianyuanli001.png" title="Caption" ></p>
 
+<!--more-->
+
+
 <p>本文会按照从上至下(速度由快至慢)的顺序分析每个锁的实现原理。需要说明的是，加解锁速度不表示锁的效率，只表示加解锁操作在执行时的复杂程度，下文会通过具体的例子来解释。</p>
 
 <h2>OSSpinLock</h2>
@@ -6257,857 +8076,6 @@ pthread的各种同步机制
 pthread_cond_wait
 
 Conditional Variable vs Semaphore
-</code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[多线程安全？应该不止这些😂！]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-%3Fying-gai-bu-zhi-zhe-xie-%3F!/"/>
-    <updated>2016-08-31T12:33:27+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-?ying-gai-bu-zhi-zhe-xie-?!</id>
-    <content type="html"><![CDATA[<ul>
-<li>前言</li>
-<li>介绍与使用</li>
-<li>总结</li>
-<li>其他实战使用</li>
-</ul>
-
-
-<h2>一、前言</h2>
-
-<p>前段时间看了几个开源项目，发现他们保持线程同步的方式各不相同，有@synchronized、NSLock、dispatch_semaphore、NSCondition、pthread_mutex、OSSpinLock。后来网上查了一下，发现他们的实现机制各不相同，性能也各不一样。不好意思，我们平常使用最多的@synchronized是性能最差的。下面我们先分别介绍每个加锁方式的使用，在使用一个案例来对他们进行性能对比。</p>
-
-<h2>二、介绍与使用</h2>
-
-<!--more-->
-
-
-<h4>2.1、@synchronized</h4>
-
-<pre><code>    NSObject *obj = [[NSObject alloc] init];
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        @synchronized(obj) {
-
-            NSLog(@"需要线程同步的操作1 开始");
-
-            sleep(3);
-
-            NSLog(@"需要线程同步的操作1 结束");
-
-        }
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        sleep(1);
-
-        @synchronized(obj) {
-
-            NSLog(@"需要线程同步的操作2");
-
-        }
-
-    });
-</code></pre>
-
-<p>@synchronized(obj)指令使用的obj为该锁的唯一标识，只有当标识相同时，才为满足互斥，如果线程2中的@synchronized(obj)改为@synchronized(self),刚线程2就不会被阻塞，@synchronized指令实现锁的优点就是我们不需要在代码中显式的创建锁对象，便可以实现锁的机制，但作为一种预防措施，@synchronized块会隐式的添加一个异常处理例程来保护代码，该处理例程会在异常抛出的时候自动的释放互斥锁。所以如果不想让隐式的异常处理例程带来额外的开销，你可以考虑使用锁对象。</p>
-
-<p>上面结果的执行结果为：</p>
-
-<pre><code>2016-06-29 20:48:35.747 SafeMultiThread[35945:580107] 需要线程同步的操作1 开始
-
-2016-06-29 20:48:38.748 SafeMultiThread[35945:580107] 需要线程同步的操作1 结束
-
-2016-06-29 20:48:38.749 SafeMultiThread[35945:580118] 需要线程同步的操作2
-</code></pre>
-
-<h4>2.2、dispatch_semaphore</h4>
-
-<pre><code>dispatch_semaphore_t signal = dispatch_semaphore_create(1);
-
-    dispatch_time_t overTime = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        dispatch_semaphore_wait(signal, overTime);
-
-            NSLog(@"需要线程同步的操作1 开始");
-
-            sleep(2);
-
-            NSLog(@"需要线程同步的操作1 结束");
-
-        dispatch_semaphore_signal(signal);
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        sleep(1);
-
-        dispatch_semaphore_wait(signal, overTime);
-
-            NSLog(@"需要线程同步的操作2");
-
-        dispatch_semaphore_signal(signal);
-
-    });
-</code></pre>
-
-<p>dispatch_semaphore是GCD用来同步的一种方式，与他相关的共有三个函数，分别是dispatch_semaphore_create，dispatch_semaphore_signal，dispatch_semaphore_wait。</p>
-
-<h6>（1）dispatch_semaphore_create的声明为：</h6>
-
-<pre><code>dispatch_semaphore_t dispatch_semaphore_create(long value);
-</code></pre>
-
-<p>传入的参数为long，输出一个dispatch_semaphore_t类型且值为value的信号量。</p>
-
-<p>值得注意的是，这里的传入的参数value必须大于或等于0，否则dispatch_semaphore_create会返回NULL。</p>
-
-<h6>（2）dispatch_semaphore_signal的声明为：</h6>
-
-<pre><code>long dispatch_semaphore_signal(dispatch_semaphore_t dsema)
-</code></pre>
-
-<p>这个函数会使传入的信号量dsema的值加1；</p>
-
-<h6>(3) dispatch_semaphore_wait的声明为：</h6>
-
-<pre><code>long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout)；
-</code></pre>
-
-<p>这个函数会使传入的信号量dsema的值减1；这个函数的作用是这样的，如果dsema信号量的值大于0，该函数所处线程就继续执行下面的语句，并且将信号量的值减1；如果desema的值为0，那么这个函数就阻塞当前线程等待timeout（注意timeout的类型为dispatch_time_t，不能直接传入整形或float型数），如果等待的期间desema的值被dispatch_semaphore_signal函数加1了，且该函数（即dispatch_semaphore_wait）所处线程获得了信号量，那么就继续向下执行并将信号量减1。如果等待期间没有获取到信号量或者信号量的值一直为0，那么等到timeout时，其所处线程自动执行其后语句。</p>
-
-<p>dispatch_semaphore 是信号量，但当信号总量设为 1 时也可以当作锁来。在没有等待情况出现时，它的性能比 pthread_mutex 还要高，但一旦有等待情况出现时，性能就会下降许多。相对于 OSSpinLock 来说，它的优势在于等待时不会消耗 CPU 资源。</p>
-
-<p>如上的代码，如果超时时间overTime设置成>2，可完成同步操作。如果overTime</p>
-
-<p>上面代码的执行结果为：</p>
-
-<pre><code>2016-06-29 20:47:52.324 SafeMultiThread[35945:579032] 需要线程同步的操作1 开始
-
-2016-06-29 20:47:55.325 SafeMultiThread[35945:579032] 需要线程同步的操作1 结束
-
-2016-06-29 20:47:55.326 SafeMultiThread[35945:579033] 需要线程同步的操作2
-</code></pre>
-
-<p>如果把超时时间设置为</p>
-
-<pre><code>2016-06-30 18:53:24.049 SafeMultiThread[30834:434334] 需要线程同步的操作1 开始
-
-2016-06-30 18:53:25.554 SafeMultiThread[30834:434332] 需要线程同步的操作2
-
-2016-06-30 18:53:26.054 SafeMultiThread[30834:434334] 需要线程同步的操作1 结束
-</code></pre>
-
-<h4>2.3、NSLock</h4>
-
-<pre><code>   NSLock *lock = [[NSLock alloc] init];
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        //[lock lock];
-
-        [lock lockBeforeDate:[NSDate date]];
-
-            NSLog(@"需要线程同步的操作1 开始");
-
-            sleep(2);
-
-            NSLog(@"需要线程同步的操作1 结束");
-
-        [lock unlock];
-
-
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        sleep(1);
-
-        if ([lock tryLock]) {//尝试获取锁，如果获取不到返回NO，不会阻塞该线程
-
-            NSLog(@"锁可用的操作");
-
-            [lock unlock];
-
-        }else{
-
-            NSLog(@"锁不可用的操作");
-
-        }
-
-
-
-        NSDate *date = [[NSDate alloc] initWithTimeIntervalSinceNow:3];
-
-        if ([lock lockBeforeDate:date]) {//尝试在未来的3s内获取锁，并阻塞该线程，如果3s内获取不到恢复线程, 返回NO,不会阻塞该线程
-
-            NSLog(@"没有超时，获得锁");
-
-            [lock unlock];
-
-        }else{
-
-            NSLog(@"超时，没有获得锁");
-
-        }
-
-
-
-    });
-</code></pre>
-
-<p>NSLock是Cocoa提供给我们最基本的锁对象，这也是我们经常所使用的，除lock和unlock方法外，NSLock还提供了tryLock和lockBeforeDate:两个方法，前一个方法会尝试加锁，如果锁不可用(已经被锁住)，刚并不会阻塞线程，并返回NO。lockBeforeDate:方法会在所指定Date之前尝试加锁，如果在指定时间之前都不能加锁，则返回NO。</p>
-
-<p>上面代码的执行结果为：</p>
-
-<pre><code>2016-06-29 20:45:08.864 SafeMultiThread[35911:575795] 需要线程同步的操作1 开始
-
-2016-06-29 20:45:09.869 SafeMultiThread[35911:575781] 锁不可用的操作
-
-2016-06-29 20:45:10.869 SafeMultiThread[35911:575795] 需要线程同步的操作1 结束
-
-2016-06-29 20:45:10.870 SafeMultiThread[35911:575781] 没有超时，获得锁
-</code></pre>
-
-<p>源码定义如下：</p>
-
-<pre><code>@protocol NSLocking
-
-
-
-- (void)lock;
-
-- (void)unlock;
-
-
-
-@end
-
-
-
-@interface NSLock : NSObject  {
-
-&lt;a href="http://www.jobbole.com/members/kaishu6296"&gt;@private&lt;/a&gt;
-
-    void *_priv;
-
-}
-
-
-
-- (BOOL)tryLock;
-
-- (BOOL)lockBeforeDate:(NSDate *)limit;
-
-
-
-@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
-
-
-
-@end
-</code></pre>
-
-<h4>2.4、NSRecursiveLock递归锁</h4>
-
-<pre><code>    //NSLock *lock = [[NSLock alloc] init];
-
-    NSRecursiveLock *lock = [[NSRecursiveLock alloc] init];
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-
-
-        static void (^RecursiveMethod)(int);
-
-
-
-        RecursiveMethod = ^(int value) {
-
-
-
-            [lock lock];
-
-            if (value &gt; 0) {
-
-
-
-                NSLog(@"value = %d", value);
-
-                sleep(1);
-
-                RecursiveMethod(value - 1);
-
-            }
-
-            [lock unlock];
-
-        };
-
-
-
-        RecursiveMethod(5);
-
-    });
-</code></pre>
-
-<p>NSRecursiveLock实际上定义的是一个递归锁，这个锁可以被同一线程多次请求，而不会引起死锁。这主要是用在循环或递归操作中。</p>
-
-<p>这段代码是一个典型的死锁情况。在我们的线程中，RecursiveMethod是递归调用的。所以每次进入这个block时，都会去加一次锁，而从第二次开始，由于锁已经被使用了且没有解锁，所以它需要等待锁被解除，这样就导致了死锁，线程被阻塞住了。调试器中会输出如下信息：</p>
-
-<pre><code>2016-06-30 19:08:06.393 SafeMultiThread[30928:449008] value = 5
-
-2016-06-30 19:08:07.399 SafeMultiThread[30928:449008] -[NSLock lock]: deadlock ( ‘(null)’)
-
-2016-06-30 19:08:07.399 SafeMultiThread[30928:449008] Break on _NSLockError() to debug.
-</code></pre>
-
-<p>在这种情况下，我们就可以使用NSRecursiveLock。它可以允许同一线程多次加锁，而不会造成死锁。递归锁会跟踪它被lock的次数。每次成功的lock都必须平衡调用unlock操作。只有所有达到这种平衡，锁最后才能被释放，以供其它线程使用。</p>
-
-<p>如果我们将NSLock代替为NSRecursiveLock，上面代码则会正确执行。</p>
-
-<pre><code>2016-06-30 19:09:41.414 SafeMultiThread[30949:450684] value = 5
-
-2016-06-30 19:09:42.418 SafeMultiThread[30949:450684] value = 4
-
-2016-06-30 19:09:43.419 SafeMultiThread[30949:450684] value = 3
-
-2016-06-30 19:09:44.424 SafeMultiThread[30949:450684] value = 2
-
-2016-06-30 19:09:45.426 SafeMultiThread[30949:450684] value = 1
-</code></pre>
-
-<p>如果需要其他功能，源码定义如下：</p>
-
-<pre><code>@interface NSRecursiveLock : NSObject  {
-
-&lt;a href="http://www.jobbole.com/members/kaishu6296"&gt;@private&lt;/a&gt;
-
-    void *_priv;
-
-}
-
-
-
-- (BOOL)tryLock;
-
-- (BOOL)lockBeforeDate:(NSDate *)limit;
-
-
-
-@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
-
-
-
-@end
-</code></pre>
-
-<h2>2.5、NSConditionLock条件锁</h2>
-
-<pre><code>    NSMutableArray *products = [NSMutableArray array];
-
-
-
-    NSInteger HAS_DATA = 1;
-
-    NSInteger NO_DATA = 0;
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        while (1) {
-
-            [lock lockWhenCondition:NO_DATA];
-
-            [products addObject:[[NSObject alloc] init]];
-
-            NSLog(@"produce a product,总量:%zi",products.count);
-
-            [lock unlockWithCondition:HAS_DATA];
-
-            sleep(1);
-
-        }
-
-
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        while (1) {
-
-            NSLog(@"wait for product");
-
-            [lock lockWhenCondition:HAS_DATA];
-
-            [products removeObjectAtIndex:0];
-
-            NSLog(@"custome a product");
-
-            [lock unlockWithCondition:NO_DATA];
-
-        }
-
-
-
-    });
-</code></pre>
-
-<p>当我们在使用多线程的时候，有时一把只会lock和unlock的锁未必就能完全满足我们的使用。因为普通的锁只能关心锁与不锁，而不在乎用什么钥匙才能开锁，而我们在处理资源共享的时候，多数情况是只有满足一定条件的情况下才能打开这把锁：</p>
-
-<p>在线程1中的加锁使用了lock，所以是不需要条件的，所以顺利的就锁住了，但在unlock的使用了一个整型的条件，它可以开启其它线程中正在等待这把钥匙的临界地，而线程2则需要一把被标识为2的钥匙，所以当线程1循环到最后一次的时候，才最终打开了线程2中的阻塞。但即便如此，NSConditionLock也跟其它的锁一样，是需要lock与unlock对应的，只是lock,lockWhenCondition:与unlock，unlockWithCondition:是可以随意组合的，当然这是与你的需求相关的。</p>
-
-<p>上面代码执行结果如下：</p>
-
-<pre><code>2016-06-30 20:31:58.699 SafeMultiThread[31282:521698] wait for product
-
-2016-06-30 20:31:58.699 SafeMultiThread[31282:521708] produce a product,总量:1
-
-2016-06-30 20:31:58.700 SafeMultiThread[31282:521698] custome a product
-
-2016-06-30 20:31:58.700 SafeMultiThread[31282:521698] wait for product
-
-2016-06-30 20:31:59.705 SafeMultiThread[31282:521708] produce a product,总量:1
-
-2016-06-30 20:31:59.706 SafeMultiThread[31282:521698] custome a product
-
-2016-06-30 20:31:59.706 SafeMultiThread[31282:521698] wait for product
-
-2016-06-30 20:32:00.707 SafeMultiThread[31282:521708] produce a product,总量:1
-
-2016-06-30 20:32:00.708 SafeMultiThread[31282:521698] custome a product
-</code></pre>
-
-<p>如果你需要其他功能，源码定义如下：</p>
-
-<pre><code>@interface NSConditionLock : NSObject  {
-
-&lt;a href="http://www.jobbole.com/members/kaishu6296"&gt;@private&lt;/a&gt;
-
-    void *_priv;
-
-}
-
-
-
-- (instancetype)initWithCondition:(NSInteger)condition NS_DESIGNATED_INITIALIZER;
-
-
-
-@property (readonly) NSInteger condition;
-
-- (void)lockWhenCondition:(NSInteger)condition;
-
-- (BOOL)tryLock;
-
-- (BOOL)tryLockWhenCondition:(NSInteger)condition;
-
-- (void)unlockWithCondition:(NSInteger)condition;
-
-- (BOOL)lockBeforeDate:(NSDate *)limit;
-
-- (BOOL)lockWhenCondition:(NSInteger)condition beforeDate:(NSDate *)limit;
-
-
-
-@property (nullable, copy) NSString *name NS_AVAILABLE(10_5, 2_0);
-
-
-
-@end
-</code></pre>
-
-<h4>2.6、NSCondition</h4>
-
-<pre><code>   NSCondition *condition = [[NSCondition alloc] init];
-
-
-
-    NSMutableArray *products = [NSMutableArray array];
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        while (1) {
-
-            [condition lock];
-
-            if ([products count] == 0) {
-
-                NSLog(@"wait for product");
-
-                [condition wait];
-
-            }
-
-            [products removeObjectAtIndex:0];
-
-            NSLog(@"custome a product");
-
-            [condition unlock];
-
-        }
-
-
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-        while (1) {
-
-            [condition lock];
-
-            [products addObject:[[NSObject alloc] init]];
-
-            NSLog(@"produce a product,总量:%zi",products.count);
-
-            [condition signal];
-
-            [condition unlock];
-
-            sleep(1);
-
-        }
-
-
-
-    });
-</code></pre>
-
-<h6>一种最基本的条件锁。手动控制线程wait和signal。</h6>
-
-<p>[condition lock];一般用于多线程同时访问、修改同一个数据源，保证在同一时间内数据源只被访问、修改一次，其他线程的命令需要在lock 外等待，只到unlock ，才可访问</p>
-
-<pre><code>[condition unlock];与lock 同时使用
-
-
-
-[condition wait];让当前线程处于等待状态
-
-
-
-[condition signal];CPU发信号告诉线程不用在等待，可以继续执行
-</code></pre>
-
-<p>上面代码执行结果如下：</p>
-
-<pre><code>2016-06-30 20:21:25.295 SafeMultiThread[31256:513991] wait for product
-
-2016-06-30 20:21:25.296 SafeMultiThread[31256:513994] produce a product,总量:1
-
-2016-06-30 20:21:25.296 SafeMultiThread[31256:513991] custome a product
-
-2016-06-30 20:21:25.297 SafeMultiThread[31256:513991] wait for product
-
-2016-06-30 20:21:26.302 SafeMultiThread[31256:513994] produce a product,总量:1
-
-2016-06-30 20:21:26.302 SafeMultiThread[31256:513991] custome a product
-
-2016-06-30 20:21:26.302 SafeMultiThread[31256:513991] wait for product
-
-2016-06-30 20:21:27.307 SafeMultiThread[31256:513994] produce a product,总量:1
-
-2016-06-30 20:21:27.308 SafeMultiThread[31256:513991] custome a product
-</code></pre>
-
-<h4>2.7、pthread_mutex</h4>
-
-<pre><code>    __block pthread_mutex_t theLock;
-
-    pthread_mutex_init(&amp;theLock, NULL);
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-            pthread_mutex_lock(&amp;theLock);
-
-            NSLog(@"需要线程同步的操作1 开始");
-
-            sleep(3);
-
-            NSLog(@"需要线程同步的操作1 结束");
-
-            pthread_mutex_unlock(&amp;theLock);
-
-
-
-    });
-
-
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-            sleep(1);
-
-            pthread_mutex_lock(&amp;theLock);
-
-            NSLog(@"需要线程同步的操作2");
-
-            pthread_mutex_unlock(&amp;theLock);
-
-
-
-    });
-</code></pre>
-
-<p>c语言定义下多线程加锁方式。</p>
-
-<pre><code>1：pthread_mutex_init(pthread_mutex_t mutex,const pthread_mutexattr_t attr);
-
-初始化锁变量mutex。attr为锁属性，NULL值为默认属性。
-
-2：pthread_mutex_lock(pthread_mutex_t mutex);加锁
-
-3：pthread_mutex_tylock(*pthread_mutex_t *mutex);加锁，但是与2不一样的是当锁已经在使用的时候，返回为EBUSY，而不是挂起等待。
-
-4：pthread_mutex_unlock(pthread_mutex_t *mutex);释放锁
-
-5：pthread_mutex_destroy(pthread_mutex_t* mutex);使用完后释放
-</code></pre>
-
-<p>代码执行操作结果如下：</p>
-
-<pre><code>2016-06-30 21:13:32.440 SafeMultiThread[31429:548869] 需要线程同步的操作1 开始
-
-2016-06-30 21:13:35.445 SafeMultiThread[31429:548869] 需要线程同步的操作1 结束
-
-2016-06-30 21:13:35.446 SafeMultiThread[31429:548866] 需要线程同步的操作2
-</code></pre>
-
-<h4>2.8、pthread_mutex(recursive)</h4>
-
-<p>这是pthread_mutex为了防止在递归的情况下出现死锁而出现的递归锁。作用和NSRecursiveLock递归锁类似。</p>
-
-<p>如果使用pthread_mutex_init(&amp;theLock, NULL);初始化锁的话，上面的代码会出现死锁现象。如果使用递归锁的形式，则没有问题。</p>
-
-<h4>2.9、OSSpinLock</h4>
-
-<p>OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do while 忙等。它的缺点是当等待时会消耗大量 CPU 资源，所以它不适用于较长时间的任务。 不过最近YY大神在自己的博客不再安全的 OSSpinLock中说明了OSSpinLock已经不再安全，请大家谨慎使用。</p>
-
-<p>三、性能对比</p>
-
-<p>对以上各个锁进行1000000此的加锁解锁的空操作时间如下：</p>
-
-<pre><code>OSSpinLock: 46.15 ms
-
-dispatch_semaphore: 56.50 ms
-
-pthread_mutex: 178.28 ms
-
-NSCondition: 193.38 ms
-
-NSLock: 175.02 ms
-
-pthread_mutex(recursive): 172.56 ms
-
-NSRecursiveLock: 157.44 ms
-
-NSConditionLock: 490.04 ms
-
-@synchronized: 371.17 ms
-</code></pre>
-
-<h2>三.总的来说：</h2>
-
-<ul>
-<li><p>OSSpinLock和dispatch_semaphore的效率远远高于其他。</p></li>
-<li><p>@synchronized和NSConditionLock效率较差。</p></li>
-<li><p>鉴于OSSpinLock的不安全，所以我们在开发中如果考虑性能的话，建议使用dispatch_semaphore。</p></li>
-<li><p>如果不考虑性能，只是图个方便的话，那就使用@synchronized。</p>
-
-<blockquote><p> 总感觉这个标题怪怪的,但是我自身词汇有限,也不知道怎么描述好了.用一个简单的需求来解释一下吧.我之前开发的一个项目,需要向服务器上传图片,多图片上传,然后每次上传之后会返回一个图片的AID, 然后需要所有图片上传完成之后, 拿着一个全是AID的数组作为参数进行另一个异步请求&hellip;好吧,我感觉又绕了&hellip;</p></blockquote>
-
-<p>  前几天,我在一个技术交流圈,看到一个朋友去JINGDONG的面试题, 其中一个题目的描述是:有a、b、c、d 4个异步请求，如何判断a、b、c、d都完成执行？, 跟我上面的需求大同小异.</p>
-
-<p>  所以在这儿,我把我工作中曾经用到过的一些方法做一个小的总结,有遗漏的或者错误的地方,请大家留意指正,非常感谢哈!!!</p>
-
-<p>  特别注意:所有的代码都基于JINGDONG这道面试题, 不过我只打印了A和B而已..</p></li>
-</ul>
-
-
-<h2>四.实战应用</h2>
-
-<p>我们公司App前段时间刚好有一个功能需求，就是关于发动态的时候图片上传的需求。以前一般来说的话，我们是讲所有图片打包一起发给服务器，但是这依稀不一样的是，必须每一张每一张的传，具体为什么老大说了一各位自己体会。</p>
-
-<p>需求是：</p>
-
-<ul>
-<li>1：每次上传图片的时候必须一张一张的传。</li>
-<li>2：上传完一张之后服务器返回给我们一个url，把他存起来</li>
-<li>3：全部传完之后再把所有存起来的url一起通过json格式发送给服务器</li>
-</ul>
-
-
-<p>这里试了各种方法，问了各种大牛都没找到好的方法，只能说有些能解决，但是达不到非常满意的效果。这里总结一下常见的使用。</p>
-
-<ol>
-<li><p>RunLoop</p>
-
-<p> 需要注意一点: 这儿用的是NSURLSession, 不是AFN, 所以block里面的线程是子线程,不是主线程, 不能直接使用CFRunLoopGetCurrent</p>
-
-<pre><code> CFRunLoopGetCurrent : Returns the CFRunLoop object for the current thread.
- CFRunLoopGetMain: Returns the main CFRunLoop object.
-
- NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-         NSLog(@"A");
-         CFRunLoopStop(CFRunLoopGetMain());
-     }] ;
-     [task resume];
-  CFRunLoopRun();
-  NSLog(@"B");
-</code></pre></li>
-<li><p>GCD的group</p>
-
-<p> dispatch_group_notify就是需要等queue里面的子线程都执行完毕之后才会执行
- 这种方法比较常见, 不多说</p>
-
-<pre><code> dispatch_group_t group = dispatch_group_create();
-     dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-     dispatch_group_async(group, queue, ^{
-         NSLog(@"A");
-     });
-     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-         NSLog(@"B");
-     });
-</code></pre></li>
-<li><p>dispatch_barrier_async</p>
-
-<p> barrier的中文意思就是障碍, 屏障
- 一般使用dispatch_barrier_async, 会让barrier之前的线程执行完成之后才会执行barrier后面的操作</p>
-
-<pre><code>  dispatch_queue_t queue =  dispatch_queue_create(0, DISPATCH_QUEUE_CONCURRENT);
-     dispatch_async(queue, ^{
-         NSLog(@"A");
-     });
-     dispatch_async(queue, ^{
-         NSLog(@"C");
-     });
-     dispatch_barrier_async(queue, ^{
-         NSLog(@"拿到了A的值");
-     });
-
-     dispatch_async(queue, ^{
-         NSLog(@"D");
-     });
-     dispatch_async(queue, ^{
-         NSLog(@"E");
-     });dispatch_async(queue, ^{
-         NSLog(@"F");
-     });
-</code></pre></li>
-</ol>
-
-
-<p>4.NSOperationQueue</p>
-
-<p>   主要就是用到NSOperationQueue的一个对象方法-addDependency
-   需要注意一点: waitUntilFinished如果是YES,必须等到queue中所有Operation执行完毕之后, 才会打印HAHA, 反之的话, HAHA的打印顺序是随机的了,就看哪个线程跑得快了&hellip;</p>
-
-<pre><code>NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    NSBlockOperation *p1 = [NSBlockOperation blockOperationWithBlock:^{
-        NSLog(@"A");
-    }];
-    NSBlockOperation *p2 = [NSBlockOperation blockOperationWithBlock:^{
-        NSLog(@"B");
-    }];
-    NSBlockOperation *p3 = [NSBlockOperation blockOperationWithBlock:^{
-        NSLog(@"C");
-    }];
-    [p3 addDependency:p1];
-    [p3 addDependency:p2];
-    // waitUntilFinished是否阻塞当前线程
-    [queue addOperations:@[p1,p2,p3] waitUntilFinished:NO];
-
-    // 如果是NO,那么这行打印就是随机的, 反之就是等A,B,C都打印完之后才执行
-    NSLog(@"HAHA");
-</code></pre>
-
-<ol>
-<li><p>使用AFN中的batchOfRequestOperations</p>
-
-<p> 这个和GCD一样, 我工作中比较常用的一种方法
- batchOfRequestOperations方法其实是AFHTTPRequestOperation的父类AFURLConnectionOperation的一个方法.
- 这儿的waitUntilFinished同4. NSOperationQueue
- progressBlock一般用在进度计算中, 比如执行了多少百分比, 可以自定义一些炫酷动画</p>
-
-<pre><code> AFHTTPRequestOperation *queue = [[AFHTTPRequestOperation alloc] initWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]]];
-     [queue setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-         NSLog(@"A");
-     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-         NSLog(@"A");
-     }];
-     [queue resume];
-
- AFHTTPRequestOperation *queue2 = [[AFHTTPRequestOperation alloc] initWithRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]]];
- [queue2 setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-     NSLog(@"B");
- } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-     NSLog(@"B");
- }];
- [queue2 resume];
-
- NSArray *operations = [AFHTTPRequestOperation batchOfRequestOperations:@[queue, queue2] progressBlock:^(NSUInteger numberOfFinishedOperations, NSUInteger totalNumberOfOperations) {
-     NSLog(@"%ld/%ld", numberOfFinishedOperations, totalNumberOfOperations);
- } completionBlock:^(NSArray *operations) {
-     NSLog(@"C");
- }];
-
- [[NSOperationQueue mainQueue] addOperations:operations waitUntilFinished:NO];
-</code></pre></li>
-</ol>
-
-
-<p>6.其他</p>
-
-<pre><code>老早以前, 我一般是在一个异步请求中的completionBlock或者successBlock中拿到需要的值, 为空判断后,直接在block里面再写一个异步线程...其实这样的写法可能很多人都用过,但是代码的阅读性太弱了,花括号太多,看的眼花缭乱的...
-其实还可以设置flag进行判断等等方法...
-暂时就想到这么多, 还有别的方案的话, 欢迎留言哈,大家共同学习!!!
 </code></pre>
 
 <hr />
