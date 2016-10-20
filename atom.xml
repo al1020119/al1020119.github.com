@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-10-16T13:27:05+08:00</updated>
+  <updated>2016-10-20T12:47:40+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,393 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[App太胖了——减肥😂]]></title>
+    <link href="http://al1020119.github.io/blog/2016/10/20/apptai-pang-liao-jian-fei/"/>
+    <updated>2016-10-20T13:00:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/20/apptai-pang-liao-jian-fei</id>
+    <content type="html"><![CDATA[<p>先来看两张关于瘦身的整理，第一张是我实践的时候网上找到了，第二张是我根据自己的项目整理的。但是慢慢的发现项目的好像还是不足以满足需求，所以就网上找了不少资料，整理的一下。</p>
+
+<p><img src="http://al1020119.github.io/images/iosshoushen00001.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iosshoushen00002.jpg" title="Caption" ></p>
+
+<!--more-->
+
+
+<h3>开篇</h3>
+
+<pre><code>最近公司需求不多，正好研究一下 App 瘦身的办法，写了点小总结。
+
+如果你不知道下面几个问题，不妨可以看看文章。
+
+    使用 .xcassets 有什么好处?
+
+    @1x 、@2x 和 @3x 会一起内置到安装包中吗？
+
+    PDF 和 @1x 、@2x 和 @3x 有什么区别？
+
+    如果我有一个 10 x 10 的控件和一个 50 x 50 的控件，美工需要制作几张 PDF？
+
+    Iconfont 是什么？PDF 和 Iconfont 有什么区别？
+
+    启动图的正确打开方式？
+
+    使用 Swift 或者 混编会增大多少的包体积？
+
+    Install Smallest or Coding Fastest ？
+</code></pre>
+
+<h3>分析</h3>
+
+<pre><code>在瘦身之前，首先需要分析一下，我们可以从哪几个方面入手。(以 Yep 为例)
+
+
+Yep是一款很优秀的 Swift 开源软件。
+
+https://github.com/CatchChat/Yep
+</code></pre>
+
+<h3>目录划分</h3>
+
+<pre><code>App 的瘦身主要是针对于安装包，而在 iOS 中安装包就是一个以 .ipa 结尾的压缩包。我们可以通过 iTunes 下载获取这个 .ipa 来分析。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei001.jpg" title="Caption" ></p>
+
+<p>稍微整理一下，大致可以分为以下几类。</p>
+
+<pre><code>资源层面：
+
+    Assets.car：项目中所有 .xcassets 的压缩包
+
+    image: 图片资源文件
+
+    Video &amp;&amp; Audio ：音频 或者 视频。
+
+代码层面：
+
+    国际化：国际化适配的 String ===&gt; 89K
+
+    Xib &amp;&amp; Storyboard：Xib 和 Storyboard 编译后的文件。
+
+    Yep :项目可执行文件。
+
+    Frameworks：Embedded Frameworks，项目中使用的动态库
+
+其他：
+
+    other：配置文件
+
+    PlugIns：YepShare，一个共享的插件。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei002.jpg" title="Caption" ></p>
+
+<pre><code>虽然 Yep 不能代表所有的 App，但是在对于 Yep 的 ipa 分析之后，大致可以总结出，对一个 App 的安装包瘦身，可以从资源层面和代码层面两个层面入手。
+</code></pre>
+
+<h3>资源层面</h3>
+
+<pre><code>在讲资源层面之前，希望我们能达到一个共识，那就是所谓的资源文件指的是 图片、视频、音频。
+
+Remote : 将资源文件放在服务器上，当用户下载完 App 后根据需要再下载。
+
+Local : 将资源文件集成到安装包中的。
+</code></pre>
+
+<h3>Remote</h3>
+
+<pre><code>对于 Remote 的方式，如果做好策略(比如缓存),那么理论上，我们可以把 非必须的资源文件 都放到服务器上，这样对资源压缩率达到了 100%。也就是说安装包 没有任何非必须资源文件 。
+
+    必须资源文件:例如应用图标、启动图的这种配置图片。
+
+苹果的 On-Demand Resources(http://benbeng.leanote.com/post/On-Demand-Resources-Guide) 也是通过这种按需加载资源的思路给我们提供了一种阶段性加载资源的途径，具体的不展开描述，你可以点前面的链接进行查看。但是虽然以关卡、tag这种方式来按需加载资源，但是苹果的服务器对于中国用户来说实在是慢的不行，所以暂时不建议采取这种方式。你们可以在自己服务器上实现这种策略方式来加载图片。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei003.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei004.jpg" title="Caption" ></p>
+
+<h3>Local</h3>
+
+<pre><code>当然全部将非必须资源文件放到服务器上明显是不现实的，对于一些必用资源文件，还是需要将资源文件 集成到安装包中的。
+
+    必用资源文件：安装了 App 肯定会用到。
+</code></pre>
+
+<h3>Local 集成方式</h3>
+
+<pre><code>Create group 和 Create folder references
+
+    这两种其实就是直接把资源文件 拖 进去，在 Xcode 打包之后，所有图片都在可执行文件的相同目录下面。这也是很多老的 App 或者目前部分 App 的使用方式。
+
+.xcassets
+
+    这是苹果在 Xcode 5 出来之后，推荐我们使用的图片管理方式，提供了图片渲染、拉伸模式模式、机型适配等功能。在 Xcode 打包之后所有的.xcassets 文件都会放入一个Assets.car文件中。
+</code></pre>
+
+<h3>Local 开发使用方式列举分析。</h3>
+
+<pre><code>一般 App 的图片内置方式
+
+    采用拖的方式,图片包含@1x、@2x 和 @3x。
+
+    采用拖的方式,图片只包含 @2x 和 @3x。
+
+    采用拖的方式,图片只包含 @2x 或 @3x。
+
+    采用.xcassets的方式,图片包含@1x、@2x 和 @3x。
+
+    采用.xcassets的方式,图片只包含@2x 和 @3x。
+
+    采用.xcassets的方式,图片只 包含@2x 或 @3x。
+
+    采用.xcassets的方式,图片使用 PDF。
+    (可能还有其他方式，希望你能告诉我。)
+</code></pre>
+
+<h6>拖的方式</h6>
+
+<pre><code>  首先@1x、@2x 和 @3x主要是为了适配不同 ppi 的机子而做了一种策略。@1x主要是为了适配 iPhone 4 之前的 非 Retina 屏幕，@2x 主要是为了适配 非 plus的 iPhone 设备, @3x 是为了适配一个点的 3 * 3 个像素的手机。
+
+  因为 iPhone 4 之前的机子基本没有什么 App 会去适配，所以一般来说都会删除，所以就有了 『采用拖的方式,图片只包含@2x 和 @3x』 的方式。但是假如你只提供一张图片，例如你只提供了一张 @3x 的图片，iOS 系统在 iPhone 7 上无法找到 @2x 的图片，会去查找 @3x 或者 @1x 等，再根据实际分辨率进行拉伸，最后把像素铺到屏幕上。所以在能够接受查找和拉伸造成的性能消耗的前提下，我们可以只用一张通用的图片，所以就有了 『采用拖的方式,图片包含@2x 或 @3x』 的方式。
+
+  以一个 14M 的图片资源(包含@1x 、@2x、@3x)来说，如果所有的图片去除掉 @1x 能减少 1M 左右，去除掉@2x能去掉 4M 左右。因此采用『采用拖的方式,图片包含@2x 或 @3x』的方式虽然损失了一点性能，单大概图片资源大概减少了35%左右，。
+</code></pre>
+
+<h6>采用.xcassets的方式</h6>
+
+<pre><code>  我们都知道了，采用『采用拖的方式,图片包含@2x 或 @3x』的方式大概图片资源大概减少了35%左右，但是稍微损失了一点性能。有什么方式可以减少掉这点性能消耗呢？
+
+  “很幸运” ，苹果在 iOS 9 终于意识到了这个问题，然后提供了一个叫做 App Slicing(如下图所示)的东西。App Slicing大致就是App Store会根据不同的设备准备不同的安装包(App Variant)，每个安装包(App Variant)都只有相应尺寸的图片,比如 iPhone 6 去下载时，只会下载到 @2x 的图片的安装包(App Variant)。但能实现这个功能的前提是图片需要放置在.xcassets去管理。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei005.jpg" title="Caption" ></p>
+
+<pre><code>所以，目前许多 App 采用 『.xcassets的方式,图片只 包含@2x 或 @3x』 其实是没意义的，特别是在你不适配 iOS 8 的时候，你这么做是强行降低了 App 的性能。当然你要觉得为了 8% 的非 iOS 9 用户 减少 App 安装包大小 而去降低另外 92% 的用户的 App 运行性能 没什么问题，那么你可以采取上面这种方式。
+</code></pre>
+
+<h6>关于 PDF</h6>
+
+<pre><code>  我最早是在这一篇博客（http://martiancraft.com/blog/2014/09/vector-images-xcode6/）中看到的，当然 Yep 也是这种方式。大致是删掉 @2x 和 @3x 的图片，然后替换成 矢量图 PDF，最后放入.xcassets中去。
+
+  而 Xcode 在打包的过程中，根据你的矢量PDF图的大小，生成@1x、@2x和@3x的图。例如你的PDF图是4545px，那么Xcode会在编译时生成下面3个png：4545px 、9090px、135135px，最后再放入Assets.car中。所以采用@1x、@2x 和 @3x 和 PDF 两种方式本质上是一样的。
+
+  在这里有很多人会有一个误解，例如在 App 中有一个 10 10 pt 和 一个 50 50 pt 的 imageView 都用了一个相同的图标。很多人会以为做一个就够了，因为 pdf 是矢量图。但是其实是需要一个 10 10 px 和 50 50 px 的两张 pdf 才可以，因为只用一张的话，另外一张用的其实就是 10 * 10px 的 PDF 的产物。
+</code></pre>
+
+<h6>关于压缩问题。</h6>
+
+<pre><code>  我是用tinypng 来压缩的，应该是以最小的占用量达到了最适合的效果。但是其实.xcassets 也会为你做一部分的压缩。如下图所示：
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei006.jpg" title="Caption" ></p>
+
+<pre><code>.xcassets 的压缩应该还对图片进行了处理这也就是为什么 840KB 压缩了 81.5%，Assets.car却没有减少那么多。
+
+同时也有人在试验中发现，用一些压缩工具似乎没有很么实际效果，这也有可能是因为 Xcode 在打包的时候做了一定的处理。
+</code></pre>
+
+<h3>启动图</h3>
+
+<pre><code>启动图在一个项目资源中占比其实蛮大的，之前见过一个项目 6 张启动图大概有5M 左右，最大的是2M。
+
+    iPad 2 and iPad mini (@1x): 768 x 1024
+
+    iPad and iPad mini (retina @2x): 1536 x 2048
+
+    iPhone 4s (retina @2x) 640 x 960
+
+    iPhone 5 (@2x): 640 x 1136
+
+    iPhone 6 (@2x): 750 x 1334
+
+    iPhone 6 Plus (@3x): 1242 x 2208
+
+
+但是自从LaunchScreen.storyboard出来一后完全没必要做这么多张了。只需要将启动图设置为LaunchScreen.storyboard 然后在LaunchScreen.storyboard上设置一张 imageView 。最后再弄一张启动图的 pdf 就可以了。
+</code></pre>
+
+<h3>iconfont</h3>
+
+<pre><code>首先这个东西估计很多人不知道，我也是在@桌同学的提醒下才知道原来 iOS 也是可以用 iconfont 的。最早这个东西是为 Web 设计的，主要是因为 网页的 大小直接影响了加载速度，所以在压缩上连小 icon 都不放过,当然还有一个最主要的目的就是减少请求次数，因为如果是图片的话，一个图片就是一次请求。
+
+具体的效果可以看一下，使用IconFont减小iOS应用体积（http://johnwong.github.io/mobile/2015/04/03/using-icon-font-in-ios.html）这篇文章。
+
+虽然看上去效果不多，但对于一些比较追求精致的公司可以尝试一下这种方式。
+
+期中，PDF 和 iconfont 两个都是矢量的概念，但是 iconfont 在整个 App 中不管多少种尺寸只需要一个 iconf，但是 PDF 可能需要多个。
+</code></pre>
+
+<h3>HTML 5</h3>
+
+<p>一些 APP 的一些功能可以用 HTML5 + WebView 的方式来实现。而 HTML 5 这个可以通过下面几种方式一步步优化：</p>
+
+<pre><code>让做前端的给一个最小的包内置到 App，去除无用代码、代码混淆压缩等。
+
+将所有图片 Remote 化。
+
+将所有页面 Remote 化。
+</code></pre>
+
+<h3>其他</h3>
+
+<pre><code>当然，还要注意资源文件重复的问题。而资源文件重复问题主要有几种：名字相同、名字不同内容相同/相似。
+
+
+    对于名字相同的问题，你可以把原来的拖的方式改为.xcassets，他会自动管理相同名字的图片。然后把多余的去掉
+
+    名字不同内容相同/相似:你可以使用Duplicate Photos工具
+
+
+还有一个问题就是资源文件没有用，却占了空间，可以使用LSUnusedResources将代码中没用到的文件删除。当然可能存在误删，比如用数组加载的图片，这个工具无法识别。
+</code></pre>
+
+<h3>代码层面</h3>
+
+<pre><code>Install Smallest VS. Coding Fastest
+</code></pre>
+
+<h3>语言选择</h3>
+
+<pre><code>虽然说我本人更喜欢用 Swift 来写 App。但从 App 瘦身的角度，不推荐使用 Swift，不论纯 Swift 还是 混编。原因很简单。看一下下面的图：
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei007.jpg" title="Caption" ></p>
+
+<pre><code>这是任何一个包含有 Swift 代码的 App 都有的一个为了支持 Swift 的动态库集合，在10M 左右。如果你使用 Objective – C 完全不用这个东西。
+
+当然，我是可以接受安装包大10M 来用 Swift 写的。
+</code></pre>
+
+<h3>数据库选择</h3>
+
+<pre><code>这个问题也是我在分析 Yep 的第三方库的时候发现的问题，因为 Yep 使用的是 Realm，据说是目前是性能最好的移动端数据库。但是在三方库中可以看到，Realm 的支持占了很大的比重，大约在 8M 左右。但是如果使用 FMDB 话只需要192KB，而 CoreData 几乎可以忽略不计。下面是部分截图。
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei008.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei009.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iosjianfei010.jpg" title="Caption" ></p>
+
+<h3>MRC VS. ARC</h3>
+
+<pre><code>最开始是在Bang的这篇文章中看到用ARC比用 MRC 会导致可执行文件大10%。起初我是不相信的，但是在我用 SDWebImage 的1.0 版测试之后，ARC 比 MRC 的可执行程序增加了14% +。所以MRC 比 ARC 编译成可执行文件之后更小，具体的测试方法可以去他的博客看，这里就不重复了。
+</code></pre>
+
+<h3>总结</h3>
+
+<h6>先分析一下前面几个问题造成的原因：</h6>
+
+<pre><code>  Swift &amp;&amp; Realm : 首先 Swift 是因为不稳定，所以支持的动态库没有集成到系统的”dyld的共享缓存”中去。而 Realm 因为不是苹果自己开发的，所以支持的动态库也没有集成到系统的”dyld的共享缓存”中去。所以都内置在了 App 中，而且这两个功能需要写很多代码来实现，因此容量又很大，导致看起来这两个东西占了很大的“无用”的容量。(ps.关于iOS 中库的问题，你可以去我的笔记中查看~)
+
+  ARC:因为 ARC 叫做自动引用计数，他的实现方式其实就是 Xcode 在编译的时候自动给你加内存管的代码，但是机器毕竟没人聪明，Xcode 会在很多情况下增加很多没用的代码，这也是为什么 ARC 的底层实现比 MRC 更快，但是实际运行性能上在有些时候却不及 MRC 的原因，而正因为增加了很多没用的代码，ARC 最终编译包会比 MRC 大。
+</code></pre>
+
+<blockquote><p>总结前面的几个问题，归根结底于一个问题，那就是Install Smallest VS. Coding Fastest。很多时候为了追求更快的编码速度，总会有所损失，但是在我看来这些事值得的，不然为什么我们不用 C 来代替 objective-c 或者用汇编来代替 C 呢？</p></blockquote>
+
+<h3>Bitcode</h3>
+
+<pre><code>bitcode 是被编译程序的一种中间形式的代码。包含 bitcode 配置的程序将会在 App Store 上被编译和链接。 bitcode 允许苹果在后期重新优化我们程序的二进制文件，而不需要我们重新提交一个新的版本到 App Store 上。
+
+当我们提交程序到 App Store上时， Xcode 会将程序编译为一个中间表现形式( bitcode )。然后 App store 会再将这个 bitcode 编译为可执行的64位或32位程序。
+
+所以，通过这个方式，我们可以做到架构级别的App Slicing。
+</code></pre>
+
+<h3>Tips</h3>
+
+<p>结合上面的内容，再加上Bang大神写的博客（<a href="http://blog.cnbang.net/tech/2544/%EF%BC%89%EF%BC%8C%E6%88%91%E6%80%BB%E7%BB%93%E4%BA%86%E5%87%A0%E6%9D%A1">http://blog.cnbang.net/tech/2544/%EF%BC%89%EF%BC%8C%E6%88%91%E6%80%BB%E7%BB%93%E4%BA%86%E5%87%A0%E6%9D%A1</a> Tips。排名越往前的我觉得越需要去优化。</p>
+
+<pre><code>Tip 1：去除重复、无用资源文件，解决名字重复问题。
+
+
+Tip 2：图片使用.xcassets管理且无须考虑@1x\@2x\@3x 问题。万不得已再用拖的办法，同时结合一定策略方案进行包瘦身。
+
+
+Tip 3：图片使用PDF 优先级高于 PNG,因为 Xcode 会帮你完成剩下的任务。
+
+
+Tip 4：使用tinypng压缩PNG图片。视频可以通过 Final cut 等软件进行分辨率压缩。音频则降低码率即可。
+
+
+Tip 5：icon 使用 iconfont
+
+
+Tip 6：非必须资源文件可以放到自己服务器上， 但必用资源文件需要内置到安装包中。
+
+
+Tip 7：HTML 5 需要将图片 Remote 化 或者将整个HTML 5 的页面 Remote化。
+
+
+Tip 8：Build Settings-&gt;Optimization Leve release版应该选择Fastest, Smalllest
+
+
+Tip 9：开启 BitCode
+
+
+    以下是几乎不可能去做的优化 Tips
+
+
+Tip 10：尽可能的去除无用的代码、控制类名、方法名长度、冗余字符串
+
+
+Tip 11：如果你想的话，不使用 Swift、不使用 Realm更甚至于尽量不使用 OC
+
+
+Tip 12：MRC 比 ARC 编译成可执行文件之后更小。
+</code></pre>
+
+<p>更多:工作之余，写了点笔记，如果需要可以在我的 GitHub 看。</p>
+
+<p><a href="https://github.com/al1020119">https://github.com/al1020119</a></p>
+
+<p>参考文章</p>
+
+<pre><code>App Thinning
+
+http://t.cn/RVJ8kNd
+
+Confirmed: Objective-C ARC is slow. Don’t use it! (sarcasm off)
+
+http://t.cn/zYkzifW
+
+4 XCODE ASSET CATALOG SECRETS YOU NEED TO KNOW
+
+http://t.cn/RVJR2c0
+
+使用IconFont减小iOS应用体积
+
+http://t.cn/RVU7B3h
+
+iOS可执行文件瘦身方法
+
+http://t.cn/RZgnVL3
+
+水平有限，若有错误，希望多多指正！coderonevv@gmail.com
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iOS开发——常用功能代码集锦（友秀篇）]]></title>
@@ -5447,6 +5834,26 @@ self.overlay.backgroundColor = backgroundColor;
 }
 </code></pre>
 
+<p>UserNotifications(用户通知)</p>
+
+<pre><code>iOS 10 中将通知相关的 API 都统一了,苹果对这是做了重大改进，变的非常易用。
+
+    iOS 9 以前的通知
+
+在调用方法时，有些方法让人很难区分，容易写错方法，这让开发者有时候很苦恼。
+应用在运行时和非运行时捕获通知的路径还不一致。
+应用在前台时，是无法直接显示远程通知，还需要进一步处理。
+已经发出的通知是不能更新的，内容发出时是不能改变的，并且只有简单文本展示方式，扩展性根本不是很好。
+
+    iOS 10 开始的通知
+
+所有相关通知被统一到了UserNotifications.framework框架中。
+增加了撤销、更新、中途还可以修改通知的内容。
+通知不在是简单的文本了，可以加入视频、图片，自定义通知的展示等等。
+iOS 10相对之前的通知来说更加好用易于管理，并且进行了大规模优化，对于开发者来说是一件好事。
+iOS 10开始对于权限问题进行了优化，申请权限就比较简单了(本地与远程通知集成在一个方法中)。
+</code></pre>
+
 <h2>13.代码及Api注意</h2>
 
 <p>使用Xcode8之后，有些代码可能就编译不过去了，具体我就说说我碰到的问题。</p>
@@ -5485,7 +5892,249 @@ self.overlay.backgroundColor = backgroundColor;
 ，不过不建议这么做，在Xcode8出来后，希望大家都快速上手，全员更新。这就跟Xcode5到Xcode6一样，有变动，但是还是要尽早学习，尽快适应哟！
 </code></pre>
 
-<h2>15.tabBarItem第一个重复出现</h2>
+<h2>15.UIRefreshControl</h2>
+
+<p>在iOS 10 中, UIRefreshControl可以直接在UICollectionView和UITableView中使用,并且脱离了UITableViewController.现在RefreshControl是UIScrollView的一个属性.
+    使用方法:</p>
+
+<pre><code>//创建
+ UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
+ refreshControl.tintColor = [UIColor redColor];
+ refreshControl.attributedTitle = [[NSAttributedString alloc] initWithString:@"正在刷新"];
+ [refreshControl addTarget:self action:@selector(loadData) forControlEvents:UIControlEventValueChanged];
+
+ //开始和停止刷新
+ [refreshControl beginRefreshing];
+ [refreshControl endRefreshing];
+</code></pre>
+
+<p>也可以进去头文件查看</p>
+
+<pre><code>#import
+
+- (instancetype)init;
+
+@property (nonatomic, readonly, getter=isRefreshing) BOOL refreshing;
+
+@property (null_resettable, nonatomic, strong) UIColor *tintColor;
+@property (nullable, nonatomic, strong) NSAttributedString *attributedTitle UI_APPEARANCE_SELECTOR;
+
+// May be used to indicate to the refreshControl that an external event has initiated the refresh action
+- (void)beginRefreshing NS_AVAILABLE_IOS(6_0);
+// Must be explicitly called when the refreshing has completed
+- (void)endRefreshing NS_AVAILABLE_IOS(6_0);
+</code></pre>
+
+<h2>16.UICollectionViewCell的的优化</h2>
+
+<ul>
+<li>在iOS 10 之前,UICollectionView上面如果有大量cell,当用户活动很快的时候,整个UICollectionView的卡顿会很明显,为什么会造成这样的问题,这里涉及到了iOS 系统的重用机制,当cell准备加载进屏幕的时候,整个cell都已经加载完成,等待在屏幕外面了,也就是整整一行cell都已经加载完毕,这就是造成卡顿的主要原因,专业术语叫做:掉帧.
+
+<ul>
+<li>要想让用户感觉不到卡顿,我们的app必须帧率达到60帧/秒,也就是说每帧16毫秒要刷新一次.</li>
+</ul>
+</li>
+<li>iOS 10 之前UICollectionViewCell的生命周期是这样的:
+
+<ul>
+<li>用户滑动屏幕,屏幕外有一个cell准备加载进来,把cell从reusr队列拿出来,然后调用prepareForReuse方法,在这个方法里面,可以重置cell的状态,加载新的数据;</li>
+<li>继续滑动,就会调用cellForItemAtIndexPath方法,在这个方法里面给cell赋值模型,然后返回给系统;</li>
+<li>当cell马上进去屏幕的时候,就会调用willDisplayCell方法,在这个方法里面我们还可以修改cell,为进入屏幕做最后的准备工作;</li>
+<li>执行完willDisplayCell方法后,cell就进去屏幕了.当cell完全离开屏幕以后,会调用didEndDisplayingCell方法.</li>
+</ul>
+</li>
+<li>iOS 10 UICollectionViewCell的生命周期是这样的:
+
+<ul>
+<li>用户滑动屏幕,屏幕外有一个cell准备加载进来,把cell从reusr队列拿出来,然后调用prepareForReuse方法,在这里当cell还没有进去屏幕的时候,就已经提前调用这个方法了,对比之前的区别是之前是cell的上边缘马上进去屏幕的时候就会调用该方法,而iOS 10 提前到cell还在屏幕外面的时候就调用;</li>
+<li>在cellForItemAtIndexPath中创建cell，填充数据，刷新状态等操作,相比于之前也提前了;</li>
+<li>用户继续滑动的话,当cell马上就需要显示的时候我们再调用willDisplayCell方法,原则就是:何时需要显示,何时再去调用willDisplayCell方法;</li>
+<li>当cell完全离开屏幕以后,会调用didEndDisplayingCell方法,跟之前一样,cell会进入重用队列.</li>
+</ul>
+</li>
+<li>在iOS 10 之前,cell只能从重用队列里面取出,再走一遍生命周期,并调用cellForItemAtIndexPath创建或者生成一个cell.</li>
+<li>在iOS 10 中,系统会cell保存一段时间,也就是说当用户把cell滑出屏幕以后,如果又滑动回来,cell不用再走一遍生命周期了,只需要调用willDisplayCell方法就可以重新出现在屏幕中了.</li>
+<li>iOS 10 中,系统是一个一个加载cell的,二以前是一行一行加载的,这样就可以提升很多性能;</li>
+<li><p>iOS 10 新增加的Pre-Fetching预加载</p>
+
+<ul>
+<li>这个是为了降低UICollectionViewCell在加载的时候所花费的时间,在 iOS 10 中,除了数据源协议和代理协议外,新增加了一个UICollectionViewDataSourcePrefetching协议,这个协议里面定义了两个</li>
+</ul>
+</li>
+</ul>
+
+
+<p>方法:</p>
+
+<pre><code>- (void)collectionView:(UICollectionView *)collectionView prefetchItemsAtIndexPaths:(NSArray *)indexPaths NS_AVAILABLE_IOS(10_0);
+
+- (void)collectionView:(UICollectionView *)collectionView cancelPrefetchingForItemsAtIndexPaths:(NSArray *)indexPaths  NS_AVAILABLE_IOS(10_0);
+</code></pre>
+
+<ul>
+<li>在ColletionView prefetchItemsAt indexPaths这个方法是异步预加载数据的,当中的indexPaths数组是有序的,就是item接收数据的顺序;</li>
+<li>CollectionView cancelPrefetcingForItemsAt indexPaths这个方法是可选的,可以用来处理在滑动中取消或者降低提前加载数据的优先级.</li>
+</ul>
+
+
+<blockquote><p>注意:这个协议并不能代替之前读取数据的方法,仅仅是辅助加载数据.</p></blockquote>
+
+<p>  Pre-Fetching预加载对UITableViewCell同样适用.</p>
+
+<h2>17.UITextField(好像作用并不大)</h2>
+
+<p>在iOS 10 中,UITextField新增了textContentType字段,是UITextContentType类型,它是一个枚举,作用是可以指定输入框的类型,以便系统可以分析出用户的语义.是电话类型就建议一些电话,是地址类型就建议一些地址.可以在#import 文件中,查看textContentType字段,有以下可以选择的类型:</p>
+
+<pre><code>UIKIT_EXTERN UITextContentType const UITextContentTypeName                      NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeNamePrefix                NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeGivenName                 NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeMiddleName                NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeFamilyName                NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeNameSuffix                NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeNickname                  NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeJobTitle                  NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeOrganizationName          NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeLocation                  NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeFullStreetAddress         NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeStreetAddressLine1        NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeStreetAddressLine2        NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeAddressCity               NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeAddressState              NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeAddressCityAndState       NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeSublocality               NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeCountryName               NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypePostalCode                NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeTelephoneNumber           NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeEmailAddress              NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeURL                       NS_AVAILABLE_IOS(10_0);
+UIKIT_EXTERN UITextContentType const UITextContentTypeCreditCardNumber          NS_AVAILABLE_IOS(10_0);
+</code></pre>
+
+<h2>18.UIStatusBar的问题</h2>
+
+<pre><code>在iOS10中,如果还使用以前设置UIStatusBar类型或者控制隐藏还是显示的方法,会报警告,方法过期
+</code></pre>
+
+<p>19970779-665271622c13eb6e</p>
+
+<p>警告中提到从iOS9.0开始就弃用这两个方法了，需要用</p>
+
+<pre><code>-[UIViewController preferredStatusBarstyle]
+
+-[UIViewController preferredStatusBarHidden]来替换使用，那我们来看看新的替换方法。
+</code></pre>
+
+<p>新技能见下面</p>
+
+<pre><code>#if UIKIT_DEFINE_AS_PROPERTIES
+@property(nonatomic, readonly) UIStatusBarStyle preferredStatusBarStyle NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to UIStatusBarStyleDefault
+@property(nonatomic, readonly) BOOL prefersStatusBarHidden NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to NO
+// Override to return the type of animation that should be used for status bar changes for this view controller. This currently only affects changes to prefersStatusBarHidden.
+@property(nonatomic, readonly) UIStatusBarAnimation preferredStatusBarUpdateAnimation NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to UIStatusBarAnimationFade
+#else
+- (UIStatusBarStyle)preferredStatusBarStyle NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to UIStatusBarStyleDefault
+- (BOOL)prefersStatusBarHidden NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to NO
+// Override to return the type of animation that should be used for status bar changes for this view controller. This currently only affects changes to prefersStatusBarHidden.
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation NS_AVAILABLE_IOS(7_0) __TVOS_PROHIBITED; // Defaults to UIStatusBarAnimationFade
+#endif
+</code></pre>
+
+<p>上面这个新方法在UIViewController.h文件中，这说明什么？当然说明这是viewController的属性和方法了，只需要在viewController里调用修改即可</p>
+
+<p>UIStatusBarStyle 和 prefersStatusBarHidden这两个属性是readonly readonly readonly也就是说我们如果调用下面 肯定是报错的：</p>
+
+<pre><code>//这是错误的写法
+self.preferredStatusBarStyle = UIStatusBarStyleDefault;和
+self.prefersStatusBarHidden = YES;
+</code></pre>
+
+<p>正确的打开方式在viewController重写我们还没用的新的方法</p>
+
+<pre><code>//这是正确的
+- (BOOL)prefersStatusBarHidden{
+    return YES;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleDefault;
+}
+</code></pre>
+
+<h2>19.插件取消</h2>
+
+<p>Xcode8取消了三方插件的功能，好多教程破解可以继续使用，但是可能app上线可能会被拒。我们最喜爱的VVDocumenter-Xcode也不能使用了.</p>
+
+<pre><code>看来大神都是谦虚的啊（啥时候能成为大神。我还是洗洗睡吧，梦里啥都有\^_^）
+上面也提到了我们可以继续使用注释，快捷键（⌥ Option + ⌘ Command + / ）
+</code></pre>
+
+<h2>20.真彩色的显示</h2>
+
+<p>真彩色的显示会根据光感应器来自动的调节达到特定环境下显示与性能的平衡效果,如果需要这个功能的话,可以在info.plist里配置(在Source Code模式下):</p>
+
+<pre><code>UIWhitePointAdaptivityStyle
+</code></pre>
+
+<p>它有五种取值,分别是:</p>
+
+<pre><code>UIWhitePointAdaptivityStyleStandard // 标准模式
+UIWhitePointAdaptivityStyleReading // 阅读模式
+UIWhitePointAdaptivityStylePhoto // 图片模式
+UIWhitePointAdaptivityStyleVideo // 视频模式
+UIWhitePointAdaptivityStyleStandard // 游戏模式
+</code></pre>
+
+<p>如果你的项目是游戏类的,就选择UIWhitePointAdaptivityStyleStandard这个模式,五种模式的显示效果是从上往下递减,也就是说如果你的项目是图片处理类的,你选择的是阅读模式,给选择太好的效果会影响性能.</p>
+
+<h2>21.UIColor问题</h2>
+
+<pre><code>官方文档中说:大多数core开头的图形框架和AVFoundation都提高了对扩展像素和宽色域色彩空间的支持.通过图形堆栈扩展这种方式比以往支持广色域的显示设备更加容易。现在对UIKit扩展可以在sRGB的色彩空间下工作，性能更好,也可以在更广泛的色域来搭配sRGB颜色.如果你的项目中是通过低级别的api自己实现图形处理的,建议使用sRGB,也就是说在项目中使用了RGB转化颜色的建议转换为使用sRGB,在UIColor类中新增了两个api:
+
++ (UIColor *)colorWithDisplayP3Red:(CGFloat)displayP3Red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha NS_AVAILABLE_IOS(10_0);
+- (UIColor *)initWithDisplayP3Red:(CGFloat)displayP3Red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha NS_AVAILABLE_IOS(10_0);
+</code></pre>
+
+<p>我用新老方法测试两个方法在RGB相同的数值在表现上的区别看下图：</p>
+
+<blockquote><p>可以看出下面的颜色（sRGB方法）比上面的颜色（RGB方法）颜色更深更明显。</p></blockquote>
+
+<h2>22.系统版本判断方法失效</h2>
+
+<h6>我们之前的系统版本方法如下</h6>
+
+<p>当系统版本到iOS10.0的时候 9.0和10.0比较的话是降序而不是升序，这样会导致iOS10.0是最早的版本，这样后面要走的iOS10的方法可能都不会走而出现问题</p>
+
+<pre><code>#define IOS9_OR_LATER ([[[UIDevice currentDevice] systemVersion] compare:@"9.0"] != NSOrderedAscending)
+
+#define IOS8_OR_LATER ([[[UIDevice currentDevice] systemVersion] compare:@"8.0"] != NSOrderedAscending)
+
+#define IOS7_OR_LATER ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
+
+#define IOS6_OR_LATER ([[[UIDevice currentDevice] systemVersion] compare:@"6.0"] != NSOrderedAscending)
+</code></pre>
+
+<p>下面这样也不行它会永远返回NO,substringToIndex:1在iOS 10 会被检测成 iOS 1了,</p>
+
+<pre><code>#define isiOS10 ([[[[UIDevice currentDevice] systemVersion] substringToIndex:1] intValue]&gt;=10)
+1
+
+#define isiOS10 ([[[[UIDevice currentDevice] systemVersion] substringToIndex:1] intValue]&gt;=10)
+</code></pre>
+
+<p>正确的打开方式应该是：</p>
+
+<pre><code>#define IOS10_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 10.0)
+
+#define IOS9_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 9.0)
+
+#define IOS8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 8.0)
+
+#define IOS7_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 7.0)
+
+#define IOS6_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] &gt;= 6.0)
+</code></pre>
+
+<h2>23.tabBarItem第一个重复出现</h2>
 
 <p>这个问题实在没有找到好的方法解决。不过庆幸的是，公司决定将TabBar中的Item四个变成，既然好了，我就想不通。</p>
 
@@ -5512,9 +6161,9 @@ github：https://github.com/al1020119
   
   <entry>
     <title type="html"><![CDATA[最新书单]]></title>
-    <link href="http://al1020119.github.io/blog/2016/09/26/zui-xin-shu-dan/"/>
-    <updated>2016-09-26T13:30:57+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/09/26/zui-xin-shu-dan</id>
+    <link href="http://al1020119.github.io/blog/2016/10/01/zui-xin-shu-dan/"/>
+    <updated>2016-10-01T13:30:57+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/10/01/zui-xin-shu-dan</id>
     <content type="html"><![CDATA[<h2>2016年-2017年书单</h2>
 
 <p>总结了一下，2016年，这一年来所看的书和2017年计划所要看的书，后面的文章中会给出相关介绍并且说明我为什么会选择这些，同时以后也会时常回顾这些东西。</p>
@@ -5640,6 +6289,177 @@ github：https://github.com/al1020119
 
 
 <blockquote><p>我相信 : 我们每天不是在学习，就是在学习路上！</p></blockquote>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[直播-推流篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/28/zhi-bo-mei-yan-pian/"/>
+    <updated>2016-09-28T10:09:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/28/zhi-bo-mei-yan-pian</id>
+    <content type="html"><![CDATA[<h3>前言</h3>
+
+<p>开发一款直播app，肯定需要流媒体服务器，本篇主要讲解直播中流媒体服务器搭建，并且讲解了如何利用FFMPEG编码和推流，并且介绍了FFMPEG常见命令。</p>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu001.png" title="Caption" ></p>
+
+<h2>一、安装Homebrew</h2>
+
+<p>Homebrew简称brew，是Mac OSX上的软件包管理工具，能在Mac中方便的安装软件或者卸载软件。</p>
+
+<h6>1、打开终端, 查看是否已经安装了Homebrew, 直接终端输入命令</h6>
+
+<ul>
+<li> man命令:manual（手册）的缩写，可以查看某一命令的帮助信息，比如git,brew,顺便可以查看有没有按照这个命令.</li>
+</ul>
+
+
+<p>man brew</p>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu002.png" title="Caption" ></p>
+
+<h6>2、 执行命令，安装Homebrew</h6>
+
+<p>执行命令后，需要按回车，并且需要输入电脑密码。</p>
+
+<pre><code>ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu003.png" title="Caption" ></p>
+
+<h2>二、利用安装nginx</h2>
+
+<h6>1.Nginx：Nginx是一个非常出色的HTTP服务器，其特点是占有内存少，并发能力强，事实上nginx的并发能力确实在同类型的网页服务器中表现较好。</h6>
+
+<p>从github下载Nginx到本地,增加home-brew对nginx的扩展</p>
+
+<pre><code>brew tap homebrew/nginx
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu004.png" title="Caption" ></p>
+
+<h6>2.安装Nginx服务器和rtmp模块</h6>
+
+<p>brew install nginx-full &ndash;with-rtmp-module</p>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu005.png" title="Caption" ></p>
+
+<h6>3.查看是否安装成功</h6>
+
+<p>在浏览器地址栏输入：</p>
+
+<pre><code>http://localhost:8080 （直接点击）
+</code></pre>
+
+<p>如果出现下图, 则表示安装成功</p>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu006.png" title="Caption" ></p>
+
+<h2>三、配置rtmp</h2>
+
+<h6>1.查看nginx配置文件安装在哪</h6>
+
+<p>brew info nginx-full</p>
+
+<h6>2.用xcode打开配置文件，滚动到最后面(最后一个}后面即可，不能在{}里面)，添加一下代码，进行配置，最后记得保存</h6>
+
+<pre><code>rtmp {
+    server {
+        listen 1990;
+        application liveApp {
+            live on;
+            record off;
+        }
+    }
+}
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu007.png" title="Caption" ></p>
+
+<pre><code>application：流媒体上应用名称，可以随意填
+</code></pre>
+
+<h6>3.重新加载nginx的配置文件</h6>
+
+<p>nginx -s reload</p>
+
+<h2>四、安装ffmepg进行推流</h2>
+
+<pre><code>brew install ffmpeg
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu008.png" title="Caption" ></p>
+
+<h2>五、使用ffmepg推流测试</h2>
+
+<pre><code>ffmpeg -re -i (视频全路径) -vcodec copy -f flv (rtmp路径
+
+ffmpeg -re -i /Users/yuanzheng/Desktop/02-如何学习项目.mp4 -vcodec copy -f flv rtmp://localhost:1990/liveApp/room
+</code></pre>
+
+<p>需要跟配置的一一对应，端口，应用名称，room可以随便写</p>
+
+<pre><code>延时：发送流媒体的数据的时候需要延时。不然的话，FFmpeg处理数据速度很快，瞬间就能把所有的数据发送出去，流媒体服务器是接受不了的。因此需要按照视频实际的帧率发送数据
+-re: 一定要加，代表按照帧率发送，否则ffmpeg会一股脑地按最高的效率发送数据
+-i : 输入文件
+-vcodec copy: 强制使用codec编解码方式，要加，否则ffmpeg会重新编码输入的H.264裸流
+-f 强制转换为什么格式，后接格式
+ffmpeg参数中文详细解释
+</code></pre>
+
+<h2>六、使用VLC播放rtmp推流</h2>
+
+<h6>1.下载VLC</h6>
+
+<h6>2.打开VLC,输入直播地址，cmd + N</h6>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu009.png" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu010.png" title="Caption" ></p>
+
+<h2>七、用ffmpeg抓取桌面以及摄像头推流进行直播</h2>
+
+<h6>1.首先查看ffmpeg是否支持对应的设备，在OSX下面，Video和Audio设备使用的是avfoundation，所以可以使用avfoundation来查看</h6>
+
+<pre><code>ffmpeg -f avfoundation -list_devices true -i ""
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/ioszhibotuiliu011.png" title="Caption" ></p>
+
+<h6>2.抓取桌面和摄像头进行推流</h6>
+
+<pre><code>ffmpeg -f avfoundation -framerate 30 -i "1:0" -f avfoundation -framerate 30 -video_size 640x480 -i "0" -c:v libx264 -preset slow -filter_complex 'overlay=main_w-overlay_w-10:main_h-overlay_h-10' -acodec libmp3lame -ar 44100 -ac 1  -f flv rtmp://localhost:1990/liveApp/room
+
+-f avfoundation 转换为avfoundation
+-framerate 30 : 设置帧率 30
+-i "1:0" : 设置输出，视频：Capture screen 音频：Built-in Microphone
+-f avfoundation -framerate 30 -video_size 640x480 ： 设置帧率和视频尺寸
+-c:v libx264 设置视频编码，H.264编码 优点是同等清晰度，视频文件更小 缺点就是转换慢
+-c:v flv 标准FLV编码 这个好处是速度快 清晰度高的话 视频文件会比较大
+-preset slow 使用慢速模式 延迟长 清晰度高
+ffmpeg的转码延时测试与设置优化
+-filter_complex 'overlay=main_w-overlay_w-10:main_h-overlay_h-10':给视频打水印
+-acodec libmp3lame 強制指定音频处理模式
+-ac 1 声道选择
+-ar 44100 音频赫兹
+</code></pre>
 
 <hr />
 
@@ -7625,460 +8445,6 @@ github：https://github.com/al1020119
 <pre><code>1、更高的音质，更小的容量。（256Kbps的iTunes Plus AAC优于320Kbps的MP3，接近无损。）
 2、正确完整无杂质的曲目ID3信息，内嵌官方唱片封面。
 3、正版身份，值得收藏。
-</code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[关于直播]]></title>
-    <link href="http://al1020119.github.io/blog/2016/09/01/guan-yu-zhi-bo/"/>
-    <updated>2016-09-01T14:39:39+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/09/01/guan-yu-zhi-bo</id>
-    <content type="html"><![CDATA[<p><img src="http://al1020119.github.io/images/zhibo001.png" title="Caption" ></p>
-
-<p>关于直播，这里先推荐几篇相关的文字，都是非常经典的，虽然有些难，直播本来就很难，不难还叫直播吗？是吧！</p>
-
-<p><a href="http://www.zhihu.com/question/42162310">知乎经典问答直播：如何搭建一个完整的视频直播系统？</a></p>
-
-<!--more-->
-
-
-<h4>关于直播,所有的技术细节都在这里了</h4>
-
-<p><a href="http://mini.eastday.com/a/160511190456604-2.html">http://mini.eastday.com/a/160511190456604-2.html</a></p>
-
-<p><a href="http://toutiao.com/i6283358665676161538/">http://toutiao.com/i6283358665676161538/</a></p>
-
-<p><a href="http://www.csdn.net/article/a/2016-05-20/15821126">http://www.csdn.net/article/a/2016-05-20/15821126</a></p>
-
-<p><a href="http://mini.eastday.com/a/160523102622452-4.html">http://mini.eastday.com/a/160523102622452-4.html</a></p>
-
-<p>直播其实之前好早就存在，只是真正火起来是在今年上半年，一下子各大公司都打算开始着手直播，当然直播虽然赚钱，但是重点是得先烧钱 ，而且不是一般的App那么烧钱。</p>
-
-<p>后面的文章系列就以直播为主题开始摘取和总结一系列的相关技术与知识。</p>
-
-<p><img src="http://al1020119.github.io/images/zhibo002.png" title="Caption" ></p>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[多线程安全？各种锁的实现原理😂]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-%3Fge-chong-suo-de-shi-xian-yuan-li/"/>
-    <updated>2016-08-31T15:06:21+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-?ge-chong-suo-de-shi-xian-yuan-li</id>
-    <content type="html"><![CDATA[<p>本文要做的就是简单的分析 iOS 开发中常见的几种锁如何实现，以及优缺点是什么，为什么会有性能上的差距，最终会简单的介绍锁的底层实现原理。水平有限，如果不慎有误，欢迎交流指正。同时建议读者在阅读本文以前，对 OC 中各种锁的使用方法先有大概的认识。</p>
-
-<p>在 ibireme 的 不再安全的 OSSpinLock 一文中，有一张图片简单的比较了各种锁的加解锁性能:</p>
-
-<p><img src="http://al1020119.github.io/images/duoxianchengsuoshixianyuanli001.png" title="Caption" ></p>
-
-<!--more-->
-
-
-<p>本文会按照从上至下(速度由快至慢)的顺序分析每个锁的实现原理。需要说明的是，加解锁速度不表示锁的效率，只表示加解锁操作在执行时的复杂程度，下文会通过具体的例子来解释。</p>
-
-<h2>OSSpinLock</h2>
-
-<p>上述文章中已经介绍了 OSSpinLock 不再安全，主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。</p>
-
-<p>为什么忙等会导致低优先级线程拿不到时间片？这还得从操作系统的线程调度说起。</p>
-
-<pre><code>现代操作系统在管理普通线程时，通常采用时间片轮转算法(Round Robin，简称 RR)。每个线程会被分配一段时间片(quantum)，通常在 10-100 毫秒左右。当线程用完属于自己的时间片以后，就会被操作系统挂起，放入等待队列中，直到下一次被分配时间片。
-</code></pre>
-
-<h4>自旋锁的实现原理</h4>
-
-<p>自旋锁的目的是为了确保临界区只有一个线程可以访问，它的使用可以用下面这段伪代码来描述:</p>
-
-<pre><code>do {
-
-    Acquire Lock
-
-        Critical section  // 临界区
-
-    Release Lock
-
-        Reminder section // 不需要锁保护的代码
-
-}
-</code></pre>
-
-<p>在 Acquire Lock 这一步，我们申请加锁，目的是为了保护临界区(Critical Section) 中的代码不会被多个线程执行。</p>
-
-<p>自旋锁的实现思路很简单，理论上来说只要定义一个全局变量，用来表示锁的可用情况即可，伪代码如下:</p>
-
-<pre><code>bool lock = false; // 一开始没有锁上，任何线程都可以申请锁
-
-do {
-
-    while(lock); // 如果 lock 为 true 就一直死循环，相当于申请锁
-
-    lock = true; // 挂上锁，这样别的线程就无法获得锁
-
-        Critical section  // 临界区
-
-    lock = false; // 相当于释放锁，这样别的线程可以进入临界区
-
-        Reminder section // 不需要锁保护的代码        
-
-}
-</code></pre>
-
-<p>注释写得很清楚，就不再逐行分析了。可惜这段代码存在一个问题: 如果一开始有多个线程同时执行 while 循环，他们都不会在这里卡住，而是继续执行，这样就无法保证锁的可靠性了。解决思路也很简单，只要确保申请锁的过程是原子操作即可。</p>
-
-<h4>原子操作</h4>
-
-<p>狭义上的原子操作表示一条不可打断的操作，也就是说线程在执行操作过程中，不会被操作系统挂起，而是一定会执行完。在单处理器环境下，一条汇编指令显然是原子操作，因为中断也要通过指令来实现。</p>
-
-<blockquote><p>然而在多处理器的情况下，能够被多个处理器同时执行的操作任然算不上原子操作。因此，真正的原子操作必须由硬件提供支持，比如 x86 平台上如果在指令前面加上 “LOCK” 前缀，对应的机器码在执行时会把总线锁住，使得其他 CPU不能再执行相同操作，从而从硬件层面确保了操作的原子性。</p></blockquote>
-
-<p>这些非常底层的概念无需完全掌握，我们只要知道上述申请锁的过程，可以用一个原子性操作 test_and_set 来完成，它用伪代码可以这样表示:</p>
-
-<pre><code>bool test_and_set (bool *target) {
-
-    bool rv = *target; 
-
-    *target = TRUE; 
-
-    return rv;
-
-}
-</code></pre>
-
-<p>这段代码的作用是把 target 的值设置为 1，并返回原来的值。当然，在具体实现时，它通过一个原子性的指令来完成。</p>
-
-<h4>自旋锁的总结</h4>
-
-<p>至此，自旋锁的实现原理就很清楚了:</p>
-
-<pre><code>bool lock = false; // 一开始没有锁上，任何线程都可以申请锁
-
-do {
-
-    while(test_and_set(&amp;lock); // test_and_set 是一个原子操作
-
-        Critical section  // 临界区
-
-    lock = false; // 相当于释放锁，这样别的线程可以进入临界区
-
-        Reminder section // 不需要锁保护的代码        
-
-}
-</code></pre>
-
-<p>如果临界区的执行时间过长，使用自旋锁不是个好主意。之前我们介绍过时间片轮转算法，线程在多种情况下会退出自己的时间片。其中一种是用完了时间片的时间，被操作系统强制抢占。除此以外，当线程进行 I/O 操作，或进入睡眠状态时，都会主动让出时间片。显然在 while 循环中，线程处于忙等状态，白白浪费 CPU 时间，最终因为超时被操作系统抢占时间片。如果临界区执行时间较长，比如是文件读写，这种忙等是毫无必要的。</p>
-
-<h2>信号量</h2>
-
-<p>之前我在 介绍 GCD 底层实现的文章 中简单描述了信号量 dispatch_semaphore_t 的实现原理，它最终会调用到 sem_wait 方法，这个方法在 glibc 中被实现如下:</p>
-
-<pre><code>int sem_wait (sem_t *sem) {
-
-  int *futex = (int *) sem;
-
-  if (atomic_decrement_if_positive (futex) &gt; 0)
-
-    return 0;
-
-  int err = lll_futex_wait (futex, 0);
-
-    return -1;
-
-)
-</code></pre>
-
-<p>首先会把信号量的值减一，并判断是否大于零。如果大于零，说明不用等待，所以立刻返回。具体的等待操作在 lll_futex_wait 函数中实现，lll 是 low level lock 的简称。这个函数通过汇编代码实现，调用到 SYS_futex 这个系统调用，使线程进入睡眠状态，主动让出时间片，这个函数在互斥锁的实现中，也有可能被用到。</p>
-
-<ul>
-<li>主动让出时间片并不总是代表效率高。让出时间片会导致操作系统切换到另一个线程，这种上下文切换通常需要 10 微秒左右，而且至少需要两次切换。如果等待时间很短，比如只有几个微秒，忙等就比线程睡眠更高效。</li>
-</ul>
-
-
-<p>可以看到，自旋锁和信号量的实现都非常简单，这也是两者的加解锁耗时分别排在第一和第二的原因。再次强调，加解锁耗时不能准确反应出锁的效率(比如时间片切换就无法发生)，它只能从一定程度上衡量锁的实现复杂程度。</p>
-
-<h2>pthread_mutex</h2>
-
-<p>pthread 表示 POSIX thread，定义了一组跨平台的线程相关的 API，pthread_mutex 表示互斥锁。互斥锁的实现原理与信号量非常相似，不是使用忙等，而是阻塞线程并睡眠，需要进行上下文切换。</p>
-
-<p>互斥锁的常见用法如下:</p>
-
-<pre><code>pthread_mutexattr_t attr;
-
-pthread_mutexattr_init(&amp;attr);
-
-pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_NORMAL);  // 定义锁的属性
-
-
-
-pthread_mutex_t mutex;
-
-pthread_mutex_init(&amp;mutex, &amp;attr) // 创建锁
-
-
-
-pthread_mutex_lock(&amp;mutex); // 申请锁
-
-    // 临界区
-
-pthread_mutex_unlock(&amp;mutex); // 释放锁
-</code></pre>
-
-<p>对于 pthread_mutex 来说，它的用法和之前没有太大的改变，比较重要的是锁的类型，可以有 PTHREAD_MUTEX_NORMAL、PTHREAD_MUTEX_ERRORCHECK、PTHREAD_MUTEX_RECURSIVE 等等，具体的特性就不做解释了，网上有很多相关资料。</p>
-
-<blockquote><p>一般情况下，一个线程只能申请一次锁，也只能在获得锁的情况下才能释放锁，多次申请锁或释放未获得的锁都会导致崩溃。假设在已经获得锁的情况下再次申请锁，线程会因为等待锁的释放而进入睡眠状态，因此就不可能再释放锁，从而导致死锁。</p></blockquote>
-
-<p>然而这种情况经常会发生，比如某个函数申请了锁，在临界区内又递归调用了自己。辛运的是 pthread_mutex 支持递归锁，也就是允许一个线程递归的申请锁，只要把 attr 的类型改成 PTHREAD_MUTEX_RECURSIVE 即可。</p>
-
-<h2>互斥锁的实现</h2>
-
-<p>互斥锁在申请锁时，调用了 pthread_mutex_lock 方法，它在不同的系统上实现各有不同，有时候它的内部是使用信号量来实现，即使不用信号量，也会调用到 lll_futex_wait 函数，从而导致线程休眠。</p>
-
-<blockquote><p>上文说到如果临界区很短，忙等的效率也许更高，所以在有些版本的实现中，会首先尝试一定次数(比如 1000 次)的 test_and_test，这样可以在错误使用互斥锁时提高性能。</p></blockquote>
-
-<p>另外，由于 pthread_mutex 有多种类型，可以支持递归锁等，因此在申请加锁时，需要对锁的类型加以判断，这也就是为什么它和信号量的实现类似，但效率略低的原因。</p>
-
-<h2>NSLock</h2>
-
-<p>NSLock 是 Objective-C 以对象的形式暴露给开发者的一种锁，它的实现非常简单，通过宏，定义了 lock 方法:</p>
-
-<pre><code>#define    MLOCK \
-
-- (void) lock\
-
-{\
-
-  int err = pthread_mutex_lock(&amp;_mutex);\
-
-  // 错误处理 ……
-
-}
-</code></pre>
-
-<p>NSLock 只是在内部封装了一个 pthread_mutex，属性为 PTHREAD_MUTEX_ERRORCHECK，它会损失一定性能换来错误提示。</p>
-
-<p>这里使用宏定义的原因是，OC 内部还有其他几种锁，他们的 lock 方法都是一模一样，仅仅是内部 pthread_mutex 互斥锁的类型不同。通过宏定义，可以简化方法的定义。</p>
-
-<blockquote><p>NSLock 比 pthread_mutex 略慢的原因在于它需要经过方法调用，同时由于缓存的存在，多次方法调用不会对性能产生太大的影响。</p></blockquote>
-
-<h2>NSCondition</h2>
-
-<p>NSCondition 的底层是通过条件变量(condition variable) pthread_cond_t 来实现的。条件变量有点像信号量，提供了线程阻塞与信号机制，因此可以用来阻塞某个线程，并等待某个数据就绪，随后唤醒线程，比如常见的生产者-消费者模式。</p>
-
-<h4>如何使用条件变量</h4>
-
-<p>很多介绍 pthread_cond_t 的文章都会提到，它需要与互斥锁配合使用:</p>
-
-<pre><code>void consumer () { // 消费者
-
-    pthread_mutex_lock(&amp;mutex);
-
-    while (data == NULL) {
-
-        pthread_cond_wait(&amp;condition_variable_signal, &amp;mutex); // 等待数据
-
-    }
-
-    // --- 有新的数据，以下代码负责处理 ↓↓↓↓↓↓
-
-    // temp = data;
-
-    // --- 有新的数据，以上代码负责处理 ↑↑↑↑↑↑
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-
-
-
-void producer () {
-
-    pthread_mutex_lock(&amp;mutex);
-
-    // 生产数据
-
-    pthread_cond_signal(&amp;condition_variable_signal); // 发出信号给消费者，告诉他们有了新的数据
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-</code></pre>
-
-<p>自然我们会有疑问:“如果不用互斥锁，只用条件变量会有什么问题呢？”。问题在于，temp = data; 这段代码不是线程安全的，也许在你把 data 读出来以前，已经有别的线程修改了数据。因此我们需要保证消费者拿到的数据是线程安全的。</p>
-
-<p>wait 方法除了会被 signal 方法唤醒，有时还会被虚假唤醒，所以需要这里 while 循环中的判断来做二次确认。</p>
-
-<h4>为什么要使用条件变量</h4>
-
-<p>介绍条件变量的文章非常多，但大多都对一个一个基本问题避而不谈:“为什么要用条件变量？它仅仅是控制了线程的执行顺序，用信号量或者互斥锁能不能模拟出类似效果？”</p>
-
-<p>网上的相关资料比较少，我简单说一下个人看法。信号量可以一定程度上替代 condition，但是互斥锁不行。在以上给出的生产者-消费者模式的代码中， pthread_cond_wait 方法的本质是锁的转移，消费者放弃锁，然后生产者获得锁，同理，pthread_cond_signal 则是一个锁从生产者到消费者转移的过程。</p>
-
-<p>如果使用互斥锁，我们需要把代码改成这样:</p>
-
-<pre><code>void consumer () { // 消费者
-
-    pthread_mutex_lock(&amp;mutex);
-
-    while (data == NULL) {
-
-        pthread_mutex_unlock(&amp;mutex);
-
-        pthread_mutex_lock(&amp;another_lock)  // 相当于 wait 另一个互斥锁
-
-        pthread_mutex_lock(&amp;mutex);
-
-    }
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-</code></pre>
-
-<p>这样做存在的问题在于，在等待 another_lock 之前， 生产者有可能先执行代码， 从而释放了 another_lock。也就是说，我们无法保证释放锁和等待另一个锁这两个操作是原子性的，也就无法保证“先等待、后释放 another_lock” 这个顺序。</p>
-
-<blockquote><p>用信号量则不存在这个问题，因为信号量的等待和唤醒并不需要满足先后顺序，信号量只表示有多少个资源可用，因此不存在上述问题。然而与 pthread_cond_wait 保证的原子性锁转移相比，使用信号量似乎存在一定风险(暂时没有查到非原子性操作有何不妥)。</p></blockquote>
-
-<p>不过，使用 condition 有一个好处，我们可以调用 pthread_cond_broadcast 方法通知所有等待中的消费者，这是使用信号量无法实现的。</p>
-
-<h2>NSCondition 的做法</h2>
-
-<p>NSCondition 其实是封装了一个互斥锁和条件变量， 它把前者的 lock 方法和后者的 wait/signal 统一在 NSCondition 对象中，暴露给使用者:</p>
-
-<pre><code>- (void) signal {
-
-  pthread_cond_signal(&amp;_condition);
-
-}
-
-
-
-// 其实这个函数是通过宏来定义的，展开后就是这样
-
-- (void) lock {
-
-  int err = pthread_mutex_lock(&amp;_mutex);
-
-}
-</code></pre>
-
-<p>它的加解锁过程与 NSLock 几乎一致，理论上来说耗时也应该一样(实际测试也是如此)。在图中显示它耗时略长，我猜测有可能是测试者在每次加解锁的前后还附带了变量的初始化和销毁操作。</p>
-
-<h2>NSRecursiveLock</h2>
-
-<p>上文已经说过，递归锁也是通过 pthread_mutex_lock 函数来实现，在函数内部会判断锁的类型，如果显示是递归锁，就允许递归调用，仅仅将一个计数器加一，锁的释放过程也是同理。</p>
-
-<blockquote><p>NSRecursiveLock 与 NSLock 的区别在于内部封装的 pthread_mutex_t 对象的类型不同，前者的类型为 PTHREAD_MUTEX_RECURSIVE。</p></blockquote>
-
-<h2>NSConditionLock</h2>
-
-<p>NSConditionLock 借助 NSCondition 来实现，它的本质就是一个生产者-消费者模型。“条件被满足”可以理解为生产者提供了新的内容。NSConditionLock 的内部持有一个 NSCondition 对象，以及 _condition_value 属性，在初始化时就会对这个属性进行赋值:</p>
-
-<pre><code>// 简化版代码
-
-- (id) initWithCondition: (NSInteger)value {
-
-    if (nil != (self = [super init])) {
-
-        _condition = [NSCondition new]
-
-        _condition_value = value;
-
-    }
-
-    return self;
-
-}
-</code></pre>
-
-<p>它的 lockWhenCondition 方法其实就是消费者方法:</p>
-
-<pre><code>- (void) lockWhenCondition: (NSInteger)value {
-
-    [_condition lock];
-
-    while (value != _condition_value) {
-
-        [_condition wait];
-
-    }
-
-}
-</code></pre>
-
-<p>对应的 unlockWhenCondition 方法则是生产者，使用了 broadcast 方法通知了所有的消费者:</p>
-
-<pre><code>- (void) unlockWithCondition: (NSInteger)value {
-
-    _condition_value = value;
-
-    [_condition broadcast];
-
-    [_condition unlock];
-
-}
-</code></pre>
-
-<h2>@synchronized</h2>
-
-<p>这其实是一个 OC 层面的锁， 主要是通过牺牲性能换来语法上的简洁与可读。</p>
-
-<blockquote><p>我们知道 @synchronized 后面需要紧跟一个 OC 对象，它实际上是把这个对象当做锁来使用。这是通过一个哈希表来实现的，OC 在底层使用了一个互斥锁的数组(你可以理解为锁池)，通过对对象去哈希值来得到对应的互斥锁。</p></blockquote>
-
-<p>具体的实现原理可以参考这篇文章: 关于 @synchronized，这儿比你想知道的还要多</p>
-
-<blockquote><p>参考资料</p></blockquote>
-
-<pre><code>pthread_mutex_lock
-
-ThreadSafety
-
-Difference between binary semaphore and mutex
-
-关于 @synchronized，这儿比你想知道的还要多
-
-pthread_mutex_lock.c 源码
-
-[Pthread] Linux中的线程同步机制(二)–In Glibc
-
-pthread的各种同步机制
-
-pthread_cond_wait
-
-Conditional Variable vs Semaphore
 </code></pre>
 
 <hr />

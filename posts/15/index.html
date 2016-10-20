@@ -9,8 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。 从闭包说起
-在Lisp这样的语言中， &hellip;">
+  <meta name="description" content="Swift中使用KVC和KVO的类都必须必须继承自NSObject 由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、键值监听（KVO）特性： 键值编码KVC &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +69,99 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/">谈谈KVC与KVO精髓</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-05T23:11:52+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>11:11 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Swift中使用KVC和KVO的类都必须必须继承自NSObject</p>
+
+<p>由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、键值监听（KVO）特性：</p>
+
+<ul>
+<li>键值编码KVC</li>
+<li>键值监听KVO</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/12/02/xiao-chu-jing-gao/">消除警告</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-12-02T02:51:46+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>2:51 am</span></time>
+        
+        
+        |   <a href="/blog/2014/12/02/xiao-chu-jing-gao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h6>前言：</h6>
+
+<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
+
+<p>本文分为三个部分：</p>
+
+<ul>
+<li>1.简单粗暴的消除警告。</li>
+<li>2.详细科学的消除警告。（包括警告收录）</li>
+<li>3.添加警告。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/12/02/xiao-chu-jing-gao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -192,7 +284,7 @@
 只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
 
 <p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#105;&#108;&#116;&#x6f;&#x3a;&#x6d;&#x61;&#106;&#x69;&#x61;&#48;&#x33;&#x40;&#x6d;&#x65;&#105;&#x74;&#117;&#x61;&#x6e;&#46;&#99;&#x6f;&#x6d;">&#109;&#x61;&#x6a;&#105;&#x61;&#x30;&#x33;&#64;&#109;&#101;&#x69;&#x74;&#x75;&#97;&#x6e;&#46;&#x63;&#x6f;&#x6d;</a> ）。</p>
+本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#x6d;&#97;&#106;&#x69;&#97;&#x30;&#x33;&#x40;&#x6d;&#101;&#105;&#x74;&#x75;&#97;&#x6e;&#x2e;&#x63;&#111;&#109;">&#x6d;&#x61;&#106;&#105;&#x61;&#48;&#x33;&#64;&#109;&#x65;&#105;&#116;&#117;&#97;&#110;&#46;&#99;&#111;&#x6d;</a> ）。</p>
 
 <p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
 
@@ -470,89 +562,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/09/12/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-09-12T00:21:39+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>12:21 am</span></time>
-        
-        
-        |   <a href="/blog/2014/09/12/xmppshi-yong-zong-jie/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：
-最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
-
-<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/09/12/xmppshi-yong-zong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/09/02/an-quan-ji-zhi/">安全机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-09-02T22:46:51+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>10:46 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/09/02/an-quan-ji-zhi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。</p>
-
-<ul>
-<li>苹果安全机制</li>
-<li>ios开发安全处理</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/09/02/an-quan-ji-zhi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/16">&larr; Older</a>
@@ -600,6 +609,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)/">iOS开发——常用功能代码集锦（友秀篇）</a>
       </li>
     
@@ -613,10 +626,6 @@
     
       <li class="post">
         <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
       </li>
     
   </ul>
@@ -661,8 +670,8 @@
 
 
 <section>
-    <h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
-    <a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
 
 
 <section>

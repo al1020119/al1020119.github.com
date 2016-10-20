@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="之前两篇文章都比较偏理论，文字表达比较多一些，但都是干货！学习时先理解理论知识，才能更好的帮助后面的理解。在这篇文章中，将会涉及关于CoreData的一些复杂操作，这些操作会涉及分页查询、模糊查询、批处理等高级操作。通过这些操作可以更好的使用CoreData，提升CoreData性能。 &hellip;">
+  <meta name="description" content="正文： CoreData使用相关的技术点已经讲差不多了，我所掌握的也就这么多了&hellip;. 在本篇文章中主要讲CoreData的多线程，其中会包括并发队列类型、线程安全等技术点。我对多线程的理解可能不是太透彻，文章中出现的问题还请各位指出。在之后公司项目使用CoreData的过程中， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,92 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatedzhuangbianquang/">CoreData安全问题！</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-04T18:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:59 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/07/04/coredatedzhuangbianquang/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>正文：</p>
+
+<p>CoreData使用相关的技术点已经讲差不多了，我所掌握的也就这么多了&hellip;.</p>
+
+<p>在本篇文章中主要讲CoreData的多线程，其中会包括并发队列类型、线程安全等技术点。我对多线程的理解可能不是太透彻，文章中出现的问题还请各位指出。在之后公司项目使用CoreData的过程中，我会将其中遇到的多线程相关的问题更新到文章中。</p>
+
+<p>在文章的最后，会根据我对CoreData多线程的学习，以及在工作中的具体使用，给出一些关于多线程结构的设计建议，各位可以当做参考。</p>
+
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/04/coredatedzhuangbianquang/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/04/coredatedzhuangbi/">CoreData装逼技能？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-04T14:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/07/04/coredatedzhuangbi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>正文：</p>
+
+<p>在之前的文章中，已经讲了很多关于CoreData使用相关的知识点。这篇文章中主要讲两个方面，NSFetchedResultsController和版本迁移。</p>
+
+<p>文章题目中虽然有“高级”两个字，其实讲的东西并不高级，只是因为上一篇文章中东西太多了，把两个较复杂的知识点挪到这篇文章中。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/04/coredatedzhuangbi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -411,111 +497,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/07/01/sqljinghua/">SQLite精华篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-07-01T02:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 am</span></time>
-        
-        
-        |   <a href="/blog/2016/07/01/sqljinghua/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h4>概述</h4>
-
-<p>iOS系统自带Core Data来进行持久化处理，而且Core Data可以使用图形化界面来创建对象，但是Core Data不是关系型数据库，对于Core Data来说比较擅长管理在设备上创建的数据持久化存储用户创建的对象，但是要处理大量的数据时就应该优先选择SQL关系型数据库来存储这些数据。
-Core Data在后台也是使用SQLite来存储数据的，但是开发人员不能直接访问这些数据，只能通过Core Data提供的API来操作，如果一旦人为的通过SQLite修改这些数据那么使用Core Data再次访问这些数据时就会发生错误。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/07/01/sqljinghua/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/22/socket-udp/">Socket Udp</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-22T00:00:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>12:00 am</span></time>
-        
-        
-        |   <a href="/blog/2016/06/22/socket-udp/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><hr />
-
-<p>layout: post
-title: &ldquo;Socket编程-UDP篇&rdquo;
-date: 2016-06-22 13:53:19 +0800
-comments: true
-categories: Senior
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏</p>
-
-<hr />
-
-<h3>1. UDP Socket编程</h3>
-
-<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
-
-<p>注意：Socket通信一定有要服务端和客户端。</p>
-
-<h4>1.1 UDP Socket客户端</h4>
-
-<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
-
-<p>笔者这里分成了四步：</p>
-
-<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
-第二步：调用sendto发送消息到服务器端
-第三步：调用recvfrom接收来自服务器端的消息
-第四步：调用close关闭socket
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/06/22/socket-udp/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -563,6 +544,10 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)/">iOS开发——常用功能代码集锦（友秀篇）</a>
       </li>
     
@@ -576,10 +561,6 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
     
       <li class="post">
         <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/14/ioszhuang-bi-pian-apobian-cheng/">iOS装逼篇——APO编程</a>
       </li>
     
   </ul>
@@ -624,8 +605,8 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 
 <section>
-    <h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
-    <a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
 
 
 <section>
