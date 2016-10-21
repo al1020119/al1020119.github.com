@@ -1886,6 +1886,21 @@ return newImage;
 }
 </code></pre>
 
+<h2>39.释放Timer宏</h2>
+
+<pre><code>/*
+ * 判断这个Timer不为nil则停止并释放
+ * 如果不先停止可能会导致crash
+ */
+#define WVSAFA_DELETE_TIMER(timer) { \
+    if (timer != nil) { \
+        [timer invalidate]; \
+        [timer release]; \
+        timer = nil; \
+    } \
+}
+</code></pre>
+
 <hr />
 
 <pre><code>Q Q：2211523682/790806573

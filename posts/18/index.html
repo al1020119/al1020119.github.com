@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一、NSSet、NSMutableSet集合的介绍 1）NSSet、NSMutableSet集合，元素是无序的，不能有重复的值。 2）用实例方法创建一个不可变集合对象 ">
+  <meta name="description" content="首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。 layoutSubviews在以下情况下会被调用： 1、init初始化不会触发layoutSubviews。
+2、addSubview会触发layoutSubviews。
+3、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +71,105 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-03-23T13:53:19+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/03/23/layoutsubviews%20drawrects/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-03-17T13:20:37+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:20 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此，</p>
+
+<p>Java代码可以依据任何对象来实现它的基本方法。Cocoa有多个根类，除了NSObject还有NSProxy等其他等级的根类。这只是部分原因，NSObject协议定义了一套所有的根类都可以实现的基础方法，这样在编码时就容易找到了。</p>
+
+<p>NSObject类遵循NSObject协议，这就是说，NSObject类实现了下面这些基础方法：</p>
+
+<pre><code>@interface NSObject  
+</code></pre>
+
+<p>NSProxy同样遵循NSObject协议：</p>
+
+<pre><code>@interface NSProxy      
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -432,105 +533,6 @@ EXC_BAD_ACCESS, objc_msgSend,</p>
   
     <footer>
       <a rel="full-article" href="/blog/2013/12/08/badaccess-error/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/11/26/xcode-settingfile/">Xcode配置文件</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-11-26T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2013/11/26/xcode-settingfile/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一个xcodeproj文件，其实是一个目录，它的格式大体上是这样的：</p>
-
-<p>这里写图片描述</p>
-
-<p>有的文件，比如user.mode1v3，在没有多个用户操作项目的时候，是没有的。Apple并没有提供.xcodeproj文件的文档，而且它也没有准备提供，更坑爹的是，xcodeproj的格式、内容都是随时可变的，比如一个Xcode版本上来，可能其目录就会变化，而没有任何通知。这可苦了那些为.xcodeproj开发每三方库的同学，不仅要一点一点摸索各个文件的内容，修改方法，还要忍受Apple没有任何通知地修改格式。</p>
-
-<p>Stackoverflow中这位就在抱怨苹果开发人员的傲慢：</p>
-
-<p><a href="http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580">http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580</a></p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/11/26/xcode-settingfile/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/11/11/changenumber/">不借助第三方变量修改两个值（四种方法）</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-11-11T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2013/11/11/changenumber/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>交换值</p>
-
-<ul>
-<li>1）算术运算；</li>
-<li>2）指针地址操作；</li>
-<li>3）位运算；</li>
-<li>4）栈实现。</li>
-</ul>
-
-
-<p>1） 算术运算</p>
-
-<pre><code>int a,b;
-a=10;b=12;
-a=b-a; //a=2;b=12
-b=b-a; //a=2;b=10
-a=b+a; //a=10;b=10
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/11/11/changenumber/">阅读全文😘</a>
     </footer>
   
 
