@@ -77,7 +77,7 @@ iOS初学者面对网上浩瀚的资料往往不知所措，为了让iOS初学�
 [OneV's Den](https://onevcat.com/#blog)| 王巍，喵神，知名iOS/Unity 开发者，现居日本，就职于LINE[微博@onevcat](http://weibo.com/onevcat?from=myfollow_group)
 [tany](https://github.com/12207480)| Github上有很多干货 [微博@yeBlueColor](http://weibo.com/u/5515296583?refer_flag=1001030101_&is_all=1)
 [微博@GitHubDaily](http://weibo.com/GitHubDaily?from=feed&loc=at&nick=GitHubDaily&is_all=1)| 专注于分享 GitHub 最新的优质开源项目
-[iCocos](http://al1020119.github.io/)| 个人（iCocos：曹理鹏）博文
+[iCocos](http://al1020119.github.io/)| 个人（iCocos）博文
 
 ## 四：学习网站
 

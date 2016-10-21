@@ -1778,6 +1778,19 @@ categories:
 	
 	}
 	
+##39.释放Timer宏
+
+	/*
+	 * 判断这个Timer不为nil则停止并释放
+	 * 如果不先停止可能会导致crash
+	 */
+	#define WVSAFA_DELETE_TIMER(timer) { \
+	    if (timer != nil) { \
+	        [timer invalidate]; \
+	        [timer release]; \
+	        timer = nil; \
+	    } \
+	}
 
  
 ===
