@@ -15,6 +15,9 @@ categories:
 
 
 
+<!--more-->
+
+
 ##一、安装Homebrew
 
 Homebrew简称brew，是Mac OSX上的软件包管理工具，能在Mac中方便的安装软件或者卸载软件。
