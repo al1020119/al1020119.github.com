@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="由于FMDB是建立在SQLite的之上的，所以你至少也该把这篇文章从头到尾读一遍。与此同时，把SQLite的文档页 加到你的书签中。自动引用计数（APC）还是手动内存管理呢？ 两种都行，FMDB会在编译的时候知道你是用的哪一种，然后进行相应处理。 使用方法 FMDB有三个主要的类 1. &hellip;">
+  <meta name="description" content="前言： 在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。 显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,49 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/02/fmdbzfenghuznag/">FMDB封装篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-02T22:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>10:59 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/07/02/fmdbzfenghuznag/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前言：</p>
+
+<p>在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。</p>
+
+<p>显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。于是就出现了MagicRecord这个对CoreData的封装库。一开始遇到这个库的时候，好用到几乎让我想把所有项目的数据库都换成CoreData了。两句话解决CoreData调用栈的初始化，一句话完成数据库版本升级和自动数据合并更新（虽然我们很少用到）。</p>
+
+<p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/02/fmdbzfenghuznag/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -500,46 +543,6 @@ ip协议对应于网络层
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/20/huanxingaojipian/">环信高级篇-透传和拓展</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-20T13:53:19+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/05/20/huanxingaojipian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>由于App开发中遇到了：送花和打赏，但是我们使用的即时通讯是环信，并没有直接的接口实现，而是需要我们使用里面比较特殊的技术：拓展和透传</p>
-
-<p>透传：传递用户头像和昵称
-拓展：实现非正常消息（打赏，送花，送礼物）</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/20/huanxingaojipian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/7">&larr; Older</a>
@@ -587,6 +590,10 @@ ip协议对应于网络层
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
       </li>
     
@@ -600,10 +607,6 @@ ip协议对应于网络层
     
       <li class="post">
         <a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">iOS装逼篇——函数式编程</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
       </li>
     
   </ul>

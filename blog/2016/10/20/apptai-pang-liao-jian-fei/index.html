@@ -362,6 +362,28 @@ Local : 将资源文件集成到安装包中的。
 <pre><code>最开始是在Bang的这篇文章中看到用ARC比用 MRC 会导致可执行文件大10%。起初我是不相信的，但是在我用 SDWebImage 的1.0 版测试之后，ARC 比 MRC 的可执行程序增加了14% +。所以MRC 比 ARC 编译成可执行文件之后更小，具体的测试方法可以去他的博客看，这里就不重复了。
 </code></pre>
 
+<h3>代码段</h3>
+
+<p>苹果官方文档 对二进制 __TEXT 段大小有限制：</p>
+
+<p><img src="/images/iosjianfei011.jpg" title="Caption" ></p>
+
+<p>代码实在瘦不下去怎么办？</p>
+
+<ul>
+<li>解决方案</li>
+</ul>
+
+
+<p>利用 rename_section 过审核，在Xcode中向 “Other Linker Flags” 中添加</p>
+
+<pre><code>-Wl,-rename_section,__TEXT,__cstring,__RODATA,__cstring
+-Wl,-rename_section,__TEXT,__const,__RODATA,__const
+-Wl,-rename_section,__TEXT,__objc_methname,__RODATA,__objc_methname
+-Wl,-rename_section,__TEXT,__objc_classname,__RODATA,__objc_classname
+-Wl,-rename_section,__TEXT,__objc_methtype,__RODATA,__objc_methtype
+</code></pre>
+
 <h3>总结</h3>
 
 <h6>先分析一下前面几个问题造成的原因：</h6>
@@ -503,6 +525,8 @@ github：https://github.com/al1020119
         <a class="basic-alignment left" href="/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)/" title="Previous Post: iOS开发——常用功能代码集锦（友秀篇）">&laquo; iOS开发——常用功能代码集锦（友秀篇）</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/" title="Next Post: 完虐Yii从这里开始😱😂">完虐Yii从这里开始😱😂 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -567,6 +591,10 @@ github：https://github.com/al1020119
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
       </li>
     
@@ -580,10 +608,6 @@ github：https://github.com/al1020119
     
       <li class="post">
         <a href="/blog/2016/10/14/ioszhuang-bi-pian-han-shu-shi-bian-cheng/">iOS装逼篇——函数式编程</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/14/ioszhuang-bi-pian-lian-shi-bian-cheng/">iOS装逼篇——链式编程</a>
       </li>
     
   </ul>
