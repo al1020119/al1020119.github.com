@@ -370,6 +370,28 @@ categories:
     最开始是在Bang的这篇文章中看到用ARC比用 MRC 会导致可执行文件大10%。起初我是不相信的，但是在我用 SDWebImage 的1.0 版测试之后，ARC 比 MRC 的可执行程序增加了14% +。所以MRC 比 ARC 编译成可执行文件之后更小，具体的测试方法可以去他的博客看，这里就不重复了。
 
 
+###代码段
+
+苹果官方文档 对二进制 __TEXT 段大小有限制：
+
+
+
+{% img /images/iosjianfei011.jpg Caption %}  
+
+代码实在瘦不下去怎么办？
+
++ 解决方案
+
+利用 rename_section 过审核，在Xcode中向 “Other Linker Flags” 中添加
+
+	-Wl,-rename_section,__TEXT,__cstring,__RODATA,__cstring
+	-Wl,-rename_section,__TEXT,__const,__RODATA,__const
+	-Wl,-rename_section,__TEXT,__objc_methname,__RODATA,__objc_methname
+	-Wl,-rename_section,__TEXT,__objc_classname,__RODATA,__objc_classname
+	-Wl,-rename_section,__TEXT,__objc_methtype,__RODATA,__objc_methtype
+
+
+
 ###总结
 
 
