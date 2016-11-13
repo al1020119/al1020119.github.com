@@ -48,7 +48,7 @@ Yii分基础班和高级版，区别就是，高级版里面自带数据库及�
 
 1. 安装基础版
 
-解压-拷贝到-XAMPP的安装目录/htdocs文件夹里面（路径地址：/Applications/XAMPP/htdocs），然后在浏览器输入：http://127.0.0.1/basic/web/（这里是你前面配置完成的情况下），就会出现这个界面：
+解压-拷贝到-XAMPP的安装目录/htdocs文件夹里面（路径地址：/Applications/XAMPP/htdocs），然后在浏览器输入：[http://127.0.0.1/basic/web/]()（这里是你前面配置完成的情况下），就会出现这个界面：
 
 {% img /images/Yiichushihua0003.png Caption %}  
 
