@@ -45,10 +45,10 @@ footer: true
  职位：iOS高级工程师
 
 
- 感兴趣的技术：iOS,Swift,H5
+ 感兴趣的技术：iOS（Objective-C，Swift）,H5，PHP
 
 
- 最近目标：深入学习iOS开发相关技术
+ 最近目标：深入学习iOS开发相关技术，深入学习JavaScript相关技术，学习并使用PHP实现前后端及API。
 
 
  座右铭：不战胜自己，何以改变未来！
@@ -86,18 +86,18 @@ footer: true
 
 ######技能：
 
-* 精通C，Objective-C，Swift开发
+* 熟悉C，熟练使用Objective-C，Swift进行iOS开发。
 
-* 熟悉android（java），C#，C++，
+* 熟悉H5开发，熟悉android（java），C#。
 
 * 最近在研究并学习
 	
 	- 算法与数据结构 
-	- 前端开发：H5+Css3+JavaScript，逆向工程，PHP
+	- 前后端开发：JavaScript，PHP
 
 ######后期规划：
 
-目标：全栈工程师！
+目标：后端管理层+iOS
 
 
 * 近十年除了提高自己吃饭的家伙，每年会研究一门语言。
