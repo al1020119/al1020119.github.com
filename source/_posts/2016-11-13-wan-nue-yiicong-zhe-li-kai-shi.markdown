@@ -6,7 +6,18 @@ comments: true
 categories: 
 ---
 
-前提条件
+
+
+######目录
+
+1. 简单配置概述
+2. Yii安装
+3. 数据库实战
+4. 附加福利
+
+
+
+######前提条件
 
 1. 安装：XAMPP、MAMPP，WAMPP。。。。
 2. 下载好了Yii Advanced
@@ -14,6 +25,9 @@ categories:
 
 
 ######这里大概说说一下上面几点及遇到的问题
+
+
+<!--more-->
 
 ####1：简单配置概述
 
@@ -42,8 +56,8 @@ Yii分基础班和高级版，区别就是，高级版里面自带数据库及�
 
 同基础版一样，拷贝到基础班的同级目录，然后在浏览器输入（这里分前后端）
 
-1. 前段：http://127.0.0.1/Yii/frontend/web/index.php
-2. 后端：http://127.0.0.1/advanced/backend/web 这里会自动跳到：http://127.0.0.1/advanced/backend/web/index.php?r=site%2Flogin
+1. 前段：[http://127.0.0.1/Yii/frontend/web/index.php2.]()	
+2. 后端：[http://127.0.0.1/advanced/backend/web]() 这里会自动跳到：[http://127.0.0.1/advanced/backend/web/index.php?r=site%2Flogin]()
 
 分别就会出现一个网站的前后端。
 
@@ -106,7 +120,7 @@ Yii分基础班和高级版，区别就是，高级版里面自带数据库及�
 2. Yii中所有方法默认一action开头，浏览器输入的时候可以不用输入action，直接输入后面的名字就可以
 3. Yii中大写会转成-，所以输入应该是get-list
 
-输入：http://127.0.0.1/advanced/backend/web/index.php?r=site&a=get-list，既可以查看我数据库对应的表。
+输入：[http://127.0.0.1/advanced/backend/web/index.php?r=site&a=get-list]()，既可以查看我数据库对应的表。
 
 ######3. 创建表（这里为了方便使用的是可视化，高手都用代码，哈哈）
 打开navicat，链接并打开WWWiCocos数据库，新建一张表，设置相关字段，然后保存为YiiDB
@@ -232,7 +246,7 @@ Yii分基础班和高级版，区别就是，高级版里面自带数据库及�
 
 然后在浏览器输入下面的地址执行CocosdbController中对应的index方法就可以看到如下界面，
 
-http://127.0.0.1/advanced/backend/web/index.php?r=cocosdb/index
+[http://127.0.0.1/advanced/backend/web/index.php?r=cocosdb/index]()
 
 {% img /images/Yiichushihua0014.png Caption %}  
 
