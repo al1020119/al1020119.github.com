@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-01T14:11:12+08:00</updated>
+  <updated>2016-12-01T17:15:16+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -401,6 +401,274 @@ engine  初始化模板引擎
 <li>配置数据库相关属性</li>
 </ol>
 
+
+<p>在这之前先回顾一下原生PHP什么实现这个操作。</p>
+
+<h6>链接数据库</h6>
+
+<p>面向对象</p>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+
+// 创建连接
+$conn = new mysqli($servername, $username, $password);
+
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+} 
+echo "连接成功";
+?&gt;
+</code></pre>
+
+<p>PDO实现</p>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+
+try {
+    $conn = new PDO("mysql:host=$servername;dbname=myDB", $username, $password);
+    echo "连接成功"; 
+}
+catch(PDOException $e)
+{
+    echo $e-&gt;getMessage();
+}
+?&gt;
+
+关闭
+
+$conn-&gt;close(); 
+$conn = null; 
+</code></pre>
+
+<h6>创建数据库</h6>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+
+// 创建连接
+$conn = new mysqli($servername, $username, $password);
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+}
+
+// 创建数据库
+$sql = "CREATE DATABASE myDB";
+if ($conn-&gt;query($sql) === TRUE) {
+    echo "数据库创建成功";
+} else {
+    echo "Error creating database: " . $conn-&gt;error;
+}
+
+$conn-&gt;close();
+?&gt; 
+</code></pre>
+
+<h6>创建表</h6>
+
+<pre><code> &lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "myDB";
+
+// 创建连接
+$conn = new mysqli($servername, $username, $password, $dbname);
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+}
+
+// 使用 sql 创建数据表
+$sql = "CREATE TABLE MyGuests (
+id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+firstname VARCHAR(30) NOT NULL,
+lastname VARCHAR(30) NOT NULL,
+email VARCHAR(50),
+reg_date TIMESTAMP
+)";
+
+if ($conn-&gt;query($sql) === TRUE) {
+    echo "Table MyGuests created successfully";
+} else {
+    echo "创建数据表错误: " . $conn-&gt;error;
+}
+
+$conn-&gt;close();
+?&gt; 
+</code></pre>
+
+<h6>插入数据库</h6>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "myDB";
+
+// 创建连接
+$conn = new mysqli($servername, $username, $password, $dbname);
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+}
+
+$sql = "INSERT INTO MyGuests (firstname, lastname, email)
+VALUES ('John', 'Doe', 'john@example.com')";
+
+if ($conn-&gt;query($sql) === TRUE) {
+    echo "新记录插入成功";
+} else {
+    echo "Error: " . $sql . "&lt;br&gt;" . $conn-&gt;error;
+}
+
+$conn-&gt;close();
+?&gt; 
+</code></pre>
+
+<h6>插入多条</h6>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "myDB";
+
+// 创建链接
+$conn = new mysqli($servername, $username, $password, $dbname);
+// 检查链接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+}
+
+$sql = "INSERT INTO MyGuests (firstname, lastname, email)
+VALUES ('John', 'Doe', 'john@example.com');";
+$sql .= "INSERT INTO MyGuests (firstname, lastname, email)
+VALUES ('Mary', 'Moe', 'mary@example.com');";
+$sql .= "INSERT INTO MyGuests (firstname, lastname, email)
+VALUES ('Julie', 'Dooley', 'julie@example.com')";
+
+if ($conn-&gt;multi_query($sql) === TRUE) {
+    echo "新记录插入成功";
+} else {
+    echo "Error: " . $sql . "&lt;br&gt;" . $conn-&gt;error;
+}
+
+$conn-&gt;close();
+?&gt; 
+</code></pre>
+
+<h6>查询数据</h6>
+
+<pre><code>&lt;?php
+$servername = "localhost";
+$username = "username";
+$password = "password";
+$dbname = "myDB";
+
+// 创建连接
+$conn = new mysqli($servername, $username, $password, $dbname);
+// 检测连接
+if ($conn-&gt;connect_error) {
+    die("连接失败: " . $conn-&gt;connect_error);
+}
+
+$sql = "SELECT id, firstname, lastname FROM MyGuests";
+$result = $conn-&gt;query($sql);
+
+if ($result-&gt;num_rows &gt; 0) {
+    // 输出每行数据
+    while($row = $result-&gt;fetch_assoc()) {
+        echo "&lt;br&gt; id: ". $row["id"]. " - Name: ". $row["firstname"]. " " . $row["lastname"];
+    }
+} else {
+    echo "0 个结果";
+}
+$conn-&gt;close();
+?&gt; 
+</code></pre>
+
+<h6>更新</h6>
+
+<pre><code>&lt;?php
+$con=mysqli_connect("localhost","username","password","database");
+// 检测连接
+if (mysqli_connect_errno())
+{
+    echo "连接失败: " . mysqli_connect_error();
+}
+
+mysqli_query($con,"UPDATE Persons SET Age=36
+WHERE FirstName='Peter' AND LastName='Griffin'");
+
+mysqli_close($con);
+?&gt;
+</code></pre>
+
+<h6>删除</h6>
+
+<pre><code>&lt;?php
+$con=mysqli_connect("localhost","username","password","database");
+// 检测连接
+if (mysqli_connect_errno())
+{
+    echo "连接失败: " . mysqli_connect_error();
+}
+
+mysqli_query($con,"DELETE FROM Persons WHERE LastName='Griffin'");
+
+mysqli_close($con);
+?&gt;
+</code></pre>
+
+<h6>ODBC</h6>
+
+<p>下面的实例展示了如何首先创建一个数据库连接，接着创建一个结果集，然后在 HTML 表格中显示数据。</p>
+
+<pre><code>&lt;html&gt;
+&lt;body&gt;
+
+&lt;?php
+$conn=odbc_connect('northwind','','');
+if (!$conn)
+{
+    exit("连接失败: " . $conn);
+}
+
+$sql="SELECT * FROM customers";
+$rs=odbc_exec($conn,$sql);
+
+if (!$rs)
+{
+    exit("SQL 语句错误");
+}
+echo "&lt;table&gt;&lt;tr&gt;";
+echo "&lt;th&gt;Companyname&lt;/th&gt;";
+echo "&lt;th&gt;Contactname&lt;/th&gt;&lt;/tr&gt;";
+
+while (odbc_fetch_row($rs))
+{
+    $compname=odbc_result($rs,"CompanyName");
+    $conname=odbc_result($rs,"ContactName");
+    echo "&lt;tr&gt;&lt;td&gt;$compname&lt;/td&gt;";
+    echo "&lt;td&gt;$conname&lt;/td&gt;&lt;/tr&gt;";
+}
+odbc_close($conn);
+echo "&lt;/table&gt;";
+?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
 
 <h6>在根目录的database.php中配置对应的数据信息</h6>
 
