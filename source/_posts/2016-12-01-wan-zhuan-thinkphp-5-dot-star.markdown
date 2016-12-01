@@ -18,6 +18,12 @@ categories:
 8. 模型基本使用
 9. 总结：（ThinkPhp5.+ <-->ThinkPhp3.+）
 
+
+
+<!--more-->
+
+
+
 ### 下载安装
 
 ###### 一、官网下载安装
@@ -185,7 +191,7 @@ ThinkPhp5的入口文件
 	}
 
 
-其中return返回的数据，正好是我们前面输入：http://localhost/tp5/public/所看到对应的数据。
+其中return返回的数据，正好是我们前面输入：[http://localhost/tp5/public/](http://localhost/tp5/public/)所看到对应的数据。
 
 
 下面开始简单的项目文件配置（根据个人习惯而定）。
