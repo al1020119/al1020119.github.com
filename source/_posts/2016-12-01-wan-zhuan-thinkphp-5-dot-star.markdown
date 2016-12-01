@@ -391,6 +391,62 @@ admin：
 
 	Db::connect('mysql://root:1234@127.0.0.1:3306/thinkphp#utf8');
 
+####验证连接并打印数据
+
+
+	首先必须清楚的明白之前在ThinkPhp3中的单字母函数，ThinkPhp5中已经取消了，比如M(),D()等，所以我们必须忘掉之前的这种风格。
+	
+这里配置好了数据库之后，使用对应的函数来验证连接，并且打印相关信息。
+
+ThinkPhp3的方式
+
+        $db = M('tp_user'); 
+        print("<pre>"); // 格式化输出数组
+        var_dump($db);
+        print("</pre>");
+
+ThinkPhp5的方式
+
+        print("<pre>"); // 格式化输出数组
+        var_dump(Db::table('tp_user')->select());
+        // Db::name('user')->select(); // 或者
+        print("</pre>");
+
+
+这样就可以打印出数据库相关的信息如下：
+	
+	array(2) {
+	  [0]=>
+	  array(5) {
+	    ["id"]=>
+	    int(1)
+	    ["uname"]=>
+	    string(2) "56"
+	    ["upwd"]=>
+	    string(2) "65"
+	    ["ip"]=>
+	    string(3) "645"
+	    ["last_time"]=>
+	    int(564)
+	  }
+	  [1]=>
+	  array(5) {
+	    ["id"]=>
+	    int(2)
+	    ["uname"]=>
+	    string(3) "234"
+	    ["upwd"]=>
+	    string(3) "wer"
+	    ["ip"]=>
+	    string(3) "221"
+	    ["last_time"]=>
+	    int(23)
+	  }
+	}
+
+
+
+
 ###基本使用
 
 配置了数据库连接信息后，我们就可以直接使用数据库运行原生SQL操作了，支持query（查询操作）和execute（写入操作）方法，并且支持参数绑定。
@@ -798,8 +854,43 @@ config是一个单独的数据库配置，支持数组和字符串，也可以�
 
 其他高级操作参考官方手册：[模型操作](http://www.kancloud.cn/manual/thinkphp5/135186)
 
+####MVC思想
 
-### 入门总结
+1. 连接并获取数据相关数据
+
+	    $result = Db::table('tp_user')->find();
+
+	    //$result = Db::table('tp_user')->where('upwd', 'wer')->find();
+	        
+		//var_dump(Db::select(function ($query)
+		//{
+		//   $query->table('tp_user')->where('id', 2);
+		//
+		//}));
+		
+2. 将获取到的数据库数据赋值给View（注意这里使用assign,thin3中是display）
+ 
+        $this->assign('result',$result);
+        return $this->fetch();
+        
+3. 在View中拿到数据显示
+
+	    <!DOCTYPE html>
+	    <html>
+	    <head>
+	      <meta charset="UTF-8">
+	      <title>Insert title here</title>
+	    </head>
+	    <body>
+	      {$result.id}--{$result.data}
+	    </body>
+	    </html>
+
+
+一个最简单的MVC模式就实现了，其实后面开发和实战中基本上就是讲这个实现扩大，然后做相应的逻辑或者细节处理。
+
+
+### 总结
 
 
 ####ThinkPHP5.* 与 ThinkPHP3.* 之间的使用差异
