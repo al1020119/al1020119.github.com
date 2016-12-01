@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-01T00:37:22+08:00</updated>
+  <updated>2016-12-01T14:04:17+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -483,6 +483,61 @@ return [
 <h6>或者使用字符串方式：</h6>
 
 <pre><code>Db::connect('mysql://root:1234@127.0.0.1:3306/thinkphp#utf8');
+</code></pre>
+
+<h4>验证连接并打印数据</h4>
+
+<pre><code>首先必须清楚的明白之前在ThinkPhp3中的单字母函数，ThinkPhp5中已经取消了，比如M(),D()等，所以我们必须忘掉之前的这种风格。
+</code></pre>
+
+<p>这里配置好了数据库之后，使用对应的函数来验证连接，并且打印相关信息。</p>
+
+<p>ThinkPhp3的方式</p>
+
+<pre><code>    $db = M('tp_user'); 
+    print("&lt;pre&gt;"); // 格式化输出数组
+    var_dump($db);
+    print("&lt;/pre&gt;");
+</code></pre>
+
+<p>ThinkPhp5的方式</p>
+
+<pre><code>    print("&lt;pre&gt;"); // 格式化输出数组
+    var_dump(Db::table('tp_user')-&gt;select());
+    // Db::name('user')-&gt;select(); // 或者
+    print("&lt;/pre&gt;");
+</code></pre>
+
+<p>这样就可以打印出数据库相关的信息如下：</p>
+
+<pre><code>array(2) {
+  [0]=&gt;
+  array(5) {
+    ["id"]=&gt;
+    int(1)
+    ["uname"]=&gt;
+    string(2) "56"
+    ["upwd"]=&gt;
+    string(2) "65"
+    ["ip"]=&gt;
+    string(3) "645"
+    ["last_time"]=&gt;
+    int(564)
+  }
+  [1]=&gt;
+  array(5) {
+    ["id"]=&gt;
+    int(2)
+    ["uname"]=&gt;
+    string(3) "234"
+    ["upwd"]=&gt;
+    string(3) "wer"
+    ["ip"]=&gt;
+    string(3) "221"
+    ["last_time"]=&gt;
+    int(23)
+  }
+}
 </code></pre>
 
 <h3>基本使用</h3>
@@ -977,7 +1032,45 @@ $user-&gt;where('name', 'thinkphp')
 
 <p>其他高级操作参考官方手册：<a href="http://www.kancloud.cn/manual/thinkphp5/135186">模型操作</a></p>
 
-<h3>入门总结</h3>
+<h4>MVC思想</h4>
+
+<ol>
+<li><p>连接并获取数据相关数据</p>
+
+<pre><code> $result = Db::table('tp_user')-&gt;find();
+
+ //$result = Db::table('tp_user')-&gt;where('upwd', 'wer')-&gt;find();
+
+ //var_dump(Db::select(function ($query)
+ //{
+ //   $query-&gt;table('tp_user')-&gt;where('id', 2);
+ //
+ //}));
+</code></pre></li>
+<li><p>将获取到的数据库数据赋值给View（注意这里使用assign,thin3中是display）</p>
+
+<pre><code> $this-&gt;assign('result',$result);
+ return $this-&gt;fetch();
+</code></pre></li>
+<li><p>在View中拿到数据显示</p>
+
+<pre><code> &lt;!DOCTYPE html&gt;
+ &lt;html&gt;
+ &lt;head&gt;
+   &lt;meta charset="UTF-8"&gt;
+   &lt;title&gt;Insert title here&lt;/title&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+   {$result.id}--{$result.data}
+ &lt;/body&gt;
+ &lt;/html&gt;
+</code></pre></li>
+</ol>
+
+
+<p>一个最简单的MVC模式就实现了，其实后面开发和实战中基本上就是讲这个实现扩大，然后做相应的逻辑或者细节处理。</p>
+
+<h3>总结</h3>
 
 <h4>ThinkPHP5.<em> 与 ThinkPHP3.</em> 之间的使用差异</h4>
 
