@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！ 1:移除ruby镜像（天朝的网你们懂的） $ gem sources --remove https://rubygems.org/ ">
+  <meta name="description" content="一. 概要 在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,218 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/02/15/xiang-ce-shen-jiu/">相册深究</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-02-15T13:38:22+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:38 pm</span></time>
+        
+        
+        |   <a href="/blog/2015/02/15/xiang-ce-shen-jiu/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>一. 概要</h3>
+
+<p>在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS 应用发展步伐以及代码设计原则但确实强大的框架，考虑到 iOS7 仍占有不少的渗透率，因此 AssetsLibrary 也是本文重点介绍的部分。而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架，一个可以让应用更好地与设备照片库对接的框架，文末也会介绍一下这个框架。</p>
+
+<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
+
+<h3>二. AssetsLibrary 组成介绍</h3>
+
+<p>AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/02/15/xiang-ce-shen-jiu/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/">函数&amp;方法的奥秘</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-02-08T23:54:30+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:54 pm</span></time>
+        
+        
+        |   <a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先问个问题，你知道函数与方法的区别吗？</p>
+
+<p>什么？没有区别？那你就out了！</p>
+
+<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
+直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
+
+<h5>初始化函数</h5>
+
+<pre><code>- (void)init
+{
+…
+} 
+…
+</code></pre>
+
+<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
+哦？原来函数跟方法是不一样的。</p>
+
+<h2>函数</h2>
+
+<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
+
+<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
+{
+  // Code here
+}
+一个函数声明与调用的例子：
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+int main (int argc, const char *argv[])
+{
+  int x = 2;
+  int y = 3;
+  // 调用函数
+  int result = plus(x, y);
+
+  return 0;
+}
+</code></pre>
+
+<h2>方法</h2>
+
+<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
+
+<pre><code>@implementation Person
+
+// 实现方法
+- (void)setName:(NSString *)name
+{
+  //code here
+}
+
+@end
+
+int main (int argc, const char *argv[])
+{
+  // 使用对象调用方法
+  [[Person new] setName:@"zhenby"];
+
+  return 0;
+}
+</code></pre>
+
+<hr />
+
+<h1>有什么不同</h1>
+
+<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
+
+<h3>Objective-C中的函数</h3>
+
+<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
+知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
+
+<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
+
+<pre><code>// 函数原型
+int plus(int, int);
+/*
+ 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
+ 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
+ */
+long timestamp(void);
+
+
+// 实现函数
+int plus(int x, int y)
+{
+  return x * y;
+}
+
+long timestamp()
+{
+  // 返回当前的时间戳
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+</code></pre>
+
+<h3>Objective-C中的方法</h3>
+
+<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
+
+<pre><code>@implementation Test
+
+- (long)timestamp
+{
+  NSLog(@"in timestamp");
+  // 返回当前时间戳   
+    return (long)[[NSDate date] timeIntervalSince1970];
+}
+
+@end
+
+// 调用 timestamp 方法
+Test *test = [Test new];
+[test timestamp];
+[test release];
+
+//----------------------------------------------------------
+
+/*
+ 上面 [test timestamp] 这句代码就相当于以下的函数调用，
+ 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
+ */
+#import &lt;objc/message.h&gt;
+
+objc_msgSend(test, @selector(timestamp));
+</code></pre>
+
+<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -540,115 +752,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/11/14/fang-fa-huan-cun/">方法缓存</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-11-14T17:42:41+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:42 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/11/14/fang-fa-huan-cun/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
-
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#105;&#108;&#x74;&#111;&#x3a;&#x6d;&#97;&#106;&#x69;&#97;&#x30;&#51;&#64;&#x6d;&#x65;&#x69;&#116;&#x75;&#x61;&#x6e;&#46;&#x63;&#111;&#109;">&#x6d;&#x61;&#106;&#105;&#x61;&#48;&#51;&#64;&#109;&#101;&#105;&#x74;&#x75;&#97;&#110;&#46;&#99;&#x6f;&#109;</a> ）。</p>
-
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
-
-<ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/11/14/fang-fa-huan-cun/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-11-05T17:44:16+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:44 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>一个控件从外在特征来说，主要是封装这几点：</p>
-
-<ul>
-<li>交互方式</li>
-<li>显示样式</li>
-<li>数据使用</li>
-</ul>
-
-
-<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
-
-<ul>
-<li>灵活性</li>
-<li>低耦合</li>
-<li>易拓展</li>
-<li>易维护</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/16">&larr; Older</a>
@@ -680,6 +783,7 @@
 <li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
 <li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
 <li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
 <li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
 <li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
 <li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
@@ -696,6 +800,14 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
       </li>
     
@@ -705,14 +817,6 @@
     
       <li class="post">
         <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/16/ioskai-fa-chang-yong-gong-neng-dai-ma-ji-jin-(you-xiu-pian-)/">iOS开发——常用功能代码集锦（友秀篇）</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/14/ioszhuang-bi-pian-xiang-ying-shi-bian-cheng/">iOS装逼篇——响应式编程</a>
       </li>
     
   </ul>

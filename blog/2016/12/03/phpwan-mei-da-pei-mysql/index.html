@@ -1,0 +1,985 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>PHP完美搭配之Mysql初探 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="数据库概念 什么是数据库 数据库就是用来存储和管理数据的仓库！ 数据库存储数据的优先： 可存储大量数据； 方便检索； 保持数据的一致性、完整性； 安全，可共享； 通过组合分析，可产生新数据。 数据库的发展历程 没有数据库，使用磁盘文件存储数据； 层次结构模型数据库； 网状结构模型数据库； &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">PHP完美搭配之Mysql初探</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-12-03T13:36:37+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:36 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>数据库概念</h3>
+
+<h6>什么是数据库</h6>
+
+<p>数据库就是用来存储和管理数据的仓库！</p>
+
+<p>数据库存储数据的优先：</p>
+
+<pre><code>可存储大量数据；
+
+ 方便检索；
+
+ 保持数据的一致性、完整性；
+
+ 安全，可共享；
+
+ 通过组合分析，可产生新数据。
+</code></pre>
+
+<p> <!--more--></p>
+
+<h6>数据库的发展历程</h6>
+
+<p> 没有数据库，使用磁盘文件存储数据；</p>
+
+<pre><code> 层次结构模型数据库；
+
+ 网状结构模型数据库；
+
+ 关系结构模型数据库：
+
+ 使用二维表格来存储数据；
+
+ 关系-对象模型数据库；
+
+ MySQL就是关系型数据库！
+</code></pre>
+
+<h6>常见数据库</h6>
+
+<pre><code> Oracle（神喻）：甲骨文（最高！）；
+
+ DB2：IBM；
+
+ SQ Server：微软；
+
+ Sybase：赛尔斯；
+
+ MySQL：甲骨文；
+</code></pre>
+
+<h6>理解数据库</h6>
+
+<pre><code> RDBMS = 管理员（manager）+仓库（database）
+
+ database = N个table
+</code></pre>
+
+<p> table：</p>
+
+<pre><code>表结构：定义表的列名和列类型！
+表记录：一行一行的记录！
+</code></pre>
+
+<p>我们现在所说的数据库泛指“关系型数据库管理系统（RDBMS - Relationa database management system）”，即“数据库服务器”。</p>
+
+<p>当我们安装了数据库服务器后，就可以在数据库服务器中创建数据库，每个数据库中还可以包含多张表。</p>
+
+<pre><code>表头(header): 每一列的名称;
+列(row): 具有相同数据类型的数据的集合;
+行(col): 每一行用来描述某个人/物的具体信息;
+值(value): 行的具体信息, 每个值必须与该列的数据类型相同;
+键(key): 表中用来识别某个特定的人\物的方法, 键的值在当前列中具有唯一性。
+</code></pre>
+
+<p>数据库表就是一个多行多列的表格。在创建表时，需要指定表的列数，以及列名称，列类型等信息。而不用指定表格的行数，行数是没有上限的</p>
+
+<h6>应用程序与数据库</h6>
+
+<p>　　应用程序使用数据库完成对数据的存储！</p>
+
+<h6>启动和关闭mysql服务器</h6>
+
+<pre><code> 启动：net start mysql；
+
+ 关闭：net stop mysql；
+</code></pre>
+
+<h6>客户端登录退出mysql</h6>
+
+<p>在启动MySQL服务器后，我们需要使用管理员用户登录MySQL服务器，然后来对服务器进行操作。</p>
+
+<h6>登录：mysq -u root -p 123 -h localhost；</h6>
+
+<pre><code>-u：后面的root是用户名，这里使用的是超级管理员root；
+-p：后面的123是密码，这是在安装MySQL时就已经指定的密码；
+-h：后面给出的localhost是服务器主机名，它是可以省略的，例如：mysq -u root -p 123；
+</code></pre>
+
+<h6>退出：quit或exit；</h6>
+
+<h3>概述</h3>
+
+<h6>什么是SQL</h6>
+
+<p>SQL（Structured Query Language）是“结构化查询语言”，它是对关系型数据库的操作语言。它可以应用到所有关系型数据库中，例如：MySQL、Oracle、SQ Server等。SQ标准（ANSI/ISO）有：</p>
+
+<pre><code> SQL-92：1992年发布的SQL语言标准；
+
+ SQL:1999：1999年发布的SQL语言标签；
+
+ SQL:2003：2003年发布的SQL语言标签；
+</code></pre>
+
+<p>这些标准就与JDK的版本一样，在新的版本中总要有一些语法的变化。不同时期的数据库对不同标准做了实现。</p>
+
+<p>虽然SQL可以用在所有关系型数据库中，但很多数据库还都有标准之后的一些语法，我们可以称之为“方言”。例如MySQL中的LIMIT语句就是MySQL独有的方言，其它数据库都不支持！当然，Oracle或SQ Server都有自己的方言。</p>
+
+<h3>语法要求</h3>
+
+<pre><code> SQL语句可以单行或多行书写，以分号结尾；
+
+ 可以用空格和缩进来来增强语句的可读性；
+
+ 关键字不区别大小写，建议使用大写；
+</code></pre>
+
+<h3>分类</h3>
+
+<pre><code> DDL（Data Definition Language）：数据定义语言，用来定义数据库对象：库、表、列等；
+
+ DML（Data Manipulation Language）：数据操作语言，用来定义数据库记录（数据）；
+
+ DCL（Data Contro Language）：数据控制语言，用来定义访问权限和安全级别；
+
+ DQL（Data Query Language）：数据查询语言，用来查询记录（数据）。
+</code></pre>
+
+<h3>DDL</h3>
+
+<h6>基本操作</h6>
+
+<p> 查看所有数据库名称：</p>
+
+<pre><code> SHOW DATABASES；　
+</code></pre>
+
+<p> 切换数据库：</p>
+
+<pre><code> USE mydb1，切换到mydb1数据库；
+</code></pre>
+
+<h6>操作数据库</h6>
+
+<p> 创建数据库：</p>
+
+<pre><code> CREATE DATABASE [IF NOT EXISTS] mydb1；
+</code></pre>
+
+<p>创建数据库，例如：</p>
+
+<pre><code>CREATE DATABASE mydb1，创建一个名为mydb1的数据库。如果这个数据已经存在，那么会报错。例如CREATE DATABASE IF NOT EXISTS mydb1，在名为mydb1的数据库不存在时创建该库，这样可以避免报错。
+</code></pre>
+
+<p> 删除数据库：</p>
+
+<pre><code> DROP DATABASE [IF EXISTS] mydb1；
+</code></pre>
+
+<p>删除数据库，例如：</p>
+
+<pre><code>DROP DATABASE mydb1，删除名为mydb1的数据库。如果这个数据库不存在，那么会报错。DROP DATABASE IF EXISTS mydb1，就算mydb1不存在，也不会的报错。
+</code></pre>
+
+<p> 修改数据库编码：</p>
+
+<pre><code> ALTER DATABASE mydb1 CHARACTER SET utf8
+</code></pre>
+
+<p>修改数据库mydb1的编码为utf8。注意，在MySQL中所有的UTF-8编码都不能使用中间的“-”，即UTF-8要书写为UTF8。</p>
+
+<h3>数据类型</h3>
+
+<p>MySQL有三大类数据类型, 分别为数字、日期\时间、字符串, 这三大类中又更细致的划分了许多子类型:</p>
+
+<h6>数字类型</h6>
+
+<pre><code>    整数: tinyint、smallint、mediumint、int、bigint
+    浮点数: float、double、real、decimal
+</code></pre>
+
+<h6>日期和时间:</h6>
+
+<pre><code>    date、time、datetime、timestamp、year
+</code></pre>
+
+<h6>字符串类型</h6>
+
+<pre><code>    字符串: char、varchar
+    文本: tinytext、text、mediumtext、longtext
+    二进制(可用来存储图片、音乐等): tinyblob、blob、mediumblob、longblob
+</code></pre>
+
+<p>MySQL与Java一样，也有数据类型。MySQL中数据类型主要应用在列上。</p>
+
+<p>常用类型：</p>
+
+<pre><code> int：整型
+
+ double：浮点型，例如double(5,2)表示最多5位，其中必须有2位小数，即最大值为999.99；
+
+ decimal：泛型型，在表单钱方面使用该类型，因为不会出现精度缺失问题；
+
+ char：固定长度字符串类型；
+
+ varchar：可变长度字符串类型；
+
+ text：字符串类型；
+
+ blob：字节类型；
+
+ date：日期类型，格式为：yyyy-MM-dd；
+
+ time：时间类型，格式为：hh:mm:ss
+
+ timestamp：时间戳类型；
+</code></pre>
+
+<h3>组成</h3>
+
+<p>与常规的脚本语言类似, MySQ 也具有一套对字符、单词以及特殊符号的使用规定, MySQ 通过执行 SQ 脚本来完成对数据库的操作, 该脚本由一条或多条MySQL语句(SQL语句 + 扩展语句)组成, 保存时脚本文件后缀名一般为 .sql。在控制台下, MySQ 客户端也可以对语句进行单句的执行而不用保存为.sql文件。</p>
+
+<h3>标识符</h3>
+
+<p>标识符用来命名一些对象, 如数据库、表、列、变量等, 以便在脚本中的其他地方引用。MySQL标识符命名规则稍微有点繁琐, 这里我们使用万能命名规则: 标识符由字母、数字或下划线(_)组成, 且第一个字符必须是字母或下划线。</p>
+
+<p>对于标识符是否区分大小写取决于当前的操作系统, Windows下是不敏感的, 但对于大多数 linux\unix 系统来说, 这些标识符大小写是敏感的。</p>
+
+<h6>关键字:</h6>
+
+<pre><code>MySQL的关键字众多, 这里不一一列出, 在学习中学习。 这些关键字有自己特定的含义, 尽量避免作为标识符。
+</code></pre>
+
+<h6>语句:</h6>
+
+<pre><code>MySQL语句是组成MySQL脚本的基本单位, 每条语句能完成特定的操作, 他是由 SQ 标准语句 + MySQ 扩展语句组成。
+</code></pre>
+
+<h6>函数:</h6>
+
+<pre><code>MySQL函数用来实现数据库操作的一些高级功能, 这些函数大致分为以下几类: 字符串函数、数学函数、日期时间函数、搜索函数、加密函数、信息函数。
+</code></pre>
+
+<h3>操作</h3>
+
+<h6>登录到MySQL</h6>
+
+<p>当 MySQ 服务已经运行时, 我们可以通过MySQL自带的客户端工具登录到MySQL数据库中, 首先打开命令提示符, 输入以下格式的命名:</p>
+
+<p>mysq -h 主机名 -u 用户名 -p</p>
+
+<pre><code>-h : 该命令用于指定客户端所要登录的MySQL主机名, 登录当前机器该参数可以省略;
+-u : 所要登录的用户名;
+-p : 告诉服务器将会使用一个密码来登录, 如果所要登录的用户名密码为空, 可以忽略此选项。
+</code></pre>
+
+<p>以登录刚刚安装在本机的MySQL数据库为例, 在命令行下输入 mysq -u root -p 按回车确认, 如果安装正确且MySQL正在运行, 会得到以下响应:</p>
+
+<pre><code>Enter password:
+</code></pre>
+
+<blockquote><p>若密码存在, 输入密码登录, 不存在则直接按回车登录, 按照本文中的安装方法, 默认 root 账号是无密码的。登录成功后你将会看到 Welecome to the MySQ monitor&hellip; 的提示语。</p></blockquote>
+
+<p>然后命令提示符会一直以 mysql> 加一个闪烁的光标等待命令的输入, 输入 exit 或 quit 退出登录。</p>
+
+<h6>创建一个数据库</h6>
+
+<p>使用 create database 语句可完成对数据库的创建, 创建命令的格式如下:</p>
+
+<pre><code>create database 数据库名 [其他选项];
+</code></pre>
+
+<p>例如我们需要创建一个名为 samp_db 的数据库, 在命令行下执行以下命令:</p>
+
+<pre><code>create database samp_db character set gbk;
+</code></pre>
+
+<h6>选择所要操作的数据库</h6>
+
+<p>要对一个数据库进行操作, 必须先选择该数据库, 否则会提示错误:</p>
+
+<pre><code>ERROR 1046(3D000): No database selected
+</code></pre>
+
+<p>两种方式对数据库进行使用的选择:</p>
+
+<p>一: 在登录数据库时指定, 命令: mysq -D 所选择的数据库名 -h 主机名 -u 用户名 -p</p>
+
+<pre><code>例如登录时选择刚刚创建的数据库: mysq -D samp_db -u root -p
+</code></pre>
+
+<p>二: 在登录后使用 use 语句指定, 命令: use 数据库名;</p>
+
+<pre><code>use 语句可以不加分号, 执行 use samp_db 来选择刚刚创建的数据库, 选择成功后会提示: Database changed
+</code></pre>
+
+<h6>创建数据库表</h6>
+
+<p>使用 create table 语句可完成对表的创建, create table 的常见形式:</p>
+
+<pre><code>create table 表名称(列声明);
+</code></pre>
+
+<p>以创建 students 表为例, 表中将存放 学号(id)、姓名(name)、性别(sex)、年龄(age)、联系电话(tel) 这些内容:</p>
+
+<pre><code>create table students
+（
+    id int unsigned not nul auto_increment primary key,
+    name char(8) not null,
+    sex char(4) not null,
+    age tinyint unsigned not null,
+    te char(13) nul default "-"
+);
+</code></pre>
+
+<h6>向表中插入数据</h6>
+
+<p>insert 语句可以用来将一行或多行数据插到数据库表中, 使用的一般形式如下:</p>
+
+<pre><code>insert [into] 表名 [(列名1, 列名2, 列名3, ...)] values (值1, 值2, 值3, ...);
+</code></pre>
+
+<p>其中 [] 内的内容是可选的, 例如, 要给 samp_db 数据库中的 students 表插入一条记录, 执行语句:</p>
+
+<pre><code>insert into students values(NULL, "王刚", "男", 20, "13811371377");
+</code></pre>
+
+<h6>查询表中的数据</h6>
+
+<p>select 语句常用来根据一定的查询规则到数据库中获取数据, 其基本的用法为:</p>
+
+<pre><code>select 列名称 from 表名称 [查询条件];
+</code></pre>
+
+<p>例如要查询 students 表中所有学生的名字和年龄, 输入语句 select name, age from students; 执行结果如下:</p>
+
+<pre><code>mysql&gt; select name, age from students;
++--------+-----+
+| name   | age |
++--------+-----+
+| 王刚   |  20 |
+| 孙丽华 |  21 |
+| 王永恒 |  23 |
+| 郑俊杰 |  19 |
+| 陈芳   |  22 |
+| 张伟朋 |  21 |
++--------+-----+
+6 rows in set (0.00 sec)
+</code></pre>
+
+<p>按特定条件查询:</p>
+
+<pre><code>where 关键词用于指定查询条件, 用法形式为: select 列名称 from 表名称 where 条件;
+
+以查询所有性别为女的信息为例, 输入查询语句: select * from students where sex="女";
+</code></pre>
+
+<h6>更新表中的数据</h6>
+
+<p>update 语句可用来修改表中的数据, 基本的使用形式为:</p>
+
+<pre><code>update 表名称 set 列名称=新值 where 更新条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>将id为5的手机号改为默认的"-": update students set tel=default where id=5;
+
+将所有人的年龄增加1: update students set age=age+1;
+
+将手机号为 13288097888 的姓名改为 "张伟鹏", 年龄改为 19: update students set name="张伟鹏", age=19 where tel="13288097888";
+</code></pre>
+
+<h6>删除表中的数据</h6>
+
+<p>delete 语句用于删除表中的数据, 基本用法为:</p>
+
+<pre><code>delete from 表名称 where 删除条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>删除id为2的行: delete from students where id=2;
+
+删除所有年龄小于21岁的数据: delete from students where age&lt;20;
+
+删除表中的所有数据: delete from students;
+</code></pre>
+
+<h3>创建后表的修改</h3>
+
+<p>alter table 语句用于创建后对表的修改, 基础用法如下:</p>
+
+<h6>添加列</h6>
+
+<pre><code>基本形式: alter table 表名 add 列名 列数据类型 [after 插入位置];
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>在表的最后追加列 address: alter table students add address char(60);
+
+在名为 age 的列后插入列 birthday: alter table students add birthday date after age;
+</code></pre>
+
+<h6>修改列</h6>
+
+<pre><code>基本形式: alter table 表名 change 列名称 列新名称 新数据类型;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>将表 te 列改名为 telphone: alter table students change te telphone char(13) default "-";
+
+将 name 列的数据类型改为 char(16): alter table students change name name char(16) not null;
+</code></pre>
+
+<h6>删除列</h6>
+
+<pre><code>基本形式: alter table 表名 drop 列名称;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 birthday 列: alter table students drop birthday;
+</code></pre>
+
+<h6>重命名表</h6>
+
+<pre><code>基本形式: alter table 表名 rename 新表名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>重命名 students 表为 workmates: alter table students rename workmates;
+</code></pre>
+
+<h6>删除整张表</h6>
+
+<p>基本形式: drop table 表名;</p>
+
+<pre><code>示例: 删除 workmates 表: drop table workmates;
+</code></pre>
+
+<p>删除整个数据库</p>
+
+<pre><code>基本形式: drop database 数据库名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 samp_db 数据库: drop database samp_db;
+</code></pre>
+
+<h3>附录</h3>
+
+<h6>修改 root 用户密码</h6>
+
+<p>按照本文的安装方式, root 用户默认是没有密码的, 重设 root 密码的方式也较多, 这里仅介绍一种较常用的方式。</p>
+
+<p>使用 mysqladmin 方式:</p>
+
+<pre><code>打开命令提示符界面, 执行命令: mysqladmin -u root -p password 新密码
+</code></pre>
+
+<p>执行后提示输入旧密码完成密码修改, 当旧密码为空时直接按回车键确认即可。</p>
+
+<h3>总结：</h3>
+
+<p>1、说明：创建数据库</p>
+
+<pre><code>CREATE DATABASE database-name
+</code></pre>
+
+<p>2、说明：删除数据库</p>
+
+<pre><code>drop database dbname
+</code></pre>
+
+<p>3、说明：备份sq server</p>
+
+<p>&mdash; 创建 备份数据的 device</p>
+
+<pre><code>USE master
+EXEC sp_addumpdevice 'disk', 'testBack', 'c:\mssql7backup\MyNwind_1.dat'
+</code></pre>
+
+<p>&mdash; 开始 备份</p>
+
+<pre><code>BACKUP DATABASE pubs TO testBack
+</code></pre>
+
+<p>4、说明：创建新表</p>
+
+<pre><code>create table tabname(col1 type1 [not null] [primary key],col2 type2 [not null],..)
+</code></pre>
+
+<p>根据已有的表创建新表：</p>
+
+<pre><code>A：create table tab_new like tab_old (使用旧表创建新表)
+B：create table tab_new as select col1,col2… from tab_old definition only
+</code></pre>
+
+<p>5、说明：删除新表</p>
+
+<pre><code>drop table tabname
+</code></pre>
+
+<p>6、说明：增加一个列</p>
+
+<pre><code>Alter table tabname add column co type
+
+注：列增加后将不能删除。DB2中列加上后数据类型也不能改变，唯一能改变的是增加varchar类型的长度。
+</code></pre>
+
+<p>7、说明：添加主键： Alter table tabname add primary key(col)</p>
+
+<pre><code>说明：删除主键： Alter table tabname drop primary key(col)
+</code></pre>
+
+<p>8、说明：创建索引：create [unique] index idxname on tabname(col….)</p>
+
+<pre><code>删除索引：drop index idxname
+注：索引是不可更改的，想更改必须删除重新建。
+</code></pre>
+
+<p>9、说明：创建视图：create view viewname as select statement</p>
+
+<pre><code>删除视图：drop view viewname
+</code></pre>
+
+<p>10、说明：几个简单的基本的sql语句</p>
+
+<pre><code>选择：select * from table1 where 范围
+插入：insert into table1(field1,field2) values(value1,value2)
+删除：delete from table1 where 范围
+更新：update table1 set field1=value1 where 范围
+查找：select * from table1 where field1 like ’%value1%’ ---like的语法很精妙，查资料!
+排序：select * from table1 order by field1,field2 [desc]
+总数：select count as totalcount from table1
+求和：select sum(field1) as sumvalue from table1
+平均：select avg(field1) as avgvalue from table1
+最大：select max(field1) as maxvalue from table1
+最小：select min(field1) as minvalue from table1
+</code></pre>
+
+<h3>Mysql写出高质量的sql语句的几点建议</h3>
+
+<h6>1 建议一：尽量避免在列上运算</h6>
+
+<p>尽量避免在列上运算，这样会导致索引失效。
+1.1 日期运算
+优化前：</p>
+
+<pre><code>select * from system_user where date(createtime) &gt;= '2015-06-01'
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where createtime &gt;= '2015-06-01'
+</code></pre>
+
+<p>1.2 加，减，乘，除
+优化前：</p>
+
+<pre><code>select * from system_user where age + 10 &gt;= 20
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where age &gt;= 10
+</code></pre>
+
+<h6>2 建议二：用整型设计索引</h6>
+
+<p>用整型设计的索引，占用的字节少，相对与字符串索引要快的多。特别是创建主键索引和唯一索引的时候。 1）设计日期时候，建议用int取代char(8)。例如整型：20150603。 2）设计IP时候可以用bigint把IP转化为长整型存储。</p>
+
+<h6>3 建议三：join时，使用小结果集驱动大结果集</h6>
+
+<p>使用join的时候，应该尽量让小结果集驱动大的结果集，把复杂的join查询拆分成多个query。因为join多个表的时候，可能会有表的锁定和阻塞。如果大结果集非常大，而且被锁了，那么这个语句会一直等待。这个也是新手常犯的一个错误！ 优化前：</p>
+
+<pre><code>select
+    *
+from table_a a
+left join table_b b
+    on a.id = b.id
+left join table_c c
+    on a.id = c.id
+where a.id &gt; 100
+    and b.id &lt; 200
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select
+    *
+from (
+    select  
+        *
+    from table_a
+    where id &gt; 100
+) a
+left join(
+    select  
+        *
+    from table_b
+    where id &lt; 200
+)b
+    on a.id = b.id
+left join table_c
+    on a.id = c.id
+</code></pre>
+
+<h6>4 建议四：仅列出需要查询的字段</h6>
+
+<p>仅列出需要查询的字段，新手一般都查询的时候都是*，其实这样不好。这对速度不会有明显的影响，主要考虑的是节省内存。 优化前：</p>
+
+<pre><code>select * from system_user where age &gt; 10
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select username,emai from system_user where age &gt; 10
+</code></pre>
+
+<h6>5 建议五：使用批量插入节省交互</h6>
+
+<p>优化前：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456')
+insert into system_user(username,passwd) values('test2','123456')
+insert into system_user(username,passwd) values('test3','123456')
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456'),('test2','123456'),('test3','123456')
+</code></pre>
+
+<h6>6 建议六：多习惯使用explain分析sql语句</h6>
+
+<h6>7 建议七：多使用profiling分析sql语句时间开销</h6>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-12-03T13:36:37+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:36 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/php-lover/'>php-lover</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/12/02/zhong-zheng-linux/" title="Previous Post: 重整Linux一次就够了">&laquo; 重整Linux一次就够了</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="PHP完美搭配之Mysql初探"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

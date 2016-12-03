@@ -1,0 +1,1761 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Php-lover | iOS梦工厂]]></title>
+  <link href="http://al1020119.github.io/blog/categories/php-lover/atom.xml" rel="self"/>
+  <link href="http://al1020119.github.io/"/>
+  <updated>2016-12-03T13:46:19+08:00</updated>
+  <id>http://al1020119.github.io/</id>
+  <author>
+    <name><![CDATA[iCocos]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[PHP完美搭配之Mysql初探]]></title>
+    <link href="http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql/"/>
+    <updated>2016-12-03T13:36:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql</id>
+    <content type="html"><![CDATA[<h3>数据库概念</h3>
+
+<h6>什么是数据库</h6>
+
+<p>数据库就是用来存储和管理数据的仓库！</p>
+
+<p>数据库存储数据的优先：</p>
+
+<pre><code>可存储大量数据；
+
+ 方便检索；
+
+ 保持数据的一致性、完整性；
+
+ 安全，可共享；
+
+ 通过组合分析，可产生新数据。
+</code></pre>
+
+<p> <!--more--></p>
+
+<h6>数据库的发展历程</h6>
+
+<p> 没有数据库，使用磁盘文件存储数据；</p>
+
+<pre><code> 层次结构模型数据库；
+
+ 网状结构模型数据库；
+
+ 关系结构模型数据库：
+
+ 使用二维表格来存储数据；
+
+ 关系-对象模型数据库；
+
+ MySQL就是关系型数据库！
+</code></pre>
+
+<h6>常见数据库</h6>
+
+<pre><code> Oracle（神喻）：甲骨文（最高！）；
+
+ DB2：IBM；
+
+ SQ Server：微软；
+
+ Sybase：赛尔斯；
+
+ MySQL：甲骨文；
+</code></pre>
+
+<h6>理解数据库</h6>
+
+<pre><code> RDBMS = 管理员（manager）+仓库（database）
+
+ database = N个table
+</code></pre>
+
+<p> table：</p>
+
+<pre><code>表结构：定义表的列名和列类型！
+表记录：一行一行的记录！
+</code></pre>
+
+<p>我们现在所说的数据库泛指“关系型数据库管理系统（RDBMS - Relationa database management system）”，即“数据库服务器”。</p>
+
+<p>当我们安装了数据库服务器后，就可以在数据库服务器中创建数据库，每个数据库中还可以包含多张表。</p>
+
+<pre><code>表头(header): 每一列的名称;
+列(row): 具有相同数据类型的数据的集合;
+行(col): 每一行用来描述某个人/物的具体信息;
+值(value): 行的具体信息, 每个值必须与该列的数据类型相同;
+键(key): 表中用来识别某个特定的人\物的方法, 键的值在当前列中具有唯一性。
+</code></pre>
+
+<p>数据库表就是一个多行多列的表格。在创建表时，需要指定表的列数，以及列名称，列类型等信息。而不用指定表格的行数，行数是没有上限的</p>
+
+<h6>应用程序与数据库</h6>
+
+<p>　　应用程序使用数据库完成对数据的存储！</p>
+
+<h6>启动和关闭mysql服务器</h6>
+
+<pre><code> 启动：net start mysql；
+
+ 关闭：net stop mysql；
+</code></pre>
+
+<h6>客户端登录退出mysql</h6>
+
+<p>在启动MySQL服务器后，我们需要使用管理员用户登录MySQL服务器，然后来对服务器进行操作。</p>
+
+<h6>登录：mysq -u root -p 123 -h localhost；</h6>
+
+<pre><code>-u：后面的root是用户名，这里使用的是超级管理员root；
+-p：后面的123是密码，这是在安装MySQL时就已经指定的密码；
+-h：后面给出的localhost是服务器主机名，它是可以省略的，例如：mysq -u root -p 123；
+</code></pre>
+
+<h6>退出：quit或exit；</h6>
+
+<h3>概述</h3>
+
+<h6>什么是SQL</h6>
+
+<p>SQL（Structured Query Language）是“结构化查询语言”，它是对关系型数据库的操作语言。它可以应用到所有关系型数据库中，例如：MySQL、Oracle、SQ Server等。SQ标准（ANSI/ISO）有：</p>
+
+<pre><code> SQL-92：1992年发布的SQL语言标准；
+
+ SQL:1999：1999年发布的SQL语言标签；
+
+ SQL:2003：2003年发布的SQL语言标签；
+</code></pre>
+
+<p>这些标准就与JDK的版本一样，在新的版本中总要有一些语法的变化。不同时期的数据库对不同标准做了实现。</p>
+
+<p>虽然SQL可以用在所有关系型数据库中，但很多数据库还都有标准之后的一些语法，我们可以称之为“方言”。例如MySQL中的LIMIT语句就是MySQL独有的方言，其它数据库都不支持！当然，Oracle或SQ Server都有自己的方言。</p>
+
+<h3>语法要求</h3>
+
+<pre><code> SQL语句可以单行或多行书写，以分号结尾；
+
+ 可以用空格和缩进来来增强语句的可读性；
+
+ 关键字不区别大小写，建议使用大写；
+</code></pre>
+
+<h3>分类</h3>
+
+<pre><code> DDL（Data Definition Language）：数据定义语言，用来定义数据库对象：库、表、列等；
+
+ DML（Data Manipulation Language）：数据操作语言，用来定义数据库记录（数据）；
+
+ DCL（Data Contro Language）：数据控制语言，用来定义访问权限和安全级别；
+
+ DQL（Data Query Language）：数据查询语言，用来查询记录（数据）。
+</code></pre>
+
+<h3>DDL</h3>
+
+<h6>基本操作</h6>
+
+<p> 查看所有数据库名称：</p>
+
+<pre><code> SHOW DATABASES；　
+</code></pre>
+
+<p> 切换数据库：</p>
+
+<pre><code> USE mydb1，切换到mydb1数据库；
+</code></pre>
+
+<h6>操作数据库</h6>
+
+<p> 创建数据库：</p>
+
+<pre><code> CREATE DATABASE [IF NOT EXISTS] mydb1；
+</code></pre>
+
+<p>创建数据库，例如：</p>
+
+<pre><code>CREATE DATABASE mydb1，创建一个名为mydb1的数据库。如果这个数据已经存在，那么会报错。例如CREATE DATABASE IF NOT EXISTS mydb1，在名为mydb1的数据库不存在时创建该库，这样可以避免报错。
+</code></pre>
+
+<p> 删除数据库：</p>
+
+<pre><code> DROP DATABASE [IF EXISTS] mydb1；
+</code></pre>
+
+<p>删除数据库，例如：</p>
+
+<pre><code>DROP DATABASE mydb1，删除名为mydb1的数据库。如果这个数据库不存在，那么会报错。DROP DATABASE IF EXISTS mydb1，就算mydb1不存在，也不会的报错。
+</code></pre>
+
+<p> 修改数据库编码：</p>
+
+<pre><code> ALTER DATABASE mydb1 CHARACTER SET utf8
+</code></pre>
+
+<p>修改数据库mydb1的编码为utf8。注意，在MySQL中所有的UTF-8编码都不能使用中间的“-”，即UTF-8要书写为UTF8。</p>
+
+<h3>数据类型</h3>
+
+<p>MySQL有三大类数据类型, 分别为数字、日期\时间、字符串, 这三大类中又更细致的划分了许多子类型:</p>
+
+<h6>数字类型</h6>
+
+<pre><code>    整数: tinyint、smallint、mediumint、int、bigint
+    浮点数: float、double、real、decimal
+</code></pre>
+
+<h6>日期和时间:</h6>
+
+<pre><code>    date、time、datetime、timestamp、year
+</code></pre>
+
+<h6>字符串类型</h6>
+
+<pre><code>    字符串: char、varchar
+    文本: tinytext、text、mediumtext、longtext
+    二进制(可用来存储图片、音乐等): tinyblob、blob、mediumblob、longblob
+</code></pre>
+
+<p>MySQL与Java一样，也有数据类型。MySQL中数据类型主要应用在列上。</p>
+
+<p>常用类型：</p>
+
+<pre><code> int：整型
+
+ double：浮点型，例如double(5,2)表示最多5位，其中必须有2位小数，即最大值为999.99；
+
+ decimal：泛型型，在表单钱方面使用该类型，因为不会出现精度缺失问题；
+
+ char：固定长度字符串类型；
+
+ varchar：可变长度字符串类型；
+
+ text：字符串类型；
+
+ blob：字节类型；
+
+ date：日期类型，格式为：yyyy-MM-dd；
+
+ time：时间类型，格式为：hh:mm:ss
+
+ timestamp：时间戳类型；
+</code></pre>
+
+<h3>组成</h3>
+
+<p>与常规的脚本语言类似, MySQ 也具有一套对字符、单词以及特殊符号的使用规定, MySQ 通过执行 SQ 脚本来完成对数据库的操作, 该脚本由一条或多条MySQL语句(SQL语句 + 扩展语句)组成, 保存时脚本文件后缀名一般为 .sql。在控制台下, MySQ 客户端也可以对语句进行单句的执行而不用保存为.sql文件。</p>
+
+<h3>标识符</h3>
+
+<p>标识符用来命名一些对象, 如数据库、表、列、变量等, 以便在脚本中的其他地方引用。MySQL标识符命名规则稍微有点繁琐, 这里我们使用万能命名规则: 标识符由字母、数字或下划线(_)组成, 且第一个字符必须是字母或下划线。</p>
+
+<p>对于标识符是否区分大小写取决于当前的操作系统, Windows下是不敏感的, 但对于大多数 linux\unix 系统来说, 这些标识符大小写是敏感的。</p>
+
+<h6>关键字:</h6>
+
+<pre><code>MySQL的关键字众多, 这里不一一列出, 在学习中学习。 这些关键字有自己特定的含义, 尽量避免作为标识符。
+</code></pre>
+
+<h6>语句:</h6>
+
+<pre><code>MySQL语句是组成MySQL脚本的基本单位, 每条语句能完成特定的操作, 他是由 SQ 标准语句 + MySQ 扩展语句组成。
+</code></pre>
+
+<h6>函数:</h6>
+
+<pre><code>MySQL函数用来实现数据库操作的一些高级功能, 这些函数大致分为以下几类: 字符串函数、数学函数、日期时间函数、搜索函数、加密函数、信息函数。
+</code></pre>
+
+<h3>操作</h3>
+
+<h6>登录到MySQL</h6>
+
+<p>当 MySQ 服务已经运行时, 我们可以通过MySQL自带的客户端工具登录到MySQL数据库中, 首先打开命令提示符, 输入以下格式的命名:</p>
+
+<p>mysq -h 主机名 -u 用户名 -p</p>
+
+<pre><code>-h : 该命令用于指定客户端所要登录的MySQL主机名, 登录当前机器该参数可以省略;
+-u : 所要登录的用户名;
+-p : 告诉服务器将会使用一个密码来登录, 如果所要登录的用户名密码为空, 可以忽略此选项。
+</code></pre>
+
+<p>以登录刚刚安装在本机的MySQL数据库为例, 在命令行下输入 mysq -u root -p 按回车确认, 如果安装正确且MySQL正在运行, 会得到以下响应:</p>
+
+<pre><code>Enter password:
+</code></pre>
+
+<blockquote><p>若密码存在, 输入密码登录, 不存在则直接按回车登录, 按照本文中的安装方法, 默认 root 账号是无密码的。登录成功后你将会看到 Welecome to the MySQ monitor&hellip; 的提示语。</p></blockquote>
+
+<p>然后命令提示符会一直以 mysql> 加一个闪烁的光标等待命令的输入, 输入 exit 或 quit 退出登录。</p>
+
+<h6>创建一个数据库</h6>
+
+<p>使用 create database 语句可完成对数据库的创建, 创建命令的格式如下:</p>
+
+<pre><code>create database 数据库名 [其他选项];
+</code></pre>
+
+<p>例如我们需要创建一个名为 samp_db 的数据库, 在命令行下执行以下命令:</p>
+
+<pre><code>create database samp_db character set gbk;
+</code></pre>
+
+<h6>选择所要操作的数据库</h6>
+
+<p>要对一个数据库进行操作, 必须先选择该数据库, 否则会提示错误:</p>
+
+<pre><code>ERROR 1046(3D000): No database selected
+</code></pre>
+
+<p>两种方式对数据库进行使用的选择:</p>
+
+<p>一: 在登录数据库时指定, 命令: mysq -D 所选择的数据库名 -h 主机名 -u 用户名 -p</p>
+
+<pre><code>例如登录时选择刚刚创建的数据库: mysq -D samp_db -u root -p
+</code></pre>
+
+<p>二: 在登录后使用 use 语句指定, 命令: use 数据库名;</p>
+
+<pre><code>use 语句可以不加分号, 执行 use samp_db 来选择刚刚创建的数据库, 选择成功后会提示: Database changed
+</code></pre>
+
+<h6>创建数据库表</h6>
+
+<p>使用 create table 语句可完成对表的创建, create table 的常见形式:</p>
+
+<pre><code>create table 表名称(列声明);
+</code></pre>
+
+<p>以创建 students 表为例, 表中将存放 学号(id)、姓名(name)、性别(sex)、年龄(age)、联系电话(tel) 这些内容:</p>
+
+<pre><code>create table students
+（
+    id int unsigned not nul auto_increment primary key,
+    name char(8) not null,
+    sex char(4) not null,
+    age tinyint unsigned not null,
+    te char(13) nul default "-"
+);
+</code></pre>
+
+<h6>向表中插入数据</h6>
+
+<p>insert 语句可以用来将一行或多行数据插到数据库表中, 使用的一般形式如下:</p>
+
+<pre><code>insert [into] 表名 [(列名1, 列名2, 列名3, ...)] values (值1, 值2, 值3, ...);
+</code></pre>
+
+<p>其中 [] 内的内容是可选的, 例如, 要给 samp_db 数据库中的 students 表插入一条记录, 执行语句:</p>
+
+<pre><code>insert into students values(NULL, "王刚", "男", 20, "13811371377");
+</code></pre>
+
+<h6>查询表中的数据</h6>
+
+<p>select 语句常用来根据一定的查询规则到数据库中获取数据, 其基本的用法为:</p>
+
+<pre><code>select 列名称 from 表名称 [查询条件];
+</code></pre>
+
+<p>例如要查询 students 表中所有学生的名字和年龄, 输入语句 select name, age from students; 执行结果如下:</p>
+
+<pre><code>mysql&gt; select name, age from students;
++--------+-----+
+| name   | age |
++--------+-----+
+| 王刚   |  20 |
+| 孙丽华 |  21 |
+| 王永恒 |  23 |
+| 郑俊杰 |  19 |
+| 陈芳   |  22 |
+| 张伟朋 |  21 |
++--------+-----+
+6 rows in set (0.00 sec)
+</code></pre>
+
+<p>按特定条件查询:</p>
+
+<pre><code>where 关键词用于指定查询条件, 用法形式为: select 列名称 from 表名称 where 条件;
+
+以查询所有性别为女的信息为例, 输入查询语句: select * from students where sex="女";
+</code></pre>
+
+<h6>更新表中的数据</h6>
+
+<p>update 语句可用来修改表中的数据, 基本的使用形式为:</p>
+
+<pre><code>update 表名称 set 列名称=新值 where 更新条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>将id为5的手机号改为默认的"-": update students set tel=default where id=5;
+
+将所有人的年龄增加1: update students set age=age+1;
+
+将手机号为 13288097888 的姓名改为 "张伟鹏", 年龄改为 19: update students set name="张伟鹏", age=19 where tel="13288097888";
+</code></pre>
+
+<h6>删除表中的数据</h6>
+
+<p>delete 语句用于删除表中的数据, 基本用法为:</p>
+
+<pre><code>delete from 表名称 where 删除条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>删除id为2的行: delete from students where id=2;
+
+删除所有年龄小于21岁的数据: delete from students where age&lt;20;
+
+删除表中的所有数据: delete from students;
+</code></pre>
+
+<h3>创建后表的修改</h3>
+
+<p>alter table 语句用于创建后对表的修改, 基础用法如下:</p>
+
+<h6>添加列</h6>
+
+<pre><code>基本形式: alter table 表名 add 列名 列数据类型 [after 插入位置];
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>在表的最后追加列 address: alter table students add address char(60);
+
+在名为 age 的列后插入列 birthday: alter table students add birthday date after age;
+</code></pre>
+
+<h6>修改列</h6>
+
+<pre><code>基本形式: alter table 表名 change 列名称 列新名称 新数据类型;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>将表 te 列改名为 telphone: alter table students change te telphone char(13) default "-";
+
+将 name 列的数据类型改为 char(16): alter table students change name name char(16) not null;
+</code></pre>
+
+<h6>删除列</h6>
+
+<pre><code>基本形式: alter table 表名 drop 列名称;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 birthday 列: alter table students drop birthday;
+</code></pre>
+
+<h6>重命名表</h6>
+
+<pre><code>基本形式: alter table 表名 rename 新表名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>重命名 students 表为 workmates: alter table students rename workmates;
+</code></pre>
+
+<h6>删除整张表</h6>
+
+<p>基本形式: drop table 表名;</p>
+
+<pre><code>示例: 删除 workmates 表: drop table workmates;
+</code></pre>
+
+<p>删除整个数据库</p>
+
+<pre><code>基本形式: drop database 数据库名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 samp_db 数据库: drop database samp_db;
+</code></pre>
+
+<h3>附录</h3>
+
+<h6>修改 root 用户密码</h6>
+
+<p>按照本文的安装方式, root 用户默认是没有密码的, 重设 root 密码的方式也较多, 这里仅介绍一种较常用的方式。</p>
+
+<p>使用 mysqladmin 方式:</p>
+
+<pre><code>打开命令提示符界面, 执行命令: mysqladmin -u root -p password 新密码
+</code></pre>
+
+<p>执行后提示输入旧密码完成密码修改, 当旧密码为空时直接按回车键确认即可。</p>
+
+<h3>总结：</h3>
+
+<p>1、说明：创建数据库</p>
+
+<pre><code>CREATE DATABASE database-name
+</code></pre>
+
+<p>2、说明：删除数据库</p>
+
+<pre><code>drop database dbname
+</code></pre>
+
+<p>3、说明：备份sq server</p>
+
+<p>&mdash; 创建 备份数据的 device</p>
+
+<pre><code>USE master
+EXEC sp_addumpdevice 'disk', 'testBack', 'c:\mssql7backup\MyNwind_1.dat'
+</code></pre>
+
+<p>&mdash; 开始 备份</p>
+
+<pre><code>BACKUP DATABASE pubs TO testBack
+</code></pre>
+
+<p>4、说明：创建新表</p>
+
+<pre><code>create table tabname(col1 type1 [not null] [primary key],col2 type2 [not null],..)
+</code></pre>
+
+<p>根据已有的表创建新表：</p>
+
+<pre><code>A：create table tab_new like tab_old (使用旧表创建新表)
+B：create table tab_new as select col1,col2… from tab_old definition only
+</code></pre>
+
+<p>5、说明：删除新表</p>
+
+<pre><code>drop table tabname
+</code></pre>
+
+<p>6、说明：增加一个列</p>
+
+<pre><code>Alter table tabname add column co type
+
+注：列增加后将不能删除。DB2中列加上后数据类型也不能改变，唯一能改变的是增加varchar类型的长度。
+</code></pre>
+
+<p>7、说明：添加主键： Alter table tabname add primary key(col)</p>
+
+<pre><code>说明：删除主键： Alter table tabname drop primary key(col)
+</code></pre>
+
+<p>8、说明：创建索引：create [unique] index idxname on tabname(col….)</p>
+
+<pre><code>删除索引：drop index idxname
+注：索引是不可更改的，想更改必须删除重新建。
+</code></pre>
+
+<p>9、说明：创建视图：create view viewname as select statement</p>
+
+<pre><code>删除视图：drop view viewname
+</code></pre>
+
+<p>10、说明：几个简单的基本的sql语句</p>
+
+<pre><code>选择：select * from table1 where 范围
+插入：insert into table1(field1,field2) values(value1,value2)
+删除：delete from table1 where 范围
+更新：update table1 set field1=value1 where 范围
+查找：select * from table1 where field1 like ’%value1%’ ---like的语法很精妙，查资料!
+排序：select * from table1 order by field1,field2 [desc]
+总数：select count as totalcount from table1
+求和：select sum(field1) as sumvalue from table1
+平均：select avg(field1) as avgvalue from table1
+最大：select max(field1) as maxvalue from table1
+最小：select min(field1) as minvalue from table1
+</code></pre>
+
+<h3>Mysql写出高质量的sql语句的几点建议</h3>
+
+<h6>1 建议一：尽量避免在列上运算</h6>
+
+<p>尽量避免在列上运算，这样会导致索引失效。
+1.1 日期运算
+优化前：</p>
+
+<pre><code>select * from system_user where date(createtime) &gt;= '2015-06-01'
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where createtime &gt;= '2015-06-01'
+</code></pre>
+
+<p>1.2 加，减，乘，除
+优化前：</p>
+
+<pre><code>select * from system_user where age + 10 &gt;= 20
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where age &gt;= 10
+</code></pre>
+
+<h6>2 建议二：用整型设计索引</h6>
+
+<p>用整型设计的索引，占用的字节少，相对与字符串索引要快的多。特别是创建主键索引和唯一索引的时候。 1）设计日期时候，建议用int取代char(8)。例如整型：20150603。 2）设计IP时候可以用bigint把IP转化为长整型存储。</p>
+
+<h6>3 建议三：join时，使用小结果集驱动大结果集</h6>
+
+<p>使用join的时候，应该尽量让小结果集驱动大的结果集，把复杂的join查询拆分成多个query。因为join多个表的时候，可能会有表的锁定和阻塞。如果大结果集非常大，而且被锁了，那么这个语句会一直等待。这个也是新手常犯的一个错误！ 优化前：</p>
+
+<pre><code>select
+    *
+from table_a a
+left join table_b b
+    on a.id = b.id
+left join table_c c
+    on a.id = c.id
+where a.id &gt; 100
+    and b.id &lt; 200
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select
+    *
+from (
+    select  
+        *
+    from table_a
+    where id &gt; 100
+) a
+left join(
+    select  
+        *
+    from table_b
+    where id &lt; 200
+)b
+    on a.id = b.id
+left join table_c
+    on a.id = c.id
+</code></pre>
+
+<h6>4 建议四：仅列出需要查询的字段</h6>
+
+<p>仅列出需要查询的字段，新手一般都查询的时候都是*，其实这样不好。这对速度不会有明显的影响，主要考虑的是节省内存。 优化前：</p>
+
+<pre><code>select * from system_user where age &gt; 10
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select username,emai from system_user where age &gt; 10
+</code></pre>
+
+<h6>5 建议五：使用批量插入节省交互</h6>
+
+<p>优化前：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456')
+insert into system_user(username,passwd) values('test2','123456')
+insert into system_user(username,passwd) values('test3','123456')
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456'),('test2','123456'),('test3','123456')
+</code></pre>
+
+<h6>6 建议六：多习惯使用explain分析sql语句</h6>
+
+<h6>7 建议七：多使用profiling分析sql语句时间开销</h6>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[重整Linux一次就够了]]></title>
+    <link href="http://al1020119.github.io/blog/2016/12/02/zhong-zheng-linux/"/>
+    <updated>2016-12-02T13:35:16+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/12/02/zhong-zheng-linux</id>
+    <content type="html"><![CDATA[<h6>前言：</h6>
+
+<p>因为之前学校有学过linux😂，而且这几年一直使用的Mac做开发，所以对Linux及相关命令还是有些接触的，只是没有机会，也没有刻意去专门研究或者整理，最近因为学习与工作的而需要开始了一次Linux之路，所以学习的过程中寻找资料并且整理了一下。</p>
+
+<blockquote><p>目前几乎大部分的互联网公司公司都是使用Linux</p></blockquote>
+
+<p>这里以Ubantu为例整理一套Linux命令，至于为什么是Ubantu，谁用谁知道，好了废话不多说，开干🤔🤔🤔🤔🤔🤔🤔🤔</p>
+
+<h3>目录</h3>
+
+<ul>
+<li>系统</li>
+<li>硬盘</li>
+<li>内存</li>
+<li>进程</li>
+<li>查看当前有哪些进程#ps -A</li>
+<li>网络</li>
+<li>服务</li>
+<li>设置</li>
+<li>中文</li>
+<li>文件</li>
+<li>FTP</li>
+<li>解压缩</li>
+<li>Nautilus</li>
+<li>程序</li>
+<li>数据库</li>
+<li>其它</li>
+<li>Ubuntu命令行下修改网络配置</li>
+<li>安装AMP服务</li>
+<li>其他总结</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>查看软件xxx安装内容</p>
+
+<pre><code>#dpkg -L xxx
+</code></pre>
+
+<p>查找软件</p>
+
+<pre><code>#apt-cache search 正则表达式
+</code></pre>
+
+<p>查找文件属于哪个包</p>
+
+<pre><code>#dpkg -S filename apt-file search filename
+</code></pre>
+
+<p>查询软件xxx依赖哪些包</p>
+
+<pre><code>#apt-cache depends xxx
+</code></pre>
+
+<p>查询软件xxx被哪些包依赖</p>
+
+<pre><code>#apt-cache rdepends xxx
+</code></pre>
+
+<p>增加一个光盘源</p>
+
+<pre><code>#sudo apt-cdrom add
+</code></pre>
+
+<p>系统升级</p>
+
+<pre><code>#sudo apt-get update
+#sudo apt-get upgrade
+#sudo apt-get dist-upgrade
+</code></pre>
+
+<p>清除所以删除包的残余配置文件</p>
+
+<pre><code>#dpkg -l |grep ^rc|awk ‘{print $2}’ |tr [”"n”] [” “]|sudo xargs dpkg -P -
+</code></pre>
+
+<p>编译时缺少h文件的自动处理</p>
+
+<pre><code>#sudo auto-apt run ./configure
+</code></pre>
+
+<p>查看安装软件时下载包的临时存放目录</p>
+
+<pre><code>#ls /var/cache/apt/archives
+</code></pre>
+
+<p>备份当前系统安装的所有包的列表</p>
+
+<pre><code>#dpkg –get-selections | grep -v deinstall &gt; ~/somefile
+</code></pre>
+
+<p>从上面备份的安装包的列表文件恢复所有包</p>
+
+<pre><code>#dpkg –set-selections &lt; ~/somefile sudo dselect
+</code></pre>
+
+<p>清理旧版本的软件缓存</p>
+
+<pre><code>#sudo apt-get autoclean
+</code></pre>
+
+<p>清理所有软件缓存</p>
+
+<pre><code>#sudo apt-get clean
+</code></pre>
+
+<p>删除系统不再使用的孤立软件</p>
+
+<pre><code>#sudo apt-get autoremove
+</code></pre>
+
+<p>查看包在服务器上面的地址</p>
+
+<pre><code>#apt-get -qq –print-uris install ssh | cut -d"’ -f2
+</code></pre>
+
+<h3>系统</h3>
+
+<p>查看内核</p>
+
+<pre><code>#uname -a
+</code></pre>
+
+<p>查看Ubuntu版本</p>
+
+<pre><code>#cat /etc/issue
+</code></pre>
+
+<p>查看内核加载的模块</p>
+
+<pre><code>#lsmod
+</code></pre>
+
+<p>查看PCI设备</p>
+
+<pre><code>#lspci
+</code></pre>
+
+<p>查看USB设备</p>
+
+<pre><code>#lsusb
+</code></pre>
+
+<p>查看网卡状态</p>
+
+<pre><code>#sudo ethtool eth0
+</code></pre>
+
+<p>查看CPU信息</p>
+
+<pre><code>#cat /proc/cpuinfo
+</code></pre>
+
+<p>显示当前硬件信息</p>
+
+<pre><code>#lshw
+</code></pre>
+
+<h3>硬盘</h3>
+
+<p>查看硬盘的分区</p>
+
+<pre><code>#sudo fdisk -l
+</code></pre>
+
+<p>查看IDE硬盘信息</p>
+
+<pre><code>#sudo hdparm -i /dev/hda
+</code></pre>
+
+<p>查看STAT硬盘信息</p>
+
+<pre><code>#sudo hdparm -I /dev/sda
+或
+#sudo apt-get install blktool
+#sudo blktool /dev/sda id
+</code></pre>
+
+<p>查看硬盘剩余空间</p>
+
+<pre><code>#df -h
+#df -H
+</code></pre>
+
+<p>查看目录占用空间</p>
+
+<pre><code>#du -hs 目录名
+</code></pre>
+
+<p>优盘没法卸载</p>
+
+<pre><code>#sync fuser -km /media/usbdisk
+</code></pre>
+
+<h3>内存</h3>
+
+<p>查看当前的内存使用情况</p>
+
+<pre><code>#free -m
+</code></pre>
+
+<h3>进程</h3>
+
+<p>查看当前有哪些进程</p>
+
+<pre><code>#ps -A
+</code></pre>
+
+<p>中止一个进程</p>
+
+<pre><code>#kill 进程号(就是ps -A中的第一列的数字) 或者 killall 进程名
+</code></pre>
+
+<p>强制中止一个进程(在上面进程中止不成功的时候使用)</p>
+
+<pre><code>#kill -9 进程号 或者 killall -9 进程名
+</code></pre>
+
+<p>图形方式中止一个程序</p>
+
+<pre><code>#xkill 出现骷髅标志的鼠标，点击需要中止的程序即可
+</code></pre>
+
+<p>查看当前进程的实时状况</p>
+
+<pre><code>#top
+</code></pre>
+
+<p>查看进程打开的文件</p>
+
+<pre><code>#lsof -p
+</code></pre>
+
+<p>ADSL 配置 ADSL</p>
+
+<pre><code>#sudo pppoeconf
+</code></pre>
+
+<p>ADSL手工拨号</p>
+
+<pre><code>#sudo pon dsl-provider
+</code></pre>
+
+<p>激活 ADSL</p>
+
+<pre><code>#sudo /etc/ppp/pppoe_on_boot
+</code></pre>
+
+<p>断开 ADSL</p>
+
+<pre><code>#sudo poff
+</code></pre>
+
+<p>查看拨号日志</p>
+
+<pre><code>#sudo plog
+</code></pre>
+
+<p>如何设置动态域名</p>
+
+<pre><code>#首先去http://www.3322.org申请一个动态域名
+#然后修改 /etc/ppp/ip-up 增加拨号时更新域名指令 sudo vim /etc/ppp/ip-up
+#在最后增加如下行 w3m -no-cookie -dump
+</code></pre>
+
+<h3>网络</h3>
+
+<p>根据IP查网卡地址</p>
+
+<pre><code>#arping IP地址
+</code></pre>
+
+<p>查看当前IP地址</p>
+
+<pre><code>#ifconfig eth0 |awk ‘/inet/ {split($2,x,”:”);print x[2]}’
+</code></pre>
+
+<p>查看当前外网的IP地址</p>
+
+<pre><code>#w3m -no-cookie -dumpwww.edu.cn|grep-o‘[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+#w3m -no-cookie -dumpwww.xju.edu.cn|grep-o’[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+#w3m -no-cookie -dump ip.loveroot.com|grep -o’[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+</code></pre>
+
+<p>查看当前监听80端口的程序</p>
+
+<pre><code>#lsof -i :80
+</code></pre>
+
+<p>查看当前网卡的物理地址</p>
+
+<pre><code>#arp -a | awk ‘{print $4}’ ifconfig eth0 | head -1 | awk ‘{print $5}’
+</code></pre>
+
+<p>立即让网络支持nat</p>
+
+<pre><code>#sudo echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+#sudo iptables -t nat -I POSTROUTING -j MASQUERADE
+</code></pre>
+
+<p>查看路由信息</p>
+
+<pre><code>#netstat -rn sudo route -n
+</code></pre>
+
+<p>手工增加删除一条路由</p>
+
+<pre><code>#sudo route add -net 192.168.0.0 netmask 255.255.255.0 gw 172.16.0.1
+#sudo route del -net 192.168.0.0 netmask 255.255.255.0 gw 172.16.0.1
+</code></pre>
+
+<p>修改网卡MAC地址的方法</p>
+
+<pre><code>#sudo ifconfig eth0 down 关闭网卡
+#sudo ifconfig eth0 hw ether 00:AA:BB:CC:DD:EE 然后改地址
+#sudo ifconfig eth0 up 然后启动网卡
+</code></pre>
+
+<p>统计当前IP连接的个数</p>
+
+<pre><code>#netstat -na|grep ESTABLISHED|awk ‘{print $5}’|awk -F: ‘{print $1}’|sort|uniq -c|sort -r -n
+#netstat -na|grep SYN|awk ‘{print $5}’|awk -F: ‘{print $1}’|sort|uniq -c|sort -r -n
+</code></pre>
+
+<p>统计当前20000个IP包中大于100个IP包的IP地址</p>
+
+<pre><code>#tcpdump -tnn -c 20000 -i eth0 | awk -F “.” ‘{print $1″.”$2″.”$3″.”$4}’ | sort | uniq -c | sort -nr | awk ‘ $1 &gt; 100 ‘
+</code></pre>
+
+<p>屏蔽IPV6</p>
+
+<pre><code>#echo “blacklist ipv6″ | sudo tee /etc/modprobe.d/blacklist-ipv6
+</code></pre>
+
+<h3>服务</h3>
+
+<p>添加一个服务</p>
+
+<pre><code>#sudo update-rc.d 服务名 defaults 99
+</code></pre>
+
+<p>删除一个服务</p>
+
+<pre><code>#sudo update-rc.d 服务名 remove
+</code></pre>
+
+<p>临时重启一个服务</p>
+
+<pre><code>#/etc/init.d/服务名 restart
+</code></pre>
+
+<p>临时关闭一个服务</p>
+
+<pre><code>#/etc/init.d/服务名 stop
+</code></pre>
+
+<p>临时启动一个服务
+    #/etc/init.d/服务名 start</p>
+
+<h3>设置</h3>
+
+<p>配置默认Java使用哪个</p>
+
+<pre><code>#sudo update-alternatives –config java
+</code></pre>
+
+<p>修改用户资料</p>
+
+<pre><code>#sudo chfn userid
+</code></pre>
+
+<p>给apt设置代理</p>
+
+<pre><code>#export http_proxy=http://xx.xx.xx.xx:xxx
+</code></pre>
+
+<p>修改系统登录信息</p>
+
+<pre><code>#sudo vim /etc/motd
+</code></pre>
+
+<h3>中文</h3>
+
+<p>转换文件名由GBK为UTF8</p>
+
+<pre><code>#sudo apt-get install convmv convmv -r -f cp936 -t utf8 –notest –nosmart *
+</code></pre>
+
+<p>批量转换src目录下的所有文件内容由GBK到UTF8</p>
+
+<pre><code>#find src -type d -exec mkdir -p utf8/{} "; find src -type f -exec iconv -f GBK -t UTF-8 {} -o utf8/{} "; mv utf8/* src rm -fr utf8
+</code></pre>
+
+<p>转换文件内容由GBK到UTF8</p>
+
+<pre><code>#iconv -f gbk -t utf8 $i &gt; newfile
+</code></pre>
+
+<p>转换 mp3 标签编码</p>
+
+<pre><code>#sudo apt-get install python-mutagen find . -iname “*.mp3” -execdir mid3iconv -e GBK {} ";
+</code></pre>
+
+<p>控制台下显示中文</p>
+
+<pre><code>#sudo apt-get install zhcon 使用时，输入zhcon即可
+</code></pre>
+
+<h3>文件</h3>
+
+<p>快速查找某个文件</p>
+
+<pre><code>#whereis filename
+#find 目录 -name 文件名
+</code></pre>
+
+<p>查看文件类型</p>
+
+<pre><code>#file filename
+</code></pre>
+
+<p>显示xxx文件倒数6行的内容</p>
+
+<pre><code>#tail -n 6 xxx
+</code></pre>
+
+<p>让tail不停地读地最新的内容</p>
+
+<pre><code>#tail -n 10 -f /var/log/apache2/access.log
+</code></pre>
+
+<p>查看文件中间的第五行（含）到第10行（含）的内容</p>
+
+<pre><code>#sed -n ‘5,10p’ /var/log/apache2/access.log
+</code></pre>
+
+<p>查找包含xxx字符串的文件</p>
+
+<pre><code>#grep -l -r xxx .
+</code></pre>
+
+<p>全盘搜索文件(桌面可视化)</p>
+
+<pre><code>gnome-search-tool
+</code></pre>
+
+<p>查找关于xxx的命令</p>
+
+<pre><code>#apropos xxx man -k xxx
+</code></pre>
+
+<p>通过ssh传输文件</p>
+
+<pre><code>#scp -rp /path/filenameusername@remoteIP:/path
+#将本地文件拷贝到服务器上
+#scp -rpusername@remoteIP:/path/filename/path
+#将远程文件从服务器下载到本地
+</code></pre>
+
+<p>查看某个文件被哪些应用程序读写</p>
+
+<pre><code>#lsof 文件名
+</code></pre>
+
+<p>把所有文件的后辍由rm改为rmvb</p>
+
+<pre><code>#rename ’s/.rm$/.rmvb/’ *
+</code></pre>
+
+<p>把所有文件名中的大写改为小写</p>
+
+<pre><code>#rename ‘tr/A-Z/a-z/’ *
+</code></pre>
+
+<p>删除特殊文件名的文件，如文件名：–help.txt</p>
+
+<pre><code>#rm — –help.txt 或者 rm ./–help.txt
+</code></pre>
+
+<p>查看当前目录的子目录</p>
+
+<pre><code>#ls -d */. 或 echo */.
+</code></pre>
+
+<p>将当前目录下最近30天访问过的文件移动到上级back目录</p>
+
+<pre><code>#find . -type f -atime -30 -exec mv {} ../back ";
+</code></pre>
+
+<p>将当前目录下最近2小时到8小时之内的文件显示出来</p>
+
+<pre><code>#find . -mmin +120 -mmin -480 -exec more {} ";
+</code></pre>
+
+<p>删除修改时间在30天之前的所有文件</p>
+
+<pre><code>#find . -type f -mtime +30 -mtime -3600 -exec rm {} ";
+</code></pre>
+
+<p>查找guest用户的以avi或者rm结尾的文件并删除掉</p>
+
+<pre><code>#find . -name ‘*.avi’ -o -name ‘*.rm’ -user ‘guest’ -exec rm {} ";
+</code></pre>
+
+<p>查找的不以java和xml结尾,并7天没有使用的文件删除掉</p>
+
+<pre><code>#find . ! -name *.java ! -name ‘*.xml’ -atime +7 -exec rm {} ";
+</code></pre>
+
+<p>统计当前文件个数</p>
+
+<pre><code>#ls /usr/bin|wc -w
+</code></pre>
+
+<p>统计当前目录个数</p>
+
+<pre><code>#ls -l /usr/bin|grep ^d|wc -l
+</code></pre>
+
+<p>显示当前目录下2006-01-01的文件名</p>
+
+<pre><code>#ls -l |grep 2006-01-01 |awk ‘{print $8}’
+</code></pre>
+
+<h3>FTP</h3>
+
+<p>上传下载文件工具-filezilla</p>
+
+<pre><code>#sudo apt-get install filezilla
+</code></pre>
+
+<p>filezilla无法列出中文目录？
+站点->字符集->自定义->输入：GBK</p>
+
+<h6>本地中文界面</h6>
+
+<p>1）下载filezilla中文包到本地目录，如~/
+2）#unrar x Filezilla3_zhCN.rar
+3) 如果你没有unrar的话，请先安装rar和unrar</p>
+
+<pre><code>#sudo apt-get install rar unrar
+#sudo ln -f /usr/bin/rar /usr/bin/unrar
+</code></pre>
+
+<p>4）先备份原来的语言包,再安装；实际就是拷贝一个语言包。</p>
+
+<pre><code>#sudo cp /usr/share/locale/zh_CN/filezilla.mo /usr/share/locale/zh_CN/filezilla.mo.bak
+
+#sudo cp ~/locale/zh_CN/filezilla.mo /usr/share/locale/zh_CN/filezilla.mo
+</code></pre>
+
+<p>5）重启filezilla,即可！</p>
+
+<h3>解压缩</h3>
+
+<p>解压缩 xxx.tar.gz</p>
+
+<pre><code>#tar -zxvf xxx.tar.gz
+</code></pre>
+
+<p>解压缩 xxx.tar.bz2</p>
+
+<pre><code>#tar -jxvf xxx.tar.bz2
+</code></pre>
+
+<p>压缩aaa bbb目录为xxx.tar.gz</p>
+
+<pre><code>#tar -zcvf xxx.tar.gz aaa bbb
+</code></pre>
+
+<p>压缩aaa bbb目录为xxx.tar.bz2</p>
+
+<pre><code>#tar -jcvf xxx.tar.bz2 aaa bbb
+</code></pre>
+
+<h6>解压缩 RAR 文件</h6>
+
+<p>1) 先安装</p>
+
+<pre><code>#sudo apt-get install rar unrar
+#sudo ln -f /usr/bin/rar /usr/bin/unrar
+</code></pre>
+
+<p>2) 解压</p>
+
+<pre><code>#unrar x aaaa.rar
+</code></pre>
+
+<h6>解压缩 ZIP 文件</h6>
+
+<p>1) 先安装</p>
+
+<pre><code>#sudo apt-get install zip unzip
+#sudo ln -f /usr/bin/zip /usr/bin/unzip
+</code></pre>
+
+<p>2) 解压</p>
+
+<pre><code>#unzip x aaaa.zip
+</code></pre>
+
+<h3>Nautilus</h3>
+
+<p>显示隐藏文件</p>
+
+<pre><code>Ctrl+h
+</code></pre>
+
+<p>显示地址栏</p>
+
+<pre><code>Ctrl+l
+</code></pre>
+
+<p>特殊 URI 地址</p>
+
+<pre><code>* computer:/// - 全部挂载的设备和网络
+* network:/// - 浏览可用的网络
+* burn:/// - 一个刻录 CDs/DVDs 的数据虚拟目录
+* smb:/// - 可用的 windows/samba 网络资源
+* x-nautilus-desktop:/// - 桌面项目和图标
+*file:///- 本地文件
+* trash:/// - 本地回收站目录
+* ftp:// - FTP 文件夹
+* ssh:// - SSH 文件夹
+* fonts:/// - 字体文件夹，可将字体文件拖到此处以完成安装
+* themes:/// - 系统主题文件夹
+</code></pre>
+
+<p>查看已安装字体</p>
+
+<pre><code>在nautilus的地址栏里输入”fonts:///“，就可以查看本机所有的fonts
+</code></pre>
+
+<h3>程序</h3>
+
+<p>详细显示程序的运行信息</p>
+
+<pre><code>#strace -f -F -o outfile
+</code></pre>
+
+<h6>日期和时间</h6>
+
+<p>设置日期</p>
+
+<pre><code>#date -s mm/dd/yy
+</code></pre>
+
+<p>设置时间</p>
+
+<pre><code>#date -s HH:MM
+</code></pre>
+
+<p>将时间写入CMOS</p>
+
+<pre><code>#hwclock –systohc
+</code></pre>
+
+<p>读取CMOS时间</p>
+
+<pre><code>#hwclock –hctosys
+</code></pre>
+
+<p>从服务器上同步时间</p>
+
+<pre><code>#sudo ntpdate time.nist.gov
+#sudo ntpdate time.windows.com
+</code></pre>
+
+<h6>控制台</h6>
+
+<p>不同控制台间切换</p>
+
+<pre><code>Ctrl + ALT + ← Ctrl + ALT + →
+</code></pre>
+
+<p>指定控制台切换</p>
+
+<pre><code>Ctrl + ALT + Fn(n:1~7)
+</code></pre>
+
+<p>控制台下滚屏</p>
+
+<pre><code>SHIFT + pageUp/pageDown
+</code></pre>
+
+<p>控制台抓图</p>
+
+<pre><code>#setterm -dump n(n:1~7)
+</code></pre>
+
+<h3>数据库</h3>
+
+<p>mysql的数据库存放在地方</p>
+
+<pre><code>#/var/lib/mysql
+</code></pre>
+
+<p>从mysql中导出和导入数据</p>
+
+<pre><code>#mysqldump 数据库名 &gt; 文件名 #导出数据库
+#mysqladmin create 数据库名 #建立数据库
+#mysql 数据库名 &lt; 文件名 #导入数据库
+</code></pre>
+
+<p>忘了mysql的root口令怎么办</p>
+
+<pre><code>#sudo /etc/init.d/mysql stop
+#sudo mysqld_safe –skip-grant-tables
+#sudo mysqladmin -u user password ‘newpassword”
+#sudo mysqladmin flush-privileges
+</code></pre>
+
+<p>修改mysql的root口令</p>
+
+<pre><code>#sudo mysqladmin -uroot -p password ‘你的新密码’
+</code></pre>
+
+<h3>其它</h3>
+
+<p>下载网站文档</p>
+
+<pre><code>#wget -r -p -np -khttp://www.21cn.com
+· r：在本机建立服务器端目录结构；
+· -p: 下载显示HTML文件的所有图片；
+· -np：只下载目标站点指定目录及其子目录的内容；
+· -k: 转换非相对链接为相对链接。
+</code></pre>
+
+<p>如何删除Totem电影播放机的播放历史记录</p>
+
+<pre><code>#rm ~/.recently-used
+</code></pre>
+
+<p>如何更换gnome程序的快捷键
+点击菜单，鼠标停留在某条菜单上，键盘输入任意你所需要的键，可以是组合键，会立即生效； 如果要清除该快捷键，请使用backspace</p>
+
+<p>vim 如何显示彩色字符</p>
+
+<pre><code>#sudo cp /usr/share/vim/vimcurrent/vimrc_example.vim /usr/share/vim/vimrc
+</code></pre>
+
+<p>如何在命令行删除在会话设置的启动程序</p>
+
+<pre><code>#cd ~/.config/autostart rm 需要删除启动程序
+</code></pre>
+
+<p>如何提高wine的反应速度</p>
+
+<pre><code>#sudo sed -ie ‘/GBK/,/^}/d’ /usr/share/X11/locale/zh_CN.UTF-8/XLC_LOCALE
+
+#chgrp
+</code></pre>
+
+<p>语法: chgrp [-R] 文件组 文件…
+说明： 文件的GID表示文件的文件组，文件组可用数字表示， 也可用一个有效的组名表示，此命令改变一个文件的GID，可参看chown。
+-R 递归地改变所有子目录下所有文件的存取模式
+例子:</p>
+
+<pre><code>＃chgrp group file 将文件 file 的文件组改为 group
+
+#chmod
+</code></pre>
+
+<p>语法: chmod [-R] 模式 文件…
+或 chmod [ugoa] {+|-|=} [rwxst] 文件…
+说明: 改变文件的存取模式，存取模式可表示为数字或符号串，例如：
+＃chmod nnnn file ， n为0-7的数字，意义如下:</p>
+
+<pre><code>4000 运行时可改变UID
+2000 运行时可改变GID
+1000 置粘着位
+0400 文件主可读
+0200 文件主可写
+0100 文件主可执行
+0040 同组用户可读
+0020 同组用户可写
+0010 同组用户可执行
+0004 其他用户可读
+0002 其他用户可写
+0001 其他用户可执行
+</code></pre>
+
+<p>nnnn 就是上列数字相加得到的，例如 chmod 0777 file 是指将文件 file 存取权限置为所有用户可读可写可执行。
+-R 递归地改变所有子目录下所有文件的存取模式</p>
+
+<pre><code>u 文件主
+g 同组用户
+o 其他用户
+a 所有用户
++ 增加后列权限
+- 取消后列权限
+= 置成后列权限
+r 可读
+w 可写
+x 可执行
+s 运行时可置UID
+t 运行时可置GID
+</code></pre>
+
+<p>例子:</p>
+
+<pre><code>＃chmod 0666 file1 file2 将文件 file1 及 file2 置为所有用户可读可写
+＃chmod u+x file 对文件 file 增加文件主可执行权限
+＃chmod o-rwx 对文件file 取消其他用户的所有权限
+
+#chown
+</code></pre>
+
+<p>语法: chown [-R] 文件主 文件…</p>
+
+<p>说明: 文件的UID表示文件的文件主，文件主可用数字表示， 也可用一个有效的用户名表示，此命令改变一个文件的UID，仅当此文件的文件主或超级用户可使用。
+-R 递归地改变所有子目录下所有文件的存取模式
+例子:</p>
+
+<pre><code>#chown mary file 将文件 file 的文件主改为 mary
+#chown 150 file 将文件 file 的UID改为150
+</code></pre>
+
+<h3>Ubuntu命令行下修改网络配置</h3>
+
+<p>以eth0为例</p>
+
+<h6>以DHCP方式配置网卡</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>#sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>并用下面的行来替换有关eth0的行:</p>
+
+<pre><code># The primary network interface - use DHCP to find our address
+auto eth0
+iface eth0 inet dhcp
+</code></pre>
+
+<p>用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<p>当然,也可以在命令行下直接输入下面的命令来获取地址</p>
+
+<pre><code>#sudo dhclient eth0
+</code></pre>
+
+<h6>为网卡配置静态IP地址</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>    #sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>并用下面的行来替换有关eth0的行:</p>
+
+<pre><code>    # The primary network interface
+    auto eth0
+    iface eth0 inet static
+    address 192.168.3.90
+    gateway 192.168.3.1
+    netmask 255.255.255.0
+    network 192.168.3.0
+    broadcast 192.168.3.255
+</code></pre>
+
+<p>将上面的ip地址等信息换成你自己就可以了.</p>
+
+<p>用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<h6>设定第二个IP地址(虚拟IP地址)</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>    #sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>在该文件中添加如下的行:</p>
+
+<pre><code>auto eth0:1
+iface eth0:1 inet static
+address 192.168.1.60
+netmask 255.255.255.0
+network x.x.x.x
+broadcast x.x.x.x
+gateway x.x.x.x
+</code></pre>
+
+<p>根据你的情况填上所有诸如address,netmask,network,broadcast和gateways等信息.
+用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<h6>设置主机名称(hostname)</h6>
+
+<p>使用下面的命令来查看当前主机的主机名称:</p>
+
+<pre><code>#sudo /bin/hostname
+</code></pre>
+
+<p>使用下面的命令来设置当前主机的主机名称:</p>
+
+<pre><code>#sudo /bin/hostname newname
+</code></pre>
+
+<p>系统启动时,它会从/etc/hostname来读取主机的名称.</p>
+
+<h6>配置DNS</h6>
+
+<p>首先,你可以在/etc/hosts中加入一些主机名称和这些主机名称对应的IP地址,这是简单使用本机的静态查询.
+要访问DNS 服务器来进行查询,需要设置/etc/resolv.conf文件.
+假设DNS服务器的IP地址是192.168.3.2, 那么/etc/resolv.conf文件的内容应为:</p>
+
+<pre><code>    search test.com
+    nameserver 192.168.3.2
+</code></pre>
+
+<h3>安装AMP服务</h3>
+
+<p>如果采用Ubuntu Server CD开始安装时，可以选择安装，这系统会自动装上apache2,php5和mysql5。下面主要说明一下如果不是安装的Ubuntu server时的安装方法。
+用命令在Ubuntu下架设Lamp其实很简单，用一条命令就完成。在终端输入以下命令：</p>
+
+<pre><code>#sudo apt-get install apache2 mysql-server php5 php5-mysql php5-gd #phpmyadmin
+</code></pre>
+
+<p>装好后，mysql管理员是root，无密码，通过<a href="http://localhost/phpmyadmin%E5%B0%B1%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AEmysql%E4%BA%86">http://localhost/phpmyadmin%E5%B0%B1%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AEmysql%E4%BA%86</a></p>
+
+<h6>修改 MySql 密码</h6>
+
+<p>终端下输入：</p>
+
+<pre><code>#mysql -u root
+#mysql&gt; GRANT ALL PRIVILEGES ON *.* TO root@localhost IDENTIFIED BY “123456″;
+</code></pre>
+
+<p>’123456‘是root的密码，可以自由设置，但最好是设个安全点的。
+    #mysql> quit; 退出mysql</p>
+
+<h6>apache2的操作命令</h6>
+
+<pre><code>启动：#sudo /etc/init.d/apache2 start
+重启：#sudo /etc/init.d/apache2 restart
+关闭：#sudo /etc/init.d/apache2 stop
+apache2的默认主目录：/var/www/
+</code></pre>
+
+<h3>总结</h3>
+
+<h6>一、文件/文件夹管理</h6>
+
+<pre><code>ls 列出当前目录文件（不包括隐含文件）
+ls -a 列出当前目录文件（包括隐含文件）
+ls -l 列出当前目录下文件的详细信息
+
+cd .. 回当前目录的上一级目录
+cd - 回上一次所在的目录
+cd ~ 或 cd 回当前用户的宿主目录
+mkdir 目录名 创建一个目录
+rmdir 空目录名 删除一个空目录
+rm 文件名 文件名 删除一个文件或多个文件
+rm -rf 非空目录名 删除一个非空目录下的一切
+
+mv 路经/文件 /经/文件移动相对路经下的文件到绝对路经下
+mv 文件名 新名称 在当前目录下改名
+find 路经 -name “字符串” 查找路经所在范围内满足字符串匹配的文件和目录
+</code></pre>
+
+<h6>二、系统管理</h6>
+
+<pre><code>fdisk fdisk -l 查看系统分区信息
+fdisk fdisk /dev/sdb 为一块新的SCSI硬盘进行分区
+chown chown root /home 把/home的属主改成root用户
+chgrp chgrp root /home 把/home的属组改成root组
+
+Useradd 创建一个新的用户
+Groupadd 组名 创建一个新的组
+Passwd 用户名 为用户创建密码
+Passwd -d用户名 删除用户密码也能登陆
+Passwd -S用户名 查询账号密码
+Usermod -l 新用户名 老用户名 为用户改名
+Userdel–r 用户名 删除用户一切
+
+service [servicename] start/stop/restart 系统服务控制操作
+/etc/init.d/[servicename] start/stop/restart 系统服务控制操作
+
+uname -a 查看内核版本
+cat /etc/issue 查看ubuntu版本
+lsusb 查看usb设备
+sudo ethtool eth0 查看网卡状态
+cat /proc/cpuinfo 查看cpu信息
+lshw 查看当前硬件信息
+sudo fdisk -l 查看磁盘信息
+df -h 查看硬盘剩余空间
+free -m 查看当前的内存使用情况
+ps -A 查看当前有哪些进程
+kill 进程号(就是ps -A中的第一列的数字)或者 killall 进程名( 杀死一个进程)
+kill -9 进程号 强制杀死一个进程
+
+reboot Init 6 重启LINUX系统
+Halt Init 0 Shutdown –h now 关闭LINUX系统
+</code></pre>
+
+<h6>三、打包/解压</h6>
+
+<pre><code>tar -c 创建包 –x 释放包 -v 显示命令过程 –z 代表压缩包
+tar –cvf benet.tar /home/benet 把/home/benet目录打包
+tar –zcvf benet.tar.gz /mnt 把目录打包并压缩
+tar –zxvf benet.tar.gz 压缩包的文件解压恢复
+tar –jxvf benet.tar.bz2 解压缩
+</code></pre>
+
+<h6>四、make编译</h6>
+
+<pre><code>make 编译
+make install 安装编译好的源码包
+</code></pre>
+
+<h6>五、apt命令</h6>
+
+<pre><code>apt-cache search package 搜索包
+apt-cache show package 获取包的相关信息，如说明、大小、版本等
+sudo apt-get install package 安装包
+sudo apt-get install package - - reinstall 重新安装包
+sudo apt-get -f install 修复安装”-f = –fix-missing”
+sudo apt-get remove package 删除包
+sudo apt-get remove package - - purge 删除包，包括删除配置文件等
+sudo apt-get update 更新源
+sudo apt-get upgrade 更新已安装的包
+sudo apt-get dist-upgrade 升级系统
+sudo apt-get dselect-upgrade 使用 dselect 升级
+apt-cache depends package 了解使用依赖
+apt-cache rdepends package 是查看该包被哪些包依赖
+sudo apt-get build-dep package 安装相关的编译环境
+apt-get source package 下载该包的源代码
+sudo apt-get clean &amp;&amp; sudo apt-get autoclean 清理无用的包
+sudo apt-get check 检查是否有损坏的依赖
+sudo apt-get clean 清理所有软件缓存（即缓存在/var/cache/apt/archives目录里的deb包）
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+</feed>

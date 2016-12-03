@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-01T17:15:16+08:00</updated>
+  <updated>2016-12-03T13:46:19+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,1751 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[PHP完美搭配之Mysql初探]]></title>
+    <link href="http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql/"/>
+    <updated>2016-12-03T13:36:37+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/12/03/phpwan-mei-da-pei-mysql</id>
+    <content type="html"><![CDATA[<h3>数据库概念</h3>
+
+<h6>什么是数据库</h6>
+
+<p>数据库就是用来存储和管理数据的仓库！</p>
+
+<p>数据库存储数据的优先：</p>
+
+<pre><code>可存储大量数据；
+
+ 方便检索；
+
+ 保持数据的一致性、完整性；
+
+ 安全，可共享；
+
+ 通过组合分析，可产生新数据。
+</code></pre>
+
+<p> <!--more--></p>
+
+<h6>数据库的发展历程</h6>
+
+<p> 没有数据库，使用磁盘文件存储数据；</p>
+
+<pre><code> 层次结构模型数据库；
+
+ 网状结构模型数据库；
+
+ 关系结构模型数据库：
+
+ 使用二维表格来存储数据；
+
+ 关系-对象模型数据库；
+
+ MySQL就是关系型数据库！
+</code></pre>
+
+<h6>常见数据库</h6>
+
+<pre><code> Oracle（神喻）：甲骨文（最高！）；
+
+ DB2：IBM；
+
+ SQ Server：微软；
+
+ Sybase：赛尔斯；
+
+ MySQL：甲骨文；
+</code></pre>
+
+<h6>理解数据库</h6>
+
+<pre><code> RDBMS = 管理员（manager）+仓库（database）
+
+ database = N个table
+</code></pre>
+
+<p> table：</p>
+
+<pre><code>表结构：定义表的列名和列类型！
+表记录：一行一行的记录！
+</code></pre>
+
+<p>我们现在所说的数据库泛指“关系型数据库管理系统（RDBMS - Relationa database management system）”，即“数据库服务器”。</p>
+
+<p>当我们安装了数据库服务器后，就可以在数据库服务器中创建数据库，每个数据库中还可以包含多张表。</p>
+
+<pre><code>表头(header): 每一列的名称;
+列(row): 具有相同数据类型的数据的集合;
+行(col): 每一行用来描述某个人/物的具体信息;
+值(value): 行的具体信息, 每个值必须与该列的数据类型相同;
+键(key): 表中用来识别某个特定的人\物的方法, 键的值在当前列中具有唯一性。
+</code></pre>
+
+<p>数据库表就是一个多行多列的表格。在创建表时，需要指定表的列数，以及列名称，列类型等信息。而不用指定表格的行数，行数是没有上限的</p>
+
+<h6>应用程序与数据库</h6>
+
+<p>　　应用程序使用数据库完成对数据的存储！</p>
+
+<h6>启动和关闭mysql服务器</h6>
+
+<pre><code> 启动：net start mysql；
+
+ 关闭：net stop mysql；
+</code></pre>
+
+<h6>客户端登录退出mysql</h6>
+
+<p>在启动MySQL服务器后，我们需要使用管理员用户登录MySQL服务器，然后来对服务器进行操作。</p>
+
+<h6>登录：mysq -u root -p 123 -h localhost；</h6>
+
+<pre><code>-u：后面的root是用户名，这里使用的是超级管理员root；
+-p：后面的123是密码，这是在安装MySQL时就已经指定的密码；
+-h：后面给出的localhost是服务器主机名，它是可以省略的，例如：mysq -u root -p 123；
+</code></pre>
+
+<h6>退出：quit或exit；</h6>
+
+<h3>概述</h3>
+
+<h6>什么是SQL</h6>
+
+<p>SQL（Structured Query Language）是“结构化查询语言”，它是对关系型数据库的操作语言。它可以应用到所有关系型数据库中，例如：MySQL、Oracle、SQ Server等。SQ标准（ANSI/ISO）有：</p>
+
+<pre><code> SQL-92：1992年发布的SQL语言标准；
+
+ SQL:1999：1999年发布的SQL语言标签；
+
+ SQL:2003：2003年发布的SQL语言标签；
+</code></pre>
+
+<p>这些标准就与JDK的版本一样，在新的版本中总要有一些语法的变化。不同时期的数据库对不同标准做了实现。</p>
+
+<p>虽然SQL可以用在所有关系型数据库中，但很多数据库还都有标准之后的一些语法，我们可以称之为“方言”。例如MySQL中的LIMIT语句就是MySQL独有的方言，其它数据库都不支持！当然，Oracle或SQ Server都有自己的方言。</p>
+
+<h3>语法要求</h3>
+
+<pre><code> SQL语句可以单行或多行书写，以分号结尾；
+
+ 可以用空格和缩进来来增强语句的可读性；
+
+ 关键字不区别大小写，建议使用大写；
+</code></pre>
+
+<h3>分类</h3>
+
+<pre><code> DDL（Data Definition Language）：数据定义语言，用来定义数据库对象：库、表、列等；
+
+ DML（Data Manipulation Language）：数据操作语言，用来定义数据库记录（数据）；
+
+ DCL（Data Contro Language）：数据控制语言，用来定义访问权限和安全级别；
+
+ DQL（Data Query Language）：数据查询语言，用来查询记录（数据）。
+</code></pre>
+
+<h3>DDL</h3>
+
+<h6>基本操作</h6>
+
+<p> 查看所有数据库名称：</p>
+
+<pre><code> SHOW DATABASES；　
+</code></pre>
+
+<p> 切换数据库：</p>
+
+<pre><code> USE mydb1，切换到mydb1数据库；
+</code></pre>
+
+<h6>操作数据库</h6>
+
+<p> 创建数据库：</p>
+
+<pre><code> CREATE DATABASE [IF NOT EXISTS] mydb1；
+</code></pre>
+
+<p>创建数据库，例如：</p>
+
+<pre><code>CREATE DATABASE mydb1，创建一个名为mydb1的数据库。如果这个数据已经存在，那么会报错。例如CREATE DATABASE IF NOT EXISTS mydb1，在名为mydb1的数据库不存在时创建该库，这样可以避免报错。
+</code></pre>
+
+<p> 删除数据库：</p>
+
+<pre><code> DROP DATABASE [IF EXISTS] mydb1；
+</code></pre>
+
+<p>删除数据库，例如：</p>
+
+<pre><code>DROP DATABASE mydb1，删除名为mydb1的数据库。如果这个数据库不存在，那么会报错。DROP DATABASE IF EXISTS mydb1，就算mydb1不存在，也不会的报错。
+</code></pre>
+
+<p> 修改数据库编码：</p>
+
+<pre><code> ALTER DATABASE mydb1 CHARACTER SET utf8
+</code></pre>
+
+<p>修改数据库mydb1的编码为utf8。注意，在MySQL中所有的UTF-8编码都不能使用中间的“-”，即UTF-8要书写为UTF8。</p>
+
+<h3>数据类型</h3>
+
+<p>MySQL有三大类数据类型, 分别为数字、日期\时间、字符串, 这三大类中又更细致的划分了许多子类型:</p>
+
+<h6>数字类型</h6>
+
+<pre><code>    整数: tinyint、smallint、mediumint、int、bigint
+    浮点数: float、double、real、decimal
+</code></pre>
+
+<h6>日期和时间:</h6>
+
+<pre><code>    date、time、datetime、timestamp、year
+</code></pre>
+
+<h6>字符串类型</h6>
+
+<pre><code>    字符串: char、varchar
+    文本: tinytext、text、mediumtext、longtext
+    二进制(可用来存储图片、音乐等): tinyblob、blob、mediumblob、longblob
+</code></pre>
+
+<p>MySQL与Java一样，也有数据类型。MySQL中数据类型主要应用在列上。</p>
+
+<p>常用类型：</p>
+
+<pre><code> int：整型
+
+ double：浮点型，例如double(5,2)表示最多5位，其中必须有2位小数，即最大值为999.99；
+
+ decimal：泛型型，在表单钱方面使用该类型，因为不会出现精度缺失问题；
+
+ char：固定长度字符串类型；
+
+ varchar：可变长度字符串类型；
+
+ text：字符串类型；
+
+ blob：字节类型；
+
+ date：日期类型，格式为：yyyy-MM-dd；
+
+ time：时间类型，格式为：hh:mm:ss
+
+ timestamp：时间戳类型；
+</code></pre>
+
+<h3>组成</h3>
+
+<p>与常规的脚本语言类似, MySQ 也具有一套对字符、单词以及特殊符号的使用规定, MySQ 通过执行 SQ 脚本来完成对数据库的操作, 该脚本由一条或多条MySQL语句(SQL语句 + 扩展语句)组成, 保存时脚本文件后缀名一般为 .sql。在控制台下, MySQ 客户端也可以对语句进行单句的执行而不用保存为.sql文件。</p>
+
+<h3>标识符</h3>
+
+<p>标识符用来命名一些对象, 如数据库、表、列、变量等, 以便在脚本中的其他地方引用。MySQL标识符命名规则稍微有点繁琐, 这里我们使用万能命名规则: 标识符由字母、数字或下划线(_)组成, 且第一个字符必须是字母或下划线。</p>
+
+<p>对于标识符是否区分大小写取决于当前的操作系统, Windows下是不敏感的, 但对于大多数 linux\unix 系统来说, 这些标识符大小写是敏感的。</p>
+
+<h6>关键字:</h6>
+
+<pre><code>MySQL的关键字众多, 这里不一一列出, 在学习中学习。 这些关键字有自己特定的含义, 尽量避免作为标识符。
+</code></pre>
+
+<h6>语句:</h6>
+
+<pre><code>MySQL语句是组成MySQL脚本的基本单位, 每条语句能完成特定的操作, 他是由 SQ 标准语句 + MySQ 扩展语句组成。
+</code></pre>
+
+<h6>函数:</h6>
+
+<pre><code>MySQL函数用来实现数据库操作的一些高级功能, 这些函数大致分为以下几类: 字符串函数、数学函数、日期时间函数、搜索函数、加密函数、信息函数。
+</code></pre>
+
+<h3>操作</h3>
+
+<h6>登录到MySQL</h6>
+
+<p>当 MySQ 服务已经运行时, 我们可以通过MySQL自带的客户端工具登录到MySQL数据库中, 首先打开命令提示符, 输入以下格式的命名:</p>
+
+<p>mysq -h 主机名 -u 用户名 -p</p>
+
+<pre><code>-h : 该命令用于指定客户端所要登录的MySQL主机名, 登录当前机器该参数可以省略;
+-u : 所要登录的用户名;
+-p : 告诉服务器将会使用一个密码来登录, 如果所要登录的用户名密码为空, 可以忽略此选项。
+</code></pre>
+
+<p>以登录刚刚安装在本机的MySQL数据库为例, 在命令行下输入 mysq -u root -p 按回车确认, 如果安装正确且MySQL正在运行, 会得到以下响应:</p>
+
+<pre><code>Enter password:
+</code></pre>
+
+<blockquote><p>若密码存在, 输入密码登录, 不存在则直接按回车登录, 按照本文中的安装方法, 默认 root 账号是无密码的。登录成功后你将会看到 Welecome to the MySQ monitor&hellip; 的提示语。</p></blockquote>
+
+<p>然后命令提示符会一直以 mysql> 加一个闪烁的光标等待命令的输入, 输入 exit 或 quit 退出登录。</p>
+
+<h6>创建一个数据库</h6>
+
+<p>使用 create database 语句可完成对数据库的创建, 创建命令的格式如下:</p>
+
+<pre><code>create database 数据库名 [其他选项];
+</code></pre>
+
+<p>例如我们需要创建一个名为 samp_db 的数据库, 在命令行下执行以下命令:</p>
+
+<pre><code>create database samp_db character set gbk;
+</code></pre>
+
+<h6>选择所要操作的数据库</h6>
+
+<p>要对一个数据库进行操作, 必须先选择该数据库, 否则会提示错误:</p>
+
+<pre><code>ERROR 1046(3D000): No database selected
+</code></pre>
+
+<p>两种方式对数据库进行使用的选择:</p>
+
+<p>一: 在登录数据库时指定, 命令: mysq -D 所选择的数据库名 -h 主机名 -u 用户名 -p</p>
+
+<pre><code>例如登录时选择刚刚创建的数据库: mysq -D samp_db -u root -p
+</code></pre>
+
+<p>二: 在登录后使用 use 语句指定, 命令: use 数据库名;</p>
+
+<pre><code>use 语句可以不加分号, 执行 use samp_db 来选择刚刚创建的数据库, 选择成功后会提示: Database changed
+</code></pre>
+
+<h6>创建数据库表</h6>
+
+<p>使用 create table 语句可完成对表的创建, create table 的常见形式:</p>
+
+<pre><code>create table 表名称(列声明);
+</code></pre>
+
+<p>以创建 students 表为例, 表中将存放 学号(id)、姓名(name)、性别(sex)、年龄(age)、联系电话(tel) 这些内容:</p>
+
+<pre><code>create table students
+（
+    id int unsigned not nul auto_increment primary key,
+    name char(8) not null,
+    sex char(4) not null,
+    age tinyint unsigned not null,
+    te char(13) nul default "-"
+);
+</code></pre>
+
+<h6>向表中插入数据</h6>
+
+<p>insert 语句可以用来将一行或多行数据插到数据库表中, 使用的一般形式如下:</p>
+
+<pre><code>insert [into] 表名 [(列名1, 列名2, 列名3, ...)] values (值1, 值2, 值3, ...);
+</code></pre>
+
+<p>其中 [] 内的内容是可选的, 例如, 要给 samp_db 数据库中的 students 表插入一条记录, 执行语句:</p>
+
+<pre><code>insert into students values(NULL, "王刚", "男", 20, "13811371377");
+</code></pre>
+
+<h6>查询表中的数据</h6>
+
+<p>select 语句常用来根据一定的查询规则到数据库中获取数据, 其基本的用法为:</p>
+
+<pre><code>select 列名称 from 表名称 [查询条件];
+</code></pre>
+
+<p>例如要查询 students 表中所有学生的名字和年龄, 输入语句 select name, age from students; 执行结果如下:</p>
+
+<pre><code>mysql&gt; select name, age from students;
++--------+-----+
+| name   | age |
++--------+-----+
+| 王刚   |  20 |
+| 孙丽华 |  21 |
+| 王永恒 |  23 |
+| 郑俊杰 |  19 |
+| 陈芳   |  22 |
+| 张伟朋 |  21 |
++--------+-----+
+6 rows in set (0.00 sec)
+</code></pre>
+
+<p>按特定条件查询:</p>
+
+<pre><code>where 关键词用于指定查询条件, 用法形式为: select 列名称 from 表名称 where 条件;
+
+以查询所有性别为女的信息为例, 输入查询语句: select * from students where sex="女";
+</code></pre>
+
+<h6>更新表中的数据</h6>
+
+<p>update 语句可用来修改表中的数据, 基本的使用形式为:</p>
+
+<pre><code>update 表名称 set 列名称=新值 where 更新条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>将id为5的手机号改为默认的"-": update students set tel=default where id=5;
+
+将所有人的年龄增加1: update students set age=age+1;
+
+将手机号为 13288097888 的姓名改为 "张伟鹏", 年龄改为 19: update students set name="张伟鹏", age=19 where tel="13288097888";
+</code></pre>
+
+<h6>删除表中的数据</h6>
+
+<p>delete 语句用于删除表中的数据, 基本用法为:</p>
+
+<pre><code>delete from 表名称 where 删除条件;
+</code></pre>
+
+<p>使用示例:</p>
+
+<pre><code>删除id为2的行: delete from students where id=2;
+
+删除所有年龄小于21岁的数据: delete from students where age&lt;20;
+
+删除表中的所有数据: delete from students;
+</code></pre>
+
+<h3>创建后表的修改</h3>
+
+<p>alter table 语句用于创建后对表的修改, 基础用法如下:</p>
+
+<h6>添加列</h6>
+
+<pre><code>基本形式: alter table 表名 add 列名 列数据类型 [after 插入位置];
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>在表的最后追加列 address: alter table students add address char(60);
+
+在名为 age 的列后插入列 birthday: alter table students add birthday date after age;
+</code></pre>
+
+<h6>修改列</h6>
+
+<pre><code>基本形式: alter table 表名 change 列名称 列新名称 新数据类型;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>将表 te 列改名为 telphone: alter table students change te telphone char(13) default "-";
+
+将 name 列的数据类型改为 char(16): alter table students change name name char(16) not null;
+</code></pre>
+
+<h6>删除列</h6>
+
+<pre><code>基本形式: alter table 表名 drop 列名称;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 birthday 列: alter table students drop birthday;
+</code></pre>
+
+<h6>重命名表</h6>
+
+<pre><code>基本形式: alter table 表名 rename 新表名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>重命名 students 表为 workmates: alter table students rename workmates;
+</code></pre>
+
+<h6>删除整张表</h6>
+
+<p>基本形式: drop table 表名;</p>
+
+<pre><code>示例: 删除 workmates 表: drop table workmates;
+</code></pre>
+
+<p>删除整个数据库</p>
+
+<pre><code>基本形式: drop database 数据库名;
+</code></pre>
+
+<p>示例:</p>
+
+<pre><code>删除 samp_db 数据库: drop database samp_db;
+</code></pre>
+
+<h3>附录</h3>
+
+<h6>修改 root 用户密码</h6>
+
+<p>按照本文的安装方式, root 用户默认是没有密码的, 重设 root 密码的方式也较多, 这里仅介绍一种较常用的方式。</p>
+
+<p>使用 mysqladmin 方式:</p>
+
+<pre><code>打开命令提示符界面, 执行命令: mysqladmin -u root -p password 新密码
+</code></pre>
+
+<p>执行后提示输入旧密码完成密码修改, 当旧密码为空时直接按回车键确认即可。</p>
+
+<h3>总结：</h3>
+
+<p>1、说明：创建数据库</p>
+
+<pre><code>CREATE DATABASE database-name
+</code></pre>
+
+<p>2、说明：删除数据库</p>
+
+<pre><code>drop database dbname
+</code></pre>
+
+<p>3、说明：备份sq server</p>
+
+<p>&mdash; 创建 备份数据的 device</p>
+
+<pre><code>USE master
+EXEC sp_addumpdevice 'disk', 'testBack', 'c:\mssql7backup\MyNwind_1.dat'
+</code></pre>
+
+<p>&mdash; 开始 备份</p>
+
+<pre><code>BACKUP DATABASE pubs TO testBack
+</code></pre>
+
+<p>4、说明：创建新表</p>
+
+<pre><code>create table tabname(col1 type1 [not null] [primary key],col2 type2 [not null],..)
+</code></pre>
+
+<p>根据已有的表创建新表：</p>
+
+<pre><code>A：create table tab_new like tab_old (使用旧表创建新表)
+B：create table tab_new as select col1,col2… from tab_old definition only
+</code></pre>
+
+<p>5、说明：删除新表</p>
+
+<pre><code>drop table tabname
+</code></pre>
+
+<p>6、说明：增加一个列</p>
+
+<pre><code>Alter table tabname add column co type
+
+注：列增加后将不能删除。DB2中列加上后数据类型也不能改变，唯一能改变的是增加varchar类型的长度。
+</code></pre>
+
+<p>7、说明：添加主键： Alter table tabname add primary key(col)</p>
+
+<pre><code>说明：删除主键： Alter table tabname drop primary key(col)
+</code></pre>
+
+<p>8、说明：创建索引：create [unique] index idxname on tabname(col….)</p>
+
+<pre><code>删除索引：drop index idxname
+注：索引是不可更改的，想更改必须删除重新建。
+</code></pre>
+
+<p>9、说明：创建视图：create view viewname as select statement</p>
+
+<pre><code>删除视图：drop view viewname
+</code></pre>
+
+<p>10、说明：几个简单的基本的sql语句</p>
+
+<pre><code>选择：select * from table1 where 范围
+插入：insert into table1(field1,field2) values(value1,value2)
+删除：delete from table1 where 范围
+更新：update table1 set field1=value1 where 范围
+查找：select * from table1 where field1 like ’%value1%’ ---like的语法很精妙，查资料!
+排序：select * from table1 order by field1,field2 [desc]
+总数：select count as totalcount from table1
+求和：select sum(field1) as sumvalue from table1
+平均：select avg(field1) as avgvalue from table1
+最大：select max(field1) as maxvalue from table1
+最小：select min(field1) as minvalue from table1
+</code></pre>
+
+<h3>Mysql写出高质量的sql语句的几点建议</h3>
+
+<h6>1 建议一：尽量避免在列上运算</h6>
+
+<p>尽量避免在列上运算，这样会导致索引失效。
+1.1 日期运算
+优化前：</p>
+
+<pre><code>select * from system_user where date(createtime) &gt;= '2015-06-01'
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where createtime &gt;= '2015-06-01'
+</code></pre>
+
+<p>1.2 加，减，乘，除
+优化前：</p>
+
+<pre><code>select * from system_user where age + 10 &gt;= 20
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select * from system_user where age &gt;= 10
+</code></pre>
+
+<h6>2 建议二：用整型设计索引</h6>
+
+<p>用整型设计的索引，占用的字节少，相对与字符串索引要快的多。特别是创建主键索引和唯一索引的时候。 1）设计日期时候，建议用int取代char(8)。例如整型：20150603。 2）设计IP时候可以用bigint把IP转化为长整型存储。</p>
+
+<h6>3 建议三：join时，使用小结果集驱动大结果集</h6>
+
+<p>使用join的时候，应该尽量让小结果集驱动大的结果集，把复杂的join查询拆分成多个query。因为join多个表的时候，可能会有表的锁定和阻塞。如果大结果集非常大，而且被锁了，那么这个语句会一直等待。这个也是新手常犯的一个错误！ 优化前：</p>
+
+<pre><code>select
+    *
+from table_a a
+left join table_b b
+    on a.id = b.id
+left join table_c c
+    on a.id = c.id
+where a.id &gt; 100
+    and b.id &lt; 200
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select
+    *
+from (
+    select  
+        *
+    from table_a
+    where id &gt; 100
+) a
+left join(
+    select  
+        *
+    from table_b
+    where id &lt; 200
+)b
+    on a.id = b.id
+left join table_c
+    on a.id = c.id
+</code></pre>
+
+<h6>4 建议四：仅列出需要查询的字段</h6>
+
+<p>仅列出需要查询的字段，新手一般都查询的时候都是*，其实这样不好。这对速度不会有明显的影响，主要考虑的是节省内存。 优化前：</p>
+
+<pre><code>select * from system_user where age &gt; 10
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>select username,emai from system_user where age &gt; 10
+</code></pre>
+
+<h6>5 建议五：使用批量插入节省交互</h6>
+
+<p>优化前：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456')
+insert into system_user(username,passwd) values('test2','123456')
+insert into system_user(username,passwd) values('test3','123456')
+</code></pre>
+
+<p>优化后：</p>
+
+<pre><code>insert into system_user(username,passwd) values('test1','123456'),('test2','123456'),('test3','123456')
+</code></pre>
+
+<h6>6 建议六：多习惯使用explain分析sql语句</h6>
+
+<h6>7 建议七：多使用profiling分析sql语句时间开销</h6>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[重整Linux一次就够了]]></title>
+    <link href="http://al1020119.github.io/blog/2016/12/02/zhong-zheng-linux/"/>
+    <updated>2016-12-02T13:35:16+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/12/02/zhong-zheng-linux</id>
+    <content type="html"><![CDATA[<h6>前言：</h6>
+
+<p>因为之前学校有学过linux😂，而且这几年一直使用的Mac做开发，所以对Linux及相关命令还是有些接触的，只是没有机会，也没有刻意去专门研究或者整理，最近因为学习与工作的而需要开始了一次Linux之路，所以学习的过程中寻找资料并且整理了一下。</p>
+
+<blockquote><p>目前几乎大部分的互联网公司公司都是使用Linux</p></blockquote>
+
+<p>这里以Ubantu为例整理一套Linux命令，至于为什么是Ubantu，谁用谁知道，好了废话不多说，开干🤔🤔🤔🤔🤔🤔🤔🤔</p>
+
+<h3>目录</h3>
+
+<ul>
+<li>系统</li>
+<li>硬盘</li>
+<li>内存</li>
+<li>进程</li>
+<li>查看当前有哪些进程#ps -A</li>
+<li>网络</li>
+<li>服务</li>
+<li>设置</li>
+<li>中文</li>
+<li>文件</li>
+<li>FTP</li>
+<li>解压缩</li>
+<li>Nautilus</li>
+<li>程序</li>
+<li>数据库</li>
+<li>其它</li>
+<li>Ubuntu命令行下修改网络配置</li>
+<li>安装AMP服务</li>
+<li>其他总结</li>
+</ul>
+
+
+<!--more-->
+
+
+<p>查看软件xxx安装内容</p>
+
+<pre><code>#dpkg -L xxx
+</code></pre>
+
+<p>查找软件</p>
+
+<pre><code>#apt-cache search 正则表达式
+</code></pre>
+
+<p>查找文件属于哪个包</p>
+
+<pre><code>#dpkg -S filename apt-file search filename
+</code></pre>
+
+<p>查询软件xxx依赖哪些包</p>
+
+<pre><code>#apt-cache depends xxx
+</code></pre>
+
+<p>查询软件xxx被哪些包依赖</p>
+
+<pre><code>#apt-cache rdepends xxx
+</code></pre>
+
+<p>增加一个光盘源</p>
+
+<pre><code>#sudo apt-cdrom add
+</code></pre>
+
+<p>系统升级</p>
+
+<pre><code>#sudo apt-get update
+#sudo apt-get upgrade
+#sudo apt-get dist-upgrade
+</code></pre>
+
+<p>清除所以删除包的残余配置文件</p>
+
+<pre><code>#dpkg -l |grep ^rc|awk ‘{print $2}’ |tr [”"n”] [” “]|sudo xargs dpkg -P -
+</code></pre>
+
+<p>编译时缺少h文件的自动处理</p>
+
+<pre><code>#sudo auto-apt run ./configure
+</code></pre>
+
+<p>查看安装软件时下载包的临时存放目录</p>
+
+<pre><code>#ls /var/cache/apt/archives
+</code></pre>
+
+<p>备份当前系统安装的所有包的列表</p>
+
+<pre><code>#dpkg –get-selections | grep -v deinstall &gt; ~/somefile
+</code></pre>
+
+<p>从上面备份的安装包的列表文件恢复所有包</p>
+
+<pre><code>#dpkg –set-selections &lt; ~/somefile sudo dselect
+</code></pre>
+
+<p>清理旧版本的软件缓存</p>
+
+<pre><code>#sudo apt-get autoclean
+</code></pre>
+
+<p>清理所有软件缓存</p>
+
+<pre><code>#sudo apt-get clean
+</code></pre>
+
+<p>删除系统不再使用的孤立软件</p>
+
+<pre><code>#sudo apt-get autoremove
+</code></pre>
+
+<p>查看包在服务器上面的地址</p>
+
+<pre><code>#apt-get -qq –print-uris install ssh | cut -d"’ -f2
+</code></pre>
+
+<h3>系统</h3>
+
+<p>查看内核</p>
+
+<pre><code>#uname -a
+</code></pre>
+
+<p>查看Ubuntu版本</p>
+
+<pre><code>#cat /etc/issue
+</code></pre>
+
+<p>查看内核加载的模块</p>
+
+<pre><code>#lsmod
+</code></pre>
+
+<p>查看PCI设备</p>
+
+<pre><code>#lspci
+</code></pre>
+
+<p>查看USB设备</p>
+
+<pre><code>#lsusb
+</code></pre>
+
+<p>查看网卡状态</p>
+
+<pre><code>#sudo ethtool eth0
+</code></pre>
+
+<p>查看CPU信息</p>
+
+<pre><code>#cat /proc/cpuinfo
+</code></pre>
+
+<p>显示当前硬件信息</p>
+
+<pre><code>#lshw
+</code></pre>
+
+<h3>硬盘</h3>
+
+<p>查看硬盘的分区</p>
+
+<pre><code>#sudo fdisk -l
+</code></pre>
+
+<p>查看IDE硬盘信息</p>
+
+<pre><code>#sudo hdparm -i /dev/hda
+</code></pre>
+
+<p>查看STAT硬盘信息</p>
+
+<pre><code>#sudo hdparm -I /dev/sda
+或
+#sudo apt-get install blktool
+#sudo blktool /dev/sda id
+</code></pre>
+
+<p>查看硬盘剩余空间</p>
+
+<pre><code>#df -h
+#df -H
+</code></pre>
+
+<p>查看目录占用空间</p>
+
+<pre><code>#du -hs 目录名
+</code></pre>
+
+<p>优盘没法卸载</p>
+
+<pre><code>#sync fuser -km /media/usbdisk
+</code></pre>
+
+<h3>内存</h3>
+
+<p>查看当前的内存使用情况</p>
+
+<pre><code>#free -m
+</code></pre>
+
+<h3>进程</h3>
+
+<p>查看当前有哪些进程</p>
+
+<pre><code>#ps -A
+</code></pre>
+
+<p>中止一个进程</p>
+
+<pre><code>#kill 进程号(就是ps -A中的第一列的数字) 或者 killall 进程名
+</code></pre>
+
+<p>强制中止一个进程(在上面进程中止不成功的时候使用)</p>
+
+<pre><code>#kill -9 进程号 或者 killall -9 进程名
+</code></pre>
+
+<p>图形方式中止一个程序</p>
+
+<pre><code>#xkill 出现骷髅标志的鼠标，点击需要中止的程序即可
+</code></pre>
+
+<p>查看当前进程的实时状况</p>
+
+<pre><code>#top
+</code></pre>
+
+<p>查看进程打开的文件</p>
+
+<pre><code>#lsof -p
+</code></pre>
+
+<p>ADSL 配置 ADSL</p>
+
+<pre><code>#sudo pppoeconf
+</code></pre>
+
+<p>ADSL手工拨号</p>
+
+<pre><code>#sudo pon dsl-provider
+</code></pre>
+
+<p>激活 ADSL</p>
+
+<pre><code>#sudo /etc/ppp/pppoe_on_boot
+</code></pre>
+
+<p>断开 ADSL</p>
+
+<pre><code>#sudo poff
+</code></pre>
+
+<p>查看拨号日志</p>
+
+<pre><code>#sudo plog
+</code></pre>
+
+<p>如何设置动态域名</p>
+
+<pre><code>#首先去http://www.3322.org申请一个动态域名
+#然后修改 /etc/ppp/ip-up 增加拨号时更新域名指令 sudo vim /etc/ppp/ip-up
+#在最后增加如下行 w3m -no-cookie -dump
+</code></pre>
+
+<h3>网络</h3>
+
+<p>根据IP查网卡地址</p>
+
+<pre><code>#arping IP地址
+</code></pre>
+
+<p>查看当前IP地址</p>
+
+<pre><code>#ifconfig eth0 |awk ‘/inet/ {split($2,x,”:”);print x[2]}’
+</code></pre>
+
+<p>查看当前外网的IP地址</p>
+
+<pre><code>#w3m -no-cookie -dumpwww.edu.cn|grep-o‘[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+#w3m -no-cookie -dumpwww.xju.edu.cn|grep-o’[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+#w3m -no-cookie -dump ip.loveroot.com|grep -o’[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}".[0-9]"{1,3"}’
+</code></pre>
+
+<p>查看当前监听80端口的程序</p>
+
+<pre><code>#lsof -i :80
+</code></pre>
+
+<p>查看当前网卡的物理地址</p>
+
+<pre><code>#arp -a | awk ‘{print $4}’ ifconfig eth0 | head -1 | awk ‘{print $5}’
+</code></pre>
+
+<p>立即让网络支持nat</p>
+
+<pre><code>#sudo echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+#sudo iptables -t nat -I POSTROUTING -j MASQUERADE
+</code></pre>
+
+<p>查看路由信息</p>
+
+<pre><code>#netstat -rn sudo route -n
+</code></pre>
+
+<p>手工增加删除一条路由</p>
+
+<pre><code>#sudo route add -net 192.168.0.0 netmask 255.255.255.0 gw 172.16.0.1
+#sudo route del -net 192.168.0.0 netmask 255.255.255.0 gw 172.16.0.1
+</code></pre>
+
+<p>修改网卡MAC地址的方法</p>
+
+<pre><code>#sudo ifconfig eth0 down 关闭网卡
+#sudo ifconfig eth0 hw ether 00:AA:BB:CC:DD:EE 然后改地址
+#sudo ifconfig eth0 up 然后启动网卡
+</code></pre>
+
+<p>统计当前IP连接的个数</p>
+
+<pre><code>#netstat -na|grep ESTABLISHED|awk ‘{print $5}’|awk -F: ‘{print $1}’|sort|uniq -c|sort -r -n
+#netstat -na|grep SYN|awk ‘{print $5}’|awk -F: ‘{print $1}’|sort|uniq -c|sort -r -n
+</code></pre>
+
+<p>统计当前20000个IP包中大于100个IP包的IP地址</p>
+
+<pre><code>#tcpdump -tnn -c 20000 -i eth0 | awk -F “.” ‘{print $1″.”$2″.”$3″.”$4}’ | sort | uniq -c | sort -nr | awk ‘ $1 &gt; 100 ‘
+</code></pre>
+
+<p>屏蔽IPV6</p>
+
+<pre><code>#echo “blacklist ipv6″ | sudo tee /etc/modprobe.d/blacklist-ipv6
+</code></pre>
+
+<h3>服务</h3>
+
+<p>添加一个服务</p>
+
+<pre><code>#sudo update-rc.d 服务名 defaults 99
+</code></pre>
+
+<p>删除一个服务</p>
+
+<pre><code>#sudo update-rc.d 服务名 remove
+</code></pre>
+
+<p>临时重启一个服务</p>
+
+<pre><code>#/etc/init.d/服务名 restart
+</code></pre>
+
+<p>临时关闭一个服务</p>
+
+<pre><code>#/etc/init.d/服务名 stop
+</code></pre>
+
+<p>临时启动一个服务
+    #/etc/init.d/服务名 start</p>
+
+<h3>设置</h3>
+
+<p>配置默认Java使用哪个</p>
+
+<pre><code>#sudo update-alternatives –config java
+</code></pre>
+
+<p>修改用户资料</p>
+
+<pre><code>#sudo chfn userid
+</code></pre>
+
+<p>给apt设置代理</p>
+
+<pre><code>#export http_proxy=http://xx.xx.xx.xx:xxx
+</code></pre>
+
+<p>修改系统登录信息</p>
+
+<pre><code>#sudo vim /etc/motd
+</code></pre>
+
+<h3>中文</h3>
+
+<p>转换文件名由GBK为UTF8</p>
+
+<pre><code>#sudo apt-get install convmv convmv -r -f cp936 -t utf8 –notest –nosmart *
+</code></pre>
+
+<p>批量转换src目录下的所有文件内容由GBK到UTF8</p>
+
+<pre><code>#find src -type d -exec mkdir -p utf8/{} "; find src -type f -exec iconv -f GBK -t UTF-8 {} -o utf8/{} "; mv utf8/* src rm -fr utf8
+</code></pre>
+
+<p>转换文件内容由GBK到UTF8</p>
+
+<pre><code>#iconv -f gbk -t utf8 $i &gt; newfile
+</code></pre>
+
+<p>转换 mp3 标签编码</p>
+
+<pre><code>#sudo apt-get install python-mutagen find . -iname “*.mp3” -execdir mid3iconv -e GBK {} ";
+</code></pre>
+
+<p>控制台下显示中文</p>
+
+<pre><code>#sudo apt-get install zhcon 使用时，输入zhcon即可
+</code></pre>
+
+<h3>文件</h3>
+
+<p>快速查找某个文件</p>
+
+<pre><code>#whereis filename
+#find 目录 -name 文件名
+</code></pre>
+
+<p>查看文件类型</p>
+
+<pre><code>#file filename
+</code></pre>
+
+<p>显示xxx文件倒数6行的内容</p>
+
+<pre><code>#tail -n 6 xxx
+</code></pre>
+
+<p>让tail不停地读地最新的内容</p>
+
+<pre><code>#tail -n 10 -f /var/log/apache2/access.log
+</code></pre>
+
+<p>查看文件中间的第五行（含）到第10行（含）的内容</p>
+
+<pre><code>#sed -n ‘5,10p’ /var/log/apache2/access.log
+</code></pre>
+
+<p>查找包含xxx字符串的文件</p>
+
+<pre><code>#grep -l -r xxx .
+</code></pre>
+
+<p>全盘搜索文件(桌面可视化)</p>
+
+<pre><code>gnome-search-tool
+</code></pre>
+
+<p>查找关于xxx的命令</p>
+
+<pre><code>#apropos xxx man -k xxx
+</code></pre>
+
+<p>通过ssh传输文件</p>
+
+<pre><code>#scp -rp /path/filenameusername@remoteIP:/path
+#将本地文件拷贝到服务器上
+#scp -rpusername@remoteIP:/path/filename/path
+#将远程文件从服务器下载到本地
+</code></pre>
+
+<p>查看某个文件被哪些应用程序读写</p>
+
+<pre><code>#lsof 文件名
+</code></pre>
+
+<p>把所有文件的后辍由rm改为rmvb</p>
+
+<pre><code>#rename ’s/.rm$/.rmvb/’ *
+</code></pre>
+
+<p>把所有文件名中的大写改为小写</p>
+
+<pre><code>#rename ‘tr/A-Z/a-z/’ *
+</code></pre>
+
+<p>删除特殊文件名的文件，如文件名：–help.txt</p>
+
+<pre><code>#rm — –help.txt 或者 rm ./–help.txt
+</code></pre>
+
+<p>查看当前目录的子目录</p>
+
+<pre><code>#ls -d */. 或 echo */.
+</code></pre>
+
+<p>将当前目录下最近30天访问过的文件移动到上级back目录</p>
+
+<pre><code>#find . -type f -atime -30 -exec mv {} ../back ";
+</code></pre>
+
+<p>将当前目录下最近2小时到8小时之内的文件显示出来</p>
+
+<pre><code>#find . -mmin +120 -mmin -480 -exec more {} ";
+</code></pre>
+
+<p>删除修改时间在30天之前的所有文件</p>
+
+<pre><code>#find . -type f -mtime +30 -mtime -3600 -exec rm {} ";
+</code></pre>
+
+<p>查找guest用户的以avi或者rm结尾的文件并删除掉</p>
+
+<pre><code>#find . -name ‘*.avi’ -o -name ‘*.rm’ -user ‘guest’ -exec rm {} ";
+</code></pre>
+
+<p>查找的不以java和xml结尾,并7天没有使用的文件删除掉</p>
+
+<pre><code>#find . ! -name *.java ! -name ‘*.xml’ -atime +7 -exec rm {} ";
+</code></pre>
+
+<p>统计当前文件个数</p>
+
+<pre><code>#ls /usr/bin|wc -w
+</code></pre>
+
+<p>统计当前目录个数</p>
+
+<pre><code>#ls -l /usr/bin|grep ^d|wc -l
+</code></pre>
+
+<p>显示当前目录下2006-01-01的文件名</p>
+
+<pre><code>#ls -l |grep 2006-01-01 |awk ‘{print $8}’
+</code></pre>
+
+<h3>FTP</h3>
+
+<p>上传下载文件工具-filezilla</p>
+
+<pre><code>#sudo apt-get install filezilla
+</code></pre>
+
+<p>filezilla无法列出中文目录？
+站点->字符集->自定义->输入：GBK</p>
+
+<h6>本地中文界面</h6>
+
+<p>1）下载filezilla中文包到本地目录，如~/
+2）#unrar x Filezilla3_zhCN.rar
+3) 如果你没有unrar的话，请先安装rar和unrar</p>
+
+<pre><code>#sudo apt-get install rar unrar
+#sudo ln -f /usr/bin/rar /usr/bin/unrar
+</code></pre>
+
+<p>4）先备份原来的语言包,再安装；实际就是拷贝一个语言包。</p>
+
+<pre><code>#sudo cp /usr/share/locale/zh_CN/filezilla.mo /usr/share/locale/zh_CN/filezilla.mo.bak
+
+#sudo cp ~/locale/zh_CN/filezilla.mo /usr/share/locale/zh_CN/filezilla.mo
+</code></pre>
+
+<p>5）重启filezilla,即可！</p>
+
+<h3>解压缩</h3>
+
+<p>解压缩 xxx.tar.gz</p>
+
+<pre><code>#tar -zxvf xxx.tar.gz
+</code></pre>
+
+<p>解压缩 xxx.tar.bz2</p>
+
+<pre><code>#tar -jxvf xxx.tar.bz2
+</code></pre>
+
+<p>压缩aaa bbb目录为xxx.tar.gz</p>
+
+<pre><code>#tar -zcvf xxx.tar.gz aaa bbb
+</code></pre>
+
+<p>压缩aaa bbb目录为xxx.tar.bz2</p>
+
+<pre><code>#tar -jcvf xxx.tar.bz2 aaa bbb
+</code></pre>
+
+<h6>解压缩 RAR 文件</h6>
+
+<p>1) 先安装</p>
+
+<pre><code>#sudo apt-get install rar unrar
+#sudo ln -f /usr/bin/rar /usr/bin/unrar
+</code></pre>
+
+<p>2) 解压</p>
+
+<pre><code>#unrar x aaaa.rar
+</code></pre>
+
+<h6>解压缩 ZIP 文件</h6>
+
+<p>1) 先安装</p>
+
+<pre><code>#sudo apt-get install zip unzip
+#sudo ln -f /usr/bin/zip /usr/bin/unzip
+</code></pre>
+
+<p>2) 解压</p>
+
+<pre><code>#unzip x aaaa.zip
+</code></pre>
+
+<h3>Nautilus</h3>
+
+<p>显示隐藏文件</p>
+
+<pre><code>Ctrl+h
+</code></pre>
+
+<p>显示地址栏</p>
+
+<pre><code>Ctrl+l
+</code></pre>
+
+<p>特殊 URI 地址</p>
+
+<pre><code>* computer:/// - 全部挂载的设备和网络
+* network:/// - 浏览可用的网络
+* burn:/// - 一个刻录 CDs/DVDs 的数据虚拟目录
+* smb:/// - 可用的 windows/samba 网络资源
+* x-nautilus-desktop:/// - 桌面项目和图标
+*file:///- 本地文件
+* trash:/// - 本地回收站目录
+* ftp:// - FTP 文件夹
+* ssh:// - SSH 文件夹
+* fonts:/// - 字体文件夹，可将字体文件拖到此处以完成安装
+* themes:/// - 系统主题文件夹
+</code></pre>
+
+<p>查看已安装字体</p>
+
+<pre><code>在nautilus的地址栏里输入”fonts:///“，就可以查看本机所有的fonts
+</code></pre>
+
+<h3>程序</h3>
+
+<p>详细显示程序的运行信息</p>
+
+<pre><code>#strace -f -F -o outfile
+</code></pre>
+
+<h6>日期和时间</h6>
+
+<p>设置日期</p>
+
+<pre><code>#date -s mm/dd/yy
+</code></pre>
+
+<p>设置时间</p>
+
+<pre><code>#date -s HH:MM
+</code></pre>
+
+<p>将时间写入CMOS</p>
+
+<pre><code>#hwclock –systohc
+</code></pre>
+
+<p>读取CMOS时间</p>
+
+<pre><code>#hwclock –hctosys
+</code></pre>
+
+<p>从服务器上同步时间</p>
+
+<pre><code>#sudo ntpdate time.nist.gov
+#sudo ntpdate time.windows.com
+</code></pre>
+
+<h6>控制台</h6>
+
+<p>不同控制台间切换</p>
+
+<pre><code>Ctrl + ALT + ← Ctrl + ALT + →
+</code></pre>
+
+<p>指定控制台切换</p>
+
+<pre><code>Ctrl + ALT + Fn(n:1~7)
+</code></pre>
+
+<p>控制台下滚屏</p>
+
+<pre><code>SHIFT + pageUp/pageDown
+</code></pre>
+
+<p>控制台抓图</p>
+
+<pre><code>#setterm -dump n(n:1~7)
+</code></pre>
+
+<h3>数据库</h3>
+
+<p>mysql的数据库存放在地方</p>
+
+<pre><code>#/var/lib/mysql
+</code></pre>
+
+<p>从mysql中导出和导入数据</p>
+
+<pre><code>#mysqldump 数据库名 &gt; 文件名 #导出数据库
+#mysqladmin create 数据库名 #建立数据库
+#mysql 数据库名 &lt; 文件名 #导入数据库
+</code></pre>
+
+<p>忘了mysql的root口令怎么办</p>
+
+<pre><code>#sudo /etc/init.d/mysql stop
+#sudo mysqld_safe –skip-grant-tables
+#sudo mysqladmin -u user password ‘newpassword”
+#sudo mysqladmin flush-privileges
+</code></pre>
+
+<p>修改mysql的root口令</p>
+
+<pre><code>#sudo mysqladmin -uroot -p password ‘你的新密码’
+</code></pre>
+
+<h3>其它</h3>
+
+<p>下载网站文档</p>
+
+<pre><code>#wget -r -p -np -khttp://www.21cn.com
+· r：在本机建立服务器端目录结构；
+· -p: 下载显示HTML文件的所有图片；
+· -np：只下载目标站点指定目录及其子目录的内容；
+· -k: 转换非相对链接为相对链接。
+</code></pre>
+
+<p>如何删除Totem电影播放机的播放历史记录</p>
+
+<pre><code>#rm ~/.recently-used
+</code></pre>
+
+<p>如何更换gnome程序的快捷键
+点击菜单，鼠标停留在某条菜单上，键盘输入任意你所需要的键，可以是组合键，会立即生效； 如果要清除该快捷键，请使用backspace</p>
+
+<p>vim 如何显示彩色字符</p>
+
+<pre><code>#sudo cp /usr/share/vim/vimcurrent/vimrc_example.vim /usr/share/vim/vimrc
+</code></pre>
+
+<p>如何在命令行删除在会话设置的启动程序</p>
+
+<pre><code>#cd ~/.config/autostart rm 需要删除启动程序
+</code></pre>
+
+<p>如何提高wine的反应速度</p>
+
+<pre><code>#sudo sed -ie ‘/GBK/,/^}/d’ /usr/share/X11/locale/zh_CN.UTF-8/XLC_LOCALE
+
+#chgrp
+</code></pre>
+
+<p>语法: chgrp [-R] 文件组 文件…
+说明： 文件的GID表示文件的文件组，文件组可用数字表示， 也可用一个有效的组名表示，此命令改变一个文件的GID，可参看chown。
+-R 递归地改变所有子目录下所有文件的存取模式
+例子:</p>
+
+<pre><code>＃chgrp group file 将文件 file 的文件组改为 group
+
+#chmod
+</code></pre>
+
+<p>语法: chmod [-R] 模式 文件…
+或 chmod [ugoa] {+|-|=} [rwxst] 文件…
+说明: 改变文件的存取模式，存取模式可表示为数字或符号串，例如：
+＃chmod nnnn file ， n为0-7的数字，意义如下:</p>
+
+<pre><code>4000 运行时可改变UID
+2000 运行时可改变GID
+1000 置粘着位
+0400 文件主可读
+0200 文件主可写
+0100 文件主可执行
+0040 同组用户可读
+0020 同组用户可写
+0010 同组用户可执行
+0004 其他用户可读
+0002 其他用户可写
+0001 其他用户可执行
+</code></pre>
+
+<p>nnnn 就是上列数字相加得到的，例如 chmod 0777 file 是指将文件 file 存取权限置为所有用户可读可写可执行。
+-R 递归地改变所有子目录下所有文件的存取模式</p>
+
+<pre><code>u 文件主
+g 同组用户
+o 其他用户
+a 所有用户
++ 增加后列权限
+- 取消后列权限
+= 置成后列权限
+r 可读
+w 可写
+x 可执行
+s 运行时可置UID
+t 运行时可置GID
+</code></pre>
+
+<p>例子:</p>
+
+<pre><code>＃chmod 0666 file1 file2 将文件 file1 及 file2 置为所有用户可读可写
+＃chmod u+x file 对文件 file 增加文件主可执行权限
+＃chmod o-rwx 对文件file 取消其他用户的所有权限
+
+#chown
+</code></pre>
+
+<p>语法: chown [-R] 文件主 文件…</p>
+
+<p>说明: 文件的UID表示文件的文件主，文件主可用数字表示， 也可用一个有效的用户名表示，此命令改变一个文件的UID，仅当此文件的文件主或超级用户可使用。
+-R 递归地改变所有子目录下所有文件的存取模式
+例子:</p>
+
+<pre><code>#chown mary file 将文件 file 的文件主改为 mary
+#chown 150 file 将文件 file 的UID改为150
+</code></pre>
+
+<h3>Ubuntu命令行下修改网络配置</h3>
+
+<p>以eth0为例</p>
+
+<h6>以DHCP方式配置网卡</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>#sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>并用下面的行来替换有关eth0的行:</p>
+
+<pre><code># The primary network interface - use DHCP to find our address
+auto eth0
+iface eth0 inet dhcp
+</code></pre>
+
+<p>用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<p>当然,也可以在命令行下直接输入下面的命令来获取地址</p>
+
+<pre><code>#sudo dhclient eth0
+</code></pre>
+
+<h6>为网卡配置静态IP地址</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>    #sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>并用下面的行来替换有关eth0的行:</p>
+
+<pre><code>    # The primary network interface
+    auto eth0
+    iface eth0 inet static
+    address 192.168.3.90
+    gateway 192.168.3.1
+    netmask 255.255.255.0
+    network 192.168.3.0
+    broadcast 192.168.3.255
+</code></pre>
+
+<p>将上面的ip地址等信息换成你自己就可以了.</p>
+
+<p>用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<h6>设定第二个IP地址(虚拟IP地址)</h6>
+
+<p>编辑文件/etc/network/interfaces:</p>
+
+<pre><code>    #sudo vi /etc/network/interfaces
+</code></pre>
+
+<p>在该文件中添加如下的行:</p>
+
+<pre><code>auto eth0:1
+iface eth0:1 inet static
+address 192.168.1.60
+netmask 255.255.255.0
+network x.x.x.x
+broadcast x.x.x.x
+gateway x.x.x.x
+</code></pre>
+
+<p>根据你的情况填上所有诸如address,netmask,network,broadcast和gateways等信息.
+用下面的命令使网络设置生效:</p>
+
+<pre><code>#sudo /etc/init.d/networking restart
+</code></pre>
+
+<h6>设置主机名称(hostname)</h6>
+
+<p>使用下面的命令来查看当前主机的主机名称:</p>
+
+<pre><code>#sudo /bin/hostname
+</code></pre>
+
+<p>使用下面的命令来设置当前主机的主机名称:</p>
+
+<pre><code>#sudo /bin/hostname newname
+</code></pre>
+
+<p>系统启动时,它会从/etc/hostname来读取主机的名称.</p>
+
+<h6>配置DNS</h6>
+
+<p>首先,你可以在/etc/hosts中加入一些主机名称和这些主机名称对应的IP地址,这是简单使用本机的静态查询.
+要访问DNS 服务器来进行查询,需要设置/etc/resolv.conf文件.
+假设DNS服务器的IP地址是192.168.3.2, 那么/etc/resolv.conf文件的内容应为:</p>
+
+<pre><code>    search test.com
+    nameserver 192.168.3.2
+</code></pre>
+
+<h3>安装AMP服务</h3>
+
+<p>如果采用Ubuntu Server CD开始安装时，可以选择安装，这系统会自动装上apache2,php5和mysql5。下面主要说明一下如果不是安装的Ubuntu server时的安装方法。
+用命令在Ubuntu下架设Lamp其实很简单，用一条命令就完成。在终端输入以下命令：</p>
+
+<pre><code>#sudo apt-get install apache2 mysql-server php5 php5-mysql php5-gd #phpmyadmin
+</code></pre>
+
+<p>装好后，mysql管理员是root，无密码，通过<a href="http://localhost/phpmyadmin%E5%B0%B1%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AEmysql%E4%BA%86">http://localhost/phpmyadmin%E5%B0%B1%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AEmysql%E4%BA%86</a></p>
+
+<h6>修改 MySql 密码</h6>
+
+<p>终端下输入：</p>
+
+<pre><code>#mysql -u root
+#mysql&gt; GRANT ALL PRIVILEGES ON *.* TO root@localhost IDENTIFIED BY “123456″;
+</code></pre>
+
+<p>’123456‘是root的密码，可以自由设置，但最好是设个安全点的。
+    #mysql> quit; 退出mysql</p>
+
+<h6>apache2的操作命令</h6>
+
+<pre><code>启动：#sudo /etc/init.d/apache2 start
+重启：#sudo /etc/init.d/apache2 restart
+关闭：#sudo /etc/init.d/apache2 stop
+apache2的默认主目录：/var/www/
+</code></pre>
+
+<h3>总结</h3>
+
+<h6>一、文件/文件夹管理</h6>
+
+<pre><code>ls 列出当前目录文件（不包括隐含文件）
+ls -a 列出当前目录文件（包括隐含文件）
+ls -l 列出当前目录下文件的详细信息
+
+cd .. 回当前目录的上一级目录
+cd - 回上一次所在的目录
+cd ~ 或 cd 回当前用户的宿主目录
+mkdir 目录名 创建一个目录
+rmdir 空目录名 删除一个空目录
+rm 文件名 文件名 删除一个文件或多个文件
+rm -rf 非空目录名 删除一个非空目录下的一切
+
+mv 路经/文件 /经/文件移动相对路经下的文件到绝对路经下
+mv 文件名 新名称 在当前目录下改名
+find 路经 -name “字符串” 查找路经所在范围内满足字符串匹配的文件和目录
+</code></pre>
+
+<h6>二、系统管理</h6>
+
+<pre><code>fdisk fdisk -l 查看系统分区信息
+fdisk fdisk /dev/sdb 为一块新的SCSI硬盘进行分区
+chown chown root /home 把/home的属主改成root用户
+chgrp chgrp root /home 把/home的属组改成root组
+
+Useradd 创建一个新的用户
+Groupadd 组名 创建一个新的组
+Passwd 用户名 为用户创建密码
+Passwd -d用户名 删除用户密码也能登陆
+Passwd -S用户名 查询账号密码
+Usermod -l 新用户名 老用户名 为用户改名
+Userdel–r 用户名 删除用户一切
+
+service [servicename] start/stop/restart 系统服务控制操作
+/etc/init.d/[servicename] start/stop/restart 系统服务控制操作
+
+uname -a 查看内核版本
+cat /etc/issue 查看ubuntu版本
+lsusb 查看usb设备
+sudo ethtool eth0 查看网卡状态
+cat /proc/cpuinfo 查看cpu信息
+lshw 查看当前硬件信息
+sudo fdisk -l 查看磁盘信息
+df -h 查看硬盘剩余空间
+free -m 查看当前的内存使用情况
+ps -A 查看当前有哪些进程
+kill 进程号(就是ps -A中的第一列的数字)或者 killall 进程名( 杀死一个进程)
+kill -9 进程号 强制杀死一个进程
+
+reboot Init 6 重启LINUX系统
+Halt Init 0 Shutdown –h now 关闭LINUX系统
+</code></pre>
+
+<h6>三、打包/解压</h6>
+
+<pre><code>tar -c 创建包 –x 释放包 -v 显示命令过程 –z 代表压缩包
+tar –cvf benet.tar /home/benet 把/home/benet目录打包
+tar –zcvf benet.tar.gz /mnt 把目录打包并压缩
+tar –zxvf benet.tar.gz 压缩包的文件解压恢复
+tar –jxvf benet.tar.bz2 解压缩
+</code></pre>
+
+<h6>四、make编译</h6>
+
+<pre><code>make 编译
+make install 安装编译好的源码包
+</code></pre>
+
+<h6>五、apt命令</h6>
+
+<pre><code>apt-cache search package 搜索包
+apt-cache show package 获取包的相关信息，如说明、大小、版本等
+sudo apt-get install package 安装包
+sudo apt-get install package - - reinstall 重新安装包
+sudo apt-get -f install 修复安装”-f = –fix-missing”
+sudo apt-get remove package 删除包
+sudo apt-get remove package - - purge 删除包，包括删除配置文件等
+sudo apt-get update 更新源
+sudo apt-get upgrade 更新已安装的包
+sudo apt-get dist-upgrade 升级系统
+sudo apt-get dselect-upgrade 使用 dselect 升级
+apt-cache depends package 了解使用依赖
+apt-cache rdepends package 是查看该包被哪些包依赖
+sudo apt-get build-dep package 安装相关的编译环境
+apt-get source package 下载该包的源代码
+sudo apt-get clean &amp;&amp; sudo apt-get autoclean 清理无用的包
+sudo apt-get check 检查是否有损坏的依赖
+sudo apt-get clean 清理所有软件缓存（即缓存在/var/cache/apt/archives目录里的deb包）
+</code></pre>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[完虐ThinkPHP 5.* 远不止这些😱😂]]></title>
@@ -12025,708 +13770,6 @@ Demo点击下载</p>
 </code></pre>
 
 <p><img src="http://al1020119.github.io/images/zhiboshizhan030.png" title="Caption" ></p>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[直播-原理篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/09/15/zhi-bo-yuan-li-pian/"/>
-    <updated>2016-09-15T14:42:49+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/09/15/zhi-bo-yuan-li-pian</id>
-    <content type="html"><![CDATA[<p>前言</p>
-
-<p>本系列文章引自一个朋友（讲师）的精华：<a href="http://www.jianshu.com/users/b09c3959ab3b/latest_articles">袁峥Seemygo</a></p>
-
-<h2>一、个人见解（直播难与易）</h2>
-
-<p>直播难：个人认为要想把直播从零开始做出来，绝对是牛逼中的牛逼，大牛中的大牛，因为直播中运用到的技术难点非常之多，视频/音频处理，图形处理，视频/音频压缩，CDN分发，即时通讯等技术，每一个技术都够你学几年的。</p>
-
-<!--more-->
-
-
-<p></p>
-
-<p>直播易：已经有各个领域的大牛，封装好了许多牛逼的框架，我们只需要用别人写好的框架，就能快速的搭建一个直播app，也就是传说中的站在大牛肩膀上编程。</p>
-
-<h2>二、了解直播</h2>
-
-<p>热门直播产品</p>
-
-<p>映客，斗鱼，熊猫，虎牙，花椒等等
-直播效果图</p>
-
-<p><img src="http://al1020119.github.io/images/zhiboyuanli001.png" title="Caption" >
-1.一个完整直播app功能(来自落影loyinglin分享)</p>
-
-<pre><code>1、聊天
-    私聊、聊天室、点亮、推送、黑名单等;
-
-2、礼物
-    普通礼物、豪华礼物、红包、排行榜、第三方充值、内购、礼物动态更新、提现等；
-
-3、直播列表
-    关注、热门、最新、分类直播用户列表等；
-
-4、自己直播
-    录制、推流、解码、播放、美颜、心跳、后台切换、主播对管理员操作、管理员对用户等；
-
-5、房间逻辑
-    创建房间、进入房间、退出房间、关闭房间、切换房间、房间管理员设置、房间用户列表等；
-
-6、用户逻辑
-    普通登陆、第三方登陆、注册、搜索、修改个人信息、关注列表、粉丝列表、忘记密码、查看个人信息、收入榜、关注和取关、检索等；
-
-7、观看直播
-    聊天信息、滚屏弹幕、礼物显示、加载界面等；
-
-8、统计
-    APP业务统计、第三方统计等；
-
-9、超管
-    禁播、隐藏、审核等；
-</code></pre>
-
-<p>2.一个完整直播app原理</p>
-
-<p>直播原理：把主播录制的视频，推送到服务器，在由服务器分发给观众观看。</p>
-
-<p>直播环节：推流端（采集、美颜处理、编码、推流）、服务端处理（转码、录制、截图、鉴黄）、播放器（拉流、解码、渲染）、互动系统（聊天室、礼物系统、赞）
-3.一个完整直播app实现流程</p>
-
-<p>1.采集、2.滤镜处理、3.编码、4.推流、5.CDN分发、6.拉流、7.解码、8.播放、9.聊天互动</p>
-
-<p><img src="http://al1020119.github.io/images/zhiboyuanli002.png" title="Caption" >
-4.一个完整直播app架构</p>
-
-<p><img src="http://al1020119.github.io/images/zhiboyuanli003.png" title="Caption" >
-5.一个完整直播app技术点</p>
-
-<p><img src="http://al1020119.github.io/images/zhiboyuanli004.png" title="Caption" ></p>
-
-<h2>三、了解流媒体（直播需要用到流媒体）</h2>
-
-<pre><code>流媒体开发:网络层(socket或st)负责传输，协议层(rtmp或hls)负责网络打包，封装层(flv、ts)负责编解码数据的封装，编码层(h.264和aac)负责图像，音频压缩。
-帧:每帧代表一幅静止的图像
-GOP:（Group of Pictures）画面组，一个GOP就是一组连续的画面，每个画面都是一帧，一个GOP就是很多帧的集合
-    直播的数据，其实是一组图片，包括I帧、P帧、B帧，当用户第一次观看的时候，会寻找I帧，而播放器会到服务器寻找到最近的I帧反馈给用户。因此，GOP Cache增加了端到端延迟，因为它必须要拿到最近的I帧
-    GOP Cache的长度越长，画面质量越好
-码率：图片进行压缩后每秒显示的数据量。
-帧率：每秒显示的图片数。影响画面流畅度，与画面流畅度成正比：帧率越大，画面越流畅；帧率越小，画面越有跳动感。
-    由于人类眼睛的特殊生理结构，如果所看画面之帧率高于16的时候，就会认为是连贯的，此现象称之为视觉暂留。并且当帧速达到一定数值后，再增长的话，人眼也不容易察觉到有明显的流畅度提升了。
-分辨率：(矩形)图片的长度和宽度，即图片的尺寸
-压缩前的每秒数据量:帧率X分辨率(单位应该是若干个字节)
-压缩比:压缩前的每秒数据量/码率 （对于同一个视频源并采用同一种视频编码算法，则：压缩比越高，画面质量越差。）　
-
-视频文件格式：文件的后缀，比如.wmv,.mov,.mp4,.mp3,.avi,
-    主要用处，根据文件格式，系统会自动判断用什么软件打开,
-    注意: 随意修改文件格式，对文件的本身不会造成太大的影响，比如把avi改成mp4,文件还是avi.
-
-视频封装格式：一种储存视频信息的容器，流式封装可以有TS、FLV等，索引式的封装有MP4,MOV,AVI等，
-    主要作用：一个视频文件往往会包含图像和音频，还有一些配置信息(如图像和音频的关联，如何解码它们等)：这些内容需要按照一定的规则组织、封装起来.
-    注意：会发现封装格式跟文件格式一样，因为一般视频文件格式的后缀名即采用相应的视频封装格式的名称,所以视频文件格式就是视频封装格式。
-视频封装格式和视频压缩编码标准：就好像项目工程和编程语言，封装格式就是一个项目的工程，视频编码方式就是编程语言，一个项目工程可以用不同语言开发。
-</code></pre>
-
-<h2>四、直播基础知识介绍：</h2>
-
-<h4>1.采集视频、音频</h4>
-
-<ul>
-<li><p>1.1 采集视频、音频编码框架 *</p>
-
-<p>  AVFoundation:AVFoundation是用来播放和创建实时的视听媒体数据的框架，同时提供Objective-C接口来操作这些视听数据，比如编辑，旋转，重编码</p></li>
-<li><p>1.2 视频、音频硬件设备 *</p>
-
-<p>  CCD:图像传感器： 用于图像采集和处理的过程，把图像转换成电信号。
-  拾音器:声音传感器： 用于声音采集和处理的过程，把声音转换成电信号。
-  音频采样数据:一般都是PCM格式
-  视频采样数据: 一般都是YUV,或RGB格式，采集到的原始音视频的体积是非常大的，需要经过压缩技术处理来提高传输效率</p></li>
-</ul>
-
-
-<h4>2.视频处理（美颜，水印）</h4>
-
-<pre><code>视频处理原理:因为视频最终也是通过GPU，一帧一帧渲染到屏幕上的，所以我们可以利用OpenGL ES，对视频帧进行各种加工，从而视频各种不同的效果，就好像一个水龙头流出的水，经过若干节管道，然后流向不同的目标
-    现在的各种美颜和视频添加特效的app都是利用GPUImage这个框架实现的,.
-</code></pre>
-
-<ul>
-<li><p>视频处理框架 *</p>
-
-<p>  GPUImage : GPUImage是一个基于OpenGL ES的一个强大的图像/视频处理框架,封装好了各种滤镜同时也可以编写自定义的滤镜,其本身内置了多达120多种常见的滤镜效果。
-  OpenGL:OpenGL（全写Open Graphics Library）是个定义了一个跨编程语言、跨平台的编程接口的规格，它用于三维图象（二维的亦可）。OpenGL是个专业的图形程序接口，是一个功能强大，调用方便的底层图形库。
-  OpenGL ES:OpenGL ES (OpenGL for Embedded Systems) 是 OpenGL三维图形 API 的子集，针对手机、PDA和游戏主机等嵌入式设备而设计。</p></li>
-</ul>
-
-
-<h4>3.视频编码解码</h4>
-
-<ul>
-<li><p>3.1 视频编码框架 *</p>
-
-<p>  FFmpeg:是一个跨平台的开源视频框架,能实现如视频编码,解码,转码,串流,播放等丰富的功能。其支持的视频格式以及播放协议非常丰富,几乎包含了所有音视频编解码、封装格式以及播放协议。
-      -Libswresample:可以对音频进行重采样,rematrixing 以及转换采样格式等操 作。
-      -Libavcodec:提供了一个通用的编解码框架,包含了许多视频,音频,字幕流 等编码/解码器。
-      -Libavformat:用于对视频进行封装/解封装。
-      -Libavutil:包含一些共用的函数,如随机数生成,数据结构,数学运算等。
-      -Libpostproc:用于进行视频的一些后期处理。
-      -Libswscale:用于视频图像缩放,颜色空间转换等。
-      -Libavfilter:提供滤镜功能。
-  X264:把视频原数据YUV编码压缩成H.264格式
-  VideoToolbox:苹果自带的视频硬解码和硬编码API，但是在iOS8之后才开放。
-  AudioToolbox:苹果自带的音频硬解码和硬编码API</p></li>
-<li><p>3.2 视频编码技术 *</p>
-
-<p>  视频压缩编码标准：对视频进行压缩(视频编码)或者解压缩（视频解码）的编码技术,比如MPEG，H.264,这些视频编码技术是压缩编码视频的</p>
-
-<pre><code>  主要作用:是将视频像素数据压缩成为视频码流，从而降低视频的数据量。如果视频不经过压缩编码的话，体积通常是非常大的，一部电影可能就要上百G的空间。
-  注意:最影响视频质量的是其视频编码数据和音频编码数据，跟封装格式没有多大关系
-</code></pre>
-
-<p>  MPEG:一种视频压缩方式，它采用了帧间压缩，仅存储连续帧之间有差别的地方 ，从而达到较大的压缩比</p></li>
-</ul>
-
-
-<p> H.264/AVC:一种视频压缩方式,采用事先预测和与MPEG中的P-B帧一样的帧预测方法压缩，它可以根据需要产生适合网络情况传输的视频流,还有更高的压缩比，有更好的图象质量</p>
-
-<pre><code>    注意1:如果是从单个画面清晰度比较，MPEG4有优势；从动作连贯性上的清晰度，H.264有优势
-    注意2:由于264的算法更加复杂，程序实现烦琐，运行它需要更多的处理器和内存资源。因此，运行264对系统要求是比较高的。
-    注意3:由于264的实现更加灵活，它把一些实现留给了厂商自己去实现，虽然这样给实现带来了很多好处，但是不同产品之间互通成了很大的问题，造成了通过A公司的编码器编出的数据，必须通过A公司的解码器去解这样尴尬的事情
-</code></pre>
-
-<p>H.265/HEVC:一种视频压缩方式,基于H.264，保留原来的某些技术，同时对一些相关的技术加以改进，以改善码流、编码质量、延时和算法复杂度之间的关系，达到最优化设置。</p>
-
-<pre><code>    H.265 是一种更为高效的编码标准，能够在同等画质效果下将内容的体积压缩得更小，传输时更快更省带宽
-    I帧:(关键帧)保留一副完整的画面，解码时只需要本帧数据就可以完成（因为包含完整画面）
-P帧:(差别帧)保留这一帧跟之前帧的差别，解码时需要用之前缓存的画面叠加上本帧定义的差别，生成最终画面。（P帧没有完整画面数据，只有与前一帧的画面差别的数据）
-B帧:(双向差别帧)保留的是本帧与前后帧的差别，解码B帧，不仅要取得之前的缓存画面，还要解码之后的画面，通过前后画面的与本帧数据的叠加取得最终的画面。B帧压缩率高，但是解码时CPU会比较累
-帧内（Intraframe）压缩:当压缩一帧图像时，仅考虑本帧的数据而不考虑相邻帧之间的冗余信息,帧内一般采用有损压缩算法
-帧间（Interframe）压缩:时间压缩（Temporal compression），它通过比较时间轴上不同帧之间的数据进行压缩。帧间压缩一般是无损的
-muxing（合成）：将视频流、音频流甚至是字幕流封装到一个文件中(容器格式（FLV，TS）)，作为一个信号进行传输。
-</code></pre>
-
-<ul>
-<li><p>3.3 音频编码技术 *</p>
-
-<p>  AAC，mp3：这些属于音频编码技术,压缩音频用</p></li>
-<li><p>3.4码率控制 *</p>
-
-<p>  多码率:观众所处的网络情况是非常复杂的，有可能是WiFi，有可能4G、3G、甚至2G，那么怎么满足多方需求呢？多搞几条线路，根据当前网络环境自定义码率。
-      列如：常常看见视频播放软件中的1024，720，高清，标清，流畅等，指的就是各种码率。</p></li>
-<li><p>3.5 视频封装格式 *</p>
-
-<p>  TS : 一种流媒体封装格式，流媒体封装有一个好处，就是不需要加载索引再播放，大大减少了首次载入的延迟，如果片子比较长，mp4文件的索引相当大，影响用户体验
-      为什么要用TS:这是因为两个TS片段可以无缝拼接，播放器能连续播放</p>
-
-<p>  FLV: 一种流媒体封装格式,由于它形成的文件极小、加载速度极快，使得网络观看视频文件成为可能,因此FLV格式成为了当今主流视频格式</p></li>
-</ul>
-
-
-<h4>4.推流</h4>
-
-<ul>
-<li>4.1 数据传输框架 *</li>
-</ul>
-
-
-<p>librtmp:用来传输RTMP协议格式的数据</p>
-
-<ul>
-<li><p>4.2 流媒体数据传输协议 *</p>
-
-<p>  RTMP:实时消息传输协议,Adobe Systems公司为Flash播放器和服务器之间音频、视频和数据传输开发的开放协议，因为是开放协议所以都可以使用了。
-      RTMP协议用于对象、视频、音频的传输。
-      这个协议建立在TCP协议或者轮询HTTP协议之上。
-      RTMP协议就像一个用来装数据包的容器，这些数据可以是FLV中的视音频数据。一个单一的连接可以通过不同的通道传输多路网络流，这些通道中的包都是按照固定大小的包传输的</p>
-
-<p>  chunk:消息包</p></li>
-</ul>
-
-
-<h4>5.流媒体服务器</h4>
-
-<ul>
-<li><p>5.1常用服务器 *</p>
-
-<p>  SRS：一款国人开发的优秀开源流媒体服务器系统
-  BMS:也是一款流媒体服务器系统，但不开源，是SRS的商业版，比SRS功能更多
-  nginx:免费开源web服务器，常用来配置流媒体服务器。</p></li>
-<li><p>5.2数据分发 *</p>
-
-<p>  CDN：(Content Delivery Network)，即内容分发网络,将网站的内容发布到最接近用户的网络”边缘”，使用户可以就近取得所需的内容，解决 Internet网络拥挤的状况，提高用户访问网站的响应速度.
-      CDN：代理服务器，相当于一个中介。
-      CDN工作原理：比如请求流媒体数据
-          1.上传流媒体数据到服务器（源站）
-          2.源站存储流媒体数据
-          3.客户端播放流媒体，向CDN请求编码后的流媒体数据
-          4.CDN的服务器响应请求，若节点上没有该流媒体数据存在，则向源站继续请求流媒体数据；若节点上已经缓存了该视频文件，则跳到第6步。
-          5.源站响应CDN的请求，将流媒体分发到相应的CDN节点上
-          6.CDN将流媒体数据发送到客户端
-  回源：当有用户访问某一个URL的时候，如果被解析到的那个CDN节点没有缓存响应的内容，或者是缓存已经到期，就会回源站去获取搜索。如果没有人访问，那么CDN节点不会主动去源站拿.
-  带宽:在固定的时间可传输的数据总量，
-      比如64位、800MHz的前端总线，它的数据传输率就等于64bit×800MHz÷8(Byte)=6.4GB/s
-  负载均衡: 由多台服务器以对称的方式组成一个服务器集合，每台服务器都具有等价的地位，都可以单独对外提供服务而无须其他服务器的辅助.
-      通过某种负载分担技术，将外部发送来的请求均匀分配到对称结构中的某一台服务器上，而接收到请求的服务器独立地回应客户的请求。
-      均衡负载能够平均分配客户请求到服务器列阵，籍此提供快速获取重要数据，解决大量并发访问服务问题。
-      这种群集技术可以用最少的投资获得接近于大型主机的性能。
-  QoS（带宽管理）:限制每一个组群的带宽，让有限的带宽发挥最大的效用</p></li>
-</ul>
-
-
-<h4>6.拉流</h4>
-
-<pre><code>直播协议选择：
-    即时性要求较高或有互动需求的可以采用RTMP,RTSP
-    对于有回放或跨平台需求的，推荐使用HLS
-直播协议对比 :
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/zhiboyuanli005.png" title="Caption" ></p>
-
-<pre><code>HLS:由Apple公司定义的用于实时流传输的协议,HLS基于HTTP协议实现，传输内容包括两部分，一是M3U8描述文件，二是TS媒体文件。可实现流媒体的直播和点播，主要应用在iOS系统
-    HLS是以点播的技术方式来实现直播
-    HLS是自适应码率流播，客户端会根据网络状况自动选择不同码率的视频流，条件允许的情况下使用高码率，网络繁忙的时候使用低码率，并且自动在二者间随意切
-    换。这对移动设备网络状况不稳定的情况下保障流畅播放非常有帮助。
-    实现方法是服务器端提供多码率视频流，并且在列表文件中注明，播放器根据播放进度和下载速度自动调整。
-HLS与RTMP对比:HLS主要是延时比较大，RTMP主要优势在于延时低
-    HLS协议的小切片方式会生成大量的文件，存储或处理这些文件会造成大量资源浪费
-    相比使用RTSP协议的好处在于，一旦切分完成，之后的分发过程完全不需要额外使用任何专门软件，普通的网络服务器即可，大大降低了CDN边缘服务器的配置要求，可以使用任何现成的CDN,而一般服务器很少支持RTSP。
-HTTP-FLV:基于HTTP协议流式的传输媒体内容。
-    相对于RTMP，HTTP更简单和广为人知，内容延迟同样可以做到1~3秒，打开速度更快，因为HTTP本身没有复杂的状态交互。所以从延迟角度来看，HTTP-FLV要优于RTMP。
-RTSP:实时流传输协议,定义了一对多应用程序如何有效地通过IP网络传送多媒体数据.
-RTP:实时传输协议,RTP是建立在UDP协议上的，常与RTCP一起使用，其本身并没有提供按时发送机制或其它服务质量（QoS）保证，它依赖于低层服务去实现这一过程。
-RTCP:RTP的配套协议,主要功能是为RTP所提供的服务质量（QoS）提供反馈，收集相关媒体连接的统计信息，例如传输字节数，传输分组数，丢失分组数，单向和双向网络延迟等等。
-</code></pre>
-
-<h4>7.解码</h4>
-
-<ul>
-<li><p>7.1 解封装 *</p>
-
-<p>  demuxing（分离）：从视频流、音频流，字幕流合成的文件(容器格式（FLV，TS）)中， 分解出视频、音频或字幕，各自进行解码。</p></li>
-<li><p>7.2 音频编码框架 *</p>
-
-<p>  fdk_aac:音频编码解码框架，PCM音频数据和AAC音频数据互转</p></li>
-<li><p>7.3 解码介绍 *</p>
-
-<p>  硬解码：用GPU来解码，减少CPU运算
-      　优点：播放流畅、低功耗，解码速度快，
-      　　 * 缺点：兼容不好
-  软解码：用CPU来解码
-      优点：兼容好
-      　　 * 缺点：加大CPU负担，耗电增加、没有硬解码流畅，解码速度相对慢</p></li>
-</ul>
-
-
-<h4>8.播放</h4>
-
-<pre><code>ijkplayer:一个基于FFmpeg的开源Android/iOS视频播放器
-    API易于集成；
-    编译配置可裁剪，方便控制安装包大小；
-    支持硬件加速解码，更加省电
-    简单易用，指定拉流URL，自动解码播放.
-</code></pre>
-
-<h4>9.聊天互动</h4>
-
-<pre><code>IM:(InstantMessaging)即时通讯:是一个实时通信系统，允许两人或多人使用网络实时的传递文字消息、文件、语音与视频交流.
-    IM在直播系统中的主要作用是实现观众与主播、观众与观众之间的文字互动.
-    * 第三方SDK *
-腾讯云：腾讯提供的即时通讯SDK，可作为直播的聊天室
-融云：一个比较常用的即时通讯SDK，可作为直播的聊天室
-</code></pre>
-
-<h2>五、如何快速的开发一个完整的iOS直播app</h2>
-
-<h4>1、利用第三方直播SDK快速的开发</h4>
-
-<p>七牛云:七牛直播云是专为直播平台打造的全球化直播流服务和一站式实现SDK端到端直播场景的企业级直播云服务平台.</p>
-
-<ul>
-<li> 熊猫TV,龙珠TV等直播平台都是用的七牛云</li>
-</ul>
-
-
-<p>网易视频云：基于专业的跨平台视频编解码技术和大规模视频内容分发网络，提供稳定流畅、低延时、高并发的实时音视频服务，可将视频直播无缝对接到自身App.</p>
-
-<h4>2、第三方SDK公司为什么要提供SDK给我们？</h4>
-
-<pre><code>希望把我们的产品和它绑在一条船上，更加的依赖它。
-技术生钱，帮养一大批牛B的程序员
-</code></pre>
-
-<h4>3、直播功能：自研还是使用第三方直播SDK开发？</h4>
-
-<p>第三方SDK开发: 对于一个初创团队来讲，自研直播不管在技术门槛、CDN、带宽上都是有很大的门槛的，而且需要耗费大量的时间才能做出成品，不利于拉投资。</p>
-
-<p>自研：公司直播平台大，从长远看，自研可以节省成本，技术成面比直接用SDK可控多了。</p>
-
-<h6>4.第三方SDK好处</h6>
-
-<pre><code>降低成本
-    使用好的第三方企业服务，将不用再花高价请猎头去挖昂贵的大牛，也不用去安抚大牛们个性化的脾气
-提升效率
-    第三方服务的专注与代码集成所带来的方便，所花费的时间可能仅仅是1-2个小时，节约近99%的时间，足够换取更多的时间去和竞争对手斗智斗勇，增加更大的成功可能性
-降低风险
-    借助专业的第三方服务，由于它的快速、专业、稳定等特点，能够极大地加强产品的竞争能力（优质服务、研发速度等），缩短试错时间，必将是创业中保命的手段之一
-专业的事，找专业的人来做
-    第三方服务最少是10-20人的团队专注地解决同一个问题，做同一件事情。第三方服务所带来的支持效果，绝不是通过1-2个人处理所能对比的，难道不是吗
-</code></pre>
-
-<p>结束语</p>
-
-<p>后续还会有讲解视频采集，美颜，聊天室，礼物系统等更多功能，敬请关注！！！</p>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[直播-iJKPlayer]]></title>
-    <link href="http://al1020119.github.io/blog/2016/09/10/zhi-bo-ijkplayer/"/>
-    <updated>2016-09-10T14:42:37+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/09/10/zhi-bo-ijkplayer</id>
-    <content type="html"><![CDATA[<p>demo:<a href="https://github.com/al1020119/iCocosIJKPlayer">iCocosIJKPlayer</a></p>
-
-<p>网上讨论比较多并且支持Android/iOS的项目</p>
-
-<pre><code>Vitamio
-IJKPlayer
-</code></pre>
-
-<p>首先说下Vitamio目前可以拿到的版本是4.20，商业使用需要付费。</p>
-
-<p>这里只介绍IJKPlayer，为什么？用了你就知道了！</p>
-
-<!--more-->
-
-
-<p>ijkplayer 是一款做视频直播的框架, 基于ffmpeg, 支持 Android 和 iOS, 网上也有很多集成说明, 但是个人觉得还是不够详细, 在这里详细的讲一下在 iOS 中如何集成ijkplayer, 即便以前从没有接触过, 按着下面做也可以集成成功!</p>
-
-<p><a href="https://github.com/Bilibili/ijkplayer">ijkPlayer下载地址</a></p>
-
-<p><a href="http://blog.csdn.net/zc639143029/article/details/51191886">ijkPlayer详解</a></p>
-
-<p>必备条件:</p>
-
-<pre><code># install homebrew, git, yasm
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install git
-brew install yasm
-</code></pre>
-
-<h3>一. 下载ijkplayer</h3>
-
-<p><a href="https://github.com/Bilibili/ijkplayer">ijkplayer下载地址</a></p>
-
-<p>下载完成后解压, 解压后文件夹内部目录如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer001.png" title="Caption" ></p>
-
-<h3>二. 编译 ijkplayer</h3>
-
-<p>说是编译 ijkplayer, 其实是编译 ffmpeg, 在这里我们已经下载好了ijkplayer, 所以 github 上README.md中的Build iOS那一步中有一些步骤是不需要的.</p>
-
-<p>下面开始一步一步编译:</p>
-
-<ol>
-<li>打开终端, cd 到jkplayer-master文件夹中, 也就是下载完解压后的文件夹, 如下图:</li>
-</ol>
-
-
-<p><img src="http://al1020119.github.io/images/ijkplayer002.png" title="Caption" >
-2. 执行命令行./init-ios.sh, 这一步是去下载 ffmpeg 的, 时间会久一点, 耐心等一下.如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer003.png" title="Caption" >
-3. 在第2步中下载完成后, 执行cd ios, 也就是进入到 ios目录中, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer004.png" title="Caption" >
-4. 进入 ios 文件夹后, 在终端依次执行./compile-ffmpeg.sh clean和./compile-ffmpeg.sh all命令, 编译 ffmpeg, 也就是README.md中这两步, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer005.png" title="Caption" >
-编译时间较久, 耐心等待一下.</p>
-
-<pre><code>./init-ios.sh
-cd ios
-./compile-ffmpeg.sh clean
-./compile-ffmpeg.sh all
-</code></pre>
-
-<h3>三. 打包IJKMediaFramework.framework框架</h3>
-
-<p>集成 ijkplayer 有两种方法: 一种方法是按照IJKMediaDemo工程中那样, 直接导入工程IJKMediaPlayer.xcodeproj, 在这里不做介绍, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer006.png" title="Caption" >
-第二种集成方法是把 ijkplayer 打包成framework导入工程中使用. 下面开始介绍如何打包IJKMediaFramework.framework, 按下面步骤开始一步一步做:</p>
-
-<ol>
-<li>首先打开工程IJKMediaPlayer.xcodeproj, 位置如下图:</li>
-</ol>
-
-
-<p><img src="http://al1020119.github.io/images/ijkplayer007.png" title="Caption" >
-打开后是这样的, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer008.png" title="Caption" >
-2. 工程打开后设置工程的 scheme, 具体步骤如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer009.png" title="Caption" >
-<img src="http://al1020119.github.io/images/ijkplayer010.png" title="Caption" >
-3. 设置好 scheme 后, 分别选择真机和模拟器进行编译, 编译完成后, 进入 Finder, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer011.png" title="Caption" >
-进入 Finder 后, 可以看到有真机和模拟器两个版本的编译结果, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer012.png" title="Caption" >
-下面开始合并真机和模拟器版本的 framework, 注意不要合并错了, 合并的是这个文件, 如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer013.png" title="Caption" >
-打开终端, 进行合并, 命令行具体格式为:</p>
-
-<p>lipo -create &ldquo;真机版本路径&rdquo; &ldquo;模拟器版本路径&rdquo; -output &ldquo;合并后的文件路径&rdquo;</p>
-
-<p>合并后如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer014.png" title="Caption" >
-下面很重要, 需要用合并后的IJKMediaFramework把原来的IJKMediaFramework替换掉, 如下图, 希望你能看懂:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer015.png" title="Caption" >
-上图中的1、2两步完成后, 绿色框住的那个IJKMediaFramework.framework文件就是我们需要的框架了, 可以复制出来, 稍后我们需要导入工程使用.</p>
-
-<h3>四. iOS工程中集成ijkplayer</h3>
-
-<p>新建工程, 导入合并后的IJKMediaFramework.framework以及相关依赖框架以及相关依赖框架,如下图:</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer016.png" title="Caption" >
-导入框架后, 在ViewController.m进行测试, 首先导入IJKMediaFramework.h头文件, 编译看有没有错, 如果没有错说明集成成功.</p>
-
-<p>接着开始在ViewController.m文件中使用IJKMediaFramework框架进行测试使用, 写一个简单的直播视频进行测试, 在这里看一下运行后的结果, 后面会放上 Demo 供下载.</p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer0017.png" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/ijkplayer018.png" title="Caption" ></p>
-
-<pre><code>为苦于各种奇怪原因而无法玩耍的小伙伴们提供了包装了ijkplayer的pod，仅供测试体验。
-1.基于ijkplayer 5737ccc提交制作成的framework，需要注意的是需要iOS8+。
-2.如果使用ijkplayer过程中遇到BUG什么的，可以移步去ijkplayer作者的GitHub上提issue或者PR。
-哦对了，地址在这里https://coding.net/u/shirokuma/p/IJKMediaLibrary/git，因framework超过100MB无法传到GitHub上，就放到Coding上了。祝各位玩的愉快！
-</code></pre>
-
-<p>项目源码：（在集成或者使用之前请细细品读，也许你会发现不一样的乐趣）</p>
-
-<pre><code>//
-//  ViewController.m
-//  iCocosIjkPlayer
-//
-//  Created by tqy on 16/8/8.
-//  Copyright © 2016年 iCocos. All rights reserved.
-//
-
-#import "ViewController.h"
-
-#import &lt;IJKMediaFramework/IJKMediaFramework.h&gt;
-
-@interface ViewController ()
-
-@property (nonatomic, strong) NSURL *url;
-
-@property (nonatomic, retain) id&lt;IJKMediaPlayback&gt; player;
-
-@property (nonatomic, weak) UIView *PlayerView;
-
-@end
-
-@implementation ViewController
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-
-
-    //网络视频
-    //    self.url = [NSURL URLWithString:@"https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4"];
-    //    _player = [[IJKAVMoviePlayerController alloc] initWithContentURL:self.url];
-
-    //直播视频
-    self.url = [NSURL URLWithString:@"http://live.hkstv.hk.lxdns.com/live/hks/playlist.m3u8"];
-    _player = [[IJKFFMoviePlayerController alloc] initWithContentURL:self.url withOptions:nil];
-
-    UIView *playerView = [self.player view];
-
-    UIView *displayView = [[UIView alloc] initWithFrame:CGRectMake(0, 50, self.view.bounds.size.width, 180)];
-    self.PlayerView = displayView;
-    self.PlayerView.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:self.PlayerView];
-
-    playerView.frame = self.PlayerView.bounds;
-    playerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-    [self.PlayerView insertSubview:playerView atIndex:1];
-    [_player setScalingMode:IJKMPMovieScalingModeAspectFill];
-    [self installMovieNotificationObservers];
-
-}
-
--(void)viewWillAppear:(BOOL)animated{
-    if (![self.player isPlaying]) {
-        [self.player prepareToPlay];
-    }
-}
-
-#pragma Selector func
-
-- (void)loadStateDidChange:(NSNotification*)notification {
-    IJKMPMovieLoadState loadState = _player.loadState;
-
-    if ((loadState &amp; IJKMPMovieLoadStatePlaythroughOK) != 0) {
-        NSLog(@"LoadStateDidChange: IJKMovieLoadStatePlayThroughOK: %d\n",(int)loadState);
-    }else if ((loadState &amp; IJKMPMovieLoadStateStalled) != 0) {
-        NSLog(@"loadStateDidChange: IJKMPMovieLoadStateStalled: %d\n", (int)loadState);
-    } else {
-        NSLog(@"loadStateDidChange: ???: %d\n", (int)loadState);
-    }
-}
-
-- (void)moviePlayBackFinish:(NSNotification*)notification {
-    int reason =[[[notification userInfo] valueForKey:IJKMPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue];
-    switch (reason) {
-        case IJKMPMovieFinishReasonPlaybackEnded:
-            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonPlaybackEnded: %d\n", reason);
-            break;
-
-        case IJKMPMovieFinishReasonUserExited:
-            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonUserExited: %d\n", reason);
-            break;
-
-        case IJKMPMovieFinishReasonPlaybackError:
-            NSLog(@"playbackStateDidChange: IJKMPMovieFinishReasonPlaybackError: %d\n", reason);
-            break;
-
-        default:
-            NSLog(@"playbackPlayBackDidFinish: ???: %d\n", reason);
-            break;
-    }
-}
-
-- (void)mediaIsPreparedToPlayDidChange:(NSNotification*)notification {
-    NSLog(@"mediaIsPrepareToPlayDidChange\n");
-}
-
-- (void)moviePlayBackStateDidChange:(NSNotification*)notification {
-    switch (_player.playbackState) {
-        case IJKMPMoviePlaybackStateStopped:
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: stoped", (int)_player.playbackState);
-            break;
-
-        case IJKMPMoviePlaybackStatePlaying:
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: playing", (int)_player.playbackState);
-            break;
-
-        case IJKMPMoviePlaybackStatePaused:
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: paused", (int)_player.playbackState);
-            break;
-
-        case IJKMPMoviePlaybackStateInterrupted:
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: interrupted", (int)_player.playbackState);
-            break;
-
-        case IJKMPMoviePlaybackStateSeekingForward:
-        case IJKMPMoviePlaybackStateSeekingBackward: {
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: seeking", (int)_player.playbackState);
-            break;
-        }
-
-        default: {
-            NSLog(@"IJKMPMoviePlayBackStateDidChange %d: unknown", (int)_player.playbackState);
-            break;
-        }
-    }
-}
-
-#pragma Install Notifiacation
-
-- (void)installMovieNotificationObservers {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(loadStateDidChange:)
-                                                 name:IJKMPMoviePlayerLoadStateDidChangeNotification
-                                               object:_player];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(moviePlayBackFinish:)
-                                                 name:IJKMPMoviePlayerPlaybackDidFinishNotification
-                                               object:_player];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(mediaIsPreparedToPlayDidChange:)
-                                                 name:IJKMPMediaPlaybackIsPreparedToPlayDidChangeNotification
-                                               object:_player];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(moviePlayBackStateDidChange:)
-                                                 name:IJKMPMoviePlayerPlaybackStateDidChangeNotification
-                                               object:_player];
-
-}
-
-- (void)removeMovieNotificationObservers {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:IJKMPMoviePlayerLoadStateDidChangeNotification
-                                                  object:_player];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:IJKMPMoviePlayerPlaybackDidFinishNotification
-                                                  object:_player];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:IJKMPMediaPlaybackIsPreparedToPlayDidChangeNotification
-                                                  object:_player];
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:IJKMPMoviePlayerPlaybackStateDidChangeNotification
-                                                  object:_player];
-
-}
-
-
-- (IBAction)play_btn:(id)sender {
-
-    if (![self.player isPlaying]) {
-        [self.player play];
-    }else{
-        [self.player pause];
-    }
-}
-
-@end
-</code></pre>
 
 <hr />
 
