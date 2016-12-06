@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-06T18:53:32+08:00</updated>
+  <updated>2016-12-06T19:08:13+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -3486,179 +3486,6 @@ $user-&gt;where('name', 'thinkphp')
 <p>模板文件中分页输出代码如下：</p>
 
 <pre><code>　　&lt;div&gt;{$_page}&lt;/div&gt;
-</code></pre>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Ios Mian M v v M]]></title>
-    <link href="http://al1020119.github.io/blog/2016/11/18/ios-mian-m-v-v-m/"/>
-    <updated>2016-11-18T00:00:00+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/11/18/ios-mian-m-v-v-m</id>
-    <content type="html"><![CDATA[<hr />
-
-<p>layout: post
-title: &ldquo;MVVM实战篇&rdquo;
-date: 2016-11-18 18:16:05 +0800
-comments: true</p>
-
-<h2>categories: </h2>
-
-<p>M:Model中定义对应的模型属性</p>
-
-<pre><code>@property (nonatomic, copy) NSString *movieName;
-
-@property (nonatomic, copy) NSString *movieTime;
-
-@property (nonatomic, copy) NSString *movieDetail;
-
-@property (nonatomic, strong) NSURL *movieURL;
-</code></pre>
-
-<!--more-->
-
-
-<p>VM：ViewModel中定义对应的逻辑+数据+回调+代理方法</p>
-
-<pre><code>#import "iCocosModel.h"
-
-typedef void(^resultSuccessBlock)(id resultData);
-typedef void(^resultErrorBlock)(id resultError);
-
-@interface iCocosViewModel : NSObject
-
-- (void)getMoviesData;
-
-- (void)moviesDetailWithPublicModel:(iCocosModel *)model withViewController:(UIViewController *)controller;
-
-
-@property (nonatomic, copy) resultSuccessBlock successBlcok;
-
-@property (nonatomic, copy) resultErrorBlock errorBlcok;
-
-
-@end
-</code></pre>
-
-<p>实现对应的方法</p>
-
-<pre><code>#import "iCocosDetailController.h"
-
-@implementation iCocosViewModel
-
-- (void)getMoviesData
-{
-    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-
-    NSString *url = @"https://api.douban.com/v2/movie/coming_soon";
-
-    [manager GET:url parameters:nil progress:^(NSProgress * _Nonnull downloadProgress) {
-
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-
-        NSArray *subjects = responseObject[@"subjects"];
-        NSMutableArray *modelArr = [NSMutableArray arrayWithCapacity:subjects.count];
-        for (NSDictionary *subject in subjects) {
-            iCocosModel *model = [[iCocosModel alloc] init];
-            model.movieName = subject[@"title"];
-            model.movieTime = subject[@"year"];
-
-            NSString *urlStr = subject[@"images"][@"medium"];
-            model.movieURL = [NSURL URLWithString:urlStr];
-            model.movieDetail = subject[@"alt"];
-            [modelArr addObject:model];
-        }
-        _successBlcok(modelArr);
-
-
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-
-    }];
-}
-
-- (void)moviesDetailWithPublicModel:(iCocosModel *)model withViewController:(UIViewController *)controller
-{
-    iCocosDetailController *detailVC = [[iCocosDetailController alloc] init];
-    detailVC.url = model.movieDetail;
-    [controller.navigationController pushViewController:detailVC animated:YES];
-}
-
-@end
-</code></pre>
-
-<p>V:View+Controller包括视图和控制器</p>
-
-<p>View视图和MVC一样，用模型属性给控件赋值</p>
-
-<pre><code>#import "iCocosModel.h"
-
-@interface iCocosViewCell : UITableViewCell
-
-@property (nonatomic, strong) iCocosModel *model;
-
-@end
-</code></pre>
-
-<p>View的实现</p>
-
-<pre><code>#import "iCocosViewCell.h"
-#import &lt;UIImageView+AFNetworking.h&gt;
-
-@interface iCocosViewCell ()
-
-@property (nonatomic,strong) UILabel *nameLabel;
-@property (nonatomic,strong) UILabel *yearLabel;
-@property (nonatomic,strong) UIImageView *imgView;
-
-@end
-
-
-@implementation iCocosViewCell
-
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-    if (self) {
-        _imgView = [[UIImageView alloc] initWithFrame:CGRectMake(15, 10, 40, 60)];
-        [self.contentView addSubview:_imgView];
-
-        _nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(70, 10, 200, 20)];
-        [self.contentView addSubview:_nameLabel];
-
-        _yearLabel = [[UILabel alloc] initWithFrame:CGRectMake(70, 50, 100, 20)];
-        _yearLabel.textColor = [UIColor lightGrayColor];
-        _yearLabel.font = [UIFont systemFontOfSize:14];
-        [self.contentView addSubview:_yearLabel];
-    }
-    return self;
-}
-
-- (void)setModel:(iCocosModel *)model
-{
-    _model = model;
-
-    _nameLabel.text = _model.movieName;
-    _yearLabel.text = _model.movieTime;
-    [_imgView setImage:model.movieURL];
-}
-
-@end
 </code></pre>
 
 <hr />
@@ -9615,6 +9442,177 @@ AudioQueueAllocateBuffer的参数audioQueue、buffer_size、audioBuffers都很�
 <li>使用拉流ijkPlayer</li>
 </ul>
 
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[MVVM简单实战篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/28/mvvmjian-dan-shi-zhan-pian/"/>
+    <updated>2016-09-28T19:00:45+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/28/mvvmjian-dan-shi-zhan-pian</id>
+    <content type="html"><![CDATA[<h4>前言</h4>
+
+<p>由于之前一直使用MVC，而且在慢慢的开发中确实发现了不少关于MVC中存在的缺陷问题，前段时间试着使用MVVM在项目中去实战一下，发现缺点用着挺爽，他不想MVP那么复杂，也不会像MVC那么高耦合。</p>
+
+<pre><code>所以我打算以后再项目应用中尽量使用MVVM，这里只是简单的整理了一下代码！
+</code></pre>
+
+<p>M:Model中定义对应的模型属性</p>
+
+<pre><code>@property (nonatomic, copy) NSString *movieName;
+
+@property (nonatomic, copy) NSString *movieTime;
+
+@property (nonatomic, copy) NSString *movieDetail;
+
+@property (nonatomic, strong) NSURL *movieURL;
+</code></pre>
+
+<!--more-->
+
+
+<p>VM：ViewModel中定义对应的逻辑+数据+回调+代理方法</p>
+
+<pre><code>#import "iCocosModel.h"
+
+typedef void(^resultSuccessBlock)(id resultData);
+typedef void(^resultErrorBlock)(id resultError);
+
+@interface iCocosViewModel : NSObject
+
+- (void)getMoviesData;
+
+- (void)moviesDetailWithPublicModel:(iCocosModel *)model withViewController:(UIViewController *)controller;
+
+
+@property (nonatomic, copy) resultSuccessBlock successBlcok;
+
+@property (nonatomic, copy) resultErrorBlock errorBlcok;
+
+
+@end
+</code></pre>
+
+<p>实现对应的方法</p>
+
+<pre><code>#import "iCocosDetailController.h"
+
+@implementation iCocosViewModel
+
+- (void)getMoviesData
+{
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+
+    NSString *url = @"https://api.douban.com/v2/movie/coming_soon";
+
+    [manager GET:url parameters:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+
+    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+
+        NSArray *subjects = responseObject[@"subjects"];
+        NSMutableArray *modelArr = [NSMutableArray arrayWithCapacity:subjects.count];
+        for (NSDictionary *subject in subjects) {
+            iCocosModel *model = [[iCocosModel alloc] init];
+            model.movieName = subject[@"title"];
+            model.movieTime = subject[@"year"];
+
+            NSString *urlStr = subject[@"images"][@"medium"];
+            model.movieURL = [NSURL URLWithString:urlStr];
+            model.movieDetail = subject[@"alt"];
+            [modelArr addObject:model];
+        }
+        _successBlcok(modelArr);
+
+
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+
+    }];
+}
+
+- (void)moviesDetailWithPublicModel:(iCocosModel *)model withViewController:(UIViewController *)controller
+{
+    iCocosDetailController *detailVC = [[iCocosDetailController alloc] init];
+    detailVC.url = model.movieDetail;
+    [controller.navigationController pushViewController:detailVC animated:YES];
+}
+
+@end
+</code></pre>
+
+<p>V:View+Controller包括视图和控制器</p>
+
+<p>View视图和MVC一样，用模型属性给控件赋值</p>
+
+<pre><code>#import "iCocosModel.h"
+
+@interface iCocosViewCell : UITableViewCell
+
+@property (nonatomic, strong) iCocosModel *model;
+
+@end
+</code></pre>
+
+<p>View的实现</p>
+
+<pre><code>#import "iCocosViewCell.h"
+#import &lt;UIImageView+AFNetworking.h&gt;
+
+@interface iCocosViewCell ()
+
+@property (nonatomic,strong) UILabel *nameLabel;
+@property (nonatomic,strong) UILabel *yearLabel;
+@property (nonatomic,strong) UIImageView *imgView;
+
+@end
+
+
+@implementation iCocosViewCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {
+        _imgView = [[UIImageView alloc] initWithFrame:CGRectMake(15, 10, 40, 60)];
+        [self.contentView addSubview:_imgView];
+
+        _nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(70, 10, 200, 20)];
+        [self.contentView addSubview:_nameLabel];
+
+        _yearLabel = [[UILabel alloc] initWithFrame:CGRectMake(70, 50, 100, 20)];
+        _yearLabel.textColor = [UIColor lightGrayColor];
+        _yearLabel.font = [UIFont systemFontOfSize:14];
+        [self.contentView addSubview:_yearLabel];
+    }
+    return self;
+}
+
+- (void)setModel:(iCocosModel *)model
+{
+    _model = model;
+
+    _nameLabel.text = _model.movieName;
+    _yearLabel.text = _model.movieTime;
+    [_imgView setImage:model.movieURL];
+}
+
+@end
+</code></pre>
 
 <hr />
 
