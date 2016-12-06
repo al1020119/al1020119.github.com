@@ -19,6 +19,11 @@ categories: PHP-Lover
 
 
 ###目录
+
+
+<!--more-->
+
+
 + 系统
 + 硬盘
 + 内存
@@ -39,7 +44,6 @@ categories: PHP-Lover
 + 安装AMP服务
 + 其他总结
 
-<!--more-->
 
 查看软件xxx安装内容
 
