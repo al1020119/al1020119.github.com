@@ -1,15 +1,11 @@
-
+---
+layout: post
+title: "Socket编程-初探"
+date: 2016-2016-06-20 18:17:37 +0800
+comments: true
+categories: 
 ---
 
-layout: post
-title: "Socket编程-精华篇"
-date: 2016-06-20 13:53:19 +0800
-comments: true
-categories: Senior
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
-
----  
 
 
 本序列文章关于Socket编程，摘自[大神标哥](http://www.huangyibiao.com/)的精华

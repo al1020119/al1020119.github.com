@@ -1,15 +1,10 @@
-
 ---
-
 layout: post
 title: "Socket编程-UDP篇"
-date: 2016-06-22 13:53:19 +0800
+date: 2016-06-22 18:16:49 +0800
 comments: true
-categories: Senior
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
-
----  
+categories: 
+---
 
 
 

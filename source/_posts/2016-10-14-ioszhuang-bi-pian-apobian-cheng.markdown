@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS装逼篇——APO编程"
+title: "iOS装逼篇——AOP编程"
 date: 2016-10-14 11:45:17 +0800
 comments: true
 categories: 

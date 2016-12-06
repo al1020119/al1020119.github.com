@@ -15,7 +15,7 @@ categories: PHP-Lover
 
 
 
-这里以Ubantu为例整理一套Linux命令，至于为什么是Ubantu，谁用谁知道，好了废话不多说，开干🤔🤔🤔🤔🤔🤔🤔🤔
+这里以Ubantu为例整理一套Linux命令，至于为什么是Ubantu，谁用谁知道，这里我是在Mac上面安装了一个VM然后直接安装Ubantu，相关教程请查看网上资料。好了废话不多说，开干🤔🤔🤔🤔🤔🤔🤔🤔
 
 
 ###目录
