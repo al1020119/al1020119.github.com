@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Lve | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/lve/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-06T18:24:04+08:00</updated>
+  <updated>2016-12-06T18:36:27+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,356 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[直播-实战篇]]></title>
-    <link href="http://al1020119.github.io/blog/2016/09/20/zhi-bo-shi-zhan-pian/"/>
-    <updated>2016-09-20T14:42:57+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/09/20/zhi-bo-shi-zhan-pian</id>
-    <content type="html"><![CDATA[<p>前言</p>
-
-<p>在看这篇之前，如果您还不了解直播原理，请查看上篇文章如何快速的开发一个完整的iOS直播app(原理篇)</p>
-
-<p>开发一款直播app，集成ijkplayer成功后，就算完成直播功能一半的工程了，只要有拉流url，就能播放直播啦</p>
-
-<p>本篇主要讲解的是直播app中，需要用到的一个很重要的开源框架ijkplayer，然后集成这个框架可能对大多数初学者还是比较有难度的，所以本篇主要教你解决集成【ijkplayer】遇见的各种坑。</p>
-
-<!--more-->
-
-
-<p></p>
-
-<p>很多文章，可能讲解的是如何做，我比较注重讲解为什么这样做,大家有什么不明白，还可以多多提出来。</p>
-
-<p>效果</p>
-
-<p><img src="/images/zhiboshizhan001.gif" title="Caption" ></p>
-
-<h3>一、基本知识</h3>
-
-<p>README.md文件：框架的描述文件，描述这个框架怎么使用</p>
-
-<p>编译语言:程序在被执行之前，需要一个专门的编译过程，把程序编译成为机器语言的文件，运行时不需要翻译，所以编译型语言的程序执行效率高，比如OC,C,C++</p>
-
-<p>解释性语言:解释性语言的程序不需要编译，在运行程序的时候才翻译，每个语句都是执行的时候才翻译。这样解释性语言每执行一次就需要逐行翻译一次，效率比较低</p>
-
-<p>解释性语言执行和编译语言执行的区别：</p>
-
-<pre><code>解释性语言一行一行的解析，如果有错误，就不会执行，直接执行下一行。
-编译语言，只要有错，就不能编译，一行都不能执行。
-</code></pre>
-
-<p>脚本语言:属于解析语言，必须通过解释器解析，将其一条条的翻译成机器可识别的指令，并按程序顺序执行。</p>
-
-<pre><code>python：脚本语言，适合网络应用程序的开发，有利于开发效率，现在显得越来越强大
-PHP：服务器端脚本语言，适合做动态网站
-JS：作为客户端的脚本语言，在浏览中解释执行，
-shell：操作系统脚本语言，一般指Unix/Linux中使用的命令行
-编译语言，执行文件是二进制。脚本语言是解释执行的，执行文件是文本
-</code></pre>
-
-<p>shell解释器:shell是一个命令行解释器，相当于windows的cmd,处于内核和用户之间，负责把用户的指令传递给内核并且把执行结果回显给用户.</p>
-
-<pre><code>默认Unix都有shell,OS基于Unix,因此OS自带shell。
-</code></pre>
-
-<p>bash: bash是一种shell解释器版本，shell有很多种版本，就像人，也分不同国家的人。</p>
-
-<pre><code>牛程序员看到不爽的Shell解释器，就会自己重新写一套，慢慢形成了一些标准，常用的Shell解释器有这么几种，sh、bash、csh等
-</code></pre>
-
-<p>shell:通常我们说的shell,指的是shell脚本语言，而不是shell解释器。</p>
-
-<pre><code>在编写shell时，第一行一定要指明系统需要哪种shell解释器解释你的shell脚本，如：#! /bin/bash，使用bash解析脚本语言
-什么时候使用shell命令，比如有些系统命令经常需要用到，可以把命令封装到一个脚本文件，以后就不用再敲一遍了，直接执行脚本语言。
-比如ijkplayer,就用脚本文件下载ffmpeg,因为下载ffmpeg需要执行很多命令，全部封装到脚本文件中。
-在导入一些第三方框架的时候，经常需要用到一些命令，所以一般都会封装到一个脚本文件中，以后只要执行脚本，就会自动执行集成第三方框架的命令。
-</code></pre>
-
-<p>sh:sheel脚本文件后缀名</p>
-
-<h3>二、下载ijkPlayer</h3>
-
-<pre><code>去到B站得github主页，找到ijkplayer项目，下载源码 ijkplayer下载地址
-打开Demo，查看用法，一般学习第三方库，都是先查看Demo
-</code></pre>
-
-<p><img src="/images/zhiboshizhan002.png" title="Caption" ></p>
-
-<h3>三、编译ijkPlayer的步骤</h3>
-
-<p>1、找到ijkPlayerMediaDemo并运行</p>
-
-<pre><code>提示'libavformat/avformat.h' file not found
-</code></pre>
-
-<p><img src="/images/zhiboshizhan003.png" title="Caption" ></p>
-
-<p>原因：因为libavformat是ffmpeg中的库，而ijkplayer是基于ffmpeg这个库的，因此需要导入ffmpeg</p>
-
-<p>解决：查看ijkplayer的README.md，一般都会有说明。</p>
-
-<p><img src="/images/zhiboshizhan004.png" title="Caption" ></p>
-
-<p>init-ios.sh脚本的作用：下载ffmpeg源码</p>
-
-<pre><code>想了解脚本具体怎么做的，可以查看之前写的文章带你走进脚本世界，ijkplayer之【init-ios.sh】脚本分析，全面剖析了init-ios.sh这个脚本做了哪些事情。
-</code></pre>
-
-<p>如何执行init-ios.sh脚本文件</p>
-
-<pre><code>步骤一：找到init-ios.sh脚本文件
-</code></pre>
-
-<p><img src="/images/zhiboshizhan005.png" title="Caption" ></p>
-
-<pre><code>步骤二：打开终端，cd进入到ijkplayer-master的目录中
-</code></pre>
-
-<p><img src="/images/zhiboshizhan006.png" title="Caption" ></p>
-
-<pre><code>注意是 cd 这个文件夹
-</code></pre>
-
-<p><img src="/images/zhiboshizhan007.png" title="Caption" ></p>
-
-<pre><code>步骤三：输入./init-ios.sh，就会执行当前脚本了。
-</code></pre>
-
-<p><img src="/images/zhiboshizhan008.png" title="Caption" ></p>
-
-<pre><code>执行完脚本后，就会发现ijkplayer中有ffmpeg了
-</code></pre>
-
-<p><img src="/images/zhiboshizhan009.png" title="Caption" >
-2、下载好ffmpeg源码后，再次运行Demo</p>
-
-<pre><code>发现还是报'libavformat/avformat.h' file not found错误
-原因:执行init-ios.sh，仅仅是下载源码，但是源码并没有参与编译，需要把源码编译成.a文件
-    Demo依赖于IJKMediaPlayer库
-</code></pre>
-
-<p><img src="/images/zhiboshizhan010.png" title="Caption" ></p>
-
-<pre><code>打开 IJKMediaPlayer库，查看下源码
-</code></pre>
-
-<p><img src="/images/zhiboshizhan011.png" title="Caption" ></p>
-
-<pre><code>打开 IJKMediaPlayer库
-</code></pre>
-
-<p><img src="/images/zhiboshizhan012.png" title="Caption" ></p>
-
-<pre><code>右击，发现FFMPEG中的库都是红的，表示不存在
-</code></pre>
-
-<p><img src="/images/zhiboshizhan013.png" title="Caption" ></p>
-
-<pre><code>解决:查看ijkplayer的README.md
-</code></pre>
-
-<p><img src="/images/zhiboshizhan014.png" title="Caption" >
-编译ffmpeg库</p>
-
-<pre><code>步骤一：进入到脚本文件的目录下
-</code></pre>
-
-<p><img src="/images/zhiboshizhan015.png" title="Caption" ></p>
-
-<pre><code>步骤二：执行./compile-ffmpeg.sh clean
-    步骤二功能：删除一些文件和文件夹，为编译ffmpeg.sh做准备，在编译ffmpeg.sh的时候，会自动创建刚刚删除的那些文件，为避免文件名冲突，因此在编译ffmpeg.sh之前先删除等会会自动创建的文件夹或者文件
-</code></pre>
-
-<p><img src="/images/zhiboshizhan016.png" title="Caption" ></p>
-
-<pre><code>步骤三：执行./compile-ffmpeg.sh all,真正的编译各个平台的ffmpeg库，并生成所以平台的通用库.
-</code></pre>
-
-<p><img src="/images/zhiboshizhan017.png" title="Caption" ></p>
-
-<p>执行./compile-ffmpeg.sh all
-执行compile-ffmpeg.sh all前</p>
-
-<p><img src="/images/zhiboshizhan018.png" title="Caption" >
-执行compile-ffmpeg.sh all后</p>
-
-<p><img src="/images/zhiboshizhan019.png" title="Caption" >
-3.再次运行Demo,就能成功了,因为IJKMediaPlayer库获取到ffmpeg库了</p>
-
-<pre><code>编译完ffmpeg后，IJKMediaPlayer库中显示
-</code></pre>
-
-<p><img src="/images/zhiboshizhan020.png" title="Caption" ></p>
-
-<pre><code>cmd+r,Demo运行成功
-</code></pre>
-
-<p><img src="/images/zhiboshizhan021.png" title="Caption" ></p>
-
-<h3>四、如何集成到ijkplayer到自己的项目中</h3>
-
-<pre><code>注意：ijkplayer的README中的方法比较麻烦，不方便携带，不推荐。
-</code></pre>
-
-<p><img src="/images/zhiboshizhan022.png" title="Caption" >
-1.推荐自己把IJKMediaPlayer打包成静态库,在导入到自己的项目中。</p>
-
-<pre><code>如何打包，请参考，iOS中集成ijkplayer视频直播框架，写的非常不错，就不一一详细介绍了,但是只有发布版本的库。
-我自己打包了ijkplayer两个版本库，分别用于调试和发布(DEBUG和Release),点击下载
-由于文件太大上传不了GitHUb,就上传到百度云了
-</code></pre>
-
-<p>2.直接把ijkplayer库拖入到自己的工程中，</p>
-
-<pre><code>调试的话，拖入调试版本的ijkplayer库，发布的话，拖入发布版本的ijkplayer库
-</code></pre>
-
-<p><img src="/images/zhiboshizhan023.png" title="Caption" >
-3.导入ijkplayer依赖的库，具体可以查看ijkplayer的README</p>
-
-<p><img src="/images/zhiboshizhan024.png" title="Caption" >
-<img src="/images/zhiboshizhan025.png" title="Caption" ></p>
-
-<h3>五、使用ijkplayer直播</h3>
-
-<p>1.ijkplayer用法简介</p>
-
-<pre><code>ijkplayer用法比较简单，其实只要有直播地址，就能直播了
-注意：最好真机测试，模拟器测试比较卡,不流畅，真机就没有问题了
-</code></pre>
-
-<p>2.抓取数据</p>
-
-<pre><code>抓了很多直播app的数据，发现映客主播的质量是最高的。
-映客主播url:http://116.211.167.106/api/live/aggregation?uid=133825214&amp;interest=1
-    uid=账号ID，这里是我的账号ID
-    interest=兴趣 ，1表示只查看女生，哈哈
-    上下拉刷新的接口没抓到，就一下加载200条数据，哈哈
-
-- (void)loadData
-{
-    // 映客数据url
-    NSString *urlStr = @"http://116.211.167.106/api/live/aggregation?uid=133825214&amp;interest=1";
-
-    // 请求数据
-    AFHTTPSessionManager *mgr = [AFHTTPSessionManager manager];
-    mgr.responseSerializer = [AFJSONResponseSerializer serializer];
-    mgr.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/plain", nil];
-    [mgr GET:urlStr parameters:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary * _Nullable responseObject) {
-
-        _lives = [YZLiveItem mj_objectArrayWithKeyValuesArray:responseObject[@"lives"]];
-
-        [_tableView reloadData];
-
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-
-        NSLog(@"%@",error);
-
-    }];
-}
-</code></pre>
-
-<p>3.获取拉流url,直播</p>
-
-<p>IJKFFMoviePlayerController：用来做直播的类</p>
-
-<pre><code>- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    self.view.backgroundColor = [UIColor whiteColor];
-
-    // 设置直播占位图片
-    NSURL *imageUrl = [NSURL URLWithString:[NSString stringWithFormat:@"http://img.meelive.cn/%@",_live.creator.portrait]];
-    [self.imageView sd_setImageWithURL:imageUrl placeholderImage:nil];
-
-    // 拉流地址
-    NSURL *url = [NSURL URLWithString:_live.stream_addr];
-
-    // 创建IJKFFMoviePlayerController：专门用来直播，传入拉流地址就好了
-    IJKFFMoviePlayerController *playerVc = [[IJKFFMoviePlayerController alloc] initWithContentURL:url withOptions:nil];
-
-    // 准备播放
-    [playerVc prepareToPlay];
-
-    // 强引用，反正被销毁
-    _player = playerVc;
-
-    playerVc.view.frame = [UIScreen mainScreen].bounds;
-
-    [self.view insertSubview:playerVc.view atIndex:1];
-
-}
-</code></pre>
-
-<p>4.结束播放</p>
-
-<pre><code>界面不播放，一定要记得结束播放，否则会报内存溢出
-</code></pre>
-
-<p><img src="/images/zhiboshizhan026.png" title="Caption" ></p>
-
-<pre><code>- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-
-    // 界面消失，一定要记得停止播放
-    [_player pause];
-    [_player stop];
-}
-</code></pre>
-
-<p>结束语</p>
-
-<p>后续还会更新更多有关直播的资料，希望做到教会每一个朋友从零开始做一款直播app，并且Demo也会慢慢完善.
-Demo点击下载</p>
-
-<pre><code>由于FFMPEG库比较大，大概100M。
-本来想自己上传所有代码了，上传了1个小时，还没成功，就放弃了。
-提供另外一种方案，需要你们自己导入IJKPlayer库
-具体步骤：
-下载Demo后，打开YZLiveApp.xcworkspace问题
-</code></pre>
-
-<p>打开YZLiveApp.xcworkspace问题</p>
-
-<p><img src="/images/zhiboshizhan027.png" title="Caption" ></p>
-
-<pre><code>pod install就能解决
-</code></pre>
-
-<p><img src="/images/zhiboshizhan028.png" title="Caption" ></p>
-
-<pre><code>下载jkplayer库，点击下载
-把jkplayer直接拖入到与Classes同一级目录下，直接运行程序，就能成功了
-</code></pre>
-
-<p><img src="/images/zhiboshizhan029.png" title="Caption" ></p>
-
-<pre><code>注意不需要打开工程，把jkplayer拖入到工程中，而是直接把jkplayer库拷贝到与Classes同一级目录下就可以了。
-错误示范:不要向下面这样操作
-</code></pre>
-
-<p><img src="/images/zhiboshizhan030.png" title="Caption" ></p>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[直播-原理篇]]></title>
@@ -1211,6 +861,55 @@ m3u8基本上可以认为就是.m3u格式文件，区别在于，m3u8文件使�
 <h6>6. m3u8分类</h6>
 
 <p>M3U8分顶级M3U8和二级M3U8， 顶级M3U8主要是做多码率适配的， 二级M3U8才是真正的切片文件，</p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于直播]]></title>
+    <link href="http://al1020119.github.io/blog/2016/09/01/guan-yu-zhi-bo/"/>
+    <updated>2016-09-01T14:39:39+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/09/01/guan-yu-zhi-bo</id>
+    <content type="html"><![CDATA[<p><img src="/images/zhibo001.png" title="Caption" ></p>
+
+<p>关于直播，这里先推荐几篇相关的文字，都是非常经典的，虽然有些难，直播本来就很难，不难还叫直播吗？是吧！</p>
+
+<p><a href="http://www.zhihu.com/question/42162310">知乎经典问答直播：如何搭建一个完整的视频直播系统？</a></p>
+
+<!--more-->
+
+
+<h4>关于直播,所有的技术细节都在这里了</h4>
+
+<p><a href="http://mini.eastday.com/a/160511190456604-2.html">http://mini.eastday.com/a/160511190456604-2.html</a></p>
+
+<p><a href="http://toutiao.com/i6283358665676161538/">http://toutiao.com/i6283358665676161538/</a></p>
+
+<p><a href="http://www.csdn.net/article/a/2016-05-20/15821126">http://www.csdn.net/article/a/2016-05-20/15821126</a></p>
+
+<p><a href="http://mini.eastday.com/a/160523102622452-4.html">http://mini.eastday.com/a/160523102622452-4.html</a></p>
+
+<p>直播其实之前好早就存在，只是真正火起来是在今年上半年，一下子各大公司都打算开始着手直播，当然直播虽然赚钱，但是重点是得先烧钱 ，而且不是一般的App那么烧钱。</p>
+
+<p>后面的文章系列就以直播为主题开始摘取和总结一系列的相关技术与知识。</p>
+
+<p><img src="/images/zhibo002.png" title="Caption" ></p>
 
 <hr />
 
