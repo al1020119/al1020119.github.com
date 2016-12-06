@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Senior | iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/blog/categories/senior/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-03T13:46:19+08:00</updated>
+  <updated>2016-12-06T18:24:04+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -2234,359 +2234,271 @@ github：https://github.com/al1020119
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[CoreData 大战 SQLite]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/05/xsqlyucoredata/"/>
-    <updated>2016-07-05T14:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/05/xsqlyucoredata</id>
-    <content type="html"><![CDATA[<p>凭良心讲，我不能告诉你不去使用Core Data。它不错，而且也在变好，并且它被很多其他Cocoa开发者所理解，当有新人加入你的组或者需要别人接手你的项目的时候，这点很重要。</p>
+    <title type="html"><![CDATA[CoreData是什么？]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/04/coredateashishemme/"/>
+    <updated>2016-07-04T02:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/04/coredateashishemme</id>
+    <content type="html"><![CDATA[<p>这段时间公司一直比较忙，和组里小伙伴一起把公司项目按照之前逻辑重写了一下。由于项目比较大，还要兼顾之前项目的迭代和其他项目，目前为止只写完第一阶段。</p>
 
-<p>更重要的是，不值得花时间和精力去写自己的系统去代替它。真的，使用Core Data吧。</p>
+<p>之前项目本地持久化方案主要用的是SQLite，这次重写项目打算换一种持久化方案，于是我们经过讨论选择了苹果的“亲儿子”CoreData。</p>
 
-<p>为什么我不使用Core Data<br/>
- Mike Ash写到：就我自己而言，我不是个狂热粉丝。我发现API是笨拙的，并且框架本身对于大量的数据是极其缓慢的。</p>
-
-<p>一个实际的例子：10,000条目
-想象一个RSS阅读器，一个用户可以在一个feed上点击右键，并且选择标记所有为已读。</p>
+<p>在使用CoreData的过程中，我也是一边学习一边实践。在学习的过程中，一些写的质量比较高的博客对我的帮助也很大，例如objc.io等博客，在这里就不一一列举出来了，非常感谢这些作者。</p>
 
 <!--more-->
 
 
-<p>引擎下，有一个带有read属性的Article实体。把所有条目标记为已读，程序需要加载这个feed的所有文章(可能通过一对多的关系)，然后设置read属性为YES。</p>
+<p>先不说项目中用不用得到，其实很多人都是不了解CoreData的，但是经过我的学习发现CoreData还是挺不错的。所以正如这系列文章的名字一样-认识CoreData，打算写这系列文章来认识一下CoreData。</p>
 
-<p>大部分情况下这样没关系。但是设想那个feed里有200个文章，为了避免阻塞主线程，你可能考虑在后台线程里做这个工作(特别当你的程序是一个iPhone应用)。当你一开始使用Core Data多线程，事情就开始变的不好处理了。</p>
+<p>这系列博客将从简单到复杂的来讲一下CoreData，其中除了基础使用还会包括多线程、批量数据处理等内容，这些很多都是我公司项目开发过程中接触到的，我们也设想了一些极端的情况，解决方案都会体现在这系列博客中。</p>
 
-<p>这可能还凑合，至少不值得切换走Core Data。</p>
+<p>本人接触CoreData时间并不长，只是专门花了一段时间学习CoreData。</p>
 
-<p>但是接下来加同步。</p>
+<p>本系列文章偏重于通过图形化界面使用CoreData，不会全部采取纯代码进行CoreData的所有操作，而且那样操作起来也确实比较麻烦，反而就失去了CoreData的优势和本质。</p>
 
-<p>我用过两种不同的获取已读文章ID列表的RSS同步接口。其中一个返回近10,000个ID。</p>
+<p>文章中如有疏漏或错误，还请各位及时提出，谢谢！</p>
 
-<p>你不会打算在主线程中加载10,000个文章，然后设置read为NO。你甚至不想在后台线程里加载10,000个文章，即使很小心的管理内存，这有太多的工作（如果你频繁的这么做，想一下对电池寿命的影响）。</p>
+<p>写在前面</p>
 
-<p>你真正想要做的是，让数据库给在ID列表里的每一个文章设置read为YES。</p>
+<p>在CoreData中有一些常用的类，称呼可能各不相同。所以这里先约定一些关键字，以便理解后面的一些内容，这些约定很多都是出现在苹果的官方文档中的。</p>
 
-<p>SQLite可以做到这个，只用一次调用。假设uniqueID上有索引，这会很快。而且你可以在后台线程执行像在主线程执行一样容易。</p>
+<pre><code>NSPersistentStoreCoordinator(Persistent Store Coordinator)，缩写为PSC。
 
-<p>另一个例子：快速启动
-我想减少我的另一个程序的启动时间，不只是开始的时间，而是在数据显示之前的所有时间。</p>
+NSManagedObjectContext(Managed Object Context)，缩写为MOC。
 
-<p>那是个类似Twitter的应用(虽然它不是)，它显示消息的时间轴。显示时间轴意味着获取消息，加载相关用户。它很快，但是在启动的时候，会填充UI，然后填充数据。</p>
+NSManagedObjectModel(Managed Object Model)，缩写为MOM。
 
-<p>关于iPhone的应用（或者所有应用）我的理论是，启动时间很重要，比其他大部分开发者想的都要重要。应用的启动很慢看起来不像是要启动一样，因为人们潜意识里记得，并且会产生阻止启动应用的想法。减少启动时间就减少了摩擦，让用户更有可能继续使用你的应用，并且推荐给其他人。这是你让你的应用成功的一部分。</p>
+NSManagedObject及其子类，根据英文翻译和其作用，称之为托管对象。
 
-<p>因为我不使用Core Data，我手边有一个简单的，保守的解决方案。我把timeline（消息和人物对象）通过NSCoding保存到一个plist文件中。启动的时候它读这个文件，创建消息和人物对象，UI一出现就显示时间轴。</p>
-
-<p>这明显的减少了延迟。</p>
-
-<p>把消息和人物对象作为NSManagedObject的实例对象，这是不可能的。（假设我有编码的并且存储的IDs对象，但是那意味着读plist然后触及数据库。这种方式我完全避免了数据库）。</p>
-
-<p>在更新更快的机器出来后, 我去掉了那些代码。回顾过去，我希望我可以把它留下来。</p>
-
-<p>我怎么考虑这个问题
-当考虑是否使用Core Data时，我考虑下面这些事情：</p>
-
-<p>会有难以置信数量的数据吗？
-对于一个RSS阅读器或者Twitter应用，答案显而易见：是的。有些人关注上百个人。一个人可能订阅了上千个feeds。</p>
-
-<p>即使你的应用不从网络获取数据，仍然有可能让用户自动添加数据。如果你用一个支持AppleScript的Mac，有些人会写脚本去加载非常多的数据。如果通过web API去加数据也是一样的。</p>
-
-<p>会有一个Web API包含类似于数据库的终端吗（对比类对象终端）？
-一个RSS同步API能够返回一个已读文章的uniquelIDs列表。一个记笔记的应用的一个同步API可能返回已存档的和已删除的笔记的uniquelIDs。</p>
-
-<p>用户可能通过操作处理大量对象吗？
-在底层，需要考虑和之前一样的问题。当有人删除所有下载的5，000个面食食谱，你的食谱应用可以多好的完成这个功能（在iPhone上？）？</p>
-
-<p>当我决定使用Core Data（我已经发布过使用Core Data的应用），我会小心留意我怎么使用它。为了得到好的性能，我发现我把它当做一个SQL数据库的一个奇怪接口来使用，然后我知道我应该舍弃Core Data，直接使用SQLite。</p>
-
-<p>我怎么使用SQLite
-我通过FMDB Wrapper来使用SQLite，FMDB来自Flying Meat Software，由Gus Mueller提供。</p>
-
-<p>基本操作
-我在iPhone以前，Core Data以前就使用过SQLite。这是它怎么工作的的要点：</p>
-
-<ol>
-<li>所有数据库访问-读和写-发生在连续的队列里，在一个后台线程。在主线程中触及数据库是从来不被允许的。使用一个连续队列来保证每一件事是按顺序发生的。</li>
-<li>我大量使用blocks来让异步程序容易点。</li>
-<li>模型对象只存在在主线程（但有两个重要的例外），改变会触发一个后台保存。</li>
-<li>模型对象列出来他们在数据库中存储的属性。可能在代码里或者在plist文件里。
-5, 一些模型对象是唯一的，一些不是。取决于应用的需要（大部分情况是唯一的）。</li>
-<li>对关系型数据，我尽可能避免连表查询。</li>
-<li>一些对象类型在启动的时候就完全读入内存，另一些对象类型可能只需要创建并维护一个他们的uniqueIDs的。NSMutableSet，所以不需要去触及数据库，我就知道已经有什么。</li>
-<li>Web API的调用发生在后台线程，他们使用分开的模型对象。
-我会通过我现在的应用的代码来详细描述。</li>
-</ol>
-
-
-<p>数据库更新
-在我最近的应用中，有一个单一的数据库控制器-VSDatabaseController，它通过FMDB来与SQLite对话。</p>
-
-<p>FMDB区分更新和查询。更新数据库，app调用：</p>
-
-<pre><code>-[VSDatabaseController runDatabaseBlockInTransaction:(VSDatabaseUpdateBlock)databaseBlock] 
+后缀名为.xcdatamodeld的文件，因为存储着所有实体的数据结构和表示，所以称之为模型文件。
 </code></pre>
 
-<p>VSDatabaseUpdateBlock很简单：</p>
+<p>什么是CoreData？</p>
 
-<pre><code>typedef void (^VSDatabaseUpdateBlock)(FMDatabase *database); 
+<p>简单介绍一下</p>
+
+<p>CoreData出现在iOS 3中，是苹果推出的一个数据存储框架。CoreData提供了一种对象关系映射(ORM)的存储关系，类似于Java的hibernate框架。CoreData可以将OC对象存储到数据库中，也可以将数据库中的数据转化为OC对象，在这个过程中不需要手动编写任何SQL语句，这是系统帮我们完成。</p>
+
+<p>CoreData最大的优势就是使用过程中不需要编写任何SQL语句，CoreData封装了数据库的操作过程，以及数据库中数据和OC对象的转换过程。所以在使用CoreData的过程中，很多操作就像是对数据库进行操作一样，也有过滤条件、排序等操作。</p>
+
+<p>这就相当于CoreData完成了Model层的大量工作，例如Model层的表示和持久化，有效的减少了开发的工作量，使Model层的设计更加面向对象。</p>
+
+<p>CoreData好用吗？</p>
+
+<p>之前听人说过，CoreData比较容易入手，但是很难学精。这也是很多人说CoreData不好用的原因之一，只是因为使用方式有问题，或者说并没有真正掌握CoreData。</p>
+
+<p>如果从性能上来说，CoreData比SQLite确实略差一些。但是对于移动端来说，并不需要大型网站的高并发，所以这点性能差别几乎是没有影响的，所以这点可以忽略不计。在后面的文章中，将会给出CoreData的优点和缺点对比，以及详细的性能测评。</p>
+
+<p>CoreData主要的几个类</p>
+
+<pre><code>NSManagedObjectContext
 </code></pre>
 
-<p>runDatabaseBlockInTransaction也很简单：</p>
+<p>托管对象上下文，进行数据操作时大多都是和这个类打交道。</p>
 
-<pre><code>- (void)runDatabaseBlockInTransaction:(VSDatabaseUpdateBlock)databaseBlock { 
-    dispatch_async(self.serialDispatchQueue, ^{ 
-        @autoreleasepool { 
-            [self beginTransaction]; 
-            databaseBlock(self.database); 
-            [self endTransaction]; 
-        } 
-    }); 
-} 
+<pre><code>NSManagedObjectModel
 </code></pre>
 
-<p>（注意我用自己的连续调度队列。Gus建议看一下FMDatabaseQueue，也是一个连续调度队列。我还没能去看一下，因为它比FMDB的其他东西都要新。）</p>
+<p>托管对象模型，一个托管对象模型关联一个模型文件(.xcdatamodeld)，存储着数据库的数据结构。</p>
 
-<p>beginTransaction和endTransaction的调用是可嵌套的（在我的数据库控制器里）。在合适的时候他们会调用-[FMDatabase beginTransaction] 和 -[FMDatabase commit]。（使用事务是让SQLite变快的关键。）提示：我把当前事务存储在-[NSThread threadDictionary]。它很好获取每一个线程的数据，我几乎从不用其他的。</p>
-
-<p>这儿有个调用更新数据库的简单例子：</p>
-
-<pre><code>- (void)emptyTagsLookupTableForNote:(VSNote *)note { 
-    NSString *uniqueID = note.uniqueID; 
-    [self runDatabaseBlockInTransaction:^(FMDatabase *database) { 
-        [database executeUpdate: 
-            @"delete from tagsNotesLookup where noteUniqueID = ?;", uniqueID]; 
-    }]; 
-} 
+<pre><code>NSPersistentStoreCoordinator
 </code></pre>
 
-<p>这说明一些事情。首先SQL不可怕。即使你从没见过它，你也知道这行代码做了什么。</p>
+<p>持久化存储协调器，负责协调存储区和上下文之间的关系。</p>
 
-<p>像VSDatabaseController的所有其他公共接口，emptyTagsLookupTableForNote应该在主线程中被调用。模型对象只能在主线程中被引用，所以在block中用uniqueID，而不是VSNote对象。</p>
-
-<p>注意在这种情况下，我更新了一个查找表。Notes和tags是多对多关系，一种表现方式是用一个数据库表映射note uniqueIDs和tag uniqueIDs。这些表不会很难维护，但是如果可能，我确实尝试避免他们的使用。</p>
-
-<p>注意在更新字符串中的?。-[FMDatabase executeUpdate:] 是一个可变参数函数。SQLite支持使用占位符?，所以你不需要把正真的值放入字符串。这儿有一个安全问题：它帮助守护程序反对SQL插入。如果你需要避开某些值，它也为你省了麻烦。</p>
-
-<p>最后，在tagsNotesLookup表中，有一个noteUniquelID的索引（索引是SQLite性能的又一个关键）。这行代码在每次启动时都调用：</p>
-
-<pre><code>[self.database executeUpdate: 
-    @"CREATE INDEX if not exists noteUniqueIDIndex on tagsNotesLookup (noteUniqueID);"]; 
+<pre><code>NSManagedObject
 </code></pre>
 
-<p>数据库获取
-要获取对象，app调用：</p>
+<p>托管对象类，所有CoreData中的托管对象都必须继承自当前类，根据实体创建托管对象类文件。</p>
 
-<pre><code>-[VSDatabaseController runFetchForClass:(Class)databaseObjectClass  
-                             fetchBlock:(VSDatabaseFetchBlock)fetchBlock  
-                      fetchResultsBlock:(VSDatabaseFetchResultsBlock)fetchResultsBlock]; 
+<p>CoreData简单创建流程</p>
+
+<p>模型文件操作</p>
+
+<pre><code>1.1 创建模型文件，后缀名为.xcdatamodeld。创建模型文件之后，可以在其内部进行添加实体等操作(用于表示数据库文件的数据结构)
+
+1.2 添加实体(表示数据库文件中的表结构)，添加实体后需要通过实体，来创建托管对象类文件。
+
+1.3 添加属性并设置类型，可以在属性的右侧面板中设置默认值等选项。(每种数据类型设置选项是不同的)
+
+1.4 创建获取请求模板、设置配置模板等。
+
+1.5 根据指定实体，创建托管对象类文件(基于NSManagedObject的类文件)
 </code></pre>
 
-<p>这两行代码做了大部分工作：</p>
+<p>实例化上下文对象</p>
 
-<pre><code>FMResultSet *resultSet = fetchBlock(self.database); 
-NSArray *fetchedObjects = [self databaseObjectsWithResultSet:resultSet  
-                                                       class:databaseObjectClass]; 
+<pre><code>2.1 创建托管对象上下文(NSManagedObjectContext)
+
+2.2 创建托管对象模型(NSManagedObjectModel)
+
+2.3 根据托管对象模型，创建持久化存储协调器(NSPersistentStoreCoordinator)
+
+2.4 关联并创建本地数据库文件，并返回持久化存储对象(NSPersistentStore)
+
+2.5 将持久化存储协调器赋值给托管对象上下文，完成基本创建。
 </code></pre>
 
-<p>用FMDB查找数据库返回一个FMResultSet. 通过resultSet你可以逐句循环，创建模型对象。</p>
+<p>CoreData结构</p>
 
-<p>我建议写通用的代码去转换数据库行到对象。一种我使用的方法是用一个plist，映射column名字到对象属性。它也包含类型，所以你知道是否需要调用 -[FMResultSet dateForColumn:]， -[FMResultSet stringForColumn:]或其他。</p>
+<p>CoreData的结构构成</p>
 
-<p>在我的最新应用里我做了些简单的事情。数据库行刚好对应模型对象属性的名字。所有属性都是strings，除了那些名字以“Date”结尾的属性。很简单，但是你可以看到需要一个清晰的对应关系。</p>
+<p>之前看到过几张介绍CoreData结构的图片，感觉其表示的结构比较清晰。可以通过这几张图片初步认识一下CoreData，在后面的文章中还会对这几个类进行详细解释。</p>
 
-<p>唯一对象
-创建模型对象和从数据库获取数据在同一个后台线程。一获取到，程序会把他们转到主线程。</p>
+<p><img src="/images/1001.png" title="Caption" ></p>
 
-<p>通常我有uniqued对象。同一个数据库行结果始终对应同一个对象。</p>
+<p>整体结构</p>
 
-<p>为了做到唯一，我创建了一个对象缓存，一个NSMapTable，在init函数里：_objectCache = [NSMapTable weakToWeakObjectsMapTable]。我来解释一下：</p>
+<p>上图中是初始化MOC所涉及到的一些类，由这些类实例化并最终构成可以使用的MOC。图中编号是实例化一个具备数据处理能力的MOC过程，这个过程和上面介绍过的实例化上下文对象相同。</p>
 
-<p>例如，当你做一个数据库获取并且把对象转交给一个视图控制器，你希望在视图控制器使用完这些对象后，或者一个不一样的视图控制器显示了，这些对象可以消失。</p>
+<p><img src="/images/1002.png" title="Caption" ></p>
 
-<p>如果你的对象缓存是一个NSMutableDictionary，你将需要做一些额外的工作来清空缓存中的对象。确定它对应的对象在别的地方是否有引用就变的很痛苦。NSMapTable是弱引用，就会自动处理这个问题。</p>
+<p>NSManagedObjectContext</p>
 
-<p>所以：我们在主线程中让对象唯一。如果一个对象已经在对象缓存中存在，我们就用那个存在的对象。（主线程胜出，因为它可能有新的改变。）如果对象缓存中没有，它会被加上。</p>
+<p>在PSC创建并关联本地数据库，并设置为MOC的persistentStoreCoordinator属性后，MOC就具备对当前存储区所有托管对象操作的能力。但是需要注意的是，MOC对托管对象是懒加载的，在使用时才会被加载到MOC的缓存中。</p>
 
-<p>保持对象在内存中
-有很多次，把整个对象类型保留在内存中是有道理的。我最新的app有一个VSTag对象。虽然可能有成百上千个笔记，但tags的数量很小，基本少于10。一个tag只有6个属性：3个BOOL，两个很小的NSstring，还有一个NSDate。</p>
+<p><img src="/images/1003.png" title="Caption" ></p>
 
-<p>启动的时候，app获取所有tags并且把他们保存在两个字典里，一个主键是tag的uniqueID，另一个主键是tag名字的小写。</p>
+<p>NSManagedObjectModel</p>
 
-<p>这简化了很多事，不只是tag自动补全系统，这个可以完全在内存中操作，不需要数据库获取。</p>
+<p>MOM对象加载模型文件后，获取到模型文件中所有实体的构成结构。由于MOM中存储着模型文件的结构，PSC需要通过MOM对象实例化本地数据库。</p>
 
-<p>但是很多次，把所有数据保留在内存中是不实际的。比如我们不会在内存中保留所有笔记。</p>
+<p><img src="/images/1004.png" title="Caption" ></p>
 
-<p>但是也有很多次，当不能在内存中保留对象时，你希望在内存中保留所有uniqueIDs。你会像这样做一个获取：</p>
+<p>Entity</p>
 
-<pre><code>FMResultSet *resultSet = [self.database executeQuery:@"select uniqueID from some_table"]; 
+<p>所有属性都存在Entity中，以及有关联关系的属性和请求模板，这都会在后面的章节中讲到。</p>
+
+<p><img src="/images/1005.png" title="Caption" ></p>
+
+<p>NSManagedObject</p>
+
+<p>可以通过Entity创建继承自NSManagedObject类的文件，这个文件就是开发中使用的托管对象，具备模型对象的表示功能，CoreData的本地持久化都是通过这个类及其子类完成的。</p>
+
+<p>持久化存储调度器</p>
+
+<p>在CoreData的整体结构中，主要分为两部分。一个是NSManagedObjectContext管理的模型部分，管理着所有CoreData的托管对象。一个是SQLite实现的本地持久化部分，负责和SQL数据库进行数据交互，主要由NSPersistentStore类操作。这就构成了CoreData的大体结构。</p>
+
+<p><img src="/images/1006.png" title="Caption" ></p>
+
+<p>结构图</p>
+
+<p>从图中可以看出，这两部分都是比较独立的，两部分的交互由一个持久化存储调度器(NSPersistentStoreCoordinator)来控制。上层NSManagedObjectContext存储的数据都是交给持久化调度器，由调度器调用具体的持久化存储对象(NSPersistentStore)来操作对应的数据库文件，NSPersistentStore负责存储的实现细节。这样就很好的将两部分实现了分离。</p>
+
+<p>个人随想</p>
+
+<p>对于CoreData的整体结构，因为CoreData底层存储本来就是用SQLite实现的，所以我用CoreData的结构和SQLite对比了一下，发现还是很多相似之处的。</p>
+
+<p>.xcdatamodeld文件代表着数据库文件结构，通过.xcdatamodeld编译后的.momd文件生成数据库。每个实体代表一张数据表，实体之间的关联关系就是SQLite的外键。</p>
+
+<p>下图就是CoreData底层存储的结构，用红圈圈住的部分指向关联表的主键下标。例如1就指向关联表的主键下标为1的行。</p>
+
+<p><img src="/images/1007.png" title="Caption" ></p>
+
+<p>外键</p>
+
+<p>CoreData杂谈</p>
+
+<p>CoreData数据存储安全</p>
+
+<p>CoreData本质还是使用SQLite进行存储，并没有另外提供加密功能，具体的数据加解密还需要自己完成。</p>
+
+<p>CoreData在硬盘上的数据存储结构：</p>
+
+<p><img src="/images/1008.png" title="Caption" ></p>
+
+<p>数据库存储结构</p>
+
+<p>通过PSC指定创建SQLite目录后，会在指定的目录下生成一个数据库文件，同时还会生成两个同名但后缀不同的文件，其中只有后缀.sqlite的文件是存储数据的文件。</p>
+
+<p>这个数据库文件中会默认生成三个表，Z_METADATA、Z_PRIMARYKEY、Z_MODELCACHE，其他我们自己的表也都是大写Z开头的。</p>
+
+<p>在每个表中，系统还会默认生成三个字段，Z_PK、Z_ENT、Z_OPT三个字段，也都是大写Z开头并且带下划线的。其他字段就是我们自己的字段了，大写Z开头但不带下划线。</p>
+
+<p>CoreData执行效率</p>
+
+<p>现在市面上的大多数项目，都是使用SQLite作为持久化的方案，而CoreData的使用并不是很普遍。对于这个问题，我认为首先是很多项目开始的比较早，那时候好多iOS程序员都是从其他语言转过来的，更加熟悉SQLite，所以用SQLite比较多一些。后面如果不进行大的项目重构，就很难换其他的持久化方案了。</p>
+
+<p>还有就是不熟悉CoreData，也不想去了解和深入学习CoreData，我认为这是很大的原因。所以项目中用CoreData的人并不多，而真正掌握CoreData技术的人更少。</p>
+
+<p>之前听其他人说CoreData的执行效率不如SQLite高，这个如果深究的话，确实CoreData要比SQLite效率差一些，只不过并没有太大区别。CoreData本质也是在底层执行SQL语句，只是CoreData的SQL语句执行逻辑比较耗时，没有手动编写SQL语句更加直接。我们可以将CoreData的调试功能打开，具体看一下SQL语句的执行。</p>
+
+<p>这里要说一点，客户端毕竟不是服务端，不需要像服务器那样大量的数据查询，所以CoreData是完全可以应对客户端的查询量的。如果从灵活性来说，CoreData确实没有SQLite的灵活性高，一些SQLite的复杂功能可能也不能实现，但是就目前大多数项目来说，CoreData已经能够满足项目持久化需求了。</p>
+
+<p>导致执行效率差异的原因还体现在对象转换上，CoreData在执行SQL语句的基础上，还多了一层将数据映射给托管对象的操作，这样得到的就是OC的托管对象，而SQLite得到的则不是。如果给SQLite执行完成后，也加一层创建托管对象并赋值的操作，这时候对比性能两者的差距可能就会更小了。</p>
+
+<p>性能评测</p>
+
+<p>下面是一篇关于CoreData、FMDB、Realm性能测试结果的博客，最后的结果我也没有去验证，只是大致看了一下代码还是比价靠谱的。作者测试Demo和原文地址。</p>
+
+<p>测试数据的数量是以K为单位，最少为1K的数据量。涉及到的操作主要是下面四种：</p>
+
+<pre><code>新建数据库并插入1K条数据。
+
+已有数据库，插入1K条数据。
+
+查询总量为10K条数据，连续查询单次为1K数据。
+
+10K条数据总量，更新其中1K条数据的部分字段性能。
 </code></pre>
 
-<p>resultSet只包含了uniqueIDs， 你可以存储到一个NSMutableSet里。</p>
+<p>性能评测结果：</p>
 
-<p>我发现有时这个对web APIs很有用。想象一个API调用返回从某个确定的时间以后的，已创建笔记的uniqueIDs列表。如果我本地已经有了一个包含所有笔记uniqueIDs的NSMutableSet，我可以快速检查(通过 -[NSMutableSet minusSet])是否有漏掉的笔记，然后去调用另一个API下载那些漏掉的笔记。这些完全不需要触及数据库。</p>
+<p>根据测试结果可以发现，在前面两种插入操作，CoreData的性能比FMDB和Realm要快很多。</p>
 
-<p>但是，像这样的事情应该小心处理。app可以提供足够的内存吗？它真的简化编程并且提高性能了吗？</p>
+<p>而对于查询操作，CoreData比其他两种操作耗时多很多，大概多出三四倍。这很可能和CoreData将查询结果的数据转为托管对象有关系，抛去CoreData这部分转换操作性能会比现在好很多。</p>
 
-<p>用SQLite和FMDB而不是Core Data，给你带来大量的灵活性和聪明解决办法的空间。记住有的时候聪明是好的，也有的时候聪明是一个大错误。</p>
+<p>而更新操作则直接基于SQLite封装的FMDB有绝对的优势，FMDB和其他两种操作差距大概是十倍左右，而其他两种操作性能差不多。当然CoreData也存在着上面提到的对象转换操作，CoreData抛去这步结果可能会比现在好很多。</p>
 
-<p>Web APIs
-我的API调用在后台进程（经常用一个NSOperationQueue，所以我可以取消操作）。模型对象只在主线程，但是我还传递模型对象给我的API调用。</p>
+<p>测试图表</p>
 
-<p>是这样的：一个数据库对象有一个detachedCopy方法，可以复制数据库对象。这个复制对象不是引用自我用来唯一化的对象缓存。唯一引用那个对象的地方是API调用，当API调用结束，那个复制的对象就消失了。</p>
+<p>下面的测试数据中，取得是三次测试结果的平均值。</p>
 
-<p>这是一个好的系统，因为它意味着我可以在API调用里使用模型对象。方法看起来像这样：</p>
+<p><img src="/images/1009.png" title="Caption" ></p>
 
-<pre><code>- (void)uploadNote:(VSNote *)note { 
-    VSNoteAPICall *apiCall = [[VSNoteAPICall alloc] initWithNote:[note detachedCopy]]; 
-    [self enqueueAPICall:apiCall]; 
-} 
+<p><img src="/images/1010.png" title="Caption" ></p>
+
+<p>新建数据库并插入1K条数据</p>
+
+<p><img src="/images/1011.png" title="Caption" ></p>
+
+<p>已有数据库，插入1K条数据</p>
+
+<p><img src="/images/1012.png" title="Caption" ></p>
+
+<p>查询总量为10K条数据，连续查询单次为1K数据</p>
+
+<p><img src="/images/1013.png" title="Caption" ></p>
+
+<p>10K条数据总量，更新其中1K条数据的部分字段性能</p>
+
+<p>CoreData调试</p>
+
+<p>Xcode调试命令</p>
+
+<p>CoreData本质上是对SQLite的一个封装，在内部将对象的持久化转化为SQL语句执行，可以在项目中将CoreData调试打开，从而可以看到CoreData的SQL语句执行和一些其他log信息。</p>
+
+<p>打开Product，选择Edit Scheme.</p>
+
+<p>选择Arguments，在下面的ArgumentsPassed On Launch中添加下面两个选项。</p>
+
+<pre><code>(1)-com.apple.CoreData.SQLDebug
+
+(2)1
+
+    终端调试命令
+
+    如果是在模拟器上调试程序，可以通过 sqlite3 /数据库路径/ 命令来查看和操作数据库。
+
+    .tables 查看当前数据库文件中所有的表名
+
+    select *from tableName 执行查询的SQL语句
+
+    <img src="/images/1014.png" title="Caption" > 
+
+    终端调试命令
 </code></pre>
 
-<p>VSNoteAPICall从复制的VSNote获取值，并且创建HTTP请求，而不是一个字典或其他笔记的表现形式。</p>
-
-<p>处理Web API返回值
-我对web返回值做了一些类似的事情。我会对返回的JSON或者XML创建一个模型对象，这个模型对象也是分离的。它不是存储在为了唯一性的模型缓存里。</p>
-
-<p>这儿有些事情是不确定的。有时有必要用那个模型对象在两个地方做本地修改：在内存缓存和数据库。</p>
-
-<p>数据库通常是容易的部分。比如：我的应用已经有一个方法来保存笔记对象。它用一个SQL insert或者replace字符串。我只需调用那个从web API返回值生成的笔记对象，数据库就会更新。</p>
-
-<p>但是可能那个对象有一个在内存中的版本，幸运的是我们很容易找到：</p>
-
-<pre><code>VSNote *cachedNote = [self.mapTable objectForKey:downloadedNote.uniqueID]; 
-</code></pre>
-
-<p>如果cachedNote存在，我会让它从downloadedNote中获取值，而不是替换它（这样可能违反唯一性）。这可以共享detachedCopy方法的代码。</p>
-
-<p>一旦cachedNote更新了，观察者会通过KVO通知笔记，或者我会发送一个NSNotification，或者两者都做。</p>
-
-<p>Web API调用也会返回一些其他值。我提到过RSS阅读器可能获得一个已读条目的大列表。这种情况下，我用那个列表创建了一个NSSet，在内存中更新每一个缓存文章的read属性，然后调用-[FMDatabase executeUpdate:]。</p>
-
-<p>让它工作快速的关键是NSMapTable的查找是快速的。如果你找的对象在一个NSArray里，我们该重新考虑。</p>
-
-<p>数据库迁移
-Core Data的数据库迁移很酷，当它可行的时候。但是不可避免的，它是代码和数据库中的一层。如果你越直接使用SQLite，你更新数据库越直接。你可以安全容易的做到这点。</p>
-
-<p>比如加一个表：</p>
-
-<pre><code>[self.database executeUpdate:@"CREATE TABLE if not exists tags " 
-    "(uniqueID TEXT UNIQUE, name TEXT, deleted INTEGER, deletedModificationDate DATE);"]; 
-</code></pre>
-
-<p>或者加一个索引：</p>
-
-<pre><code>[self.database executeUpdate:@"CREATE INDEX if not exists " 
-    "archivedSortDateIndex on notes (archived, sortDate);"]; 
-</code></pre>
-
-<p>或者加一列：</p>
-
-<pre><code>[self.database executeUpdate:@"ALTER TABLE tags ADD deletedDate DATE"]; 
-</code></pre>
-
-<p>应用应该在代码的第一个地方用上面这些代码设置数据库。以后的改变只需加executeUpdate的调用 — 我让他们按顺序执行。因为我的数据库是我设计的，不会有什么问题（我从没碰到性能问题，它很快）。</p>
-
-<p>当然大的改变需要更多代码。如果你的数据通过web获取，有时你可以从一个新数据库模型开始，重新下载你需要的数据。</p>
-
-<p>性能技巧
-SQLite可以非常非常快，它也可以非常慢。完全取决于你怎么使用它。</p>
-
-<p>事务
-把更新包装在事务里。在更新前调用 -[FMDatabase beginTransaction] ，更新后调用-[FMDatabase commit]。</p>
-
-<p>如果你不得不反规范化（ Denormalize）
-反规范化让人很不爽。这个方法是，为了加速检索而添加冗余数据，但是它意味着你需要维护冗余数据。</p>
-
-<p>我总是疯狂避免它，直到这样能有严重的性能区别。然后我会尽可能少得这么做。</p>
-
-<p>使用索引
-我的应用中tags表的创建语句像这样：</p>
-
-<pre><code>CREATE TABLE if not exists tags  
-  (uniqueID TEXT UNIQUE, name TEXT, deleted INTEGER, deletedModificationDate DATE); 
-</code></pre>
-
-<p>uniqueID列是自动索引的，因为它定义为unique。但是如果我想用name来查询表，我可能会在name上创建一个索引，像这样：</p>
-
-<pre><code>CREATE INDEX if not exists tagNameIndex on tags (name); 
-</code></pre>
-
-<p>你可以一次性在多列上创建索引，像这样：</p>
-
-<pre><code>CREATE INDEX if not exists archivedSortDateIndex on notes (archived, sortDate); 
-</code></pre>
-
-<p>但是注意太多索引会降低你的插入速度。你只需要足够数量并且是对的那些。</p>
-
-<p>使用命令行应用
-当我的app在模拟器里运行时，我会打印数据库的路径。我可以通过sqlite3的命令行来打开数据库。（通过man sqlite3命令来了解这个应用的更多信息）。</p>
-
-<p>打开数据库的命令：sqlite3 “数据库的路径”。</p>
-
-<p>打开以后，你可以看schema: type .schema。</p>
-
-<p>你可以更新和查询，这是在使用你的app之前检查SQL是否正确的很好的方式。</p>
-
-<p>这里面最酷的一部分是，SQLite Explain Query Plan命令，你会希望确保你的语句执行的尽可能快。</p>
-
-<p>真实的例子
-我的应用显示所有没有归档笔记的标签列表。每当笔记或者标签有变化，这个查询就会重新执行一次，所以它需要很快。</p>
-
-<p>我可以用SQL join来查询，但是很慢（joins都很慢）。</p>
-
-<p>所以我放弃sqlite3并开始尝试别的方法。我又看了一次我的schema，意识到我可以反规范化。一个笔记的归档状态可以存储在notes表里，它也可以存储在tagsNotesLookup表。</p>
-
-<p>然后我可以执行一个查询：</p>
-
-<pre><code>select distinct tagUniqueID from tagsNotesLookup where archived=0; 
-</code></pre>
-
-<p>我已经有了一个在tagUniqueID上的索引。所以我用explain query plan来告诉我当我执行这个查询的时候会发生什么。</p>
-
-<pre><code>sqlite&gt; explain query plan select distinct tagUniqueID from tagsNotesLookup where archived=0; 
-0|0|0|SCAN TABLE tagsNotesLookup USING INDEX tagUniqueIDIndex (~100000 rows) 
-</code></pre>
-
-<p>它用了一个索引，但是SCAN TABLE听起来不太好，最好是一个SEARCH TABLE并且覆盖一个索引。
-我在tagUniqueID和archive上建了索引：</p>
-
-<pre><code>CREATE INDEX archivedTagUniqueID on tagsNotesLookup(archived, tagUniqueID); 
-</code></pre>
-
-<p>再次执行explain query plan:</p>
-
-<pre><code>sqlite&gt; explain query plan select distinct tagUniqueID from tagsNotesLookup where archived=0; 
-0|0|0|SEARCH TABLE tagsNotesLookup USING COVERING INDEX archivedTagUniqueID (archived=?) (~10 rows) 
-</code></pre>
-
-<p>好多了。</p>
-
-<p>更多性能提示
-FMDB的某处加了缓存statements的能力，所以当创建或打开一个数据库的时候，我总是调用[self.database setShouldCacheStatements:YES] 。这意味着对每个调用你不需要再次编译每个statement。</p>
-
-<p>我从来没有找到使用vacuum的好的指引，如果数据库没有定期压缩，它会越来越慢。我的应用会跑一个vacuum，但只是每周一次（它在NSUserDefaults里存储上次vacuum的时间，然后在开始的时候检查是否过了一周）。</p>
-
-<p>如果能auto_vacuum那更好，看pragma statements supported by SQLite列表。</p>
-
-<p>其他酷的东西
-Gus Mueller让我涉及自定义SQLite方法的内容。我并没有真的使用这些东西，既然他指出了，我可以放心的说我能找到它的用处。因为它很酷。</p>
-
-<p>在Gus的帖子里，有一个查询是这样的：</p>
-
-<pre><code>select displayName, key from items where UTTypeConformsTo(uti, ?) order by 2; 
-</code></pre>
-
-<p>SQLite完全不知道UITypes。但是你可以加核心方法，查看-[FMDatabase makeFunctionNamed:maximumArguments:withBlock:]。</p>
-
-<p>你可以执行一个大的查询来替代，然后评估每个对象。但是那需要更多工作。最好在SQL级就过滤，而不是在将表格行转为对象以后。</p>
-
-<p>最后
-你真的应该使用Core Data，我不是在开玩笑。</p>
-
-<p>我用SQLite和FMDB一段时间了，我对多得的好处感到很兴奋，也得到非同一般的性能。但是记住机器在变快，其他看你代码的人期望看到他已经知道的Core Data, 另一些不打算看你的数据库代码。所以请把这整篇文章看做一个疯子的叫喊，关于他为自己建立的细节的疯狂的世界，并把自己锁在里面。</p>
-
-<p>请享受了不起的Core Data的文章（有点难过的摇头）。</p>
-
-<p>接下来，在查完Gus指出的自定义SQLite方法特性后，我会研究SQLite的full-text search extension. 总有更多的内容需要去学习。</p>
+<hr />
 
 <pre><code>Q Q：2211523682/790806573
 
@@ -2606,139 +2518,240 @@ github：https://github.com/al1020119
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Realm 爆菊 CoreData]]></title>
-    <link href="http://al1020119.github.io/blog/2016/07/05/ycoredatayurealm/"/>
-    <updated>2016-07-05T04:59:42+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/07/05/ycoredatayurealm</id>
-    <content type="html"><![CDATA[<p>本文具有强烈的个人感情色彩,如有观看不适,请尽快关闭。本文仅作为个人学习记录使用，也欢迎在许可协议范围内转载或使用，请尊重版权并且保留原文链接，谢谢您的理解合作。如果您觉得本站对您能有帮助，您可以使用RSS方式订阅本站，这样您将能在第一时间获取本站信息。
-碎碎念</p>
+    <title type="html"><![CDATA[FMDB封装篇]]></title>
+    <link href="http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag/"/>
+    <updated>2016-07-02T22:59:42+08:00</updated>
+    <id>http://al1020119.github.io/blog/2016/07/02/fmdbzfenghuznag</id>
+    <content type="html"><![CDATA[<p>前言：</p>
 
-<p>OhMyStar 2 也进行了一段时日，我把持久化的方式从CoreData 换到了 Realm。有些感悟，顺手就记录一下吧。以下评论都是自己很主观的感受，无实际测试数据支持。
-论 iOS 的持久化</p>
+<p>在自己开发中，每次用到数据库都会纠结是使用CoreData还是FMDB。CoreData虽然Api简单，但是调用栈非常复杂，要初始化一个Context需要至少20行代码。。。</p>
+
+<p>显然，对于这种这么恶心的情况，我们的大Github必须有人会跳出来解决这种问题。于是就出现了MagicRecord这个对CoreData的封装库。一开始遇到这个库的时候，好用到几乎让我想把所有项目的数据库都换成CoreData了。两句话解决CoreData调用栈的初始化，一句话完成数据库版本升级和自动数据合并更新（虽然我们很少用到）。</p>
+
+<p>然而这并不能解决一个根本性的问题，CoreData中的每个Object都要和一个context进行绑定，导致我们很多业务需求需要创建自己的私有context，然后再需要更新的时候保存到主context中。这又导致了我们在controller中或者在自己的业务类中维护多一个私有context属性。</p>
 
 <!--more-->
 
 
-<p>iOS 持久化其实也没多少选择， 高端一点CoreData、Realm、FMDB、KV类(LevelDB等)。低端一些直接一个 NSArray 就写成 Plist 也能持久化下来。</p>
+<p>所以，最后还是选择了FMDB进行封装。</p>
 
-<p>在网络环境越来越快的当下和大部分应用数据都可能是网络应用，如果业务逻辑并不复杂，其实极端一点就只用写到 JSON 转 Object 就好了。而且一堆这样好用的封装，远有Mantle 近有YYModel。</p>
+<p>之前自己搞过Java后台，将FMDB进行Hibernate式的封装，使用runtime解析，不用继承任何基类（swift中要继承NSObject），只要实现一个持久化协议并实现方法即可，屏蔽基本的数据库和表操作。</p>
 
-<p>所以需要持久化的时候，我觉的可以慎重的评估一下需求。想明白了，后面可以节省很多事情。</p>
+<p>项目简介：</p>
 
-<p>本文章主要对比 Realm 和 CoreData，其他的就不涉及了。</p>
+<h5>JRDB：一个对FMDB进行类Hibernate封装的iOS库，支持Objective-C 和 Swift。</h5>
 
-<p>Realm
-优点
-入门门槛低</p>
+<p>Description</p>
 
-<p>Realm文档就算一个字一个字扣着读完，一个下午就足够了。而且还有中文版本，不要太友好哦，有点不习惯诶。</p>
+<pre><code>使用分类的模式，模仿Hibernate，对FMDB进行简易封装
 
-<p>文档覆盖了80%的使用情况，甚至有些太简陋的嫌疑。但不管怎么样，这种入门条件比起 CoreData 写了三个月都没搞清楚 Context 要好的多。</p>
+支持pod 安装 『pod 'JRDB'』，Podfile需要添加 use_framework!
 
-<p>在库的工具链上，安装一个 Realm Browser 以后就不需要其他辅助了。还是简单。</p>
+使用协议，不用继承基类，对任意NSObject可以进行入库操作
 
-<p>几乎做到了上手即用的程度。五星好评。</p>
+支持swift 和 Objective-C
 
-<p>PS：我用了一个通宵把 OhMyStar 2 的持久化从 CoreData 换到了 Realm ，优化调整了大概5天左右达到勉强可以用的情况 。在这之前并没有任何 Realm 的经验。
-据说性能好一些</p>
-
-<p>Realm官方介绍Fast一段中</p>
-
-<p>Counts</p>
-
-<p><img src="/images/benchmarks.001b.png" title="Caption" ></p>
-
-<p>Queries</p>
-
-<p><img src="/images/benchmarks.002b.png" title="Caption" ></p>
-
-<p>Inserts</p>
-
-<p><img src="/images/benchmarks.003b.png" title="Caption" ></p>
-
-<p>在写这里的时候我顺手Google了一下 发现一篇Core Data, FMDB, Realm 性能测试。我就多说几句</p>
-
-<p>总觉得大家对 CoreData 误会蛮深，代码 Fork 看了一下， 总觉得不应该这样写来比性能的，但是一时半会也不知道怎么改。我只能说我在优化 CoreData 的时候根据 WWDC 上教的还是提升很高，另外一个事情是 CoreData 一般都用 Sqlite 做后端。所以如果你的查询是经过优化的，确认打出来的SQL语句科学以后，Sqlite(CoreData) 跟 Sqlite(FMDB)我觉得性能就算有差距，这差距没有能大到选择方案的决定性因素。如果使用 CoreData 遇到性能瓶颈，你应该仔细的研究 WWDC 和几篇很好的文章。确保你的 CoreData 使用方式是正确科学的。
-没有需要架构Context那种烦人的东西</p>
-
-<p>应该也算Realm简单的一个方面，Realm 只要保持自己线程里面，自己的 Realm Store 操作是正确的即可。如果是 CoreData，怎么架构一个科学的 Context Stack 就足够让我头疼一整，iOS 还好，界面是一个接着一个(VC跟VC之间的层级关系很清晰)。而 OhMyStar 2 这种 OS X 桌面应用场景VC之间很复杂，线程之间Context的关系让出现很多问题。
-支持 NSPredicate</p>
-
-<p>从 CoreData 转过来并没有太多的不适应
-很简单的使用多个存储文件</p>
-
-<p>举个例子，多用户登陆情况下。用户是单独的存储文件，和全部用户使用同一个存储文件。后者需要每条用户数据都要关联一次当前用户，所有查询用户数据的时候，你都必须加上当前用户的查询项。而使用每个用户单独一个数据文件的时候，整个存储结构会清爽很多。
-技术支持</p>
-
-<p>至少实在没法的时候还可以去微博上吐槽他们，他们其实也有极大的热情来解决你遇到的问题。CoreData 这种遇到问题就只能自己默默的吞下。
-缺点
-关联关系弱的一逼</p>
-
-<p>简单说来就是对象跟对象之间的一对多关系和多对多关系。并不能映射，需要在双方里面都写上属性，此外还需要在设置的时候两边同时设置。查询时候也是 NSPredicate 也仅仅只支持一些一层的查询，没法做出带SUBQUERY的复杂查询出来。
-强制内省容错机制导致存储文件不断变大</p>
-
-<p>Realm本身感觉有一个数据容错机制。但是这个机制在数据库文件有错误的情况自己修复的时候，会无限增大。具体我这里表现为，打开看只有3000条数据，但是文件大小已经有3GB。重现Bug也很容易，只要你在写数据库的时候,用Realm Browser查看一下，crash之后在打开就很容易出现。</p>
-
-<p>官方文档里面有说到会造成这种情形的原因，我在尽我所能的避免问题以后。存储文件还是会有可能不那么夸张的变大一些。但是用Realm Browser查看数据是正常的。所以我觉得官方应该提供一个函数，可以删除掉那些容易的东西。保持存储文件的干净。
-没有细粒化通知</p>
-
-<p>也就是说，当我在某个地方做出修改。 我其他地方只知道Realm有修改，但是没法知道我是增加、修改还是删除了数据。不知道我更新的是那一条数据。据文档说，将来会解决这个问题，就只有拭目以待。
-增加包体积</p>
-
-<p>据官方说会增加1MB左右的包大小，如果你是一个小体积应用，或者是一个几千万用户的主流应用。对包大小敏感的话慎用。
-核心代码目前闭源</p>
-
-<p>对于在我们这样一个作恶满天飞的天朝长大的孩子来说，有些孩子对闭源这个事情还是挺在意的。不过官方说将来会开源，我还是倾向于相信 Realm 他们的人品。
-CoreData</p>
-
-<p>CoreData 相关资料相对多一些我就简单说
-优点
-官方支持 &amp;&amp; 亲儿子</p>
-
-<p>系统自带，Apple支持
-带图形化的Model编辑</p>
-
-<p>对于视觉化动物来说比较友好，也可以清楚的知道自己设计的 Model 之间的关系
-强大的关联关系</p>
-
-<p>以前不觉得，用了 Realm 才发现 CoreData 的关联关系如此好用，一对多，多对多。想怎么查询就怎么查询，可以写出很复杂的查询逻辑来。
-强大的查询</p>
-
-<p>虽然可能在设置NSFetchRequest的时候感觉很多东西要弄，但是复杂也带来了强大的功能，NSFetchRequest 可以设置很多，比如限制查询数量， 限制只返回某些属性值等等。就不展开说了。
-精细化的通知</p>
-
-<p>可以知道具体插入了什么、更新了什么、删除了什么。这样在刷UI，比如一个tableview的时候，你就可以控制的很准确。
-缺点
-入门门槛高</p>
-
-<pre><code>CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
-CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
-CoreData 是一个博大精深的技术，不要妄想几天之内可以用的很溜。
+支持数据类型：基本数据类型（int，double，等），String，NSData，NSNumber，NSDate
 </code></pre>
 
-<p>如果没有足够的时间和精力去接入 CoreData。 那选型的时候应当慎重考虑。
-需要一些工具才感觉好使</p>
+<h5>注：Swift的基本数据类型，不支持Option类型，既不支持Int？Int！等，对象类型支持Option类型</h5>
 
-<p>不管是老手还是新手，使用一些第三方的封装库和工具都会大大的提高使用 CoreData 的幸福指数。</p>
+<p>Installation（安装）</p>
 
-<p>mogenerator 是必须必须要的。</p>
+<pre><code>use_frameworks!
+pod 'JRDB'
+@import JRDB;
+</code></pre>
 
-<p>MagicalRecord 无愧 CoreData 第一库，据小道消息 主要贡献者 Saul Mora 可能去了微信了。
-Context</p>
+<p>Usage</p>
 
-<p>其实还是 CoreData 门槛高的问题，对我来说。Context之间的关系和线程之间的处理让我感到很头痛，特别是 OS X  是一大堆VC铺到屏幕上，我水平又菜，出的问题很多。
-多个持久化文件很麻烦</p>
+<p>。。。</p>
 
-<p>不是说不可以，但是真的好麻烦。</p>
+<p>Save（保存）</p>
 
-<p>有个第三方库有解决CoreData这个问题 CoreStore 但是我用着不是很顺手最后弃用.
-总结</p>
+<p>Objective-C</p>
 
-<p>其实吧用啥持久化都行，具体还是需要看你的需求和方案上来说哪一个方案更加适合。</p>
+<pre><code>Person *p = [[Person alloc] init];
+p.a_int = 1;
+p.b_unsigned_int = 2;
+p.c_long = 3;
+p.d_long_long = 4;
+p.e_unsigned_long = 5;
+p.f_unsigned_long_long = 6;
+p.g_float = 7.0;
+p.h_double = 8.0;
+p.i_string = @"9";
+p.j_number = @10;
+p.k_data = [NSData data];
+p.l_date = [NSDate date];
+[p jr_save];
+</code></pre>
 
-<p>如果简单说来，就是 Realm 更加适合一些业务逻辑不怎么复杂的场景，团队配置要求不高，有经验的人稍微看一下午就能上手。</p>
+<p>Swift</p>
 
-<p>CoreData 更加适合业务逻辑复杂的情况，团队配置要求比较高，有经验的老手也需要几周甚至更长的时间才能科学的使用CoreData。</p>
+<p>Swift中需要入库的类需要继承NSObject（使用到runtime）</p>
+
+<pre><code>The Object that you want to persistent should inherit from NSObject
+
+let p = Person()
+p.name = "name"
+p.age = 10
+p.birthday = NSDate()
+p.jr_save()
+</code></pre>
+
+<h5>Update（更新）</h5>
+
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+p.name = @"abc";
+[p jr_update columns:nil];
+</code></pre>
+
+<p>column: 需要更新的字段名，传入空为全量更新</p>
+
+<h5>Delete（删除）</h5>
+
+<pre><code>Person *p = [Person jr_findAll].firstObject;
+[p jr_delete];
+</code></pre>
+
+<h5>Select（查找）</h5>
+
+<h5>常规查找</h5>
+
+<pre><code>Person *p = [Person jr_findByPrimaryKey:@"111"];
+NSArray *list = [Person jr_findAll];
+NSArray *list1 = [Person jr_findAllOrderBy:@"_age" isDesc:YES];
+</code></pre>
+
+<h5>条件查询</h5>
+
+<pre><code>NSArray *condis = @[
+     [JRQueryCondition condition:@"_l_date &lt; ?" args:@[[NSDate date]] type:JRQueryConditionTypeAnd],
+     [JRQueryCondition condition:@"_a_int &gt; ?" args:@[@9] type:JRQueryConditionTypeAnd],];
+NSArray *arr = [Person jr_findByConditions:condis
+                      groupBy:@"_room"
+                      orderBy:@"_age"
+                      limit:@" limit 0,13 "
+                      isDesc:YES];
+</code></pre>
+
+<p>SQL</p>
+
+<pre><code>NSString *sql = @"select * from Person where age = ?";
+NSArray *list = [Person jr_executeSql:sql args:@[@10]];
+</code></pre>
+
+<p>Other（其他）</p>
+
+<p>协议：JRPersistent</p>
+
+<pre><code>@protocol JRPersistent @required
+- (void)setID:(NSString * _Nullable)ID;
+- (NSString * _Nullable)ID;
+@optional
+/**
+ *  返回不用入库的对象字段数组
+ *  The full property names that you want to ignore for persistent
+ *  @return array
+ */
++ (NSArray * _Nullable)jr_excludePropertyNames;
+/**
+ *  返回自定义主键字段
+ *  @return 字段全名
+ */
++ (NSString * _Nullable)jr_customPrimarykey;
+/**
+ *  返回自定义主键值
+ *  @return 主键值
+ */
+- (id _Nullable)jr_customPrimarykeyValue;
+@end
+</code></pre>
+
+<p>主键</p>
+
+<p>默认每个Object的主键为ID， UUID字符串。</p>
+
+<p>可以实现 jr_customPrimarykey 以及 jr_customPrimarykeyValue 方法，自定义主键。</p>
+
+<p>默认NSObject分类实现</p>
+
+<pre><code>@interface NSObject (JRDB) (...methods)
+@end
+JRDBMgr
+@interface JRDBMgr : NSObject
+@property (nonatomic, strong) FMDatabase *defaultDB;
++ (instancetype)shareInstance;
++ (FMDatabase *)defaultDB;
+- (FMDatabase *)createDBWithPath:(NSString *)path;
+- (void)deleteDBWithPath:(NSString *)path;
+/**
+ *  在这里注册的类，使用本框架的数据库将全部建有这些表
+ *  @param clazz 类名
+ */
+- (void)registerClazzForUpdateTable:(Class)clazz;
+- (NSArray *)registedClazz;
+/**
+ * 更新默认数据库的表（或者新建没有的表）
+ * 更新的表需要在本类先注册
+ */
+- (void)updateDefaultDB;
+- (void)updateDB:(FMDatabase *)db;
+@end
+</code></pre>
+
+<p>JRDBMgr持有一个默认数据库（~/Documents/jrdb/jrdb.sqlite），任何不指定数据库的操作，都在此数据库进行操作。默认数据库可以自行设置。</p>
+
+<p>Method</p>
+
+<pre><code>- (void)registerClazzForUpdateTable:(Class)clazz;
+</code></pre>
+
+<p>在JRDBMgr中注册的类，可以使用</p>
+
+<pre><code>-(void)updateDB:(FMDatabase *)db
+</code></pre>
+
+<p>进行统一更新或者创建表。</p>
+
+<p>Table Operation（表操作）</p>
+
+<p>Create（建表）</p>
+
+<pre><code>// FMDatabase+JRDB 方法
+[[JRDBMgr defaultDB] createTable4Clazz:[Person class]];
+[Person jr_createTable];
+// 删除原有的表，重新创建
+[[JRDBMgr defaultDB] truncateTable4Clazz:[Person class]];
+[Person jr_truncateTable];
+//保存时，若发现没有表，将自动创建
+[person jr_save];
+Update 【更新表】
+[[JRDBMgr defaultDB] updateTable4Clazz:[Person class]];
+[Person jr_updateTable];
+</code></pre>
+
+<p>更新表时，只会添加不存在的字段，不会修改字段属性，不会删除字段，若有需要，需要自行写sql语句进行修改</p>
+
+<p>Drop（删表）</p>
+
+<pre><code>[[JRDBMgr defaultDB] dropTable4Clazz:[Person class]];
+[Person jr_dropTable];
+</code></pre>
+
+<p>Thread Operation（线程操作）</p>
+
+<p>多线程操作使用FMDB自带的 FMDatabaseQueue</p>
+
+<pre><code>[person jr_saveWithComplete:^(BOOL success) {
+    NSLog(@"%d", success);
+}];
+</code></pre>
+
+<p>任何带complete block的操作，都将放入到FMDatabaseQueue进行顺序执行</p>
+
+<p>注：所有需要立刻返回结果，或者影响其他操作的数据库操作，都建议放在主线程进行更新，大批量更新以及多线程操作数据库时，请使用带complete block的操作。</p>
 
 <pre><code>Q Q：2211523682/790806573
 

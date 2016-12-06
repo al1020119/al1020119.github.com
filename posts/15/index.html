@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="一. 概要 在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS &hellip;">
+  <meta name="description" content="最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。 下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,7 +75,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/02/15/xiang-ce-shen-jiu/">相册深究</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/05/20/sign/">签名机制</a></h1>
     
     
       <p class="meta">
@@ -84,31 +84,27 @@
 
 
 
-<time class='entry-date' datetime='2015-02-15T13:38:22+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>1:38 pm</span></time>
+<time class='entry-date' datetime='2014-05-20T13:53:19+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2015/02/15/xiang-ce-shen-jiu/#comments">Comments</a>
+        |   <a href="/blog/2014/05/20/sign/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>一. 概要</h3>
+  <div class="entry-content"><p>最近看了objc.io上第17期中的文章 《Inside Code Signing》 对应的中文翻译版 《代码签名探析》 ，受益颇深，对iOS代码签名机制有了进一步的认识。想了解详细内容建议大家还是去看原文好了。</p>
 
-<p>在 iOS 设备中，照片和视频是相当重要的一部分。最近刚好在制作一个自定义的 iOS 图片选择器，顺便整理一下 iOS 中对照片框架的使用方法。在 iOS 8 出现之前，开发者只能使用 AssetsLibrary 框架来访问设备的照片库，这是一个有点跟不上 iOS 应用发展步伐以及代码设计原则但确实强大的框架，考虑到 iOS7 仍占有不少的渗透率，因此 AssetsLibrary 也是本文重点介绍的部分。而在 iOS8 出现之后，苹果提供了一个名为 PhotoKit 的框架，一个可以让应用更好地与设备照片库对接的框架，文末也会介绍一下这个框架。</p>
+<p>下面是对此文章的理解再结合自己之前对该部分的认识写出的学习笔记。本文的前提是已经对非对称加密有了一定的了解。</p>
 
-<p>另外值得强调的是，在 iOS 中，照片库并不只是照片的集合，同时也包含了视频。在 AssetsLibrary 中两者都有相同类型的对象去描述，只是类型不同而已。文中为了方便，大部分时候会使用「资源」代表 iOS 中的「照片和视频」。</p>
-
-<h3>二. AssetsLibrary 组成介绍</h3>
-
-<p>AssetsLibrary 的组成比较符合照片库本身的组成，照片库中的完整照片库对象、相册、相片都能在 AssetsLibrary 中找到一一对应的组成，这使到 AssetsLibrary 的使用变得直观而方便。</p>
+<h4>一、数字签名（digital signature）</h4>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/02/15/xiang-ce-shen-jiu/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/05/20/sign/">阅读全文😘</a>
     </footer>
   
 
@@ -120,7 +116,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/">函数&amp;方法的奥秘</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/05/20/paixu/">排序算法精髓</a></h1>
     
     
       <p class="meta">
@@ -129,195 +125,27 @@
 
 
 
-<time class='entry-date' datetime='2015-02-08T23:54:30+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:54 pm</span></time>
+<time class='entry-date' datetime='2014-05-20T13:53:19+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2015/02/08/han-shu-and-fang-fa-de-ao-mi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>首先问个问题，你知道函数与方法的区别吗？</p>
-
-<p>什么？没有区别？那你就out了！</p>
-
-<p>函数(function)，方法(method)，之前没细究它们的不同，随心所欲的想说哪个就说哪个，“这个初始化函数…”，“这个初始化方法…”，看着都差不多，没什么区别。
-直到前几天，一个新来的同事，在看我整理的 Objective-C代码规范文档，里面有一段是这样的：</p>
-
-<h5>初始化函数</h5>
-
-<pre><code>- (void)init
-{
-…
-} 
-…
-</code></pre>
-
-<p>他看到后，疑惑的跟我说：“你这表达方式不对吧，你标题说的是函数，但是内容却说的是方法。”
-哦？原来函数跟方法是不一样的。</p>
-
-<h2>函数</h2>
-
-<p>一个代码块，完成特定的功能，然后将结果返回给调用方，常见的函数的格式是这样的：</p>
-
-<pre><code>&lt;return type&gt; &lt;function name&gt; (&lt;arg1 type&gt; &lt;arg1 name&gt;, &lt;arg2 type&gt; &lt;arg2 name&gt;, ... )
-{
-  // Code here
-}
-一个函数声明与调用的例子：
-
-// 实现函数
-int plus(int x, int y)
-{
-  return x * y;
-}
-
-int main (int argc, const char *argv[])
-{
-  int x = 2;
-  int y = 3;
-  // 调用函数
-  int result = plus(x, y);
-
-  return 0;
-}
-</code></pre>
-
-<h2>方法</h2>
-
-<p>也是一个代码块，不过方法是需要写在类里面的，调用时需要类或者对象才可以调用，一个 Objective-C 的方法例子如下：</p>
-
-<pre><code>@implementation Person
-
-// 实现方法
-- (void)setName:(NSString *)name
-{
-  //code here
-}
-
-@end
-
-int main (int argc, const char *argv[])
-{
-  // 使用对象调用方法
-  [[Person new] setName:@"zhenby"];
-
-  return 0;
-}
-</code></pre>
-
-<hr />
-
-<h1>有什么不同</h1>
-
-<blockquote><p>那说到底，函数跟方法的不同就是：方法是属于类或者对象的，而函数则不一定，可以独立于类与对象之外，独立调用，所以可以说 函数 >= 方法，因此方法也可以叫 member function。</p></blockquote>
-
-<h3>Objective-C中的函数</h3>
-
-<p>Objective-C 中一般的函数是全局有效的(可在函数前加 static 关键字使得该函数只在该文件中有效)，即在一个文件中实现了一个函数，在同个项目中的其他代码中都可以直接调用此函数，所以定义函数时，函数名需要唯一，重复的函数名(不管参数是否一致)是编译不过的。
-知道这个特性后，就可以把一些常用的代码块，比如获取当前时间戳这样的功能的整理成了一个函数，这样的好处是项目中的代码在需要时都可以直接调用，而不需要类或者对象，类似于 NSLog 函数。</p>
-
-<p>而我在实现函数的时候，遇到了一个这样的警告“no previous prototype for function xxx ”，这个警告的意思是没找到一个前置的函数原型，在文件的顶端，或者头文件(如果有的话)加上你所加的函数原型就可以了，例如：</p>
-
-<pre><code>// 函数原型
-int plus(int, int);
-/*
- 如果参数为空的话，在函数原型中需要传 void，在函数原型中参数为空的话，
- 在C中表示此函数可以接受任意个参数，在 Objective-C 中也有一样的规则
- */
-long timestamp(void);
-
-
-// 实现函数
-int plus(int x, int y)
-{
-  return x * y;
-}
-
-long timestamp()
-{
-  // 返回当前的时间戳
-    return (long)[[NSDate date] timeIntervalSince1970];
-}
-</code></pre>
-
-<h3>Objective-C中的方法</h3>
-
-<p>在 Objective-C 中，方法的调用是通过消息传递来进行的，需要在运行时才能确定方法的地址(只要知道一个类的方法名，不管这个方法是否公开，都可以调用到，这也是为啥苹果的私有 API 会被挖出来，所以也没有受保护方法这样的说法，方法要么是公开的，要么是不公开的，无论公不公开，通过方法名都可以调用到方法)，而消息传递就是通过id objc_msgSend(id theReceiver, SEL theSelector, &hellip;)这个函数来达到目的的，可以说 Objective-C 中的方法，其实相当于固定前两个参数的 objc_msgSend 函数。比如：</p>
-
-<pre><code>@implementation Test
-
-- (long)timestamp
-{
-  NSLog(@"in timestamp");
-  // 返回当前时间戳   
-    return (long)[[NSDate date] timeIntervalSince1970];
-}
-
-@end
-
-// 调用 timestamp 方法
-Test *test = [Test new];
-[test timestamp];
-[test release];
-
-//----------------------------------------------------------
-
-/*
- 上面 [test timestamp] 这句代码就相当于以下的函数调用，
- 直接执行下面的代码，也可以在控制台中打印出 in timestamp。
- */
-#import &lt;objc/message.h&gt;
-
-objc_msgSend(test, @selector(timestamp));
-</code></pre>
-
-<blockquote><p>如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！</p></blockquote>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">cocoaPods简单粗暴</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-01-28T00:32:20+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:32 am</span></time>
-        
-        
-        |   <a href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/#comments">Comments</a>
+        |   <a href="/blog/2014/05/20/paixu/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>直接上代码，不要问为什么，照着做就可以，我也是这么做的，具体的细节，请查看相关文档，网上太多！</p>
+  <div class="entry-content"><h2>1、序言</h2>
 
-<p>1:移除ruby镜像（天朝的网你们懂的）</p>
+<p>ios开发中涉及到算法的地方还真不多，除非你的应用程序真的非常大，或者你想你的应用程序性能非常好才会去想到关于算法方面的性能优化，而在ios开发中真的能用得到的也就是关于排序的，当然如果你是做游戏的话那么你可能会涉及到不少的算法或者优化问题，但是这不是本篇文章讨论的范围。</p>
 
-<pre><code> $ gem sources --remove https://rubygems.org/ 
-</code></pre>
+<p>后面的文章中，我将会给大家详细介绍八大算法。</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/01/28/cocoapodsjian-dan-cu-bao/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/05/20/paixu/">阅读全文😘</a>
     </footer>
   
 
@@ -329,7 +157,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/">屏幕旋转的奥妙</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/05/05/keyoc/">常用关键字汇总</a></h1>
     
     
       <p class="meta">
@@ -338,146 +166,24 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2015-01-10T23:51:52+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:51 pm</span></time>
+<time class='entry-date' datetime='2014-05-05T13:53:19+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2015/01/10/ping-mu-xuan-zhuan-de-ao-miao/#comments">Comments</a>
+        |   <a href="/blog/2014/05/05/keyoc/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>一，决定当前UIViewController显示方向的因素</h3>
+  <div class="entry-content"><p>在做iOS开发中，系统的各个关键字处处都是，但是未必每一个关键字都是那么的明白，所以罗列出一些关键字供大家互相学习，有不完善之处请指正，谢谢</p>
 
-<h6>1，全局控制</h6>
-
-<p>工程设置中设置支持的Device Orientation，如果这里没有设置其中的一个方向，即使后面的UIViewController中配置了改方向，也是不会起作用的。实际上就是设置工程plist文件的Supported interface orientations属性。</p>
-
-<h6>2，配置AppDelegate</h6>
-
-<p>配置AppDelegate的如下方法返回需要用到的全部方向集合，如果要支持多个方向，一般都返回UIInterfaceOrientationMaskAll</p>
-
-<pre><code>- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(nullable UIWindow *)window{
-    return UIInterfaceOrientationMaskAll;
-}
-</code></pre>
-
-<p>似乎该方法默认值为Info.plist中配置的Supported interface orientations项的值。</p>
-
-<h6>3，自定义UIViewController，并实现如下orientation相关的三个方法（iOS6以后）:</h6>
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>//是否支持多方向旋转屏，会考察当前设备方向和支持的方向。一些文档上说shouldAutorotate如果返回NO则不会执行下面两个方法纯属扯淡。  
--(BOOL)shouldAutorotate  
-{  
-    return YES;  
-}  
-//第二个方法返回支持的旋转方向  
--(UIInterfaceOrientationMask)supportedInterfaceOrientations  
-{  
-    return [self.viewControllers.lastObject supportedInterfaceOrientations];  
-}  
-</code></pre>
-
-<p>返回最优先显示的屏幕方向，比如同时支持Portrait和Landscape方向，但想优先显示Landscape方向，那软件启动的时候就会先显示Landscape，在手机切换旋转方向的时候仍然可以在Portrait和Landscape之间切换；  </p>
-
-<pre><code>-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
-{  
-    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
-}  
-</code></pre>
-
-<p> 
-以上三个规则在每一个UIViewController中都会得到一个方向的交集集合，就是最终显示的方向。如果交集为空，会抛出UIApplicationInvalidInterfaceOrientationException崩溃异常。</p>
-
-<h3>二，典型的控制方案</h3>
-
-<p>另外一个非常重要的点就是并不是每一个UIViewController都会主动执行以上三个方法，根据特酷吧的实验，发现：</p>
-
-<ul>
-<li>1，当UIViewController是rootViewController（Device Orientation方向变化时会主动执行）</li>
-<li>2，当UIViewController是UINavigationController（Device Orientation方向变化时会主动执行）</li>
-<li>3，当UIViewController以modal模态形式弹出时会主动执行。
-一个典型的方案是，我们就可以在UINavigationController中这样写：</li>
-</ul>
-
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>-(BOOL)shouldAutorotate  
-{  
-    return YES;  
-}  
--(UIInterfaceOrientationMask)supportedInterfaceOrientations  
-{  
-    return [self.viewControllers.lastObject supportedInterfaceOrientations];//主动调用UIViewController对应的方法，达到在UIViewController中自定义的效果  
-}  
--(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation  
-{  
-    return [self.viewControllers.lastObject preferredInterfaceOrientationForPresentation];  
-}  
-</code></pre>
-
-<p> 
-接下来就只需要自定义各自的VC</p>
-
-<pre><code>-(UIInterfaceOrientationMask)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskPortrait;//根据需要
-}
-- (BOOL)shouldAutorotate
-{
-    return NO;//根据需要
-}
--(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
-{
-    return UIInterfaceOrientationPortrait;//根据需要
-}
-</code></pre>
-
-<p>事实上在作为一个UINavigationController的堆栈系统，普通的UIViewController的orientation方法只是一个配置项，最终决定屏幕方向的还是UINavigationController控制器，也就是UINavigationController拿UIViewController得配置决定当前控制器的方向。</p>
-
-<h3>三，强制屏幕旋转</h3>
-
-<p>如果UIInterfaceOrientation和UIDeviceOrientation方向不一样，想强制将UIInterfaceOrientation旋转成UIDeviceOrientation的方向，可以通过l类方法attemptRotationToDeviceOrientation，但是如果想将interface强制旋转成任一指定方向，就不太好实现了。目前大致有以下几种方式：</p>
-
-<h6>1，使用私有方法</h6>
-
-<p>折叠复制内容到剪贴板</p>
-
-<pre><code>[[UIDevice currentDevice] setOrientation:UIInterfaceOrientationPortrait];  
-</code></pre>
-
-<p>具体可以这样：  </p>
-
-<pre><code>         if ([[UIDevice currentDevice] respondsToSelector:@selector(setOrientation:)]) {  
-        SEL selector = NSSelectorFromString(@"setOrientation:");  
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[UIDevice instanceMethodSignatureForSelector:selector]];  
-        [invocation setSelector:selector];  
-        [invocation setTarget:[UIDevice currentDevice]];  
-        int val = UIInterfaceOrientationLandscapeRight;  
-        [invocation setArgument:&amp;val atIndex:2];  
-        [invocation invoke];  
-    }  
-</code></pre>
-
-<p> </p>
-
-<h6>2，主动触发orientation相关方法</h6>
-
-<p>只要提前设置好想要支持的orientation，然后主动触发orientation机制，使新设置的orientation起作用便能实现将 interface orientation旋转至任意方向的目的。像这样：</p>
-
-<pre><code>UIViewController *vc = [[UIViewController alloc]init]; 
-[self presentModalViewController:vc animated:NO]; 
-[self dismissModalViewControllerAnimated:NO]; 
-</code></pre>
-
-<h6>3、旋转view的transform</h6>
-
-<p>前两种都是试图触发orientation相关方法，第三种可能会造成一些不可预知的风险不推荐。</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/05/05/keyoc/">阅读全文😘</a>
+    </footer>
   
 
 
@@ -488,7 +194,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">站在AFN上看ASI</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/04/14/nscache%20nsdictionary/">NSCache&NSDcitionary你了解多少？</a></h1>
     
     
       <p class="meta">
@@ -497,22 +203,73 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2015-01-05T14:53:45+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>2:53 pm</span></time>
+<time class='entry-date' datetime='2014-04-14T13:53:19+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/#comments">Comments</a>
+        |   <a href="/blog/2014/04/14/nscache%20nsdictionary/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h6>一、底层实现</h6>
+  <div class="entry-content"><p>NSCache</p>
+
+<p>NSCache是系统提供的一种类似于集合（NSMutableDictionary）的缓存，它与集合的不同如下：</p>
+
+<ol>
+<li><p>NSCache具有自动删除的功能，以减少系统占用的内存；</p></li>
+<li><p>NSCache是线程安全的，不需要加线程锁；</p></li>
+<li><p>键对象不会像 NSMutableDictionary 中那样被复制。（键不需要实现 NSCopying 协议）。</p></li>
+</ol>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/04/14/nscache%20nsdictionary/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/02/duoxianchengshiyong/">多线程详解</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-04-02T13:53:19+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/04/02/duoxianchengshiyong/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在这篇文章中，我将为你整理一下 iOS 开发中几种多线程方案，以及其使用方法和注意事项。当然也会给出几种多线程的案例，在实际使用中感受它们的区别。还有一点需要说明的是，这篇文章将会使用 Swift 和 Objective-c 两种语言讲解，双语幼儿园。OK，let&rsquo;t begin!</p>
+
+<blockquote><p>概述:这篇文章中，我不会说多线程是什么、线程和进程的区别、多线程有什么用，当然我也不会说什么是串行、什么是并行等问题，这些我们应该都知道的。</p></blockquote>
+
+<p>在 iOS 中其实目前有 4 套多线程方案，他们分别是：</p>
 
 <ul>
-<li><p>1> AFN的底层基于OC的NSURLConnection和NSURLSession</p></li>
-<li><p>2> ASI的底层基于纯C语言的CFNetwork框架</p></li>
-<li><p>3> ASI的运行性能 高于 AFN</p></li>
+<li>Pthreads</li>
+<li>NSThread</li>
+<li>GCD</li>
+<li>NSOperation &amp; NSOperationQueue</li>
 </ul>
 
 
@@ -520,7 +277,7 @@ objc_msgSend(test, @selector(timestamp));
   
   
     <footer>
-      <a rel="full-article" href="/blog/2015/01/05/zhan-zai-afnshang-kan-asi/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/04/02/duoxianchengshiyong/">阅读全文😘</a>
     </footer>
   
 
@@ -532,7 +289,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">底层开发之越狱开发</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/04/01/duoxianchenghuizong/">多线程总结</a></h1>
     
     
       <p class="meta">
@@ -541,62 +298,27 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2014-12-29T22:32:50+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>10:32 pm</span></time>
+<time class='entry-date' datetime='2014-04-01T13:53:19+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>做越狱开发也有一些时间了，有很多东西想总结一下，希望给他人一些借鉴，也是自己对过去开发经历的一些总结。个人不推荐使用盗版，这里主要以技术介绍为主。</p>
-
-<p>这个系列里面主要介绍怎样进行越狱开发，涉及到以下几个方面:</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/12/29/yue-yu-kai-fa-xiang-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/">谈谈KVC与KVO精髓</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-12-05T23:11:52+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>11:11 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/#comments">Comments</a>
+        |   <a href="/blog/2014/04/01/duoxianchenghuizong/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>Swift中使用KVC和KVO的类都必须必须继承自NSObject</p>
+  <div class="entry-content"><h3>一、进程和线程</h3>
 
-<p>由于ObjC主要基于Smalltalk进行设计，因此它有很多类似于Ruby、Python的动态特性，例如动态类型、动态加载、动态绑定等。今天我们着重介绍ObjC中的键值编码（KVC）、键值监听（KVO）特性：</p>
+<h5>1.什么是进程</h5>
+
+<p>进程是指在系统中正在运行的一个应用程序</p>
+
+<p>每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内</p>
 
 <ul>
-<li>键值编码KVC</li>
-<li>键值监听KVO</li>
+<li><p>比如同时打开QQ、Xcode，系统就会分别启动2个进程</p></li>
+<li><p>通过“活动监视器”可以查看Mac系统中所开启的进程</p></li>
 </ul>
 
 
@@ -604,7 +326,7 @@ objc_msgSend(test, @selector(timestamp));
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/12/05/tan-tan-kvcyu-kvojing-sui/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/04/01/duoxianchenghuizong/">阅读全文😘</a>
     </footer>
   
 
@@ -616,7 +338,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/12/02/xiao-chu-jing-gao/">消除警告</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
     
     
       <p class="meta">
@@ -625,26 +347,28 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2014-12-02T02:51:46+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>2:51 am</span></time>
+<time class='entry-date' datetime='2014-03-23T13:53:19+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/12/02/xiao-chu-jing-gao/#comments">Comments</a>
+        |   <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h6>前言：</h6>
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
 
-<p>现在你维护的项目有多少警告？看着几百条警告觉得心里烦么？你真的觉得警告又不是错误可以完全不管么？ 如果你也被这些问题困惑，可以和我一起进行下面的操作。其实大部分的警告都是很好改的，把自己整个项目的警告撸一遍应该也就耗费半小时的时间，一次麻烦带来之后的清净这样不好么？</p>
-
-<p>本文分为三个部分：</p>
+<h4>layoutSubviews在以下情况下会被调用：</h4>
 
 <ul>
-<li>1.简单粗暴的消除警告。</li>
-<li>2.详细科学的消除警告。（包括警告收录）</li>
-<li>3.添加警告。</li>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
 </ul>
 
 
@@ -652,7 +376,7 @@ objc_msgSend(test, @selector(timestamp));
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/12/02/xiao-chu-jing-gao/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/03/23/layoutsubviews%20drawrects/">阅读全文😘</a>
     </footer>
   
 
@@ -664,7 +388,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/11/28/fen-lei-shi-zhan/">Block实战</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/">NSProxy&amp;NSObject初探</a></h1>
     
     
       <p class="meta">
@@ -673,26 +397,35 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2014-11-28T19:42:57+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>7:42 pm</span></time>
+<time class='entry-date' datetime='2014-03-17T13:20:37+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:20 pm</span></time>
         
         
-        |   <a href="/blog/2014/11/28/fen-lei-shi-zhan/#comments">Comments</a>
+        |   <a href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>说到block，相信大部分iOS开发者都会想到retain cycle或是__block修饰的变量。但是本文将忽略这些老生常谈的讨论，而是将重点放在美团iOS在实践中对block的应用，希望能对同行有所助益。本文假设读者对block有一定的了解。</p>
+  <div class="entry-content"><p>NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此，</p>
 
-<p>从闭包说起
-在Lisp这样的语言中，有一个概念叫做闭包（closure1），指的是一个函数以及它所处的词法作用域（lexical scope2）构成的整体。为了理解闭包，我们首先来看看什么是词法作用域。</p>
+<p>Java代码可以依据任何对象来实现它的基本方法。Cocoa有多个根类，除了NSObject还有NSProxy等其他等级的根类。这只是部分原因，NSObject协议定义了一套所有的根类都可以实现的基础方法，这样在编码时就容易找到了。</p>
+
+<p>NSObject类遵循NSObject协议，这就是说，NSObject类实现了下面这些基础方法：</p>
+
+<pre><code>@interface NSObject  
+</code></pre>
+
+<p>NSProxy同样遵循NSObject协议：</p>
+
+<pre><code>@interface NSProxy      
+</code></pre>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/11/28/fen-lei-shi-zhan/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/03/17/nsproxy-and-nsobjectchu-tan/">阅读全文😘</a>
     </footer>
   
 
@@ -704,7 +437,7 @@ objc_msgSend(test, @selector(timestamp));
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/11/26/fen-lei-shen-jiu/">分类深究</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/03/12/yufajingxuan/">语法精选</a></h1>
     
     
       <p class="meta">
@@ -713,39 +446,71 @@ objc_msgSend(test, @selector(timestamp));
 
 
 
-<time class='entry-date' datetime='2014-11-26T17:42:51+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:42 pm</span></time>
+<time class='entry-date' datetime='2014-03-12T13:53:19+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/11/26/fen-lei-shen-jiu/#comments">Comments</a>
+        |   <a href="/blog/2014/03/12/yufajingxuan/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><blockquote><p>摘要
-无论一个类设计的多么完美，在未来的需求演进中，都有可能会碰到一些无法预测的情况。那怎么扩展已有的类呢？一般而言，继承和组合是不错的选择。但是在Objective-C 2.0中，又提供了category这个语言特性，可以动态地为已有类添加新行为。如今category已经遍布于Objective-C代码的各个角落，从Apple官方的framework到各个开源框架，从功能繁复的大型APP到简单的应用，catagory无处不在。本文对category做了比较全面的整理，希望对读者有所裨益。</p></blockquote>
+  <div class="entry-content"><h4>一、NSSet、NSMutableSet集合的介绍</h4>
 
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱majia03@meituan.com）。
-本文系学习Objective-C的runtime源码时整理所成，主要剖析了category在runtime层的实现原理以及和category相关的方方面面，内容包括：</p>
+<p>1）NSSet、NSMutableSet集合，元素是无序的，不能有重复的值。</p>
 
-<ul>
-<li>初入宝地-category简介</li>
-<li>连类比事-category和extension</li>
-<li>挑灯细览-category真面目</li>
-<li>追本溯源-category如何加载</li>
-<li>旁枝末叶-category和+load方法</li>
-<li>触类旁通-category和方法覆盖</li>
-<li>更上一层-category和关联对象</li>
-</ul>
-
+<p>2）用实例方法创建一个不可变集合对象</p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/11/26/fen-lei-shen-jiu/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/03/12/yufajingxuan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/28/uiview-calayer-uiscreenuiwindow/">面试会问到的？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-02-28T13:53:19+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/02/28/uiview-calayer-uiscreenuiwindow/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>1、UIScreen可以获取设备屏幕的大小。</h4>
+
+<pre><code>// 整个屏幕的大小
+CGRect bounds = [UIScreen mainScreen].bounds;
+NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
+</code></pre>
+
+<p><code>{0, 0, 320, 480}</code></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/02/28/uiview-calayer-uiscreenuiwindow/">阅读全文😘</a>
     </footer>
   
 
@@ -786,8 +551,8 @@ objc_msgSend(test, @selector(timestamp));
 <li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
 <li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
 <li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
-<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
-<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (7)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
 <li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
 <li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
 <li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>

@@ -9,8 +9,8 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving &hellip;">
+  <meta name="description" content="一、简单说明 说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。 提示：提前准备好的软件 apache-tomcat-6.0.41.tar
+eclipse-jee-kepler-SR2-macosx-cocoa-x86_64.tar. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,7 +76,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/11/14/fang-fa-huan-cun/">方法缓存</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/02/21/fu-wu-qi-da-jian/">服务器搭建</a></h1>
     
     
       <p class="meta">
@@ -85,33 +85,26 @@
 
 
 
-<time class='entry-date' datetime='2014-11-14T17:42:41+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>14</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:42 pm</span></time>
+<time class='entry-date' datetime='2014-02-21T22:59:16+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>10:59 pm</span></time>
         
         
-        |   <a href="/blog/2014/11/14/fang-fa-huan-cun/#comments">Comments</a>
+        |   <a href="/blog/2014/02/21/fu-wu-qi-da-jian/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><blockquote><p>摘要
-只要用到Objective-C，我们每天都会跟方法调用打交道。我们都知道Objective-C的方法决议是动态的，但是在底层一个方法究竟是怎么找到的，方法缓存又是怎么运作的却鲜为人知。本文主要从源码角度探究了Objective-C在runtime层的方法决议（Method resolving）过程和方法缓存（Method cache）的实现。</p></blockquote>
+  <div class="entry-content"><h3>一、简单说明</h3>
 
-<p>简介
-本文作者来自美团酒店旅游事业群iOS研发组。我们致力于创造价值、提升效率、追求卓越。欢迎大家加入我们（简历请发送到邮箱 <a href="&#109;&#97;&#x69;&#108;&#116;&#111;&#58;&#x6d;&#x61;&#x6a;&#105;&#x61;&#x30;&#51;&#64;&#109;&#x65;&#x69;&#x74;&#117;&#97;&#110;&#x2e;&#x63;&#111;&#x6d;">&#x6d;&#x61;&#106;&#x69;&#x61;&#48;&#x33;&#64;&#x6d;&#x65;&#x69;&#x74;&#x75;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;</a> ）。</p>
+<p>说明：提前下载好相关软件，且安装目录最好安装在全英文路径下。如果路径有中文名，那么可能会出现一些莫名其妙的问题。</p>
 
-<p>本文系学习Objective-C的runtime源码时整理所成，主要剖析了Objective-C在runtime层的方法决议过程和方法缓存，内容包括：</p>
+<p>提示：提前准备好的软件</p>
 
 <ul>
-<li>从消息决议说起</li>
-<li>缓存为谁而生</li>
-<li>追本溯源，何为方法缓存</li>
-<li>缓存和散列</li>
-<li>十万个为什么</li>
-<li>缓存 - 性能优化的万金油？</li>
-<li>优化，永无止境</li>
-<li>从消息决议说起</li>
+<li><p>apache-tomcat-6.0.41.tar</p></li>
+<li><p>eclipse-jee-kepler-SR2-macosx-cocoa-x86_64.tar.gz</p></li>
+<li><p>jdk-8u5-macosx-x64.dmg</p></li>
 </ul>
 
 
@@ -119,7 +112,7 @@
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/11/14/fang-fa-huan-cun/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2014/02/21/fu-wu-qi-da-jian/">阅读全文😘</a>
     </footer>
   
 
@@ -131,7 +124,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">怎么封装一个控件</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/01/25/fmdb/">FMDB你了解多少？</a></h1>
     
     
       <p class="meta">
@@ -140,40 +133,320 @@
 
 
 
-<time class='entry-date' datetime='2014-11-05T17:44:16+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:44 pm</span></time>
+<time class='entry-date' datetime='2014-01-25T13:53:19+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/#comments">Comments</a>
+        |   <a href="/blog/2014/01/25/fmdb/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>一个控件从外在特征来说，主要是封装这几点：</p>
+  <div class="entry-content"><p>FMDB详解</p>
+
+<p>前一篇文章中我们介绍的SQLite的使用，在iOS中原生的SQLite API在使用上相当不友好。</p>
+
+<p>于是，就出现了一系列将SQLite API进行封装的库，例如FMDB、PlausibleDatabase、sqlitepersistentobjects等，FMDB (<a href="https://github.com/ccgus/fmdb">https://github.com/ccgus/fmdb</a>) 是一款简洁、易用的封装库，这一篇文章简单介绍下FMDB的使用。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/01/25/fmdb/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/11/mknetworking/">MKNetWorking是撒？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-01-11T13:53:19+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/01/11/mknetworking/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>常用框架比如：</p>
 
 <ul>
-<li>交互方式</li>
-<li>显示样式</li>
-<li>数据使用</li>
+<li>AFNetworking</li>
+<li>ASIHttpRequest</li>
+<li>SDWebImage</li>
+<li>MKNetWorKit等。</li>
 </ul>
 
 
-<p>对外在特征的封装，能让我们在多种环境下达到 PM 对产品的要求，并且提到代码复用率，使维护工作保持在一个相对较小的范围内；而一个好的控件除了有对外一致的体验之外，还有其内在特征：</p>
+<p>iOS5已出来这么久了，而ASIHttpRequest的作者已经申明不更新了，在iOS5环境下，其实还是有些问题的。</p>
+
+<p>现在MKNetWorkKi吸取了ASIHttpRequest与AFNetWorking的优点，并加入了自己特有的功能。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/01/11/mknetworking/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/01/01/animation/">三维动画初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-01-01T13:53:19+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/01/01/animation/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>实现三位旋转动画的方法有很多种，这里介绍三种</p>
+
+<p>一：UIView</p>
+
+<pre><code>[UIView animateWithDuration:1.0 animations:^{
+        self.iconView.layer.transform = CATransform3DMakeRotation(M_PI_2, 0, 1, 0);
+    } completion:^(BOOL finished) {
+        self.iconView.image = [UIImage imageNamed:@"user_defaultgift"];
+
+        [UIView animateWithDuration:1.0 animations:^{
+            self.iconView.layer.transform = CATransform3DMakeRotation(M_PI, 0, 1, 0);
+        }];
+    }];
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/01/01/animation/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/25/xingnengyouhua-xiaojie/">性能优化小结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-12-25T13:53:19+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/12/25/xingnengyouhua-xiaojie/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><ol>
+<li>用ARC管理内存
+ ARC(Automatic Reference Counting, 自动引用计数)和iOS5一起发布，它避免了最常见的也就是经常是由于我们忘记释放内存所造成的内存泄露。它自动为你管理retain和release的过程，所以你就不必去手动干预了。
+ 除了帮你避免内存泄露，ARC还可以帮你提高性能，它能保证释放掉不再需要的对象的内存</li>
+<li>在正确的地方使用reuseIdentifier
+ 这个方法把那些已经存在的cell从队列中排除，或者在必要时使用先前注册的nib或者class创造新的cell。如果没有可重用的cell，你也没有注册一个class或者nib的话，这个方法返回nil。</li>
+<li>尽可能使Views不透明
+ 如果你有不透明的Views，你应该设置它们的opaque属性为YES。
+ (opaque)这个属性给渲染系统提供了一个如何处理这个view的提示。如果设为YES， 渲染系统就认为这个view是完全不透明的，这使得渲染系统优化一些渲染过程和提高性能。如果设置为NO，渲染系统正常地和其它内容组成这个View。默认值是YES。</li>
+</ol>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/12/25/xingnengyouhua-xiaojie/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/12/08/badaccess-error/">EXC_BAD_ACCESS无处不在</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-12-08T13:53:19+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/12/08/badaccess-error/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
+EXC_BAD_ACCESS, objc_msgSend,</p>
+
+<p>此类报错往往来的莫明奇妙.</p>
+
+<p>原因往往是内存过度释放导致, 即多写了release;</p>
+
+<p>至于是哪里多写了release, 很难查知,</p>
+
+<p>出现这种情况， 也就是对指针对象的过度释放，导致次指针为野指针报错， （注意：如：[nil release] 操作空指针是不会报错的，在java中是有问题， [野指针 release] 报错  crash  很危险，）解决中bug，有很多中，暂时简单的说下几种简单的：</p>
+
+<h5>一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到</h5>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/12/08/badaccess-error/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/11/26/xcode-settingfile/">Xcode配置文件</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-11-26T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/11/26/xcode-settingfile/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>一个xcodeproj文件，其实是一个目录，它的格式大体上是这样的：</p>
+
+<p>这里写图片描述</p>
+
+<p>有的文件，比如user.mode1v3，在没有多个用户操作项目的时候，是没有的。Apple并没有提供.xcodeproj文件的文档，而且它也没有准备提供，更坑爹的是，xcodeproj的格式、内容都是随时可变的，比如一个Xcode版本上来，可能其目录就会变化，而没有任何通知。这可苦了那些为.xcodeproj开发每三方库的同学，不仅要一点一点摸索各个文件的内容，修改方法，还要忍受Apple没有任何通知地修改格式。</p>
+
+<p>Stackoverflow中这位就在抱怨苹果开发人员的傲慢：</p>
+
+<p><a href="http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580">http://stackoverflow.com/questions/49478/git-ignore-file-for-xcode-projects/12021580#12021580</a></p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/11/26/xcode-settingfile/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/11/11/changenumber/">不借助第三方变量修改两个值（四种方法）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-11-11T13:53:19+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>11</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2013/11/11/changenumber/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>交换值</p>
 
 <ul>
-<li>灵活性</li>
-<li>低耦合</li>
-<li>易拓展</li>
-<li>易维护</li>
+<li>1）算术运算；</li>
+<li>2）指针地址操作；</li>
+<li>3）位运算；</li>
+<li>4）栈实现。</li>
 </ul>
 
 
+<p>1） 算术运算</p>
+
+<pre><code>int a,b;
+a=10;b=12;
+a=b-a; //a=2;b=12
+b=b-a; //a=2;b=10
+a=b+a; //a=10;b=10
+</code></pre>
+
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/11/05/zen-yao-feng-zhuang-%5B%3F%5D-ge-kong-jian/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2013/11/11/changenumber/">阅读全文😘</a>
     </footer>
   
 
@@ -185,7 +458,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/10/28/openel-gschu-tan/">OpenEL GS初探</a></h1>
+      <h1 class="entry-title"><a href="/blog/2013/10/17/pingguoshenhe/">苹果审核指南</a></h1>
     
     
       <p class="meta">
@@ -194,86 +467,32 @@
 
 
 
-<time class='entry-date' datetime='2014-10-28T17:43:44+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>5:43 pm</span></time>
+<time class='entry-date' datetime='2013-10-17T13:53:19+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/10/28/openel-gschu-tan/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><blockquote><p>写在前头，好久没有更新博客，感谢老朋友的再次来访，同时也欢迎新朋友~</p></blockquote>
-
-<p>说起OpenGL，相信大不多数朋友都不会陌生，或多或少都有接触。本文不属于OpenGL提高篇，主要目的在于帮助新手更快熟悉iOS中如何使用OpenGL，关于这方面的介绍，网上也有很多，本文主要任务在于整理，介绍稍有偏重。这里有比较完整的Demo，可以协助大家更快上手</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/28/openel-gschu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/">传值方式总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-10-19T02:32:36+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:32 am</span></time>
-        
-        
-        |   <a href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/#comments">Comments</a>
+        |   <a href="/blog/2013/10/17/pingguoshenhe/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><ul>
-<li>简单总结
+  <div class="entry-content"><p>审核指南(修改部分红色字体标出)：</p>
+
+<h3>1.条款和条件</h3>
 
 <ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
+<li>1.1为App Store开发程序，开发者必须遵守Program License Agreement (PLA)、人机交互指南(HIG)以及开发者和苹果签订的任何其他协议和合同。以下规则和例证旨在帮助开发者的程序能获得App Store的认可，而不是修改或删除任何其他协议中的条款。</li>
 </ul>
 
 
-<hr />
-
-<ul>
-<li>简单实用
-
-<ul>
-<li>代理</li>
-<li>Block</li>
-<li>通知</li>
-</ul>
-</li>
-</ul>
-
+<h3>2.功能</h3>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/10/19/chuan-zhi-fang-shi-zong-jie/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2013/10/17/pingguoshenhe/">阅读全文😘</a>
     </footer>
   
 
@@ -285,7 +504,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">图片加载优化深究</a></h1>
+      <h1 class="entry-title"><a href="/blog/2013/10/01/ruanjianceshi/">软件测试技术</a></h1>
     
     
       <p class="meta">
@@ -294,246 +513,25 @@
 
 
 
-<time class='entry-date' datetime='2014-10-05T14:56:39+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:56 pm</span></time>
+<time class='entry-date' datetime='2013-10-01T13:53:19+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
         
         
-        |   <a href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. 网络图片显示大体步骤:</h3>
-
-<ul>
-<li>下载图片</li>
-<li>图片处理（裁剪，边框等)</li>
-<li>写入磁盘</li>
-<li>从磁盘读取数据到内核缓冲区</li>
-<li>从内核缓冲区复制到用户空间(内存级别拷贝)</li>
-<li>解压缩为位图（耗cpu较高）</li>
-<li>如果位图数据不是字节对齐的，CoreAnimation会copy一份位图数据并进行字节对齐</li>
-<li>CoreAnimation渲染解压缩过的位图</li>
-<li>以上4，5，6，7，8步是在UIImageView的setImage时进行的，所以默认在主线程进行(iOS * UI操作必须在主线程执行)。</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/10/05/tu-pian-jia-zai-you-hua-shen-jiu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/09/25/yi-dong-duan-xing-neng-you-hua/">移动端性能优化</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-09-25T14:16:31+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>2:16 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/09/25/yi-dong-duan-xing-neng-you-hua/#comments">Comments</a>
+        |   <a href="/blog/2013/10/01/ruanjianceshi/#comments">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>之前写过一篇</p>
+  <div class="entry-content"><p>一：分类</p>
 
-<p><a href="http://al1020119.github.io/blog/2015/03/02/uitableviewxing-neng-you-hua-yu-qia-dun-wen-ti/">UItableView性能优化和卡顿问题</a></p>
-
-<p>还有一篇</p>
-
-<p><a href="http://al1020119.github.io/blog/2015/11/16/appqia-dun-liao-zen-yao-ban-%3F/">App卡顿了怎么办</a></p>
-
-<p>今天看到一篇总结的非常好的文章（<a href="http://tgideas.qq.com/webplat/info/news_version3/804/808/811/m579/201412/293834.shtml">移动端性能优化</a>），就移过来，后期我也会根据自己所做的项目做一个开发中性能优化的总结，希望你们喜欢！</p>
-
-<p>随着移动互联网的发展，我们越发要关注移动页面的性能优化，今天跟大家谈谈这方面的事情。</p>
+<p><img src="/images/ruanjianceshi001.png" title="Caption" ></p>
 
 </div>
   
   
     <footer>
-      <a rel="full-article" href="/blog/2014/09/25/yi-dong-duan-xing-neng-you-hua/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/09/12/xmppshi-yong-zong-jie/">XMPP使用总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-09-12T00:21:39+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>12:21 am</span></time>
-        
-        
-        |   <a href="/blog/2014/09/12/xmppshi-yong-zong-jie/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>引言：
-最近面试被问到了一个问题，笔者当时就懵了：什么XMPP，平时怎么使用，使用过程中遇到什么问题？。</p>
-
-<p>但是还是通过记忆，简单的说了一下自己所知道了，不过那并没有撒卵用，所以你懂的</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/09/12/xmppshi-yong-zong-jie/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/09/02/an-quan-ji-zhi/">安全机制</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-09-02T22:46:51+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>2</span><span class='date-suffix'>nd</span>, <span class='date-year'>2014</span></span> <span class='time'>10:46 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/09/02/an-quan-ji-zhi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>关于安全机制，作为一个程序员必须要时刻记住的，不然你的app不仅没有人用，还会被举报甚至更加严重，所以这里大概的总结了一下。</p>
-
-<ul>
-<li>苹果安全机制</li>
-<li>ios开发安全处理</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/09/02/an-quan-ji-zhi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/28/protocol/">不平的条约（协议）</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-08-28T13:53:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/08/28/protocol/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>协议声明类需要实现的的方法，为不同的类提供公用方法，一个类可以有多个协议，但只能有一个父类，即单继承。它类似java中的接口。</p>
-
-<h2>正式协议（formal protocol）</h2>
-
-<p>声明正式协议使用@protocol指令，以@end结尾。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/08/28/protocol/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/08/15/uiview%20calayer/">UIView&CALayer是撒？</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-08-15T13:53:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2014/08/15/uiview%20calayer/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>UIView与CALayer详解</p>
-
-<p>研究Core Animation已经有段时间了，关于Core Animation，网上没什么好的介绍。苹果网站上有篇专门的总结性介绍，但是似乎原理性的东西不多，看得人云山雾罩，感觉，写那篇东西的人，其实是假 设读的人了解界面动画技术的原理的。今天有点别的事情要使用Linux，忘掉了ssh的密码，没办法重新设ssh，结果怎么也想不起来怎么设ssh远程登 陆了，没办法又到网上查了一遍，太浪费时间了，痛感忘记记笔记是多么可怕的事情。鉴于Core Animation的内容实在是非常繁杂，应用的Obj-C语言本身的特性也很多，所以写个备忘录记录一下，懂的人看了后如果发现了错误，还不吝指教。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/08/15/uiview%20calayer/">阅读全文😘</a>
+      <a rel="full-article" href="/blog/2013/10/01/ruanjianceshi/">阅读全文😘</a>
     </footer>
   
 
@@ -574,8 +572,8 @@
 <li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
 <li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
 <li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
-<li class='category'><a href='/blog/categories/reverse/'>reverse (25)</a></li>
-<li class='category'><a href='/blog/categories/senior/'>senior (40)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (7)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
 <li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
 <li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
 <li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>

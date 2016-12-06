@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Socket编程-UDP篇 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="1. UDP Socket编程 先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。 注意：Socket通信一定有要服务端和客户端。 1.1 UDP Socket客户端 客户端的工作流程： &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2016/06/22/socketbian-cheng-udppian/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Socket编程-UDP篇</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-22T18:16:49+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>6:16 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>1. UDP Socket编程</h3>
+
+<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
+
+<p>注意：Socket通信一定有要服务端和客户端。</p>
+
+<h4>1.1 UDP Socket客户端</h4>
+
+<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
+
+<p>笔者这里分成了四步：</p>
+
+<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
+第二步：调用sendto发送消息到服务器端
+第三步：调用recvfrom接收来自服务器端的消息
+第四步：调用close关闭socket
+</code></pre>
+
+<!--more-->
+
+
+<h4>1.1.1 客户端的代码实现：</h4>
+
+<pre><code>- (void)udpClient {
+  int clientSocketId;
+  ssize_t len;
+  socklen_t addrlen;
+  struct sockaddr_in client_sockaddr;
+  char buffer[256] = "Hello, server, how are you?";
+
+  // 第一步：创建Socket
+  clientSocketId = socket(AF_INET, SOCK_DGRAM, 0);
+  if(clientSocketId &lt; 0) {
+    NSLog(@"creat client socket fail\n");
+    return;
+  }
+
+  addrlen = sizeof(struct sockaddr_in);
+  bzero(&amp;client_sockaddr, addrlen);
+  client_sockaddr.sin_family = AF_INET;
+  client_sockaddr.sin_addr.s_addr = inet_addr("192.168.1.107");
+  client_sockaddr.sin_port = htons(1024);
+
+  int count = 10;
+  do {
+    bzero(buffer, sizeof(buffer));
+    sprintf(buffer, "%s", "Hello, server, how are you?");
+
+    // 第二步：发送消息到服务端
+    // 注意:UDP是面向无连接的，因此不用调用connect()
+    // 将字符串传送给server端
+   len = sendto(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, addrlen);
+
+    if (len &gt; 0) {
+      NSLog(@"发送成功");
+    } else {
+      NSLog(@"发送失败");
+    }
+
+    // 第三步：接收来自服务端返回的消息
+    // 接收server端返回的字符串
+    bzero(buffer, sizeof(buffer));
+    len = recvfrom(clientSocketId, buffer, sizeof(buffer), 0, (struct sockaddr *)&amp;client_sockaddr, &amp;addrlen);
+    NSLog(@"receive message from server: %s", buffer);
+
+    count--;
+  } while (count &gt;= 0);
+
+  // 第四步：关闭socket
+  // 由于是面向无连接的，消息发出处就可以了，不用管它收不收得到，发完就可以关闭了
+  close(clientSocketId);
+}
+</code></pre>
+
+<h4>1.1.2 客户端的打印日志</h4>
+
+<pre><code>2015-12-06 15:38:36.095 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.286 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.291 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.296 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.316 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.317 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.324 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.328 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.329 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.339 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.355 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.356 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.366 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+2015-12-06 15:38:36.373 iOS-Socket-C-Version-Client[9709:4234848] 发送成功
+2015-12-06 15:38:36.392 iOS-Socket-C-Version-Client[9709:4234848] receive message from server: Hello, server, how are you?
+</code></pre>
+
+<h4>1.2 UDP Socket服务器端</h4>
+
+<p>服务器端的工作流程：首先调用socket函数创建一个套接字，然后调用bind函数将其与本机地址以及一个本地端口号绑定，接收到一个客户端时，服务器显示该客户端的IP地址，并将字串返回给客户端。</p>
+
+<p>笔者这里分成了五步：</p>
+
+<pre><code>第一步：创建socket并配置socket
+第二步：调用bind绑定服务器本机ip及端口号
+第三步：调用recvfrom接收来自客户端的消息
+第四步：调用sendto将接收到服务器端的信息返回给客户端
+第四步：调用close关闭socket
+</code></pre>
+
+<h4>1.2.1 服务器端代码实现</h4>
+
+<pre><code>- (void)udpServer {
+  int serverSockerId = -1;
+  ssize_t len = -1;
+  socklen_t addrlen;
+  char buff[1024];
+  struct sockaddr_in ser_addr;
+
+  // 第一步：创建socket
+  // 注意，第二个参数是SOCK_DGRAM，因为udp是数据报格式的
+  serverSockerId = socket(AF_INET, SOCK_DGRAM, 0);
+
+  if(serverSockerId &lt; 0) {
+    NSLog(@"Create server socket fail");
+    return;
+  }
+
+  addrlen = sizeof(struct sockaddr_in);
+  bzero(&amp;ser_addr, addrlen);
+
+  ser_addr.sin_family = AF_INET;
+  ser_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  ser_addr.sin_port = htons(1024);
+
+  // 第二步：绑定端口号
+  if(bind(serverSockerId, (struct sockaddr *)&amp;ser_addr, addrlen) &lt; 0) {
+    NSLog(@"server connect socket fail");
+    return;
+  }
+
+  do {
+    bzero(buff, sizeof(buff));
+
+    // 第三步：接收客户端的消息
+    len = recvfrom(serverSockerId, buff, sizeof(buff), 0, (struct sockaddr *)&amp;ser_addr, &amp;addrlen);
+    // 显示client端的网络地址
+    NSLog(@"receive from %s\n", inet_ntoa(ser_addr.sin_addr));
+    // 显示客户端发来的字符串
+    NSLog(@"recevce:%s", buff);
+
+    // 第四步：将接收到的客户端发来的消息，发回客户端
+    // 将字串返回给client端
+    sendto(serverSockerId, buff, len, 0, (struct sockaddr *)&amp;ser_addr, addrlen);
+  } while (strcmp(buff, "exit") != 0);
+
+  // 第五步：关闭socket
+  close(serverSockerId);
+}
+</code></pre>
+
+<h4>1.2.2 服务器端的打印日志</h4>
+
+<pre><code>2015-12-06 15:38:36.268 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.269 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.372 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.377 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.382 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.405 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.409 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.410 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.414 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.415 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.425 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.426 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.441 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.452 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+2015-12-06 15:38:36.472 iOS-Socket-C-Version-Server[39130:2473780] receive from 192.168.1.100
+2015-12-06 15:38:36.473 iOS-Socket-C-Version-Server[39130:2473780] recevce:Hello, server, how are you?
+</code></pre>
+
+<p>我们这里打印出了客户端发来的消息，由于上面实现的代码中，只发10次，所以这里只有10条。</p>
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-06-22T18:16:49+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>6:16 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/06/21/socketbian-cheng-tcppian/" title="Previous Post: Socket编程-TCP篇">&laquo; Socket编程-TCP篇</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2016/07/01/sqljinghua/" title="Next Post: SQLite精华篇">SQLite精华篇 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Socket编程-UDP篇"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (14)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (8)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (8)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (8)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (7)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (8)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2016/06/22/socketbian-cheng-udppian/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2016/06/22/socketbian-cheng-udppian/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
