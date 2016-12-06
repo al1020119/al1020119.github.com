@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS大神之路——应有尽有"
+title: "iOS必备篇——应有尽有"
 date: 2016-10-13 18:39:20 +0800
 comments: true
 categories: 
