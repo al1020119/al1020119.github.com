@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Socket编程-初探"
-date: 2016-2016-06-20 18:17:37 +0800
+date: 2016-06-20 18:17:37 +0800
 comments: true
 categories: 
 ---
