@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="不喜欢废话。。。。。来，直接上（不是上我。。。。） ">
+  <meta name="description" content="1. UDP Socket编程 先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。 注意：Socket通信一定有要服务端和客户端。 1.1 UDP Socket客户端 客户端的工作流程： &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,201 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/06/22/socketbian-cheng-udppian/">Socket编程-UDP篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-22T18:16:49+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>6:16 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/06/22/socketbian-cheng-udppian/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>1. UDP Socket编程</h3>
+
+<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
+
+<p>注意：Socket通信一定有要服务端和客户端。</p>
+
+<h4>1.1 UDP Socket客户端</h4>
+
+<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
+
+<p>笔者这里分成了四步：</p>
+
+<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
+第二步：调用sendto发送消息到服务器端
+第三步：调用recvfrom接收来自服务器端的消息
+第四步：调用close关闭socket
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/06/22/socketbian-cheng-udppian/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/06/21/socketbian-cheng-tcppian/">Socket编程-TCP篇</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-21T18:17:11+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>6:17 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/06/21/socketbian-cheng-tcppian/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>1. TCP Socket编程</h3>
+
+<p>TCP是面向连接的，安全可靠的传输层协议。</p>
+
+<p>注意：Socket通信一定有要服务端和客户端。</p>
+
+<h4>1.1 TCP Socket客户端</h4>
+
+<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
+
+<p>笔者这里分成了六步：</p>
+
+<pre><code>第一步：创建socket并配置socket
+第二步：调用bind绑定监听ip和端口号
+第三步：调用connect连接服务器
+第四步：调用getsockname获取套接字信息
+第五步：调用send发送消息到服务器端
+第六步：调用close关闭socket
+</code></pre>
+
+<p>这里没有写接收来自服务器端的消息，大家可以自行添加。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/06/21/socketbian-cheng-tcppian/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/06/20/socketbian-cheng-chu-tan/">Socket编程-初探</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-20T18:17:37+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:17 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/06/20/socketbian-cheng-chu-tan/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本序列文章关于Socket编程，摘自<a href="http://www.huangyibiao.com/">大神标哥</a>的精华</p>
+
+<h2>序言</h2>
+
+<p>网络七层由下往上分别为物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。 其中物理层、数据链路层和网络层通常被称作媒体层，是网络工程师所研究的对象； 传输层、会话层、表示层和应用层则被称作主机层，是用户所面向和关心的内容。</p>
+
+<pre><code>http协议对应于应用层
+tcp/udp协议对应于传输层
+ip协议对应于网络层
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/06/20/socketbian-cheng-chu-tan/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-15T13:53:19+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
+
+<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -311,190 +506,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/12/ziyuanwenjianhuoqu/">资源文件夹获取</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-12T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/12/ziyuanwenjianhuoqu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>用pngcrush反编译ios app 资源文件</p>
-
-<p>时间：2012-12-27 11:56:45 类别：ios开发 访问: 3705 次</p>
-
-<p>要提高app制作水平，最好的方法就是学习领先者，用pngcrush反编译ios app 资源文件，步骤很简单</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/12/ziyuanwenjianhuoqu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/10/jingtaifenxiyushiyong/">静态分析与使用</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-10T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/10/jingtaifenxiyushiyong/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>逆向工程－静态分析及使用</p>
-
-<p>看到一篇装逼技术，有机会好好研究一下。。。。。</p>
-
-<p>最近在学习IOS逆向工程，查看网络上的资料也不是太多，边学边总结一下。</p>
-
-<p>首先学习资料：</p>
-
-<p>念茜（大神）的博客： <a href="http://nianxi.net">http://nianxi.net</a></p>
-
-<p>《ios应用逆向工程 分析与实战》</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/10/jingtaifenxiyushiyong/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/08/fanbianyihefangfanbianyi/">反编译和防反编译</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-08T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/08/fanbianyihefangfanbianyi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>关于反编译和防止反编译</p>
-
-<h3>反编译</h3>
-
-<ul>
-<li><p>内购破解</p>
-
-<ul>
-<li>iOS应用需防反编译风险之一：插件法（仅越狱）、iTools工具替换文件法（常见为存档破解）、八门神器修改</li>
-</ul>
-</li>
-<li><p>网络安全风险</p>
-
-<ul>
-<li>iOS应用需防反编译风险之二：截获网络请求，破解通信协议并模拟客户端登录，伪造用户行为，对用户数据造成危害</li>
-</ul>
-</li>
-</ul>
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/08/fanbianyihefangfanbianyi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/05/jianceshifouyueyu/">检测是否越狱</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-05T13:32:08+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>5</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:32 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/03/05/jianceshifouyueyu/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>底层开发之越狱开发第二篇</p>
-
-<p>今天项目中要用到检查iPhone是否越狱的方法。</p>
-
-<p>Umeng统计的Mobclick.h里面已经包含了越狱检测的代码，可以直接使用</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/05/jianceshifouyueyu/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/6">&larr; Older</a>
@@ -543,6 +554,14 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/08/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/06/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
       </li>
     
@@ -552,14 +571,6 @@
     
       <li class="post">
         <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
       </li>
     
   </ul>

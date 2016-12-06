@@ -9,7 +9,7 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="概览 在iOS开发中数据存储的方式可以归纳为两类：一类是存储为文件，另一类是存储到数据库。例如前面IOS开发系列—Objective-C之Foundation框架的文章中提到归档、plist文件存储，包括偏好设置其本质都是存储为文件，只是说归档或者plist文件存储可以选择保存到沙盒中， &hellip;">
+  <meta name="description" content="iOS开发常用技术底层实现（精简概述） 本章将对ios开发技术底层实现的总结，其实关于ios开发中各种底层的实现，网上相关文章多到数不过来，而不且非常不错，我也没有自信我能比他们做的更好，因为毕竟每个人专研的东西不一样，本文主要正对三类用户！ 资深的ios开发者，对底层做过专门研究， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +69,256 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/08/01/gezhongdicenshixian/">iOS开发各种底层实现--包你满意😘！</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-08-01T23:30:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:30 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/08/01/gezhongdicenshixian/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>iOS开发常用技术底层实现（精简概述）</p>
+
+<p>本章将对ios开发技术底层实现的总结，其实关于ios开发中各种底层的实现，网上相关文章多到数不过来，而不且非常不错，我也没有自信我能比他们做的更好，因为毕竟每个人专研的东西不一样，本文主要正对三类用户！</p>
+
+<ol>
+<li>资深的ios开发者，对底层做过专门研究，但是没有一个系统整理，或者说不能很清楚的表达。</li>
+<li>ios开发初学者，没有专门研究过底层或者相关源码的初学者，但是不太建议一开始就看，因为如果你没有过一点接触，看了也看不懂，或者看了也白看，最多就是留个印象在脑子了，对初学者来说，切记不能靠背或者了解，而且细细研究每一个技术点，再慢慢深入挖掘。</li>
+<li>ios开发待业程序员（面试）专用，不管你有没有接触过ios开发相关的底层，只要你是在准备找工作的程序员，我相信你看了绝对有用，但是并不能正面你就真的理解了，所以希望这对你来说只是短暂的，后续得花大量时间去专门研究才能在这条路上走得更远，不然你永远只是个码农！</li>
+</ol>
+
+
+<p>好了，废话也不多说了，我们开始吧。。。。。</p>
+
+<h6>系统篇</h6>
+
+<ul>
+<li>内存管理</li>
+<li>Runtime</li>
+</ul>
+
+
+<h6>事件篇</h6>
+
+<ul>
+<li>事件传递</li>
+<li>事件响应</li>
+</ul>
+
+
+<h6>代码篇</h6>
+
+<ul>
+<li>Block</li>
+<li>__Block</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/08/01/gezhongdicenshixian/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/08/01/weixinhongbao/">福利：抢红包神器就是这么来的</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-08-01T11:52:15+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:52 am</span></time>
+        
+        
+        |   <a href="/blog/2016/08/01/weixinhongbao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>微信红包</p>
+
+<p><img src="/images/weixinhongbao0001.jpg" title="Caption" ></p>
+
+<p>本文摘自简书大牛<a href="http://www.jianshu.com/p/189afbe3b429">east520</a>.</p>
+
+<p>别告诉我你对红包不感兴趣，如果真的是这样，那么请绕道，哈哈。</p>
+
+<p>现在由于微信和QQ的普及，几乎所有用户都会使用红包这个功能，但是对于一个程序员来说，每看到一个好的功能都会努力试着研究一下，哪怕不能成功，由于看到了一篇比较看的文章，所以就专门花时间去搞一顿，结果大吃一惊。</p>
+
+<p>最近有不少朋友找我要红包尾数的功能，我也不知道他们为什么要这个，可能是笔者太年轻了。但是我觉得这个可能不简单，而且这样的功能做好了也不能外漏，不然笔者的程序员职业生涯估计就到头了！</p>
+
+<pre><code>前言：最近笔者在研究iOS逆向工程，顺便拿微信来练手，在非越狱手机上实现了微信自动抢红包的功能。
+</code></pre>
+
+<p>题外话：此教程是一篇严肃的学术探讨类文章，仅仅用于学习研究，也请读者不要用于商业或其他非法途径上，笔者一概不负责哟~~</p>
+
+<p>好了，接下来可以进入正题了！</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/08/01/weixinhongbao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/26/chongzhengzhidao/">重整之道（面试+技术+底层+高级）</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-26T13:53:19+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/07/26/chongzhengzhidao/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>重整之道（面试+技术+底层+高级）</p>
+
+<p>不要问我为什么写这篇文章。</p>
+
+<p>我，就是这么有尿性。。。。。。。。。。</p>
+
+<p>前面三部分已经基本上完成，后面部分会陆续更新，敬请期待。但是光靠一篇这么短的文章想将通这些事不可能的，这里主要正对面试族，或者健忘族，亦或者是装逼族。好了废话不多说，我们开始吧！</p>
+
+<ul>
+<li>运行时（底层）</li>
+<li>RunLoop（底层）</li>
+<li>多线程（底层与安全）</li>
+</ul>
+
+
+<hr />
+
+<ul>
+<li>网络（底层与安全）</li>
+<li>数据持久化（各种使用与区别）（CoreData、SQLite）</li>
+<li>Block（底层/__Block）</li>
+<li>音视频</li>
+<li>直播</li>
+<li>安全</li>
+<li>优化（性能、卡顿）</li>
+<li>常见错误</li>
+<li>常用技术</li>
+<li>全栈相关</li>
+<li>算法（常用、排序）</li>
+<li>数据结构</li>
+<li>设计模式（32中）</li>
+<li>架构设计</li>
+<li>逆向工程</li>
+<li>实战应用</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/26/chongzhengzhidao/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/10/duoxianc/">多线程之葵花宝典</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-10T14:59:42+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:59 pm</span></time>
+        
+        
+        |   <a href="/blog/2016/07/10/duoxianc/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>一、进程和线程</h2>
+
+<h4>1.什么是进程</h4>
+
+<pre><code>进程是指在系统中正在运行的一个应用程序
+
+每个进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内
+
+
+
+
+
+比如同时打开QQ、Xcode，系统就会分别启动2个进程
+
+通过“活动监视器”可以查看Mac系统中所开启的进程
+</code></pre>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/10/duoxianc/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -324,201 +574,6 @@ Core Data在后台也是使用SQLite来存储数据的，但是开发人员不�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/22/socketbian-cheng-udppian/">Socket编程-UDP篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-22T18:16:49+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>6:16 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/06/22/socketbian-cheng-udppian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. UDP Socket编程</h3>
-
-<p>先讲一讲UDP编程，因为比TCP要简单多了。首先，我们需要明白UDP是用户数据报协议，英文名为User Datagram Protocol，它是面向无连接的。</p>
-
-<p>注意：Socket通信一定有要服务端和客户端。</p>
-
-<h4>1.1 UDP Socket客户端</h4>
-
-<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
-
-<p>笔者这里分成了四步：</p>
-
-<pre><code>第一步：创建socket并配置socket，如服务端ip地址和端口号
-第二步：调用sendto发送消息到服务器端
-第三步：调用recvfrom接收来自服务器端的消息
-第四步：调用close关闭socket
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/06/22/socketbian-cheng-udppian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/21/socketbian-cheng-tcppian/">Socket编程-TCP篇</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-21T18:17:11+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>21</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>6:17 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/06/21/socketbian-cheng-tcppian/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>1. TCP Socket编程</h3>
-
-<p>TCP是面向连接的，安全可靠的传输层协议。</p>
-
-<p>注意：Socket通信一定有要服务端和客户端。</p>
-
-<h4>1.1 TCP Socket客户端</h4>
-
-<p>客户端的工作流程：首先调用socket函数创建一个Socket，然后指定服务端的IP地址和端口号，就可以调用sendto将字符串传送给服务器端，并可以调用recvfrom接收服务器端返回的字符串，最后关闭该socket。</p>
-
-<p>笔者这里分成了六步：</p>
-
-<pre><code>第一步：创建socket并配置socket
-第二步：调用bind绑定监听ip和端口号
-第三步：调用connect连接服务器
-第四步：调用getsockname获取套接字信息
-第五步：调用send发送消息到服务器端
-第六步：调用close关闭socket
-</code></pre>
-
-<p>这里没有写接收来自服务器端的消息，大家可以自行添加。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/06/21/socketbian-cheng-tcppian/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/20/socketbian-cheng-chu-tan/">Socket编程-初探</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-20T18:17:37+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:17 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/06/20/socketbian-cheng-chu-tan/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>本序列文章关于Socket编程，摘自<a href="http://www.huangyibiao.com/">大神标哥</a>的精华</p>
-
-<h2>序言</h2>
-
-<p>网络七层由下往上分别为物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。 其中物理层、数据链路层和网络层通常被称作媒体层，是网络工程师所研究的对象； 传输层、会话层、表示层和应用层则被称作主机层，是用户所面向和关心的内容。</p>
-
-<pre><code>http协议对应于应用层
-tcp/udp协议对应于传输层
-ip协议对应于网络层
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/06/20/socketbian-cheng-chu-tan/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">Cell重用数据混乱</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-06-15T13:53:19+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2016/06/15/cellshujuchongyongchulifangshi/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>关于Cell重用，我们经常会遇到cell重用的时候数据不对，或者混乱的情况，这里笔者由于刚好遇到了在项目中，所以解决后整理了一下。</p>
-
-<p>常规配置如下 当超过tableView显示的范围的时候 后面显示的内容将会和前面重复</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/06/15/cellshujuchongyongchulifangshi/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -567,6 +622,14 @@ ip协议对应于网络层
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/08/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/06/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
       </li>
     
@@ -576,14 +639,6 @@ ip协议对应于网络层
     
       <li class="post">
         <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/11/13/wan-nue-yiicong-zhe-li-kai-shi/">完虐Yii从这里开始😱😂</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/20/apptai-pang-liao-jian-fei/">App太胖了——减肥😂</a>
       </li>
     
   </ul>
