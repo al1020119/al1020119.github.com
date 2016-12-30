@@ -1,0 +1,857 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>MVC初探+实战 - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2013/08/25/mvc/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">MVC初探+实战</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-08-25T13:53:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>这两天认真研究了一下MVC设计模式，在iOS开发中这个算是重点中的重点了，如果对MVC模式不理解或者说不会用，那么你iOS肯定学不好，或者写不出好的东西，当然本人目前也在学习中，不过既然能看到这篇文档，说明你已经开始着手学习并且想深入研究它了，个人也是研究很久才搞懂，就写下来希望对各位有用，也能方便自己以后开发中查看，好了废话不多说，下面就来详细介绍一下MVC，并且用实例验证一下在项目开发中怎么去使用它。</p>
+
+<p>相信你对 MVC 设计模式 并不陌生，只是不能完全理解其中的含义或者不能很好的使用它。</p>
+
+<!--more-->
+
+
+<p>从字面意思来理解， Modal , View , Controller ，其用意在于将数据与视图分离开来－－－－－－解藕。</p>
+
+<p>在iOS cocoa touch 编程中， MVC机制被发挥得淋漓尽致。 MVC 示意图如下。 只有充分理解了MVC，才能在编写出优雅的iOS app。为充分理解 MVC， 相关的概念（比如： Delegate、 Protocol、 Notification 等）也要了然于胸。</p>
+
+<pre><code> MVC 约定， Model 不允许与View 打交道。 Model 是管理数据的， 当Model中的数据发生变化时，与之对应的视图应更新。 这就需要一种机制来支持。为此 iOS 框架提供了两种支持机制： Notification 和KVO （Key-Value Observing）。
+</code></pre>
+
+<p>　　KVO 可简单理解为，为你所关注的 Key 对象注册一个监听器。 当有数据发生变化时，就会发出广播给所有的监听器。</p>
+
+<pre><code>  MVC 也约定， View 不允许直接引用Modal， 它只能被Controller 所控制。 Controller 控制 View 显示什么数据。我们知道，View 所要显示的数据是来源于 Modal， View 上产生的事件 （ 比如 Touch事件）需要通知 Controller。 既然MVC 不允许直接打交道，就需要提供一种机制。 
+</code></pre>
+
+<p>  不错， iOS 确实提供了一种机制， 名曰： Delegate。 Delegate 这个词， 有人将它译为“委托”，也有人将它译为“代理”。名称上的差异没有什么，重要的是如何理解 Delegate。 Delegate设计模式的引入，就是为了解决UIView与Controller松耦合互动问题。</p>
+
+<p>为便于理解， 这里截取一张来iOS MVC 示意图：</p>
+
+<p>图片</p>
+
+<p>我们在详细介绍下这张图的内涵：</p>
+
+<ol>
+<li>图中，绿色的箭头表示直接引用。 对View 的直接引用体现在 IBOutlet 上。 当引用一个View 时，比如Button。 需要在ViewController</li>
+</ol>
+
+
+<p>中声明一个  IBOutlet  UIButton * btn；</p>
+
+<ol>
+<li><p>然后，我们看View 是怎么向 Controller 通信的。对于这个，  iOS 有三种常见的模式：</p>
+
+<ul>
+<li><p> 设置View对应的Action Target。如设置UIButton的Touch up inside的Action Target。</p></li>
+<li><p> 设置View的Delegate，如UIAlertViewDelegate, UIActionSheetDelegate，UITextFieldDelegate等。</p></li>
+<li><p> 设置View的data source, 如UITableViewDataSource。</p></li>
+</ul>
+
+
+<p> 通过以上三种模式，View既能向Controller通信，又无需知道具体的Controller是谁，这样，View 就与Controller解耦了。</p>
+
+<p>  除此之外， iOS 还提供了 Action-Target 模式来让Controller 监听View 触发的事件。 View 又是如何获取数据呢？ iOS提供了 Data source 的概念，其实也就是Protocol 的应用。</p></li>
+</ol>
+
+
+<blockquote><p>综上所述， 正是在iOS MVC框架的驱使下， 才需要深入理解 Delegate、Protocol等概念。</p></blockquote>
+
+<p>下面来看看代码中是怎么实现的，</p>
+
+<p>说到MVC我们一开始都是先从Model开始，然后再编写对应的View最后在控制器中做相应的控制</p>
+
+<h3>一：Model</h3>
+
+<p>1:首先我们先创建一个模型类，用于实现模型数据的读取</p>
+
+<p>头文件中创建两个模型属性，和两个模型方法，</p>
+
+<pre><code>#pragma mark 模型属性
+
+//用于存储对应的数据
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, copy) NSString *icon;
+
+
+#pragma mark 模型方法
+
+//用于初始化模型数据
+
+-(instancetype)initWithDict:(NSDictionary *)dict;
+
++(instancetype)shopWithDict:(NSDictionary *)dict;
+</code></pre>
+
+<p>实现文件中实现对应的模型方法，</p>
+
+<pre><code>#pragma mark 模型方法de实现
+
+-(instancetype)initWithDict:(NSDictionary *)dict{
+    if (self == [super init]) {
+        //创建模型并且通过字典的键获取里面的值放到模型属性中，方便后面用于数据处理直接食用
+        shopsModel *shop = [[shopsModel alloc] init];
+        shop.name = dict[@"name"];
+        shop.icon = dict[@"icon"];
+    }
+    return self;
+}
+
++(instancetype)shopWithDict:(NSDictionary *)dict
+{
+    return [[self alloc] initWithDict:dict];
+}
+</code></pre>
+
+<h3>二：View</h3>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>纯代码</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>************/</p>
+
+<p>创建一个视图类，用于显示对应的视图（控件，数据）</p>
+
+<p>头文件中通过模型定义一个属性，并且定义三个快速创建视图View的方法，这种方法是使用较多的，而且让人一看上去就知道怎么用</p>
+
+<pre><code>//引入模型类
+@class shopsModel;
+
+@interface shopsView : UIView
+
+@property (nonatomic, assign) shopsModel *shop;
+
+//实例方法，使用模型快速创建视图View
+-(instancetype)initWIthShop:(shopsModel *)shop;
+
+//类方法，使用模型快速创建视图View
++(instancetype)shopWithShop:(shopsModel *)shop;
+
+//用于创建View的一个类方法
++(instancetype)shopView;
+</code></pre>
+
+<p>实现文件中先导入模型类：</p>
+
+<pre><code> 1 #import "shopsModel.h" 
+</code></pre>
+
+<p>然后实现对应的创建View的方法，</p>
+
+<pre><code>-(instancetype)initWIthShop:(shopsModel *)shop
+{
+    if (self == [super init]) {
+        self.shop = shop;
+    }
+    return self;
+}
+
++(instancetype)shopWithShop:(shopsModel *)shop
+{
+    return [[self alloc] initWIthShop:shop];
+}
+
++(instancetype)shopView
+{
+    return [[self alloc] init];
+}
+</code></pre>
+
+<p>记得平时我们自定义View的时候，都是直接在init方法中做的，但是，这里有一个细节需要注意的，就是init方法内部会自动调用initWithFrame方法，我们要自定义View一般要做的就是设置View的布局和View的创建，而initWithFrame正好是控件布局之前创建控件的时候调用的，所以我们建议在这里设置他的Frame</p>
+
+<p>这里我们先要在私有拓展中定义两个属性用于记录我们所创建的View的属性</p>
+
+<pre><code>@property (nonatomic, weak) UIImageView *imageV;
+
+@property (nonatomic, weak) UILabel *label;
+</code></pre>
+
+<p> 实现空间创建的View方法</p>
+
+<p>//初始化View的方法
+-(instancetype)initWithFrame:(CGRect)frame
+{</p>
+
+<pre><code>if (self == [super initWithFrame:frame]) {
+    //创建UIImageView和UILabel把它加到自定义View上面，并且使用我们定义的属性纪录他，方便后面使用
+
+    UIImageView *image = [[UIImageView alloc] init];
+    [self addSubview:image];
+    self.imageV = image;
+
+    UILabel *label = [[UILabel alloc] init];
+    [self addSubview:label];
+    self.label = label;
+}
+return self;
+</code></pre>
+
+<p>}
+在View中布局空间的时候就会调用下面的方法</p>
+
+<p>//布局子控件方法
+-(void)layoutSubviews
+{
+    [super layoutSubviews];</p>
+
+<pre><code>//获取宽高
+CGFloat W = self.frame.size.width;
+CGFloat H = self.frame.size.height;
+
+//设置自定义View中对应控件的Frame
+self.imageV.frame = CGRectMake(0, 0, W, W);
+self.label.frame = CGRectMake(0, W, W, H - W);
+</code></pre>
+
+<p>}
+我们还有一个事情要做，就是重写通过模型创建的那个属性，将模型里面的属性设置到控件中对应的属性，</p>
+
+<p>//重写Set方法，设置对应的数据
+-(void)setSpView:(shopsModel *)shop
+{
+    _shop = shop;</p>
+
+<pre><code>//使用模型中的数据设置控件对应的属性
+self.imageV.image = [UIImage imageNamed:shop.icon];
+self.label.text = shop.name;
+</code></pre>
+
+<p>}</p>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Xib</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>************/</p>
+
+<p>关于Xib这里就不多做解释了</p>
+
+<p>说一下怎么使用Xib创建一个我们自定义的View并且，在控制器里面显示</p>
+
+<p>首先新建一个文件选中interface Builder中的空文件设置一个名字，就可以创建一个Xib文件</p>
+
+<p>图片</p>
+
+<p>————然后创建一个自定义View的类。</p>
+
+<p>点击Xib会看到里面什么也没有，因为我需要自定View所以拖一个View到Xib内部，并且拖我们对应要实现的控件到View里面作为他的子控件，这里需要注意的我们需要设置Xib文件对应的类为我们创建的那个类的名字：</p>
+
+<p>图片</p>
+
+<p>然后我们要做的就是将我们放在View里面的属性设置对输出口（这里就是拖线）这里我们一般是拖到实现文件中的私有拓展中</p>
+
+<pre><code>1 //控件输出口
+2 
+3 @property (weak, nonatomic) IBOutlet UIImageView *icon;
+4 
+5 @property (weak, nonatomic) IBOutlet UILabel *name;
+</code></pre>
+
+<p>再后面的操作之前我们还需要在头文件引入这个类，并且通过模型创建一个属性</p>
+
+<pre><code> 1 //模型商品属性 
+ 2 @property (nonatomic, strong) shopsModel *shop; 
+</code></pre>
+
+<p>定义一个通过模型快速创建View的方法</p>
+
+<pre><code> 1 //快速创建并且加载Xib文件的方法 
+ 2 +(instancetype)shopViewWithShop:(shopsModel *)shop; 
+</code></pre>
+
+<p>然后就是在实现文件中实现这个方法，我们是将Xib的加载封装在里面更好的实现解耦和不被外界知道</p>
+
+<p>这里加载Xib文件的方式有两种</p>
+
+<pre><code>/**
+ *  便利创建自定义View的方法
+ */
++(instancetype)shopViewWithShop:(shopsModel *)shop
+{
+
+    /**
+     *  加载Xib文件
+     */
+    iCocosView *shops = [[[NSBundle mainBundle] loadNibNamed:@"shops.plist" owner:nil options:nil] lastObject];
+    /**
+     *  第二种方法
+     */
+//    UINib *nib = [UINib nibWithNibName:@"shops.plist" bundle:[NSBundle mainBundle]];
+//    NSArray *arr = [nib instantiateWithOwner:nil options:nil].lastObject;
+
+    shops.shop = shop;
+    return shops;
+}
+</code></pre>
+
+<p>这里同样需要实现重写那个通过模型创建的属性的Setter方法</p>
+
+<pre><code>//重写Setter方法，设置View中对应的控件的属性为模型中的数据
+-(void)setShop:(shopsModel *)shop
+{
+    _shop = shop;
+
+    //设置模型属性
+    self.icon.image = [UIImage imageNamed:shop.icon];
+    self.name.text = shop.name;
+}
+</code></pre>
+
+<h3>三：Controller</h3>
+
+<p>完成上面之后，控制器里面实现久简单多了</p>
+
+<p>定义一个可变数组用于存放我们的模型数据</p>
+
+<p> 1 @property (nonatomic, strong) NSMutableArray *shops;</p>
+
+<p> 使用懒加载的方式加载那个plist数据，并且转成模型放到一个数组中，方便后面的使用</p>
+
+<pre><code>//懒加载
+-(NSMutableArray *)shops
+{
+    if (_shops == nil) {
+        //加载plist数据并且把他放到一个数组中
+        NSArray *shopsArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"shops.plist" ofType:nil]];
+        //初始化存放数据的可变模型数组
+        _shops = [NSMutableArray array];
+
+        //遍历那个存放好了plist数组的数组，把他放到一个字典中
+        for (NSDictionary *arr in shopsArray) {
+
+            //使用快速创建模型的方法创建一个模型对象，并且将他加到可变的模型数组中，方便后面使用
+            shopsModel *shop = [shopsModel shopWithDict:arr];
+            [_shops addObject:shop];
+        }
+    }
+    return _shops;
+
+}
+</code></pre>
+
+<p>最后我们就只需要在控制器里面控制并且使用上面的模型和View了，</p>
+
+<p>先来看看纯代码是怎么实现的</p>
+
+<pre><code>1     //使用快速创建方法去存放模型数据的数组中取出数据，通过View内部的实现显示到View上面
+2     shopsView *shView = [shopsView shopWithShop:self.shops[count]];
+3     //设置View的frame
+4     shView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+5     //将自定义View加到界面中显示
+6     [self.shopView addSubview:shView];
+</code></pre>
+
+<p>如果你使用的是Xib，方法和思路还是一样的</p>
+
+<pre><code>//去存放模型数据的数组中取出数据
+iCocosView *shop = self.shops[index];
+//通过取出来的数据快速创建一个View放到view内部实现并且使用
+iCocosView *shopView = [iCocosView shopViewWithShop:shop];
+//设置View的Frame
+shopView.frame = CGRectMake(shopX, shopY, shopW, shopH);
+//将自定义的View添加到界面显示
+[self.shopsView addSubview:shopView];
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><em>Swift实现</em></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>********/</p>
+
+<p>注：如果你没有一点Swift基础（基本语法都不知道，虽然和OC很相似，但看了也是没有用的），建议保留此文，后面学习的Swift过程中遇到的时候再拿来看看就完全不一样了。</p>
+
+<p>最近swift被炒的很火，由于苹果今年做了一个很大的决定，就是Swift2.0将开源，9月份将会放出源码，就意味着我们可以知道这里面是怎么实现的，并且可以在Linux平台上写，我想好处远远不止这些。</p>
+
+<p>笔者对swift也有些一些研究，平时在OC上面学习到一个好东西的时候都会使用实现一遍，所以这个就更不能例外了。</p>
+
+<h3>一：Model</h3>
+
+<p>第一步我们同样从模型下手，这里喝OC有些不同的是Swift只是在一个文件里面实现的</p>
+
+<pre><code>import UIKit
+
+class Shop: NSObject {
+
+//定义变量字符串属性
+var name:String!
+var icon:String!
+
+//初始化模型方法
+init(dict:[String:String]) {
+    super.init()
+
+    //设置模型对应的属性
+    self.name = dict["name"]
+    self.icon = dict["icon"]
+
+    //使用封装好的方法设置模型属性
+    setValuesForKeysWithDictionary(dict)
+}
+
+}
+</code></pre>
+
+<h3>二：View</h3>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>纯代码</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<p>自定义View中实现的方法也是差不多的，只是方法的形式和关键字不同而已</p>
+
+<pre><code>import UIKit
+
+class ShopView: UIView {
+
+/// 懒加载控件
+lazy var iconView:UIImageView = UIImageView()
+lazy var nameView:UILabel = UILabel()
+
+
+/**
+初始化Frame
+*/
+override init(frame: CGRect) {
+    super.init(frame: frame)
+
+    //添加子控件到界面
+    self.addSubview(iconView)
+    self.addSubview(nameView)
+    //设置Label的文字剧中
+    nameView.textAlignment = NSTextAlignment.Center
+}
+
+/**
+从文件中加载数据（Xib／StoryBoard）
+*/
+required init(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+}
+
+/**
+布局子控件方法
+*/
+override func layoutSubviews() {
+    //获取宽高
+    var W:CGFloat = self.frame.size.width
+    var H:CGFloat = self.frame.size.height
+
+    //设置UIImageView和UIlable的frame
+    self.iconView.frame = CGRectMake(0, 0, W, W)
+    self.nameView.frame = CGRectMake(0, W, W, H - W)
+}
+</code></pre>
+
+<p>}</p>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Xib</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<p>使用Xib方式同样是先创建Xib，创建对应的类文件，设置Xib对应为我们创建的类，添加子控件，设置输出口，然后就实现对应的方法</p>
+
+<pre><code>import UIKit
+
+    class XMGShopView: UIView {
+
+/** 图片 */
+@IBOutlet weak var iconView: UIImageView!
+/** 名字 */
+@IBOutlet weak var nameLabel: UILabel!
+
+var shop: Shop? {
+    didSet {
+        // 重写set方法
+        iconView.image = UIImage(named: shop!.icon)
+        nameLabel.text = shop!.name
+    }
+}
+//加载Xib实现方法
+class func shopView() -&gt; XMGShopView{
+    return NSBundle.mainBundle().loadNibNamed("XMGShopView", owner: nil, options: nil).last as! XMGShopView
+}
+}
+</code></pre>
+
+<p>注：这里最值得注意的地方是didSet这个方法，其实在swift中海油一个方法叫willSet，他们是相对应的，使用来监听属性变化的，就相当于OC里面的KVO不过在这里叫做属性观察者，分别是在设置属性后和之前调用，这里由于需要只实现了设置之后观察属性的变化</p>
+
+<h3>三：Conreoller</h3>
+
+<p>关于控制器里面实现的代码和OC里面就有许多不同的地方了，特别是懒加载（lazy）这里，笔者也是搞了好久才搞明白</p>
+
+<p>懒加载</p>
+
+<pre><code>//使用lazy实现懒加载，这里使用的是一个叫做闭包返回值的东西来实现的
+lazy var shops:NSMutableArray = {
+    //从MainBundle中获取plist文件的路径
+    let path:String = NSBundle.mainBundle().pathForResource("shops.plist", ofType: nil)!
+    //加载plist文件放到一个可变数组里面，
+    let tempArr:NSMutableArray = NSMutableArray(contentsOfFile: path)!
+    //定义一个可变的数组，数组的大小就是上面那个存放plist数据的数组的大小
+    let shopsArrM:NSMutableArray = NSMutableArray(capacity: tempArr.count)
+    //遍历存放plist数据的那个数组，放到一个字典中去
+    for dict in tempArr
+    {
+        //使用模型中实现的方法创建一个模型对象
+        let shop: Shop = Shop(dict: dict as! [String : String])
+        //将模型对象放到plist数组中
+        shopsArrM.addObject(shop)
+    }
+    //返回那个存放模型数据的数组
+    return shopsArrM
+    }()下面就死创建并且显示View的实现
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>纯代码</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<pre><code>    //创建一个自定义的View
+    let shopView: ShopView = ShopView()
+    //设置他的frame
+    shopView.frame = CGRect(x: shopX, y: shopY, width: shopW, height: shopH)
+    //取出模型数组中对应的数组设置到试图中（这里使用了？表示类型转换）
+    shopView.shop = self.shops[index] as? Shop
+    //添加并显示
+    self.shopsView.addSubview(shopView)
+</code></pre>
+
+<p>/<strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong><strong>Xib</strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong></strong>**********/</p>
+
+<pre><code>//创建一个自定义的View
+  let shopView: iCocosView = iCocosView.shopView()
+  //设置他的frame
+  shopView.frame = CGRect(x: shopX, y: shopY, width: shopW, height: shopH)
+  //取出模型数组中对应的数组设置到试图中（这里使用了？表示类型转换）
+  shopView.shop = self.shops[index] as? Shop
+  //添加并显示
+  self.shopsView.addSubview(shopView)
+</code></pre>
+
+<p>使用纯代码和Xib的方式没有什么不同，最主要是自定义View内部的实现。</p>
+
+<p>mvc机制</p>
+
+<p>说明：</p>
+
+<ul>
+<li><p>（1）在开发过程中，作为控制器处理的量级应该很轻，不该操心的不操心。协调好模型和视图就ok了，要学会当一个好老板。</p></li>
+<li><p>（2）三个部分各司其职，数据模型只负责数据的处理，视图部分只负责把拿到的数据进行显示，两个部分都是被动的，等待着大管家控制器的调遣。</p></li>
+<li><p>（3）在OC中，如果视图和数据模型之间有通道，那控制器是否处于失控状态呢？</p></li>
+</ul>
+
+
+<p>网上有人是这里理解MVC的：</p>
+
+<p>MVC是Model-VIew-Controller，就是模型－视图－控制器，这些都是什么东西呢？MVC把软件系统分为三个部分：Model，View。controller。在cocoa中，你的程序中的每一个object（对象）都将明显地仅属于这三部分中的一个，而完全不属于另外两个。</p>
+
+<p>　　　　　　Model = 你的程序是什么(而不是你的程序是如何显示的)</p>
+
+<p>让我们举个例子，我们上中学的时候，我们的步步高电子词典中有个游戏叫“雷霆战机”，也就是“打飞机”的游戏，Model就是：你的小飞机的攻击力是多少？你的小飞机上装的是什么武器，炮弹，导弹，还是激光炮？你的小飞机还有多少血？等等。再概括点说，就是你的程序将要实现的功能，或者是它所能干的事情。</p>
+
+<pre><code>              Controller = 如何使你的模型呈现给用户(程序逻辑)
+</code></pre>
+
+<p>Controller是程序内部的逻辑，大多情况下你将看不到它，它将Model和View捆绑在一起，它将处理用户的输入，例如，你按开炮的键子，Controller就会通过内部的逻辑来处理你的要求，并在屏幕上做出相应的显示，你将看到屏幕上的小飞机发出炮弹击中敌机。这也是Controller控制View的显示的例子。所以你可以把Controller看成是连接M和V的桥梁。</p>
+
+<pre><code>              View ＝ 在屏幕上你所看到的（是你的Controller的“奴才”）
+</code></pre>
+
+<p>接着前面的小飞机，View就是：你的小飞机是什么样子的，有一个还是两个翅膀，有几挺枪炮；还有，你的飞机在屏幕上的位置等等。总之，你在屏幕上看到的组件都可以归类为View。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2013-08-25T13:53:19+08:00'><span class='date'><span class='date-month'>Aug</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/senior/'>senior</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/08/11/init%20pic/" title="Previous Post: 初始化图片">&laquo; 初始化图片</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/09/07/huan-cun-ji-zhi-shen-jiu/" title="Next Post: 自己写套缓存机制">自己写套缓存机制 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="MVC初探+实战"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (11)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (5)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (5)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (5)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (7)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/30/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/26/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2013/08/25/mvc/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2013/08/25/mvc/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>

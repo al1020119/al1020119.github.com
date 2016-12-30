@@ -1,0 +1,990 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>玩转CollectionView - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="iCocos博客">
+  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2013/09/28/collectionview/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/about">文章</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">玩转CollectionView</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-09-28T13:53:19+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>实现步骤</p>
+
+<h3>一、新建两个类</h3>
+
+<p>1.继承自UIScrollView的子类，比如iCocosWaterflowView</p>
+
+<ul>
+<li>瀑布流显示控件，用来显示所有的瀑布流数据</li>
+</ul>
+
+
+<p>2.继承自UIView的子类，比如iCocosWaterflowViewCell</p>
+
+<ul>
+<li>代表着瀑布流数据中的一个单元（一个格子）</li>
+</ul>
+
+
+<p>3.总结</p>
+
+<!--more-->
+
+
+<ul>
+<li>iCocosWaterflowView和iCocosWaterflowViewCell的关系实际上类似于
+UITableView和UITableViewCell的关系</li>
+</ul>
+
+
+<h3>二、设计iCocosWaterflowView的接口</h3>
+
+<p>1.模仿UITableView的接口来设计</p>
+
+<ul>
+<li>设计一套数据源和代理方法</li>
+</ul>
+
+
+<h3>三、iCocosWaterflowView的实现</h3>
+
+<p>1.reloadData</p>
+
+<ul>
+<li>作用：刷新数据</li>
+<li>步骤：
+1> 清空以前残余的数据
+2> 计算所有新数据对应的frame</li>
+</ul>
+
+
+<p>2.layoutSubviews</p>
+
+<ul>
+<li>作用：显示和移除子控件</li>
+<li><p>步骤：</p>
+
+<ul>
+<li><p>检测每一个数据对应的frame在不在屏幕上（用户能不能看见）</p></li>
+<li><p>如果这个数据对应的frame在屏幕上：向数据源索要这个数据对应的cell，添加这个cell到iCocosWaterflowView中显示</p></li>
+<li><p>如果这个数据对应的frame不在屏幕上：从iCocosWaterflowView中移除这个数据对应的cell，并将这个cell添加到缓存池中</p></li>
+</ul>
+</li>
+</ul>
+
+
+<p>View.h文件</p>
+
+<pre><code>#import &lt;UIKit/UIKit.h&gt;
+
+typedef enum {
+    iCocosWaterflowViewMarginTypeTop,
+    iCocosWaterflowViewMarginTypeBottom,
+    iCocosWaterflowViewMarginTypeLeft,
+    iCocosWaterflowViewMarginTypeRight,
+    iCocosWaterflowViewMarginTypeColumn, // 每一列
+    iCocosWaterflowViewMarginTypeRow, // 每一行
+} iCocosWaterflowViewMarginType;
+
+@class iCocosWaterflowView, iCocosWaterflowViewCell;
+
+/**
+ *  数据源方法
+ */
+@protocol iCocosWaterflowViewDataSource &lt;NSObject&gt;
+@required
+/**
+ *  一共有多少个数据
+ */
+- (NSUInteger)numberOfCellsInWaterflowView:(iCocosWaterflowView *)waterflowView;
+/**
+ *  返回index位置对应的cell
+ */
+- (iCocosWaterflowViewCell *)waterflowView:(iCocosWaterflowView *)waterflowView cellAtIndex:(NSUInteger)index;
+
+@optional
+/**
+ *  一共有多少列
+ */
+- (NSUInteger)numberOfColumnsInWaterflowView:(iCocosWaterflowView *)waterflowView;
+@end
+
+/**
+ *  代理方法
+ */
+@protocol iCocosWaterflowViewDelegate &lt;UIScrollViewDelegate&gt;
+@optional
+/**
+ *  第index位置cell对应的高度
+ */
+- (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView heightAtIndex:(NSUInteger)index;
+/**
+ *  选中第index位置的cell
+ */
+- (void)waterflowView:(iCocosWaterflowView *)waterflowView didSelectAtIndex:(NSUInteger)index;
+/**
+ *  返回间距
+ */
+- (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView marginForType:(iCocosWaterflowViewMarginType)type;
+@end
+
+/**
+ *  瀑布流控件
+ */
+@interface iCocosWaterflowView : UIScrollView
+/**
+ *  数据源
+ */
+@property (nonatomic, weak) id&lt;iCocosWaterflowViewDataSource&gt; dataSource;
+/**
+ *  代理
+ */
+@property (nonatomic, weak) id&lt;iCocosWaterflowViewDelegate&gt; delegate;
+
+/**
+ *  刷新数据（只要调用这个方法，会重新向数据源和代理发送请求，请求数据）
+ */
+- (void)reloadData;
+
+/**
+ *  cell的宽度
+ */
+- (CGFloat)cellWidth;
+
+/**
+ *  根据标识去缓存池查找可循环利用的cell
+ */
+- (id)dequeueReusableCellWithIdentifier:(NSString *)identifier;
+@end
+</code></pre>
+
+<p>复制代码</p>
+
+<p>View.m文件</p>
+
+<pre><code>#import "iCocosWaterflowView.h"
+#import "iCocosWaterflowViewCell.h"
+
+#define iCocosWaterflowViewDefaultCellH 70
+#define iCocosWaterflowViewDefaultMargin 8
+#define iCocosWaterflowViewDefaultNumberOfColumns 3
+
+@interface iCocosWaterflowView()
+/**
+ *  所有cell的frame数据
+ */
+@property (nonatomic, strong) NSMutableArray *cellFrames;
+/**
+ *  正在展示的cell
+ */
+@property (nonatomic, strong) NSMutableDictionary *displayingCells;
+/**
+ *  缓存池（用Set，存放离开屏幕的cell）
+ */
+@property (nonatomic, strong) NSMutableSet *reusableCells;
+@end
+
+@implementation iCocosWaterflowView
+
+#pragma mark - 初始化
+- (NSMutableArray *)cellFrames
+{
+    if (_cellFrames == nil) {
+        self.cellFrames = [NSMutableArray array];
+    }
+    return _cellFrames;
+}
+
+- (NSMutableDictionary *)displayingCells
+{
+    if (_displayingCells == nil) {
+        self.displayingCells = [NSMutableDictionary dictionary];
+    }
+    return _displayingCells;
+}
+
+- (NSMutableSet *)reusableCells
+{
+    if (_reusableCells == nil) {
+        self.reusableCells = [NSMutableSet set];
+    }
+    return _reusableCells;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+
+    }
+    return self;
+}
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    [self reloadData];
+}
+
+#pragma mark - 公共接口
+/**
+ *  cell的宽度
+ */
+- (CGFloat)cellWidth
+{
+    // 总列数
+    int numberOfColumns = [self numberOfColumns];
+    CGFloat leftM = [self marginForType:iCocosWaterflowViewMarginTypeLeft];
+    CGFloat rightM = [self marginForType:iCocosWaterflowViewMarginTypeRight];
+    CGFloat columnM = [self marginForType:iCocosWaterflowViewMarginTypeColumn];
+    return (self.bounds.size.width - leftM - rightM - (numberOfColumns - 1) * columnM) / numberOfColumns;
+}
+
+/**
+ *  刷新数据
+ */
+- (void)reloadData
+{
+    // 清空之前的所有数据
+    // 移除正在正在显示cell
+    [self.displayingCells.allValues makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    [self.displayingCells removeAllObjects];
+    [self.cellFrames removeAllObjects];
+    [self.reusableCells removeAllObjects];
+
+    // cell的总数
+    int numberOfCells = [self.dataSource numberOfCellsInWaterflowView:self];
+
+    // 总列数
+    int numberOfColumns = [self numberOfColumns];
+
+    // 间距
+    CGFloat topM = [self marginForType:iCocosWaterflowViewMarginTypeTop];
+    CGFloat bottomM = [self marginForType:iCocosWaterflowViewMarginTypeBottom];
+    CGFloat leftM = [self marginForType:iCocosWaterflowViewMarginTypeLeft];
+    CGFloat columnM = [self marginForType:iCocosWaterflowViewMarginTypeColumn];
+    CGFloat rowM = [self marginForType:iCocosWaterflowViewMarginTypeRow];
+
+    // cell的宽度
+    CGFloat cellW = [self cellWidth];
+
+    // 用一个C语言数组存放所有列的最大Y值
+    CGFloat maxYOfColumns[numberOfColumns];
+    for (int i = 0; i&lt;numberOfColumns; i++) {
+        maxYOfColumns[i] = 0.0;
+    }
+
+    // 计算所有cell的frame
+    for (int i = 0; i&lt;numberOfCells; i++) {
+        // cell处在第几列(最短的一列)
+        NSUInteger cellColumn = 0;
+        // cell所处那列的最大Y值(最短那一列的最大Y值)
+        CGFloat maxYOfCellColumn = maxYOfColumns[cellColumn];
+        // 求出最短的一列
+        for (int j = 1; j&lt;numberOfColumns; j++) {
+            if (maxYOfColumns[j] &lt; maxYOfCellColumn) {
+                cellColumn = j;
+                maxYOfCellColumn = maxYOfColumns[j];
+            }
+        }
+
+        // 询问代理i位置的高度
+        CGFloat cellH = [self heightAtIndex:i];
+
+        // cell的位置
+        CGFloat cellX = leftM + cellColumn * (cellW + columnM);
+        CGFloat cellY = 0;
+        if (maxYOfCellColumn == 0.0) { // 首行
+            cellY = topM;
+        } else {
+            cellY = maxYOfCellColumn + rowM;
+        }
+
+        // 添加frame到数组中
+        CGRect cellFrame = CGRectMake(cellX, cellY, cellW, cellH);
+        [self.cellFrames addObject:[NSValue valueWithCGRect:cellFrame]];
+
+        // 更新最短那一列的最大Y值
+        maxYOfColumns[cellColumn] = CGRectGetMaxY(cellFrame);
+    }
+
+    // 设置contentSize
+    CGFloat contentH = maxYOfColumns[0];
+    for (int j = 1; j&lt;numberOfColumns; j++) {
+        if (maxYOfColumns[j] &gt; contentH) {
+            contentH = maxYOfColumns[j];
+        }
+    }
+    contentH += bottomM;
+    self.contentSize = CGSizeMake(0, contentH);
+}
+
+/**
+ *  当UIScrollView滚动的时候也会调用这个方法
+ */
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    // 向数据源索要对应位置的cell
+    NSUInteger numberOfCells = self.cellFrames.count;
+    for (int i = 0; i&lt;numberOfCells; i++) {
+        // 取出i位置的frame
+        CGRect cellFrame = [self.cellFrames[i] CGRectValue];
+
+        // 优先从字典中取出i位置的cell
+        iCocosWaterflowViewCell *cell = self.displayingCells[@(i)];
+
+        // 判断i位置对应的frame在不在屏幕上（能否看见）
+        if ([self isInScreen:cellFrame]) { // 在屏幕上
+            if (cell == nil) {
+                cell = [self.dataSource waterflowView:self cellAtIndex:i];
+                cell.frame = cellFrame;
+                [self addSubview:cell];
+
+                // 存放到字典中
+                self.displayingCells[@(i)] = cell;
+            }
+        } else {  // 不在屏幕上
+            if (cell) {
+                // 从scrollView和字典中移除
+                [cell removeFromSuperview];
+                [self.displayingCells removeObjectForKey:@(i)];
+
+                // 存放进缓存池
+                [self.reusableCells addObject:cell];
+            }
+        }
+    }
+}
+
+- (id)dequeueReusableCellWithIdentifier:(NSString *)identifier
+{
+    __block iCocosWaterflowViewCell *reusableCell = nil;
+
+    [self.reusableCells enumerateObjectsUsingBlock:^(iCocosWaterflowViewCell *cell, BOOL *stop) {
+        if ([cell.identifier isEqualToString:identifier]) {
+            reusableCell = cell;
+            *stop = YES;
+        }
+    }];
+
+    if (reusableCell) { // 从缓存池中移除
+        [self.reusableCells removeObject:reusableCell];
+    }
+    return reusableCell;
+}
+
+#pragma mark - 私有方法
+/**
+ *  判断一个frame有无显示在屏幕上
+ */
+- (BOOL)isInScreen:(CGRect)frame
+{
+    return (CGRectGetMaxY(frame) &gt; self.contentOffset.y) &amp;&amp;
+    (CGRectGetMinY(frame) &lt; self.contentOffset.y + self.bounds.size.height);
+}
+
+/**
+ *  间距
+ */
+- (CGFloat)marginForType:(iCocosWaterflowViewMarginType)type
+{
+    if ([self.delegate respondsToSelector:@selector(waterflowView:marginForType:)]) {
+        return [self.delegate waterflowView:self marginForType:type];
+    } else {
+        return iCocosWaterflowViewDefaultMargin;
+    }
+}
+/**
+ *  总列数
+ */
+- (NSUInteger)numberOfColumns
+{
+    if ([self.dataSource respondsToSelector:@selector(numberOfColumnsInWaterflowView:)]) {
+        return [self.dataSource numberOfColumnsInWaterflowView:self];
+    } else {
+        return iCocosWaterflowViewDefaultNumberOfColumns;
+    }
+}
+/**
+ *  index位置对应的高度
+ */
+- (CGFloat)heightAtIndex:(NSUInteger)index
+{
+    if ([self.delegate respondsToSelector:@selector(waterflowView:heightAtIndex:)]) {
+        return [self.delegate waterflowView:self heightAtIndex:index];
+    } else {
+        return iCocosWaterflowViewDefaultCellH;
+    }
+}
+
+#pragma mark - 事件处理
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (![self.delegate respondsToSelector:@selector(waterflowView:didSelectAtIndex:)]) return;
+
+    // 获得触摸点
+    UITouch *touch = [touches anyObject];
+    //    CGPoint point = [touch locationInView:touch.view];
+    CGPoint point = [touch locationInView:self];
+
+    __block NSNumber *selectIndex = nil;
+    [self.displayingCells enumerateKeysAndObjectsUsingBlock:^(id key, iCocosWaterflowViewCell *cell, BOOL *stop) {
+        if (CGRectContainsPoint(cell.frame, point)) {
+            selectIndex = key;
+            *stop = YES;
+        }
+    }];
+
+    if (selectIndex) {
+        [self.delegate waterflowView:self didSelectAtIndex:selectIndex.unsignedIntegerValue];
+    }
+}
+</code></pre>
+
+<p>复制代码</p>
+
+<p>Cell.h文件</p>
+
+<pre><code> #import &lt;UIKit/UIKit.h&gt;
+
+ @interface iCocosWaterflowViewCell : UIView
+ @property (nonatomic, copy) NSString *identifier;
+ @end
+</code></pre>
+
+<p>使用方法：</p>
+
+<p>1:新建一个Cell模型</p>
+
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+@interface iCocosShop : NSObject
+@property (nonatomic, assign) CGFloat w;
+@property (nonatomic, assign) CGFloat h;
+@property (nonatomic, copy) NSString *img;
+@property (nonatomic, copy) NSString *price;
+@end
+</code></pre>
+
+<p>2：定义一个集成自上面的Cell的Cell</p>
+
+<pre><code>#import "iCocosWaterflowViewCell.h"
+@class iCocosWaterflowView, iCocosShop;
+
+@interface iCocosShopCell : iCocosWaterflowViewCell
++ (instancetype)cellWithWaterflowView:(iCocosWaterflowView *)waterflowView;
+
+@property (nonatomic, strong) iCocosShop *shop;
+@end
+</code></pre>
+
+<p>实现这个Cell：</p>
+
+<pre><code>#import "iCocosShopCell.h"
+#import "iCocosWaterflowView.h"
+#import "UIImageView+WebCache.h"
+#import "iCocosShop.h"
+
+@interface iCocosShopCell()
+@property (weak, nonatomic) UIImageView *imageView;
+@property (weak, nonatomic) UILabel *priceLabel;
+@end
+
+@implementation iCocosShopCell
+
+
++ (instancetype)cellWithWaterflowView:(iCocosWaterflowView *)waterflowView
+{
+    static NSString *ID = @"SHOP";
+    iCocosShopCell *cell = [waterflowView dequeueReusableCellWithIdentifier:ID];
+    if (cell == nil) {
+        cell = [[iCocosShopCell alloc] init];
+        cell.identifier = ID;
+    }
+    return cell;
+}
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+
+        UIImageView *imageView = [[UIImageView alloc] init];
+        [self addSubview:imageView];
+        self.imageView = imageView;
+
+        UILabel *priceLabel = [[UILabel alloc] init];
+        priceLabel.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
+        priceLabel.textAlignment = NSTextAlignmentCenter;
+        priceLabel.textColor = [UIColor whiteColor];
+        [self addSubview:priceLabel];
+        self.priceLabel = priceLabel;
+    }
+    return self;
+}
+
+- (void)setShop:(iCocosShop *)shop
+{
+    _shop = shop;
+
+    self.priceLabel.text = shop.price;
+    [self.imageView sd_setImageWithURL:[NSURL URLWithString:shop.img] placeholderImage:[UIImage imageNamed:@"loading"]];
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    self.imageView.frame = self.bounds;
+
+    CGFloat priceX = 0;
+    CGFloat priceH = 25;
+    CGFloat priceY = self.bounds.size.height - priceH;
+    CGFloat priceW = self.bounds.size.width;
+    self.priceLabel.frame = CGRectMake(priceX, priceY, priceW, priceH);
+}
+</code></pre>
+
+<p>3:在控制器中直接使用：</p>
+
+<pre><code>    #import "iCocosShopsViewController.h"
+    #import "iCocosShopCell.h"
+    #import "iCocosWaterflowView.h"
+    #import "iCocosShop.h"
+    #import "MJExtension.h"
+    #import "MJRefresh.h"
+
+    @interface iCocosShopsViewController ()&lt;iCocosWaterflowViewDataSource, iCocosWaterflowViewDelegate&gt;
+    @property (nonatomic, strong) NSMutableArray *shops;
+    @property (nonatomic, weak) iCocosWaterflowView *waterflowView;
+    @end
+
+    @implementation iCocosShopsViewController
+
+    - (NSMutableArray *)shops
+    {
+        if (_shops == nil) {
+            self.shops = [NSMutableArray array];
+        }
+        return _shops;
+    }
+
+    - (void)viewDidLoad
+    {
+        [super viewDidLoad];
+
+        // 0.初始化数据
+        NSArray *newShops = [iCocosShop objectArrayWithFilename:@"2.plist"];
+        [self.shops addObjectsFromArray:newShops];
+
+        // 1.瀑布流控件
+        iCocosWaterflowView *waterflowView = [[iCocosWaterflowView alloc] init];
+        waterflowView.backgroundColor = [UIColor redColor];
+        // 跟随着父控件的尺寸而自动伸缩
+        waterflowView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        waterflowView.frame = self.view.bounds;
+        waterflowView.dataSource = self;
+        waterflowView.delegate = self;
+        [self.view addSubview:waterflowView];
+        self.waterflowView = waterflowView;
+
+        // 2.继承刷新控件
+    //    [waterflowView addFooterWithCallback:^{
+    //        NSLog(@"进入上拉加载状态");
+    //    }];
+
+    //    [waterflowView addHeaderWithCallback:^{
+    //        NSLog(@"进入下拉加载状态");
+        //    }];
+
+        [waterflowView addHeaderWithTarget:self action:@selector(loadNewShops)];
+        [waterflowView addFooterWithTarget:self action:@selector(loadMoreShops)];
+    }
+
+    - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+    {
+    //    NSLog(@"屏幕旋转完毕");
+        [self.waterflowView reloadData];
+    }
+
+    - (void)loadNewShops
+    {
+        static dispatch_once_t onceToken;
+        dispatch_once(&amp;onceToken, ^{
+            // 加载1.plist
+            NSArray *newShops = [iCocosShop objectArrayWithFilename:@"1.plist"];
+            [self.shops insertObjects:newShops atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, newShops.count)]];
+        });
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // 刷新瀑布流控件
+            [self.waterflowView reloadData];
+
+            // 停止刷新
+            [self.waterflowView headerEndRefreshing];
+        });
+    }
+
+    - (void)loadMoreShops
+    {
+        static dispatch_once_t onceToken;
+        dispatch_once(&amp;onceToken, ^{
+            // 加载3.plist
+            NSArray *newShops = [iCocosShop objectArrayWithFilename:@"3.plist"];
+            [self.shops addObjectsFromArray:newShops];
+        });
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+            // 刷新瀑布流控件
+            [self.waterflowView reloadData];
+
+            // 停止刷新
+            [self.waterflowView footerEndRefreshing];
+        });
+    }
+
+    #pragma mark - 数据源方法
+    - (NSUInteger)numberOfCellsInWaterflowView:(iCocosWaterflowView *)waterflowView
+    {
+        return self.shops.count;
+    }
+
+    - (iCocosWaterflowViewCell *)waterflowView:(iCocosWaterflowView *)waterflowView cellAtIndex:(NSUInteger)index
+    {
+        iCocosShopCell *cell = [iCocosShopCell cellWithWaterflowView:waterflowView];
+
+        cell.shop = self.shops[index];
+
+        return cell;
+    }
+
+    - (NSUInteger)numberOfColumnsInWaterflowView:(iCocosWaterflowView *)waterflowView
+    {
+        if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
+            // 竖屏
+            return 3;
+        } else {
+            return 5;
+        }
+    }
+
+    #pragma mark - 代理方法
+    - (CGFloat)waterflowView:(iCocosWaterflowView *)waterflowView heightAtIndex:(NSUInteger)index
+    {
+        iCocosShop *shop = self.shops[index];
+        // 根据cell的宽度 和 图片的宽高比 算出 cell的高度
+        return waterflowView.cellWidth * shop.h / shop.w;
+    }
+</code></pre>
+
+<p>注：这里还需要引入第三方库和相应的工具类</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2013-09-28T13:53:19+08:00'><span class='date'><span class='date-month'>Sep</span> <span class='date-day'>28</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/foundation/'>foundation</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/09/14/kan-wo-zen-yao-na-dao-she-bei-xin-xi/" title="Previous Post: 看我怎么拿到设备信息">&laquo; 看我怎么拿到设备信息</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/09/30/iossheng-ming-zhou-qi/" title="Next Post: iOS生命周期">iOS生命周期 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="玩转CollectionView"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (11)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (5)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (5)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (5)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (7)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/30/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/26/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/phpwan-mei-da-pei-mysql/">PHP完美搭配之Mysql初探</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2013/09/28/collectionview/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2013/09/28/collectionview/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
