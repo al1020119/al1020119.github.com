@@ -2,7 +2,7 @@
 
 layout: post
 title: "常见设计模式总结"
-date: 2013-09-25 13:53:19 +0800
+date: 2013-10-25 13:53:19 +0800
 comments: true
 categories: Full Stack
 description: iCocos博客

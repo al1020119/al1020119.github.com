@@ -2,7 +2,7 @@
 
 layout: post
 title: "iCocos博客重整第一天"
-date: 2013-03-01 11:11:30 +0800
+date: 2013-07-01 11:11:30 +0800
 comments: true
 categories: Full Stack 
 description: "我的第一篇Octopress博客" 
@@ -12,7 +12,9 @@ keywords: Octopress
 
 
 
-由于工作的需要，由于技术的需要，笔者在此重新调整博客，之前在[博客园](http://www.cnblogs.com/iCocos/)的所有经典文章将会转移到这里。
+由于学习与工作的需要，由于技术的需要，后面的学习中将记录下这一切。
+
+
 
 后续也会陆续更新个人的技术干货，希望能与同行相互学习与交流相关技术。
 
@@ -22,9 +24,6 @@ keywords: Octopress
  
  [http://al1020119.github.io](http://al1020119.github.io)
  
- [http://www.cnblogs.com/iCocos/（iOS梦工厂）](http://www.cnblogs.com/iCocos/)
-
-
 
 <!--more-->
 

@@ -2,7 +2,7 @@
 
 layout: post
 title: "玩转CollectionView"
-date: 2013-08-18 13:53:19 +0800
+date: 2013-09-28 13:53:19 +0800
 comments: true
 categories: Foundation
 description: iCocos博客

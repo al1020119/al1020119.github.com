@@ -2,7 +2,7 @@
 
 layout: post
 title: "带你玩虐Ocotpress＋Github博客"
-date: 2013-03-10 13:53:19 +0800
+date: 2013-07-10 13:53:19 +0800
 comments: true
 categories: Full Stack
 description: "我的个人简介" 
@@ -1055,7 +1055,6 @@ I get 10 times more traffic from [Google][1] than from [Yahoo][2] or [MSN][3].
  
  [https://al1020119.github.io](https://al1020119.github.io)
  
- [http://www.cnblogs.com/iCocos/（iOS梦工厂）](http://www.cnblogs.com/iCocos/（iOS梦工厂）)
 
 更多精彩请关注
 

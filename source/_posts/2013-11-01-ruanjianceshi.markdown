@@ -2,7 +2,7 @@
 
 layout: post
 title: "软件测试技术"
-date: 2013-10-01 13:53:19 +0800
+date: 2013-11-01 13:53:19 +0800
 comments: true
 categories: Developer
 description: iCocos博客

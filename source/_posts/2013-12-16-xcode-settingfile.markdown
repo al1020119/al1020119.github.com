@@ -2,7 +2,7 @@
 
 layout: post
 title: "Xcode配置文件"
-date: 2013-11-26 13:53:19 +0800
+date: 2013-12-16 13:53:19 +0800
 comments: true
 categories: Tools
 description: iCocos博客

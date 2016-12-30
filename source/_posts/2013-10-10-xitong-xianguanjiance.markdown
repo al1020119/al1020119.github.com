@@ -2,7 +2,7 @@
 
 layout: post
 title: "系统相关检测"
-date: 2013-09-10 13:53:19 +0800
+date: 2013-10-10 13:53:19 +0800
 comments: true
 categories: Developer
 description: iCocos博客

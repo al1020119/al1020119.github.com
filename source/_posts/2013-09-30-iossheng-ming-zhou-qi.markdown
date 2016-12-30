@@ -2,7 +2,7 @@
 
 layout: post
 title: "iOS生命周期"
-date: 2013-06-30 21:52:15 +0800
+date: 2013-09-30 21:52:15 +0800
 comments: true
 categories: Foundation
 description: iCocos博客

@@ -2,7 +2,7 @@
 
 layout: post
 title: "苹果审核指南"
-date: 2013-10-17 13:53:19 +0800
+date: 2013-11-07 13:53:19 +0800
 comments: true
 categories: Apples
 description: iCocos博客
