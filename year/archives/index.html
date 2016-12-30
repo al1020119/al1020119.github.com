@@ -5,12 +5,21 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>你是怎么退出键盘的？ - iOS梦工厂</title>
+  <title>Blog Archive - iOS梦工厂</title>
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="iCocos博客">
-  <meta name="keywords" content="iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏">
+  <meta name="description" content="Blog Archive 文章分类 algorithms (6)
+and (11)
+apples (2)
+application (1)
+architecture (2)
+audio (5)
+audio-video (1)
+data (6)
+developer (16)
+foundation ( &hellip;">
+  
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +27,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://al1020119.github.io/blog/2014/07/12/popkeyboard/">
+  <link rel="canonical" href="http://al1020119.github.io/year/archives/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
@@ -68,241 +77,19 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry" role="article">
+<article role="article">
   
   <header>
-    
-      <h1 class="entry-title">你是怎么退出键盘的？</h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2014-07-12T13:53:19+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="#comments">Comments</a>
-        
-      </p>
+    <h1 class="entry-title">Blog Archive</h1>
     
   </header>
+  
+  <div id="year-archives">
 
-
-<div class="entry-content"><p>iOS开发中键盘的退出方法用很多中我们应该在合适的地方使用合适的方法才能更好的提高开发的效率和应用的性能</p>
-
-<p>下面给大家介绍几种最常用的键盘退出方法，基本上iOS开发中的键盘退出方法都是这几种中的一种活着几种。</p>
-
-<!--more-->
-
-
-<p>一：textView</p>
-
-<pre><code>//通过委托来实现放弃第一响应者
-#pragma mark - UITextView Delegate  Method
--(BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
-{
-    if([text isEqualToString:@"\n"]) {
-        [textView resignFirstResponder];
-        return NO;
-    }
-    return YES;
-}
-</code></pre>
-
-<p>二：textFiled</p>
-
-<pre><code>//通过委托来实现放弃第一响应者
-#pragma mark - UITextField Delegate Method
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
-    [textField resignFirstResponder];
-    return YES;
-}
-</code></pre>
-
-<p>三：触摸屏幕</p>
-
-<pre><code>1 ／／所有的界面都可以实现
-2 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-3 {
-4     [self.view endEditing:YES];
-5 }
-</code></pre>
-
-<p>四：ScrollView拖拽</p>
-
-<pre><code> 1 -(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView 
- 2 { 
- 3      [self.view endEditing:YES]; 
- 4 } 
-</code></pre>
-
-<blockquote><p>注：结合使用endEditing和resignFirstResponder</p></blockquote>
-
-<p>五：通知方式</p>
-
-<p>注册与移除通知</p>
-
-<pre><code>-(void) viewWillAppear:(BOOL)animated {
-
-    //注册键盘出现通知
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:)
-                                                 name: UIKeyboardDidShowNotification object:nil];
-    //注册键盘隐藏通知
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:)
-                                                 name: UIKeyboardDidHideNotification object:nil];
-    [super viewWillAppear:animated];
-}
-
-
--(void) viewWillDisappear:(BOOL)animated {
-    //解除键盘出现通知
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name: UIKeyboardDidShowNotification object:nil];
-    //解除键盘隐藏通知
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name: UIKeyboardDidHideNotification object:nil];
-
-    [super viewWillDisappear:animated];
-}
-</code></pre>
-
-<p>实现通知的方法：</p>
-
-<pre><code>-(void) keyboardDidShow: (NSNotification *)notif {
-
-    if (keyboardVisible) {//键盘已经出现要忽略通知
-        return;
-    }
-    // 获得键盘尺寸
-    NSDictionary* info = [notif userInfo];
-    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGSize keyboardSize = [aValue CGRectValue].size;
-
-    //重新定义ScrollView的尺寸
-    CGRect viewFrame = self.scrollView.frame;
-    viewFrame.size.height -= (keyboardSize.height);
-    self.scrollView.frame = viewFrame;
-
-    //滚动到当前文本框
-    CGRect textFieldRect = [self.textField frame];
-    [self.scrollView scrollRectToVisible:textFieldRect animated:YES];
-
-    keyboardVisible = YES;
-}
-
--(void) keyboardDidHide: (NSNotification *)notif {
-
-    NSDictionary* info = [notif userInfo];
-    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGSize keyboardSize = [aValue CGRectValue].size;
-
-    CGRect viewFrame = self.scrollView.frame;
-    viewFrame.size.height += keyboardSize.height;
-    self.scrollView.frame = viewFrame;
-
-    if (!keyboardVisible) {
-        return;
-    }
-
-    keyboardVisible = NO;
-
-}
-</code></pre>
-
-<p>六：辅助ScrollView</p>
-
-<p>下面再介绍一种方便的方法，先铺一个scrollview，在它上面放UITextField，不过要注意，连线的时候要把Editing Did Begin和Editing Did End连到同两个方法上，这样当开始编辑和结束编辑的时候可触发两个不同的方法</p>
-
-<p>下面是这两个方法的实现</p>
-
-<pre><code>- (IBAction)userNameDidBegin:(id)sender {
-//这里添加了一个滚动的动画
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.15];
-//开始编辑的时候，让_scrollView滚到CGPointMake(0, 216);
-    CGPoint offset = CGPointMake(0, 216);
-    [_scrollView setContentOffset:offset animated:YES];
-    [UIView commitAnimations];
-}
-
-- (IBAction)tapInputUserName:(id)sender {
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:0.15];
-//结束编辑的时候，让_scrollView滚到CGPointMake(0, 0);
-    CGPoint offset = CGPointMake(0, 0);
-    [_scrollView setContentOffset:offset animated:YES];
-    [UIView commitAnimations];
-} 
-</code></pre>
 </div>
 
-
-  <footer>
-    <p class="meta">
-      
   
-
-<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
-
-      
-
-
-
-
-<time class='entry-date' datetime='2014-07-12T13:53:19+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/foundation/'>foundation</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2014/06/25/data%20model/" title="Previous Post: 数据与模型">&laquo; 数据与模型</a>
-      
-      
-        <a class="basic-alignment right" href="/blog/2014/07/23/netuse/" title="Next Post: 网络请求初探">网络请求初探 &raquo;</a>
-      
-    </p>
-  </footer>
 </article>
-
-
-
-  <section>
-    <h1>Comments</h1>
-    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
-<div class="ds-thread" data-title="你是怎么退出键盘的？"></div>
-<script type="text/javascript">
-  var duoshuoQuery = {short_name:"icocoscao"};
-  (function() {
-    var ds = document.createElement('script');
-    ds.type = 'text/javascript';ds.async = true;
-    ds.src = 'http://static.duoshuo.com/embed.js';
-    ds.charset = 'UTF-8';
-    (document.getElementsByTagName('head')[0] 
-    || document.getElementsByTagName('body')[0]).appendChild(ds);
-  })();
-</script>
-<!-- Duoshuo Comment END --></div>
-  </section>
-
 
 </div>
 
@@ -401,7 +188,7 @@
 
 <section>
 <h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
-<a href="http://al1020119.github.io/blog/2014/07/12/popkeyboard/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2014/07/12/popkeyboard/" alt="post-qrcode"></a></section>
+<a href="http://al1020119.github.io/year/archives/index.html"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/year/archives/index.html" alt="post-qrcode"></a></section>
 
 
 <section>
