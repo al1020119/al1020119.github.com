@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "反编译和防反编译"
+title: "逆向篇-反编译和防反编译"
 date: 2016-03-08 13:32:08 +0800
 comments: true
 categories: Reverse

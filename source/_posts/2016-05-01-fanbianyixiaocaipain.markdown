@@ -1,7 +1,7 @@
 ---
 
 layout: post
-title: "反编译App小菜篇"
+title: "逆向篇-跟我一起做运动"
 date: 2016-05-01 13:53:19 +0800
 comments: true
 categories: Senior
@@ -66,6 +66,8 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 >class-dump 命令的参数可以在终端中运行 class-dump --help查看
 
+具体可以先看看这篇文章的介绍：http://www.jianshu.com/p/a4373b5feca0
+
 
 ###取方法的实现
 
@@ -73,6 +75,15 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 用法很简单，只要将二进制文件拖进去就行了
 
+
+
+推荐：
+
+[http://www.jianshu.com/p/7f9511d48e05](
+http://www.jianshu.com/p/7f9511d48e05)
+	
+	
+	
 。。。。。
 
 

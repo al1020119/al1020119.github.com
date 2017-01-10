@@ -1,12 +1,9 @@
 ---
-title: "简单App实战"
-date: 2016-03-14 13:32:08 +0800
+layout: post
+title: "逆向篇-简单App实战"
+date: 2016-03-14 14:08:31 +0800
 comments: true
-categories: Reverse
-description: iCocos博客
-keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹理鹏
-
-
+categories: 
 ---
 
 底层开发之越狱开发第一篇
@@ -230,8 +227,3 @@ http://mobile.dotblogs.com.tw/cmd4shell/archive/2013/03/26/98967.aspx
 	git博文：http://al1020119.github.io/
 	
 	github：https://github.com/al1020119
-
-
-{% img /images/iCocosCoder.jpg Caption %}  
-
-{% img /images/iCocosPublic.jpg Caption %}  

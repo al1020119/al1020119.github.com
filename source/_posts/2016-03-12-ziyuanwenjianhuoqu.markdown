@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "资源文件夹获取"
+title: "逆向篇-资源文件夹获取"
 date: 2016-03-12 13:32:08 +0800
 comments: true
 categories: Reverse

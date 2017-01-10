@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "检测是否越狱"
+title: "逆向篇-检测是否越狱"
 date: 2016-03-05 13:32:08 +0800
 comments: true
 categories: Reverse

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "iOS逆向工程前奏篇－方法与工具介绍"
+title: "逆向篇-方法与工具介绍"
 date: 2016-02-25 13:32:08 +0800
 comments: true
 categories: Reverse

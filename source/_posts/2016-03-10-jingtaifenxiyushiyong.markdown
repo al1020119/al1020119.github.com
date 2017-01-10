@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "静态分析与使用"
+title: "逆向篇-静态分析与使用"
 date: 2016-03-10 13:32:08 +0800
 comments: true
 categories: Reverse
