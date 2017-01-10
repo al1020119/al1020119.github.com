@@ -4,7 +4,7 @@
   <title><![CDATA[iOS梦工厂]]></title>
   <link href="http://al1020119.github.io/atom.xml" rel="self"/>
   <link href="http://al1020119.github.io/"/>
-  <updated>2016-12-30T11:48:53+08:00</updated>
+  <updated>2017-01-10T10:57:45+08:00</updated>
   <id>http://al1020119.github.io/</id>
   <author>
     <name><![CDATA[iCocos]]></name>
@@ -12,6 +12,131 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[App打包发布———坑中之坑]]></title>
+    <link href="http://al1020119.github.io/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng/"/>
+    <updated>2017-01-10T10:54:05+08:00</updated>
+    <id>http://al1020119.github.io/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng</id>
+    <content type="html"><![CDATA[<blockquote><p>上线了这么多App，关于App上线的坑，也遇到了很多，但是这一次是最严重，也是最值得思考的，所以我打算翻云覆雨一番。</p></blockquote>
+
+<h2>问题起源</h2>
+
+<pre><code>构建版本中找不到提交的二进制文件
+</code></pre>
+
+<p>可能有人会说，这个一般等个20分钟就有了的，如果是这么简单，那我还在这里写个鬼啊！</p>
+
+<p>所以，等待被咔嚓了，因为我等了一个晚上。。。。。</p>
+
+<!--more-->
+
+
+<pre><code>因为年前的最后第二个版本就在昨晚打包提交（不要问我为什么是最后第二个，因为放假的那天晚上还有一场奋斗），因为我一般的习惯是公司打包提交之后，回到家里再点提交以供审核，所以就直接回家了。
+
+回到家里撒野没管，该干撒干撒，看书，看电影，和家里视频。。。。10点钟的时候，被老大告知，itnues connect里面是空的，不应该，从没遇到过这种问题，我在想估计又是苹果的坑，网上一搜，原来还真有一大把类似问题发，其中大部分这样的是因为我或者UI不细心。
+</code></pre>
+
+<p>好了下面细数一下整个过程。</p>
+
+<ul>
+<li>网上找到了这么几种问题及分析方案。</li>
+</ul>
+
+
+<h4>图片错误提示</h4>
+
+<pre><code>运行成功，打包也成功，但是打包的时候报了一个：pngcrush caught libpng error:类似错误（这里即时有错误还是成功打包）
+</code></pre>
+
+<h6>两种解决方法 ：</h6>
+
+<ol>
+<li><p>在build settings里把工程里的Compress PNG files设置为NO，问题解决，但这样设置以后，弄出来的ipa会很大，感觉不是很理想。</p></li>
+<li><p>mac上的preview(预览)打开出问题的png文件，然后重新导出为png文件或者用photoshop把png图片保存为NOT INTERLACED(不交错)的，这样真机调试时就没有错误了。</p></li>
+</ol>
+
+
+<h6>还有一种类似的提示，当然大部分都会直接提示到对应的图片。</h6>
+
+<pre><code> While reading /Volumes/data2/project/ChildStory/ChildStory/nav_bar.png pngcrush caught libpng error:
+
+
+Could not find file: /Users/hopo/Library/Developer/Xcode/DerivedData/ChildStory-cwdwhztnszhpawbnlproivndbuvw/Build/Products/Debug-iphoneos/ChildStory.app/nav_bar.png
+
+Command /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/copypng emitted errors but did not return a nonzero exit code to indicate failure
+</code></pre>
+
+<h6>原因：</h6>
+
+<p>该文件不是真正的png文件，可能是个jpg文件（被你手动更改的），实际的文件头信息是不一样的，造成不能识别。</p>
+
+<p>解决方法有两种：</p>
+
+<ol>
+<li><p>重新把图片文件处理成png文件</p></li>
+<li><p>修改文件名后缀，比如改成.jpg</p></li>
+</ol>
+
+
+<h3>关于二进制</h3>
+
+<pre><code>提交打包提交App，将包上传到iTunes Connect之后，以为就能发布了，便点击构建版本，发现没有刚刚上传的包，于是就点击"预发行"看一下,会看到"已上传"，过不久再刷新一次再看，就变成了二进制无效，无比的郁闷，上传了五六次都是二进制文件无效，
+</code></pre>
+
+<h6>原因：</h6>
+
+<p>自2015年2月份开始,新上传到iTunes上面审核的app,必须支持64位，新上传是指第一次上传，</p>
+
+<p>或者没有审核通过过，总之就是在AppStore上面没有上架的app,必须支持64位，包括工程里面的代码和用到的静态库文件</p>
+
+<ol>
+<li>build setting中Archivecture指定arm64</li>
+<li>Schemes的Analyze和Archive设置release模式</li>
+<li>Build Active Architecture Only：是否只编译当前设备适用的指令集（如果这个参数设为YES，使用iPhone 6调试，那么最终生成的一个支持ARM64指令集的Binary。一般在DEBUG模式下设为YES，RELEASE设为NO）。</li>
+</ol>
+
+
+<p>Valid architectures：即将编译的指令集。（Valid architectures 和 Architecture两个集合的交集为最终编译生成的版本）</p>
+
+<p>Architectures：你想支持的指令集。（支持指令集是通过编译生成对应的二进制数据包实现的，如果支持的指令集数目有多个，就会编译出包含多个指令集代码的数据包，造成最终编译的包很大。）</p>
+
+<p>温馨提示+警钟</p>
+
+<p>上线的时候一定要切忌（作为一个好的程序员应有的习惯）</p>
+
+<ol>
+<li>不要TMD直接修改jpg<-->png。</li>
+<li>一定要跑真机，一定要Analyze，一定要跑一下Profile里面常见的工具。</li>
+<li>编译，运行，打包的时候一定不能放过任何错误，一个都不行。</li>
+<li>编译，运行，打包（尤其是打包）的时候一定要尽量减少警告。</li>
+<li>archive之前一定要细心检查相关配置，release/debug，API切换，脚本配置等等</li>
+<li>Archive-Upload之后，最好等提交以供审核了之后再下班，或者带电脑回去，不然运气不好加班也白加了。</li>
+</ol>
+
+
+<p>最后来个喜讯，相信这之前是大部分iOS开发者苦恼的问题之一，所以你们懂。</p>
+
+<p><img src="http://al1020119.github.io/images/iCocosATS0001.png" title="Caption" ></p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[保持初心继续前进-年终篇]]></title>
@@ -11867,411 +11992,6 @@ github：https://github.com/al1020119
 <p>后面的文章系列就以直播为主题开始摘取和总结一系列的相关技术与知识。</p>
 
 <p><img src="http://al1020119.github.io/images/zhibo002.png" title="Caption" ></p>
-
-<hr />
-
-<pre><code>Q Q：2211523682/790806573
-
-微信：18370997821/13148454507
-
-微博WB:http://weibo.com/u/3288975567?is_hot=1
-
-git博文：http://al1020119.github.io/
-
-github：https://github.com/al1020119
-</code></pre>
-
-<p><img src="http://al1020119.github.io/images/iCocosCoder.jpg" title="Caption" ></p>
-
-<p><img src="http://al1020119.github.io/images/iCocosPublic.jpg" title="Caption" ></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[多线程安全？各种锁的实现原理😂]]></title>
-    <link href="http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-%3Fge-chong-suo-de-shi-xian-yuan-li/"/>
-    <updated>2016-08-31T15:06:21+08:00</updated>
-    <id>http://al1020119.github.io/blog/2016/08/31/duo-xian-cheng-an-quan-?ge-chong-suo-de-shi-xian-yuan-li</id>
-    <content type="html"><![CDATA[<p>本文要做的就是简单的分析 iOS 开发中常见的几种锁如何实现，以及优缺点是什么，为什么会有性能上的差距，最终会简单的介绍锁的底层实现原理。水平有限，如果不慎有误，欢迎交流指正。同时建议读者在阅读本文以前，对 OC 中各种锁的使用方法先有大概的认识。</p>
-
-<p>在 ibireme 的 不再安全的 OSSpinLock 一文中，有一张图片简单的比较了各种锁的加解锁性能:</p>
-
-<p><img src="http://al1020119.github.io/images/duoxianchengsuoshixianyuanli001.png" title="Caption" ></p>
-
-<!--more-->
-
-
-<p>本文会按照从上至下(速度由快至慢)的顺序分析每个锁的实现原理。需要说明的是，加解锁速度不表示锁的效率，只表示加解锁操作在执行时的复杂程度，下文会通过具体的例子来解释。</p>
-
-<h2>OSSpinLock</h2>
-
-<p>上述文章中已经介绍了 OSSpinLock 不再安全，主要原因发生在低优先级线程拿到锁时，高优先级线程进入忙等(busy-wait)状态，消耗大量 CPU 时间，从而导致低优先级线程拿不到 CPU 时间，也就无法完成任务并释放锁。这种问题被称为优先级反转。</p>
-
-<p>为什么忙等会导致低优先级线程拿不到时间片？这还得从操作系统的线程调度说起。</p>
-
-<pre><code>现代操作系统在管理普通线程时，通常采用时间片轮转算法(Round Robin，简称 RR)。每个线程会被分配一段时间片(quantum)，通常在 10-100 毫秒左右。当线程用完属于自己的时间片以后，就会被操作系统挂起，放入等待队列中，直到下一次被分配时间片。
-</code></pre>
-
-<h4>自旋锁的实现原理</h4>
-
-<p>自旋锁的目的是为了确保临界区只有一个线程可以访问，它的使用可以用下面这段伪代码来描述:</p>
-
-<pre><code>do {
-
-    Acquire Lock
-
-        Critical section  // 临界区
-
-    Release Lock
-
-        Reminder section // 不需要锁保护的代码
-
-}
-</code></pre>
-
-<p>在 Acquire Lock 这一步，我们申请加锁，目的是为了保护临界区(Critical Section) 中的代码不会被多个线程执行。</p>
-
-<p>自旋锁的实现思路很简单，理论上来说只要定义一个全局变量，用来表示锁的可用情况即可，伪代码如下:</p>
-
-<pre><code>bool lock = false; // 一开始没有锁上，任何线程都可以申请锁
-
-do {
-
-    while(lock); // 如果 lock 为 true 就一直死循环，相当于申请锁
-
-    lock = true; // 挂上锁，这样别的线程就无法获得锁
-
-        Critical section  // 临界区
-
-    lock = false; // 相当于释放锁，这样别的线程可以进入临界区
-
-        Reminder section // 不需要锁保护的代码        
-
-}
-</code></pre>
-
-<p>注释写得很清楚，就不再逐行分析了。可惜这段代码存在一个问题: 如果一开始有多个线程同时执行 while 循环，他们都不会在这里卡住，而是继续执行，这样就无法保证锁的可靠性了。解决思路也很简单，只要确保申请锁的过程是原子操作即可。</p>
-
-<h4>原子操作</h4>
-
-<p>狭义上的原子操作表示一条不可打断的操作，也就是说线程在执行操作过程中，不会被操作系统挂起，而是一定会执行完。在单处理器环境下，一条汇编指令显然是原子操作，因为中断也要通过指令来实现。</p>
-
-<blockquote><p>然而在多处理器的情况下，能够被多个处理器同时执行的操作任然算不上原子操作。因此，真正的原子操作必须由硬件提供支持，比如 x86 平台上如果在指令前面加上 “LOCK” 前缀，对应的机器码在执行时会把总线锁住，使得其他 CPU不能再执行相同操作，从而从硬件层面确保了操作的原子性。</p></blockquote>
-
-<p>这些非常底层的概念无需完全掌握，我们只要知道上述申请锁的过程，可以用一个原子性操作 test_and_set 来完成，它用伪代码可以这样表示:</p>
-
-<pre><code>bool test_and_set (bool *target) {
-
-    bool rv = *target; 
-
-    *target = TRUE; 
-
-    return rv;
-
-}
-</code></pre>
-
-<p>这段代码的作用是把 target 的值设置为 1，并返回原来的值。当然，在具体实现时，它通过一个原子性的指令来完成。</p>
-
-<h4>自旋锁的总结</h4>
-
-<p>至此，自旋锁的实现原理就很清楚了:</p>
-
-<pre><code>bool lock = false; // 一开始没有锁上，任何线程都可以申请锁
-
-do {
-
-    while(test_and_set(&amp;lock); // test_and_set 是一个原子操作
-
-        Critical section  // 临界区
-
-    lock = false; // 相当于释放锁，这样别的线程可以进入临界区
-
-        Reminder section // 不需要锁保护的代码        
-
-}
-</code></pre>
-
-<p>如果临界区的执行时间过长，使用自旋锁不是个好主意。之前我们介绍过时间片轮转算法，线程在多种情况下会退出自己的时间片。其中一种是用完了时间片的时间，被操作系统强制抢占。除此以外，当线程进行 I/O 操作，或进入睡眠状态时，都会主动让出时间片。显然在 while 循环中，线程处于忙等状态，白白浪费 CPU 时间，最终因为超时被操作系统抢占时间片。如果临界区执行时间较长，比如是文件读写，这种忙等是毫无必要的。</p>
-
-<h2>信号量</h2>
-
-<p>之前我在 介绍 GCD 底层实现的文章 中简单描述了信号量 dispatch_semaphore_t 的实现原理，它最终会调用到 sem_wait 方法，这个方法在 glibc 中被实现如下:</p>
-
-<pre><code>int sem_wait (sem_t *sem) {
-
-  int *futex = (int *) sem;
-
-  if (atomic_decrement_if_positive (futex) &gt; 0)
-
-    return 0;
-
-  int err = lll_futex_wait (futex, 0);
-
-    return -1;
-
-)
-</code></pre>
-
-<p>首先会把信号量的值减一，并判断是否大于零。如果大于零，说明不用等待，所以立刻返回。具体的等待操作在 lll_futex_wait 函数中实现，lll 是 low level lock 的简称。这个函数通过汇编代码实现，调用到 SYS_futex 这个系统调用，使线程进入睡眠状态，主动让出时间片，这个函数在互斥锁的实现中，也有可能被用到。</p>
-
-<ul>
-<li>主动让出时间片并不总是代表效率高。让出时间片会导致操作系统切换到另一个线程，这种上下文切换通常需要 10 微秒左右，而且至少需要两次切换。如果等待时间很短，比如只有几个微秒，忙等就比线程睡眠更高效。</li>
-</ul>
-
-
-<p>可以看到，自旋锁和信号量的实现都非常简单，这也是两者的加解锁耗时分别排在第一和第二的原因。再次强调，加解锁耗时不能准确反应出锁的效率(比如时间片切换就无法发生)，它只能从一定程度上衡量锁的实现复杂程度。</p>
-
-<h2>pthread_mutex</h2>
-
-<p>pthread 表示 POSIX thread，定义了一组跨平台的线程相关的 API，pthread_mutex 表示互斥锁。互斥锁的实现原理与信号量非常相似，不是使用忙等，而是阻塞线程并睡眠，需要进行上下文切换。</p>
-
-<p>互斥锁的常见用法如下:</p>
-
-<pre><code>pthread_mutexattr_t attr;
-
-pthread_mutexattr_init(&amp;attr);
-
-pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_NORMAL);  // 定义锁的属性
-
-
-
-pthread_mutex_t mutex;
-
-pthread_mutex_init(&amp;mutex, &amp;attr) // 创建锁
-
-
-
-pthread_mutex_lock(&amp;mutex); // 申请锁
-
-    // 临界区
-
-pthread_mutex_unlock(&amp;mutex); // 释放锁
-</code></pre>
-
-<p>对于 pthread_mutex 来说，它的用法和之前没有太大的改变，比较重要的是锁的类型，可以有 PTHREAD_MUTEX_NORMAL、PTHREAD_MUTEX_ERRORCHECK、PTHREAD_MUTEX_RECURSIVE 等等，具体的特性就不做解释了，网上有很多相关资料。</p>
-
-<blockquote><p>一般情况下，一个线程只能申请一次锁，也只能在获得锁的情况下才能释放锁，多次申请锁或释放未获得的锁都会导致崩溃。假设在已经获得锁的情况下再次申请锁，线程会因为等待锁的释放而进入睡眠状态，因此就不可能再释放锁，从而导致死锁。</p></blockquote>
-
-<p>然而这种情况经常会发生，比如某个函数申请了锁，在临界区内又递归调用了自己。辛运的是 pthread_mutex 支持递归锁，也就是允许一个线程递归的申请锁，只要把 attr 的类型改成 PTHREAD_MUTEX_RECURSIVE 即可。</p>
-
-<h2>互斥锁的实现</h2>
-
-<p>互斥锁在申请锁时，调用了 pthread_mutex_lock 方法，它在不同的系统上实现各有不同，有时候它的内部是使用信号量来实现，即使不用信号量，也会调用到 lll_futex_wait 函数，从而导致线程休眠。</p>
-
-<blockquote><p>上文说到如果临界区很短，忙等的效率也许更高，所以在有些版本的实现中，会首先尝试一定次数(比如 1000 次)的 test_and_test，这样可以在错误使用互斥锁时提高性能。</p></blockquote>
-
-<p>另外，由于 pthread_mutex 有多种类型，可以支持递归锁等，因此在申请加锁时，需要对锁的类型加以判断，这也就是为什么它和信号量的实现类似，但效率略低的原因。</p>
-
-<h2>NSLock</h2>
-
-<p>NSLock 是 Objective-C 以对象的形式暴露给开发者的一种锁，它的实现非常简单，通过宏，定义了 lock 方法:</p>
-
-<pre><code>#define    MLOCK \
-
-- (void) lock\
-
-{\
-
-  int err = pthread_mutex_lock(&amp;_mutex);\
-
-  // 错误处理 ……
-
-}
-</code></pre>
-
-<p>NSLock 只是在内部封装了一个 pthread_mutex，属性为 PTHREAD_MUTEX_ERRORCHECK，它会损失一定性能换来错误提示。</p>
-
-<p>这里使用宏定义的原因是，OC 内部还有其他几种锁，他们的 lock 方法都是一模一样，仅仅是内部 pthread_mutex 互斥锁的类型不同。通过宏定义，可以简化方法的定义。</p>
-
-<blockquote><p>NSLock 比 pthread_mutex 略慢的原因在于它需要经过方法调用，同时由于缓存的存在，多次方法调用不会对性能产生太大的影响。</p></blockquote>
-
-<h2>NSCondition</h2>
-
-<p>NSCondition 的底层是通过条件变量(condition variable) pthread_cond_t 来实现的。条件变量有点像信号量，提供了线程阻塞与信号机制，因此可以用来阻塞某个线程，并等待某个数据就绪，随后唤醒线程，比如常见的生产者-消费者模式。</p>
-
-<h4>如何使用条件变量</h4>
-
-<p>很多介绍 pthread_cond_t 的文章都会提到，它需要与互斥锁配合使用:</p>
-
-<pre><code>void consumer () { // 消费者
-
-    pthread_mutex_lock(&amp;mutex);
-
-    while (data == NULL) {
-
-        pthread_cond_wait(&amp;condition_variable_signal, &amp;mutex); // 等待数据
-
-    }
-
-    // --- 有新的数据，以下代码负责处理 ↓↓↓↓↓↓
-
-    // temp = data;
-
-    // --- 有新的数据，以上代码负责处理 ↑↑↑↑↑↑
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-
-
-
-void producer () {
-
-    pthread_mutex_lock(&amp;mutex);
-
-    // 生产数据
-
-    pthread_cond_signal(&amp;condition_variable_signal); // 发出信号给消费者，告诉他们有了新的数据
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-</code></pre>
-
-<p>自然我们会有疑问:“如果不用互斥锁，只用条件变量会有什么问题呢？”。问题在于，temp = data; 这段代码不是线程安全的，也许在你把 data 读出来以前，已经有别的线程修改了数据。因此我们需要保证消费者拿到的数据是线程安全的。</p>
-
-<p>wait 方法除了会被 signal 方法唤醒，有时还会被虚假唤醒，所以需要这里 while 循环中的判断来做二次确认。</p>
-
-<h4>为什么要使用条件变量</h4>
-
-<p>介绍条件变量的文章非常多，但大多都对一个一个基本问题避而不谈:“为什么要用条件变量？它仅仅是控制了线程的执行顺序，用信号量或者互斥锁能不能模拟出类似效果？”</p>
-
-<p>网上的相关资料比较少，我简单说一下个人看法。信号量可以一定程度上替代 condition，但是互斥锁不行。在以上给出的生产者-消费者模式的代码中， pthread_cond_wait 方法的本质是锁的转移，消费者放弃锁，然后生产者获得锁，同理，pthread_cond_signal 则是一个锁从生产者到消费者转移的过程。</p>
-
-<p>如果使用互斥锁，我们需要把代码改成这样:</p>
-
-<pre><code>void consumer () { // 消费者
-
-    pthread_mutex_lock(&amp;mutex);
-
-    while (data == NULL) {
-
-        pthread_mutex_unlock(&amp;mutex);
-
-        pthread_mutex_lock(&amp;another_lock)  // 相当于 wait 另一个互斥锁
-
-        pthread_mutex_lock(&amp;mutex);
-
-    }
-
-    pthread_mutex_unlock(&amp;mutex);
-
-}
-</code></pre>
-
-<p>这样做存在的问题在于，在等待 another_lock 之前， 生产者有可能先执行代码， 从而释放了 another_lock。也就是说，我们无法保证释放锁和等待另一个锁这两个操作是原子性的，也就无法保证“先等待、后释放 another_lock” 这个顺序。</p>
-
-<blockquote><p>用信号量则不存在这个问题，因为信号量的等待和唤醒并不需要满足先后顺序，信号量只表示有多少个资源可用，因此不存在上述问题。然而与 pthread_cond_wait 保证的原子性锁转移相比，使用信号量似乎存在一定风险(暂时没有查到非原子性操作有何不妥)。</p></blockquote>
-
-<p>不过，使用 condition 有一个好处，我们可以调用 pthread_cond_broadcast 方法通知所有等待中的消费者，这是使用信号量无法实现的。</p>
-
-<h2>NSCondition 的做法</h2>
-
-<p>NSCondition 其实是封装了一个互斥锁和条件变量， 它把前者的 lock 方法和后者的 wait/signal 统一在 NSCondition 对象中，暴露给使用者:</p>
-
-<pre><code>- (void) signal {
-
-  pthread_cond_signal(&amp;_condition);
-
-}
-
-
-
-// 其实这个函数是通过宏来定义的，展开后就是这样
-
-- (void) lock {
-
-  int err = pthread_mutex_lock(&amp;_mutex);
-
-}
-</code></pre>
-
-<p>它的加解锁过程与 NSLock 几乎一致，理论上来说耗时也应该一样(实际测试也是如此)。在图中显示它耗时略长，我猜测有可能是测试者在每次加解锁的前后还附带了变量的初始化和销毁操作。</p>
-
-<h2>NSRecursiveLock</h2>
-
-<p>上文已经说过，递归锁也是通过 pthread_mutex_lock 函数来实现，在函数内部会判断锁的类型，如果显示是递归锁，就允许递归调用，仅仅将一个计数器加一，锁的释放过程也是同理。</p>
-
-<blockquote><p>NSRecursiveLock 与 NSLock 的区别在于内部封装的 pthread_mutex_t 对象的类型不同，前者的类型为 PTHREAD_MUTEX_RECURSIVE。</p></blockquote>
-
-<h2>NSConditionLock</h2>
-
-<p>NSConditionLock 借助 NSCondition 来实现，它的本质就是一个生产者-消费者模型。“条件被满足”可以理解为生产者提供了新的内容。NSConditionLock 的内部持有一个 NSCondition 对象，以及 _condition_value 属性，在初始化时就会对这个属性进行赋值:</p>
-
-<pre><code>// 简化版代码
-
-- (id) initWithCondition: (NSInteger)value {
-
-    if (nil != (self = [super init])) {
-
-        _condition = [NSCondition new]
-
-        _condition_value = value;
-
-    }
-
-    return self;
-
-}
-</code></pre>
-
-<p>它的 lockWhenCondition 方法其实就是消费者方法:</p>
-
-<pre><code>- (void) lockWhenCondition: (NSInteger)value {
-
-    [_condition lock];
-
-    while (value != _condition_value) {
-
-        [_condition wait];
-
-    }
-
-}
-</code></pre>
-
-<p>对应的 unlockWhenCondition 方法则是生产者，使用了 broadcast 方法通知了所有的消费者:</p>
-
-<pre><code>- (void) unlockWithCondition: (NSInteger)value {
-
-    _condition_value = value;
-
-    [_condition broadcast];
-
-    [_condition unlock];
-
-}
-</code></pre>
-
-<h2>@synchronized</h2>
-
-<p>这其实是一个 OC 层面的锁， 主要是通过牺牲性能换来语法上的简洁与可读。</p>
-
-<blockquote><p>我们知道 @synchronized 后面需要紧跟一个 OC 对象，它实际上是把这个对象当做锁来使用。这是通过一个哈希表来实现的，OC 在底层使用了一个互斥锁的数组(你可以理解为锁池)，通过对对象去哈希值来得到对应的互斥锁。</p></blockquote>
-
-<p>具体的实现原理可以参考这篇文章: 关于 @synchronized，这儿比你想知道的还要多</p>
-
-<blockquote><p>参考资料</p></blockquote>
-
-<pre><code>pthread_mutex_lock
-
-ThreadSafety
-
-Difference between binary semaphore and mutex
-
-关于 @synchronized，这儿比你想知道的还要多
-
-pthread_mutex_lock.c 源码
-
-[Pthread] Linux中的线程同步机制(二)–In Glibc
-
-pthread的各种同步机制
-
-pthread_cond_wait
-
-Conditional Variable vs Semaphore
-</code></pre>
 
 <hr />
 

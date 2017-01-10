@@ -9,7 +9,9 @@
   <meta name="author" content="iCocos">
 
   
-  <meta name="description" content="NSObject类属于根类。根类在层级结构中处于最高级，也就是说除此以外没有更高层级。而且Objective-c中还有其他根类，不像Java里只有一个java.lang.Object根类，其他所有的类都直接或间接的继承于它。因此， Java代码可以依据任何对象来实现它的基本方法。 &hellip;">
+  <meta name="description" content="首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。 layoutSubviews在以下情况下会被调用： 1、init初始化不会触发layoutSubviews。
+2、addSubview会触发layoutSubviews。
+3、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -69,6 +71,56 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/23/layoutsubviews%20drawrects/">layoutSubViews&drawRects会了吗？</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2014-03-23T13:53:19+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2014</span></span> <span class='time'>1:53 pm</span></time>
+        
+        
+        |   <a href="/blog/2014/03/23/layoutsubviews%20drawrects/#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>首先两个方法都是异步执行。layoutSubviews方便数据计算，drawRect方便视图重绘。</p>
+
+<h4>layoutSubviews在以下情况下会被调用：</h4>
+
+<ul>
+<li>1、init初始化不会触发layoutSubviews。</li>
+<li>2、addSubview会触发layoutSubviews。</li>
+<li>3、设置view的Frame会触发layoutSubviews，当然前提是frame的值设置前后发生了变化。</li>
+<li>4、滚动一个UIScrollView会触发layoutSubviews。</li>
+<li>5、旋转Screen会触发父UIView上的layoutSubviews事件。</li>
+<li>6、改变一个UIView大小的时候也会触发父UIView上的layoutSubviews事件。</li>
+<li>7、直接调用setLayoutSubviews。</li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/03/23/layoutsubviews%20drawrects/">阅读全文😘</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -484,54 +536,6 @@ NSLog(@"UIScreen bounds: %@", NSStringFromCGRect(bounds));
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/12/08/badaccess-error/">EXC_BAD_ACCESS无处不在</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-12-08T13:53:19+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>8</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:53 pm</span></time>
-        
-        
-        |   <a href="/blog/2013/12/08/badaccess-error/#comments">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这种错误可以说是每次写代码都会遇到的，所以如果是你你会怎么解决呢，如果不知道那么请往下看
-EXC_BAD_ACCESS, objc_msgSend,</p>
-
-<p>此类报错往往来的莫明奇妙.</p>
-
-<p>原因往往是内存过度释放导致, 即多写了release;</p>
-
-<p>至于是哪里多写了release, 很难查知,</p>
-
-<p>出现这种情况， 也就是对指针对象的过度释放，导致次指针为野指针报错， （注意：如：[nil release] 操作空指针是不会报错的，在java中是有问题， [野指针 release] 报错  crash  很危险，）解决中bug，有很多中，暂时简单的说下几种简单的：</p>
-
-<h5>一： 在xcode中Run，Stop 右边也就是选择设备的地方左边找到</h5>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/12/08/badaccess-error/">阅读全文😘</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/16">&larr; Older</a>
@@ -580,6 +584,10 @@ EXC_BAD_ACCESS, objc_msgSend,</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng/">App打包发布———坑中之坑</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/30/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
       </li>
     
@@ -593,10 +601,6 @@ EXC_BAD_ACCESS, objc_msgSend,</p>
     
       <li class="post">
         <a href="/blog/2016/12/02/zhong-zheng-linux/">重整Linux一次就够了</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/12/01/wan-zhuan-thinkphp-5-dot-star/">完虐ThinkPHP 5.* 远不止这些😱😂</a>
       </li>
     
   </ul>
