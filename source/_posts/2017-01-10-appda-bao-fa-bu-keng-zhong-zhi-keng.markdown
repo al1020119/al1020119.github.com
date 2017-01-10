@@ -39,9 +39,9 @@ categories:
 
 ######两种解决方法 ：
 
-   1.  在build settings里把工程里的Compress PNG files设置为NO，问题解决，但这样设置以后，弄出来的ipa会很大，感觉不是很理想。
-    
-   2. mac上的preview(预览)打开出问题的png文件，然后重新导出为png文件或者用photoshop把png图片保存为NOT INTERLACED(不交错)的，这样真机调试时就没有错误了。
+	   1.  在build settings里把工程里的Compress PNG files设置为NO，问题解决，但这样设置以后，弄出来的ipa会很大，感觉不是很理想。
+	    
+	   2. mac上的preview(预览)打开出问题的png文件，然后重新导出为png文件或者用photoshop把png图片保存为NOT INTERLACED(不交错)的，这样真机调试时就没有错误了。
 
 
 ######还有一种类似的提示，当然大部分都会直接提示到对应的图片。
@@ -61,9 +61,9 @@ categories:
 
 解决方法有两种：
 
-1. 重新把图片文件处理成png文件
-
-2. 修改文件名后缀，比如改成.jpg
+	1. 重新把图片文件处理成png文件
+	
+	2. 修改文件名后缀，比如改成.jpg
 
 
 ###关于二进制
@@ -77,9 +77,9 @@ categories:
 
 或者没有审核通过过，总之就是在AppStore上面没有上架的app,必须支持64位，包括工程里面的代码和用到的静态库文件
 
-1. build setting中Archivecture指定arm64
-2. Schemes的Analyze和Archive设置release模式
-3. Build Active Architecture Only：是否只编译当前设备适用的指令集（如果这个参数设为YES，使用iPhone 6调试，那么最终生成的一个支持ARM64指令集的Binary。一般在DEBUG模式下设为YES，RELEASE设为NO）。
+	1. build setting中Archivecture指定arm64
+	2. Schemes的Analyze和Archive设置release模式
+	3. Build Active Architecture Only：是否只编译当前设备适用的指令集（如果这个参数设为YES，使用iPhone 6调试，那么最终生成的一个支持ARM64指令集的Binary。一般在DEBUG模式下设为YES，RELEASE设为NO）。
 
 
 Valid architectures：即将编译的指令集。（Valid architectures 和 Architecture两个集合的交集为最终编译生成的版本）
@@ -91,19 +91,26 @@ Architectures：你想支持的指令集。（支持指令集是通过编译生�
 
 上线的时候一定要切忌（作为一个好的程序员应有的习惯）
 
-1. 不要TMD直接修改jpg<-->png。
-2. 一定要跑真机，一定要Analyze，一定要跑一下Profile里面常见的工具。
-3. 编译，运行，打包的时候一定不能放过任何错误，一个都不行。
-4. 编译，运行，打包（尤其是打包）的时候一定要尽量减少警告。
-5. archive之前一定要细心检查相关配置，release/debug，API切换，脚本配置等等
-6. Archive-Upload之后，最好等提交以供审核了之后再下班，或者带电脑回去，不然运气不好加班也白加了。
+	1. 不要TMD直接修改jpg<-->png。
+	2. 一定要跑真机，一定要Analyze，一定要跑一下Profile里面常见的工具。
+	3. 编译，运行，打包的时候一定不能放过任何错误，一个都不行。
+	4. 编译，运行，打包（尤其是打包）的时候一定要尽量减少警告。
+	5. archive之前一定要细心检查相关配置，release/debug，API切换，脚本配置等等
+	6. Archive-Upload之后，最好等提交以供审核了之后再下班，或者带电脑回去，不然运气不好加班也白加了。
 
 
-最后来个喜讯，相信这之前是大部分iOS开发者苦恼的问题之一，所以你们懂。
+######最后来个喜讯，相信这之前是大部分iOS开发者苦恼的问题之一，所以你们懂。
 
 
 
 {% img /images/iCocosATS0001.png Caption %}  
+
+
+
+
+
+
+
 
 
 ===
