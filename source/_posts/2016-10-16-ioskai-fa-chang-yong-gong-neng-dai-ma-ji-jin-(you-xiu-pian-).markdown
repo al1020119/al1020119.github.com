@@ -57,10 +57,78 @@ categories:
 37. 数组拆分
 38. 图片压缩
 39. 释放timer宏
-
-40. 其他
-
-
+40. 获取某个view所在的控制器
+41. 两种方法删除NSUserDefaults所有记录
+42. 打印系统所有已注册的字体名称
+43. 获取图片某一点的颜色
+44. 字符串反转
+45. 禁止锁屏，
+46. 模态推出透明界面
+47. Xcode调试不显示内存占用
+48. 显示隐藏文件
+49. iOS跳转到App Store下载应用评分
+50. iOS 获取汉字的拼音
+51. 手动更改iOS状态栏的颜色
+52. 判断当前ViewController是push还是present的方式显示的
+53. 获取实际使用的LaunchImage图片
+54. iOS在当前屏幕获取第一响应
+55. 判断view是不是指定视图的子视图
+56. NSArray 快速求总和 最大值 最小值 和 平均值
+57. 修改UITextField中Placeholder的文字颜色
+58. 关于NSDateFormatter的格式
+59. 获取一个类的所有子类
+60. 监测IOS设备是否设置了代理，需要CFNetwork.framework
+61. 阿拉伯数字转中文格式
+62. Base64编码与NSString对象或NSData对象的转换
+63. 取消UICollectionView的隐式动画
+64. 下面几种方法都可以帮你去除这些动画
+65. 让Xcode的控制台支持LLDB类型的打印
+66. CocoaPods pod install/pod update更新慢的问题
+67. UIImage 占用内存大小
+68. GCD timer定时器
+69. 图片上绘制文字 写一个UIImage的category
+70. 查找一个视图的所有子视图
+71. 计算文件大小
+72. UIView设置部分圆角
+73. 取上整与取下整
+74. 计算字符串字符长度，一个汉字算两个字符
+75. 给UIView设置图片
+76. 防止scrollView手势覆盖侧滑手势
+77. 字符串中是否含有中文
+78. dispatch_group的使用
+79. UITextField每四位加一个空格,实现代理
+80. 获取私有属性和成员变量 #import
+81. 获取手机安装的应用
+82. 判断两个日期是否在同一周 写在NSDate的category里面
+83. 应用内打开系统设置界面
+84. 可选值如下：
+85. 屏蔽触发事件，2秒后取消屏蔽
+86. 动画暂停再开始
+87. iOS中数字的格式化
+88. 如何获取WebView所有的图片地址，
+89. 获取到webview的高度
+90. navigationBar变为纯透明
+91. tabBar同理
+92. navigationBar根据滑动距离的渐变色实现
+93. iOS 开发中一些相关的路径
+94. navigationItem的BarButtonItem如何紧靠屏幕右边界或者左边界？
+95. NSString进行URL编码和解码
+96. UIWebView设置User-Agent。
+97. 获取硬盘总容量与可用容量:
+98. 获取UIColor的RGBA值
+99. 修改textField的placeholder的字体颜色、大小
+100. AFN移除JSON中的NSNull
+101. ceil()和floor()
+102. 在webView加载完的代理方法里面这样写：
+103. NSDateFormat最佳方式（strptime）
+104. 毛玻璃
+105. tableview下拉刷新停留（不滚到顶部）， 类似QQ，微信拉去历史消息
+106. KeyChain隐私信息存储（主要是密码类）
+107. 自定义圆角裁剪：搞性能
+108. 隐藏tabbar上面的虚线
+109. 隐藏导航栏下面的虚线
+110. 两个范围的富文本
+111. 修改UIAlertController
 
 <!--more-->
 
@@ -1799,10 +1867,7 @@ categories:
 
 
 
-##40。 其他
-
-
-######获取某个view所在的控制器
+###获取某个view所在的控制器
 
 	- (UIViewController *)viewController
 	{
@@ -1820,7 +1885,7 @@ categories:
 	    return viewController;
 	}
 
-######两种方法删除NSUserDefaults所有记录
+###两种方法删除NSUserDefaults所有记录
 
 	//方法一
 	NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
@@ -1839,7 +1904,7 @@ categories:
 	    [defs synchronize];
 	}
 
-######打印系统所有已注册的字体名称
+###打印系统所有已注册的字体名称
 
 	#pragma mark - 打印系统所有已注册的字体名称
 	void enumerateFonts()
@@ -1855,7 +1920,7 @@ categories:
 	   }
 	}
 
-######获取图片某一点的颜色
+###获取图片某一点的颜色
 
 	- (UIColor*) getPixelColorAtLocation:(CGPoint)point inImage:(UIImage *)image
 	{
@@ -1889,7 +1954,7 @@ categories:
 	    return color;
 	}
 
-######字符串反转
+###字符串反转
 
 	第一种：
 	- (NSString *)reverseWordsInString:(NSString *)str
@@ -1913,7 +1978,7 @@ categories:
 	     return reverString;
 	}
 
-######禁止锁屏，
+###禁止锁屏，
 
 默认情况下，当设备一段时间没有触控动作时，iOS会锁住屏幕。但有一些应用是不需要锁屏的，比如视频播放器。
 
@@ -1921,7 +1986,7 @@ categories:
 	或
 	[[UIApplication sharedApplication] setIdleTimerDisabled:YES];
 
-######模态推出透明界面
+###模态推出透明界面
 
 	UIViewController *vc = [[UIViewController alloc] init];
 	UINavigationController *na = [[UINavigationController alloc] initWithRootViewController:vc];
@@ -1938,11 +2003,11 @@ categories:
 	[self presentViewController:na animated:YES completion:nil];
 
 
-######Xcode调试不显示内存占用
+###Xcode调试不显示内存占用
 
 	editSCheme  里面有个选项叫叫做enable zoombie Objects  取消选中
 
-######显示隐藏文件
+###显示隐藏文件
 
 	//显示
 	defaults write com.apple.finder AppleShowAllFiles -bool true
@@ -1952,11 +2017,11 @@ categories:
 	defaults write com.apple.finder AppleShowAllFiles -bool false
 	killall Finder
  
-######iOS跳转到App Store下载应用评分
+###iOS跳转到App Store下载应用评分
 
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=APPID"]];
 
-######iOS 获取汉字的拼音
+###iOS 获取汉字的拼音
 
 	+ (NSString *)transform:(NSString *)chinese
 	{    
@@ -1972,7 +2037,7 @@ categories:
 	    return pinyin;
 	 }
 
-######手动更改iOS状态栏的颜色
+###手动更改iOS状态栏的颜色
 
 	- (void)setStatusBarBackgroundColor:(UIColor *)color
 	{
@@ -1985,7 +2050,7 @@ categories:
 	}
 
 
-######判断当前ViewController是push还是present的方式显示的
+###判断当前ViewController是push还是present的方式显示的
 
 	
 	NSArray *viewcontrollers=self.navigationController.viewControllers;
@@ -2004,7 +2069,7 @@ categories:
 	    [self dismissViewControllerAnimated:YES completion:nil];
 	}
 
-######获取实际使用的LaunchImage图片
+###获取实际使用的LaunchImage图片
 
 	
 	- (NSString *)getLaunchImageName
@@ -2025,12 +2090,12 @@ categories:
 	    return launchImageName;
 	}
 
-######iOS在当前屏幕获取第一响应
+###iOS在当前屏幕获取第一响应
 
 	UIWindow * keyWindow = [[UIApplication sharedApplication] keyWindow];
 	UIView * firstResponder = [keyWindow performSelector:@selector(firstResponder)];
 
-######判断对象是否遵循了某协议
+###判断对象是否遵循了某协议
 
 	
 	if ([self.selectedController conformsToProtocol:@protocol(RefreshPtotocol)])
@@ -2038,11 +2103,11 @@ categories:
 	     [self.selectedController performSelector:@selector(onTriggerRefresh)];
 	}
 
-######判断view是不是指定视图的子视图
+###判断view是不是指定视图的子视图
 
 	BOOL isView = [textView isDescendantOfView:self.view];
 
-######NSArray 快速求总和 最大值 最小值 和 平均值
+###NSArray 快速求总和 最大值 最小值 和 平均值
 
 		
 	NSArray *array = [NSArray arrayWithObjects:@"2.0", @"2.3", @"3.0", @"4.0", @"10", nil];
@@ -2052,12 +2117,12 @@ categories:
 	CGFloat min =[[array valueForKeyPath:@"@min.floatValue"] floatValue];
 	NSLog(@"%f\n%f\n%f\n%f",sum,avg,max,min);
 
-######修改UITextField中Placeholder的文字颜色
+###修改UITextField中Placeholder的文字颜色
 
 	
 	[textField setValue:[UIColor redColor] forKeyPath:@"_placeholderLabel.textColor"];
 
-######关于NSDateFormatter的格式
+###关于NSDateFormatter的格式
 
 	
 	G: 公元时代，例如AD公元
@@ -2079,7 +2144,7 @@ categories:
 	ss: 秒，2位
 	S: 毫秒
 
-######获取一个类的所有子类
+###获取一个类的所有子类
 
 	
 	+ (NSArray *) allSubclasses
@@ -2090,7 +2155,7 @@ categories:
 	    Class *classes = objc_copyClassList(&numOfClasses;);
 	    for (unsigned int ci = 0; ci 
 	}
-######监测IOS设备是否设置了代理，需要CFNetwork.framework
+###监测IOS设备是否设置了代理，需要CFNetwork.framework
 
 	
 	NSDictionary *proxySettings = (__bridge NSDictionary *)(CFNetworkCopySystemProxySettings());
@@ -2111,7 +2176,7 @@ categories:
 	     NSLog(@"设置了代理");
 	}
 
-######阿拉伯数字转中文格式
+###阿拉伯数字转中文格式
 
 	
 	+(NSString *)translation:(NSString *)arebic
@@ -2127,7 +2192,7 @@ categories:
 	 
 	}
 
-######Base64编码与NSString对象或NSData对象的转换
+###Base64编码与NSString对象或NSData对象的转换
 
 	
 	// Create NSData object
@@ -2151,10 +2216,10 @@ categories:
 	  initWithData:nsdataFromBase64String encoding:NSUTF8StringEncoding];
 	NSLog(@"Decoded: %@", base64Decoded);
 
-######取消UICollectionView的隐式动画
+###取消UICollectionView的隐式动画
 
 	UICollectionView在reloadItems的时候，默认会附加一个隐式的fade动画，有时候很讨厌，尤其是当你的cell是复合cell的情况下(比如cell使用到了UIStackView)。
-######下面几种方法都可以帮你去除这些动画
+###下面几种方法都可以帮你去除这些动画
 	
 	//方法一
 	[UIView performWithoutAnimation:^{
@@ -2175,25 +2240,25 @@ categories:
 	} completion:^(BOOL finished) {
 	    [UIView setAnimationsEnabled:YES];
 	}];
-######让Xcode的控制台支持LLDB类型的打印
+###让Xcode的控制台支持LLDB类型的打印
 	
 	打开终端输入三条命令:
 	touch ~/.lldbinit
 	echo display @import UIKit >> ~/.lldbinit
 	echo target stop-hook add -o \"target stop-hook disable\" >> ~/.lldbinit
 
-######CocoaPods pod install/pod update更新慢的问题
+###CocoaPods pod install/pod update更新慢的问题
 	
 	pod install --verbose --no-repo-update 
 	pod update --verbose --no-repo-update
 如果不加后面的参数，默认会升级CocoaPods的spec仓库，加一个参数可以省略这一步，然后速度就会提升不少
 
-######UIImage 占用内存大小
+###UIImage 占用内存大小
 
 	UIImage *image = [UIImage imageNamed:@"aa"];
 	NSUInteger size  = CGImageGetHeight(image.CGImage) * CGImageGetBytesPerRow(image.CGImage);
 
-######GCD timer定时器
+###GCD timer定时器
 
 	
 	dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -2208,7 +2273,7 @@ categories:
 	});
 	dispatch_resume(timer);
 
-######图片上绘制文字 写一个UIImage的category
+###图片上绘制文字 写一个UIImage的category
 
 	- (UIImage *)imageWithTitle:(NSString *)title fontSize:(CGFloat)fontSize
 	{
@@ -2240,7 +2305,7 @@ categories:
 	    return newImage;
 	}
 
-######查找一个视图的所有子视图
+###查找一个视图的所有子视图
 
 	
 	- (NSMutableArray *)allSubViewsForView:(UIView *)view
@@ -2257,7 +2322,7 @@ categories:
 	    return array;
 	}
 
-######计算文件大小
+###计算文件大小
 
 	//文件大小
 	- (long long)fileSizeAtPath:(NSString *)path
@@ -2297,7 +2362,7 @@ categories:
 	    return folderSize;
 	}
 
-######UIView设置部分圆角
+###UIView设置部分圆角
 
 你是不是也遇到过这样的问题，一个button或者label，只要右边的两个角圆角，或者只要一个圆角。该怎么办呢。这就需要图层蒙版来帮助我们了
 
@@ -2311,7 +2376,7 @@ categories:
 	masklayer.path = path.CGPath;//设置路径
 	view.layer.mask = masklayer;
 
-######取上整与取下整
+###取上整与取下整
 
 	
 	floor(x),有时候也写做Floor(x)，其功能是“下取整”，即取不大于x的最大整数 例如：
@@ -2325,7 +2390,7 @@ categories:
 	 
 	floor函数与ceil函数的返回值均为double型
 
-######计算字符串字符长度，一个汉字算两个字符
+###计算字符串字符长度，一个汉字算两个字符
 
 	
 	//方法一：
@@ -2336,21 +2401,21 @@ categories:
 	    for (int i=0 ; i
 	}
 
-######给UIView设置图片
+###给UIView设置图片
 
 	UIImage *image = [UIImage imageNamed:@"image"];
 	self.MYView.layer.contents = (__bridge id _Nullable)(image.CGImage);
 	self.MYView.layer.contentsRect = CGRectMake(0, 0, 0.5, 0.5);
 
-######防止scrollView手势覆盖侧滑手势
+###防止scrollView手势覆盖侧滑手势
 	
 	[scrollView.panGestureRecognizerrequireGestureRecognizerToFail:self.navigationController.interactivePopGestureRecognizer];
 
-######去掉导航栏返回的back标题
+###去掉导航栏返回的back标题
 
 	[[UIBarButtonItemappearance]setBackButtonTitlePositionAdjustment:UIOffsetMake(0, -60)forBarMetrics:UIBarMetricsDefault];
 
-######字符串中是否含有中文
+###字符串中是否含有中文
 
 	
 	+ (BOOL)checkIsChinese:(NSString *)string
@@ -2359,7 +2424,7 @@ categories:
 	}
 
 
-######dispatch_group的使用
+###dispatch_group的使用
 
 	
 	 dispatch_group_t dispatchGroup = dispatch_group_create();
@@ -2380,7 +2445,7 @@ categories:
 	        NSLog(@"请求完成");
 	    });
 
-######UITextField每四位加一个空格,实现代理
+###UITextField每四位加一个空格,实现代理
 
 	
 	- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
@@ -2405,7 +2470,7 @@ categories:
 	    return YES;
 	}
 
-######获取私有属性和成员变量 #import
+###获取私有属性和成员变量 #import
 
 	
 	//获取私有属性 比如设置UIDatePicker的字体颜色
@@ -2422,7 +2487,7 @@ categories:
 	    Ivar *ivars = class_copyIvarList([UIAlertAction class], &count);
 	    for(int i =0;i 
 
-######获取手机安装的应用
+###获取手机安装的应用
 
 	
 	Class c =NSClassFromString(@"LSApplicationWorkspace");
@@ -2436,7 +2501,7 @@ categories:
 	    NSLog(@"%@",[item performSelector:NSSelectorFromString(@"shortVersionString")]);
 	}
 
-######判断两个日期是否在同一周 写在NSDate的category里面
+###判断两个日期是否在同一周 写在NSDate的category里面
 
 	- (BOOL)isSameDateWithDate:(NSDate *)date
 	{
@@ -2456,7 +2521,7 @@ categories:
 	    return countSelf == countDate;
 	}
 
-######应用内打开系统设置界面
+###应用内打开系统设置界面
 	
 	//iOS8之后
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
@@ -2466,7 +2531,7 @@ categories:
 	//先添加一个url type如下图，在代码中调用如下代码,即可跳转到设置页面的对应项
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:root=WIFI"]];
 
-######可选值如下：
+###可选值如下：
 
 	About — prefs:root=General&path=About
 	Accessibility — prefs:root=General&path=ACCESSIBILITY
@@ -2504,14 +2569,14 @@ categories:
 	Wallpaper — prefs:root=Wallpaper
 	Wi-Fi — prefs:root=WIFI
 
-######屏蔽触发事件，2秒后取消屏蔽
+###屏蔽触发事件，2秒后取消屏蔽
 	
 	[[UIApplication sharedApplication] beginIgnoringInteractionEvents];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 	    [[UIApplication sharedApplication] endIgnoringInteractionEvents]
 	});
 
-######动画暂停再开始
+###动画暂停再开始
 
 	
 	-(void)pauseLayer:(CALayer *)layer
@@ -2531,7 +2596,7 @@ categories:
 	    layer.beginTime = timeSincePause;
 	}
 
-iOS中数字的格式化
+###iOS中数字的格式化
 	
 	//通过NSNumberFormatter，同样可以设置NSNumber输出的格式。例如如下代码：
 	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
@@ -2557,7 +2622,7 @@ iOS中数字的格式化
 	[1243:403] Formatted number string:1.23456789E8
 	[1243:403] Formatted number string:一亿二千三百四十五万六千七百八十九
 
-######如何获取WebView所有的图片地址，
+###如何获取WebView所有的图片地址，
 
 在网页加载完成时，通过js获取图片和添加点击的识别方式
 
@@ -2583,12 +2648,12 @@ iOS中数字的格式化
 	    var imgScr = '';\
 	    for(var i=0;i
 
-######获取到webview的高度
+###获取到webview的高度
 
 	
 	CGFloat height = [[self.webView stringByEvaluatingJavaScriptFromString:@"document.body.offsetHeight"] floatValue];
 
-######navigationBar变为纯透明
+###navigationBar变为纯透明
 
 	
 	//第一种方法
@@ -2600,13 +2665,13 @@ iOS中数字的格式化
 	//第二种方法
 	[[self.navigationBar subviews] objectAtIndex:0].alpha = 0;
 
-######tabBar同理
+###tabBar同理
 
 	
 	[self.tabBar setBackgroundImage:[UIImage new]];
 	self.tabBar.shadowImage = [UIImage new];
 
-######navigationBar根据滑动距离的渐变色实现
+###navigationBar根据滑动距离的渐变色实现
 
 	
 	//第一种
@@ -2641,7 +2706,7 @@ iOS中数字的格式化
 	    return theImage;
 	}
 
-######iOS 开发中一些相关的路径
+###iOS 开发中一些相关的路径
 
 	
 	模拟器的位置:
@@ -2660,7 +2725,7 @@ iOS中数字的格式化
 	描述文件路径
 	~/Library/MobileDevice/Provisioning Profiles
 
-######navigationItem的BarButtonItem如何紧靠屏幕右边界或者左边界？
+###navigationItem的BarButtonItem如何紧靠屏幕右边界或者左边界？
 
 一般情况下，右边的item会和屏幕右侧保持一段距离：
 下面是通过添加一个负值宽度的固定间距的item来解决，也可以改变宽度实现不同的间隔：
@@ -2674,7 +2739,7 @@ iOS中数字的格式化
 	UIBarButtonItem *rightBtnItem2 = [[UIBarButtonItem alloc]initWithImage:img style:UIBarButtonItemStylePlain target:self action:@selector(rightButtonItemClicked:)];
 	self.navigationItem.rightBarButtonItems = @[rightNegativeSpacer,rightBtnItem1,rightBtnItem2];
 
-######NSString进行URL编码和解码
+###NSString进行URL编码和解码
 
 	
 	NSString *string = @"http://abc.com?aaa=你好&bbb=tttee";
@@ -2685,7 +2750,7 @@ iOS中数字的格式化
 	//解码 打印：http://abc.com?aaa=你好&bbb=tttee
 	string = [string stringByRemovingPercentEncoding];
 
-######UIWebView设置User-Agent。
+###UIWebView设置User-Agent。
 
 	
 	//设置
@@ -2694,7 +2759,7 @@ iOS中数字的格式化
 	//获取
 	NSString *agent = [self.WebView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
 
-######获取硬盘总容量与可用容量:
+###获取硬盘总容量与可用容量:
 
 	
 	NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -2703,7 +2768,7 @@ iOS中数字的格式化
 	NSLog(@"容量%.2fG",[attributes[NSFileSystemSize] doubleValue] / (powf(1024, 3)));
 	NSLog(@"可用%.2fG",[attributes[NSFileSystemFreeSize] doubleValue] / powf(1024, 3));
 
-######获取UIColor的RGBA值
+###获取UIColor的RGBA值
 
 	
 	UIColor *color = [UIColor colorWithRed:0.2 green:0.3 blue:0.9 alpha:1.0];
@@ -2713,24 +2778,24 @@ iOS中数字的格式化
 	NSLog(@"Blue: %.1f", components[2]);
 	NSLog(@"Alpha: %.1f", components[3]);
 
-######修改textField的placeholder的字体颜色、大小
+###修改textField的placeholder的字体颜色、大小
 
 	
 	[self.textField setValue:[UIColor redColor] forKeyPath:@"_placeholderLabel.textColor"];
 	[self.textField setValue:[UIFont boldSystemFontOfSize:16] forKeyPath:@"_placeholderLabel.font"];
 
-######AFN移除JSON中的NSNull
+###AFN移除JSON中的NSNull
 
 	AFJSONResponseSerializer *response = [AFJSONResponseSerializer serializer];
 	response.removesKeysWithNullValues = YES;
 
-######ceil()和floor()
+###ceil()和floor()
 
 	ceil()功 能：返回大于或者等于指定表达式的最小整数
 	floor()功 能：返回小于或者等于指定表达式的最大整数
 	UIWebView里面的图片自适应屏幕
 
-######在webView加载完的代理方法里面这样写：
+###在webView加载完的代理方法里面这样写：
 
 	
 	- (void)webViewDidFinishLoad:(UIWebView *)webView
@@ -2750,7 +2815,7 @@ iOS中数字的格式化
 	}
 
 
-######NSDateFormat最佳方式（strptime）
+###NSDateFormat最佳方式（strptime）
 
 	+ (NSDate *)dateFromISO8601StringDateFormatter:(NSString *)string locale:(NSLocale *)locale{
 	    if (!string) {
@@ -2779,7 +2844,7 @@ iOS中数字的格式化
 	    return [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
 	}
 
-######毛玻璃
+###毛玻璃
 
 
     //创建
@@ -2801,7 +2866,7 @@ iOS中数字的格式化
     toolbar.alpha = 0.8f;
     [imageView addSubview:toolbar];
 
-######tableview下拉刷新停留（不滚到顶部）， 类似QQ，微信拉去历史消息
+###tableview下拉刷新停留（不滚到顶部）， 类似QQ，微信拉去历史消息
  
  关于TableView代理方法和其他一些数据与逻辑处理和平时一样，只是在下啦的时候啦到的数据，放到最前面，同事控制TableView的偏移。
  
@@ -2832,7 +2897,7 @@ iOS中数字的格式化
     });
     
     
-######KeyChain隐私信息存储（主要是密码类）
+###KeyChain隐私信息存储（主要是密码类）
 	 
 集成NSObject
 	 
@@ -2883,7 +2948,7 @@ iOS中数字的格式化
 	    SecItemDelete((__bridge_retained CFDictionaryRef)keychainQuery);
 	}
 
-######自定义圆角裁剪：搞性能
+###自定义圆角裁剪：搞性能
 
 
 
@@ -2997,7 +3062,7 @@ iOS中数字的格式化
 
 
 
-######隐藏tabbar上面的虚线
+###隐藏tabbar上面的虚线
 	
 	//隐藏阴影线
 	[[UITabBar appearance] setShadowImage:[UIImage new]];
@@ -3023,7 +3088,7 @@ iOS中数字的格式化
 	}
 	
 	
-######隐藏导航栏下面的虚线
+###隐藏导航栏下面的虚线
 
 #######方法一，世界使用背景图片与阴影
 
