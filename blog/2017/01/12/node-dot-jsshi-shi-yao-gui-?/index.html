@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Node.js是什么鬼？ - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="Node.js介绍 Node.js什么时候出现，2009年，Ryan Dahl(瑞恩·达尔)在GitHub上发布了最初版本的部分Node.js包，随后几个月里，有人开始使用Node.js开发应用
+什么是Node.js,做过Javascript开发的，看到Node.js这个名字， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/year">年终</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Node.js是什么鬼？</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2017-01-12T11:18:13+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:18 am</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h6>Node.js介绍</h6>
+
+<pre><code>Node.js什么时候出现，2009年，Ryan Dahl(瑞恩·达尔)在GitHub上发布了最初版本的部分Node.js包，随后几个月里，有人开始使用Node.js开发应用
+什么是Node.js,做过Javascript开发的，看到Node.js这个名字，初学者可能会误以为这是一个Javascript应用，事实上，Node.js采用C++语言编写而成，是一个Javascript的运行环境，意思就是底层使用c++编写，外层封装采用Javascript，需要使用Javascript解析执行。
+比如OC底层也是c++，但是执行代码，只需要解析OC代码。
+Node.js是一个后端的Javascript运行环境，这意味着你可以编写服务器端的Javascript代码，交给Node.js来解释执行。
+</code></pre>
+
+<!--more-->
+
+
+<h6>Node.js工作原理与优缺点（了解一门语言的开始）</h6>
+
+<pre><code>传统Web服务器原理(T):传统的网络服务技术，是每个新增一个连接（请求）便生成一个新的线程，这个新的线程会占用系统内存，最终会占掉所有的可用内存。
+
+Node.js工作原理(T)：只运行在一个单线程中，使用非阻塞的异步 I/O 调用，所有连接都由该线程处理，也就是一个新的连接，不会开启新的线程，仅仅一个线程去处理多个请求。
+
+优缺点：
+    传统的比较消耗内存，Node.js只开启一个线程，大大减少内存消耗。
+    假设是普通的Web程序，新接入一个连接会占用 2M 的内存，在有 8GB RAM的系统上运行时, 算上线程之间上下文切换的成本，并发连接的最大理论值则为 4000 个。这是在传统 Web服务端技术下的处理情况。而 Node.js 则达到了约 1M 一个并发连接的拓展级别
+    Node.js弊端:大量的计算可能会使得 Node 的单线程暂时失去反应, 并导致所有的其他客户端的请求一直阻塞, 直到计算结束才恢复正常
+
+疑问？Node.js是单线程的。单线程怎么开启异步?怎么工作的？ 需要了解事件驱动。
+
+什么是事件驱动?
+传统的web server多为基于线程模型。你启动Apache或者什么server，它开始等待接受连接。当收到一个连接，server保持连接连通直到页面或者什么事务请求完成。如果他需要花几微妙时间去读取磁盘或者访问数据库，web server就阻塞了IO操作（这也被称之为阻塞式IO).想提高这样的web server的性能就只有启动更多的server实例。
+Node.Js使用事件驱动模型，当web server接收到请求，就把它关闭然后进行处理，然后去服务下一个web请求。当这个请求完成，它被放回处理队列，当到达队列开头，这个结果被返回给用户。这个模型非常高效可扩展性非常强，因为webserver一直接受请求而不等待任何读写操作。（这也被称之为非阻塞式IO或者事件驱动IO）
+本质:当然最终处理事件还是需要底层开启线程，只不过接受请求只用一个线程去接收。
+</code></pre>
+
+<h6>Node.js使用介绍</h6>
+
+<pre><code>Node.js使用Module模块去划分不同的功能，以简化App开发，Module就是库，跟组件化差不多，一个功能一个库。
+NodeJS内建了一个HTTP服务器，可以轻而易举的实现一个网站和服务器的组合，不像PHP那样，在使用PHP的时候，必须先搭建一个Apache之类的HTTP服务器，然后通过HTTP服务器的模块加载CGI调用，才能将PHP脚本的执行结果呈现给用户
+require() 函数，用于在当前模块中加载和使用其他模块；
+</code></pre>
+
+<h6>Express模块(框架)</h6>
+
+<pre><code>Express是Node.JS第三方库
+Express可以处理各种HTTP请求
+Express是目前最流行的基于Node.js的Web开发框架，
+Express框架建立在node.js内置的http模块上，可以快速地搭建一个Web服务器
+</code></pre>
+
+<h3>Node搭建服务器及使用</h3>
+
+<h4>方案一：</h4>
+
+<pre><code>打开终端，输入node -v，先查看是否已经安装
+如果没有安装，就需要安装node软件。
+mac上可以使用Homebrew，安装node
+    Homebrew:Homebrew简称brew，是Mac OSX上的软件包管理工具，能在Mac中方便的安装软件或者卸载软件,相当于window上360管家，可以帮你下载软件。
+
+先输入brew -v,查看mac是否安装了HomeBrew
+    安装ruby教程(http://www.jianshu.com/p/daa92187621c)
+    使用ruby安装Homebrew，前提是安装了ruby
+    输入指令安装brew
+
+   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+使用Homebrew安装Node，输入指令
+
+brew install node
+
+安装完，输入`node -v``查看是否安装成功
+</code></pre>
+
+<h6>二、安装NPM</h6>
+
+<pre><code>NPM是随同NodeJS一起安装的包管理工具，用于下载NodeJS第三方库。
+类似iOS开发中cocoapods，用于安装第三方框架
+新版的NodeJS已经集成了npm，所以只要安装好Node.JS就好
+</code></pre>
+
+<h6>三、利用NPM下载第三方模块（Express和Socket.IO）</h6>
+
+<pre><code>package.json
+    package.json类似cocoapods中的Podfile文件
+    package.json文件描述了下载哪些第三方框架.
+    可以使用npm init创建
+    需要添加dependencies字段，描述添加哪些框架,其他字段随便填
+    注意：不能有中文符号
+
+     "dependencies": {
+           "express": "^4.14.0",
+           "socket.io": "^1.4.8"
+         }
+</code></pre>
+
+<h6>四、执行npm install,就会自动下载依赖库</h6>
+
+<pre><code>npm install
+</code></pre>
+
+<h4>方案二：</h4>
+
+<h6>step1</h6>
+
+<p>或者你如果不喜欢使用命令的话这个方案相信是最好的选择。</p>
+
+<pre><code>访问nodejs官网，点击蓝色选框区域稳定版，并下载https://nodejs.org/en/
+</code></pre>
+
+<h6>step 2：</h6>
+
+<pre><code>双击刚下载的文件，按步骤默认安装就行
+</code></pre>
+
+<h6>step 3：</h6>
+
+<pre><code>安装完成后打开终端，输入
+npm -v
+node -v
+两个命令，如下图出现版本信息，说明安装成功。
+</code></pre>
+
+<h4>使用</h4>
+
+<p>使用上面任何一种种方式完成以后，就可以开始测试了。</p>
+
+<p>新建一个js文件，nodejsTest.js , 输入下面的代码, 并保存</p>
+
+<pre><code>var http = require("http");
+
+http.createServer(function(request, response) {
+    response.writeHead(200, {
+        "Content-Type" : "text/plain"
+    });
+    response.write("Welcome to Nodejs");
+    response.end();
+}).listen(8000, "127.0.0.1");
+
+console.log("Creat server on http://127.0.0.1:8000/");
+</code></pre>
+
+<h4>测试</h4>
+
+<p>打开终端进入 nodejsTest.js 所在目录， 输入 node nodejsTest</p>
+
+<p><img src="/images/node0001.png" title="Caption" ></p>
+
+<p>打开浏览器，点击或者输入<a href="http://127.0.0.1:8000/%EF%BC%8C">http://127.0.0.1:8000/%EF%BC%8C</a> 如果无法打开，可以去掉.listen(8000, “127.0.0.1”) 中得ip监听改成 .listen(8000)，然后点击或者输入<a href="http://localhost:8000/">http://localhost:8000/</a></p>
+
+<p><img src="/images/node0002.png" title="Caption" ></p>
+
+<p>关于Node.js其他的相关配置可以查看<a href="http://www.jianshu.com/p/d76ecf5ed690">http://www.jianshu.com/p/d76ecf5ed690</a>,笔者也就是好奇所以是了一下，希望不会被喷。</p>
+
+<blockquote><p>后面有机会会结合客户端实现数据的交互相关处理。</p></blockquote>
+
+<p>参考：
+<a href="http://www.ruanyifeng.com/blog/2014/10/event-loop.html">http://www.ruanyifeng.com/blog/2014/10/event-loop.html</a></p>
+
+<p><a href="http://www.csdn.net/article/a/2016-07-12/3358">http://www.csdn.net/article/a/2016-07-12/3358</a></p>
+
+<p><a href="http://www.yiibai.com/nodejs/nodejs-quick-start.html">http://www.yiibai.com/nodejs/nodejs-quick-start.html</a></p>
+
+<hr />
+
+<pre><code>Q Q：2211523682/790806573
+
+微信：18370997821/13148454507
+
+微博WB:http://weibo.com/u/3288975567?is_hot=1
+
+git博文：http://al1020119.github.io/
+
+github：https://github.com/al1020119
+</code></pre>
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2017-01-12T11:18:13+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:18 am</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng/" title="Previous Post: App打包发布———坑中之坑">&laquo; App打包发布———坑中之坑</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2017/01/20/chu-shi-llvm-slash-clang/" title="Next Post: 初识LLVM/Clang">初识LLVM/Clang &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="Node.js是什么鬼？"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (11)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (5)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (5)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (5)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (6)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2017/01/20/chu-shi-llvm-slash-clang/">初识LLVM/Clang</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/">Node.js是什么鬼？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng/">App打包发布———坑中之坑</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/30/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/26/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
