@@ -3094,7 +3094,40 @@ iOS中数字的格式化
 	    [super viewWillDisappear:animated];
 	    navBarHairlineImageView.hidden = NO;
 	}
- 
+ ###两个范围的富文本
+
+    NSString *times = [NSString stringWithFormat:@"哇塞！本次视频聊天%@", [info objectStringForKey:@"times"]];
+    NSString *type = [NSString stringWithFormat:@"%@", [info objectStringForKey:@"type"]];
+    NSString *counts = nil;
+    if ([type isEqualToString:@"1"]) {
+        counts = [NSString stringWithFormat:@"消耗%@能量", [info objectStringForKey:@"counts"]];
+    } else {
+        counts = [NSString stringWithFormat:@"赚了%@积分", [info objectStringForKey:@"counts"]];
+    }
+    
+    NSString *formatString = [NSString stringWithFormat:@"%@,%@", times, counts];
+    NSMutableAttributedString *AttributedStr = [[NSMutableAttributedString alloc]initWithString:formatString];
+    NSRange range = [formatString rangeOfString:@","];
+    [AttributedStr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithHexString:@"#fb455a"] range:NSMakeRange(9, range.location - 9)];
+    [AttributedStr addAttribute:NSForegroundColorAttributeName value:[UIColor colorWithHexString:@"#fb455a"] range:NSMakeRange(range.location + 3, formatString.length - range.location - 5)];
+    
+
+###修改UIAlertController
+
+
+    // 在 viewDidLoad 中创建
+    UIAlertController *alertVC = [UIAlertController alertControllerWithTitle:nil message:AttributedStr.string preferredStyle:UIAlertControllerStyleAlert];
+    // 用 KVC 修改其 没有暴露出来的
+//    [alertVC setValue:AttributedTit forKey:@"attributedTitle"];
+    [alertVC setValue:AttributedStr forKey:@"attributedMessage"];
+    
+    //修改按钮的颜色，同上可以使用同样的方法修改内容，样式
+    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil];
+    [defaultAction setValue:[UIColor blackColor] forKey:@"_titleTextColor"];
+    [alertVC addAction:defaultAction];
+    
+    [self presentViewController:alertVC animated:YES completion:nil];
+    
 
 上面使用了一种个人比较喜欢的方法，
 
