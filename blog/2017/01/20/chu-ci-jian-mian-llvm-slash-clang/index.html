@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>初次见面-LLVM/Clang - iOS梦工厂</title>
+  <meta name="author" content="iCocos">
+
+  
+  <meta name="description" content="做了几个小时的车，终于到了世界上最美的地方-《家》，虽然有点累，但是还是很开心，总有种说不出的激动。 虽然过年，但是像我这么爱学习的孩子，肯定不会停止学习，因为在车上用电脑看了孙源将的Clang的视频，所以打算自己也去摸索一下，哪怕是瞎扯一番，希望以后也有机会能用到实战或者工作中。 开始之前， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://al1020119.github.io/blog/2017/01/20/chu-ci-jian-mian-llvm-slash-clang/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="iOS梦工厂" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//libs.baidu.com/jquery/1.7.2/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+
+<!--<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+-->
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">iOS梦工厂</a></h1>
+  
+    <h2>iCocos——不战胜自己，何以改变未来！</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="al1020119.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">博文</a></li>
+  <li><a href="/blog/archives">归档</a></li>
+  <li><a href="/icocos">iCocos</a></li>
+  <li><a href="/year">年终</a></li>
+  <li><a href="/other">其他</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">初次见面-LLVM/Clang</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2017-01-20T23:34:34+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:34 pm</span></time>
+        
+        
+        |   <a href="#comments">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>做了几个小时的车，终于到了世界上最美的地方-《家》，虽然有点累，但是还是很开心，总有种说不出的激动。</p>
+
+<ul>
+<li>虽然过年，但是像我这么爱学习的孩子，肯定不会停止学习，因为在车上用电脑看了孙源将的Clang的视频，所以打算自己也去摸索一下，哪怕是瞎扯一番，希望以后也有机会能用到实战或者工作中。</li>
+</ul>
+
+
+<p>开始之前，祝大家新年快乐，身体健康，万事如意，也祝各位单身狗早日脱单（虽然我也是单身狗），相信过年都还坐在电脑前的不是单身狗就是技术狂。</p>
+
+<p>好了，废话也不多说，come on&hellip;.</p>
+
+<!--more-->
+
+
+<h3>介绍</h3>
+
+<pre><code>iOS 开发中 Objective-C 和 Swift 都用的是 Clang / LLVM 来编译的。LLVM是一个模块化和可重用的编译器和工具链技术的集合，Clang 是 LLVM 的子项目，是 C，C++ 和 Objective-C 编译器，目的是提供惊人的快速编译，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。LLVM 核心库提供一个优化器，对流行的 CPU 做代码生成支持。lld 是 Clang / LLVM 的内置链接器，clang 必须调用链接器来产生可执行文件。
+
+LLVM 比较有特色的一点是它能提供一种代码编写良好的中间表示 IR，这意味着它可以作为多种语言的后端，这样就能够提供语言无关的优化同时还能够方便的针对多种 CPU 的代码生成。
+</code></pre>
+
+<h3>总结一句</h3>
+
+<pre><code>LLVM是编译器和工具链技的集合，Clang才是真正的编译器，Clang必须调用链接器(内置lldb)来产生可执行文件。
+</code></pre>
+
+<p>摘自<a href="https://linuxtoy.org/archives/llvm-and-clang.html">https://linuxtoy.org/archives/llvm-and-clang.html</a></p>
+
+<pre><code>LLVM（Low Level Virtual Machine）：编译器的后台——进行程序语言的编译期优化、链接优化、在线编译优化、代码生成（优化以任意程序语言编写的程序的编译时间(compile-time)、链接时间(link-time)、运行时间(run-time)以及空闲时间(idle-time)）
+Clang:：编译器（LLVM）的前端— 是一个 C++ 编写、基于 LLVM、发布于 LLVM BSD 许可证下的 C/C++/Objective C/Objective C++ 编译器，其目标（之一）就是超越 GCC
+</code></pre>
+
+<h6>LLVM其他用途</h6>
+
+<pre><code>LLVM 还被用在 Gallium3D 中进行 JIT 优化，Xorg 中的 pixman 也有考虑使用 LLVM 来优化执行速度，llvm-lua 使用 LLVM 来编译 Lua 代码，gpuocelot 使用 LLVM 可以令 CUDA 程序无需重新编译即可运行在多核 X86CPU、IBM Cell、支持 OpenCL 的设备之上... 
+
+LLVM，做语法树分析，实现语言转换、字符串加密。编写ClangPlugin，扩展功能。编写Pass，代码混淆优化。
+</code></pre>
+
+<h3>区别于优势：</h3>
+
+<h6>总结：Clang 具有如下优点：</h6>
+
+<pre><code>编译速度快：在某些平台上，Clang 的编译速度显著的快过 GCC。
+占用内存小：Clang 生成的 AST 所占用的内存是 GCC 的五分之一左右。
+模块化设计：Clang 采用基于库的模块化设计，易于 IDE 集成及其他用途的重用。
+诊断信息可读性强：在编译过程中，Clang 创建并保留了大量详细的元数据 (metadata)，有利于调试和错误报告。
+</code></pre>
+
+<h6>Clang缺陷：</h6>
+
+<pre><code>支持更多语言：GCC 除了支持 C/C++/Objective-C, 还支持 Fortran/Pascal/Java/Ada/Go 和其他语言。Clang 目前支持的语言有 C/C++/Objective-C/Objective-C++。
+加强对 C++ 的支持：Clang 对 C++ 的支持依然落后于 GCC，Clang 还需要加强对 C++ 提供全方位支持。
+支持更多平台：GCC 流行的时间比较长，已经被广泛使用，对各种平台的支持也很完备。Clang 目前支持的平台有 Linux/Windows/Mac OS。
+</code></pre>
+
+<h6>当然，GCC 也有其优势：</h6>
+
+<pre><code>GCC 原名为GNU C语言编译器
+支持 JAVA/ADA/FORTRAN
+当前的 Clang 的 C++ 支持落后于 GCC，参见。（近日 Clang 已经可以自编译，见）
+GCC 支持更多平台
+GCC 更流行，广泛使用，支持完备
+GCC 基于 C，不需要 C++ 编译器即可编译
+</code></pre>
+
+<h3>关于Clang</h3>
+
+<h6>clang分三个实体概念：</h6>
+
+<pre><code>clang驱动：利用现有OS、编译环境以及参数选项来驱动整个编译过程的工具。
+clang编译器：利用clang前端组件及库打造的编译器，其入口为cc1_main; 参数为clang -cc1 或者 -Xclang；
+clang前端组件及库：包括Support、Basic、Diagnostics、Preprocessor、Lexer、Sema、CodeGen等；
+</code></pre>
+
+<h5>Clang架构图</h5>
+
+<p><img src="/images/clang0001.png" title="Caption" ></p>
+
+<h5>Clang流程图</h5>
+
+<p><img src="/images/clang0002.png" title="Caption" ></p>
+
+<h5>关于编译器：</h5>
+
+<pre><code>编译器前端负责产生机器无关的中间代码
+编译器后端负责对中间代码进行优化并转化为目标机器代码，
+</code></pre>
+
+<h3>编译过程：</h3>
+
+<pre><code>预处理（Pre-process）：把宏替换，删除注释，展开头文件，产生 .i 文件。
+
+编译（Compliling）：把之前的 .i 文件转换成汇编语言，产生 .s文件。
+
+汇编（Asembly）：把汇编语言文件转换为机器码文件，产生 .o 文件。
+
+链接（Link）：对.o文件中的对于其他的库的引用的地方进行引用，生成最后的可执行文件（同时也包括多个 .o 文件进行 link）。
+</code></pre>
+
+<h6>曾经看到有人对ios编译流程做了更加详细的理解</h6>
+
+<pre><code>编译信息写入辅助文件，创建文件架构 .app 文件
+处理文件打包信息
+执行 CocoaPod 编译前脚本，checkPods Manifest.lock
+编译.m文件，使用 CompileC 和 clang 命令
+链接需要的 Framework
+编译 xib
+拷贝 xib ，资源文件
+编译 ImageAssets
+处理 info.plist
+执行 CocoaPod 脚本
+拷贝标准库
+创建 .app 文件和签名
+</code></pre>
+
+<h6>期间包括了各种特性与底层</h6>
+
+<ul>
+<li>预处理(宏的替换，头文件的导入，#if的处理)</li>
+<li>词法分析(把代码切成一个个 Token，大小括号，等于号,字符串)</li>
+<li>语法分析(法是否正确,将所有节点组成抽象语法树 AST)</li>
+<li>IR中间代码的生成</li>
+<li>CodeGen 会负责将语法树自顶向下遍历逐步翻译成 LLVM IR(IR 是编译过程的前端的输出后端的输入,Pass 是 LLVM 优化工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。)</li>
+<li>开启了 bitcode 苹果会做进一步的优化，有新的后端架构还是可以用这份优化过的 bitcode 去生成。</li>
+<li>生成汇编</li>
+<li>生成目标文件</li>
+<li>生成可执行文件</li>
+</ul>
+
+
+<h3>点击Run做了什么（上面的详细版）：</h3>
+
+<pre><code>预处理 -&gt; 词法分析 （token ） -&gt;语法分析 -&gt;语义分析 -&gt;中间代码生成 -&gt; 生成字节码-&gt; 优化 -&gt; 生成汇编代码 -&gt; Link -&gt; 目标文件 -&gt;生层可执行文件。
+</code></pre>
+
+<h6>预处理</h6>
+
+<pre><code>预处理：处理源文件中#开头的预编译命令，宏的替换
+</code></pre>
+
+<h6>编译</h6>
+
+<pre><code>词法分析 （token ）：把代码切成一个个Token（词法/代码符号），大小括号，等于号,字符串
+语法分析：符号化的字符串，转化抽象为可以被计算机存储的树形结构，即抽象语法树（AST），检测正确性 
+语义分析：语义分析器就会发现类型不匹配，编译器提出相应的错误警告。主要是类型检查、以及符号表管理
+中间代码生成：编译器前端负责产生机器无关的中间代码，编译器后端负责对中间代码进行优化并转化为目标机器代码
+生成字节码/目标代码：编译器后端主要包括代码生成器、代码优化器。代码生成器将中间代码转换为目标代码，代码优化器主要是进行一些优化，比如删除多余指令，选择合适寻址方式等
+</code></pre>
+
+<h6>汇编</h6>
+
+<p>目标代码需要经过汇编器处理，才能变成机器上可以执行的指令。生成对应的.o文件</p>
+
+<h6>链接</h6>
+
+<p>链接器（这里指的是静态链接器）将多个目标文件合并为一个可执行文件，在 OS X 和 iOS中的可执行文件是 Mach-O，对于Mach-O的文件格式可以参考这里，刚才所描述的过程其实可以用 sunnyxx的一页 ppt来进行总结</p>
+
+<ul>
+<li>动态：静态链接：在编译链接期间发挥作用，把目标文件和静态库一起链接形成可执行文件</li>
+<li>静态：动态链接：链接过程推迟到运行时再进行。</li>
+</ul>
+
+
+<h6>区别</h6>
+
+<pre><code>如果多个程序都用到了一个库，那么每个程序都要将其链接到可执行文件中，非常冗余，动态链接的话，多个程序可以共享同一段代码，不需要在磁盘上存多份拷贝，但是动态链接发生在启动或运行时，增加了启动时间，造成一些性能的影响。
+静态库不方便升级，必须重新编译，动态库的升级更加方便
+</code></pre>
+
+<h6>签名（.app）</h6>
+
+<p>.app目录中，有又一个叫_CodeSignature的子目录，这是一个 plist文件，里面包含了程序的代码签名，你的程序一旦签名，就没有办法更改其中的任何东西，包括资源文件，可执行文件等，iOS系统会检查这个签名。</p>
+
+<pre><code>签名过程本身是由命令行工具 codesign 来完成的。如果你在 Xcode中build一个应用，这个应用构建完成之后会自动调用codesign 命令进行签名，这也是Link之后的一个关键步骤。
+</code></pre>
+
+<h6>启动</h6>
+
+<p>启动过程中，dyld（动态链接器） 起了很重要的作用，进行动态链接，进行符号和地址的一个绑定</p>
+
+<pre><code>加载所依赖的dylibs
+Fix-ups：Rebase修正地址偏移，因为 OS X和 iOS 搞了一个叫 ASLR的东西来做地址偏移（随机化）来避免收到攻击
+Fix-ups：Binding确定 Non-Lazy Pointer地址，进行符号地址绑定。
+ObjC runtime初始化：加载所有类
+Initializers：执行load 方法和__attribute__((constructor))修饰的函数
+</code></pre>
+
+<h3>扯在最后</h3>
+
+<pre><code>    宏观的LLVM，指的是整个的LLVM的框架，它肯定包含了Clang，因为Clang是LLVM的框架的一部分，是它的一个C/C++的前端。虽然这个前端占的比重比较大，但是它依然只是个前端，LLVM框架可以有很多个前端和很多个后端，只要你想继续扩展。
+    微观的LLVM指的是以实际开发过程中，包括实际使用过程中，划分出来的LLVM。比如编译LLVM和Clang的时候，LLVM的源码包是不包含Clang的源码包的，需要单独下载Clang的源码包。
+    所以这里想讨论的就是微观的LLVM和Clang的关系。从编译器用户的角度，Clang使用了LLVM中的一些功能，目前所知道的主要就是对中间格式代码的优化，或许还有一部分生成代码的功能。从Clang和微观LLVM的源码位置可以看出，Clang是基于微观的LLVM的一个工具。而从功能的角度来说，微观的LLVM可以认为是一个编译器的后端，而Clang是一个编译器的前端，它们的关系就更加的明了了，一个编译器前端想要程序最终变成可执行文件，是缺少不了对编译器后端的介绍的。
+</code></pre>
+
+<hr />
+
+<hr />
+
+<h6>微信号：</h6>
+
+<p>clpaial10201119（Q Q：2211523682）</p>
+
+<h6>微博WB:</h6>
+
+<p><a href="http://weibo.com/u/3288975567?is_hot=1">http://weibo.com/u/3288975567?is_hot=1</a></p>
+
+<h6>gitHub：</h6>
+
+<p><a href="https://github.com/al1020119">https://github.com/al1020119</a></p>
+
+<h6>博客</h6>
+
+<p><a href="http://al1020119.github.io/">http://al1020119.github.io/</a></p>
+
+<hr />
+
+<p><img src="/images/iCocosCoder.jpg" title="Caption" ></p>
+
+<p><img src="/images/iCocosPublic.jpg" title="Caption" ></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">iCocos</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2017-01-20T23:34:34+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2017</span></span> <span class='time'>11:34 pm</span></time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/" title="Previous Post: Node.js是什么鬼？">&laquo; Node.js是什么鬼？</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- Duoshuo Comment BEGIN -->
+<div class="ds-thread" data-title="初次见面-LLVM/Clang"></div>
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"icocoscao"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script>
+<!-- Duoshuo Comment END --></div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+    <h1>文章分类</h1>
+    <ul id="categories">
+        <li class='category'><a href='/blog/categories/algorithms/'>algorithms (6)</a></li>
+<li class='category'><a href='/blog/categories/and/'>and (11)</a></li>
+<li class='category'><a href='/blog/categories/apples/'>apples (2)</a></li>
+<li class='category'><a href='/blog/categories/application/'>application (1)</a></li>
+<li class='category'><a href='/blog/categories/architecture/'>architecture (2)</a></li>
+<li class='category'><a href='/blog/categories/audio/'>audio (5)</a></li>
+<li class='category'><a href='/blog/categories/audio-video/'>audio-video (1)</a></li>
+<li class='category'><a href='/blog/categories/data/'>data (6)</a></li>
+<li class='category'><a href='/blog/categories/developer/'>developer (16)</a></li>
+<li class='category'><a href='/blog/categories/foundation/'>foundation (31)</a></li>
+<li class='category'><a href='/blog/categories/full/'>full (13)</a></li>
+<li class='category'><a href='/blog/categories/low-level/'>low-level (4)</a></li>
+<li class='category'><a href='/blog/categories/lve/'>lve (5)</a></li>
+<li class='category'><a href='/blog/categories/news/'>news (4)</a></li>
+<li class='category'><a href='/blog/categories/others/'>others (1)</a></li>
+<li class='category'><a href='/blog/categories/performance/'>performance (12)</a></li>
+<li class='category'><a href='/blog/categories/php-lover/'>php-lover (2)</a></li>
+<li class='category'><a href='/blog/categories/practical/'>practical (1)</a></li>
+<li class='category'><a href='/blog/categories/radio/'>radio (5)</a></li>
+<li class='category'><a href='/blog/categories/reverse/'>reverse (6)</a></li>
+<li class='category'><a href='/blog/categories/senior/'>senior (31)</a></li>
+<li class='category'><a href='/blog/categories/stack/'>stack (13)</a></li>
+<li class='category'><a href='/blog/categories/structures/'>structures (6)</a></li>
+<li class='category'><a href='/blog/categories/summarize/'>summarize (5)</a></li>
+<li class='category'><a href='/blog/categories/tools/'>tools (5)</a></li>
+<li class='category'><a href='/blog/categories/video/'>video (5)</a></li>
+
+    </ul>
+</section><section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2017/01/20/chu-ci-jian-mian-llvm-slash-clang/">初次见面-LLVM/Clang</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2017/01/12/node-dot-jsshi-shi-yao-gui-%3F/">Node.js是什么鬼？</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2017/01/10/appda-bao-fa-bu-keng-zhong-zhi-keng/">App打包发布———坑中之坑</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/30/bao-chi-chu-cin-ji-xu-qian-jin/">保持初心继续前进-年终篇</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/26/ios-daobao/">自动打包上传代码</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/al1020119">@al1020119</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'al1020119',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+<section>
+<h1>博客<abbr title="The word '博客' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '博客', not for image.">&trade;</abbr></h1>
+<a href="http://al1020119.github.io/blog/2017/01/20/chu-ci-jian-mian-llvm-slash-clang/"><img src="http://chart.apis.google.com/chart?chs=150x150&cht=qr&chld=|0&chco=165B94&chl=http://al1020119.github.io/blog/2017/01/20/chu-ci-jian-mian-llvm-slash-clang/" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>github<abbr title="The word 'github' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word 'github', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosgithub.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>微信<abbr title="The word '微信' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '微信', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosWX.png" alt="post-qrcode"></a></section>
+
+
+<section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocosMGC.png" alt="post-qrcode"></a><section>
+  
+  
+</section>
+<h1>公众号<abbr title="The word '公众号' is a registered trademark of DENSO WAVE INCORPORATED. It applies only for the word '公众号', not for image.">&trade;</abbr></h1>
+<a><img src="/images/iCocos520.png" alt="post-qrcode"></a></section>
+<section>
+    <h1>访客统计</h1>
+    <br/>
+    <a href="http://s07.flagcounter.com/more/2SH"><img src="http://s07.flagcounter.com/count/2SH/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_12/viewers_0/labels_0/pageviews_1/flags_0/" alt="Flag Counter" border="0"></a>
+</section><section>
+    <h1>新浪微博</h1>
+    <ul id="weibo">
+        <li>
+            
+            <!-- 在此插入获得的微博秀代码 -->
+            <iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=1&isFans=1&uid=3288975567&verifier=20ffcedd&dpc=1"></iframe>
+            
+        </li>
+    </ul>
+</section>
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - iCocos -
+<span class="credit">welcome to <a href="http://al1020119.github.io">曹#黎</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+<!--
+-->
+
+
+
+</body>
+</html>
