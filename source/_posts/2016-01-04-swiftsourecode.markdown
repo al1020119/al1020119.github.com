@@ -69,18 +69,32 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 > 总而言之，Swift开源是大大前进了一步。而超越Swift开源本身，当今编程语言的发展趋势也值得我们认真思考。如果从完全理性的角度看待编程语言，那么编程语言无非就是一门编程语言：“选择好适合自己的编程语言就是了”。但问题就在于如何选择合适的编程语言呢？语言的魅力也许就像盲人摸象，你无法做到足够理性，或者这世界就没有银弹，编程语言的比较和纷争，将是一个永恒的话题，热度无限......
 
+
+
+
+
+===
 ===
 
-    Q Q：2211523682/790806573
 
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

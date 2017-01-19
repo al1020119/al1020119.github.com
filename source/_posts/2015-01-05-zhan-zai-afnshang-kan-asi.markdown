@@ -86,3 +86,33 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 	* 暂停\恢复\取消所有的请求
 	
 	* 监听整个队列中所有请求的下载进度和上传进度
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

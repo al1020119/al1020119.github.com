@@ -1171,22 +1171,31 @@ OSSpinLock 自旋锁，性能最高的锁。原理很简单，就是一直 do wh
 
 
 
+
+
+
+===
 ===
 
 
-
-
-
-    Q Q：2211523682/790806573
-
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

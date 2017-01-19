@@ -141,18 +141,32 @@ ios设备越狱，这个我就不讲了吧，不过我要赞@盘古团队一个�
 > 单纯的静态分析只能知道个大概，想知道框架和具体内容还需要动态分析（下面分析）的帮助。不过想知道一个应用用到了什么库，界面是什么结构，有什么图片资源，上面的绝对够用了。总之逆向工程是比较枯燥无味的东西，资料又少，需要的是。。。。。加油
 
 
+
+
+
+
+===
 ===
 
-    Q Q：2211523682/790806573
 
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

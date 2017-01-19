@@ -73,3 +73,30 @@ object c中，重写allocWithZone方法，保证即使用户用 alloc方法直�
 * 注意事项：项目初期，软件结构和需求都没有稳定下来时，不建议使用此模式，因为其劣势也很明显，
 增 加了代码的复杂度，增加了调用层次，增加了内存负担。所以要注意防止模式的滥用。 
 
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

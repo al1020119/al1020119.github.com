@@ -219,6 +219,11 @@ categories:
 	    
 	}
 
+####有个朋友给了一个更好的方案
+
+	直接设置内边距，TableView会直接根据内边距进行相应的缩进！
+
+
 ##4：图片截取
 
     CGSize itemSize = CGSizeMake(self.image.size.width, self.image.size.height);
@@ -3198,22 +3203,32 @@ categories:
 
 > 总体来说，第二种办法还是很好地，建议大家使用第二种办法。
  
+
+
+
+
+===
 ===
 
 
-
-
-
-    Q Q：2211523682/790806573
-
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

@@ -152,3 +152,33 @@ UIView的layerClass方法，可以返回主layer所使用的类，UIView的子�
  
 
 9.变形：Quartz Core的渲染能力，使二维图像可以被自由操纵，就好像是三维的。图像可以在一个三维坐标系中以任意角度被旋转，缩放和倾斜。CATransform3D的一套方法提供了一些魔术般的变换效果。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

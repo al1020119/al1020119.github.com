@@ -110,3 +110,33 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 
 ######3、旋转view的transform
 前两种都是试图触发orientation相关方法，第三种可能会造成一些不可预知的风险不推荐。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

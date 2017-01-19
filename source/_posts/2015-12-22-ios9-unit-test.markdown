@@ -358,3 +358,34 @@ Frank， KIF， Subliminal， Apple 的 UIAutomation，我把他们都试了一�
 * KIF 已经与主要的 iOS 修订版本决裂。
 * Subliminal 不能在命令行中可靠地运行。
 * UIAutomation 是用 JavaScript 和 clunky 写的。
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

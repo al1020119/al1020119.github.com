@@ -221,3 +221,33 @@ iOS中提供了4个框架用于实现蓝牙连接
  详细请参看：
  
  [蓝牙开发专题](http://liuyanwei.jumppo.com/2015/07/17/ios-BLE-0.html)
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

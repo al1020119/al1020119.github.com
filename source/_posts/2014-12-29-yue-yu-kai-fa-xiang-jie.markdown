@@ -307,3 +307,33 @@ apt和Cydia的方式来进行判断的，没看见源码
 
 [http://since2006.com/blog/240/ios6-mobileinstallationinstall](http://since2006.com/blog/240/ios6-mobileinstallationinstall)
 [http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html](http://blog.sina.com.cn/s/blog_9cd1705d0101l4bo.html)
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

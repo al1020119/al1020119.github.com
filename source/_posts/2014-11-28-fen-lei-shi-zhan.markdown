@@ -156,3 +156,33 @@ Lisp最强大的特性之一是condition系统，它可以分离异常的检测�
 
 总结
 block给Objective C带来了无穷的可能性。本文只讨论了美团iOS在实践中的一些用法，更多想法还在等待挖掘。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

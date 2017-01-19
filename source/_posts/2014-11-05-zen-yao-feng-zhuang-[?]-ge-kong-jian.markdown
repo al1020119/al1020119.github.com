@@ -562,3 +562,34 @@ xib 配合 IBInspectable 宏虽然可以让属性设置变得简单化，但是�
 能够返回你所需要的高度，比如设置 preferredContentSize 属性
 ChildViewController 动态地设置 contentSize，容器监听 contentSize 的变化动态地设置约束或者 frame。
 
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

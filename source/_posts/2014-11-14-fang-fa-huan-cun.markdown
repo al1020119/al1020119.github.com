@@ -249,3 +249,33 @@ list的方法还保存了除了selector和imp之外其他很多属性
 
 后记
 本文是Objective-C runtime源码研究的第二篇，主要对Objective-C的方法决议和方法缓存做了剖析。runtime的源代码可以在 http://www.opensource.apple.com/tarballs/ 下载。如有错误，敬请指正。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

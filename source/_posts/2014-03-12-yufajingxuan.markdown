@@ -294,3 +294,33 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 	3     NSLog(@"Person---initialize");
 	4  }
 本博文由博主（iCocos）独立编写或者借鉴别人的好文章进行修改而成，如果不对的地方望指正，谢谢！ 如果您还有看到新浪博客关于IOS梦工厂的博文，麻烦请到这里找更完整更清晰的版本，博主已从http://blog.sina.com.cn/s/articlelist_3288975567_0_1.html转移到博客园
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

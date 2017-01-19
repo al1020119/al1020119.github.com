@@ -289,18 +289,32 @@ FastImageCache分别优化了2,4,6.1三个步骤：
 > 尽量减少内存占用.  因为原始图片要比低分辨率图大很多, 所以当用户从一张图片翻阅到另一张图片时,  当前图片加载为原始尺寸的高清大图, 而原来那张就被替换为低分辨率图了。 虽然读写次数增多了, 但内存确实省了不少。
 
 
+
+
+
+
+===
 ===
 
-    Q Q：2211523682/790806573
 
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

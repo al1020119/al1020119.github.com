@@ -165,3 +165,35 @@ M是modol模型 V是view视图 C是control控制器。
 		KVC：就是可以暴力的去get/set类的私有属性，同时还有强大的键值路径对数组类型的属性进行操作
 
 		KVO：监听类中属性值变化的
+
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

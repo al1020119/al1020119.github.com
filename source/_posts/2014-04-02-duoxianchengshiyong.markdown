@@ -722,3 +722,34 @@ NSTimer 是iOS中的一个计时器类，除了延迟执行还有很多用法，
 > 更新：第一次放出来的时候，有很多地方有错误，很感谢有朋友提出来了。如果你看到有错误的地方，一定记得指出来，这样对大家都有帮助。还有一点对初学者来说，遇到不懂的方法，最好的办法就是查看官方文档，那里是最准确的，就算有几个单词不认识，查一下就好了，不会影响对整体的理解。
 
 
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

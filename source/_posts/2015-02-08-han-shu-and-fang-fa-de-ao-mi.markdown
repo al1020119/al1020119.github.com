@@ -145,3 +145,34 @@ Objective-C 中一般的函数是全局有效的(可在函数前加 static 关�
 
 
 > 如果你还不了解是什么回事，那么你可以看看swift，我记得在学习swift1.2版的时候，官方提到了函数与方法的区别和注意点！
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

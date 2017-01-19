@@ -97,3 +97,33 @@ iBeacon 的 API 并不十分复杂，但他的行为比较难弄清楚，特别�
 设备重启并不影响 iBeacon 后台检测的执行。
 iOS 7 中，在多任务界面中杀掉程序会终止 iBeacon 检测的执行，iOS 7.1 上改变了这一行为，被杀掉的 app 还可以继续进行 iBeacon 检测。
  
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

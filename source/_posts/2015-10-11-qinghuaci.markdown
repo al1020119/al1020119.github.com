@@ -173,3 +173,33 @@ charles又名青花瓷，在iOS开发中的抓包中具有重要作用。最大�
 这么做的意义：
 
 这里只是简单的更改了一些数字，在页面显示更加直观。实际的操作中，你可以经常用来把某些值改为临界情况以看到App在处理这些临界状况时的反应，这样比找那些临界数据的测试账号成本要低得多。也可以把一些可能不会反回数值的字段找到，直接将里面的值删成nil，看看会不会报异常等等。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

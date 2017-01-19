@@ -207,3 +207,33 @@ Storyboard真是让人又爱又恨，每个在多人合作项目中使用Storybo
 自动Refactord的故事板文件会为每一个scenes留下一个UIStoryboard Reference，并且在需要的地方自动创建可读性不好的Storyboard ID。所以就个人来说，我更推荐手动复制scenes到新的故事板文件中，然后在源文件中删除这些scenes并手动添加Storyboard Reference。
 
 > 如果你已经有多个故事板文件了，为自己庆祝一下吧——你又可以精简你的代码了！从Object库中拖拽一个UIStoryboard Reference，并配置segue。然后选取你手动跳转的代码，大力地按下删除键吧！
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

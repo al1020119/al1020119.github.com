@@ -87,18 +87,32 @@ iOS应用防反编译总结
 * 反编译的流程，就是虚拟一个执行环境，看程序执行了那些指令，翻译成相应的语句一般的流程是先把程序调入到数据段， 虚拟运行环境，一般这分配文件头部，从纪录指令程序数据段，载入到虚拟环境中，纪录指令，遇到跳转指令，压入栈，形成树结构（看数据结构），遍历每个节点 的指令。形成完整程序
  
 
+
+
+
+
+===
 ===
 
-    Q Q：2211523682/790806573
 
-    微信：18370997821/13148454507
-    
-    微博WB:http://weibo.com/u/3288975567?is_hot=1
-    
-	git博文：http://al1020119.github.io/
+######微信号：
 	
-	github：https://github.com/al1020119
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
 
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
 
 {% img /images/iCocosCoder.jpg Caption %}  
 

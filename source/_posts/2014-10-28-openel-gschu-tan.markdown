@@ -72,3 +72,34 @@ OpenGL绘制本文就不做介绍，HJGLKViewControllerDemo中有大量的示例
 西蒙iPhone-OpenGL ES 中文教程专题
 Cocos2d源码
 小贴士：当App退到后台时， 切记暂停OpenGL绘制，否则可能导致crash
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

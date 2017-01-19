@@ -197,3 +197,34 @@ photoKit001.png
  * 从 AssetsLibrary 中获取数据，无论是相册，还是资源，本质上都是使用枚举的方式，遍历照片库取得相应的数据。而 PhotoKit 则是通过传入参数，直接获取相应的数据，因而效率会提高不少。
  * 在 AssetsLibrary 中，相册和资源是对应不同的对象（ALAssetGroup 和 ALAsset），因此获取相册和获取资源是两个完全没有关联的接口。而 PhotoKit 中则有 PHFetchResult 这个可以统一储存相册或资源的对象，因此处理相册和资源时也会比较方便。
  * PhotoKit 返回资源结果时，同时返回了资源的元数据，获取元数据在 AssetsLibrary 中是很难办到的一件事。同时通过 PHAsset，开发者还能直接获取资源是否被收藏（favorite）和隐藏（hidden），拍摄图片时是否开启了 HDR 或全景模式，甚至能通过一张连拍图片获取到连拍图片中的其他图片。这也是文章开头说的，PhotoKit 能更好地与设备照片库接入的一个重要因素。
+
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

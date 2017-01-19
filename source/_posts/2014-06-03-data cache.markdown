@@ -391,3 +391,33 @@ FMDatabaseQueue 后台会建立系列化的G-C-D队列，并执行你传给G-C-D
 
 以上内容属于本人整理的笔记，如有错误的地方希望能告诉我，大家共同进步。
 以上内容有些段落或语句可能是本人从其他地方Copy而来，如有侵权，请及时告诉我。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

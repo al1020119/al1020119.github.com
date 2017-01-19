@@ -307,3 +307,33 @@ keywords: iCocos, iOS开发, 博客, 技术分析, 文章, 学习, 曹黎, 曹�
 在这个练习中你已经学会了如何往现有的iOS app中添加手表app，如何创建一个界面控制器和使用嵌套组构造一个非常复杂的界面，以及使用WKInterfaceController类来配合这项工作。那么，接下来呢？
 
 本教程系列的第二部分，你将学习所有关于表和导航WatchKit的使用。
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  

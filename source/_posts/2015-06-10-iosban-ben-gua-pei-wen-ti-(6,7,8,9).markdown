@@ -825,3 +825,33 @@ iPad适配Slide Over 和 Split View，若想适配multi tasking特性，唯一�
 	Getting Started with Multitasking on iPad in iOS 9
 	Optimizing Your App for Multitasking on iPad in iOS
 本文部分内容来自网络整理，如有错误请留言指出，谢谢！
+
+
+
+
+===
+===
+
+
+######微信号：
+	
+clpaial10201119（Q Q：2211523682）
+    
+######微博WB:
+
+[http://weibo.com/u/3288975567?is_hot=1](http://weibo.com/u/3288975567?is_hot=1)
+
+######gitHub：
+
+
+[https://github.com/al1020119](https://github.com/al1020119)
+	
+######博客
+
+[http://al1020119.github.io/](http://al1020119.github.io/)
+
+===
+
+{% img /images/iCocosCoder.jpg Caption %}  
+
+{% img /images/iCocosPublic.jpg Caption %}  
