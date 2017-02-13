@@ -71,13 +71,12 @@ footer: true
  ***
   	
 											|  其他相关  | 
-######本人目前就职：
+######本人目前就职-广州
  
- * 玩秀网络科技-iiwanxiu
+ * 哈中少年商学院（简称：少年MBA）
  
- 1:[http://www.iiwanxiu.com/](http://www.iiwanxiu.com/)
- 
- 2:[http://www.iiyouxiu.com/](http://www.iiyouxiu.com/)
+
+	- [http://www.hymba.com/](http://www.hymba.com/) 
  
 
 ######技能：
